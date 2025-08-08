@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 1.7.0
+**Version:** 1.8.0
 **Auteur:** Etienne
 **Licence:** GPL v2 or later
 
@@ -10,26 +10,24 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 Ce plugin a été développé en suivant les meilleures pratiques de WordPress en matière de sécurité, de performance, de maintenabilité et d'évolutivité. Il inclut un mécanisme de mise à jour qui permettra de gérer les migrations de données pour les futures versions.
 
-## Fonctionnalités (v1.7.0)
+## Fonctionnalités (v1.8.0)
 
+*   **Autocomplétion d'Adresse :** Intégration avec l'API Géoplateforme de l'IGN pour suggérer et remplir automatiquement les champs d'adresse, de code postal et de ville.
 *   **Page d'Options :** Une page de réglages (`Réglages > Options DAME`) permet de gérer le comportement du plugin.
 *   **Gestion du Cycle de Vie des Adhésions :**
-    *   Un champ **État d'adhésion** (Non Adhérent, Actif, Expiré, Ancien) est disponible dans la section de classification.
+    *   Un champ **État d'adhésion** (Non Adhérent, Actif, Expiré, Ancien).
     *   La saisie d'une **Date d'adhésion** passe automatiquement le statut à "Actif".
-    *   Une fonction de **réinitialisation annuelle** sur la page d'options permet de mettre à jour en masse les statuts (`Actif` -> `Expiré`, `Expiré` -> `Ancien`) et de vider la date d'adhésion. Cette action est limitée à une fois par an.
+    *   Une fonction de **réinitialisation annuelle** sur la page d'options met à jour en masse les statuts.
 *   **Champs de Données Complets :**
     *   Nom, Prénom, Date de naissance (obligatoires).
-    *   Sexe (Masculin / Féminin).
-    *   Numéro de licence (format validé), Numéro de téléphone.
-    *   Adresse complète (2 lignes, code postal, ville).
-    *   Localisation (Pays, Région, Département) avec menus déroulants.
+    *   Sexe, Numéro de licence, Numéro de téléphone.
+    *   Localisation (Pays, Région, Département).
 *   **Sélection Auto. du Département :** Le département est automatiquement suggéré à partir du code postal.
-*   **Informations Scolaires :** Section dédiée pour l'établissement et l'académie (menu déroulant).
-*   **Gestion des Mineurs :** Champs pour deux représentants légaux, chacun avec nom, prénom, email, téléphone, et adresse sur deux lignes.
+*   **Informations Scolaires :** Section dédiée pour l'établissement et l'académie.
+*   **Gestion des Mineurs :** Champs pour deux représentants légaux (avec adresse complète et téléphone).
 *   **Classification :**
     *   Cases à cocher pour "Junior" et "Pôle Excellence".
-    *   Menu déroulant pour le niveau d'**Arbitre** (Non, Jeune, Club, etc.).
-*   **Liaison Utilisateur :** Permet de lier un adhérent à un compte utilisateur WordPress.
+    *   Menu déroulant pour le niveau d'**Arbitre**.
 *   **Rôles Utilisateurs Personnalisés :** Ajoute les rôles "Membre" et "Entraineur".
 
 ## Désinstallation
