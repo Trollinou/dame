@@ -1,0 +1,214 @@
+<?php
+/**
+ * File for handling the plugin's settings page.
+ *
+ * @package DAME
+ */
+
+// If this file is called directly, abort.
+if ( ! defined( 'WPINC' ) ) {
+    die;
+}
+
+/**
+ * Add the options page to the Settings menu.
+ */
+function dame_add_options_page() {
+    add_options_page(
+        __( 'Options DAME', 'dame' ),
+        __( 'Options DAME', 'dame' ),
+        'manage_options',
+        'dame-settings',
+        'dame_render_options_page'
+    );
+}
+add_action( 'admin_menu', 'dame_add_options_page' );
+
+/**
+ * Renders the options page wrapper.
+ */
+function dame_render_options_page() {
+    ?>
+    <div class="wrap">
+        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+        <form action="options.php" method="post">
+            <?php
+            settings_fields( 'dame_options_group' );
+            do_settings_sections( 'dame-settings' );
+            submit_button( __( 'Enregistrer les modifications', 'dame' ) );
+            ?>
+        </form>
+    </div>
+    <?php
+}
+
+/**
+ * Register settings, sections, and fields.
+ */
+function dame_register_settings() {
+    // Register the settings group
+    register_setting( 'dame_options_group', 'dame_options', 'dame_options_sanitize' );
+
+    // Add Uninstall Section
+    add_settings_section(
+        'dame_uninstall_section',
+        __( 'Désinstallation', 'dame' ),
+        'dame_uninstall_section_callback',
+        'dame-settings'
+    );
+
+    // Add Uninstall Field
+    add_settings_field(
+        'dame_delete_on_uninstall',
+        __( 'Suppression des données', 'dame' ),
+        'dame_delete_on_uninstall_callback',
+        'dame-settings',
+        'dame_uninstall_section'
+    );
+
+    // Add Annual Reset Section
+    add_settings_section(
+        'dame_reset_section',
+        __( 'Réinitialisation Annuelle des Adhésions', 'dame' ),
+        'dame_reset_section_callback',
+        'dame-settings'
+    );
+
+    // Add Reset Button Field
+    add_settings_field(
+        'dame_reset_button',
+        __( 'Action', 'dame' ),
+        'dame_reset_button_callback',
+        'dame-settings',
+        'dame_reset_section'
+    );
+}
+add_action( 'admin_init', 'dame_register_settings' );
+
+/**
+ * Handle the annual reset action.
+ */
+function dame_handle_annual_reset() {
+    if ( isset( $_POST['dame_action'] ) && 'annual_reset' === $_POST['dame_action'] ) {
+        // Verify nonce
+        if ( ! isset( $_POST['dame_annual_reset_nonce_field'] ) || ! wp_verify_nonce( $_POST['dame_annual_reset_nonce_field'], 'dame_annual_reset_nonce' ) ) {
+            wp_die( 'Security check failed.' );
+        }
+
+        // Check if reset already done this year
+        $current_year = date( 'Y' );
+        $last_reset_year = get_option( 'dame_last_reset_year' );
+        if ( $current_year === $last_reset_year ) {
+            add_action( 'admin_notices', function() {
+                echo '<div class="error"><p>' . esc_html__( 'La réinitialisation a déjà été effectuée cette année.', 'dame' ) . '</p></div>';
+            });
+            return;
+        }
+
+        global $wpdb;
+
+        // Update 'Expired' (E) to 'Ancient' (X)
+        $expired_to_ancient = $wpdb->query(
+            "UPDATE {$wpdb->postmeta} SET meta_value = 'X' WHERE meta_key = '_dame_membership_status' AND meta_value = 'E'"
+        );
+
+        // Update 'Active' (A) to 'Expired' (E)
+        $active_to_expired = $wpdb->query(
+            "UPDATE {$wpdb->postmeta} SET meta_value = 'E' WHERE meta_key = '_dame_membership_status' AND meta_value = 'A'"
+        );
+
+        // Update the last reset year
+        update_option( 'dame_last_reset_year', $current_year );
+
+        add_action( 'admin_notices', function() use ( $active_to_expired, $expired_to_ancient ) {
+            $message = sprintf(
+                esc_html__( 'Réinitialisation annuelle terminée. %d adhésions actives passées à Expiré. %d adhésions expirées passées à Ancien.', 'dame' ),
+                $active_to_expired,
+                $expired_to_ancient
+            );
+            echo '<div class="updated"><p>' . $message . '</p></div>';
+        });
+    }
+}
+add_action( 'admin_init', 'dame_handle_annual_reset' );
+
+/**
+ * Sanitize the options array.
+ *
+ * @param array $input The input options.
+ * @return array The sanitized options.
+ */
+function dame_options_sanitize( $input ) {
+    $sanitized_input = array();
+    if ( isset( $input['delete_on_uninstall'] ) ) {
+        $sanitized_input['delete_on_uninstall'] = absint( $input['delete_on_uninstall'] );
+    }
+    return $sanitized_input;
+}
+
+/**
+ * Callback for the uninstall section.
+ */
+function dame_uninstall_section_callback() {
+    echo '<p>' . esc_html__( 'Gérer les options relatives à la désinstallation du plugin.', 'dame' ) . '</p>';
+}
+
+/**
+ * Callback for the delete_on_uninstall field.
+ */
+function dame_delete_on_uninstall_callback() {
+    $options = get_option( 'dame_options' );
+    $checked = isset( $options['delete_on_uninstall'] ) ? $options['delete_on_uninstall'] : 0;
+    ?>
+    <label>
+        <input type="checkbox" name="dame_options[delete_on_uninstall]" value="1" <?php checked( $checked, 1 ); ?> />
+        <?php esc_html_e( 'Cochez cette case pour supprimer toutes les données du plugin (adhérents, etc.) lors de sa suppression.', 'dame' ); ?>
+    </label>
+    <p class="description"><?php _e( 'Attention : cette action est irréversible.', 'dame' ); ?></p>
+    <?php
+}
+
+
+/**
+ * Callbacks for Annual Reset Section
+ */
+function dame_reset_section_callback() {
+    echo '<p>' . esc_html__( 'Cette action met à jour le statut de tous les adhérents en fin d\'année civile.', 'dame' ) . '</p>';
+    echo '<p><strong>' . esc_html__( 'Processus : Les adhésions "Actif" passent à "Expiré", et les "Expiré" passent à "Ancien".', 'dame' ) . '</strong></p>';
+    $last_reset_year = get_option( 'dame_last_reset_year', __( 'jamais', 'dame' ) );
+    echo '<p>' . sprintf( esc_html__( 'Dernière réinitialisation effectuée pour l\'année : %s', 'dame' ), '<strong>' . esc_html( $last_reset_year ) . '</strong>' ) . '</p>';
+}
+
+function dame_reset_button_callback() {
+    $current_year = date( 'Y' );
+    $last_reset_year = get_option( 'dame_last_reset_year' );
+    $disabled = ( $current_year === $last_reset_year ) ? 'disabled' : '';
+    ?>
+    <form method="post">
+        <input type="hidden" name="dame_action" value="annual_reset" />
+        <?php wp_nonce_field( 'dame_annual_reset_nonce', 'dame_annual_reset_nonce_field' ); ?>
+        <?php submit_button( __( 'Lancer la réinitialisation annuelle', 'dame' ), 'delete', 'dame_annual_reset', false, $disabled ); ?>
+        <p class="description">
+            <?php
+            if ( $disabled ) {
+                esc_html_e( 'La réinitialisation a déjà été effectuée pour cette année.', 'dame' );
+            } else {
+                esc_html_e( 'Cette action ne peut être effectuée qu\'une fois par année civile.', 'dame' );
+            }
+            ?>
+        </p>
+    </form>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const resetButton = document.getElementById('dame_annual_reset');
+            if (resetButton) {
+                resetButton.addEventListener('click', function(e) {
+                    if (!confirm("<?php echo esc_js( __( 'Êtes-vous sûr de vouloir lancer la réinitialisation annuelle ? Cette action est irréversible.', 'dame' ) ); ?>")) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+    </script>
+    <?php
+}

@@ -24,6 +24,7 @@ function dame_set_adherent_columns( $columns ) {
         'dame_email' => __( 'Email', 'dame' ),
         'dame_phone' => __( 'Téléphone', 'dame' ),
         'dame_classification' => __( 'Classification', 'dame' ),
+        'dame_membership_status' => __( 'Statut Adhésion', 'dame' ),
         'dame_membership_date' => __( 'Date d\'adhésion', 'dame' ),
     );
     return $new_columns;
@@ -67,6 +68,17 @@ function dame_render_adherent_columns( $column, $post_id ) {
                 $classifications[] = __( 'Pôle Excellence', 'dame' );
             }
             echo esc_html( implode( ', ', $classifications ) );
+            break;
+
+        case 'dame_membership_status':
+            $status_key = get_post_meta( $post_id, '_dame_membership_status', true );
+            $status_options = [
+                'N' => __( 'Non Adhérent (N)', 'dame' ),
+                'A' => __( 'Actif (A)', 'dame' ),
+                'E' => __( 'Expiré (E)', 'dame' ),
+                'X' => __( 'Ancien (X)', 'dame' ),
+            ];
+            echo esc_html( $status_options[ $status_key ] ?? '' );
             break;
     }
 }

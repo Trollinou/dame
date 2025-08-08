@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 1.5.0
+**Version:** 1.6.0
 **Auteur:** Etienne
 **Licence:** GPL v2 or later
 
@@ -10,10 +10,12 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 Ce plugin a été développé en suivant les meilleures pratiques de WordPress en matière de sécurité, de performance, de maintenabilité et d'évolutivité. Il inclut un mécanisme de mise à jour qui permettra de gérer les migrations de données pour les futures versions.
 
-## Fonctionnalités (v1.5.0)
+## Fonctionnalités (v1.6.0)
 
-*   **Gestion des Adhérents :** Crée une section "Adhérents" dédiée dans le menu d'administration de WordPress.
-*   **Génération Automatique du Titre :** Le titre de la fiche est automatiquement généré (`NOM Prénom`).
+*   **Page d'Options :** Une page de réglages (`Réglages > Options DAME`) permet de gérer le comportement du plugin.
+*   **Gestion du Cycle de Vie des Adhésions :**
+    *   Un nouveau champ **État d'adhésion** (Non Adhérent, Actif, Expiré, Ancien) a été ajouté.
+    *   Une fonction de **réinitialisation annuelle** sur la page d'options permet de mettre à jour en masse les statuts (`Actif` -> `Expiré`, `Expiré` -> `Ancien`). Cette action est limitée à une fois par an.
 *   **Champs de Données Complets :**
     *   Nom, Prénom, Date de naissance (obligatoires).
     *   Sexe (Masculin / Féminin).
@@ -29,18 +31,7 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
     *   Menu déroulant pour le niveau d'**Arbitre** (Non, Jeune, Club, etc.).
 *   **Liaison Utilisateur :** Permet de lier un adhérent à un compte utilisateur WordPress.
 *   **Rôles Utilisateurs Personnalisés :** Ajoute les rôles "Membre" et "Entraineur".
-*   **Interface d'Administration Optimisée :** Colonnes de liste personnalisées pour une meilleure visibilité.
-*   **Prêt pour la Traduction :** Entièrement internationalisé.
-
-## Installation
-
-1.  Compressez le dossier `dame` pour créer un fichier `dame.zip`.
-2.  Depuis votre tableau de bord WordPress, allez dans `Extensions` > `Ajouter`.
-3.  Cliquez sur `Téléverser une extension`.
-4.  Choisissez le fichier `dame.zip` et cliquez sur `Installer maintenant`.
-5.  Activez l'extension.
 
 ## Désinstallation
 
-Par défaut, la désactivation et la suppression de ce plugin ne suppriment aucune donnée. Pour supprimer toutes les données, ajoutez la ligne suivante à votre fichier `wp-config.php` avant de supprimer le plugin :
-`define( 'DAME_DELETE_ON_UNINSTALL', true );`
+La suppression des données lors de la désinstallation du plugin peut être activée depuis la page d'options (`Réglages > Options DAME`). Par défaut, les données sont conservées par sécurité.

@@ -10,11 +10,16 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
     exit;
 }
 
-// Check if the user has opted-in to data removal.
-// To do so, a constant DAME_DELETE_ON_UNINSTALL must be set to true in wp-config.php
-if ( ! defined( 'DAME_DELETE_ON_UNINSTALL' ) || ! DAME_DELETE_ON_UNINSTALL ) {
+// Check if the user has opted-in to data removal from the settings page.
+$options = get_option( 'dame_options' );
+if ( ! isset( $options['delete_on_uninstall'] ) || 1 !== (int) $options['delete_on_uninstall'] ) {
     return;
 }
+
+// Delete the options.
+delete_option( 'dame_options' );
+delete_option( 'dame_plugin_version' );
+delete_option( 'dame_last_reset_year' );
 
 global $wpdb;
 
