@@ -22,6 +22,25 @@ function dame_display_admin_notices() {
 }
 add_action( 'admin_notices', 'dame_display_admin_notices' );
 
+/**
+ * Enqueues admin scripts for the plugin.
+ *
+ * @param string $hook The current admin page.
+ */
+function dame_enqueue_admin_scripts( $hook ) {
+    global $post;
+    if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && 'adherent' === $post->post_type ) {
+        wp_enqueue_script(
+            'dame-main-js',
+            plugin_dir_url( __FILE__ ) . 'js/main.js',
+            array(),
+            DAME_VERSION,
+            true
+        );
+    }
+}
+add_action( 'admin_enqueue_scripts', 'dame_enqueue_admin_scripts' );
+
 
 /**
  * Adds the meta boxes for the Adherent CPT.
@@ -76,6 +95,7 @@ function dame_render_adherent_details_metabox( $post ) {
     $birth_date = get_post_meta( $post->ID, '_dame_birth_date', true );
     $sexe = get_post_meta( $post->ID, '_dame_sexe', true );
     $license_number = get_post_meta( $post->ID, '_dame_license_number', true );
+    $phone = get_post_meta( $post->ID, '_dame_phone_number', true );
     $email = get_post_meta( $post->ID, '_dame_email', true );
     $address_1 = get_post_meta( $post->ID, '_dame_address_1', true );
     $address_2 = get_post_meta( $post->ID, '_dame_address_2', true );
@@ -84,7 +104,6 @@ function dame_render_adherent_details_metabox( $post ) {
     $country = get_post_meta( $post->ID, '_dame_country', true );
     $region = get_post_meta( $post->ID, '_dame_region', true );
     $department = get_post_meta( $post->ID, '_dame_department', true );
-    $phone = get_post_meta( $post->ID, '_dame_phone_number', true );
     $membership_date = get_post_meta( $post->ID, '_dame_membership_date', true );
 
     ?>
@@ -113,6 +132,10 @@ function dame_render_adherent_details_metabox( $post ) {
             <td><input type="text" id="dame_license_number" name="dame_license_number" value="<?php echo esc_attr( $license_number ); ?>" class="regular-text" placeholder="A12345" pattern="[A-Z][0-9]{5}" /></td>
         </tr>
         <tr>
+            <th><label for="dame_phone_number"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label></th>
+            <td><input type="tel" id="dame_phone_number" name="dame_phone_number" value="<?php echo esc_attr( $phone ); ?>" class="regular-text" /></td>
+        </tr>
+        <tr>
             <th><label for="dame_email"><?php _e( 'Email', 'dame' ); ?></label></th>
             <td><input type="email" id="dame_email" name="dame_email" value="<?php echo esc_attr( $email ); ?>" class="regular-text" /></td>
         </tr>
@@ -126,7 +149,7 @@ function dame_render_adherent_details_metabox( $post ) {
         </tr>
         <tr>
             <th><label for="dame_postal_code"><?php _e( 'Code Postal', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_postal_code" name="dame_postal_code" value="<?php echo esc_attr( $postal_code ); ?>" class="small-text" /></td>
+            <td><input type="text" id="dame_postal_code" name="dame_postal_code" value="<?php echo esc_attr( $postal_code ); ?>" class="regular-text" /></td>
         </tr>
         <tr>
             <th><label for="dame_city"><?php _e( 'Ville', 'dame' ); ?></label></th>
@@ -163,10 +186,6 @@ function dame_render_adherent_details_metabox( $post ) {
             </td>
         </tr>
         <tr>
-            <th><label for="dame_phone_number"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label></th>
-            <td><input type="tel" id="dame_phone_number" name="dame_phone_number" value="<?php echo esc_attr( $phone ); ?>" class="regular-text" /></td>
-        </tr>
-        <tr>
             <th><label for="dame_membership_date"><?php _e( 'Date d\'adhésion', 'dame' ); ?></label></th>
             <td><input type="date" id="dame_membership_date" name="dame_membership_date" value="<?php echo esc_attr( $membership_date ); ?>" /></td>
         </tr>
@@ -190,7 +209,13 @@ function dame_render_school_info_metabox( $post ) {
         </tr>
         <tr>
             <th><label for="dame_school_academy"><?php _e( 'Académie', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_school_academy" name="dame_school_academy" value="<?php echo esc_attr( $school_academy ); ?>" class="regular-text" /></td>
+            <td>
+                <select id="dame_school_academy" name="dame_school_academy">
+                    <?php foreach ( dame_get_academy_list() as $code => $name ) : ?>
+                        <option value="<?php echo esc_attr( $code ); ?>" <?php selected( $school_academy, $code ); ?>><?php echo esc_html( $name ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
         </tr>
     </table>
     <?php
@@ -250,7 +275,7 @@ function dame_render_legal_rep_metabox( $post ) {
         </tr>
         <tr>
             <th><label for="dame_legal_rep_1_postal_code"><?php _e( 'Code Postal', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_legal_rep_1_postal_code" name="dame_legal_rep_1_postal_code" value="<?php echo esc_attr( $rep1_postal_code ); ?>" class="small-text" /></td>
+            <td><input type="text" id="dame_legal_rep_1_postal_code" name="dame_legal_rep_1_postal_code" value="<?php echo esc_attr( $rep1_postal_code ); ?>" class="regular-text" /></td>
         </tr>
          <tr>
             <th><label for="dame_legal_rep_1_city"><?php _e( 'Ville', 'dame' ); ?></label></th>
@@ -288,7 +313,7 @@ function dame_render_legal_rep_metabox( $post ) {
         </tr>
         <tr>
             <th><label for="dame_legal_rep_2_postal_code"><?php _e( 'Code Postal', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_legal_rep_2_postal_code" name="dame_legal_rep_2_postal_code" value="<?php echo esc_attr( $rep2_postal_code ); ?>" class="small-text" /></td>
+            <td><input type="text" id="dame_legal_rep_2_postal_code" name="dame_legal_rep_2_postal_code" value="<?php echo esc_attr( $rep2_postal_code ); ?>" class="regular-text" /></td>
         </tr>
          <tr>
             <th><label for="dame_legal_rep_2_city"><?php _e( 'Ville', 'dame' ); ?></label></th>
@@ -307,6 +332,8 @@ function dame_render_classification_metabox( $post ) {
     $is_junior = get_post_meta( $post->ID, '_dame_is_junior', true );
     $is_pole_excellence = get_post_meta( $post->ID, '_dame_is_pole_excellence', true );
     $linked_user = get_post_meta( $post->ID, '_dame_linked_wp_user', true );
+    $arbitre_level = get_post_meta( $post->ID, '_dame_arbitre_level', true );
+    $arbitre_options = ['Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2'];
     ?>
     <p>
         <input type="checkbox" id="dame_is_junior" name="dame_is_junior" value="1" <?php checked( $is_junior, '1' ); ?> />
@@ -315,6 +342,15 @@ function dame_render_classification_metabox( $post ) {
     <p>
         <input type="checkbox" id="dame_is_pole_excellence" name="dame_is_pole_excellence" value="1" <?php checked( $is_pole_excellence, '1' ); ?> />
         <label for="dame_is_pole_excellence"><?php _e( 'Pôle Excellence', 'dame' ); ?></label>
+    </p>
+    <hr>
+    <p>
+        <label for="dame_arbitre_level"><strong><?php _e( 'Niveau d\'arbitre', 'dame' ); ?></strong></label>
+        <select id="dame_arbitre_level" name="dame_arbitre_level" style="width:100%;">
+            <?php foreach ( $arbitre_options as $option ) : ?>
+                <option value="<?php echo esc_attr( $option ); ?>" <?php selected( $arbitre_level, $option ); ?>><?php echo esc_html( $option ); ?></option>
+            <?php endforeach; ?>
+        </select>
     </p>
     <hr>
     <p><strong><?php _e( 'Lier à un compte WordPress', 'dame' ); ?></strong></p>
@@ -403,6 +439,7 @@ function dame_save_adherent_meta( $post_id ) {
 
         'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint',
         'dame_linked_wp_user' => 'absint',
+        'dame_arbitre_level' => 'sanitize_text_field',
     ];
 
     foreach ( $fields as $field_name => $sanitize_callback ) {
