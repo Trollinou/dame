@@ -20,6 +20,7 @@ function dame_set_adherent_columns( $columns ) {
     $new_columns = array(
         'cb' => $columns['cb'],
         'title' => __( 'Nom de l\'adhérent', 'dame' ),
+        'dame_license_number' => __( 'Licence', 'dame' ),
         'dame_email' => __( 'Email', 'dame' ),
         'dame_phone' => __( 'Téléphone', 'dame' ),
         'dame_classification' => __( 'Classification', 'dame' ),
@@ -37,6 +38,11 @@ add_filter( 'manage_edit-adherent_columns', 'dame_set_adherent_columns' );
  */
 function dame_render_adherent_columns( $column, $post_id ) {
     switch ( $column ) {
+        case 'dame_license_number':
+            $license = get_post_meta( $post_id, '_dame_license_number', true );
+            echo esc_html( $license );
+            break;
+
         case 'dame_email':
             $email = get_post_meta( $post_id, '_dame_email', true );
             echo esc_html( $email );
