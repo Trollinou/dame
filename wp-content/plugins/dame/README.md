@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 **Auteur:** Jules
 **Licence:** GPL v2 or later
 
@@ -8,7 +8,7 @@
 
 DAME est un plugin WordPress conçu pour gérer une base de données d'adhérents pour un club, une association ou toute autre organisation. Il fournit une interface d'administration simple et intégrée pour gérer les informations des membres, leurs classifications et leurs liens avec les comptes utilisateurs WordPress.
 
-Ce plugin a été développé en suivant les meilleures pratiques de WordPress en matière de sécurité, de performance et de maintenabilité.
+Ce plugin a été développé en suivant les meilleures pratiques de WordPress en matière de sécurité, de performance, de maintenabilité et d'évolutivité. Il inclut un mécanisme de mise à jour qui permettra de gérer les migrations de données pour les futures versions.
 
 ## Fonctionnalités
 

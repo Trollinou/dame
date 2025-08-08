@@ -17,7 +17,36 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '1.0.0' );
+define( 'DAME_VERSION', '1.2.0' );
+
+/**
+ * Handles plugin updates.
+ */
+function dame_check_for_updates() {
+    $current_version = get_option( 'dame_plugin_version', '1.0.0' );
+    if ( version_compare( $current_version, DAME_VERSION, '<' ) ) {
+        dame_perform_upgrade( $current_version, DAME_VERSION );
+    }
+}
+add_action( 'plugins_loaded', 'dame_check_for_updates' );
+
+/**
+ * Perform the upgrade procedures.
+ *
+ * @param string $old_version The old version number.
+ * @param string $new_version The new version number.
+ */
+function dame_perform_upgrade( $old_version, $new_version ) {
+    // In the future, you can add upgrade logic here based on version.
+    // Example:
+    // if ( version_compare( $old_version, '1.3.0', '<' ) ) {
+    //     // Code to migrate data for version 1.3.0
+    // }
+
+    // Update the version in the database to the new version.
+    update_option( 'dame_plugin_version', $new_version );
+}
+
 
 // Include plugin files
 require_once plugin_dir_path( __FILE__ ) . 'includes/roles.php';

@@ -29,6 +29,9 @@ function dame_add_custom_roles() {
     if ( $editor ) {
         add_role( 'entraineur', __( 'Entraineur', 'dame' ), $editor->capabilities );
     }
+
+    // Store the plugin version on activation.
+    update_option( 'dame_plugin_version', DAME_VERSION );
 }
 
 /**
