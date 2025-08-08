@@ -51,6 +51,9 @@ function dame_add_admin_styles() {
     }
     ?>
     <style>
+        .dame-autocomplete-wrapper {
+            position: relative;
+        }
         #dame-address-suggestions {
             border: 1px solid #ddd;
             border-top: none;
@@ -58,7 +61,7 @@ function dame_add_admin_styles() {
             overflow-y: auto;
             background-color: #fff;
             position: absolute;
-            width: calc(100% - 12px);
+            width: 100%;
             z-index: 99;
         }
         .dame-suggestion-item {
@@ -172,7 +175,11 @@ function dame_render_adherent_details_metabox( $post ) {
         </tr>
         <tr>
             <th><label for="dame_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
-            <td style="position: relative;"><input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text" /></td>
+            <td>
+                <div class="dame-autocomplete-wrapper" style="position: relative;">
+                    <input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text" autocomplete="off" />
+                </div>
+            </td>
         </tr>
         <tr>
             <th><label for="dame_address_2"><?php _e( 'Adresse (Ligne 2)', 'dame' ); ?></label></th>

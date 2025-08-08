@@ -8,9 +8,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const cityInput = document.getElementById('dame_city');
     const departmentSelect = document.getElementById('dame_department');
 
+    const wrapper = addressInput.closest('.dame-autocomplete-wrapper');
+    if (!wrapper) {
+        return;
+    }
+
     const resultsContainer = document.createElement('div');
     resultsContainer.id = 'dame-address-suggestions';
-    addressInput.parentNode.insertBefore(resultsContainer, addressInput.nextSibling);
+    wrapper.appendChild(resultsContainer);
 
     let debounceTimer;
 
