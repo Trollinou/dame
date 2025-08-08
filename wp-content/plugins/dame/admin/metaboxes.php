@@ -334,7 +334,23 @@ function dame_render_classification_metabox( $post ) {
     $linked_user = get_post_meta( $post->ID, '_dame_linked_wp_user', true );
     $arbitre_level = get_post_meta( $post->ID, '_dame_arbitre_level', true );
     $arbitre_options = ['Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2'];
+    $membership_status = get_post_meta( $post->ID, '_dame_membership_status', true );
+    $status_options = [
+        'N' => __( 'Non Adhérent (N)', 'dame' ),
+        'A' => __( 'Actif (A)', 'dame' ),
+        'E' => __( 'Expiré (E)', 'dame' ),
+        'X' => __( 'Ancien (X)', 'dame' ),
+    ];
     ?>
+    <p>
+        <label for="dame_membership_status"><strong><?php _e( 'État de l\'adhésion', 'dame' ); ?></strong></label>
+        <select id="dame_membership_status" name="dame_membership_status" style="width:100%;">
+            <?php foreach ( $status_options as $key => $label ) : ?>
+                <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $membership_status, $key ); ?>><?php echo esc_html( $label ); ?></option>
+            <?php endforeach; ?>
+        </select>
+    </p>
+    <hr>
     <p>
         <input type="checkbox" id="dame_is_junior" name="dame_is_junior" value="1" <?php checked( $is_junior, '1' ); ?> />
         <label for="dame_is_junior"><?php _e( 'Junior', 'dame' ); ?></label>
@@ -440,6 +456,7 @@ function dame_save_adherent_meta( $post_id ) {
         'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint',
         'dame_linked_wp_user' => 'absint',
         'dame_arbitre_level' => 'sanitize_text_field',
+        'dame_membership_status' => 'sanitize_text_field',
     ];
 
     foreach ( $fields as $field_name => $sanitize_callback ) {
