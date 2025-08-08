@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 1.3.0
+**Version:** 1.4.0
 **Auteur:** Jules
 **Licence:** GPL v2 or later
 
@@ -16,10 +16,13 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 *   **Génération Automatique du Titre :** Le titre de la fiche adhérent est automatiquement généré sous la forme `NOM Prénom`, simplifiant la saisie.
 *   **Champs de Données Complets :** Permet de sauvegarder des informations détaillées pour chaque membre :
     *   Nom, Prénom, Date de naissance (tous obligatoires).
+    *   Sexe (Masculin / Féminin).
     *   Numéro de licence (format validé : A12345).
     *   Email, Numéro de téléphone.
     *   Adresse complète (2 lignes, code postal, ville).
+    *   Localisation (Pays, Région, Département).
     *   Date d'adhésion.
+*   **Informations Scolaires :** Une section dédiée pour l'établissement scolaire et l'académie.
 *   **Gestion des Mineurs :** Inclut des champs spécifiques pour les informations de **deux représentants légaux**. Chaque représentant dispose de champs pour le nom, prénom, email, téléphone, et une adresse sur deux lignes.
 *   **Classification :** Permet de classifier les membres avec les étiquettes "Junior" et "Pôle Excellence".
 *   **Liaison Utilisateur :** Permet de lier un adhérent à un compte utilisateur WordPress existant.
@@ -27,7 +30,7 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
     *   **Membre** : Basé sur le rôle "Abonné", mais avec la permission de poster des commentaires.
     *   **Entraineur** : Basé sur le rôle "Éditeur".
 *   **Interface d'Administration Optimisée :** La liste des adhérents affiche les informations les plus pertinentes (Licence, Email, etc.) pour une meilleure lisibilité.
-*   **Prêt pour la Traduction :** Le plugin est entièrement internationalisé. Un fichier modèle `dame.pot` est fourni dans le dossier `languages` pour faciliter la création de traductions.
+*   **Prêt pour la Traduction :** Le plugin est entièrement internationalisé.
 
 ## Installation
 

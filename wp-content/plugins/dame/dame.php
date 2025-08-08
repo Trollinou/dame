@@ -17,7 +17,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '1.3.0' );
+define( 'DAME_VERSION', '1.4.0' );
 
 /**
  * Handles plugin updates.
@@ -51,6 +51,7 @@ function dame_perform_upgrade( $old_version, $new_version ) {
 // Include plugin files
 require_once plugin_dir_path( __FILE__ ) . 'includes/roles.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/cpt.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/data-lists.php';
 
 if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/metaboxes.php';

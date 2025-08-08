@@ -36,6 +36,14 @@ function dame_add_meta_boxes() {
         'high'
     );
     add_meta_box(
+        'dame_school_info_metabox',
+        __( 'Informations Scolaires', 'dame' ),
+        'dame_render_school_info_metabox',
+        'adherent',
+        'normal',
+        'default'
+    );
+    add_meta_box(
         'dame_legal_rep_metabox',
         __( 'Représentants Légaux (si mineur)', 'dame' ),
         'dame_render_legal_rep_metabox',
@@ -61,17 +69,24 @@ add_action( 'add_meta_boxes', 'dame_add_meta_boxes' );
  */
 function dame_render_adherent_details_metabox( $post ) {
     wp_nonce_field( 'dame_save_adherent_meta', 'dame_metabox_nonce' );
+
+    // Retrieve existing values
     $first_name = get_post_meta( $post->ID, '_dame_first_name', true );
     $last_name = get_post_meta( $post->ID, '_dame_last_name', true );
     $birth_date = get_post_meta( $post->ID, '_dame_birth_date', true );
+    $sexe = get_post_meta( $post->ID, '_dame_sexe', true );
     $license_number = get_post_meta( $post->ID, '_dame_license_number', true );
     $email = get_post_meta( $post->ID, '_dame_email', true );
     $address_1 = get_post_meta( $post->ID, '_dame_address_1', true );
     $address_2 = get_post_meta( $post->ID, '_dame_address_2', true );
     $postal_code = get_post_meta( $post->ID, '_dame_postal_code', true );
     $city = get_post_meta( $post->ID, '_dame_city', true );
+    $country = get_post_meta( $post->ID, '_dame_country', true );
+    $region = get_post_meta( $post->ID, '_dame_region', true );
+    $department = get_post_meta( $post->ID, '_dame_department', true );
     $phone = get_post_meta( $post->ID, '_dame_phone_number', true );
     $membership_date = get_post_meta( $post->ID, '_dame_membership_date', true );
+
     ?>
     <table class="form-table">
         <tr>
@@ -85,6 +100,13 @@ function dame_render_adherent_details_metabox( $post ) {
         <tr>
             <th><label for="dame_birth_date"><?php _e( 'Date de naissance', 'dame' ); ?> <span class="description">(obligatoire)</span></label></th>
             <td><input type="date" id="dame_birth_date" name="dame_birth_date" value="<?php echo esc_attr( $birth_date ); ?>" required="required" /></td>
+        </tr>
+        <tr>
+            <th><?php _e( 'Sexe', 'dame' ); ?></th>
+            <td>
+                <label><input type="radio" name="dame_sexe" value="Masculin" <?php checked( $sexe, 'Masculin' ); ?> /> <?php _e( 'Masculin', 'dame' ); ?></label><br>
+                <label><input type="radio" name="dame_sexe" value="Féminin" <?php checked( $sexe, 'Féminin' ); ?> /> <?php _e( 'Féminin', 'dame' ); ?></label>
+            </td>
         </tr>
         <tr>
             <th><label for="dame_license_number"><?php _e( 'Numéro de licence', 'dame' ); ?></label></th>
@@ -111,12 +133,64 @@ function dame_render_adherent_details_metabox( $post ) {
             <td><input type="text" id="dame_city" name="dame_city" value="<?php echo esc_attr( $city ); ?>" class="regular-text" /></td>
         </tr>
         <tr>
+            <th><label for="dame_country"><?php _e( 'Pays', 'dame' ); ?></label></th>
+            <td>
+                <select id="dame_country" name="dame_country">
+                    <?php foreach ( dame_get_country_list() as $code => $name ) : ?>
+                        <option value="<?php echo esc_attr( $code ); ?>" <?php selected( $country, $code ); ?>><?php echo esc_html( $name ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th><label for="dame_region"><?php _e( 'Région', 'dame' ); ?></label></th>
+            <td>
+                <select id="dame_region" name="dame_region">
+                    <?php foreach ( dame_get_region_list() as $code => $name ) : ?>
+                        <option value="<?php echo esc_attr( $code ); ?>" <?php selected( $region, $code ); ?>><?php echo esc_html( $name ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th><label for="dame_department"><?php _e( 'Département', 'dame' ); ?></label></th>
+            <td>
+                <select id="dame_department" name="dame_department">
+                    <?php foreach ( dame_get_department_list() as $code => $name ) : ?>
+                        <option value="<?php echo esc_attr( $code ); ?>" <?php selected( $department, $code ); ?>><?php echo esc_html( $name ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+        </tr>
+        <tr>
             <th><label for="dame_phone_number"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label></th>
             <td><input type="tel" id="dame_phone_number" name="dame_phone_number" value="<?php echo esc_attr( $phone ); ?>" class="regular-text" /></td>
         </tr>
         <tr>
             <th><label for="dame_membership_date"><?php _e( 'Date d\'adhésion', 'dame' ); ?></label></th>
             <td><input type="date" id="dame_membership_date" name="dame_membership_date" value="<?php echo esc_attr( $membership_date ); ?>" /></td>
+        </tr>
+    </table>
+    <?php
+}
+
+/**
+ * Renders the meta box for school information.
+ *
+ * @param WP_Post $post The post object.
+ */
+function dame_render_school_info_metabox( $post ) {
+    $school_name = get_post_meta( $post->ID, '_dame_school_name', true );
+    $school_academy = get_post_meta( $post->ID, '_dame_school_academy', true );
+    ?>
+    <table class="form-table">
+        <tr>
+            <th><label for="dame_school_name"><?php _e( 'Établissement scolaire', 'dame' ); ?></label></th>
+            <td><input type="text" id="dame_school_name" name="dame_school_name" value="<?php echo esc_attr( $school_name ); ?>" class="regular-text" /></td>
+        </tr>
+        <tr>
+            <th><label for="dame_school_academy"><?php _e( 'Académie', 'dame' ); ?></label></th>
+            <td><input type="text" id="dame_school_academy" name="dame_school_academy" value="<?php echo esc_attr( $school_academy ); ?>" class="regular-text" /></td>
         </tr>
     </table>
     <?php
@@ -313,7 +387,9 @@ function dame_save_adherent_meta( $post_id ) {
         'dame_email' => 'sanitize_email', 'dame_address_1' => 'sanitize_text_field',
         'dame_address_2' => 'sanitize_text_field', 'dame_postal_code' => 'sanitize_text_field',
         'dame_city' => 'sanitize_text_field', 'dame_phone_number' => 'sanitize_text_field',
-        'dame_membership_date' => 'sanitize_text_field',
+        'dame_membership_date' => 'sanitize_text_field', 'dame_sexe' => 'sanitize_text_field',
+        'dame_country' => 'sanitize_text_field', 'dame_region' => 'sanitize_text_field', 'dame_department' => 'sanitize_text_field',
+        'dame_school_name' => 'sanitize_text_field', 'dame_school_academy' => 'sanitize_text_field',
 
         'dame_legal_rep_1_first_name' => 'sanitize_text_field', 'dame_legal_rep_1_last_name' => 'sanitize_text_field',
         'dame_legal_rep_1_email' => 'sanitize_email', 'dame_legal_rep_1_phone' => 'sanitize_text_field',
