@@ -4,7 +4,7 @@
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
  * Version:           1.6.0
- * Author:            Jules
+ * Author:            Etienne
  * Author URI:
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
