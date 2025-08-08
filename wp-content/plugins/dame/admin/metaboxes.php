@@ -72,7 +72,7 @@ function dame_add_meta_boxes() {
     );
     add_meta_box(
         'dame_classification_metabox',
-        __( 'Classification et Liaison', 'dame' ),
+        __( 'Classification et Adhésion', 'dame' ),
         'dame_render_classification_metabox',
         'adherent',
         'side',
@@ -104,8 +104,6 @@ function dame_render_adherent_details_metabox( $post ) {
     $country = get_post_meta( $post->ID, '_dame_country', true );
     $region = get_post_meta( $post->ID, '_dame_region', true );
     $department = get_post_meta( $post->ID, '_dame_department', true );
-    $membership_date = get_post_meta( $post->ID, '_dame_membership_date', true );
-
     ?>
     <table class="form-table">
         <tr>
@@ -184,10 +182,6 @@ function dame_render_adherent_details_metabox( $post ) {
                     <?php endforeach; ?>
                 </select>
             </td>
-        </tr>
-        <tr>
-            <th><label for="dame_membership_date"><?php _e( 'Date d\'adhésion', 'dame' ); ?></label></th>
-            <td><input type="date" id="dame_membership_date" name="dame_membership_date" value="<?php echo esc_attr( $membership_date ); ?>" /></td>
         </tr>
     </table>
     <?php
@@ -329,6 +323,7 @@ function dame_render_legal_rep_metabox( $post ) {
  * @param WP_Post $post The post object.
  */
 function dame_render_classification_metabox( $post ) {
+    $membership_date = get_post_meta( $post->ID, '_dame_membership_date', true );
     $is_junior = get_post_meta( $post->ID, '_dame_is_junior', true );
     $is_pole_excellence = get_post_meta( $post->ID, '_dame_is_pole_excellence', true );
     $linked_user = get_post_meta( $post->ID, '_dame_linked_wp_user', true );
@@ -342,6 +337,10 @@ function dame_render_classification_metabox( $post ) {
         'X' => __( 'Ancien (X)', 'dame' ),
     ];
     ?>
+    <p>
+        <label for="dame_membership_date"><strong><?php _e( 'Date d\'adhésion', 'dame' ); ?></strong></label><br>
+        <input type="date" id="dame_membership_date" name="dame_membership_date" value="<?php echo esc_attr( $membership_date ); ?>" style="width:100%;" />
+    </p>
     <p>
         <label for="dame_membership_status"><strong><?php _e( 'État de l\'adhésion', 'dame' ); ?></strong></label>
         <select id="dame_membership_status" name="dame_membership_status" style="width:100%;">
@@ -415,6 +414,11 @@ function dame_save_adherent_meta( $post_id ) {
     if ( ! empty( $errors ) ) {
         set_transient( 'dame_error_message', implode( '<br>', $errors ), 10 );
         return;
+    }
+
+    // --- Automatic Status Update ---
+    if ( ! empty( $_POST['dame_membership_date'] ) ) {
+        $_POST['dame_membership_status'] = 'A';
     }
 
     // --- Title Generation ---

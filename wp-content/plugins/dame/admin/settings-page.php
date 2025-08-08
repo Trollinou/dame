@@ -31,13 +31,21 @@ function dame_render_options_page() {
     ?>
     <div class="wrap">
         <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+
         <form action="options.php" method="post">
             <?php
             settings_fields( 'dame_options_group' );
-            do_settings_sections( 'dame-settings' );
+            do_settings_sections( 'dame_uninstall_section_group' );
             submit_button( __( 'Enregistrer les modifications', 'dame' ) );
             ?>
         </form>
+
+        <hr>
+
+        <h2><?php esc_html_e( 'Réinitialisation Annuelle des Adhésions', 'dame' ); ?></h2>
+        <?php dame_reset_section_callback(); ?>
+        <?php dame_reset_button_callback(); ?>
+
     </div>
     <?php
 }
@@ -46,41 +54,21 @@ function dame_render_options_page() {
  * Register settings, sections, and fields.
  */
 function dame_register_settings() {
-    // Register the settings group
     register_setting( 'dame_options_group', 'dame_options', 'dame_options_sanitize' );
 
-    // Add Uninstall Section
     add_settings_section(
         'dame_uninstall_section',
         __( 'Désinstallation', 'dame' ),
         'dame_uninstall_section_callback',
-        'dame-settings'
+        'dame_uninstall_section_group'
     );
 
-    // Add Uninstall Field
     add_settings_field(
         'dame_delete_on_uninstall',
         __( 'Suppression des données', 'dame' ),
         'dame_delete_on_uninstall_callback',
-        'dame-settings',
+        'dame_uninstall_section_group',
         'dame_uninstall_section'
-    );
-
-    // Add Annual Reset Section
-    add_settings_section(
-        'dame_reset_section',
-        __( 'Réinitialisation Annuelle des Adhésions', 'dame' ),
-        'dame_reset_section_callback',
-        'dame-settings'
-    );
-
-    // Add Reset Button Field
-    add_settings_field(
-        'dame_reset_button',
-        __( 'Action', 'dame' ),
-        'dame_reset_button_callback',
-        'dame-settings',
-        'dame_reset_section'
     );
 }
 add_action( 'admin_init', 'dame_register_settings' );
@@ -90,12 +78,10 @@ add_action( 'admin_init', 'dame_register_settings' );
  */
 function dame_handle_annual_reset() {
     if ( isset( $_POST['dame_action'] ) && 'annual_reset' === $_POST['dame_action'] ) {
-        // Verify nonce
         if ( ! isset( $_POST['dame_annual_reset_nonce_field'] ) || ! wp_verify_nonce( $_POST['dame_annual_reset_nonce_field'], 'dame_annual_reset_nonce' ) ) {
             wp_die( 'Security check failed.' );
         }
 
-        // Check if reset already done this year
         $current_year = date( 'Y' );
         $last_reset_year = get_option( 'dame_last_reset_year' );
         if ( $current_year === $last_reset_year ) {
@@ -107,17 +93,24 @@ function dame_handle_annual_reset() {
 
         global $wpdb;
 
-        // Update 'Expired' (E) to 'Ancient' (X)
-        $expired_to_ancient = $wpdb->query(
-            "UPDATE {$wpdb->postmeta} SET meta_value = 'X' WHERE meta_key = '_dame_membership_status' AND meta_value = 'E'"
-        );
+        $expired_ids = $wpdb->get_col( "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_dame_membership_status' AND meta_value = 'E'" );
+        $active_ids = $wpdb->get_col( "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_dame_membership_status' AND meta_value = 'A'" );
 
-        // Update 'Active' (A) to 'Expired' (E)
-        $active_to_expired = $wpdb->query(
-            "UPDATE {$wpdb->postmeta} SET meta_value = 'E' WHERE meta_key = '_dame_membership_status' AND meta_value = 'A'"
-        );
+        $expired_to_ancient = 0;
+        if ( ! empty( $expired_ids ) ) {
+            $expired_to_ancient = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->postmeta} SET meta_value = 'X' WHERE meta_key = '_dame_membership_status' AND post_id IN (" . implode( ',', array_map('absint', $expired_ids) ) . ")" ) );
+        }
 
-        // Update the last reset year
+        $active_to_expired = 0;
+        if ( ! empty( $active_ids ) ) {
+            $active_to_expired = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->postmeta} SET meta_value = 'E' WHERE meta_key = '_dame_membership_status' AND post_id IN (" . implode( ',', array_map('absint', $active_ids) ) . ")" ) );
+        }
+
+        $all_affected_ids = array_unique( array_merge( $expired_ids, $active_ids ) );
+        if ( ! empty( $all_affected_ids ) ) {
+            $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = '_dame_membership_date' AND post_id IN (" . implode( ',', array_map('absint', $all_affected_ids) ) . ")" ) );
+        }
+
         update_option( 'dame_last_reset_year', $current_year );
 
         add_action( 'admin_notices', function() use ( $active_to_expired, $expired_to_ancient ) {
@@ -134,15 +127,10 @@ add_action( 'admin_init', 'dame_handle_annual_reset' );
 
 /**
  * Sanitize the options array.
- *
- * @param array $input The input options.
- * @return array The sanitized options.
  */
 function dame_options_sanitize( $input ) {
     $sanitized_input = array();
-    if ( isset( $input['delete_on_uninstall'] ) ) {
-        $sanitized_input['delete_on_uninstall'] = absint( $input['delete_on_uninstall'] );
-    }
+    $sanitized_input['delete_on_uninstall'] = isset( $input['delete_on_uninstall'] ) ? 1 : 0;
     return $sanitized_input;
 }
 
@@ -168,13 +156,12 @@ function dame_delete_on_uninstall_callback() {
     <?php
 }
 
-
 /**
  * Callbacks for Annual Reset Section
  */
 function dame_reset_section_callback() {
     echo '<p>' . esc_html__( 'Cette action met à jour le statut de tous les adhérents en fin d\'année civile.', 'dame' ) . '</p>';
-    echo '<p><strong>' . esc_html__( 'Processus : Les adhésions "Actif" passent à "Expiré", et les "Expiré" passent à "Ancien".', 'dame' ) . '</strong></p>';
+    echo '<p><strong>' . esc_html__( 'Processus : Les adhésions "Actif" passent à "Expiré", et les "Expiré" passent à "Ancien". La date d\'adhésion est également effacée.', 'dame' ) . '</strong></p>';
     $last_reset_year = get_option( 'dame_last_reset_year', __( 'jamais', 'dame' ) );
     echo '<p>' . sprintf( esc_html__( 'Dernière réinitialisation effectuée pour l\'année : %s', 'dame' ), '<strong>' . esc_html( $last_reset_year ) . '</strong>' ) . '</p>';
 }
