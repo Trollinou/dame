@@ -1,7 +1,7 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
 **Version:** 1.5.0
-**Auteur:** Jules
+**Auteur:** Etienne
 **Licence:** GPL v2 or later
 
 ## Description
