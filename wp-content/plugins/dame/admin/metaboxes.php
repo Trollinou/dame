@@ -130,18 +130,24 @@ function dame_render_legal_rep_metabox( $post ) {
     $rep1_first_name = get_post_meta( $post->ID, '_dame_legal_rep_1_first_name', true );
     $rep1_last_name = get_post_meta( $post->ID, '_dame_legal_rep_1_last_name', true );
     $rep1_email = get_post_meta( $post->ID, '_dame_legal_rep_1_email', true );
-    $rep1_address = get_post_meta( $post->ID, '_dame_legal_rep_1_address', true );
+    $rep1_phone = get_post_meta( $post->ID, '_dame_legal_rep_1_phone', true );
+    $rep1_address_1 = get_post_meta( $post->ID, '_dame_legal_rep_1_address_1', true );
+    $rep1_address_2 = get_post_meta( $post->ID, '_dame_legal_rep_1_address_2', true );
     $rep1_postal_code = get_post_meta( $post->ID, '_dame_legal_rep_1_postal_code', true );
     $rep1_city = get_post_meta( $post->ID, '_dame_legal_rep_1_city', true );
+
     // Rep 2
     $rep2_first_name = get_post_meta( $post->ID, '_dame_legal_rep_2_first_name', true );
     $rep2_last_name = get_post_meta( $post->ID, '_dame_legal_rep_2_last_name', true );
     $rep2_email = get_post_meta( $post->ID, '_dame_legal_rep_2_email', true );
-    $rep2_address = get_post_meta( $post->ID, '_dame_legal_rep_2_address', true );
+    $rep2_phone = get_post_meta( $post->ID, '_dame_legal_rep_2_phone', true );
+    $rep2_address_1 = get_post_meta( $post->ID, '_dame_legal_rep_2_address_1', true );
+    $rep2_address_2 = get_post_meta( $post->ID, '_dame_legal_rep_2_address_2', true );
     $rep2_postal_code = get_post_meta( $post->ID, '_dame_legal_rep_2_postal_code', true );
     $rep2_city = get_post_meta( $post->ID, '_dame_legal_rep_2_city', true );
     ?>
     <p><?php _e( 'Remplir ces informations si l\'adhérent est mineur. Au moins un représentant est requis.', 'dame' ); ?></p>
+
     <h4><?php _e( 'Représentant Légal 1', 'dame' ); ?></h4>
     <table class="form-table">
         <tr>
@@ -157,8 +163,16 @@ function dame_render_legal_rep_metabox( $post ) {
             <td><input type="email" id="dame_legal_rep_1_email" name="dame_legal_rep_1_email" value="<?php echo esc_attr( $rep1_email ); ?>" class="regular-text" /></td>
         </tr>
         <tr>
-            <th><label for="dame_legal_rep_1_address"><?php _e( 'Adresse', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_legal_rep_1_address" name="dame_legal_rep_1_address" value="<?php echo esc_attr( $rep1_address ); ?>" class="regular-text" /></td>
+            <th><label for="dame_legal_rep_1_phone"><?php _e( 'Téléphone', 'dame' ); ?></label></th>
+            <td><input type="tel" id="dame_legal_rep_1_phone" name="dame_legal_rep_1_phone" value="<?php echo esc_attr( $rep1_phone ); ?>" class="regular-text" /></td>
+        </tr>
+        <tr>
+            <th><label for="dame_legal_rep_1_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
+            <td><input type="text" id="dame_legal_rep_1_address_1" name="dame_legal_rep_1_address_1" value="<?php echo esc_attr( $rep1_address_1 ); ?>" class="regular-text" /></td>
+        </tr>
+        <tr>
+            <th><label for="dame_legal_rep_1_address_2"><?php _e( 'Adresse (Ligne 2)', 'dame' ); ?></label></th>
+            <td><input type="text" id="dame_legal_rep_1_address_2" name="dame_legal_rep_1_address_2" value="<?php echo esc_attr( $rep1_address_2 ); ?>" class="regular-text" /></td>
         </tr>
         <tr>
             <th><label for="dame_legal_rep_1_postal_code"><?php _e( 'Code Postal', 'dame' ); ?></label></th>
@@ -169,7 +183,9 @@ function dame_render_legal_rep_metabox( $post ) {
             <td><input type="text" id="dame_legal_rep_1_city" name="dame_legal_rep_1_city" value="<?php echo esc_attr( $rep1_city ); ?>" class="regular-text" /></td>
         </tr>
     </table>
+
     <hr>
+
     <h4><?php _e( 'Représentant Légal 2', 'dame' ); ?></h4>
     <table class="form-table">
         <tr>
@@ -185,8 +201,16 @@ function dame_render_legal_rep_metabox( $post ) {
             <td><input type="email" id="dame_legal_rep_2_email" name="dame_legal_rep_2_email" value="<?php echo esc_attr( $rep2_email ); ?>" class="regular-text" /></td>
         </tr>
         <tr>
-            <th><label for="dame_legal_rep_2_address"><?php _e( 'Adresse', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_legal_rep_2_address" name="dame_legal_rep_2_address" value="<?php echo esc_attr( $rep2_address ); ?>" class="regular-text" /></td>
+            <th><label for="dame_legal_rep_2_phone"><?php _e( 'Téléphone', 'dame' ); ?></label></th>
+            <td><input type="tel" id="dame_legal_rep_2_phone" name="dame_legal_rep_2_phone" value="<?php echo esc_attr( $rep2_phone ); ?>" class="regular-text" /></td>
+        </tr>
+        <tr>
+            <th><label for="dame_legal_rep_2_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
+            <td><input type="text" id="dame_legal_rep_2_address_1" name="dame_legal_rep_2_address_1" value="<?php echo esc_attr( $rep2_address_1 ); ?>" class="regular-text" /></td>
+        </tr>
+        <tr>
+            <th><label for="dame_legal_rep_2_address_2"><?php _e( 'Adresse (Ligne 2)', 'dame' ); ?></label></th>
+            <td><input type="text" id="dame_legal_rep_2_address_2" name="dame_legal_rep_2_address_2" value="<?php echo esc_attr( $rep2_address_2 ); ?>" class="regular-text" /></td>
         </tr>
         <tr>
             <th><label for="dame_legal_rep_2_postal_code"><?php _e( 'Code Postal', 'dame' ); ?></label></th>
@@ -290,12 +314,17 @@ function dame_save_adherent_meta( $post_id ) {
         'dame_address_2' => 'sanitize_text_field', 'dame_postal_code' => 'sanitize_text_field',
         'dame_city' => 'sanitize_text_field', 'dame_phone_number' => 'sanitize_text_field',
         'dame_membership_date' => 'sanitize_text_field',
+
         'dame_legal_rep_1_first_name' => 'sanitize_text_field', 'dame_legal_rep_1_last_name' => 'sanitize_text_field',
-        'dame_legal_rep_1_email' => 'sanitize_email', 'dame_legal_rep_1_address' => 'sanitize_text_field',
+        'dame_legal_rep_1_email' => 'sanitize_email', 'dame_legal_rep_1_phone' => 'sanitize_text_field',
+        'dame_legal_rep_1_address_1' => 'sanitize_text_field', 'dame_legal_rep_1_address_2' => 'sanitize_text_field',
         'dame_legal_rep_1_postal_code' => 'sanitize_text_field', 'dame_legal_rep_1_city' => 'sanitize_text_field',
+
         'dame_legal_rep_2_first_name' => 'sanitize_text_field', 'dame_legal_rep_2_last_name' => 'sanitize_text_field',
-        'dame_legal_rep_2_email' => 'sanitize_email', 'dame_legal_rep_2_address' => 'sanitize_text_field',
+        'dame_legal_rep_2_email' => 'sanitize_email', 'dame_legal_rep_2_phone' => 'sanitize_text_field',
+        'dame_legal_rep_2_address_1' => 'sanitize_text_field', 'dame_legal_rep_2_address_2' => 'sanitize_text_field',
         'dame_legal_rep_2_postal_code' => 'sanitize_text_field', 'dame_legal_rep_2_city' => 'sanitize_text_field',
+
         'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint',
         'dame_linked_wp_user' => 'absint',
     ];

@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 **Auteur:** Jules
 **Licence:** GPL v2 or later
 
@@ -20,7 +20,7 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
     *   Email, Numéro de téléphone.
     *   Adresse complète (2 lignes, code postal, ville).
     *   Date d'adhésion.
-*   **Gestion des Mineurs :** Inclut des champs spécifiques pour les informations de **deux représentants légaux**.
+*   **Gestion des Mineurs :** Inclut des champs spécifiques pour les informations de **deux représentants légaux**. Chaque représentant dispose de champs pour le nom, prénom, email, téléphone, et une adresse sur deux lignes.
 *   **Classification :** Permet de classifier les membres avec les étiquettes "Junior" et "Pôle Excellence".
 *   **Liaison Utilisateur :** Permet de lier un adhérent à un compte utilisateur WordPress existant.
 *   **Rôles Utilisateurs Personnalisés :** Ajoute deux nouveaux rôles :
