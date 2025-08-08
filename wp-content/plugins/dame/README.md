@@ -44,3 +44,13 @@ Une fois activé, un nouveau menu "Adhérents" apparaîtra dans votre tableau de
 2.  Cliquez sur `Ajouter` pour créer une nouvelle fiche adhérent.
 3.  Remplissez les informations dans les différentes boîtes de dialogue. Le champ "Titre" en haut de la page doit être utilisé pour le nom complet de l'adhérent (par exemple, "Jean Dupont").
 4.  Cliquez sur `Publier` pour sauvegarder l'adhérent.
+
+## Désinstallation
+
+Par défaut, la désactivation et la suppression de ce plugin ne suppriment aucune des données que vous avez créées (les fiches adhérents, etc.). C'est une mesure de sécurité pour éviter toute perte de données accidentelle.
+
+Si vous souhaitez supprimer **toutes** les données associées au plugin DAME lors de sa suppression, vous devez ajouter la ligne suivante à votre fichier `wp-config.php` **avant** de supprimer le plugin :
+
+```php
+define( 'DAME_DELETE_ON_UNINSTALL', true );
+```
