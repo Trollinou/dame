@@ -46,6 +46,49 @@ function dame_render_options_page() {
         <?php dame_reset_section_callback(); ?>
         <?php dame_reset_button_callback(); ?>
 
+        <hr>
+
+        <h2><?php esc_html_e( 'Import / Export de la base', 'dame' ); ?></h2>
+        <div class="dame-import-export-wrapper">
+
+            <!-- Export Section -->
+            <div class="dame-export-section">
+                <h3><?php esc_html_e( 'Exporter les données', 'dame' ); ?></h3>
+                <p><?php esc_html_e( "Cliquez sur le bouton ci-dessous pour télécharger un fichier JSON de sauvegarde de tous les adhérents.", 'dame' ); ?></p>
+                <form method="post" action="">
+                    <?php wp_nonce_field( 'dame_export_nonce_action', 'dame_export_nonce' ); ?>
+                    <?php submit_button( __( 'Exporter la base de données', 'dame' ), 'primary', 'dame_export_action' ); ?>
+                </form>
+            </div>
+
+            <!-- Import Section -->
+            <div class="dame-import-section">
+                <h3><?php esc_html_e( 'Importer les données', 'dame' ); ?></h3>
+                <p><strong><?php esc_html_e( 'Attention : ', 'dame' ); ?></strong><?php esc_html_e( "L'importation effacera et remplacera toutes les données d'adhérents existantes par les données du fichier téléversé. Assurez-vous d'avoir une sauvegarde.", 'dame' ); ?></p>
+                <form method="post" enctype="multipart/form-data" id="dame-import-form">
+                    <?php wp_nonce_field( 'dame_import_nonce_action', 'dame_import_nonce' ); ?>
+                    <p>
+                        <label for="dame_import_file"><?php esc_html_e( 'Choisissez un fichier JSON à importer :', 'dame' ); ?></label>
+                        <input type="file" id="dame_import_file" name="dame_import_file" accept="application/json" required>
+                    </p>
+                    <?php submit_button( __( 'Importer la base de données', 'dame' ), 'delete', 'dame_import' ); ?>
+                </form>
+            </div>
+
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const importForm = document.getElementById('dame-import-form');
+                if (importForm) {
+                    importForm.addEventListener('submit', function(e) {
+                        if (!confirm("<?php echo esc_js( __( 'Êtes-vous sûr de vouloir importer ce fichier ? Toutes les données d\'adhérents existantes seront supprimées et remplacées. Cette action est irréversible.', 'dame' ) ); ?>")) {
+                            e.preventDefault();
+                        }
+                    });
+                }
+            });
+        </script>
+
     </div>
     <?php
 }
