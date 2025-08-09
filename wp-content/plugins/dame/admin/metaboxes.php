@@ -427,14 +427,32 @@ function dame_render_classification_metabox( $post ) {
     // Exclude users who are already linked to another adherent.
     $exclude_users = dame_get_assigned_user_ids( $post->ID );
 
-    wp_dropdown_users( array(
-        'name'               => 'dame_linked_wp_user',
-        'id'                 => 'dame_linked_wp_user',
-        'show_option_none'   => __( 'Aucun', 'dame' ),
-        'option_none_value'  => -1, // Use a non-ambiguous value for "None"
-        'selected'           => $linked_user,
-        'exclude'            => $exclude_users,
-    ) );
+    // Get the total number of users to check for an edge case.
+    $user_count_result = count_users();
+    $total_users       = isset( $user_count_result['total_users'] ) ? $user_count_result['total_users'] : 0;
+
+    // Edge case: If all users are assigned and the current member has no user linked,
+    // wp_dropdown_users will show nothing. We manually render a disabled dropdown
+    // to ensure the "Aucun" option is always visible and explain the situation.
+    if ( count( $exclude_users ) >= $total_users && (int) $linked_user <= 0 ) {
+        ?>
+        <select name="dame_linked_wp_user" id="dame_linked_wp_user" disabled="disabled">
+            <option value="-1" selected="selected"><?php esc_html_e( 'Aucun', 'dame' ); ?></option>
+        </select>
+        <p><em><?php esc_html_e( 'Tous les comptes WordPress sont déjà assignés.', 'dame' ); ?></em></p>
+        <?php
+    } else {
+        wp_dropdown_users(
+            array(
+                'name'              => 'dame_linked_wp_user',
+                'id'                => 'dame_linked_wp_user',
+                'show_option_none'  => esc_html__( 'Aucun', 'dame' ),
+                'option_none_value' => -1,
+                'selected'          => $linked_user,
+                'exclude'           => $exclude_users,
+            )
+        );
+    }
 }
 
 
