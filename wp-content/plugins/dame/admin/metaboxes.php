@@ -424,12 +424,16 @@ function dame_render_classification_metabox( $post ) {
     <hr>
     <p><strong><?php _e( 'Lier à un compte WordPress', 'dame' ); ?></strong></p>
     <?php
+    // Exclude users who are already linked to another adherent.
+    $exclude_users = dame_get_assigned_user_ids( $post->ID );
+
     wp_dropdown_users( array(
         'name'               => 'dame_linked_wp_user',
         'id'                 => 'dame_linked_wp_user',
         'show_option_none'   => __( 'Aucun', 'dame' ),
         'option_none_value'  => -1, // Use a non-ambiguous value for "None"
         'selected'           => $linked_user,
+        'exclude'            => $exclude_users,
     ) );
 }
 

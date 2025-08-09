@@ -134,3 +134,29 @@ function dame_get_academy_list() {
         'versailles' => 'Versailles',
     );
 }
+
+/**
+ * Retrieves an array of user IDs that are already linked to an adherent.
+ *
+ * This is used to exclude already-assigned users from the dropdown list.
+ *
+ * @param int|null $exclude_post_id The ID of the post to exclude from the query (the current adherent being edited).
+ * @return array An array of user IDs.
+ */
+function dame_get_assigned_user_ids( $exclude_post_id = null ) {
+    global $wpdb;
+
+    // Base query to get all linked user IDs.
+    $query = "SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key = '_dame_linked_wp_user' AND meta_value > 0";
+
+    // If we are editing an existing adherent, we should not exclude the user
+    // already assigned to them from the list.
+    if ( null !== $exclude_post_id ) {
+        $query .= $wpdb->prepare( " AND post_id != %d", $exclude_post_id );
+    }
+
+    $user_ids = $wpdb->get_col( $query );
+
+    // Ensure the array contains only integers.
+    return array_map( 'intval', $user_ids );
+}

@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 1.9.0
+**Version:** 1.9.1
 **Auteur:** Etienne
 **Licence:** GPL v2 or later
 
@@ -34,3 +34,9 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 ## Désinstallation
 
 La suppression des données lors de la désinstallation du plugin peut être activée depuis la page d'options (`Réglages > Options DAME`). Par défaut, les données sont conservées par sécurité.
+
+## Changelog
+
+### 1.9.1 (09/08/2025)
+
+*   **Correction de bug :** Un compte WordPress déjà assigné à un adhérent n'apparaît plus dans la liste déroulante des autres adhérents, empêchant les attributions multiples.
