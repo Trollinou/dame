@@ -376,6 +376,11 @@ function dame_render_classification_metabox( $post ) {
     $is_junior = get_post_meta( $post->ID, '_dame_is_junior', true );
     $is_pole_excellence = get_post_meta( $post->ID, '_dame_is_pole_excellence', true );
     $linked_user = get_post_meta( $post->ID, '_dame_linked_wp_user', true );
+    // If meta is not set (returns empty string), default to -1 for the "Aucun" option.
+    if ( '' === $linked_user ) {
+        $linked_user = -1;
+    }
+
     $arbitre_level = get_post_meta( $post->ID, '_dame_arbitre_level', true );
     $arbitre_options = ['Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2'];
     $membership_status = get_post_meta( $post->ID, '_dame_membership_status', true );
@@ -420,10 +425,11 @@ function dame_render_classification_metabox( $post ) {
     <p><strong><?php _e( 'Lier à un compte WordPress', 'dame' ); ?></strong></p>
     <?php
     wp_dropdown_users( array(
-        'name'             => 'dame_linked_wp_user',
-        'id'               => 'dame_linked_wp_user',
-        'show_option_none' => __( 'Aucun', 'dame' ),
-        'selected'         => $linked_user,
+        'name'               => 'dame_linked_wp_user',
+        'id'                 => 'dame_linked_wp_user',
+        'show_option_none'   => __( 'Aucun', 'dame' ),
+        'option_none_value'  => -1, // Use a non-ambiguous value for "None"
+        'selected'           => $linked_user,
     ) );
 }
 
@@ -507,7 +513,6 @@ function dame_save_adherent_meta( $post_id ) {
         'dame_legal_rep_2_postal_code' => 'sanitize_text_field', 'dame_legal_rep_2_city' => 'sanitize_text_field',
 
         'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint',
-        'dame_linked_wp_user' => 'absint',
         'dame_arbitre_level' => 'sanitize_text_field',
         'dame_membership_status' => 'sanitize_text_field',
     ];
@@ -517,9 +522,21 @@ function dame_save_adherent_meta( $post_id ) {
             $value = call_user_func( $sanitize_callback, $_POST[ $field_name ] );
             update_post_meta( $post_id, '_' . $field_name, $value );
         } else {
-            if ( $sanitize_callback === 'absint' && $field_name !== 'dame_linked_wp_user' ) {
+            // This handles unchecked checkboxes, which are not present in $_POST.
+            if ( 'absint' === $sanitize_callback ) {
                 update_post_meta( $post_id, '_' . $field_name, 0 );
             }
+        }
+    }
+
+    // Handle linked WordPress user separately for clarity.
+    if ( isset( $_POST['dame_linked_wp_user'] ) ) {
+        $linked_user_id = intval( $_POST['dame_linked_wp_user'] );
+        if ( $linked_user_id > 0 ) {
+            update_post_meta( $post_id, '_dame_linked_wp_user', $linked_user_id );
+        } else {
+            // If "Aucun" (value -1) or an error occurs, delete the meta key.
+            delete_post_meta( $post_id, '_dame_linked_wp_user' );
         }
     }
 }
