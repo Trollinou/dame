@@ -61,10 +61,11 @@ function dame_handle_export_action() {
 
     $filename = 'dame-export-' . date( 'Y-m-d' ) . '.json';
 
-    header( 'Content-Type: application/json' );
+    ob_clean();
+    header( 'Content-Type: application/json; charset=utf-8' );
     header( 'Content-Disposition: attachment; filename=' . $filename );
     echo json_encode( $export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
-    wp_die();
+    exit;
 }
 add_action( 'admin_init', 'dame_handle_export_action' );
 
