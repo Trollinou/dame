@@ -42,8 +42,7 @@ function dame_handle_send_email() {
     }
 
     $article_id = isset( $_POST['dame_article_to_send'] ) ? absint( $_POST['dame_article_to_send'] ) : 0;
-    $recipient_groups = isset( $_POST['dame_recipient_groups'] ) ? (array) $_POST['dame_recipient_groups'] : array();
-    $manual_recipients = isset( $_POST['dame_manual_recipients'] ) ? (array) array_map( 'absint', $_POST['dame_manual_recipients'] ) : array();
+    $selection_method = isset( $_POST['dame_selection_method'] ) ? sanitize_key( $_POST['dame_selection_method'] ) : '';
 
     if ( empty( $article_id ) ) {
         add_action( 'admin_notices', function() {
@@ -52,37 +51,53 @@ function dame_handle_send_email() {
         return;
     }
 
-    if ( empty( $recipient_groups ) && empty( $manual_recipients ) ) {
+    $adherent_ids = array();
+
+    if ( 'group' === $selection_method ) {
+        $group = isset( $_POST['dame_recipient_group'] ) ? sanitize_key( $_POST['dame_recipient_group'] ) : '';
+        $meta_query = array();
+
+        switch ( $group ) {
+            case 'juniors':
+                $meta_query[] = array( 'key' => '_dame_is_junior', 'value' => '1' );
+                break;
+            case 'pole_excellence':
+                $meta_query[] = array( 'key' => '_dame_is_pole_excellence', 'value' => '1' );
+                break;
+            case 'status':
+                $statuses = isset( $_POST['dame_membership_status'] ) ? (array) array_map( 'sanitize_key', $_POST['dame_membership_status'] ) : array();
+                if ( empty( $statuses ) ) {
+                    add_action( 'admin_notices', function() {
+                        echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner au moins un état d'adhésion.", 'dame' ) . '</p></div>';
+                    });
+                    return;
+                }
+                $meta_query[] = array( 'key' => '_dame_membership_status', 'value' => $statuses, 'compare' => 'IN' );
+                break;
+        }
+
+        if ( ! empty( $meta_query ) ) {
+            $query_args = array(
+                'post_type' => 'adherent',
+                'posts_per_page' => -1,
+                'fields' => 'ids',
+                'meta_query' => $meta_query
+            );
+            $adherent_ids = get_posts( $query_args );
+        }
+
+    } elseif ( 'manual' === $selection_method ) {
+        $adherent_ids = isset( $_POST['dame_manual_recipients'] ) ? (array) array_map( 'absint', $_POST['dame_manual_recipients'] ) : array();
+    }
+
+    if ( empty( $adherent_ids ) ) {
         add_action( 'admin_notices', function() {
-            echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner au moins un groupe ou un adhérent.", 'dame' ) . '</p></div>';
+            echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner des destinataires.", 'dame' ) . '</p></div>';
         });
         return;
     }
 
-    $adherent_ids = array();
-
-    if ( ! empty( $recipient_groups ) ) {
-        $meta_query = array( 'relation' => 'OR' );
-        if ( in_array( 'juniors', $recipient_groups ) ) {
-            $meta_query[] = array( 'key' => '_dame_is_junior', 'value' => '1' );
-        }
-        if ( in_array( 'pole_excellence', $recipient_groups ) ) {
-            $meta_query[] = array( 'key' => '_dame_is_pole_excellence', 'value' => '1' );
-        }
-        if ( in_array( 'active_expired', $recipient_groups ) ) {
-            $meta_query[] = array( 'key' => '_dame_membership_status', 'value' => array('A', 'E'), 'compare' => 'IN' );
-        }
-
-        $query_args = array(
-            'post_type' => 'adherent',
-            'posts_per_page' => -1,
-            'fields' => 'ids',
-            'meta_query' => $meta_query
-        );
-        $adherent_ids = get_posts( $query_args );
-    }
-
-    $all_adherent_ids = array_unique( array_merge( $adherent_ids, $manual_recipients ) );
+    $all_adherent_ids = array_unique( $adherent_ids );
 
     if ( empty( $all_adherent_ids ) ) {
         add_action( 'admin_notices', function() {
@@ -112,7 +127,17 @@ function dame_handle_send_email() {
     $message = apply_filters( 'the_content', $article->post_content );
 
     $options = get_option( 'dame_options' );
-    $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option('admin_email');
+    $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : '';
+
+    if ( empty( $sender_email ) ) {
+        $admins = get_users( array( 'role' => 'administrator', 'number' => 1, 'orderby' => 'ID' ) );
+        if ( ! empty( $admins ) ) {
+            $sender_email = $admins[0]->user_email;
+        } else {
+            $sender_email = get_option( 'admin_email' ); // Fallback to site admin email if no admin user found
+        }
+    }
+
     $headers = array(
         'Content-Type: text/html; charset=UTF-8',
         'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>',
@@ -206,7 +231,7 @@ function dame_render_mailing_page() {
                         </th>
                         <td>
                             <?php
-                            $posts = get_posts( array( 'post_type' => 'post', 'post_status' => 'publish', 'numberposts' => -1 ) );
+                            $posts = get_posts( array( 'post_type' => 'post', 'post_status' => 'publish', 'numberposts' => 10, 'orderby' => 'date', 'order' => 'DESC' ) );
                             if ( ! empty( $posts ) ) {
                                 echo '<select id="dame_article_to_send" name="dame_article_to_send" style="width: 100%; max-width: 400px;">';
                                 foreach ( $posts as $p ) {
@@ -219,28 +244,48 @@ function dame_render_mailing_page() {
                             ?>
                         </td>
                     </tr>
-                    <tr>
-                        <th scope="row"><?php esc_html_e( "Destinataires", 'dame' ); ?></th>
+                    <tr valign="top">
+                        <th scope="row"><?php esc_html_e( "Méthode de sélection", 'dame' ); ?></th>
                         <td>
                             <fieldset>
+                                <legend class="screen-reader-text"><span><?php esc_html_e( "Méthode de sélection", 'dame' ); ?></span></legend>
+                                <label><input type="radio" name="dame_selection_method" value="group" checked> <?php esc_html_e( "Par groupe (sélection exclusive)", 'dame' ); ?></label><br>
+                                <label><input type="radio" name="dame_selection_method" value="manual"> <?php esc_html_e( "Manuelle", 'dame' ); ?></label>
+                            </fieldset>
+                        </td>
+                    </tr>
+
+                    <tr valign="top" class="dame-group-filters">
+                        <th scope="row"><?php esc_html_e( "Choisir un groupe", 'dame' ); ?></th>
+                        <td>
+                             <fieldset>
                                 <legend class="screen-reader-text"><span><?php esc_html_e( "Groupes de destinataires", 'dame' ); ?></span></legend>
                                 <label>
-                                    <input type="checkbox" name="dame_recipient_groups[]" value="juniors">
+                                    <input type="radio" name="dame_recipient_group" value="juniors" checked>
                                     <?php esc_html_e( "Juniors", 'dame' ); ?>
                                 </label>
                                 <br>
                                 <label>
-                                    <input type="checkbox" name="dame_recipient_groups[]" value="pole_excellence">
+                                    <input type="radio" name="dame_recipient_group" value="pole_excellence">
                                     <?php esc_html_e( "Pôle Excellence", 'dame' ); ?>
                                 </label>
                                 <br>
                                 <label>
-                                    <input type="checkbox" name="dame_recipient_groups[]" value="active_expired">
-                                    <?php esc_html_e( "Adhérents (Actifs + Échus)", 'dame' ); ?>
+                                    <input type="radio" name="dame_recipient_group" value="status">
+                                    <?php esc_html_e( "Par état d'adhésion", 'dame' ); ?>
                                 </label>
+                                <div id="dame-status-checkboxes" style="display:none; margin-top: 10px; padding-left: 20px;">
+                                    <label><input type="checkbox" name="dame_membership_status[]" value="A"> <?php esc_html_e( "Actif", 'dame' ); ?></label><br>
+                                    <label><input type="checkbox" name="dame_membership_status[]" value="E"> <?php esc_html_e( "Expiré", 'dame' ); ?></label><br>
+                                    <label><input type="checkbox" name="dame_membership_status[]" value="X"> <?php esc_html_e( "Ancien", 'dame' ); ?></label>
+                                </div>
                             </fieldset>
-                            <hr>
-                            <p><strong><?php esc_html_e( "Ou sélectionner manuellement des adhérents :", 'dame' ); ?></strong></p>
+                        </td>
+                    </tr>
+
+                    <tr valign="top" class="dame-manual-filters" style="display:none;">
+                         <th scope="row"><?php esc_html_e( "Choisir les adhérents", 'dame' ); ?></th>
+                         <td>
                             <?php
                             $adherents = get_posts( array( 'post_type' => 'adherent', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC' ) );
                             if ( ! empty( $adherents ) ) {
@@ -261,5 +306,40 @@ function dame_render_mailing_page() {
             <?php submit_button( __( "Envoyer l'email", 'dame' ) ); ?>
         </form>
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const methodRadios = document.querySelectorAll('input[name="dame_selection_method"]');
+        const groupFilters = document.querySelector('.dame-group-filters');
+        const manualFilters = document.querySelector('.dame-manual-filters');
+
+        const groupSubRadios = document.querySelectorAll('input[name="dame_recipient_group"]');
+        const statusCheckboxes = document.getElementById('dame-status-checkboxes');
+
+        function toggleMethod() {
+            if (document.querySelector('input[name="dame_selection_method"]:checked').value === 'group') {
+                groupFilters.style.display = 'table-row';
+                manualFilters.style.display = 'none';
+            } else {
+                groupFilters.style.display = 'none';
+                manualFilters.style.display = 'table-row';
+            }
+        }
+
+        function toggleStatusCheckboxes() {
+            if (document.querySelector('input[name="dame_recipient_group"]:checked').value === 'status') {
+                statusCheckboxes.style.display = 'block';
+            } else {
+                statusCheckboxes.style.display = 'none';
+            }
+        }
+
+        methodRadios.forEach(radio => radio.addEventListener('change', toggleMethod));
+        groupSubRadios.forEach(radio => radio.addEventListener('change', toggleStatusCheckboxes));
+
+        // Initial state
+        toggleMethod();
+        toggleStatusCheckboxes();
+    });
+    </script>
     <?php
 }
