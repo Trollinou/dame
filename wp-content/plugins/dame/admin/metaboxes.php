@@ -31,8 +31,8 @@ function dame_enqueue_admin_scripts( $hook ) {
     global $post;
     if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && 'adherent' === $post->post_type ) {
         wp_enqueue_script(
-            'dame-main-js',
-            plugin_dir_url( __FILE__ ) . 'js/main.js',
+            'dame-autocomplete-js',
+            plugin_dir_url( __FILE__ ) . 'js/ign-autocomplete.js',
             array(),
             DAME_VERSION,
             true
@@ -40,6 +40,43 @@ function dame_enqueue_admin_scripts( $hook ) {
     }
 }
 add_action( 'admin_enqueue_scripts', 'dame_enqueue_admin_scripts' );
+
+/**
+ * Adds custom CSS to the admin head for the suggestion box.
+ */
+function dame_add_admin_styles() {
+    $screen = get_current_screen();
+    if ( 'adherent' !== $screen->post_type ) {
+        return;
+    }
+    ?>
+    <style>
+        .dame-autocomplete-wrapper {
+            position: relative;
+        }
+        #dame-address-suggestions {
+            border: 1px solid #999;
+            border-top: none;
+            max-height: 150px; /* Show approx 4 lines */
+            overflow-y: auto;
+            background-color: #fff;
+            position: absolute;
+            width: 100%;
+            z-index: 9999; /* High z-index to appear above other elements */
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+        }
+        .dame-suggestion-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+        .dame-suggestion-item:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+    <?php
+}
+add_action( 'admin_head-post.php', 'dame_add_admin_styles' );
+add_action( 'admin_head-post-new.php', 'dame_add_admin_styles' );
 
 
 /**
@@ -139,7 +176,11 @@ function dame_render_adherent_details_metabox( $post ) {
         </tr>
         <tr>
             <th><label for="dame_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text" /></td>
+            <td>
+                <div class="dame-autocomplete-wrapper" style="position: relative;">
+                    <input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text" autocomplete="off" />
+                </div>
+            </td>
         </tr>
         <tr>
             <th><label for="dame_address_2"><?php _e( 'Adresse (Ligne 2)', 'dame' ); ?></label></th>
@@ -261,7 +302,11 @@ function dame_render_legal_rep_metabox( $post ) {
         </tr>
         <tr>
             <th><label for="dame_legal_rep_1_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_legal_rep_1_address_1" name="dame_legal_rep_1_address_1" value="<?php echo esc_attr( $rep1_address_1 ); ?>" class="regular-text" /></td>
+            <td>
+                <div class="dame-autocomplete-wrapper">
+                    <input type="text" id="dame_legal_rep_1_address_1" name="dame_legal_rep_1_address_1" value="<?php echo esc_attr( $rep1_address_1 ); ?>" class="regular-text" autocomplete="off" />
+                </div>
+            </td>
         </tr>
         <tr>
             <th><label for="dame_legal_rep_1_address_2"><?php _e( 'Adresse (Ligne 2)', 'dame' ); ?></label></th>
@@ -299,7 +344,11 @@ function dame_render_legal_rep_metabox( $post ) {
         </tr>
         <tr>
             <th><label for="dame_legal_rep_2_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_legal_rep_2_address_1" name="dame_legal_rep_2_address_1" value="<?php echo esc_attr( $rep2_address_1 ); ?>" class="regular-text" /></td>
+            <td>
+                <div class="dame-autocomplete-wrapper">
+                    <input type="text" id="dame_legal_rep_2_address_1" name="dame_legal_rep_2_address_1" value="<?php echo esc_attr( $rep2_address_1 ); ?>" class="regular-text" autocomplete="off" />
+                </div>
+            </td>
         </tr>
         <tr>
             <th><label for="dame_legal_rep_2_address_2"><?php _e( 'Adresse (Ligne 2)', 'dame' ); ?></label></th>
