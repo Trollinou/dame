@@ -35,14 +35,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         })
                         .then(data => {
                             resultsContainer.innerHTML = '';
-                            if (data.features && data.features.length > 0) {
+                            // BUG FIX: The API returns 'results', not 'features'.
+                            if (data.results && data.results.length > 0) {
                                 resultsContainer.style.display = 'block';
-                                const features = data.features.slice(0, 4); // Requirement: Max 4 lines
-                                features.forEach(feature => {
+                                const results = data.results.slice(0, 4); // Requirement: Max 4 lines
+                                results.forEach(result => {
                                     const suggestionDiv = document.createElement('div');
                                     suggestionDiv.classList.add('dame-suggestion-item');
-                                    suggestionDiv.textContent = feature.properties.label;
-                                    suggestionDiv.dataset.feature = JSON.stringify(feature.properties);
+                                    suggestionDiv.textContent = result.fulltext; // Use 'fulltext' for the label
+                                    suggestionDiv.dataset.feature = JSON.stringify(result); // Store the whole result object
                                     resultsContainer.appendChild(suggestionDiv);
                                 });
                             } else {
@@ -60,9 +61,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (e.target.classList.contains('dame-suggestion-item')) {
                     const featureProperties = JSON.parse(e.target.dataset.feature);
 
-                    addressInput.value = featureProperties.name;
-                    if(postalCodeInput) postalCodeInput.value = featureProperties.postcode;
-                    if(cityInput) cityInput.value = featureProperties.city;
+                    addressInput.value = featureProperties.street; // Use 'street'
+                    if(postalCodeInput) postalCodeInput.value = featureProperties.zipcode; // Use 'zipcode'
+                    if(cityInput) cityInput.value = featureProperties.city; // Use 'city'
 
                     if(postalCodeInput) {
                         const event = new Event('keyup');
