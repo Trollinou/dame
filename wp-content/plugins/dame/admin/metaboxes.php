@@ -529,8 +529,8 @@ function dame_save_adherent_meta( $post_id ) {
         if ( $linked_user_id > 0 ) {
             update_post_meta( $post_id, '_dame_linked_wp_user', $linked_user_id );
         } else {
-            // If "Aucun" (value 0) is selected, delete the meta key.
-            delete_post_meta( $post_id, '_dame_linked_wp_user' );
+            // If "Aucun" (value 0) is selected, save an empty string to prevent defaulting.
+            update_post_meta( $post_id, '_dame_linked_wp_user', '' );
         }
     }
 }
