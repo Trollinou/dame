@@ -124,7 +124,8 @@ function dame_handle_send_email() {
 
     $article = get_post( $article_id );
     $subject = $article->post_title;
-    $message = apply_filters( 'the_content', $article->post_content );
+    $content = apply_filters( 'the_content', $article->post_content );
+    $message = '<div style="margin: 1cm;">' . $content . '</div>';
 
     $options = get_option( 'dame_options' );
     $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : '';
@@ -143,50 +144,53 @@ function dame_handle_send_email() {
         'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>',
     );
 
-    // Final implementation: loop and send individually.
-    $sent_count = 0;
-    foreach ( $recipient_emails as $recipient_email ) {
-        if ( wp_mail( $recipient_email, $subject, $message, $headers ) ) {
-            $sent_count++;
-        }
-    }
+    // Restore robust BCC implementation
+    global $dame_bcc_emails;
+    $dame_bcc_emails = $recipient_emails;
 
-    // Admin notice for the UI
-    add_action( 'admin_notices', function() use ( $sent_count, $recipient_emails ) {
-        $total_recipients = count( $recipient_emails );
-        if ( $sent_count === $total_recipients && $sent_count > 0 ) {
-            $message = sprintf(
-                esc_html( _n( "Email envoyé avec succès à %d destinataire.", "Email envoyé avec succès à %d destinataires.", $sent_count, 'dame' ) ),
-                $sent_count
-            );
-            echo '<div class="updated"><p>' . $message . '</p></div>';
-        } elseif ( $sent_count > 0 ) {
-            $message = sprintf(
-                esc_html__( "L'envoi a réussi pour %d sur %d destinataires.", 'dame' ),
-                $sent_count,
-                $total_recipients
-            );
-            echo '<div class="notice notice-warning"><p>' . $message . '</p></div>';
-        } else {
-            echo '<div class="error"><p>' . esc_html__( "L'envoi des emails a échoué pour tous les destinataires.", 'dame' ) . '</p></div>';
-        }
-    });
+    wp_mail( $sender_email, $subject, $message, $headers );
 
-    // Send a confirmation email to the sender for traceability
-    if ( $sent_count > 0 ) {
-        $recipient_list_for_debug = implode( "\n - ", $recipient_emails );
-        $confirmation_subject = sprintf( __( '[Confirmation] Envoi de l\'article "%s"', 'dame' ), $subject );
-        $confirmation_message = sprintf(
-            esc_html__( "Bonjour,\n\nCeci est une confirmation que l'article \"%1\$s\" a bien été envoyé à %2\$d membre(s) de votre sélection.\n\nListe des destinataires pour vérification :\n - %3\$s\n\nContenu de l'article envoyé :\n\n%4\$s", 'dame' ),
-            $subject,
-            $sent_count,
-            $recipient_list_for_debug,
-            wp_strip_all_tags( $message ) // Send a plain text version for the confirmation
+    // Clean up the global after the mail is sent.
+    $dame_bcc_emails = null;
+
+    add_action( 'admin_notices', function() use ( $recipient_emails ) {
+        $count = count( $recipient_emails );
+        $message = sprintf(
+            esc_html( _n( "Email envoyé avec succès à %d destinataire.", "Email envoyé avec succès à %d destinataires.", $count, 'dame' ) ),
+            $count
         );
-        wp_mail( $sender_email, $confirmation_subject, $confirmation_message );
-    }
+        echo '<div class="updated"><p>' . $message . '</p></div>';
+    });
 }
 add_action( 'admin_init', 'dame_handle_send_email' );
+
+
+/**
+ * Adds Bcc recipients to the PHPMailer object.
+ *
+ * This function is hooked into `phpmailer_init` and uses a global variable
+ * to get the list of recipients from the `dame_handle_send_email` function.
+ *
+ * @param PHPMailer $phpmailer The PHPMailer object.
+ */
+function dame_add_bcc_to_mailer( $phpmailer ) {
+    global $dame_bcc_emails;
+
+    if ( ! empty( $dame_bcc_emails ) && is_array( $dame_bcc_emails ) ) {
+        foreach ( $dame_bcc_emails as $email ) {
+            try {
+                // Add each email as a Bcc recipient.
+                $phpmailer->addBCC( $email );
+            } catch ( Exception $e ) {
+                // Silently continue if an email is invalid.
+                continue;
+            }
+        }
+        // Clean up the global to prevent it from affecting other wp_mail calls.
+        $dame_bcc_emails = null;
+    }
+}
+add_action( 'phpmailer_init', 'dame_add_bcc_to_mailer' );
 
 
 /**
@@ -224,17 +228,10 @@ function dame_get_emails_for_adherent( $adherent_id ) {
             $emails[] = $rep2_email;
         }
     } else {
-        $linked_user_id = get_post_meta( $adherent_id, '_dame_linked_wp_user', true );
-        if ( ! empty( $linked_user_id ) && $linked_user_id > 0 ) {
-            $user_data = get_userdata( $linked_user_id );
-            if ( $user_data && ! empty( $user_data->user_email ) ) {
-                $emails[] = $user_data->user_email;
-            }
-        } else {
-            $member_email = get_post_meta( $adherent_id, '_dame_email', true );
-            if ( ! empty( $member_email ) ) {
-                $emails[] = $member_email;
-            }
+        // Always use the email from the adherent's profile, not the linked WP user.
+        $member_email = get_post_meta( $adherent_id, '_dame_email', true );
+        if ( ! empty( $member_email ) ) {
+            $emails[] = $member_email;
         }
     }
 
