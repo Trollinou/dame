@@ -55,14 +55,15 @@ function dame_add_admin_styles() {
             position: relative;
         }
         #dame-address-suggestions {
-            border: 1px solid #ddd;
+            border: 1px solid #999;
             border-top: none;
-            max-height: 200px;
+            max-height: 150px; /* Show approx 4 lines */
             overflow-y: auto;
             background-color: #fff;
             position: absolute;
             width: 100%;
-            z-index: 99;
+            z-index: 9999; /* High z-index to appear above other elements */
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
         }
         .dame-suggestion-item {
             padding: 8px;
