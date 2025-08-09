@@ -507,7 +507,6 @@ function dame_save_adherent_meta( $post_id ) {
         'dame_legal_rep_2_postal_code' => 'sanitize_text_field', 'dame_legal_rep_2_city' => 'sanitize_text_field',
 
         'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint',
-        'dame_linked_wp_user' => 'absint',
         'dame_arbitre_level' => 'sanitize_text_field',
         'dame_membership_status' => 'sanitize_text_field',
     ];
@@ -517,9 +516,21 @@ function dame_save_adherent_meta( $post_id ) {
             $value = call_user_func( $sanitize_callback, $_POST[ $field_name ] );
             update_post_meta( $post_id, '_' . $field_name, $value );
         } else {
-            if ( $sanitize_callback === 'absint' && $field_name !== 'dame_linked_wp_user' ) {
+            // This handles unchecked checkboxes, which are not present in $_POST.
+            if ( 'absint' === $sanitize_callback ) {
                 update_post_meta( $post_id, '_' . $field_name, 0 );
             }
+        }
+    }
+
+    // Handle linked WordPress user separately for clarity.
+    if ( isset( $_POST['dame_linked_wp_user'] ) ) {
+        $linked_user_id = absint( $_POST['dame_linked_wp_user'] );
+        if ( $linked_user_id > 0 ) {
+            update_post_meta( $post_id, '_dame_linked_wp_user', $linked_user_id );
+        } else {
+            // If "Aucun" (value 0) is selected, delete the meta key.
+            delete_post_meta( $post_id, '_dame_linked_wp_user' );
         }
     }
 }
