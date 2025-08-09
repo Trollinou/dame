@@ -375,7 +375,7 @@ function dame_render_classification_metabox( $post ) {
     $membership_date = get_post_meta( $post->ID, '_dame_membership_date', true );
     $is_junior = get_post_meta( $post->ID, '_dame_is_junior', true );
     $is_pole_excellence = get_post_meta( $post->ID, '_dame_is_pole_excellence', true );
-    $linked_user = get_post_meta( $post->ID, '_dame_linked_wp_user', true );
+    $linked_user = absint( get_post_meta( $post->ID, '_dame_linked_wp_user', true ) );
     $arbitre_level = get_post_meta( $post->ID, '_dame_arbitre_level', true );
     $arbitre_options = ['Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2'];
     $membership_status = get_post_meta( $post->ID, '_dame_membership_status', true );
