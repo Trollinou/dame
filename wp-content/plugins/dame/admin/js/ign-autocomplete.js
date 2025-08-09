@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 clearTimeout(debounceTimer);
                 const query = this.value;
 
-                if (query.length < 10) { // Requirement: 10 characters minimum
+                if (query.length < 10) {
                     resultsContainer.innerHTML = '';
                     resultsContainer.style.display = 'none';
                     return;
@@ -35,15 +35,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         })
                         .then(data => {
                             resultsContainer.innerHTML = '';
-                            // BUG FIX: The API returns 'results', not 'features'.
                             if (data.results && data.results.length > 0) {
                                 resultsContainer.style.display = 'block';
-                                const results = data.results.slice(0, 4); // Requirement: Max 4 lines
+                                const results = data.results.slice(0, 4);
                                 results.forEach(result => {
                                     const suggestionDiv = document.createElement('div');
                                     suggestionDiv.classList.add('dame-suggestion-item');
-                                    suggestionDiv.textContent = result.fulltext; // Use 'fulltext' for the label
-                                    suggestionDiv.dataset.feature = JSON.stringify(result); // Store the whole result object
+                                    suggestionDiv.textContent = result.fulltext;
+                                    suggestionDiv.dataset.feature = JSON.stringify(result);
                                     resultsContainer.appendChild(suggestionDiv);
                                 });
                             } else {
@@ -54,16 +53,22 @@ document.addEventListener('DOMContentLoaded', function () {
                             console.error('Error fetching address suggestions:', error);
                             resultsContainer.style.display = 'none';
                         });
-                }, 1000); // Requirement: 1 second debounce
+                }, 1000);
             });
 
             resultsContainer.addEventListener('click', function(e) {
                 if (e.target.classList.contains('dame-suggestion-item')) {
                     const featureProperties = JSON.parse(e.target.dataset.feature);
 
-                    addressInput.value = featureProperties.street; // Use 'street'
-                    if(postalCodeInput) postalCodeInput.value = featureProperties.zipcode; // Use 'zipcode'
-                    if(cityInput) cityInput.value = featureProperties.city; // Use 'city'
+                    // BUG FIX: Use the 'street' property which contains number + name, or parse from 'fulltext'.
+                    // Based on user feedback, the 'street' property is missing the number.
+                    // The 'fulltext' is "19 Rue Claude Debussy, 04160 Château-Arnoux-Saint-Auban"
+                    // So we will parse it.
+                    let streetAddress = featureProperties.fulltext.split(',')[0];
+                    addressInput.value = streetAddress.trim();
+
+                    if(postalCodeInput) postalCodeInput.value = featureProperties.zipcode;
+                    if(cityInput) cityInput.value = featureProperties.city;
 
                     if(postalCodeInput) {
                         const event = new Event('keyup');
