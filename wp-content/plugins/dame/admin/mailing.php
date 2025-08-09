@@ -144,9 +144,13 @@ function dame_handle_send_email() {
     );
 
     // Use Bcc to protect privacy
-    $headers[] = 'Bcc: ' . implode( ',', $recipient_emails );
+    // $headers[] = 'Bcc: ' . implode( ',', $recipient_emails ); // This is fragile. Use phpmailer_init instead.
 
-    wp_mail( get_option( 'admin_email' ), $subject, $message, $headers );
+    // Pass emails to the phpmailer_init hook via a global.
+    global $dame_bcc_emails;
+    $dame_bcc_emails = $recipient_emails;
+
+    wp_mail( $sender_email, $subject, $message, $headers );
 
     add_action( 'admin_notices', function() use ( $recipient_emails ) {
         $count = count( $recipient_emails );
@@ -158,6 +162,35 @@ function dame_handle_send_email() {
     });
 }
 add_action( 'admin_init', 'dame_handle_send_email' );
+
+
+/**
+ * Adds Bcc recipients to the PHPMailer object.
+ *
+ * This function is hooked into `phpmailer_init` and uses a global variable
+ * to get the list of recipients from the `dame_handle_send_email` function.
+ *
+ * @param PHPMailer $phpmailer The PHPMailer object.
+ */
+function dame_add_bcc_to_mailer( $phpmailer ) {
+    global $dame_bcc_emails;
+
+    if ( ! empty( $dame_bcc_emails ) && is_array( $dame_bcc_emails ) ) {
+        foreach ( $dame_bcc_emails as $email ) {
+            try {
+                // Add each email as a Bcc recipient.
+                $phpmailer->addBCC( $email );
+            } catch ( Exception $e ) {
+                // Silently continue if an email is invalid.
+                continue;
+            }
+        }
+        // Clean up the global to prevent it from affecting other wp_mail calls.
+        $dame_bcc_emails = null;
+    }
+}
+add_action( 'phpmailer_init', 'dame_add_bcc_to_mailer' );
+
 
 /**
  * Get the relevant email addresses for a given adherent.
