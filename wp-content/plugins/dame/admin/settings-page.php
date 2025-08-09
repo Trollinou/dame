@@ -35,6 +35,7 @@ function dame_render_options_page() {
         <form action="options.php" method="post">
             <?php
             settings_fields( 'dame_options_group' );
+            do_settings_sections( 'dame_mailing_section_group' ); // Ajout du groupe de la section mailing
             do_settings_sections( 'dame_uninstall_section_group' );
             submit_button( __( 'Enregistrer les modifications', 'dame' ) );
             ?>
@@ -98,6 +99,22 @@ function dame_render_options_page() {
  */
 function dame_register_settings() {
     register_setting( 'dame_options_group', 'dame_options', 'dame_options_sanitize' );
+
+    // Section pour le mailing
+    add_settings_section(
+        'dame_mailing_section',
+        __( 'Paramètres d\'envoi d\'email', 'dame' ),
+        'dame_mailing_section_callback',
+        'dame_mailing_section_group'
+    );
+
+    add_settings_field(
+        'dame_sender_email',
+        __( "Email de l'expéditeur", 'dame' ),
+        'dame_sender_email_callback',
+        'dame_mailing_section_group',
+        'dame_mailing_section'
+    );
 
     add_settings_section(
         'dame_uninstall_section',
@@ -173,8 +190,34 @@ add_action( 'admin_init', 'dame_handle_annual_reset' );
  */
 function dame_options_sanitize( $input ) {
     $sanitized_input = array();
+
+    if ( isset( $input['sender_email'] ) ) {
+        $sanitized_input['sender_email'] = sanitize_email( $input['sender_email'] );
+    }
+
     $sanitized_input['delete_on_uninstall'] = isset( $input['delete_on_uninstall'] ) ? 1 : 0;
     return $sanitized_input;
+}
+
+/**
+ * Callback for the mailing section.
+ */
+function dame_mailing_section_callback() {
+    echo '<p>' . esc_html__( "Paramètres relatifs à l'envoi d'emails depuis le plugin.", 'dame' ) . '</p>';
+}
+
+/**
+ * Callback for the sender_email field.
+ */
+function dame_sender_email_callback() {
+    $options = get_option( 'dame_options' );
+    $sender_email = isset( $options['sender_email'] ) ? $options['sender_email'] : '';
+    ?>
+    <input type="email" name="dame_options[sender_email]" value="<?php echo esc_attr( $sender_email ); ?>" class="regular-text" />
+    <p class="description">
+        <?php esc_html_e( "L'adresse email qui sera utilisée comme expéditeur pour les communications par email. Si laissé vide, l'adresse par défaut de WordPress sera utilisée.", 'dame' ); ?>
+    </p>
+    <?php
 }
 
 /**
