@@ -302,7 +302,11 @@ function dame_render_legal_rep_metabox( $post ) {
         </tr>
         <tr>
             <th><label for="dame_legal_rep_1_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_legal_rep_1_address_1" name="dame_legal_rep_1_address_1" value="<?php echo esc_attr( $rep1_address_1 ); ?>" class="regular-text" /></td>
+            <td>
+                <div class="dame-autocomplete-wrapper">
+                    <input type="text" id="dame_legal_rep_1_address_1" name="dame_legal_rep_1_address_1" value="<?php echo esc_attr( $rep1_address_1 ); ?>" class="regular-text" autocomplete="off" />
+                </div>
+            </td>
         </tr>
         <tr>
             <th><label for="dame_legal_rep_1_address_2"><?php _e( 'Adresse (Ligne 2)', 'dame' ); ?></label></th>
@@ -340,7 +344,11 @@ function dame_render_legal_rep_metabox( $post ) {
         </tr>
         <tr>
             <th><label for="dame_legal_rep_2_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_legal_rep_2_address_1" name="dame_legal_rep_2_address_1" value="<?php echo esc_attr( $rep2_address_1 ); ?>" class="regular-text" /></td>
+            <td>
+                <div class="dame-autocomplete-wrapper">
+                    <input type="text" id="dame_legal_rep_2_address_1" name="dame_legal_rep_2_address_1" value="<?php echo esc_attr( $rep2_address_1 ); ?>" class="regular-text" autocomplete="off" />
+                </div>
+            </td>
         </tr>
         <tr>
             <th><label for="dame_legal_rep_2_address_2"><?php _e( 'Adresse (Ligne 2)', 'dame' ); ?></label></th>

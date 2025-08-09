@@ -1,16 +1,19 @@
 document.addEventListener('DOMContentLoaded', function () {
-    /**
-     * IGN Address Autocompletion
-     */
-    const addressInput = document.getElementById('dame_address_1');
-    if (addressInput) {
-        const postalCodeInput = document.getElementById('dame_postal_code');
-        const cityInput = document.getElementById('dame_city');
+
+    function initAutocomplete(addressId, postalCodeId, cityId) {
+        const addressInput = document.getElementById(addressId);
+        if (!addressInput) {
+            return;
+        }
+
+        const postalCodeInput = document.getElementById(postalCodeId);
+        const cityInput = document.getElementById(cityId);
         const wrapper = addressInput.closest('.dame-autocomplete-wrapper');
 
         if (wrapper) {
             const resultsContainer = document.createElement('div');
-            resultsContainer.id = 'dame-address-suggestions';
+            resultsContainer.className = 'dame-address-suggestions';
+            resultsContainer.style.display = 'none';
             wrapper.appendChild(resultsContainer);
 
             let debounceTimer;
@@ -27,12 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 debounceTimer = setTimeout(() => {
                     fetch(`https://data.geopf.fr/geocodage/completion?text=${encodeURIComponent(query)}&type=StreetAddress`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
+                        .then(response => response.json())
                         .then(data => {
                             resultsContainer.innerHTML = '';
                             if (data.results && data.results.length > 0) {
@@ -60,17 +58,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (e.target.classList.contains('dame-suggestion-item')) {
                     const featureProperties = JSON.parse(e.target.dataset.feature);
 
-                    // BUG FIX: Use the 'street' property which contains number + name, or parse from 'fulltext'.
-                    // Based on user feedback, the 'street' property is missing the number.
-                    // The 'fulltext' is "19 Rue Claude Debussy, 04160 Château-Arnoux-Saint-Auban"
-                    // So we will parse it.
                     let streetAddress = featureProperties.fulltext.split(',')[0];
                     addressInput.value = streetAddress.trim();
 
                     if(postalCodeInput) postalCodeInput.value = featureProperties.zipcode;
                     if(cityInput) cityInput.value = featureProperties.city;
 
-                    if(postalCodeInput) {
+                    if(postalCodeInput && postalCodeInput.id === 'dame_postal_code') {
                         const event = new Event('keyup');
                         postalCodeInput.dispatchEvent(event);
                     }
@@ -88,13 +82,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Initialize for all address fields
+    initAutocomplete('dame_address_1', 'dame_postal_code', 'dame_city');
+    initAutocomplete('dame_legal_rep_1_address_1', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city');
+    initAutocomplete('dame_legal_rep_2_address_1', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city');
+
+
     /**
-     * Postal Code -> Department Link
+     * Postal Code -> Department Link (Only for main address)
      */
-    const postalCodeField = document.getElementById('dame_postal_code');
+    const mainPostalCodeField = document.getElementById('dame_postal_code');
     const departmentSelect = document.getElementById('dame_department');
-    if (postalCodeField && departmentSelect) {
-        postalCodeField.addEventListener('keyup', function () {
+    if (mainPostalCodeField && departmentSelect) {
+        mainPostalCodeField.addEventListener('keyup', function () {
             const postalCode = this.value;
             if (postalCode.length >= 2) {
                 let departmentCode = postalCode.substring(0, 2);
