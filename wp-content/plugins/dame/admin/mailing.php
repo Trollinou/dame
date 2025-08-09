@@ -174,11 +174,13 @@ function dame_handle_send_email() {
 
     // Send a confirmation email to the sender for traceability
     if ( $sent_count > 0 ) {
+        $recipient_list_for_debug = implode( "\n - ", $recipient_emails );
         $confirmation_subject = sprintf( __( '[Confirmation] Envoi de l\'article "%s"', 'dame' ), $subject );
         $confirmation_message = sprintf(
-            esc_html__( "Bonjour,\n\nCeci est une confirmation que l'article \"%s\" a bien été envoyé à %d membre(s) de votre sélection.\n\nContenu de l'article envoyé :\n\n%s", 'dame' ),
+            esc_html__( "Bonjour,\n\nCeci est une confirmation que l'article \"%1\$s\" a bien été envoyé à %2\$d membre(s) de votre sélection.\n\nListe des destinataires pour vérification :\n - %3\$s\n\nContenu de l'article envoyé :\n\n%4\$s", 'dame' ),
             $subject,
             $sent_count,
+            $recipient_list_for_debug,
             wp_strip_all_tags( $message ) // Send a plain text version for the confirmation
         );
         wp_mail( $sender_email, $confirmation_subject, $confirmation_message );
