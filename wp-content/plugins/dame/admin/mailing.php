@@ -146,7 +146,7 @@ function dame_handle_send_email() {
     // Use Bcc to protect privacy
     $headers[] = 'Bcc: ' . implode( ',', $recipient_emails );
 
-    wp_mail( $sender_email, $subject, $message, $headers );
+    wp_mail( get_option( 'admin_email' ), $subject, $message, $headers );
 
     add_action( 'admin_notices', function() use ( $recipient_emails ) {
         $count = count( $recipient_emails );
