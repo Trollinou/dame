@@ -10,10 +10,10 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 Ce plugin a été développé en suivant les meilleures pratiques de WordPress en matière de sécurité, de performance, de maintenabilité et d'évolutivité. Il inclut un mécanisme de mise à jour qui permettra de gérer les migrations de données pour les futures versions.
 
-## Fonctionnalités (v1.11.1)
+## Fonctionnalités (v1.12.0)
 
-*   **Envoi d'articles par email :** Une nouvelle page "Envoyer un article" permet d'envoyer un article du site à des groupes d'adhérents. La sélection des destinataires peut se faire par groupes exclusifs (École d'échecs, Pôle Excellence, état d'adhésion) ou par sélection manuelle. La fonctionnalité gère les emails des représentants légaux pour les adhérents mineurs.
 *   **Export CSV des Adhérents :** Une nouvelle option sur la page d'options permet d'exporter la liste complète des adhérents au format CSV avec des colonnes prédéfinies.
+*   **Envoi d'articles par email :** Une nouvelle page "Envoyer un article" permet d'envoyer un article du site à des groupes d'adhérents. La sélection des destinataires peut se faire par groupes exclusifs (École d'échecs, Pôle Excellence, état d'adhésion) ou par sélection manuelle. La fonctionnalité gère les emails des représentants légaux pour les adhérents mineurs.
 *   **Import/Export Complet :** Une nouvelle section sur la page d'options permet d'exporter l'intégralité de la base d'adhérents dans un fichier JSON, et de la réimporter pour une restauration complète.
 *   **Autocomplétion d'Adresse :** Intégration avec l'API Géoplateforme de l'IGN pour suggérer et remplir automatiquement les champs d'adresse, de code postal et de ville.
 *   **Page d'Options :** Une page de réglages (`Réglages > Options DAME`) permet de gérer le comportement du plugin.
@@ -38,10 +38,6 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 La suppression des données lors de la désinstallation du plugin peut être activée depuis la page d'options (`Réglages > Options DAME`). Par défaut, les données sont conservées par sécurité.
 
 ## Changelog
-
-### 1.12.0 (10/08/2025)
-
-*   **Fonctionnalité :** Ajout d'une fonction d'export au format CSV de la liste des adhérents depuis la page d'options. L'export inclut toutes les données des adhérents et de leurs représentants légaux.
 
 ### 1.11.1 (10/08/2025)
 
