@@ -153,6 +153,9 @@ function dame_render_adherent_details_metabox( $post ) {
 	$last_name = get_post_meta( $post->ID, '_dame_last_name', true );
 	$birth_date = get_post_meta( $post->ID, '_dame_birth_date', true );
 	$sexe = get_post_meta( $post->ID, '_dame_sexe', true );
+	if ( ! $sexe ) {
+		$sexe = 'Non précisé';
+	}
 	$license_number = get_post_meta( $post->ID, '_dame_license_number', true );
 	$phone = get_post_meta( $post->ID, '_dame_phone_number', true );
 	$email = get_post_meta( $post->ID, '_dame_email', true );
@@ -174,14 +177,15 @@ function dame_render_adherent_details_metabox( $post ) {
 			<td><input type="text" id="dame_last_name" name="dame_last_name" value="<?php echo esc_attr( $last_name ); ?>" class="regular-text" required="required" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_birth_date"><?php _e( 'Date de naissance', 'dame' ); ?> <span class="description">(obligatoire)</span></label></th>
-			<td><input type="date" id="dame_birth_date" name="dame_birth_date" value="<?php echo esc_attr( $birth_date ); ?>" required="required" /></td>
+			<th><label for="dame_birth_date"><?php _e( 'Date de naissance', 'dame' ); ?></label></th>
+			<td><input type="date" id="dame_birth_date" name="dame_birth_date" value="<?php echo esc_attr( $birth_date ); ?>" /></td>
 		</tr>
 		<tr>
 			<th><?php _e( 'Sexe', 'dame' ); ?></th>
 			<td>
 				<label style="margin-right: 15px;"><input type="radio" name="dame_sexe" value="Masculin" <?php checked( $sexe, 'Masculin' ); ?> /> <?php _e( 'Masculin', 'dame' ); ?></label>
-				<label><input type="radio" name="dame_sexe" value="Féminin" <?php checked( $sexe, 'Féminin' ); ?> /> <?php _e( 'Féminin', 'dame' ); ?></label>
+				<label style="margin-right: 15px;"><input type="radio" name="dame_sexe" value="Féminin" <?php checked( $sexe, 'Féminin' ); ?> /> <?php _e( 'Féminin', 'dame' ); ?></label>
+				<label><input type="radio" name="dame_sexe" value="Non précisé" <?php checked( $sexe, 'Non précisé' ); ?> /> <?php _e( 'Non précisé', 'dame' ); ?></label>
 			</td>
 		</tr>
 		<tr>
@@ -394,11 +398,21 @@ function dame_render_legal_rep_metabox( $post ) {
  * @param WP_Post $post The post object.
  */
 function dame_render_diverse_info_metabox( $post ) {
-	$allergies = get_post_meta( $post->ID, '_dame_allergies', true );
-	$diet = get_post_meta( $post->ID, '_dame_diet', true );
-	$transport = get_post_meta( $post->ID, '_dame_transport', true );
+	$autre_telephone  = get_post_meta( $post->ID, '_dame_autre_telephone', true );
+	$taille_vetements = get_post_meta( $post->ID, '_dame_taille_vetements', true );
+	$allergies        = get_post_meta( $post->ID, '_dame_allergies', true );
+	$diet             = get_post_meta( $post->ID, '_dame_diet', true );
+	$transport        = get_post_meta( $post->ID, '_dame_transport', true );
 	?>
 	<table class="form-table">
+		<tr>
+			<th><label for="dame_autre_telephone"><?php _e( 'Autre téléphone', 'dame' ); ?></label></th>
+			<td><input type="text" id="dame_autre_telephone" name="dame_autre_telephone" value="<?php echo esc_attr( $autre_telephone ); ?>" class="regular-text" /></td>
+		</tr>
+		<tr>
+			<th><label for="dame_taille_vetements"><?php _e( 'Taille vêtements', 'dame' ); ?></label></th>
+			<td><input type="text" id="dame_taille_vetements" name="dame_taille_vetements" value="<?php echo esc_attr( $taille_vetements ); ?>" class="regular-text" /></td>
+		</tr>
 		<tr>
 			<th><label for="dame_allergies"><?php _e( 'Allergies connues', 'dame' ); ?></label></th>
 			<td><input type="text" id="dame_allergies" name="dame_allergies" value="<?php echo esc_attr( $allergies ); ?>" class="regular-text" /></td>
@@ -430,6 +444,9 @@ function dame_render_classification_metabox( $post ) {
 	];
 
 	$license_type = get_post_meta( $post->ID, '_dame_license_type', true );
+	if ( ! $license_type ) {
+		$license_type = 'A';
+	}
 	$membership_date = get_post_meta( $post->ID, '_dame_membership_date', true );
 
 	$is_junior = get_post_meta( $post->ID, '_dame_is_junior', true );
@@ -442,6 +459,9 @@ function dame_render_classification_metabox( $post ) {
 	}
 
 	$arbitre_level = get_post_meta( $post->ID, '_dame_arbitre_level', true );
+	if ( ! $arbitre_level ) {
+		$arbitre_level = 'Non';
+	}
 	$arbitre_options = ['Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2'];
 
 	?>
@@ -457,7 +477,8 @@ function dame_render_classification_metabox( $post ) {
 		<p>
 			<label><strong><?php _e( 'Type de licence', 'dame' ); ?></strong></label><br>
 			<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="A" <?php checked( $license_type, 'A' ); ?> /> A</label>
-			<label><input type="radio" name="dame_license_type" value="B" <?php checked( $license_type, 'B' ); ?> /> B</label>
+			<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="B" <?php checked( $license_type, 'B' ); ?> /> B</label>
+			<label><input type="radio" name="dame_license_type" value="Non précisé" <?php checked( $license_type, 'Non précisé' ); ?> /> <?php _e( 'Non précisé', 'dame' ); ?></label>
 		</p>
 		<p>
 			<label for="dame_membership_date"><strong><?php _e( 'Date d\'adhésion', 'dame' ); ?></strong></label><br>
@@ -546,9 +567,6 @@ function dame_save_adherent_meta( $post_id ) {
 	if ( empty( $_POST['dame_last_name'] ) ) {
 		$errors[] = __( 'Le nom est obligatoire.', 'dame' );
 	}
-	if ( empty( $_POST['dame_birth_date'] ) ) {
-		$errors[] = __( 'La date de naissance est obligatoire.', 'dame' );
-	}
 	if ( ! empty( $_POST['dame_license_number'] ) && ! preg_match( '/^[A-Z][0-9]{5}$/', $_POST['dame_license_number'] ) ) {
 		$errors[] = __( 'Le format du numéro de licence est invalide. Il doit être une lettre majuscule suivie de 5 chiffres (ex: A12345).', 'dame' );
 	}
@@ -613,6 +631,8 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_arbitre_level' => 'sanitize_text_field',
 		'dame_membership_status' => 'sanitize_text_field',
 		'dame_license_type' => 'sanitize_text_field',
+		'dame_autre_telephone' => 'sanitize_text_field',
+		'dame_taille_vetements' => 'sanitize_text_field',
 		'dame_allergies' => 'sanitize_text_field',
 		'dame_diet' => 'sanitize_text_field',
 		'dame_transport' => 'sanitize_text_field',

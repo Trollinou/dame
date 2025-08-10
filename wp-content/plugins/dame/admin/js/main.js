@@ -20,16 +20,37 @@ document.addEventListener('DOMContentLoaded', function () {
             if (postalCode.length >= 2) {
                 let departmentCode = postalCode.substring(0, 2);
 
-                if (departmentCode === '20') {
-                    return;
+                // Handle Corsica postal codes (20) which can be 2A or 2B
+                if (postalCode.length >= 3 && postalCode.startsWith('20')) {
+                    const thirdDigit = parseInt(postalCode.substring(2, 3), 10);
+                    if (!isNaN(thirdDigit)) {
+                        if (thirdDigit <= 1) { // 200xx, 201xx
+                            departmentCode = '2A';
+                        } else { // 202xx and above
+                            departmentCode = '2B';
+                        }
+                    }
+                } else if (departmentCode === '97') { // Handle overseas departments
+                    if (postalCode.length >= 3) {
+                        departmentCode = postalCode.substring(0, 3);
+                    }
                 }
 
+                let departmentChanged = false;
                 for (let i = 0; i < departmentSelect.options.length; i++) {
                     const option = departmentSelect.options[i];
                     if (option.value === departmentCode) {
-                        departmentSelect.value = departmentCode;
+                        if (departmentSelect.value !== departmentCode) {
+                            departmentSelect.value = departmentCode;
+                            departmentChanged = true;
+                        }
                         break;
                     }
+                }
+
+                // If the department was changed, trigger the change event to update the region
+                if (departmentChanged) {
+                    departmentSelect.dispatchEvent(new Event('change'));
                 }
             }
         });
