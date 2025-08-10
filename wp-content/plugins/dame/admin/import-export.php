@@ -253,9 +253,31 @@ function dame_handle_csv_import_action() {
 				}
 
 				if ( '_dame_membership_status' === $meta_key ) {
-					// Assuming status is given as 'Actif (A)', 'Non Adhérent (N)', etc.
-					preg_match( '/\(([A-Z])\)/', $value, $matches );
-					$value = isset( $matches[1] ) ? $matches[1] : 'N';
+					$status_key = 'N'; // Default to 'Non Adhérent'
+					$normalized_value = strtoupper( trim( $value ) );
+
+					// Handle cases like "Actif (A)" by extracting the key
+					if ( preg_match( '/\(([A-Z])\)/', $normalized_value, $matches ) ) {
+						$normalized_value = $matches[1];
+					}
+
+					$status_map = array(
+						'ACTIF' => 'A',
+						'A' => 'A',
+						'EXPIRÉ' => 'E',
+						'EXPIRE' => 'E',
+						'E' => 'E',
+						'ANCIEN' => 'X',
+						'X' => 'X',
+						'NON ADHÉRENT' => 'N',
+						'NON ADHERENT' => 'N',
+						'N' => 'N',
+					);
+
+					if ( isset( $status_map[ $normalized_value ] ) ) {
+						$status_key = $status_map[ $normalized_value ];
+					}
+					$value = $status_key;
 				}
 
 				// Sanitize phone numbers
