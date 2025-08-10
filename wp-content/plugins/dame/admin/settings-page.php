@@ -58,7 +58,11 @@ function dame_render_options_page() {
                 <p><?php esc_html_e( "Cliquez sur le bouton ci-dessous pour télécharger un fichier JSON de sauvegarde de tous les adhérents.", 'dame' ); ?></p>
                 <form method="post" action="">
                     <?php wp_nonce_field( 'dame_export_nonce_action', 'dame_export_nonce' ); ?>
-                    <?php submit_button( __( 'Exporter la base de données', 'dame' ), 'primary', 'dame_export_action' ); ?>
+                    <?php submit_button( __( 'Exporter la base de données (JSON)', 'dame' ), 'secondary', 'dame_export_action' ); ?>
+                </form>
+                <form method="post" action="">
+                    <?php wp_nonce_field( 'dame_export_csv_nonce_action', 'dame_export_csv_nonce' ); ?>
+                    <?php submit_button( __( 'Exporter la liste des adhérents (CSV)', 'dame' ), 'primary', 'dame_export_csv_action' ); ?>
                 </form>
             </div>
 

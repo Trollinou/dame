@@ -11,6 +11,130 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
+ * Handles the export of member data to CSV.
+ */
+function dame_handle_csv_export_action() {
+	if ( ! isset( $_POST['dame_export_csv_action'] ) || ! isset( $_POST['dame_export_csv_nonce'] ) || ! wp_verify_nonce( $_POST['dame_export_csv_nonce'], 'dame_export_csv_nonce_action' ) ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", 'dame' ) );
+	}
+
+	$adherents_args = array(
+		'post_type'      => 'adherent',
+		'posts_per_page' => -1,
+		'post_status'    => 'any',
+		'orderby'        => 'title',
+		'order'          => 'ASC',
+	);
+
+	$adherents_query = new WP_Query( $adherents_args );
+
+	$filename = 'dame-export-adherents-' . date( 'Y-m-d' ) . '.csv';
+
+	ob_clean();
+	header( 'Content-Type: text/csv; charset=utf-8' );
+	header( 'Content-Disposition: attachment; filename=' . $filename );
+
+	$output = fopen( 'php://output', 'w' );
+
+	// Add BOM to fix UTF-8 in Excel.
+	fprintf( $output, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
+
+	$headers = array(
+		"Nom", "Prénom", "Date de naissance", "Sexe", "Adresse email", "Numéro de téléphone",
+		"Adresse 1", "Adresse 2", "Code Postal", "Ville", "Pays", "Numéro de licence",
+		"Etat de l'adhésion", "Type de licence", "Date d'adhésion", "Ecole d'échecs (O/N)",
+		"Pôle excellence (O/N)", "Bénévole (O/N)", "Arbitre",
+		"Représentant légal 1 - Nom", "Représentant légal 1 - Prénom", "Représentant légal 1 - Email", "Représentant légal 1 - Téléphone",
+		"Représentant légal 1 - Adresse 1", "Représentant légal 1 - Adresse 2", "Représentant légal 1 - Code Postal", "Représentant légal 1 - Ville",
+		"Représentant légal 2 - Nom", "Représentant légal 2 - Prénom", "Représentant légal 2 - Email", "Représentant légal 2 - Téléphone",
+		"Représentant légal 2 - Adresse 1", "Représentant légal 2 - Adresse 2", "Représentant légal 2 - Code Postal", "Représentant légal 2 - Ville",
+		"Allergies", "Régime alimentaire", "Moyen de locomotion",
+	);
+
+	fputcsv( $output, $headers, ';' );
+
+	if ( $adherents_query->have_posts() ) {
+		while ( $adherents_query->have_posts() ) {
+			$adherents_query->the_post();
+			$post_id = get_the_ID();
+
+			// Format dates.
+			$birth_date             = get_post_meta( $post_id, '_dame_birth_date', true );
+			$formatted_birth_date   = $birth_date ? date( 'd/m/Y', strtotime( $birth_date ) ) : '';
+
+			$membership_date             = get_post_meta( $post_id, '_dame_membership_date', true );
+			$formatted_membership_date = $membership_date ? date( 'd/m/Y', strtotime( $membership_date ) ) : '';
+
+			// Format booleans.
+			$is_ecole_echecs    = get_post_meta( $post_id, '_dame_is_junior', true ) ? 'O' : 'N';
+			$is_pole_excellence = get_post_meta( $post_id, '_dame_is_pole_excellence', true ) ? 'O' : 'N';
+			$is_benevole        = get_post_meta( $post_id, '_dame_is_benevole', true ) ? 'O' : 'N';
+
+			$status_options = [
+				'N' => __( 'Non Adhérent (N)', 'dame' ),
+				'A' => __( 'Actif (A)', 'dame' ),
+				'E' => __( 'Expiré (E)', 'dame' ),
+				'X' => __( 'Ancien (X)', 'dame' ),
+			];
+			$membership_status_key   = get_post_meta( $post_id, '_dame_membership_status', true );
+			$membership_status_label = isset( $status_options[ $membership_status_key ] ) ? $status_options[ $membership_status_key ] : $membership_status_key;
+
+			$row = array(
+				get_post_meta( $post_id, '_dame_last_name', true ),
+				get_post_meta( $post_id, '_dame_first_name', true ),
+				$formatted_birth_date,
+				get_post_meta( $post_id, '_dame_sexe', true ),
+				get_post_meta( $post_id, '_dame_email', true ),
+				get_post_meta( $post_id, '_dame_phone_number', true ),
+				get_post_meta( $post_id, '_dame_address_1', true ),
+				get_post_meta( $post_id, '_dame_address_2', true ),
+				get_post_meta( $post_id, '_dame_postal_code', true ),
+				get_post_meta( $post_id, '_dame_city', true ),
+				get_post_meta( $post_id, '_dame_country', true ),
+				get_post_meta( $post_id, '_dame_license_number', true ),
+				$membership_status_label,
+				get_post_meta( $post_id, '_dame_license_type', true ),
+				$formatted_membership_date,
+				$is_ecole_echecs,
+				$is_pole_excellence,
+				$is_benevole,
+				get_post_meta( $post_id, '_dame_arbitre_level', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_1_last_name', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_1_first_name', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_1_email', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_1_phone', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_1_address_1', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_1_address_2', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_1_postal_code', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_1_city', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_2_last_name', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_2_first_name', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_2_email', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_2_phone', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_2_address_1', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_2_address_2', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_2_postal_code', true ),
+				get_post_meta( $post_id, '_dame_legal_rep_2_city', true ),
+				get_post_meta( $post_id, '_dame_allergies', true ),
+				get_post_meta( $post_id, '_dame_diet', true ),
+				get_post_meta( $post_id, '_dame_transport', true ),
+			);
+
+			fputcsv( $output, $row, ';' );
+		}
+		wp_reset_postdata();
+	}
+
+	fclose( $output );
+	exit;
+}
+add_action( 'admin_init', 'dame_handle_csv_export_action' );
+
+/**
  * Handles the export of member data.
  */
 function dame_handle_export_action() {
