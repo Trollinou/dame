@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 1.13.0
+**Version:** 1.14.5
 **Auteur:** Etienne
 **Licence:** GPL v2 or later
 
@@ -35,6 +35,13 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 La suppression des données lors de la désinstallation du plugin peut être activée depuis la page d'options (`Réglages > Options DAME`). Par défaut, les données sont conservées par sécurité.
 
 ## Changelog
+
+### 1.14.5 (10/08/2025)
+
+*   **Correctif :** Le menu "Assignations des comptes" est maintenant correctement positionné sous "Ajouter un nouvel adhérent".
+*   **Correctif :** L'accès au menu "Assignations des comptes" est maintenant strictement réservé aux administrateurs.
+*   **Amélioration :** Le rôle "Membre" est maintenant sélectionné par défaut dans la page "Assignations des comptes".
+*   **Correctif Technique :** Correction d'une erreur fatale sur les versions récentes de PHP liée à la réorganisation du menu d'administration.
 
 ### 1.13.0 (10/08/2025)
 
