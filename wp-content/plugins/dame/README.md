@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 1.11.0
+**Version:** 1.11.1
 **Auteur:** Etienne
 **Licence:** GPL v2 or later
 
@@ -10,7 +10,7 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 Ce plugin a été développé en suivant les meilleures pratiques de WordPress en matière de sécurité, de performance, de maintenabilité et d'évolutivité. Il inclut un mécanisme de mise à jour qui permettra de gérer les migrations de données pour les futures versions.
 
-## Fonctionnalités (v1.11.0)
+## Fonctionnalités (v1.11.1)
 
 *   **Envoi d'articles par email :** Une nouvelle page "Envoyer un article" permet d'envoyer un article du site à des groupes d'adhérents. La sélection des destinataires peut se faire par groupes exclusifs (École d'échecs, Pôle Excellence, état d'adhésion) ou par sélection manuelle. La fonctionnalité gère les emails des représentants légaux pour les adhérents mineurs.
 *   **Import/Export Complet :** Une nouvelle section sur la page d'options permet d'exporter l'intégralité de la base d'adhérents dans un fichier JSON, et de la réimporter pour une restauration complète.
@@ -23,12 +23,12 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 *   **Champs de Données Complets :**
     *   Nom, Prénom, Date de naissance (obligatoires).
     *   Sexe, Numéro de licence, Numéro de téléphone.
-    *   Localisation (Pays, Région, Département).
-*   **Sélection Auto. du Département :** Le département est automatiquement suggéré à partir du code postal.
+    *   Localisation (Pays, Département, Région).
+*   **Sélection Auto. de la Région :** La région est automatiquement suggérée à partir du département.
 *   **Informations Scolaires :** Section dédiée pour l'établissement et l'académie.
 *   **Gestion des Mineurs :** Champs pour deux représentants légaux (avec adresse complète et téléphone).
 *   **Classification :**
-    *   Cases à cocher pour "Junior" et "Pôle Excellence".
+    *   Cases à cocher pour "École d'échecs", "Pôle Excellence" et "Bénévole".
     *   Menu déroulant pour le niveau d'**Arbitre**.
 *   **Rôles Utilisateurs Personnalisés :** Ajoute les rôles "Membre" et "Entraineur".
 
@@ -37,6 +37,13 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 La suppression des données lors de la désinstallation du plugin peut être activée depuis la page d'options (`Réglages > Options DAME`). Par défaut, les données sont conservées par sécurité.
 
 ## Changelog
+
+### 1.11.1 (10/08/2025)
+
+*   **Correctif :** Le champ titre ne contient plus de texte par défaut.
+*   **Correctif :** Les champs "Type de licence" et "Date d'adhésion" sont toujours visibles.
+*   **Correctif :** Le renommage de "Junior" en "École d’échecs" est maintenant appliqué sur tous les écrans.
+*   **Amélioration :** Le champ "Département" est positionné au-dessus de "Région" et la sélection de la région est maintenant automatique.
 
 ### 1.11.0 (10/08/2025)
 
