@@ -289,7 +289,7 @@ function dame_render_mailing_page() {
                                 <legend class="screen-reader-text"><span><?php esc_html_e( "Groupes de destinataires", 'dame' ); ?></span></legend>
                                 <label>
                                     <input type="radio" name="dame_recipient_group" value="juniors" checked>
-                                    <?php esc_html_e( "Juniors", 'dame' ); ?>
+                                    <?php esc_html_e( "École d'échecs", 'dame' ); ?>
                                 </label>
                                 <br>
                                 <label>

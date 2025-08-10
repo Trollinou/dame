@@ -37,6 +37,13 @@ function dame_enqueue_admin_scripts( $hook ) {
 			DAME_VERSION,
 			true
 		);
+		wp_localize_script(
+			'dame-main-js',
+			'dame_admin_data',
+			array(
+				'department_region_mapping' => dame_get_department_region_mapping(),
+			)
+		);
 		wp_enqueue_script(
 			'dame-autocomplete-js',
 			plugin_dir_url( __FILE__ ) . 'js/ign-autocomplete.js',
@@ -220,21 +227,21 @@ function dame_render_adherent_details_metabox( $post ) {
 			</td>
 		</tr>
 		<tr>
-			<th><label for="dame_region"><?php _e( 'Région', 'dame' ); ?></label></th>
+            <th><label for="dame_department"><?php _e( 'Département', 'dame' ); ?></label></th>
 			<td>
-				<select id="dame_region" name="dame_region">
-					<?php foreach ( dame_get_region_list() as $code => $name ) : ?>
-						<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $region, $code ); ?>><?php echo esc_html( $name ); ?></option>
+                <select id="dame_department" name="dame_department">
+                    <?php foreach ( dame_get_department_list() as $code => $name ) : ?>
+                        <option value="<?php echo esc_attr( $code ); ?>" <?php selected( $department, $code ); ?>><?php echo esc_html( $name ); ?></option>
 					<?php endforeach; ?>
 				</select>
 			</td>
 		</tr>
 		<tr>
-			<th><label for="dame_department"><?php _e( 'Département', 'dame' ); ?></label></th>
+            <th><label for="dame_region"><?php _e( 'Région', 'dame' ); ?></label></th>
 			<td>
-				<select id="dame_department" name="dame_department">
-					<?php foreach ( dame_get_department_list() as $code => $name ) : ?>
-						<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $department, $code ); ?>><?php echo esc_html( $name ); ?></option>
+                <select id="dame_region" name="dame_region">
+                    <?php foreach ( dame_get_region_list() as $code => $name ) : ?>
+                        <option value="<?php echo esc_attr( $code ); ?>" <?php selected( $region, $code ); ?>><?php echo esc_html( $name ); ?></option>
 					<?php endforeach; ?>
 				</select>
 			</td>

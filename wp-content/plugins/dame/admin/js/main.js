@@ -8,12 +8,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (firstNameInput) {
             firstNameInput.focus();
         }
-
-        // Changer le placeholder du titre
-        const titleInput = document.getElementById('title');
-        if (titleInput) {
-            titleInput.placeholder = 'Ne pas remplir';
-        }
     }
 
     // Auto-select department from postal code
@@ -41,33 +35,29 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Show/hide membership details based on status
-    const membershipStatusSelect = document.getElementById('dame_membership_status');
-    const membershipDetailsWrapper = document.getElementById('dame_membership_details_wrapper');
-
-    function toggleMembershipDetails() {
-        if (membershipStatusSelect && membershipDetailsWrapper) {
-            if (membershipStatusSelect.value === 'A') {
-                membershipDetailsWrapper.style.display = '';
-            } else {
-                membershipDetailsWrapper.style.display = 'none';
-            }
-        }
-    }
-
-    if (membershipStatusSelect) {
-        membershipStatusSelect.addEventListener('change', toggleMembershipDetails);
-        // Initial check
-        toggleMembershipDetails();
-    }
-
     // Auto-set membership status to 'Active' when date is entered
     const membershipDateInput = document.getElementById('dame_membership_date');
+    const membershipStatusSelect = document.getElementById('dame_membership_status');
     if (membershipDateInput && membershipStatusSelect) {
         membershipDateInput.addEventListener('change', function() {
             if (this.value && membershipStatusSelect.value !== 'A') {
                 membershipStatusSelect.value = 'A';
-                toggleMembershipDetails(); // Update visibility
+            }
+        });
+    }
+
+    // Department -> Region auto-selection
+    const departmentSelectForRegion = document.getElementById('dame_department');
+    const regionSelect = document.getElementById('dame_region');
+
+    if (departmentSelectForRegion && regionSelect && typeof dame_admin_data !== 'undefined') {
+        departmentSelectForRegion.addEventListener('change', function () {
+            const departmentCode = this.value;
+            const regionCode = dame_admin_data.department_region_mapping[departmentCode];
+            if (regionCode) {
+                regionSelect.value = regionCode;
+            } else {
+                regionSelect.value = 'NA'; // Default to N/A if not found
             }
         });
     }
