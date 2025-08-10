@@ -96,12 +96,13 @@ add_action( 'admin_menu', 'dame_add_user_assignment_page' );
  */
 function dame_render_user_assignment_page() {
     // Get all linked user IDs first
-    $linked_user_ids = get_posts( array(
-        'post_type'      => 'adherent',
-        'posts_per_page' => -1,
-        'meta_key'       => '_dame_linked_wp_user',
-        'fields'         => 'meta_values',
-    ) );
+    global $wpdb;
+    $linked_user_ids = $wpdb->get_col(
+        $wpdb->prepare(
+            "SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value != ''",
+            '_dame_linked_wp_user'
+        )
+    );
     $linked_user_ids = array_map( 'intval', $linked_user_ids );
 
     // Get members who are not yet linked
