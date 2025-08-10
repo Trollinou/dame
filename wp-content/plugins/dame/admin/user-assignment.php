@@ -86,8 +86,7 @@ function dame_add_user_assignment_page() {
         __( 'Assignation des comptes', 'dame' ),
         'administrator',
         'dame-user-assignment',
-        'dame_render_user_assignment_page',
-        10.5
+        'dame_render_user_assignment_page'
     );
 }
 add_action( 'admin_menu', 'dame_add_user_assignment_page' );

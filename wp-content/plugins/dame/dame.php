@@ -54,6 +54,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/cpt.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/data-lists.php';
 
 if ( is_admin() ) {
+    require_once plugin_dir_path( __FILE__ ) . 'admin/menu.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/metaboxes.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/columns.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/settings-page.php';
