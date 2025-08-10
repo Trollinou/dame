@@ -62,7 +62,7 @@ function dame_render_adherent_columns( $column, $post_id ) {
         case 'dame_classification':
             $classifications = [];
             if ( get_post_meta( $post_id, '_dame_is_junior', true ) ) {
-                $classifications[] = __( 'Junior', 'dame' );
+            $classifications[] = __( 'École d\'échecs', 'dame' );
             }
             if ( get_post_meta( $post_id, '_dame_is_pole_excellence', true ) ) {
                 $classifications[] = __( 'Pôle Excellence', 'dame' );
