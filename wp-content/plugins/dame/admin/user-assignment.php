@@ -84,10 +84,10 @@ function dame_add_user_assignment_page() {
         'edit.php?post_type=adherent',
         __( 'Assignation des comptes', 'dame' ),
         __( 'Assignation des comptes', 'dame' ),
-        'manage_options',
+        'administrator',
         'dame-user-assignment',
         'dame_render_user_assignment_page',
-        11
+        10.5
     );
 }
 add_action( 'admin_menu', 'dame_add_user_assignment_page' );
@@ -177,7 +177,7 @@ function dame_render_user_assignment_page() {
                                 <td>
                                     <select name="role[<?php echo esc_attr( get_the_ID() ); ?>]">
                                         <?php foreach ( $roles as $role_value => $role_name ) : ?>
-                                            <option value="<?php echo esc_attr( $role_value ); ?>">
+                                            <option value="<?php echo esc_attr( $role_value ); ?>" <?php selected( $role_value, 'membre' ); ?>>
                                                 <?php echo esc_html( $role_name ); ?>
                                             </option>
                                         <?php endforeach; ?>
