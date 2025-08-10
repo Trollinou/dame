@@ -55,11 +55,6 @@ La suppression des données lors de la désinstallation du plugin peut être act
 *   **Correctif :** Le renommage de "Junior" en "École d’échecs" est maintenant appliqué sur tous les écrans.
 *   **Amélioration :** Le champ "Département" est positionné au-dessus de "Région" et la sélection de la région est maintenant automatique.
 
-*   **Correctif :** Le champ titre ne contient plus de texte par défaut.
-*   **Correctif :** Les champs "Type de licence" et "Date d'adhésion" sont toujours visibles.
-*   **Correctif :** Le renommage de "Junior" en "École d’échecs" est maintenant appliqué sur tous les écrans.
-*   **Amélioration :** Le champ "Département" est positionné au-dessus de "Région" et la sélection de la région est maintenant automatique.
-
 ### 1.11.0 (10/08/2025)
 
 *   **Amélioration :** La date d'adhésion est maintenant située sous l'état de l'adhésion pour une meilleure logique.
