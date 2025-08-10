@@ -178,6 +178,11 @@ function dame_handle_csv_import_action() {
 		return;
 	}
 
+	// Remove BOM from the first header element if present
+	if ( isset( $header[0] ) ) {
+		$header[0] = preg_replace( '/^\x{FEFF}/u', '', $header[0] );
+	}
+
 	$expected_headers = array(
 		'Nom', 'Prénom', 'Date de naissance', 'Sexe', 'Adresse email', 'Numéro de téléphone', 'Adresse 1',
 		'Adresse 2', 'Code Postal', 'Ville', 'Numéro de licence', 'Etat de l\'adhésion',
@@ -253,6 +258,17 @@ function dame_handle_csv_import_action() {
 					$value = isset( $matches[1] ) ? $matches[1] : 'N';
 				}
 
+				// Sanitize phone numbers
+				if ( in_array( $meta_key, array( '_dame_phone_number', '_dame_autre_telephone' ) ) ) {
+					$phone_number = str_replace( array( ' ', '.' ), '', $value );
+					if ( substr( $phone_number, 0, 3 ) === '+33' ) {
+						$phone_number = '0' . substr( $phone_number, 3 );
+					} elseif ( substr( $phone_number, 0, 2 ) === '33' ) {
+						$phone_number = '0' . substr( $phone_number, 2 );
+					}
+					$value = $phone_number;
+				}
+
 				update_post_meta( $post_id, $meta_key, sanitize_text_field( $value ) );
 			}
 
@@ -278,7 +294,7 @@ function dame_handle_csv_import_action() {
 			}
 
 			// Set defaults for fields not in CSV
-			update_post_meta( $post_id, '_dame_license_type', 'A' );
+			update_post_meta( $post_id, '_dame_license_type', 'Non précisé' );
 			update_post_meta( $post_id, '_dame_arbitre_level', 'Non' );
 
 			$imported_count++;
