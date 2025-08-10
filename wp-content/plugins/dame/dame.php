@@ -60,6 +60,7 @@ if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/import-export.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/mailing.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/import-export-page.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/user-assignment.php';
 }
 
 
