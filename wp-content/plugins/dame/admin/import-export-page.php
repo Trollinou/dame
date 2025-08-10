@@ -57,6 +57,30 @@ function dame_render_import_export_page() {
 
                 <h4><?php esc_html_e( 'Import CSV', 'dame' ); ?></h4>
 				<p><?php esc_html_e( 'Importer une liste d\'adhérents depuis un fichier CSV (séparateur point-virgule, encodage UTF-8). Cet import ajoute les adhérents à la base de données existante.', 'dame' ); ?></p>
+
+                <p><?php esc_html_e( 'Le fichier CSV doit contenir une ligne d\'en-tête avec les noms de colonnes suivants. L\'ordre des colonnes n\'est pas important, mais les noms doivent correspondre. Les colonnes supplémentaires dans le fichier seront ignorées.', 'dame' ); ?></p>
+                <div class="dame-expected-columns" style="background: #f7f7f7; border: 1px solid #ccc; padding: 10px 20px; margin-bottom: 1em;">
+                    <ol style="margin: 0; padding-left: 20px;">
+                        <li>Nom</li>
+                        <li>Prénom</li>
+                        <li>Date de naissance (format DD/MM/YYYY)</li>
+                        <li>Sexe</li>
+                        <li>Adresse email</li>
+                        <li>Numéro de téléphone</li>
+                        <li>Adresse 1</li>
+                        <li>Adresse 2</li>
+                        <li>Code Postal</li>
+                        <li>Ville</li>
+                        <li>Numéro de licence</li>
+                        <li>Etat de l'adhésion</li>
+                        <li>Autre téléphone</li>
+                        <li>Taille vêtements</li>
+                        <li>Etablissement scolaire</li>
+                        <li>Académie</li>
+                        <li>Allergies connu</li>
+                    </ol>
+                </div>
+
                 <form method="post" enctype="multipart/form-data" id="dame-import-csv-form" action="">
 					<?php wp_nonce_field( 'dame_import_csv_nonce_action', 'dame_import_csv_nonce' ); ?>
                     <p>
