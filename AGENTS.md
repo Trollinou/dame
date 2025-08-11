@@ -14,6 +14,8 @@ L'agent principal doit agir comme **expert en développement de plugins WordPres
 - documentation et commentaires clairs ;
 - compatibilité avec les dernières versions de WordPress ;
 - optimisation et bonnes pratiques SEO.
+- gestion des numéros de version
+- mise à jour du fichier README
 
 > **Contraintes de style** :
 >
