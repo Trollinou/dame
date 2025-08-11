@@ -4,6 +4,14 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 1.15.0 (11/08/2025)
+
+*   **Fonctionnalité :** La date de naissance est maintenant un champ obligatoire.
+*   **Fonctionnalité :** Ajout des champs "Code postal de naissance" et "Commune de naissance".
+*   **Fonctionnalité :** Implémentation de l'auto-complétion pour les champs de naissance en utilisant l'API géo.api.gouv.fr.
+*   **Amélioration :** Lors de l'import CSV, si la date de naissance est manquante, la date "19/09/1950" est utilisée par défaut.
+*   **Amélioration :** Les nouveaux champs de naissance sont ajoutés à l'export CSV et JSON.
+
 ### 1.14.5 (10/08/2025)
 
 *   **Correctif :** Le menu "Assignations des comptes" est maintenant correctement positionné sous "Ajouter un nouvel adhérent".

@@ -44,7 +44,7 @@ function dame_handle_csv_export_action() {
 	fprintf( $output, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
 
 	$headers = array(
-		__( 'Nom', 'dame' ), __( 'Prénom', 'dame' ), __( 'Date de naissance', 'dame' ), __( 'Sexe', 'dame' ), __( 'Adresse email', 'dame' ), __( 'Numéro de téléphone', 'dame' ),
+		__( 'Nom', 'dame' ), __( 'Prénom', 'dame' ), __( 'Date de naissance', 'dame' ), __( 'Code postal de naissance', 'dame' ), __( 'Commune de naissance', 'dame' ), __( 'Sexe', 'dame' ), __( 'Adresse email', 'dame' ), __( 'Numéro de téléphone', 'dame' ),
 		__( 'Adresse 1', 'dame' ), __( 'Adresse 2', 'dame' ), __( 'Code Postal', 'dame' ), __( 'Ville', 'dame' ), __( 'Pays', 'dame' ), __( 'Numéro de licence', 'dame' ),
 		__( 'Etat de l\'adhésion', 'dame' ), __( 'Type de licence', 'dame' ), __( 'Date d\'adhésion', 'dame' ), __( 'Ecole d\'échecs (O/N)', 'dame' ),
 		__( 'Pôle excellence (O/N)', 'dame' ), __( 'Bénévole (O/N)', 'dame' ), __( 'Arbitre', 'dame' ),
@@ -87,6 +87,8 @@ function dame_handle_csv_export_action() {
 				get_post_meta( $post_id, '_dame_last_name', true ),
 				get_post_meta( $post_id, '_dame_first_name', true ),
 				$formatted_birth_date,
+				get_post_meta( $post_id, '_dame_birth_postal_code', true ),
+				get_post_meta( $post_id, '_dame_birth_city', true ),
 				get_post_meta( $post_id, '_dame_sexe', true ),
 				get_post_meta( $post_id, '_dame_email', true ),
 				get_post_meta( $post_id, '_dame_phone_number', true ),
@@ -184,7 +186,7 @@ function dame_handle_csv_import_action() {
 	}
 
 	$expected_headers = array(
-		'Nom', 'Prénom', 'Date de naissance', 'Sexe', 'Adresse email', 'Numéro de téléphone', 'Adresse 1',
+		'Nom', 'Prénom', 'Date de naissance', 'Code postal de naissance', 'Commune de naissance', 'Sexe', 'Adresse email', 'Numéro de téléphone', 'Adresse 1',
 		'Adresse 2', 'Code Postal', 'Ville', 'Numéro de licence', 'Etat de l\'adhésion',
 		'Autre téléphone', 'Taille vêtements', 'Etablissement scolaire', 'Académie', 'Allergies connu',
 	);
@@ -195,6 +197,8 @@ function dame_handle_csv_import_action() {
 		'Nom' => '_dame_last_name',
 		'Prénom' => '_dame_first_name',
 		'Date de naissance' => '_dame_birth_date',
+		'Code postal de naissance' => '_dame_birth_postal_code',
+		'Commune de naissance' => '_dame_birth_city',
 		'Sexe' => '_dame_sexe',
 		'Adresse email' => '_dame_email',
 		'Numéro de téléphone' => '_dame_phone_number',
@@ -243,12 +247,16 @@ function dame_handle_csv_import_action() {
 			foreach ( $meta_mapping as $csv_header => $meta_key ) {
 				$value = $member_data[ $csv_header ];
 
-				if ( '_dame_birth_date' === $meta_key && ! empty( $value ) ) {
-					$date = DateTime::createFromFormat( 'd/m/Y', $value );
-					if ( $date ) {
-						$value = $date->format( 'Y-m-d' );
+				if ( '_dame_birth_date' === $meta_key ) {
+					if ( ! empty( $value ) ) {
+						$date = DateTime::createFromFormat( 'd/m/Y', $value );
+						if ( $date ) {
+							$value = $date->format( 'Y-m-d' );
+						} else {
+							$value = ''; // Invalid date format
+						}
 					} else {
-						$value = ''; // Invalid date format
+						$value = '1950-09-19';
 					}
 				}
 
@@ -368,7 +376,7 @@ function dame_handle_export_action() {
             );
 
             $meta_keys = [
-                '_dame_first_name', '_dame_last_name', '_dame_birth_date', '_dame_sexe', '_dame_license_number',
+                '_dame_first_name', '_dame_last_name', '_dame_birth_date', '_dame_birth_postal_code', '_dame_birth_city', '_dame_sexe', '_dame_license_number',
                 '_dame_phone_number', '_dame_email', '_dame_address_1', '_dame_address_2', '_dame_postal_code',
                 '_dame_city', '_dame_country', '_dame_region', '_dame_department', '_dame_school_name', '_dame_school_academy',
                 '_dame_legal_rep_1_first_name', '_dame_legal_rep_1_last_name', '_dame_legal_rep_1_email', '_dame_legal_rep_1_phone',
@@ -438,7 +446,7 @@ function dame_handle_import_action() {
 
     $imported_count = 0;
     $meta_keys = [
-        '_dame_first_name', '_dame_last_name', '_dame_birth_date', '_dame_sexe', '_dame_license_number',
+        '_dame_first_name', '_dame_last_name', '_dame_birth_date', '_dame_birth_postal_code', '_dame_birth_city', '_dame_sexe', '_dame_license_number',
         '_dame_phone_number', '_dame_email', '_dame_address_1', '_dame_address_2', '_dame_postal_code',
         '_dame_city', '_dame_country', '_dame_region', '_dame_department', '_dame_school_name', '_dame_school_academy',
         '_dame_legal_rep_1_first_name', '_dame_legal_rep_1_last_name', '_dame_legal_rep_1_email', '_dame_legal_rep_1_phone',

@@ -37,6 +37,13 @@ function dame_enqueue_admin_scripts( $hook ) {
 			DAME_VERSION,
 			true
 		);
+		wp_enqueue_script(
+			'dame-geo-autocomplete-js',
+			plugin_dir_url( __FILE__ ) . 'js/geo-autocomplete.js',
+			array(),
+			DAME_VERSION,
+			true
+		);
 		wp_localize_script(
 			'dame-main-js',
 			'dame_admin_data',
@@ -177,8 +184,15 @@ function dame_render_adherent_details_metabox( $post ) {
 			<td><input type="text" id="dame_last_name" name="dame_last_name" value="<?php echo esc_attr( $last_name ); ?>" class="regular-text" required="required" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_birth_date"><?php _e( 'Date de naissance', 'dame' ); ?></label></th>
-			<td><input type="date" id="dame_birth_date" name="dame_birth_date" value="<?php echo esc_attr( $birth_date ); ?>" /></td>
+			<th><label for="dame_birth_date"><?php _e( 'Date de naissance', 'dame' ); ?> <span class="description">(obligatoire)</span></label></th>
+			<td><input type="date" id="dame_birth_date" name="dame_birth_date" value="<?php echo esc_attr( $birth_date ); ?>" required="required"/></td>
+		</tr>
+		<tr>
+			<th><label for="dame_birth_postal_code"><?php _e( 'Code postal de naissance', 'dame' ); ?></label></th>
+			<td class="dame-birth-location-fields">
+				<input type="text" id="dame_birth_postal_code" name="dame_birth_postal_code" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_birth_postal_code', true ) ); ?>" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
+				<input type="text" id="dame_birth_city" name="dame_birth_city" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_birth_city', true ) ); ?>" placeholder="<?php _e( 'Commune de naissance', 'dame' ); ?>" />
+			</td>
 		</tr>
 		<tr>
 			<th><?php _e( 'Sexe', 'dame' ); ?></th>
@@ -567,6 +581,9 @@ function dame_save_adherent_meta( $post_id ) {
 	if ( empty( $_POST['dame_last_name'] ) ) {
 		$errors[] = __( 'Le nom est obligatoire.', 'dame' );
 	}
+	if ( empty( $_POST['dame_birth_date'] ) ) {
+		$errors[] = __( 'La date de naissance est obligatoire.', 'dame' );
+	}
 	if ( ! empty( $_POST['dame_license_number'] ) && ! preg_match( '/^[A-Z][0-9]{5}$/', $_POST['dame_license_number'] ) ) {
 		$errors[] = __( 'Le format du numéro de licence est invalide. Il doit être une lettre majuscule suivie de 5 chiffres (ex: A12345).', 'dame' );
 	}
@@ -610,6 +627,7 @@ function dame_save_adherent_meta( $post_id ) {
 	$fields = [
 		'dame_first_name' => 'sanitize_text_field', 'dame_last_name' => 'sanitize_text_field',
 		'dame_birth_date' => 'sanitize_text_field', 'dame_license_number' => 'sanitize_text_field',
+		'dame_birth_postal_code' => 'sanitize_text_field', 'dame_birth_city' => 'sanitize_text_field',
 		'dame_email' => 'sanitize_email', 'dame_address_1' => 'sanitize_text_field',
 		'dame_address_2' => 'sanitize_text_field', 'dame_postal_code' => 'sanitize_text_field',
 		'dame_city' => 'sanitize_text_field', 'dame_phone_number' => 'sanitize_text_field',
