@@ -4,6 +4,10 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 1.16.0 (11/08/2025)
+
+*   **Fonctionnalité :** Ajout de filtres sur la page de liste des adhérents pour permettre de trier par Groupe (École d'échecs, Pôle Excellence, Bénévole, Elu local) et par État de l'adhésion.
+
 ### 1.15.0 (11/08/2025)
 
 *   **Fonctionnalité :** La date de naissance est maintenant un champ obligatoire.
