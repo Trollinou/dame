@@ -75,7 +75,7 @@ function dame_add_admin_styles() {
 		.dame-autocomplete-wrapper {
 			position: relative;
 		}
-		#dame-address-suggestions {
+		.dame-address-suggestions {
 			border: 1px solid #999;
 			border-top: none;
 			max-height: 150px; /* Show approx 4 lines */
@@ -155,24 +155,37 @@ add_action( 'add_meta_boxes', 'dame_add_meta_boxes' );
 function dame_render_adherent_details_metabox( $post ) {
 	wp_nonce_field( 'dame_save_adherent_meta', 'dame_metabox_nonce' );
 
-	// Retrieve existing values
-	$first_name = get_post_meta( $post->ID, '_dame_first_name', true );
-	$last_name = get_post_meta( $post->ID, '_dame_last_name', true );
-	$birth_date = get_post_meta( $post->ID, '_dame_birth_date', true );
-	$sexe = get_post_meta( $post->ID, '_dame_sexe', true );
+	$transient_data = get_transient( 'dame_post_data_' . $post->ID );
+	if ( $transient_data ) {
+		delete_transient( 'dame_post_data_' . $post->ID );
+	}
+
+	$get_value = function( $field_name, $default = '' ) use ( $post, $transient_data ) {
+		return isset( $transient_data[ $field_name ] )
+			? $transient_data[ $field_name ]
+			: get_post_meta( $post->ID, '_' . $field_name, true );
+	};
+
+	// Retrieve values using the helper function
+	$first_name = $get_value( 'dame_first_name' );
+	$last_name = $get_value( 'dame_last_name' );
+	$birth_date = $get_value( 'dame_birth_date' );
+	$sexe = $get_value( 'dame_sexe', 'Non précisé' );
 	if ( ! $sexe ) {
 		$sexe = 'Non précisé';
 	}
-	$license_number = get_post_meta( $post->ID, '_dame_license_number', true );
-	$phone = get_post_meta( $post->ID, '_dame_phone_number', true );
-	$email = get_post_meta( $post->ID, '_dame_email', true );
-	$address_1 = get_post_meta( $post->ID, '_dame_address_1', true );
-	$address_2 = get_post_meta( $post->ID, '_dame_address_2', true );
-	$postal_code = get_post_meta( $post->ID, '_dame_postal_code', true );
-	$city = get_post_meta( $post->ID, '_dame_city', true );
-	$country = get_post_meta( $post->ID, '_dame_country', true );
-	$region = get_post_meta( $post->ID, '_dame_region', true );
-	$department = get_post_meta( $post->ID, '_dame_department', true );
+	$license_number = $get_value( 'dame_license_number' );
+	$phone = $get_value( 'dame_phone_number' );
+	$email = $get_value( 'dame_email' );
+	$address_1 = $get_value( 'dame_address_1' );
+	$address_2 = $get_value( 'dame_address_2' );
+	$postal_code = $get_value( 'dame_postal_code' );
+	$city = $get_value( 'dame_city' );
+	$country = $get_value( 'dame_country' );
+	$region = $get_value( 'dame_region' );
+	$department = $get_value( 'dame_department' );
+	$birth_postal_code = $get_value( 'dame_birth_postal_code' );
+	$birth_city = $get_value( 'dame_birth_city' );
 	?>
 	<table class="form-table">
 		<tr>
@@ -190,8 +203,8 @@ function dame_render_adherent_details_metabox( $post ) {
 		<tr>
 			<th><label for="dame_birth_postal_code"><?php _e( 'Code postal de naissance', 'dame' ); ?></label></th>
 			<td class="dame-birth-location-fields">
-				<input type="text" id="dame_birth_postal_code" name="dame_birth_postal_code" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_birth_postal_code', true ) ); ?>" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
-				<input type="text" id="dame_birth_city" name="dame_birth_city" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_birth_city', true ) ); ?>" placeholder="<?php _e( 'Commune de naissance', 'dame' ); ?>" />
+				<input type="text" id="dame_birth_postal_code" name="dame_birth_postal_code" value="<?php echo esc_attr( $birth_postal_code ); ?>" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
+				<input type="text" id="dame_birth_city" name="dame_birth_city" value="<?php echo esc_attr( $birth_city ); ?>" placeholder="<?php _e( 'Commune de naissance', 'dame' ); ?>" />
 			</td>
 		</tr>
 		<tr>
@@ -589,9 +602,6 @@ function dame_save_adherent_meta( $post_id ) {
 	}
 	// Custom validation for active members
 	if ( isset( $_POST['dame_membership_status'] ) && 'A' === $_POST['dame_membership_status'] ) {
-		if ( empty( $_POST['dame_membership_date'] ) ) {
-			$errors[] = __( 'La date d\'adhésion est obligatoire pour un membre actif.', 'dame' );
-		}
 		if ( empty( $_POST['dame_license_type'] ) ) {
 			$errors[] = __( 'Le type de licence est obligatoire pour un membre actif.', 'dame' );
 		}
@@ -600,8 +610,18 @@ function dame_save_adherent_meta( $post_id ) {
 
 	if ( ! empty( $errors ) ) {
 		set_transient( 'dame_error_message', implode( '<br>', $errors ), 10 );
+
+		$post_data_to_save = array();
+		foreach ( $_POST as $key => $value ) {
+			if ( strpos( $key, 'dame_' ) === 0 ) {
+				$post_data_to_save[ $key ] = wp_unslash( $value );
+			}
+		}
+		set_transient( 'dame_post_data_' . $post_id, $post_data_to_save, 60 );
+
 		return;
 	}
+	delete_transient( 'dame_post_data_' . $post_id );
 
 	// --- Automatic Status Update ---
 	if ( ! empty( $_POST['dame_membership_date'] ) && ( ! isset( $_POST['dame_membership_status'] ) || 'N' === $_POST['dame_membership_status'] ) ) {
