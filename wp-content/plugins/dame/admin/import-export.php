@@ -44,10 +44,10 @@ function dame_handle_csv_export_action() {
 	fprintf( $output, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
 
 	$headers = array(
-		__( 'Nom', 'dame' ), __( 'Prénom', 'dame' ), __( 'Date de naissance', 'dame' ), __( 'Sexe', 'dame' ), __( 'Adresse email', 'dame' ), __( 'Numéro de téléphone', 'dame' ),
+		__( 'Nom', 'dame' ), __( 'Prénom', 'dame' ), __( 'Date de naissance', 'dame' ), __( 'Code postal de naissance', 'dame' ), __( 'Commune de naissance', 'dame' ), __( 'Sexe', 'dame' ), __( 'Adresse email', 'dame' ), __( 'Numéro de téléphone', 'dame' ),
 		__( 'Adresse 1', 'dame' ), __( 'Adresse 2', 'dame' ), __( 'Code Postal', 'dame' ), __( 'Ville', 'dame' ), __( 'Pays', 'dame' ), __( 'Numéro de licence', 'dame' ),
 		__( 'Etat de l\'adhésion', 'dame' ), __( 'Type de licence', 'dame' ), __( 'Date d\'adhésion', 'dame' ), __( 'Ecole d\'échecs (O/N)', 'dame' ),
-		__( 'Pôle excellence (O/N)', 'dame' ), __( 'Bénévole (O/N)', 'dame' ), __( 'Arbitre', 'dame' ),
+		__( 'Pôle excellence (O/N)', 'dame' ), __( 'Bénévole (O/N)', 'dame' ), __( 'Elu local (O/N)', 'dame' ), __( 'Arbitre', 'dame' ),
 		__( 'Représentant légal 1 - Nom', 'dame' ), __( 'Représentant légal 1 - Prénom', 'dame' ), __( 'Représentant légal 1 - Email', 'dame' ), __( 'Représentant légal 1 - Téléphone', 'dame' ),
 		__( 'Représentant légal 1 - Adresse 1', 'dame' ), __( 'Représentant légal 1 - Adresse 2', 'dame' ), __( 'Représentant légal 1 - Code Postal', 'dame' ), __( 'Représentant légal 1 - Ville', 'dame' ),
 		__( 'Représentant légal 2 - Nom', 'dame' ), __( 'Représentant légal 2 - Prénom', 'dame' ), __( 'Représentant légal 2 - Email', 'dame' ), __( 'Représentant légal 2 - Téléphone', 'dame' ),
@@ -73,6 +73,7 @@ function dame_handle_csv_export_action() {
 			$is_ecole_echecs    = get_post_meta( $post_id, '_dame_is_junior', true ) ? 'O' : 'N';
 			$is_pole_excellence = get_post_meta( $post_id, '_dame_is_pole_excellence', true ) ? 'O' : 'N';
 			$is_benevole        = get_post_meta( $post_id, '_dame_is_benevole', true ) ? 'O' : 'N';
+			$is_elu_local       = get_post_meta( $post_id, '_dame_is_elu_local', true ) ? 'O' : 'N';
 
 			$status_options = [
 				'N' => __( 'Non Adhérent (N)', 'dame' ),
@@ -87,6 +88,8 @@ function dame_handle_csv_export_action() {
 				get_post_meta( $post_id, '_dame_last_name', true ),
 				get_post_meta( $post_id, '_dame_first_name', true ),
 				$formatted_birth_date,
+				get_post_meta( $post_id, '_dame_birth_postal_code', true ),
+				get_post_meta( $post_id, '_dame_birth_city', true ),
 				get_post_meta( $post_id, '_dame_sexe', true ),
 				get_post_meta( $post_id, '_dame_email', true ),
 				get_post_meta( $post_id, '_dame_phone_number', true ),
@@ -102,6 +105,7 @@ function dame_handle_csv_export_action() {
 				$is_ecole_echecs,
 				$is_pole_excellence,
 				$is_benevole,
+				$is_elu_local,
 				get_post_meta( $post_id, '_dame_arbitre_level', true ),
 				get_post_meta( $post_id, '_dame_legal_rep_1_last_name', true ),
 				get_post_meta( $post_id, '_dame_legal_rep_1_first_name', true ),
@@ -184,9 +188,9 @@ function dame_handle_csv_import_action() {
 	}
 
 	$expected_headers = array(
-		'Nom', 'Prénom', 'Date de naissance', 'Sexe', 'Adresse email', 'Numéro de téléphone', 'Adresse 1',
+		'Nom', 'Prénom', 'Date de naissance', 'Code postal de naissance', 'Commune de naissance', 'Sexe', 'Adresse email', 'Numéro de téléphone', 'Adresse 1',
 		'Adresse 2', 'Code Postal', 'Ville', 'Numéro de licence', 'Etat de l\'adhésion',
-		'Autre téléphone', 'Taille vêtements', 'Etablissement scolaire', 'Académie', 'Allergies connu',
+		'Autre téléphone', 'Taille vêtements', 'Etablissement scolaire', 'Académie', 'Allergies connu', 'Elu local (O/N)',
 	);
 	$col_map = array_flip( $header );
 
@@ -195,6 +199,8 @@ function dame_handle_csv_import_action() {
 		'Nom' => '_dame_last_name',
 		'Prénom' => '_dame_first_name',
 		'Date de naissance' => '_dame_birth_date',
+		'Code postal de naissance' => '_dame_birth_postal_code',
+		'Commune de naissance' => '_dame_birth_city',
 		'Sexe' => '_dame_sexe',
 		'Adresse email' => '_dame_email',
 		'Numéro de téléphone' => '_dame_phone_number',
@@ -209,6 +215,7 @@ function dame_handle_csv_import_action() {
 		'Etablissement scolaire' => '_dame_school_name',
 		'Académie' => '_dame_school_academy',
 		'Allergies connu' => '_dame_allergies',
+		'Elu local (O/N)' => '_dame_is_elu_local',
 	);
 
 	$imported_count = 0;
@@ -243,12 +250,16 @@ function dame_handle_csv_import_action() {
 			foreach ( $meta_mapping as $csv_header => $meta_key ) {
 				$value = $member_data[ $csv_header ];
 
-				if ( '_dame_birth_date' === $meta_key && ! empty( $value ) ) {
-					$date = DateTime::createFromFormat( 'd/m/Y', $value );
-					if ( $date ) {
-						$value = $date->format( 'Y-m-d' );
+				if ( '_dame_birth_date' === $meta_key ) {
+					if ( ! empty( $value ) ) {
+						$date = DateTime::createFromFormat( 'd/m/Y', $value );
+						if ( $date ) {
+							$value = $date->format( 'Y-m-d' );
+						} else {
+							$value = ''; // Invalid date format
+						}
 					} else {
-						$value = ''; // Invalid date format
+						$value = '1950-09-19';
 					}
 				}
 
@@ -289,6 +300,17 @@ function dame_handle_csv_import_action() {
 						$phone_number = '0' . substr( $phone_number, 2 );
 					}
 					$value = $phone_number;
+				}
+
+				// Handle boolean fields (O/N)
+				$boolean_fields = [
+					'_dame_is_junior',
+					'_dame_is_pole_excellence',
+					'_dame_is_benevole',
+					'_dame_is_elu_local',
+				];
+				if ( in_array( $meta_key, $boolean_fields ) ) {
+					$value = ( strtoupper( trim( $value ) ) === 'O' ) ? 1 : 0;
 				}
 
 				update_post_meta( $post_id, $meta_key, sanitize_text_field( $value ) );
@@ -368,14 +390,14 @@ function dame_handle_export_action() {
             );
 
             $meta_keys = [
-                '_dame_first_name', '_dame_last_name', '_dame_birth_date', '_dame_sexe', '_dame_license_number',
+                '_dame_first_name', '_dame_last_name', '_dame_birth_date', '_dame_birth_postal_code', '_dame_birth_city', '_dame_sexe', '_dame_license_number',
                 '_dame_phone_number', '_dame_email', '_dame_address_1', '_dame_address_2', '_dame_postal_code',
                 '_dame_city', '_dame_country', '_dame_region', '_dame_department', '_dame_school_name', '_dame_school_academy',
                 '_dame_legal_rep_1_first_name', '_dame_legal_rep_1_last_name', '_dame_legal_rep_1_email', '_dame_legal_rep_1_phone',
                 '_dame_legal_rep_1_address_1', '_dame_legal_rep_1_address_2', '_dame_legal_rep_1_postal_code', '_dame_legal_rep_1_city',
                 '_dame_legal_rep_2_first_name', '_dame_legal_rep_2_last_name', '_dame_legal_rep_2_email', '_dame_legal_rep_2_phone',
                 '_dame_legal_rep_2_address_1', '_dame_legal_rep_2_address_2', '_dame_legal_rep_2_postal_code', '_dame_legal_rep_2_city',
-                '_dame_membership_date', '_dame_is_junior', '_dame_is_pole_excellence', '_dame_linked_wp_user',
+                '_dame_membership_date', '_dame_is_junior', '_dame_is_pole_excellence', '_dame_is_benevole', '_dame_is_elu_local', '_dame_linked_wp_user',
                 '_dame_arbitre_level', '_dame_membership_status', '_dame_autre_telephone', '_dame_taille_vetements',
 				'_dame_allergies', '_dame_diet', '_dame_transport'
             ];
@@ -438,14 +460,14 @@ function dame_handle_import_action() {
 
     $imported_count = 0;
     $meta_keys = [
-        '_dame_first_name', '_dame_last_name', '_dame_birth_date', '_dame_sexe', '_dame_license_number',
+        '_dame_first_name', '_dame_last_name', '_dame_birth_date', '_dame_birth_postal_code', '_dame_birth_city', '_dame_sexe', '_dame_license_number',
         '_dame_phone_number', '_dame_email', '_dame_address_1', '_dame_address_2', '_dame_postal_code',
         '_dame_city', '_dame_country', '_dame_region', '_dame_department', '_dame_school_name', '_dame_school_academy',
         '_dame_legal_rep_1_first_name', '_dame_legal_rep_1_last_name', '_dame_legal_rep_1_email', '_dame_legal_rep_1_phone',
         '_dame_legal_rep_1_address_1', '_dame_legal_rep_1_address_2', '_dame_legal_rep_1_postal_code', '_dame_legal_rep_1_city',
         '_dame_legal_rep_2_first_name', '_dame_legal_rep_2_last_name', '_dame_legal_rep_2_email', '_dame_legal_rep_2_phone',
         '_dame_legal_rep_2_address_1', '_dame_legal_rep_2_address_2', '_dame_legal_rep_2_postal_code', '_dame_legal_rep_2_city',
-        '_dame_membership_date', '_dame_is_junior', '_dame_is_pole_excellence', '_dame_linked_wp_user',
+                '_dame_membership_date', '_dame_is_junior', '_dame_is_pole_excellence', '_dame_is_benevole', '_dame_is_elu_local', '_dame_linked_wp_user',
         '_dame_arbitre_level', '_dame_membership_status', '_dame_autre_telephone', '_dame_taille_vetements',
 		'_dame_allergies', '_dame_diet', '_dame_transport'
     ];

@@ -37,6 +37,13 @@ function dame_enqueue_admin_scripts( $hook ) {
 			DAME_VERSION,
 			true
 		);
+		wp_enqueue_script(
+			'dame-geo-autocomplete-js',
+			plugin_dir_url( __FILE__ ) . 'js/geo-autocomplete.js',
+			array(),
+			DAME_VERSION,
+			true
+		);
 		wp_localize_script(
 			'dame-main-js',
 			'dame_admin_data',
@@ -68,7 +75,7 @@ function dame_add_admin_styles() {
 		.dame-autocomplete-wrapper {
 			position: relative;
 		}
-		#dame-address-suggestions {
+		.dame-address-suggestions {
 			border: 1px solid #999;
 			border-top: none;
 			max-height: 150px; /* Show approx 4 lines */
@@ -85,6 +92,21 @@ function dame_add_admin_styles() {
 		}
 		.dame-suggestion-item:hover {
 			background-color: #f1f1f1;
+		}
+		#dame_birth_date, #dame_membership_date {
+			width: 8em;
+		}
+		.dame-inline-fields {
+			display: flex;
+			gap: 1em;
+		}
+		.dame-inline-fields .postal-code {
+			width: 8em;
+			flex-shrink: 0;
+		}
+		.dame-inline-fields .city {
+			width: 16em;
+			flex-shrink: 0;
 		}
 	</style>
 	<?php
@@ -148,24 +170,37 @@ add_action( 'add_meta_boxes', 'dame_add_meta_boxes' );
 function dame_render_adherent_details_metabox( $post ) {
 	wp_nonce_field( 'dame_save_adherent_meta', 'dame_metabox_nonce' );
 
-	// Retrieve existing values
-	$first_name = get_post_meta( $post->ID, '_dame_first_name', true );
-	$last_name = get_post_meta( $post->ID, '_dame_last_name', true );
-	$birth_date = get_post_meta( $post->ID, '_dame_birth_date', true );
-	$sexe = get_post_meta( $post->ID, '_dame_sexe', true );
+	$transient_data = get_transient( 'dame_post_data_' . $post->ID );
+	if ( $transient_data ) {
+		delete_transient( 'dame_post_data_' . $post->ID );
+	}
+
+	$get_value = function( $field_name, $default = '' ) use ( $post, $transient_data ) {
+		return isset( $transient_data[ $field_name ] )
+			? $transient_data[ $field_name ]
+			: get_post_meta( $post->ID, '_' . $field_name, true );
+	};
+
+	// Retrieve values using the helper function
+	$first_name = $get_value( 'dame_first_name' );
+	$last_name = $get_value( 'dame_last_name' );
+	$birth_date = $get_value( 'dame_birth_date' );
+	$sexe = $get_value( 'dame_sexe', 'Non précisé' );
 	if ( ! $sexe ) {
 		$sexe = 'Non précisé';
 	}
-	$license_number = get_post_meta( $post->ID, '_dame_license_number', true );
-	$phone = get_post_meta( $post->ID, '_dame_phone_number', true );
-	$email = get_post_meta( $post->ID, '_dame_email', true );
-	$address_1 = get_post_meta( $post->ID, '_dame_address_1', true );
-	$address_2 = get_post_meta( $post->ID, '_dame_address_2', true );
-	$postal_code = get_post_meta( $post->ID, '_dame_postal_code', true );
-	$city = get_post_meta( $post->ID, '_dame_city', true );
-	$country = get_post_meta( $post->ID, '_dame_country', true );
-	$region = get_post_meta( $post->ID, '_dame_region', true );
-	$department = get_post_meta( $post->ID, '_dame_department', true );
+	$license_number = $get_value( 'dame_license_number' );
+	$phone = $get_value( 'dame_phone_number' );
+	$email = $get_value( 'dame_email' );
+	$address_1 = $get_value( 'dame_address_1' );
+	$address_2 = $get_value( 'dame_address_2' );
+	$postal_code = $get_value( 'dame_postal_code' );
+	$city = $get_value( 'dame_city' );
+	$country = $get_value( 'dame_country' );
+	$region = $get_value( 'dame_region' );
+	$department = $get_value( 'dame_department' );
+	$birth_postal_code = $get_value( 'dame_birth_postal_code' );
+	$birth_city = $get_value( 'dame_birth_city' );
 	?>
 	<table class="form-table">
 		<tr>
@@ -177,8 +212,17 @@ function dame_render_adherent_details_metabox( $post ) {
 			<td><input type="text" id="dame_last_name" name="dame_last_name" value="<?php echo esc_attr( $last_name ); ?>" class="regular-text" required="required" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_birth_date"><?php _e( 'Date de naissance', 'dame' ); ?></label></th>
-			<td><input type="date" id="dame_birth_date" name="dame_birth_date" value="<?php echo esc_attr( $birth_date ); ?>" /></td>
+			<th><label for="dame_birth_date"><?php _e( 'Date de naissance', 'dame' ); ?> <span class="description">(obligatoire)</span></label></th>
+			<td><input type="date" id="dame_birth_date" name="dame_birth_date" value="<?php echo esc_attr( $birth_date ); ?>" required="required"/></td>
+		</tr>
+		<tr>
+			<th><label for="dame_birth_postal_code"><?php _e( 'Lieu de naissance', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-inline-fields dame-autocomplete-wrapper">
+					<input type="text" id="dame_birth_postal_code" name="dame_birth_postal_code" value="<?php echo esc_attr( $birth_postal_code ); ?>" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" class="postal-code" />
+					<input type="text" id="dame_birth_city" name="dame_birth_city" value="<?php echo esc_attr( $birth_city ); ?>" placeholder="<?php _e( 'Commune de naissance', 'dame' ); ?>" class="city" />
+				</div>
+			</td>
 		</tr>
 		<tr>
 			<th><?php _e( 'Sexe', 'dame' ); ?></th>
@@ -187,10 +231,6 @@ function dame_render_adherent_details_metabox( $post ) {
 				<label style="margin-right: 15px;"><input type="radio" name="dame_sexe" value="Féminin" <?php checked( $sexe, 'Féminin' ); ?> /> <?php _e( 'Féminin', 'dame' ); ?></label>
 				<label><input type="radio" name="dame_sexe" value="Non précisé" <?php checked( $sexe, 'Non précisé' ); ?> /> <?php _e( 'Non précisé', 'dame' ); ?></label>
 			</td>
-		</tr>
-		<tr>
-			<th><label for="dame_license_number"><?php _e( 'Numéro de licence', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_license_number" name="dame_license_number" value="<?php echo esc_attr( $license_number ); ?>" class="regular-text" placeholder="A12345" pattern="[A-Z][0-9]{5}" /></td>
 		</tr>
 		<tr>
 			<th><label for="dame_phone_number"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label></th>
@@ -213,12 +253,13 @@ function dame_render_adherent_details_metabox( $post ) {
 			<td><input type="text" id="dame_address_2" name="dame_address_2" value="<?php echo esc_attr( $address_2 ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_postal_code"><?php _e( 'Code Postal', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_postal_code" name="dame_postal_code" value="<?php echo esc_attr( $postal_code ); ?>" class="regular-text" /></td>
-		</tr>
-		<tr>
-			<th><label for="dame_city"><?php _e( 'Ville', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_city" name="dame_city" value="<?php echo esc_attr( $city ); ?>" class="regular-text" /></td>
+			<th><label for="dame_postal_code"><?php _e( 'Code Postal / Ville', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-inline-fields">
+					<input type="text" id="dame_postal_code" name="dame_postal_code" value="<?php echo esc_attr( $postal_code ); ?>" class="postal-code" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
+					<input type="text" id="dame_city" name="dame_city" value="<?php echo esc_attr( $city ); ?>" class="city" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
+				</div>
+			</td>
 		</tr>
 		<tr>
 			<th><label for="dame_country"><?php _e( 'Pays', 'dame' ); ?></label></th>
@@ -339,12 +380,13 @@ function dame_render_legal_rep_metabox( $post ) {
 			<td><input type="text" id="dame_legal_rep_1_address_2" name="dame_legal_rep_1_address_2" value="<?php echo esc_attr( $rep1_address_2 ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_1_postal_code"><?php _e( 'Code Postal', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_legal_rep_1_postal_code" name="dame_legal_rep_1_postal_code" value="<?php echo esc_attr( $rep1_postal_code ); ?>" class="regular-text" /></td>
-		</tr>
-		 <tr>
-			<th><label for="dame_legal_rep_1_city"><?php _e( 'Ville', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_legal_rep_1_city" name="dame_legal_rep_1_city" value="<?php echo esc_attr( $rep1_city ); ?>" class="regular-text" /></td>
+			<th><label for="dame_legal_rep_1_postal_code"><?php _e( 'Code Postal / Ville', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-inline-fields">
+					<input type="text" id="dame_legal_rep_1_postal_code" name="dame_legal_rep_1_postal_code" value="<?php echo esc_attr( $rep1_postal_code ); ?>" class="postal-code" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
+					<input type="text" id="dame_legal_rep_1_city" name="dame_legal_rep_1_city" value="<?php echo esc_attr( $rep1_city ); ?>" class="city" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
+				</div>
+			</td>
 		</tr>
 	</table>
 
@@ -381,12 +423,13 @@ function dame_render_legal_rep_metabox( $post ) {
 			<td><input type="text" id="dame_legal_rep_2_address_2" name="dame_legal_rep_2_address_2" value="<?php echo esc_attr( $rep2_address_2 ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_2_postal_code"><?php _e( 'Code Postal', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_legal_rep_2_postal_code" name="dame_legal_rep_2_postal_code" value="<?php echo esc_attr( $rep2_postal_code ); ?>" class="regular-text" /></td>
-		</tr>
-		 <tr>
-			<th><label for="dame_legal_rep_2_city"><?php _e( 'Ville', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_legal_rep_2_city" name="dame_legal_rep_2_city" value="<?php echo esc_attr( $rep2_city ); ?>" class="regular-text" /></td>
+			<th><label for="dame_legal_rep_2_postal_code"><?php _e( 'Code Postal / Ville', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-inline-fields">
+					<input type="text" id="dame_legal_rep_2_postal_code" name="dame_legal_rep_2_postal_code" value="<?php echo esc_attr( $rep2_postal_code ); ?>" class="postal-code" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
+					<input type="text" id="dame_legal_rep_2_city" name="dame_legal_rep_2_city" value="<?php echo esc_attr( $rep2_city ); ?>" class="city" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
+				</div>
+			</td>
 		</tr>
 	</table>
 	<?php
@@ -435,7 +478,16 @@ function dame_render_diverse_info_metabox( $post ) {
  * @param WP_Post $post The post object.
  */
 function dame_render_classification_metabox( $post ) {
-	$membership_status = get_post_meta( $post->ID, '_dame_membership_status', true );
+	$transient_data = get_transient( 'dame_post_data_' . $post->ID );
+	$get_value = function( $field_name, $default = '' ) use ( $post, $transient_data ) {
+		$value = isset( $transient_data[ $field_name ] )
+			? $transient_data[ $field_name ]
+			: get_post_meta( $post->ID, '_' . $field_name, true );
+		return $value ?: $default;
+	};
+
+	$license_number = $get_value( 'dame_license_number' );
+	$membership_status = $get_value( 'dame_membership_status' );
 	$status_options = [
 		'N' => __( 'Non Adhérent (N)', 'dame' ),
 		'A' => __( 'Actif (A)', 'dame' ),
@@ -452,6 +504,7 @@ function dame_render_classification_metabox( $post ) {
 	$is_junior = get_post_meta( $post->ID, '_dame_is_junior', true );
 	$is_pole_excellence = get_post_meta( $post->ID, '_dame_is_pole_excellence', true );
 	$is_benevole = get_post_meta( $post->ID, '_dame_is_benevole', true );
+	$is_elu_local = get_post_meta( $post->ID, '_dame_is_elu_local', true );
 
 	$linked_user = get_post_meta( $post->ID, '_dame_linked_wp_user', true );
 	if ( '' === $linked_user ) {
@@ -465,6 +518,10 @@ function dame_render_classification_metabox( $post ) {
 	$arbitre_options = ['Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2'];
 
 	?>
+	<p>
+		<label for="dame_license_number"><strong><?php _e( 'Numéro de licence', 'dame' ); ?></strong></label>
+		<input type="text" id="dame_license_number" name="dame_license_number" value="<?php echo esc_attr( $license_number ); ?>" style="width:100%;" placeholder="A12345" pattern="[A-Z][0-9]{5}" />
+	</p>
 	<p>
 		<label for="dame_membership_status"><strong><?php _e( 'État de l\'adhésion', 'dame' ); ?></strong></label>
 		<select id="dame_membership_status" name="dame_membership_status" style="width:100%;">
@@ -497,6 +554,10 @@ function dame_render_classification_metabox( $post ) {
 	<p>
 		<input type="checkbox" id="dame_is_benevole" name="dame_is_benevole" value="1" <?php checked( $is_benevole, '1' ); ?> />
 		<label for="dame_is_benevole"><?php _e( 'Bénévole', 'dame' ); ?></label>
+	</p>
+	<p>
+		<input type="checkbox" id="dame_is_elu_local" name="dame_is_elu_local" value="1" <?php checked( $is_elu_local, '1' ); ?> />
+		<label for="dame_is_elu_local"><?php _e( 'Elu local', 'dame' ); ?></label>
 	</p>
 	<hr>
 	<p>
@@ -567,14 +628,14 @@ function dame_save_adherent_meta( $post_id ) {
 	if ( empty( $_POST['dame_last_name'] ) ) {
 		$errors[] = __( 'Le nom est obligatoire.', 'dame' );
 	}
+	if ( empty( $_POST['dame_birth_date'] ) ) {
+		$errors[] = __( 'La date de naissance est obligatoire.', 'dame' );
+	}
 	if ( ! empty( $_POST['dame_license_number'] ) && ! preg_match( '/^[A-Z][0-9]{5}$/', $_POST['dame_license_number'] ) ) {
 		$errors[] = __( 'Le format du numéro de licence est invalide. Il doit être une lettre majuscule suivie de 5 chiffres (ex: A12345).', 'dame' );
 	}
 	// Custom validation for active members
 	if ( isset( $_POST['dame_membership_status'] ) && 'A' === $_POST['dame_membership_status'] ) {
-		if ( empty( $_POST['dame_membership_date'] ) ) {
-			$errors[] = __( 'La date d\'adhésion est obligatoire pour un membre actif.', 'dame' );
-		}
 		if ( empty( $_POST['dame_license_type'] ) ) {
 			$errors[] = __( 'Le type de licence est obligatoire pour un membre actif.', 'dame' );
 		}
@@ -583,8 +644,18 @@ function dame_save_adherent_meta( $post_id ) {
 
 	if ( ! empty( $errors ) ) {
 		set_transient( 'dame_error_message', implode( '<br>', $errors ), 10 );
+
+		$post_data_to_save = array();
+		foreach ( $_POST as $key => $value ) {
+			if ( strpos( $key, 'dame_' ) === 0 ) {
+				$post_data_to_save[ $key ] = wp_unslash( $value );
+			}
+		}
+		set_transient( 'dame_post_data_' . $post_id, $post_data_to_save, 60 );
+
 		return;
 	}
+	delete_transient( 'dame_post_data_' . $post_id );
 
 	// --- Automatic Status Update ---
 	if ( ! empty( $_POST['dame_membership_date'] ) && ( ! isset( $_POST['dame_membership_status'] ) || 'N' === $_POST['dame_membership_status'] ) ) {
@@ -610,6 +681,7 @@ function dame_save_adherent_meta( $post_id ) {
 	$fields = [
 		'dame_first_name' => 'sanitize_text_field', 'dame_last_name' => 'sanitize_text_field',
 		'dame_birth_date' => 'sanitize_text_field', 'dame_license_number' => 'sanitize_text_field',
+		'dame_birth_postal_code' => 'sanitize_text_field', 'dame_birth_city' => 'sanitize_text_field',
 		'dame_email' => 'sanitize_email', 'dame_address_1' => 'sanitize_text_field',
 		'dame_address_2' => 'sanitize_text_field', 'dame_postal_code' => 'sanitize_text_field',
 		'dame_city' => 'sanitize_text_field', 'dame_phone_number' => 'sanitize_text_field',
@@ -627,7 +699,7 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_legal_rep_2_address_1' => 'sanitize_text_field', 'dame_legal_rep_2_address_2' => 'sanitize_text_field',
 		'dame_legal_rep_2_postal_code' => 'sanitize_text_field', 'dame_legal_rep_2_city' => 'sanitize_text_field',
 
-		'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint', 'dame_is_benevole' => 'absint',
+		'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint', 'dame_is_benevole' => 'absint', 'dame_is_elu_local' => 'absint',
 		'dame_arbitre_level' => 'sanitize_text_field',
 		'dame_membership_status' => 'sanitize_text_field',
 		'dame_license_type' => 'sanitize_text_field',

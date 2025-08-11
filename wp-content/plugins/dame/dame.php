@@ -17,7 +17,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '1.14.5' );
+define( 'DAME_VERSION', '1.15.0' );
 
 /**
  * Handles plugin updates.
