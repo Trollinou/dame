@@ -54,34 +54,50 @@ function dame_handle_send_email() {
     $adherent_ids = array();
 
     if ( 'group' === $selection_method ) {
-        $group = isset( $_POST['dame_recipient_group'] ) ? sanitize_key( $_POST['dame_recipient_group'] ) : '';
-        $meta_query = array();
+        $groups = isset( $_POST['dame_recipient_group'] ) ? (array) array_map( 'sanitize_key', $_POST['dame_recipient_group'] ) : array();
+        $meta_query = array( 'relation' => 'OR' );
 
-        switch ( $group ) {
-            case 'juniors':
-                $meta_query[] = array( 'key' => '_dame_is_junior', 'value' => '1' );
-                break;
-            case 'pole_excellence':
-                $meta_query[] = array( 'key' => '_dame_is_pole_excellence', 'value' => '1' );
-                break;
-            case 'status':
-                $statuses = isset( $_POST['dame_membership_status'] ) ? (array) array_map( 'sanitize_key', $_POST['dame_membership_status'] ) : array();
-                if ( empty( $statuses ) ) {
-                    add_action( 'admin_notices', function() {
-                        echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner au moins un état d'adhésion.", 'dame' ) . '</p></div>';
-                    });
-                    return;
-                }
-                $meta_query[] = array( 'key' => '_dame_membership_status', 'value' => $statuses, 'compare' => 'IN' );
-                break;
+        if ( empty( $groups ) ) {
+            add_action( 'admin_notices', function() {
+                echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner au moins un groupe.", 'dame' ) . '</p></div>';
+            });
+            return;
         }
 
-        if ( ! empty( $meta_query ) ) {
+        foreach ( $groups as $group ) {
+            switch ( $group ) {
+                case 'juniors':
+                    $meta_query[] = array( 'key' => '_dame_is_junior', 'value' => '1' );
+                    break;
+                case 'pole_excellence':
+                    $meta_query[] = array( 'key' => '_dame_is_pole_excellence', 'value' => '1' );
+                    break;
+                case 'benevoles':
+                    $meta_query[] = array( 'key' => '_dame_is_benevole', 'value' => '1' );
+                    break;
+                case 'elus_locaux':
+                    $meta_query[] = array( 'key' => '_dame_is_elu_local', 'value' => '1' );
+                    break;
+                case 'status':
+                    $statuses = isset( $_POST['dame_membership_status'] ) ? (array) array_map( 'sanitize_key', $_POST['dame_membership_status'] ) : array();
+                    if ( empty( $statuses ) ) {
+                        add_action( 'admin_notices', function() {
+                            echo '<div class="error"><p>' . esc_html__( "Pour le groupe 'Par état d'adhésion', veuillez sélectionner au moins un état.", 'dame' ) . '</p></div>';
+                        });
+                        return;
+                    }
+                    $meta_query[] = array( 'key' => '_dame_membership_status', 'value' => $statuses, 'compare' => 'IN' );
+                    break;
+            }
+        }
+
+        // We need at least one condition besides 'relation'
+        if ( count( $meta_query ) > 1 ) {
             $query_args = array(
                 'post_type' => 'adherent',
                 'posts_per_page' => -1,
                 'fields' => 'ids',
-                'meta_query' => $meta_query
+                'meta_query' => $meta_query,
             );
             $adherent_ids = get_posts( $query_args );
         }
@@ -276,29 +292,39 @@ function dame_render_mailing_page() {
                         <td>
                             <fieldset>
                                 <legend class="screen-reader-text"><span><?php esc_html_e( "Méthode de sélection", 'dame' ); ?></span></legend>
-                                <label><input type="radio" name="dame_selection_method" value="group" checked> <?php esc_html_e( "Par groupe (sélection exclusive)", 'dame' ); ?></label><br>
+                                <label><input type="radio" name="dame_selection_method" value="group" checked> <?php esc_html_e( "Par groupe (sélection multiple)", 'dame' ); ?></label><br>
                                 <label><input type="radio" name="dame_selection_method" value="manual"> <?php esc_html_e( "Manuelle", 'dame' ); ?></label>
                             </fieldset>
                         </td>
                     </tr>
 
                     <tr valign="top" class="dame-group-filters">
-                        <th scope="row"><?php esc_html_e( "Choisir un groupe", 'dame' ); ?></th>
+                        <th scope="row"><?php esc_html_e( "Choisir un ou plusieurs groupes", 'dame' ); ?></th>
                         <td>
                              <fieldset>
                                 <legend class="screen-reader-text"><span><?php esc_html_e( "Groupes de destinataires", 'dame' ); ?></span></legend>
                                 <label>
-                                    <input type="radio" name="dame_recipient_group" value="juniors" checked>
+                                    <input type="checkbox" name="dame_recipient_group[]" value="juniors" checked>
                                     <?php esc_html_e( "École d'échecs", 'dame' ); ?>
                                 </label>
                                 <br>
                                 <label>
-                                    <input type="radio" name="dame_recipient_group" value="pole_excellence">
+                                    <input type="checkbox" name="dame_recipient_group[]" value="pole_excellence">
                                     <?php esc_html_e( "Pôle Excellence", 'dame' ); ?>
                                 </label>
                                 <br>
                                 <label>
-                                    <input type="radio" name="dame_recipient_group" value="status">
+                                    <input type="checkbox" name="dame_recipient_group[]" value="benevoles">
+                                    <?php esc_html_e( "Bénévoles", 'dame' ); ?>
+                                </label>
+                                <br>
+                                <label>
+                                    <input type="checkbox" name="dame_recipient_group[]" value="elus_locaux">
+                                    <?php esc_html_e( "Elus locaux", 'dame' ); ?>
+                                </label>
+                                <br>
+                                <label>
+                                    <input type="checkbox" id="dame_recipient_group_status" name="dame_recipient_group[]" value="status">
                                     <?php esc_html_e( "Par état d'adhésion", 'dame' ); ?>
                                 </label>
                                 <div id="dame-status-checkboxes" style="display:none; margin-top: 10px; padding-left: 20px;">
@@ -339,8 +365,9 @@ function dame_render_mailing_page() {
         const groupFilters = document.querySelector('.dame-group-filters');
         const manualFilters = document.querySelector('.dame-manual-filters');
 
-        const groupSubRadios = document.querySelectorAll('input[name="dame_recipient_group"]');
+        const groupSubRadios = document.querySelectorAll('input[name="dame_recipient_group[]"]');
         const statusCheckboxes = document.getElementById('dame-status-checkboxes');
+        const statusCheckbox = document.getElementById('dame_recipient_group_status');
 
         function toggleMethod() {
             if (document.querySelector('input[name="dame_selection_method"]:checked').value === 'group') {
@@ -353,7 +380,7 @@ function dame_render_mailing_page() {
         }
 
         function toggleStatusCheckboxes() {
-            if (document.querySelector('input[name="dame_recipient_group"]:checked').value === 'status') {
+            if (statusCheckbox.checked) {
                 statusCheckboxes.style.display = 'block';
             } else {
                 statusCheckboxes.style.display = 'none';
@@ -361,7 +388,7 @@ function dame_render_mailing_page() {
         }
 
         methodRadios.forEach(radio => radio.addEventListener('change', toggleMethod));
-        groupSubRadios.forEach(radio => radio.addEventListener('change', toggleStatusCheckboxes));
+        statusCheckbox.addEventListener('change', toggleStatusCheckboxes);
 
         // Initial state
         toggleMethod();
