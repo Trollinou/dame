@@ -93,18 +93,20 @@ function dame_add_admin_styles() {
 		.dame-suggestion-item:hover {
 			background-color: #f1f1f1;
 		}
+		#dame_birth_date, #dame_membership_date {
+			width: 10em;
+		}
 		.dame-inline-fields {
 			display: flex;
-			gap: 2%;
-		}
-		.dame-inline-fields input[type="text"] {
-			width: 100%;
+			gap: 1em;
 		}
 		.dame-inline-fields .postal-code {
-			flex: 1;
+			width: 10em;
+			flex-shrink: 0;
 		}
 		.dame-inline-fields .city {
-			flex: 2;
+			width: 14em;
+			flex-shrink: 0;
 		}
 	</style>
 	<?php
