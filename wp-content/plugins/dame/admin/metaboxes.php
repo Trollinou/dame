@@ -634,18 +634,6 @@ function dame_save_adherent_meta( $post_id ) {
 	if ( ! empty( $_POST['dame_license_number'] ) && ! preg_match( '/^[A-Z][0-9]{5}$/', $_POST['dame_license_number'] ) ) {
 		$errors[] = __( 'Le format du numéro de licence est invalide. Il doit être une lettre majuscule suivie de 5 chiffres (ex: A12345).', 'dame' );
 	}
-
-	// Email validation
-	if ( ! empty( $_POST['dame_email'] ) && ! is_email( $_POST['dame_email'] ) ) {
-		$errors[] = __( "Le format de l'email de l'adhérent est invalide.", 'dame' );
-	}
-	if ( ! empty( $_POST['dame_legal_rep_1_email'] ) && ! is_email( $_POST['dame_legal_rep_1_email'] ) ) {
-		$errors[] = __( "Le format de l'email du représentant légal 1 est invalide.", 'dame' );
-	}
-	if ( ! empty( $_POST['dame_legal_rep_2_email'] ) && ! is_email( $_POST['dame_legal_rep_2_email'] ) ) {
-		$errors[] = __( "Le format de l'email du représentant légal 2 est invalide.", 'dame' );
-	}
-
 	// Custom validation for active members
 	if ( isset( $_POST['dame_membership_status'] ) && 'A' === $_POST['dame_membership_status'] ) {
 		if ( empty( $_POST['dame_license_type'] ) ) {

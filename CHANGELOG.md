@@ -4,15 +4,6 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
-### 1.15.5 (11/08/2025)
-
-*   **Amélioration UI :** Ajout d'une scrollbox sur le popup de complétion des adresses pour visualiser toutes les suggestions.
-*   **Fonctionnalité :** L'envoi d'email se fait maintenant par un système de filtres combinables (OU) pour les statuts d'adhésion et les groupes.
-*   **Fonctionnalité :** Ajout des groupes "Bénévole" et "Elu local" dans les options d'envoi d'email.
-*   **Amélioration :** La logique d'envoi d'email collecte maintenant l'email de l'adhérent ainsi que ceux de ses représentants légaux, en s'assurant de l'unicité des adresses.
-*   **Amélioration UI :** Dans l'écran d'envoi d'email, aucun groupe n'est coché par défaut, et les filtres par statut sont toujours visibles et présentés sur une seule ligne.
-*   **Sécurité :** Ajout d'une validation du format des adresses email lors de la saisie d'un adhérent.
-
 ### 1.15.0 (11/08/2025)
 
 *   **Fonctionnalité :** La date de naissance est maintenant un champ obligatoire.

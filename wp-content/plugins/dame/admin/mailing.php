@@ -54,51 +54,34 @@ function dame_handle_send_email() {
     $adherent_ids = array();
 
     if ( 'group' === $selection_method ) {
-        $groups = isset( $_POST['dame_recipient_group'] ) ? (array) array_map( 'sanitize_key', $_POST['dame_recipient_group'] ) : array();
-        $statuses = isset( $_POST['dame_membership_status'] ) ? (array) array_map( 'sanitize_key', $_POST['dame_membership_status'] ) : array();
+        $group = isset( $_POST['dame_recipient_group'] ) ? sanitize_key( $_POST['dame_recipient_group'] ) : '';
+        $meta_query = array();
 
-        if ( empty( $groups ) && empty( $statuses ) ) {
-            add_action( 'admin_notices', function() {
-                echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner au moins un filtre (groupe ou état d'adhésion).", 'dame' ) . '</p></div>';
-            });
-            return;
-        }
-
-        $meta_query = array( 'relation' => 'OR' );
-
-        if ( ! empty( $groups ) ) {
-            foreach ( $groups as $group ) {
-                switch ( $group ) {
-                    case 'juniors':
-                        $meta_query[] = array( 'key' => '_dame_is_junior', 'value' => '1' );
-                        break;
-                    case 'pole_excellence':
-                        $meta_query[] = array( 'key' => '_dame_is_pole_excellence', 'value' => '1' );
-                        break;
-                    case 'benevoles':
-                        $meta_query[] = array( 'key' => '_dame_is_benevole', 'value' => '1' );
-                        break;
-                    case 'elus_locaux':
-                        $meta_query[] = array( 'key' => '_dame_is_elu_local', 'value' => '1' );
-                        break;
+        switch ( $group ) {
+            case 'juniors':
+                $meta_query[] = array( 'key' => '_dame_is_junior', 'value' => '1' );
+                break;
+            case 'pole_excellence':
+                $meta_query[] = array( 'key' => '_dame_is_pole_excellence', 'value' => '1' );
+                break;
+            case 'status':
+                $statuses = isset( $_POST['dame_membership_status'] ) ? (array) array_map( 'sanitize_key', $_POST['dame_membership_status'] ) : array();
+                if ( empty( $statuses ) ) {
+                    add_action( 'admin_notices', function() {
+                        echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner au moins un état d'adhésion.", 'dame' ) . '</p></div>';
+                    });
+                    return;
                 }
-            }
+                $meta_query[] = array( 'key' => '_dame_membership_status', 'value' => $statuses, 'compare' => 'IN' );
+                break;
         }
 
-        if ( ! empty( $statuses ) ) {
-            $meta_query[] = array(
-                'key' => '_dame_membership_status',
-                'value' => $statuses,
-                'compare' => 'IN',
-            );
-        }
-
-        if ( count( $meta_query ) > 1 ) {
+        if ( ! empty( $meta_query ) ) {
             $query_args = array(
                 'post_type' => 'adherent',
                 'posts_per_page' => -1,
                 'fields' => 'ids',
-                'meta_query' => $meta_query,
+                'meta_query' => $meta_query
             );
             $adherent_ids = get_posts( $query_args );
         }
@@ -218,23 +201,38 @@ add_action( 'phpmailer_init', 'dame_add_bcc_to_mailer' );
  */
 function dame_get_emails_for_adherent( $adherent_id ) {
     $emails = array();
+    $birth_date_str = get_post_meta( $adherent_id, '_dame_birth_date', true );
 
-    // Get the adherent's own email
-    $member_email = get_post_meta( $adherent_id, '_dame_email', true );
-    if ( ! empty( $member_email ) && is_email( $member_email ) ) {
-        $emails[] = $member_email;
+    $is_minor = false;
+    if ( ! empty( $birth_date_str ) ) {
+        try {
+            $birth_date = new DateTime( $birth_date_str );
+            $today = new DateTime();
+            $age = $today->diff( $birth_date )->y;
+            if ( $age < 18 ) {
+                $is_minor = true;
+            }
+        } catch ( Exception $e ) {
+            // Invalid date format, treat as adult for safety.
+            $is_minor = false;
+        }
     }
 
-    // Get legal representative 1's email
-    $rep1_email = get_post_meta( $adherent_id, '_dame_legal_rep_1_email', true );
-    if ( ! empty( $rep1_email ) && is_email( $rep1_email ) ) {
-        $emails[] = $rep1_email;
-    }
-
-    // Get legal representative 2's email
-    $rep2_email = get_post_meta( $adherent_id, '_dame_legal_rep_2_email', true );
-    if ( ! empty( $rep2_email ) && is_email( $rep2_email ) ) {
-        $emails[] = $rep2_email;
+    if ( $is_minor ) {
+        $rep1_email = get_post_meta( $adherent_id, '_dame_legal_rep_1_email', true );
+        $rep2_email = get_post_meta( $adherent_id, '_dame_legal_rep_2_email', true );
+        if ( ! empty( $rep1_email ) ) {
+            $emails[] = $rep1_email;
+        }
+        if ( ! empty( $rep2_email ) ) {
+            $emails[] = $rep2_email;
+        }
+    } else {
+        // Always use the email from the adherent's profile, not the linked WP user.
+        $member_email = get_post_meta( $adherent_id, '_dame_email', true );
+        if ( ! empty( $member_email ) ) {
+            $emails[] = $member_email;
+        }
     }
 
     return $emails;
@@ -278,45 +276,36 @@ function dame_render_mailing_page() {
                         <td>
                             <fieldset>
                                 <legend class="screen-reader-text"><span><?php esc_html_e( "Méthode de sélection", 'dame' ); ?></span></legend>
-                                <label><input type="radio" name="dame_selection_method" value="group" checked> <?php esc_html_e( "Par filtre", 'dame' ); ?></label><br>
+                                <label><input type="radio" name="dame_selection_method" value="group" checked> <?php esc_html_e( "Par groupe (sélection exclusive)", 'dame' ); ?></label><br>
                                 <label><input type="radio" name="dame_selection_method" value="manual"> <?php esc_html_e( "Manuelle", 'dame' ); ?></label>
                             </fieldset>
                         </td>
                     </tr>
+
                     <tr valign="top" class="dame-group-filters">
-                        <th scope="row"><?php esc_html_e( "Filtrer les destinataires", 'dame' ); ?></th>
+                        <th scope="row"><?php esc_html_e( "Choisir un groupe", 'dame' ); ?></th>
                         <td>
-                            <fieldset>
-                                <legend class="screen-reader-text"><span><?php esc_html_e( "Filtres de destinataires", 'dame' ); ?></span></legend>
-
-                                <div id="dame-status-filter" style="margin-bottom: 15px;">
-                                    <strong style="vertical-align: middle;"><?php esc_html_e( "Adhérents :", 'dame' ); ?></strong>
-                                    <label style="margin-left: 10px; font-weight: normal;"><input type="checkbox" name="dame_membership_status[]" value="A"> <?php esc_html_e( "Actif", 'dame' ); ?></label>
-                                    <label style="margin-left: 10px; font-weight: normal;"><input type="checkbox" name="dame_membership_status[]" value="E"> <?php esc_html_e( "Expiré", 'dame' ); ?></label>
-                                    <label style="margin-left: 10px; font-weight: normal;"><input type="checkbox" name="dame_membership_status[]" value="X"> <?php esc_html_e( "Ancien", 'dame' ); ?></label>
-                                </div>
-
-                                <hr style="margin: 15px 0;">
-
+                             <fieldset>
+                                <legend class="screen-reader-text"><span><?php esc_html_e( "Groupes de destinataires", 'dame' ); ?></span></legend>
                                 <label>
-                                    <input type="checkbox" name="dame_recipient_group[]" value="juniors">
+                                    <input type="radio" name="dame_recipient_group" value="juniors" checked>
                                     <?php esc_html_e( "École d'échecs", 'dame' ); ?>
                                 </label>
                                 <br>
                                 <label>
-                                    <input type="checkbox" name="dame_recipient_group[]" value="pole_excellence">
+                                    <input type="radio" name="dame_recipient_group" value="pole_excellence">
                                     <?php esc_html_e( "Pôle Excellence", 'dame' ); ?>
                                 </label>
                                 <br>
                                 <label>
-                                    <input type="checkbox" name="dame_recipient_group[]" value="benevoles">
-                                    <?php esc_html_e( "Bénévoles", 'dame' ); ?>
+                                    <input type="radio" name="dame_recipient_group" value="status">
+                                    <?php esc_html_e( "Par état d'adhésion", 'dame' ); ?>
                                 </label>
-                                <br>
-                                <label>
-                                    <input type="checkbox" name="dame_recipient_group[]" value="elus_locaux">
-                                    <?php esc_html_e( "Elus locaux", 'dame' ); ?>
-                                </label>
+                                <div id="dame-status-checkboxes" style="display:none; margin-top: 10px; padding-left: 20px;">
+                                    <label><input type="checkbox" name="dame_membership_status[]" value="A"> <?php esc_html_e( "Actif", 'dame' ); ?></label><br>
+                                    <label><input type="checkbox" name="dame_membership_status[]" value="E"> <?php esc_html_e( "Expiré", 'dame' ); ?></label><br>
+                                    <label><input type="checkbox" name="dame_membership_status[]" value="X"> <?php esc_html_e( "Ancien", 'dame' ); ?></label>
+                                </div>
                             </fieldset>
                         </td>
                     </tr>
@@ -350,6 +339,9 @@ function dame_render_mailing_page() {
         const groupFilters = document.querySelector('.dame-group-filters');
         const manualFilters = document.querySelector('.dame-manual-filters');
 
+        const groupSubRadios = document.querySelectorAll('input[name="dame_recipient_group"]');
+        const statusCheckboxes = document.getElementById('dame-status-checkboxes');
+
         function toggleMethod() {
             if (document.querySelector('input[name="dame_selection_method"]:checked').value === 'group') {
                 groupFilters.style.display = 'table-row';
@@ -360,10 +352,20 @@ function dame_render_mailing_page() {
             }
         }
 
+        function toggleStatusCheckboxes() {
+            if (document.querySelector('input[name="dame_recipient_group"]:checked').value === 'status') {
+                statusCheckboxes.style.display = 'block';
+            } else {
+                statusCheckboxes.style.display = 'none';
+            }
+        }
+
         methodRadios.forEach(radio => radio.addEventListener('change', toggleMethod));
+        groupSubRadios.forEach(radio => radio.addEventListener('change', toggleStatusCheckboxes));
 
         // Initial state
         toggleMethod();
+        toggleStatusCheckboxes();
     });
     </script>
     <?php

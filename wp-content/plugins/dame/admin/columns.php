@@ -99,6 +99,8 @@ function dame_add_adherent_filters() {
             <option value=""><?php _e( 'Tous les groupes', 'dame' ); ?></option>
             <option value="juniors" <?php selected( 'juniors', $current_group ); ?>><?php _e( 'École d\'échecs', 'dame' ); ?></option>
             <option value="pole_excellence" <?php selected( 'pole_excellence', $current_group ); ?>><?php _e( 'Pôle Excellence', 'dame' ); ?></option>
+            <option value="benevole" <?php selected( 'benevole', $current_group ); ?>><?php _e( 'Bénévole', 'dame' ); ?></option>
+            <option value="elu_local" <?php selected( 'elu_local', $current_group ); ?>><?php _e( 'Elu local', 'dame' ); ?></option>
         </select>
         <?php
 
@@ -138,14 +140,26 @@ function dame_filter_adherent_query( $query ) {
         // Group filter
         if ( isset( $_GET['dame_group_filter'] ) && '' !== $_GET['dame_group_filter'] ) {
             $group = sanitize_key( $_GET['dame_group_filter'] );
-            if ( 'juniors' === $group ) {
+            $group_key = '';
+
+            switch($group) {
+                case 'juniors':
+                    $group_key = '_dame_is_junior';
+                    break;
+                case 'pole_excellence':
+                    $group_key = '_dame_is_pole_excellence';
+                    break;
+                case 'benevole':
+                    $group_key = '_dame_is_benevole';
+                    break;
+                case 'elu_local':
+                    $group_key = '_dame_is_elu_local';
+                    break;
+            }
+
+            if ( ! empty( $group_key ) ) {
                 $meta_query[] = array(
-                    'key' => '_dame_is_junior',
-                    'value' => '1',
-                );
-            } elseif ( 'pole_excellence' === $group ) {
-                $meta_query[] = array(
-                    'key' => '_dame_is_pole_excellence',
+                    'key' => $group_key,
                     'value' => '1',
                 );
             }
