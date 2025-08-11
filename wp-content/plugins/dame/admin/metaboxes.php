@@ -94,18 +94,18 @@ function dame_add_admin_styles() {
 			background-color: #f1f1f1;
 		}
 		#dame_birth_date, #dame_membership_date {
-			width: 10em;
+			width: 8em;
 		}
 		.dame-inline-fields {
 			display: flex;
 			gap: 1em;
 		}
 		.dame-inline-fields .postal-code {
-			width: 10em;
+			width: 8em;
 			flex-shrink: 0;
 		}
 		.dame-inline-fields .city {
-			width: 14em;
+			width: 16em;
 			flex-shrink: 0;
 		}
 	</style>
