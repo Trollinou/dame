@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             resultsContainer.innerHTML = '';
                             if (data.results && data.results.length > 0) {
                                 resultsContainer.style.display = 'block';
-                                const results = data.results.slice(0, 4);
+                                const results = data.results;
                                 results.forEach(result => {
                                     const suggestionDiv = document.createElement('div');
                                     suggestionDiv.classList.add('dame-suggestion-item');

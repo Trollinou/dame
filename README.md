@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 1.14.5
+**Version:** 1.16.0
 **Auteur:** Etienne
 **Licence:** GPL v2 or later
 
@@ -10,8 +10,9 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 Ce plugin a été développé en suivant les meilleures pratiques de WordPress en matière de sécurité, de performance, de maintenabilité et d'évolutivité. Il inclut un mécanisme de mise à jour qui permettra de gérer les migrations de données pour les futures versions.
 
-## Fonctionnalités (v1.14.5)
+## Fonctionnalités (v1.16.0)
 
+*   **Filtrage des Adhérents :** Des filtres ont été ajoutés à la liste des adhérents pour permettre un tri par groupe (École d'échecs, Pôle Excellence, etc.) et par statut d'adhésion.
 *   ****Fonctionnalité :** Ajout d'un écran "Assignation des comptes" pour lier facilement un adhérent à un compte utilisateur WordPress et lui assigner un rôle.
 *   **Import CSV des Adhérents :** Une nouvelle fonctionnalité majeure permet d'importer des adhérents à partir d'un fichier CSV. L'import est flexible et ignore les colonnes non reconnues.
 *   **Page d'Import/Export dédiée :** Les fonctionnalités d'import et d'export ont été déplacées dans un sous-menu "Import / Export" dédié sous "Adhérents" pour une meilleure clarté.
