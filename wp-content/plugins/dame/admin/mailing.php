@@ -217,38 +217,23 @@ add_action( 'phpmailer_init', 'dame_add_bcc_to_mailer' );
  */
 function dame_get_emails_for_adherent( $adherent_id ) {
     $emails = array();
-    $birth_date_str = get_post_meta( $adherent_id, '_dame_birth_date', true );
 
-    $is_minor = false;
-    if ( ! empty( $birth_date_str ) ) {
-        try {
-            $birth_date = new DateTime( $birth_date_str );
-            $today = new DateTime();
-            $age = $today->diff( $birth_date )->y;
-            if ( $age < 18 ) {
-                $is_minor = true;
-            }
-        } catch ( Exception $e ) {
-            // Invalid date format, treat as adult for safety.
-            $is_minor = false;
-        }
+    // Get the adherent's own email
+    $member_email = get_post_meta( $adherent_id, '_dame_email', true );
+    if ( ! empty( $member_email ) && is_email( $member_email ) ) {
+        $emails[] = $member_email;
     }
 
-    if ( $is_minor ) {
-        $rep1_email = get_post_meta( $adherent_id, '_dame_legal_rep_1_email', true );
-        $rep2_email = get_post_meta( $adherent_id, '_dame_legal_rep_2_email', true );
-        if ( ! empty( $rep1_email ) ) {
-            $emails[] = $rep1_email;
-        }
-        if ( ! empty( $rep2_email ) ) {
-            $emails[] = $rep2_email;
-        }
-    } else {
-        // Always use the email from the adherent's profile, not the linked WP user.
-        $member_email = get_post_meta( $adherent_id, '_dame_email', true );
-        if ( ! empty( $member_email ) ) {
-            $emails[] = $member_email;
-        }
+    // Get legal representative 1's email
+    $rep1_email = get_post_meta( $adherent_id, '_dame_legal_rep_1_email', true );
+    if ( ! empty( $rep1_email ) && is_email( $rep1_email ) ) {
+        $emails[] = $rep1_email;
+    }
+
+    // Get legal representative 2's email
+    $rep2_email = get_post_meta( $adherent_id, '_dame_legal_rep_2_email', true );
+    if ( ! empty( $rep2_email ) && is_email( $rep2_email ) ) {
+        $emails[] = $rep2_email;
     }
 
     return $emails;
