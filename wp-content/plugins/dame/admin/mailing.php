@@ -64,7 +64,7 @@ function dame_handle_send_email() {
             return;
         }
 
-        $meta_query = array( 'relation' => 'AND' );
+        $meta_query = array( 'relation' => 'OR' );
 
         if ( ! empty( $statuses ) ) {
             $meta_query[] = array(
