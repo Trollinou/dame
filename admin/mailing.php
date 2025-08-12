@@ -183,12 +183,14 @@ function dame_handle_send_email() {
 
     // Restore robust BCC implementation
     global $dame_bcc_emails;
-    $dame_bcc_emails = $recipient_emails;
+    $email_chunks = array_chunk( $recipient_emails, 20 );
 
-    wp_mail( $sender_email, $subject, $message, $headers );
-
-    // Clean up the global after the mail is sent.
-    $dame_bcc_emails = null;
+    foreach ( $email_chunks as $chunk ) {
+        $dame_bcc_emails = $chunk;
+        wp_mail( $sender_email, $subject, $message, $headers );
+        // It's good practice to clean up the global after each mail call.
+        $dame_bcc_emails = null;
+    }
 
     add_action( 'admin_notices', function() use ( $recipient_emails ) {
         $count = count( $recipient_emails );
