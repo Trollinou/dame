@@ -66,31 +66,51 @@ function dame_handle_send_email() {
 
         $meta_query = array( 'relation' => 'OR' );
 
+        if ( ! empty( $statuses ) ) {
+            $meta_query[] = array(
+                'key'     => '_dame_membership_status',
+                'value'   => $statuses,
+                'compare' => 'IN',
+            );
+        }
+
         if ( ! empty( $groups ) ) {
+            $group_query = array( 'relation' => 'OR' );
             foreach ( $groups as $group ) {
                 switch ( $group ) {
                     case 'juniors':
-                        $meta_query[] = array( 'key' => '_dame_is_junior', 'value' => '1' );
+                        $group_query[] = array(
+                            'key'     => '_dame_is_junior',
+                            'value'   => '1',
+                            'compare' => '=',
+                        );
                         break;
                     case 'pole_excellence':
-                        $meta_query[] = array( 'key' => '_dame_is_pole_excellence', 'value' => '1' );
+                        $group_query[] = array(
+                            'key'     => '_dame_is_pole_excellence',
+                            'value'   => '1',
+                            'compare' => '=',
+                        );
                         break;
                     case 'benevoles':
-                        $meta_query[] = array( 'key' => '_dame_is_benevole', 'value' => '1' );
+                        $group_query[] = array(
+                            'key'     => '_dame_is_benevole',
+                            'value'   => '1',
+                            'compare' => '=',
+                        );
                         break;
                     case 'elus_locaux':
-                        $meta_query[] = array( 'key' => '_dame_is_elu_local', 'value' => '1' );
+                        $group_query[] = array(
+                            'key'     => '_dame_is_elu_local',
+                            'value'   => '1',
+                            'compare' => '=',
+                        );
                         break;
                 }
             }
-        }
-
-        if ( ! empty( $statuses ) ) {
-            $meta_query[] = array(
-                'key' => '_dame_membership_status',
-                'value' => $statuses,
-                'compare' => 'IN',
-            );
+            if ( count( $group_query ) > 1 ) {
+                $meta_query[] = $group_query;
+            }
         }
 
         if ( count( $meta_query ) > 1 ) {
@@ -203,8 +223,7 @@ function dame_add_bcc_to_mailer( $phpmailer ) {
                 continue;
             }
         }
-        // Clean up the global to prevent it from affecting other wp_mail calls.
-        $dame_bcc_emails = null;
+        // The main function will clean up the global.
     }
 }
 add_action( 'phpmailer_init', 'dame_add_bcc_to_mailer' );
