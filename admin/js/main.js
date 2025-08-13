@@ -132,4 +132,91 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // Mailing page article filter logic
+    const categoryFilter = document.getElementById('dame-category-filter');
+    if (categoryFilter && typeof dame_mailing_data !== 'undefined') {
+        const articlesContainer = document.getElementById('dame-articles-list-container');
+        const checkboxes = categoryFilter.querySelectorAll('input[type="checkbox"]');
+        const storageKey = 'dame_selected_categories';
+
+        function updateArticlesList() {
+            const selectedCategories = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            localStorage.setItem(storageKey, JSON.stringify(selectedCategories));
+            articlesContainer.style.opacity = '0.5';
+
+            const data = new URLSearchParams();
+            data.append('action', 'dame_get_filtered_articles');
+            data.append('nonce', dame_mailing_data.nonce);
+            selectedCategories.forEach(catId => {
+                data.append('categories[]', catId);
+            });
+
+            fetch(dame_mailing_data.ajax_url, {
+                method: 'POST',
+                body: data
+            })
+            .then(response => response.json())
+            .then(response => {
+                articlesContainer.style.opacity = '1';
+                articlesContainer.innerHTML = ''; // Clear previous content
+
+                if (response.success) {
+                    const articles = response.data;
+                    if (articles.length > 0) {
+                        const select = document.createElement('select');
+                        select.id = 'dame_article_to_send';
+                        select.name = 'dame_article_to_send';
+                        select.style.width = '100%';
+                        select.style.maxWidth = '400px';
+
+                        articles.forEach(article => {
+                            const option = document.createElement('option');
+                            option.value = article.ID;
+                            option.innerHTML = article.post_title; // Use innerHTML to decode entities
+                            select.appendChild(option);
+                        });
+                        articlesContainer.appendChild(select);
+                    } else {
+                        const noResult = document.createElement('p');
+                        noResult.textContent = dame_mailing_data.no_articles_found;
+                        articlesContainer.appendChild(noResult);
+                    }
+                } else {
+                    const errorMsg = document.createElement('p');
+                    errorMsg.style.color = 'red';
+                    errorMsg.textContent = response.data.message || dame_mailing_data.generic_error;
+                    articlesContainer.appendChild(errorMsg);
+                }
+            })
+            .catch(error => {
+                articlesContainer.style.opacity = '1';
+                const errorMsg = document.createElement('p');
+                errorMsg.style.color = 'red';
+                errorMsg.textContent = dame_mailing_data.generic_error;
+                articlesContainer.innerHTML = '';
+                articlesContainer.appendChild(errorMsg);
+                console.error('Error fetching articles:', error);
+            });
+        }
+
+        function loadInitialState() {
+            const savedCategories = JSON.parse(localStorage.getItem(storageKey)) || [];
+            if (savedCategories.length > 0) {
+                checkboxes.forEach(cb => {
+                    if (savedCategories.includes(cb.value)) {
+                        cb.checked = true;
+                    }
+                });
+            }
+            updateArticlesList();
+        }
+
+        checkboxes.forEach(cb => cb.addEventListener('change', updateArticlesList));
+
+        loadInitialState();
+    }
 });

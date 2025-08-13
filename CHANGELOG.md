@@ -4,6 +4,11 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 1.16.3 (13/08/2025)
+
+*   **Fonctionnalité :** Ajout d'un filtre par catégorie sur la page "Envoyer un article". Ce filtre permet de sélectionner une ou plusieurs catégories pour affiner dynamiquement la liste des articles. Le filtre est mémorisé entre les sessions.
+*   **Correctif :** Correction d'un problème d'affichage des caractères spéciaux (comme les apostrophes) dans la liste déroulante des articles filtrés dynamiquement.
+
 ### 1.16.2 (13/08/2025)
 
 *   **Fonctionnalité :** Ajout d'une section de configuration SMTP (`Réglages > Options DAME`) pour permettre l'envoi d'emails via un serveur externe. Cela améliore considérablement la fiabilité de l'envoi d'emails.

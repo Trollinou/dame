@@ -292,22 +292,45 @@ function dame_render_mailing_page() {
             <table class="form-table">
                 <tbody>
                     <tr>
+                        <th scope="row"><?php esc_html_e( "Filtrer par catégorie", 'dame' ); ?></th>
+                        <td>
+                            <fieldset id="dame-category-filter">
+                                <legend class="screen-reader-text"><span><?php esc_html_e( "Catégories", 'dame' ); ?></span></legend>
+                                <?php
+                                $categories = get_categories( array( 'hide_empty' => false ) );
+                                if ( ! empty( $categories ) ) {
+                                    foreach ( $categories as $category ) {
+                                        echo '<label style="margin-right: 15px; font-weight: normal;">';
+                                        echo '<input type="checkbox" name="dame_article_categories[]" value="' . esc_attr( $category->term_id ) . '">';
+                                        echo ' ' . esc_html( $category->name );
+                                        echo '</label>';
+                                    }
+                                } else {
+                                    echo '<p>' . esc_html__( "Aucune catégorie trouvée.", 'dame' ) . '</p>';
+                                }
+                                ?>
+                            </fieldset>
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row">
                             <label for="dame_article_to_send"><?php esc_html_e( "Article à envoyer", 'dame' ); ?></label>
                         </th>
                         <td>
-                            <?php
-                            $posts = get_posts( array( 'post_type' => 'post', 'post_status' => 'publish', 'numberposts' => 10, 'orderby' => 'date', 'order' => 'DESC' ) );
-                            if ( ! empty( $posts ) ) {
-                                echo '<select id="dame_article_to_send" name="dame_article_to_send" style="width: 100%; max-width: 400px;">';
-                                foreach ( $posts as $p ) {
-                                    echo '<option value="' . esc_attr( $p->ID ) . '">' . esc_html( $p->post_title ) . '</option>';
+                            <div id="dame-articles-list-container">
+                                <?php
+                                $posts = get_posts( array( 'post_type' => 'post', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'date', 'order' => 'DESC' ) );
+                                if ( ! empty( $posts ) ) {
+                                    echo '<select id="dame_article_to_send" name="dame_article_to_send" style="width: 100%; max-width: 400px;">';
+                                    foreach ( $posts as $p ) {
+                                        echo '<option value="' . esc_attr( $p->ID ) . '">' . esc_html( $p->post_title ) . '</option>';
+                                    }
+                                    echo '</select>';
+                                } else {
+                                    echo '<p>' . esc_html__( "Aucun article publié trouvé.", 'dame' ) . '</p>';
                                 }
-                                echo '</select>';
-                            } else {
-                                echo '<p>' . esc_html__( "Aucun article publié trouvé.", 'dame' ) . '</p>';
-                            }
-                            ?>
+                                ?>
+                            </div>
                         </td>
                     </tr>
                     <tr valign="top">
@@ -405,3 +428,57 @@ function dame_render_mailing_page() {
     </script>
     <?php
 }
+
+/**
+ * AJAX handler for fetching filtered articles.
+ */
+function dame_get_filtered_articles_ajax_handler() {
+    // 1. Security checks
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'dame_filter_articles_nonce' ) ) {
+        wp_send_json_error( array( 'message' => __( "Vérification de sécurité échouée.", 'dame' ) ), 403 );
+    }
+
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( array( 'message' => __( "Vous n'avez pas la permission d'effectuer cette action.", 'dame' ) ), 403 );
+    }
+
+    // 2. Get and sanitize categories
+    $category_ids = isset( $_POST['categories'] ) && is_array( $_POST['categories'] ) ? array_map( 'absint', $_POST['categories'] ) : array();
+
+    // 3. Build query arguments
+    $args = array(
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'numberposts'    => -1,
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    );
+
+    if ( ! empty( $category_ids ) ) {
+        $args['tax_query'] = array(
+            array(
+                'taxonomy' => 'category',
+                'field'    => 'term_id',
+                'terms'    => $category_ids,
+                'operator' => 'IN',
+            ),
+        );
+    }
+
+    // 4. Fetch posts
+    $posts = get_posts( $args );
+    $results = array();
+
+    if ( ! empty( $posts ) ) {
+        foreach ( $posts as $p ) {
+            $results[] = array(
+                'ID'         => $p->ID,
+                'post_title' => esc_html( get_the_title( $p->ID ) ),
+            );
+        }
+    }
+
+    // 5. Send response
+    wp_send_json_success( $results );
+}
+add_action( 'wp_ajax_dame_get_filtered_articles', 'dame_get_filtered_articles_ajax_handler' );
