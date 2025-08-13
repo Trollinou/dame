@@ -58,6 +58,27 @@ function dame_enqueue_admin_scripts( $hook ) {
 			DAME_VERSION,
 			true
 		);
+	} elseif ( 'adherent_page_dame-mailing' === $hook ) {
+		// Ensure main.js is enqueued for the mailing page as well
+		wp_enqueue_script(
+			'dame-main-js',
+			plugin_dir_url( __FILE__ ) . 'js/main.js',
+			array(),
+			DAME_VERSION,
+			true
+		);
+
+		// Localize data for the mailing page filter
+		wp_localize_script(
+			'dame-main-js',
+			'dame_mailing_data',
+			array(
+				'ajax_url'          => admin_url( 'admin-ajax.php' ),
+				'nonce'             => wp_create_nonce( 'dame_filter_articles_nonce' ),
+				'no_articles_found' => __( "Aucun article ne correspond aux filtres sélectionnés.", 'dame' ),
+				'generic_error'     => __( "Une erreur est survenue lors de la récupération des articles.", 'dame' ),
+			)
+		);
 	}
 }
 add_action( 'admin_enqueue_scripts', 'dame_enqueue_admin_scripts' );
