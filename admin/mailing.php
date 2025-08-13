@@ -183,12 +183,14 @@ function dame_handle_send_email() {
 
     // Restore robust BCC implementation
     global $dame_bcc_emails;
-    $dame_bcc_emails = $recipient_emails;
+    $email_chunks = array_chunk( $recipient_emails, 20 );
 
-    wp_mail( $sender_email, $subject, $message, $headers );
-
-    // Clean up the global after the mail is sent.
-    $dame_bcc_emails = null;
+    foreach ( $email_chunks as $chunk ) {
+        $dame_bcc_emails = $chunk;
+        wp_mail( $sender_email, $subject, $message, $headers );
+        // It's good practice to clean up the global after each mail call.
+        $dame_bcc_emails = null;
+    }
 
     add_action( 'admin_notices', function() use ( $recipient_emails ) {
         $count = count( $recipient_emails );
@@ -211,6 +213,22 @@ add_action( 'admin_init', 'dame_handle_send_email' );
  * @param PHPMailer $phpmailer The PHPMailer object.
  */
 function dame_add_bcc_to_mailer( $phpmailer ) {
+    $options = get_option( 'dame_options' );
+
+    // Configure SMTP if settings are provided.
+    if ( ! empty( $options['smtp_host'] ) && ! empty( $options['smtp_username'] ) && ! empty( $options['smtp_password'] ) ) {
+        $phpmailer->isSMTP();
+        $phpmailer->Host       = $options['smtp_host'];
+        $phpmailer->SMTPAuth   = true;
+        $phpmailer->Port       = isset( $options['smtp_port'] ) ? (int) $options['smtp_port'] : 465;
+        $phpmailer->Username   = $options['smtp_username'];
+        $phpmailer->Password   = $options['smtp_password'];
+
+        if ( isset( $options['smtp_encryption'] ) && 'none' !== $options['smtp_encryption'] ) {
+            $phpmailer->SMTPSecure = $options['smtp_encryption'];
+        }
+    }
+
     global $dame_bcc_emails;
 
     if ( ! empty( $dame_bcc_emails ) && is_array( $dame_bcc_emails ) ) {

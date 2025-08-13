@@ -73,6 +73,47 @@ function dame_register_settings() {
         'dame_mailing_section'
     );
 
+    // SMTP settings fields
+    add_settings_field(
+        'dame_smtp_host',
+        __( 'Hôte SMTP', 'dame' ),
+        'dame_smtp_host_callback',
+        'dame_mailing_section_group',
+        'dame_mailing_section'
+    );
+
+    add_settings_field(
+        'dame_smtp_port',
+        __( 'Port SMTP', 'dame' ),
+        'dame_smtp_port_callback',
+        'dame_mailing_section_group',
+        'dame_mailing_section'
+    );
+
+    add_settings_field(
+        'dame_smtp_encryption',
+        __( 'Chiffrement', 'dame' ),
+        'dame_smtp_encryption_callback',
+        'dame_mailing_section_group',
+        'dame_mailing_section'
+    );
+
+    add_settings_field(
+        'dame_smtp_username',
+        __( 'Nom d\'utilisateur SMTP', 'dame' ),
+        'dame_smtp_username_callback',
+        'dame_mailing_section_group',
+        'dame_mailing_section'
+    );
+
+    add_settings_field(
+        'dame_smtp_password',
+        __( 'Mot de passe SMTP', 'dame' ),
+        'dame_smtp_password_callback',
+        'dame_mailing_section_group',
+        'dame_mailing_section'
+    );
+
     add_settings_section(
         'dame_uninstall_section',
         __( 'Désinstallation', 'dame' ),
@@ -146,10 +187,37 @@ add_action( 'admin_init', 'dame_handle_annual_reset' );
  * Sanitize the options array.
  */
 function dame_options_sanitize( $input ) {
+    $options = get_option( 'dame_options' );
     $sanitized_input = array();
 
     if ( isset( $input['sender_email'] ) ) {
         $sanitized_input['sender_email'] = sanitize_email( $input['sender_email'] );
+    }
+
+    if ( isset( $input['smtp_host'] ) ) {
+        $sanitized_input['smtp_host'] = sanitize_text_field( $input['smtp_host'] );
+    }
+
+    if ( isset( $input['smtp_port'] ) ) {
+        $sanitized_input['smtp_port'] = absint( $input['smtp_port'] );
+    }
+
+    if ( isset( $input['smtp_encryption'] ) && in_array( $input['smtp_encryption'], array( 'none', 'ssl', 'tls' ) ) ) {
+        $sanitized_input['smtp_encryption'] = $input['smtp_encryption'];
+    }
+
+    if ( isset( $input['smtp_username'] ) ) {
+        $sanitized_input['smtp_username'] = sanitize_text_field( $input['smtp_username'] );
+    }
+
+    // Only update the password if a new value is provided.
+    if ( ! empty( $input['smtp_password'] ) ) {
+        $sanitized_input['smtp_password'] = trim( $input['smtp_password'] );
+    } else {
+        // Keep the old password if the field is empty.
+        if ( isset( $options['smtp_password'] ) ) {
+            $sanitized_input['smtp_password'] = $options['smtp_password'];
+        }
     }
 
     $sanitized_input['delete_on_uninstall'] = isset( $input['delete_on_uninstall'] ) ? 1 : 0;
@@ -160,7 +228,7 @@ function dame_options_sanitize( $input ) {
  * Callback for the mailing section.
  */
 function dame_mailing_section_callback() {
-    echo '<p>' . esc_html__( "Paramètres relatifs à l'envoi d'emails depuis le plugin.", 'dame' ) . '</p>';
+    echo '<p>' . esc_html__( "Paramètres relatifs à l'envoi d'emails depuis le plugin. Pour utiliser un service SMTP externe (recommandé), remplissez les champs ci-dessous.", 'dame' ) . '</p>';
 }
 
 /**
@@ -170,12 +238,64 @@ function dame_sender_email_callback() {
     $options = get_option( 'dame_options' );
     $sender_email = isset( $options['sender_email'] ) ? $options['sender_email'] : '';
     ?>
-    <input type="email" name="dame_options[sender_email]" value="<?php echo esc_attr( $sender_email ); ?>" class="regular-text" />
+    <input type="email" id="dame_sender_email" name="dame_options[sender_email]" value="<?php echo esc_attr( $sender_email ); ?>" class="regular-text" />
     <p class="description">
-        <?php esc_html_e( "L'adresse email qui sera utilisée comme expéditeur pour les communications par email. Si laissé vide, l'adresse par défaut de WordPress sera utilisée.", 'dame' ); ?>
+        <?php esc_html_e( "L'adresse email qui sera utilisée comme expéditeur. Doit correspondre au nom d'utilisateur SMTP si utilisé.", 'dame' ); ?>
     </p>
     <?php
 }
+
+/**
+ * Callbacks for SMTP settings fields.
+ */
+function dame_smtp_host_callback() {
+    $options = get_option( 'dame_options' );
+    $smtp_host = isset( $options['smtp_host'] ) ? $options['smtp_host'] : '';
+    ?>
+    <input type="text" id="dame_smtp_host" name="dame_options[smtp_host]" value="<?php echo esc_attr( $smtp_host ); ?>" class="regular-text" />
+    <?php
+}
+
+function dame_smtp_port_callback() {
+    $options = get_option( 'dame_options' );
+    $smtp_port = isset( $options['smtp_port'] ) ? $options['smtp_port'] : '';
+    ?>
+    <input type="number" id="dame_smtp_port" name="dame_options[smtp_port]" value="<?php echo esc_attr( $smtp_port ); ?>" class="small-text" />
+    <p class="description">
+        <?php esc_html_e( 'Ex: 465 pour SSL, 587 pour TLS.', 'dame' ); ?>
+    </p>
+    <?php
+}
+
+function dame_smtp_encryption_callback() {
+    $options = get_option( 'dame_options' );
+    $smtp_encryption = isset( $options['smtp_encryption'] ) ? $options['smtp_encryption'] : 'none';
+    ?>
+    <select id="dame_smtp_encryption" name="dame_options[smtp_encryption]">
+        <option value="none" <?php selected( $smtp_encryption, 'none' ); ?>><?php esc_html_e( 'Aucun', 'dame' ); ?></option>
+        <option value="ssl" <?php selected( $smtp_encryption, 'ssl' ); ?>>SSL</option>
+        <option value="tls" <?php selected( $smtp_encryption, 'tls' ); ?>>TLS</option>
+    </select>
+    <?php
+}
+
+function dame_smtp_username_callback() {
+    $options = get_option( 'dame_options' );
+    $smtp_username = isset( $options['smtp_username'] ) ? $options['smtp_username'] : '';
+    ?>
+    <input type="text" id="dame_smtp_username" name="dame_options[smtp_username]" value="<?php echo esc_attr( $smtp_username ); ?>" class="regular-text" />
+    <?php
+}
+
+function dame_smtp_password_callback() {
+    ?>
+    <input type="password" id="dame_smtp_password" name="dame_options[smtp_password]" value="" class="regular-text" autocomplete="new-password" />
+    <p class="description">
+        <?php esc_html_e( 'Laissez vide pour ne pas modifier le mot de passe existant.', 'dame' ); ?>
+    </p>
+    <?php
+}
+
 
 /**
  * Callback for the uninstall section.
