@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         articles.forEach(article => {
                             const option = document.createElement('option');
                             option.value = article.ID;
-                            option.textContent = article.post_title;
+                            option.innerHTML = article.post_title; // Use innerHTML to decode entities
                             select.appendChild(option);
                         });
                         articlesContainer.appendChild(select);

@@ -473,7 +473,7 @@ function dame_get_filtered_articles_ajax_handler() {
         foreach ( $posts as $p ) {
             $results[] = array(
                 'ID'         => $p->ID,
-                'post_title' => get_the_title( $p->ID ),
+                'post_title' => esc_html( get_the_title( $p->ID ) ),
             );
         }
     }
