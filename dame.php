@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier Administratif des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           1.16.3
+ * Version:           2.0.0
  * Author:            Etienne
  * Author URI:
  * License:           GPL v2 or later
@@ -17,7 +17,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '1.16.3' );
+define( 'DAME_VERSION', '2.0.0' );
 
 /**
  * Handles plugin updates.
@@ -38,10 +38,14 @@ add_action( 'plugins_loaded', 'dame_check_for_updates' );
  */
 function dame_perform_upgrade( $old_version, $new_version ) {
     // In the future, you can add upgrade logic here based on version.
-    // Example:
-    // if ( version_compare( $old_version, '1.3.0', '<' ) ) {
-    //     // Code to migrate data for version 1.3.0
-    // }
+    if ( version_compare( $old_version, '2.0.0', '<' ) ) {
+        // Add new capabilities for the chess content module
+        if ( function_exists( 'dame_add_capabilities_to_roles' ) ) {
+            dame_add_capabilities_to_roles();
+        }
+        // Flush rewrite rules for the new CPTs
+        flush_rewrite_rules();
+    }
 
     // Update the version in the database to the new version.
     update_option( 'dame_plugin_version', $new_version );
@@ -51,7 +55,13 @@ function dame_perform_upgrade( $old_version, $new_version ) {
 // Include plugin files
 require_once plugin_dir_path( __FILE__ ) . 'includes/roles.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/cpt.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/taxonomies.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/data-lists.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/access-control.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/lesson-completion.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/shortcodes.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/single-exercice-handler.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/single-course-handler.php';
 
 if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/menu.php';
