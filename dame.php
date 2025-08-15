@@ -43,6 +43,8 @@ function dame_perform_upgrade( $old_version, $new_version ) {
         if ( function_exists( 'dame_add_capabilities_to_roles' ) ) {
             dame_add_capabilities_to_roles();
         }
+        // Flush rewrite rules for the new CPTs
+        flush_rewrite_rules();
     }
 
     // Update the version in the database to the new version.

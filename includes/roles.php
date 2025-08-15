@@ -96,6 +96,9 @@ function dame_add_custom_roles() {
     // Add all our custom capabilities to the roles.
     dame_add_capabilities_to_roles();
 
+    // Flush rewrite rules to register CPT slugs
+    flush_rewrite_rules();
+
     // Store the plugin version on activation.
     update_option( 'dame_plugin_version', DAME_VERSION );
 }
