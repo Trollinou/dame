@@ -80,6 +80,17 @@ function dame_enqueue_admin_scripts( $hook ) {
 			)
 		);
 	}
+
+    // Enqueue script for the course builder dual list
+    if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && 'dame_cours' === $post->post_type ) {
+        wp_enqueue_script(
+            'dame-course-builder',
+            plugin_dir_url( __FILE__ ) . 'js/course-builder.js',
+            array('jquery'),
+            DAME_VERSION,
+            true
+        );
+    }
 }
 add_action( 'admin_enqueue_scripts', 'dame_enqueue_admin_scripts' );
 
@@ -899,10 +910,10 @@ function dame_save_exercice_meta( $post_id ) {
 }
 add_action( 'save_post_dame_exercice', 'dame_save_exercice_meta' );
 
-// --- Meta Box for Cours CPT ---
+// --- Meta Box for Cours CPT (Dual List Interface) ---
 
 /**
- * Adds the meta boxes for the Cours CPT.
+ * Adds the meta box for the Cours CPT.
  */
 function dame_add_cours_meta_boxes() {
     add_meta_box(
@@ -917,82 +928,81 @@ function dame_add_cours_meta_boxes() {
 add_action( 'add_meta_boxes', 'dame_add_cours_meta_boxes' );
 
 /**
- * Renders the meta box for the course builder.
+ * Renders the dual list meta box for the course builder.
  *
  * @param WP_Post $post The post object.
  */
 function dame_render_cours_builder_metabox( $post ) {
     wp_nonce_field( 'dame_save_cours_meta', 'dame_cours_metabox_nonce' );
 
-    // Enqueue the script for the course builder
-    wp_enqueue_script('dame-course-builder', plugin_dir_url(__FILE__) . 'js/course-builder.js', array('jquery', 'jquery-ui-sortable', 'jquery-ui-draggable'), DAME_VERSION, true);
+    // Get all available lessons and exercices
+    $all_lessons = get_posts( array( 'post_type' => 'dame_lecon', 'posts_per_page' => -1, 'orderby' => 'title', 'order' => 'ASC' ) );
+    $all_exercices = get_posts( array( 'post_type' => 'dame_exercice', 'posts_per_page' => -1, 'orderby' => 'title', 'order' => 'ASC' ) );
 
-    $course_items = get_post_meta( $post->ID, '_dame_course_items', true );
-    if ( ! is_array( $course_items ) ) {
-        $course_items = array();
+    // Get current course items
+    $course_items_raw = get_post_meta( $post->ID, '_dame_course_items', true );
+    if ( ! is_array( $course_items_raw ) ) {
+        $course_items_raw = array();
     }
 
-    $all_lessons = get_posts( array( 'post_type' => 'dame_lecon', 'posts_per_page' => -1 ) );
-    $all_exercices = get_posts( array( 'post_type' => 'dame_exercice', 'posts_per_page' => -1 ) );
+    // Create an array of IDs of items already in the course to exclude them from the "Available" list
+    $used_ids = array_map(function($item) { return $item['id']; }, $course_items_raw);
+
     ?>
     <style>
-        #dame-course-builder-wrapper { display: flex; gap: 20px; }
-        #dame-available-items, #dame-course-content { flex: 1; border: 1px solid #ccc; padding: 10px; min-height: 300px; background: #f9f9f9; }
-        #dame-course-item-list { min-height: 100px; border: 1px dashed #ccc; background-color: #fdfdfd; }
-        .dame-course-item { padding: 8px; border: 1px solid #ddd; background: #fff; margin-bottom: 5px; cursor: move; }
-        .dame-course-item .item-type { font-style: italic; color: #777; font-size: 0.9em; }
-        #dame-course-content { background: #f0f0f0; }
+        .dame-dual-list-wrapper { display: flex; align-items: center; gap: 15px; }
+        .dame-dual-list-box { flex: 1; }
+        .dame-dual-list-box select { width: 100%; height: 300px; }
+        .dame-dual-list-controls { display: flex; flex-direction: column; gap: 10px; }
+        .dame-dual-list-controls button { width: 100px; }
     </style>
-
-    <div id="dame-course-builder-wrapper">
-        <div id="dame-available-items">
-            <h3><?php _e( 'Contenus Disponibles', 'dame' ); ?></h3>
-            <p class="description"><?php _e( 'Glissez-déposez les éléments de gauche à droite pour construire votre cours.', 'dame' ); ?></p>
-
-            <h4><?php _e( 'Leçons', 'dame' ); ?></h4>
-            <ul class="dame-item-list">
-                <?php foreach ( $all_lessons as $lesson ) : ?>
-                    <li class="dame-course-item" data-id="<?php echo esc_attr( $lesson->ID ); ?>" data-type="lecon">
-                        <strong><?php echo esc_html( $lesson->post_title ); ?></strong>
-                        <span class="item-type"><?php _e( 'Leçon', 'dame' ); ?></span>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-
-            <h4><?php _e( 'Exercices', 'dame' ); ?></h4>
-            <ul class="dame-item-list">
-                <?php foreach ( $all_exercices as $exercice ) : ?>
-                    <li class="dame-course-item" data-id="<?php echo esc_attr( $exercice->ID ); ?>" data-type="exercice">
-                        <strong><?php echo esc_html( $exercice->post_title ); ?></strong>
-                        <span class="item-type"><?php _e( 'Exercice', 'dame' ); ?></span>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
+    <div class="dame-dual-list-wrapper">
+        <!-- Available Items List -->
+        <div class="dame-dual-list-box">
+            <strong><?php _e( 'Contenus Disponibles', 'dame' ); ?></strong>
+            <select id="dame-available-items-select" multiple>
+                <optgroup label="<?php esc_attr_e( 'Leçons', 'dame' ); ?>">
+                    <?php foreach ( $all_lessons as $lesson ) : if ( ! in_array($lesson->ID, $used_ids) ): ?>
+                        <option value="<?php echo esc_attr( 'lecon:' . $lesson->ID ); ?>"><?php echo esc_html( $lesson->post_title ); ?></option>
+                    <?php endif; endforeach; ?>
+                </optgroup>
+                <optgroup label="<?php esc_attr_e( 'Exercices', 'dame' ); ?>">
+                    <?php foreach ( $all_exercices as $exercice ) : if ( ! in_array($exercice->ID, $used_ids) ): ?>
+                        <option value="<?php echo esc_attr( 'exercice:' . $exercice->ID ); ?>"><?php echo esc_html( $exercice->post_title ); ?></option>
+                    <?php endif; endforeach; ?>
+                </optgroup>
+            </select>
         </div>
 
-        <div id="dame-course-content">
-            <h3><?php _e( 'Contenu du Cours (ordonné)', 'dame' ); ?></h3>
-            <ul id="dame-course-item-list" class="dame-item-list">
+        <!-- Controls -->
+        <div class="dame-dual-list-controls">
+            <button type="button" id="dame-add-to-course" class="button">&gt;&gt;</button>
+            <button type="button" id="dame-remove-from-course" class="button">&lt;&lt;</button>
+        </div>
+
+        <!-- Course Items List -->
+        <div class="dame-dual-list-box">
+            <strong><?php _e( 'Contenu du Cours', 'dame' ); ?></strong>
+            <select id="dame-course-items-select" name="dame_course_items[]" multiple>
                 <?php
-                if ( ! empty( $course_items ) ) {
-                    foreach ( $course_items as $item ) {
-                        $post_id = $item['id'];
-                        $post_type = $item['type'];
-                        $post_obj = get_post($post_id);
-                        if ($post_obj) {
-                            ?>
-                            <li class="dame-course-item" data-id="<?php echo esc_attr( $post_id ); ?>" data-type="<?php echo esc_attr($post_type); ?>">
-                                <strong><?php echo esc_html( $post_obj->post_title ); ?></strong>
-                                <span class="item-type"><?php echo $post_type === 'lecon' ? __( 'Leçon', 'dame' ) : __( 'Exercice', 'dame' ); ?></span>
-                                <input type="hidden" name="dame_course_items[]" value="<?php echo esc_attr( $post_type . ':' . $post_id ); ?>">
-                                <button type="button" class="button-link-delete dame-delete-item" style="margin-left: 10px; cursor: pointer; color: #a00; border: none; background: none; font-size: 1.5em; line-height: 1; vertical-align: middle;">&times;</button>
-                            </li>
-                            <?php
+                if ( ! empty( $course_items_raw ) ) {
+                    foreach ( $course_items_raw as $item ) {
+                        $post_obj = get_post( $item['id'] );
+                        if ( $post_obj ) {
+                            $value = esc_attr( $item['type'] . ':' . $item['id'] );
+                            $label = esc_html( $post_obj->post_title . ' (' . $item['type'] . ')' );
+                            echo "<option value=\"{$value}\">{$label}</option>";
                         }
                     }
                 }
                 ?>
-            </ul>
+            </select>
+        </div>
+
+        <!-- Reorder Controls -->
+        <div class="dame-dual-list-controls">
+            <button type="button" id="dame-move-up" class="button">&#9650;</button>
+            <button type="button" id="dame-move-down" class="button">&#9660;</button>
         </div>
     </div>
     <?php
@@ -1000,8 +1010,6 @@ function dame_render_cours_builder_metabox( $post ) {
 
 /**
  * Save meta box content for Cours CPT.
- *
- * @param int $post_id Post ID
  */
 function dame_save_cours_meta( $post_id ) {
     if ( ! isset( $_POST['dame_cours_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_cours_metabox_nonce'], 'dame_save_cours_meta' ) ) {
@@ -1017,6 +1025,7 @@ function dame_save_cours_meta( $post_id ) {
     if ( isset( $_POST['dame_course_items'] ) && is_array( $_POST['dame_course_items'] ) ) {
         $sanitized_items = array();
         foreach ( $_POST['dame_course_items'] as $item ) {
+            // Value is in format "type:id"
             list($type, $id) = explode(':', sanitize_text_field($item));
             if ( in_array($type, ['lecon', 'exercice']) && is_numeric($id) ) {
                 $sanitized_items[] = array(
@@ -1027,7 +1036,7 @@ function dame_save_cours_meta( $post_id ) {
         }
         update_post_meta( $post_id, '_dame_course_items', $sanitized_items );
     } else {
-        // If the list is empty, remove the meta key
+        // If the list is empty, it means no items are in the course.
         delete_post_meta( $post_id, '_dame_course_items' );
     }
 }
