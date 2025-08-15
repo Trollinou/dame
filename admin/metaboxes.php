@@ -95,6 +95,13 @@ function dame_enqueue_admin_scripts( $hook ) {
     // Ensure editor scripts are loaded for the Exercice CPT solution field
     if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && 'dame_exercice' === $post->post_type ) {
         wp_enqueue_editor();
+        // Enqueue admin styles for the z-index fix
+        wp_enqueue_style(
+            'dame-admin-styles',
+            plugin_dir_url( __FILE__ ) . 'css/admin-styles.css',
+            array(),
+            DAME_VERSION
+        );
     }
 }
 add_action( 'admin_enqueue_scripts', 'dame_enqueue_admin_scripts' );
