@@ -8,22 +8,33 @@
             revert: true,
             // The 'receive' event fires when a draggable is dropped on the sortable
             receive: function(event, ui) {
-                // The 'ui.item' is the clone from the draggable.
-                // We need to add our hidden input and delete button to it.
-                const postId = ui.item.data('id');
-                const postType = ui.item.data('type');
+                const droppedItemId = ui.item.data('id');
+                let isDuplicate = false;
 
-                // Add hidden input for saving the value
+                // Check for duplicates by scanning existing items in the target list.
+                // We check items other than the placeholder where the new item is about to land.
+                $(this).find('.dame-course-item').not('.ui-sortable-placeholder').each(function() {
+                    if ($(this).data('id') === droppedItemId) {
+                        isDuplicate = true;
+                    }
+                });
+
+                if (isDuplicate) {
+                    // Alert the user and cancel the drop
+                    alert("Cet élément est déjà présent dans le cours.");
+                    $(ui.sender).sortable('cancel');
+                    return;
+                }
+
+                // If not a duplicate, add hidden input and delete button
+                const postType = ui.item.data('type');
                 ui.item.append(
                     $('<input>', {
                         type: 'hidden',
                         name: 'dame_course_items[]',
-                        value: postType + ':' + postId
+                        value: postType + ':' + droppedItemId
                     })
-                );
-
-                // Add a delete button
-                ui.item.append(
+                ).append(
                     $('<button type="button" class="button-link-delete dame-delete-item" style="margin-left: 10px; cursor: pointer; color: #a00; border: none; background: none; font-size: 1.5em; line-height: 1; vertical-align: middle;">&times;</button>')
                 );
             }
@@ -37,8 +48,10 @@
         });
 
         // 3. Handle click on the delete button using event delegation
-        $('#dame-course-content').on('click', '.dame-delete-item', function() {
-            $(this).closest('.dame-course-item').remove();
+        $('#dame-course-content').on('click', '.dame-delete-item', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).closest('.dame-course-item').fadeOut(300, function() { $(this).remove(); });
         });
 
         // 4. Add a placeholder style for visual feedback during drag
