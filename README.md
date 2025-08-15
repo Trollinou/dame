@@ -1,6 +1,6 @@
-# DAME - Dossier Administratif des Membres Échiquéens
+# DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 2.0.0
+**Version:** 2.0.1
 **Auteur:** Etienne
 **Licence:** GPL v2 or later
 
