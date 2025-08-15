@@ -5,6 +5,86 @@
         const availableList = $('#dame-available-items-select');
         const courseList = $('#dame-course-items-select');
         const hiddenInputsContainer = $('#dame-course-items-hidden-inputs');
+        const difficultySelect = $('#dame_difficulty');
+        const availableItemsPlaceholder = $('#dame-available-items-placeholder');
+        const i18n = dame_course_builder_data.i18n;
+
+        function fetchAvailableItems() {
+            var difficulty = difficultySelect.val();
+
+            if (!difficulty) {
+                availableList.empty().prop('disabled', true);
+                if (availableItemsPlaceholder) {
+                    availableItemsPlaceholder.text(i18n.no_content).show();
+                }
+                return;
+            }
+
+            availableList.empty().prop('disabled', true);
+            if (availableItemsPlaceholder) {
+                availableItemsPlaceholder.text(i18n.loading).show();
+            }
+
+            $.ajax({
+                url: dame_course_builder_data.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'dame_get_course_builder_items',
+                    nonce: dame_course_builder_data.nonce,
+                    difficulty: difficulty,
+                    course_id: dame_course_builder_data.course_id
+                },
+                success: function(response) {
+                    if (response.success) {
+                        var lessons = response.data.lessons;
+                        var exercices = response.data.exercices;
+
+                        if (lessons.length > 0) {
+                            var lessonOptgroup = $('<optgroup>').attr('label', i18n.lessons);
+                            lessons.forEach(function(item) {
+                                lessonOptgroup.append($('<option>').val('lecon:' + item.id).text(item.title));
+                            });
+                            availableList.append(lessonOptgroup);
+                        }
+
+                        if (exercices.length > 0) {
+                            var exerciceOptgroup = $('<optgroup>').attr('label', i18n.exercices);
+                            exercices.forEach(function(item) {
+                                exerciceOptgroup.append($('<option>').val('exercice:' + item.id).text(item.title));
+                            });
+                            availableList.append(exerciceOptgroup);
+                        }
+
+                        if (lessons.length === 0 && exercices.length === 0) {
+                            if (availableItemsPlaceholder) {
+                                availableItemsPlaceholder.text(i18n.no_content).show();
+                            }
+                        } else {
+                            if (availableItemsPlaceholder) {
+                                availableItemsPlaceholder.hide();
+                            }
+                        }
+
+                        availableList.prop('disabled', false);
+                    } else {
+                        if (availableItemsPlaceholder) {
+                            availableItemsPlaceholder.text(i18n.error).show();
+                        }
+                    }
+                },
+                error: function() {
+                    if (availableItemsPlaceholder) {
+                        availableItemsPlaceholder.text(i18n.error).show();
+                    }
+                }
+            });
+        }
+
+        difficultySelect.on('change', fetchAvailableItems);
+
+        if (difficultySelect.val()) {
+            fetchAvailableItems();
+        }
 
         // Function to synchronize the hidden inputs with the course list
         function syncHiddenInputs() {
@@ -31,6 +111,7 @@
         // Remove selected items from the course list
         $('#dame-remove-from-course').on('click', function() {
             courseList.find('option:selected').each(function() {
+                // Just moving it back is fine, it will be gone on next difficulty change, which is expected.
                 $(this).remove().appendTo(availableList);
             });
             syncHiddenInputs(); // Sync after removing
@@ -58,8 +139,8 @@
             syncHiddenInputs(); // Sync after reordering
         });
 
-        // No pre-submit hook is needed with this new method.
-        // The hidden inputs are always in sync with the visual list.
+        // On load, ensure the hidden inputs match the course list.
+        syncHiddenInputs();
     });
 
 })(jQuery);
