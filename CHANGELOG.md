@@ -4,6 +4,18 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.0.0 (15/08/2025)
+
+*   **Fonctionnalité majeure : Module de contenu échiquéen**
+    *   **CPT Leçons :** Ajout d'un type de contenu "Leçon" réservé aux membres. Les entraîneurs peuvent suivre la complétion.
+    *   **CPT Exercices :** Ajout d'un type de contenu "Exercice" avec gestion de la difficulté, types de questions (QCM, Vrai/Faux), et solution.
+    *   **CPT Cours :** Ajout d'un type de contenu "Cours" permettant aux entraîneurs de créer des parcours pédagogiques en assemblant leçons et exercices.
+    *   **Interface d'exercices publique :** Une nouvelle interface accessible via shortcode `[dame_exercices]` permet aux utilisateurs de s'entraîner sur des exercices aléatoires, filtrés par catégorie et difficulté, avec un compteur de score.
+    *   **Constructeur de cours :** Une interface en glisser-déposer permet de construire les cours de manière intuitive.
+    *   **Taxonomie partagée :** Une nouvelle taxonomie "Catégories d'échecs" a été créée pour organiser tout le contenu pédagogique.
+    *   **Permissions granulaires :** La création de contenu est réservée aux rôles Entraîneur et Administrateur.
+    *   **Compatibilité :** Le contenu (leçons, exercices, solutions) est compatible avec les shortcodes, notamment ceux du plugin RPB Chessboard.
+
 ### 1.16.3 (13/08/2025)
 
 *   **Fonctionnalité :** Ajout d'un filtre par catégorie sur la page "Envoyer un article". Ce filtre permet de sélectionner une ou plusieurs catégories pour affiner dynamiquement la liste des articles. Le filtre est mémorisé entre les sessions.

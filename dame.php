@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier Administratif des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           1.16.3
+ * Version:           2.0.0
  * Author:            Etienne
  * Author URI:
  * License:           GPL v2 or later
@@ -17,7 +17,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '1.16.3' );
+define( 'DAME_VERSION', '2.0.0' );
 
 /**
  * Handles plugin updates.
@@ -51,7 +51,11 @@ function dame_perform_upgrade( $old_version, $new_version ) {
 // Include plugin files
 require_once plugin_dir_path( __FILE__ ) . 'includes/roles.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/cpt.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/taxonomies.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/data-lists.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/access-control.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/lesson-completion.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/shortcodes.php';
 
 if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/menu.php';

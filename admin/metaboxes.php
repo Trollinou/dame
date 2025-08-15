@@ -767,3 +767,266 @@ function dame_save_adherent_meta( $post_id ) {
 	}
 }
 add_action( 'save_post_adherent', 'dame_save_adherent_meta' );
+
+// --- Meta Box for Exercice CPT ---
+
+/**
+ * Adds the meta boxes for the Exercice CPT.
+ */
+function dame_add_exercice_meta_boxes() {
+    add_meta_box(
+        'dame_exercice_details_metabox',
+        __( 'Détails de l\'exercice', 'dame' ),
+        'dame_render_exercice_details_metabox',
+        'dame_exercice',
+        'normal',
+        'high'
+    );
+}
+add_action( 'add_meta_boxes', 'dame_add_exercice_meta_boxes' );
+
+/**
+ * Renders the meta box for exercice details.
+ *
+ * @param WP_Post $post The post object.
+ */
+function dame_render_exercice_details_metabox( $post ) {
+    wp_nonce_field( 'dame_save_exercice_meta', 'dame_exercice_metabox_nonce' );
+
+    $difficulty = get_post_meta( $post->ID, '_dame_difficulty', true );
+    $question_type = get_post_meta( $post->ID, '_dame_question_type', true );
+    $solution = get_post_meta( $post->ID, '_dame_solution', true );
+    $answers = get_post_meta( $post->ID, '_dame_answers', true );
+    ?>
+    <table class="form-table">
+        <tr>
+            <th><label for="dame_difficulty"><?php _e( 'Difficulté', 'dame' ); ?></label></th>
+            <td>
+                <select name="dame_difficulty" id="dame_difficulty">
+                    <option value="1" <?php selected( $difficulty, 1 ); ?>><?php _e( '1 - Très facile', 'dame' ); ?></option>
+                    <option value="2" <?php selected( $difficulty, 2 ); ?>><?php _e( '2 - Facile', 'dame' ); ?></option>
+                    <option value="3" <?php selected( $difficulty, 3 ); ?>><?php _e( '3 - Modéré', 'dame' ); ?></option>
+                    <option value="4" <?php selected( $difficulty, 4 ); ?>><?php _e( '4 - Difficile', 'dame' ); ?></option>
+                    <option value="5" <?php selected( $difficulty, 5 ); ?>><?php _e( '5 - Très Difficile', 'dame' ); ?></option>
+                    <option value="6" <?php selected( $difficulty, 6 ); ?>><?php _e( '6 - Expert', 'dame' ); ?></option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th><?php _e( 'Type de question', 'dame' ); ?></th>
+            <td>
+                <label><input type="radio" name="dame_question_type" value="true_false" <?php checked( $question_type, 'true_false' ); ?>> <?php _e( 'Vrai/Faux', 'dame' ); ?></label><br>
+                <label><input type="radio" name="dame_question_type" value="qcm_single" <?php checked( $question_type, 'qcm_single' ); ?>> <?php _e( 'QCM - Choix unique', 'dame' ); ?></label><br>
+                <label><input type="radio" name="dame_question_type" value="qcm_multiple" <?php checked( $question_type, 'qcm_multiple' ); ?>> <?php _e( 'QCM - Choix multiples', 'dame' ); ?></label>
+            </td>
+        </tr>
+        <tr>
+            <th><?php _e( 'Réponses possibles', 'dame' ); ?></th>
+            <td>
+                <p class="description"><?php _e('Pour chaque réponse, entrez le texte (les shortcodes sont autorisés) et cochez la case si c\'est une réponse correcte.', 'dame'); ?></p>
+                <?php
+                $answers = is_array($answers) ? $answers : array_fill(0, 5, ['text' => '', 'correct' => false]);
+                for ($i = 0; $i < 5; $i++) :
+                    $answer_text = isset($answers[$i]['text']) ? $answers[$i]['text'] : '';
+                    $is_correct = isset($answers[$i]['correct']) ? (bool)$answers[$i]['correct'] : false;
+                ?>
+                <div style="margin-bottom: 15px;">
+                    <label for="dame_answer_text_<?php echo $i; ?>"><?php printf(__('Réponse %d', 'dame'), $i + 1); ?></label>
+                    <input type="text" name="dame_answers[<?php echo $i; ?>][text]" id="dame_answer_text_<?php echo $i; ?>" value="<?php echo esc_attr($answer_text); ?>" style="width: 80%;" />
+                    <label><input type="checkbox" name="dame_answers[<?php echo $i; ?>][correct]" value="1" <?php checked($is_correct); ?> /> <?php _e('Correcte', 'dame'); ?></label>
+                </div>
+                <?php endfor; ?>
+            </td>
+        </tr>
+        <tr>
+            <th><label for="dame_solution"><?php _e( 'Solution', 'dame' ); ?></label></th>
+            <td>
+                <?php
+                wp_editor( $solution, 'dame_solution', array(
+                    'textarea_name' => 'dame_solution',
+                    'media_buttons' => false,
+                    'textarea_rows' => 10,
+                ) );
+                ?>
+                <p class="description"><?php _e('La solution sera affichée après que l\'utilisateur a répondu à l\'exercice.', 'dame'); ?></p>
+            </td>
+        </tr>
+    </table>
+    <?php
+}
+
+/**
+ * Save meta box content for Exercice CPT.
+ *
+ * @param int $post_id Post ID
+ */
+function dame_save_exercice_meta( $post_id ) {
+    // --- Security checks ---
+    if ( ! isset( $_POST['dame_exercice_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_exercice_metabox_nonce'], 'dame_save_exercice_meta' ) ) {
+        return;
+    }
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+        return;
+    }
+    // The capability check is handled by the CPT definition, but an explicit check is good practice.
+    if ( ! current_user_can( 'edit_post', $post_id ) ) {
+        return;
+    }
+
+    // --- Sanitize and Save Data ---
+    if ( isset( $_POST['dame_difficulty'] ) ) {
+        update_post_meta( $post_id, '_dame_difficulty', intval( $_POST['dame_difficulty'] ) );
+    }
+    if ( isset( $_POST['dame_question_type'] ) ) {
+        update_post_meta( $post_id, '_dame_question_type', sanitize_key( $_POST['dame_question_type'] ) );
+    }
+    if ( isset( $_POST['dame_solution'] ) ) {
+        update_post_meta( $post_id, '_dame_solution', wp_kses_post( $_POST['dame_solution'] ) );
+    }
+    if ( isset( $_POST['dame_answers'] ) && is_array( $_POST['dame_answers'] ) ) {
+        $sanitized_answers = array();
+        foreach ( $_POST['dame_answers'] as $answer ) {
+            // Ignore empty answer fields
+            if ( ! empty( $answer['text'] ) ) {
+                $sanitized_answers[] = array(
+                    'text'    => sanitize_text_field( $answer['text'] ),
+                    'correct' => isset( $answer['correct'] ) ? true : false,
+                );
+            }
+        }
+        update_post_meta( $post_id, '_dame_answers', $sanitized_answers );
+    }
+}
+add_action( 'save_post_dame_exercice', 'dame_save_exercice_meta' );
+
+// --- Meta Box for Cours CPT ---
+
+/**
+ * Adds the meta boxes for the Cours CPT.
+ */
+function dame_add_cours_meta_boxes() {
+    add_meta_box(
+        'dame_cours_builder_metabox',
+        __( 'Constructeur de Cours', 'dame' ),
+        'dame_render_cours_builder_metabox',
+        'dame_cours',
+        'normal',
+        'high'
+    );
+}
+add_action( 'add_meta_boxes', 'dame_add_cours_meta_boxes' );
+
+/**
+ * Renders the meta box for the course builder.
+ *
+ * @param WP_Post $post The post object.
+ */
+function dame_render_cours_builder_metabox( $post ) {
+    wp_nonce_field( 'dame_save_cours_meta', 'dame_cours_metabox_nonce' );
+
+    // Enqueue the script for the course builder
+    wp_enqueue_script('dame-course-builder', plugin_dir_url(__FILE__) . 'js/course-builder.js', array('jquery', 'jquery-ui-sortable'), DAME_VERSION, true);
+
+    $course_items = get_post_meta( $post->ID, '_dame_course_items', true );
+    if ( ! is_array( $course_items ) ) {
+        $course_items = array();
+    }
+
+    $all_lessons = get_posts( array( 'post_type' => 'dame_lecon', 'posts_per_page' => -1 ) );
+    $all_exercices = get_posts( array( 'post_type' => 'dame_exercice', 'posts_per_page' => -1 ) );
+    ?>
+    <style>
+        #dame-course-builder-wrapper { display: flex; gap: 20px; }
+        #dame-available-items, #dame-course-content { flex: 1; border: 1px solid #ccc; padding: 10px; min-height: 300px; background: #f9f9f9; }
+        .dame-course-item { padding: 8px; border: 1px solid #ddd; background: #fff; margin-bottom: 5px; cursor: move; }
+        .dame-course-item .item-type { font-style: italic; color: #777; font-size: 0.9em; }
+        #dame-course-content { background: #f0f0f0; }
+    </style>
+
+    <div id="dame-course-builder-wrapper">
+        <div id="dame-available-items">
+            <h3><?php _e( 'Contenus Disponibles', 'dame' ); ?></h3>
+            <p class="description"><?php _e( 'Glissez-déposez les éléments de gauche à droite pour construire votre cours.', 'dame' ); ?></p>
+
+            <h4><?php _e( 'Leçons', 'dame' ); ?></h4>
+            <ul class="dame-item-list">
+                <?php foreach ( $all_lessons as $lesson ) : ?>
+                    <li class="dame-course-item" data-id="<?php echo esc_attr( $lesson->ID ); ?>" data-type="lecon">
+                        <strong><?php echo esc_html( $lesson->post_title ); ?></strong>
+                        <span class="item-type"><?php _e( 'Leçon', 'dame' ); ?></span>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+
+            <h4><?php _e( 'Exercices', 'dame' ); ?></h4>
+            <ul class="dame-item-list">
+                <?php foreach ( $all_exercices as $exercice ) : ?>
+                    <li class="dame-course-item" data-id="<?php echo esc_attr( $exercice->ID ); ?>" data-type="exercice">
+                        <strong><?php echo esc_html( $exercice->post_title ); ?></strong>
+                        <span class="item-type"><?php _e( 'Exercice', 'dame' ); ?></span>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+
+        <div id="dame-course-content">
+            <h3><?php _e( 'Contenu du Cours (ordonné)', 'dame' ); ?></h3>
+            <ul id="dame-course-item-list" class="dame-item-list">
+                <?php
+                if ( ! empty( $course_items ) ) {
+                    foreach ( $course_items as $item ) {
+                        $post_id = $item['id'];
+                        $post_type = $item['type'];
+                        $post_obj = get_post($post_id);
+                        if ($post_obj) {
+                            ?>
+                            <li class="dame-course-item" data-id="<?php echo esc_attr( $post_id ); ?>" data-type="<?php echo esc_attr($post_type); ?>">
+                                <strong><?php echo esc_html( $post_obj->post_title ); ?></strong>
+                                <span class="item-type"><?php echo $post_type === 'lecon' ? __( 'Leçon', 'dame' ) : __( 'Exercice', 'dame' ); ?></span>
+                                <input type="hidden" name="dame_course_items[]" value="<?php echo esc_attr( $post_type . ':' . $post_id ); ?>">
+                            </li>
+                            <?php
+                        }
+                    }
+                }
+                ?>
+            </ul>
+        </div>
+    </div>
+    <?php
+}
+
+/**
+ * Save meta box content for Cours CPT.
+ *
+ * @param int $post_id Post ID
+ */
+function dame_save_cours_meta( $post_id ) {
+    if ( ! isset( $_POST['dame_cours_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_cours_metabox_nonce'], 'dame_save_cours_meta' ) ) {
+        return;
+    }
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+        return;
+    }
+    if ( ! current_user_can( 'edit_post', $post_id ) ) {
+        return;
+    }
+
+    if ( isset( $_POST['dame_course_items'] ) && is_array( $_POST['dame_course_items'] ) ) {
+        $sanitized_items = array();
+        foreach ( $_POST['dame_course_items'] as $item ) {
+            list($type, $id) = explode(':', sanitize_text_field($item));
+            if ( in_array($type, ['lecon', 'exercice']) && is_numeric($id) ) {
+                $sanitized_items[] = array(
+                    'type' => $type,
+                    'id'   => intval($id),
+                );
+            }
+        }
+        update_post_meta( $post_id, '_dame_course_items', $sanitized_items );
+    } else {
+        // If the list is empty, remove the meta key
+        delete_post_meta( $post_id, '_dame_course_items' );
+    }
+}
+add_action( 'save_post_dame_cours', 'dame_save_cours_meta' );
