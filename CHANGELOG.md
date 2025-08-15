@@ -4,6 +4,15 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.0.2 (15/08/2025)
+
+*   **Fonctionnalité :** Ajout d'un champ "Difficulté" obligatoire (de 1 à 6) pour les Leçons, Exercices et Cours pour une classification cohérente.
+*   **Fonctionnalité :** Ajout d'une colonne "Difficulté" dans les listes d'administration des Leçons, Exercices et Cours, avec une icône étoile colorée pour visualiser rapidement le niveau.
+*   **Amélioration :** Le constructeur de cours filtre désormais les contenus disponibles (leçons, exercices) pour ne proposer que ceux correspondant à la difficulté du cours.
+*   **Amélioration :** Lors d'un changement de difficulté sur un cours, la liste des contenus sélectionnés est maintenant vidée (après confirmation) pour éviter les incohérences.
+*   **Correctif :** Le type de contenu s'affiche désormais correctement ("Leçon" au lieu de "lecon") dans la liste des éléments du constructeur de cours.
+*   **Correctif :** Lors du retrait d'un élément d'un cours, celui-ci retourne maintenant dans la bonne catégorie (Leçons ou Exercices) dans la liste des contenus disponibles.
+
 ### 2.0.1 (15/08/2025)
 
 *   **Changement :** Le nom du plugin devient "Dossier et Apprentissage des Membres Échiquéens" pour mieux refléter l'ajout des fonctionnalités pédagogiques.
