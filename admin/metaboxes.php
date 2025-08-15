@@ -995,7 +995,7 @@ function dame_render_cours_builder_metabox( $post ) {
         <!-- Course Items List -->
         <div class="dame-dual-list-box">
             <strong><?php _e( 'Contenu du Cours', 'dame' ); ?></strong>
-            <select id="dame-course-items-select" name="dame_course_items[]" multiple>
+            <select id="dame-course-items-select" multiple>
                 <?php
                 if ( ! empty( $course_items_raw ) ) {
                     foreach ( $course_items_raw as $item ) {
@@ -1009,6 +1009,16 @@ function dame_render_cours_builder_metabox( $post ) {
                 }
                 ?>
             </select>
+            <div id="dame-course-items-hidden-inputs">
+                <?php
+                if ( ! empty( $course_items_raw ) ) {
+                    foreach ( $course_items_raw as $item ) {
+                        $value = esc_attr( $item['type'] . ':' . $item['id'] );
+                        echo '<input type="hidden" name="dame_course_items[]" value="' . $value . '">';
+                    }
+                }
+                ?>
+            </div>
         </div>
 
         <!-- Reorder Controls -->
