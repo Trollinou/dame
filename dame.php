@@ -38,10 +38,12 @@ add_action( 'plugins_loaded', 'dame_check_for_updates' );
  */
 function dame_perform_upgrade( $old_version, $new_version ) {
     // In the future, you can add upgrade logic here based on version.
-    // Example:
-    // if ( version_compare( $old_version, '1.3.0', '<' ) ) {
-    //     // Code to migrate data for version 1.3.0
-    // }
+    if ( version_compare( $old_version, '2.0.0', '<' ) ) {
+        // Add new capabilities for the chess content module
+        if ( function_exists( 'dame_add_capabilities_to_roles' ) ) {
+            dame_add_capabilities_to_roles();
+        }
+    }
 
     // Update the version in the database to the new version.
     update_option( 'dame_plugin_version', $new_version );

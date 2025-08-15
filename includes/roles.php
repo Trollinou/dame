@@ -47,26 +47,20 @@ function dame_get_cours_capabilities() {
     );
 }
 
-function dame_add_custom_roles() {
-    // Role: Membre (Member)
-    // Based on Subscriber, but can post comments.
-    $subscriber = get_role( 'subscriber' );
-    if ( $subscriber ) {
-        $capabilities = $subscriber->capabilities;
-        $capabilities['post_comments'] = true; // As requested
-        add_role( 'membre', __( 'Membre', 'dame' ), $capabilities );
-    }
-
-    // Role: Entraineur (Coach)
-    // Based on Editor.
-    $editor = get_role( 'editor' );
-    if ( $editor ) {
-        $entraineur_caps = array_merge(
-            $editor->capabilities,
+/**
+ * Adds the custom capabilities for the plugin to the relevant roles.
+ */
+function dame_add_capabilities_to_roles() {
+    // Add caps to Entraineur
+    $entraineur = get_role( 'entraineur' );
+    if ( $entraineur ) {
+        $caps_to_add = array_merge(
             dame_get_exercice_capabilities(),
             dame_get_cours_capabilities()
         );
-        add_role( 'entraineur', __( 'Entraineur', 'dame' ), $entraineur_caps );
+        foreach ( $caps_to_add as $cap => $grant ) {
+            $entraineur->add_cap( $cap, $grant );
+        }
     }
 
     // Add caps to Administrator
@@ -80,6 +74,27 @@ function dame_add_custom_roles() {
             $admin->add_cap( $cap, $grant );
         }
     }
+}
+
+function dame_add_custom_roles() {
+    // Role: Membre (Member)
+    // Based on Subscriber, but can post comments.
+    $subscriber = get_role( 'subscriber' );
+    if ( $subscriber ) {
+        $capabilities = $subscriber->capabilities;
+        $capabilities['post_comments'] = true; // As requested
+        add_role( 'membre', __( 'Membre', 'dame' ), $capabilities );
+    }
+
+    // Role: Entraineur (Coach)
+    // Based on Editor. We add capabilities separately.
+    $editor = get_role( 'editor' );
+    if ( $editor ) {
+        add_role( 'entraineur', __( 'Entraineur', 'dame' ), $editor->capabilities );
+    }
+
+    // Add all our custom capabilities to the roles.
+    dame_add_capabilities_to_roles();
 
     // Store the plugin version on activation.
     update_option( 'dame_plugin_version', DAME_VERSION );
