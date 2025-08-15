@@ -8,27 +8,32 @@
             revert: true,
             // The 'receive' event fires when a draggable is dropped on the sortable
             receive: function(event, ui) {
-                const droppedItemId = ui.item.data('id');
+                const droppedItem = ui.item;
+                const droppedItemId = droppedItem.data('id');
                 let isDuplicate = false;
 
-                // Check for duplicates by scanning existing items in the target list.
-                // We check items other than the placeholder where the new item is about to land.
-                $(this).find('.dame-course-item').not('.ui-sortable-placeholder').each(function() {
+                // Check for duplicates by looking at other items already in the list.
+                // The .not(ui.item) is crucial to exclude the item just dropped.
+                $(this).find('.dame-course-item').not(ui.item).each(function() {
                     if ($(this).data('id') === droppedItemId) {
                         isDuplicate = true;
                     }
                 });
 
                 if (isDuplicate) {
-                    // Alert the user and cancel the drop
                     alert("Cet élément est déjà présent dans le cours.");
+                    // Remove the item that was just dropped.
+                    // Using .remove() on ui.item is not reliable here as it's a clone.
+                    // The best way is to cancel the operation from the sender.
                     $(ui.sender).sortable('cancel');
                     return;
                 }
 
-                // If not a duplicate, add hidden input and delete button
-                const postType = ui.item.data('type');
-                ui.item.append(
+                // If not a duplicate, add the hidden input and delete button
+                const postType = droppedItem.data('type');
+                // The dropped element is a clone, we need to add the input and button to it.
+                // The helper is what is dragged, but ui.item is what is in the list now.
+                droppedItem.append(
                     $('<input>', {
                         type: 'hidden',
                         name: 'dame_course_items[]',
@@ -44,14 +49,16 @@
         $("#dame-available-items .dame-course-item").draggable({
             connectToSortable: "#dame-course-item-list",
             helper: "clone",
-            revert: "invalid" // Snap back if not dropped on a valid sortable
+            revert: "invalid"
         });
 
-        // 3. Handle click on the delete button using event delegation
-        $('#dame-course-content').on('click', '.dame-delete-item', function(e) {
+        // 3. Use a more robust delegated event handler for the delete button, attached to the document
+        $(document).on('click', '#dame-course-content .dame-delete-item', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            $(this).closest('.dame-course-item').fadeOut(300, function() { $(this).remove(); });
+            $(this).closest('.dame-course-item').fadeOut(300, function() {
+                $(this).remove();
+            });
         });
 
         // 4. Add a placeholder style for visual feedback during drag
