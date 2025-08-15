@@ -127,7 +127,7 @@ function dame_fetch_exercice_ajax_handler() {
             <input type="hidden" id="dame-exercice-id" value="<?php echo esc_attr( $exercice_id ); ?>">
             <h2><?php the_title(); ?></h2>
             <div class="dame-exercice-content">
-                <?php the_content(); ?>
+                <?php echo apply_filters( 'the_content', get_the_content() ); ?>
             </div>
 
             <?php
