@@ -80,8 +80,34 @@
             });
         }
 
-        difficultySelect.on('change', fetchAvailableItems);
+        difficultySelect.on('focus', function () {
+            // Store the original value on focus
+            $(this).data('previous-value', $(this).val());
+        }).on('change', function() {
+            var previousValue = $(this).data('previous-value');
+            var currentValue = $(this).val();
 
+            if (courseList.find('option').length > 0) {
+                if (confirm("Changer le niveau de difficulté videra la liste des leçons et exercices déjà sélectionnés. Voulez-vous continuer ?")) {
+                    // User confirmed, clear the list and fetch new items
+                    courseList.empty();
+                    syncHiddenInputs();
+                    fetchAvailableItems();
+                } else {
+                    // User canceled, revert the dropdown to its previous value
+                    $(this).val(previousValue);
+                    return;
+                }
+            } else {
+                // List is empty, just fetch items
+                fetchAvailableItems();
+            }
+
+            // Update the previous value for the next change event
+            $(this).data('previous-value', currentValue);
+        });
+
+        // Initial load if a difficulty is already selected
         if (difficultySelect.val()) {
             fetchAvailableItems();
         }
