@@ -24,12 +24,16 @@
                 success: function(response) {
                     if (response.success) {
                         let message = '';
+                        let feedbackHtml = '';
                         if (response.data.correct) {
-                            message = '<p style="color:green;">' + response.data.message + '</p>';
+                            feedbackHtml = '<p style="color:green;">' + response.data.message + '</p>';
                         } else {
-                            message = '<p style="color:red;">' + response.data.message + '</p>';
+                            feedbackHtml = '<p style="color:red;">' + response.data.message + '</p>';
+                            if (response.data.correct_answers) {
+                                feedbackHtml += '<p>' + "La bonne réponse était :" + '</p>' + response.data.correct_answers;
+                            }
                         }
-                        feedbackDiv.html(message);
+                        feedbackDiv.html(feedbackHtml);
                         solutionDiv.html(response.data.solution).show();
                         submitButton.hide();
                     } else {

@@ -202,19 +202,27 @@ function dame_check_answer_ajax_handler() {
     $solution_html = get_post_meta( $exercise_id, '_dame_solution', true );
     $solution_html = apply_filters('the_content', $solution_html); // Process shortcodes etc.
 
+    $response_data = array(
+        'correct' => $is_correct,
+        'solution' => $solution_html
+    );
+
     if ($is_correct) {
-        wp_send_json_success(array(
-            'correct' => true,
-            'message' => __('Bonne réponse !', 'dame'),
-            'solution' => $solution_html
-        ));
+        $response_data['message'] = __('Bonne réponse !', 'dame');
     } else {
-        wp_send_json_success(array(
-            'correct' => false,
-            'message' => __('Réponse incorrecte.', 'dame'),
-            'solution' => $solution_html
-        ));
+        $correct_answer_texts = array();
+        foreach($correct_answers_indices as $index) {
+            if(isset($all_answers[$index]['text'])) {
+                $correct_answer_texts[] = '<li>' . do_shortcode(wp_kses_post($all_answers[$index]['text'])) . '</li>';
+            }
+        }
+        $response_data['message'] = __('Réponse incorrecte.', 'dame');
+        if(!empty($correct_answer_texts)) {
+             $response_data['correct_answers'] = '<ul>' . implode('', $correct_answer_texts) . '</ul>';
+        }
     }
+
+    wp_send_json_success($response_data);
 
     wp_die();
 }

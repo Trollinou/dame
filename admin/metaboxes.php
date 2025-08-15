@@ -91,6 +91,11 @@ function dame_enqueue_admin_scripts( $hook ) {
             true
         );
     }
+
+    // Ensure editor scripts are loaded for the Exercice CPT solution field
+    if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && 'dame_exercice' === $post->post_type ) {
+        wp_enqueue_editor();
+    }
 }
 add_action( 'admin_enqueue_scripts', 'dame_enqueue_admin_scripts' );
 

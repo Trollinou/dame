@@ -80,7 +80,11 @@
                             $('#dame-score-correct').text(scoreCorrect);
                             solutionDiv.before('<p style="color:green;">' + response.data.message + '</p>');
                         } else {
-                             solutionDiv.before('<p style="color:red;">' + response.data.message + '</p>');
+                             let feedbackHtml = '<p style="color:red;">' + response.data.message + '</p>';
+                             if (response.data.correct_answers) {
+                                 feedbackHtml += '<p>' + "La bonne réponse était :" + '</p>' + response.data.correct_answers;
+                             }
+                             solutionDiv.before(feedbackHtml);
                         }
                         solutionDiv.html(response.data.solution).show();
                         submitButton.hide();
