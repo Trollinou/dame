@@ -60,6 +60,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/data-lists.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/access-control.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/lesson-completion.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/shortcodes.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/single-exercice-handler.php';
 
 if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/menu.php';
