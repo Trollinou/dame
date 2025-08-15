@@ -938,6 +938,7 @@ function dame_render_cours_builder_metabox( $post ) {
     <style>
         #dame-course-builder-wrapper { display: flex; gap: 20px; }
         #dame-available-items, #dame-course-content { flex: 1; border: 1px solid #ccc; padding: 10px; min-height: 300px; background: #f9f9f9; }
+        #dame-course-item-list { min-height: 100px; border: 1px dashed #ccc; background-color: #fdfdfd; }
         .dame-course-item { padding: 8px; border: 1px solid #ddd; background: #fff; margin-bottom: 5px; cursor: move; }
         .dame-course-item .item-type { font-style: italic; color: #777; font-size: 0.9em; }
         #dame-course-content { background: #f0f0f0; }
