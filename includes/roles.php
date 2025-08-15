@@ -37,9 +37,9 @@ function dame_get_exercice_capabilities() {
  */
 function dame_get_cours_capabilities() {
     return array(
-        'edit_cours'          => true,
-        'read_cours'          => true,
-        'delete_cours'        => true,
+        'edit_cours_item'    => true,
+        'read_cours_item'    => true,
+        'delete_cours_item'  => true,
         'edit_cours'         => true,
         'edit_others_cours'  => true,
         'publish_cours'      => true,

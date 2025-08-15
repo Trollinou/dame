@@ -241,9 +241,9 @@ function dame_register_cours_cpt() {
         'publicly_queryable'    => true,
         'capability_type'       => 'post', // Using 'post' and custom capabilities like for exercices
         'capabilities' => array(
-            'edit_post'          => 'edit_cours',
-            'read_post'          => 'read_cours',
-            'delete_post'        => 'delete_cours',
+            'edit_post'          => 'edit_cours_item',
+            'read_post'          => 'read_cours_item',
+            'delete_post'        => 'delete_cours_item',
             'edit_posts'         => 'edit_cours',
             'edit_others_posts'  => 'edit_others_cours',
             'publish_posts'      => 'publish_cours',
