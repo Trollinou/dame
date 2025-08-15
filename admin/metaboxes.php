@@ -984,6 +984,7 @@ function dame_render_cours_builder_metabox( $post ) {
                                 <strong><?php echo esc_html( $post_obj->post_title ); ?></strong>
                                 <span class="item-type"><?php echo $post_type === 'lecon' ? __( 'Leçon', 'dame' ) : __( 'Exercice', 'dame' ); ?></span>
                                 <input type="hidden" name="dame_course_items[]" value="<?php echo esc_attr( $post_type . ':' . $post_id ); ?>">
+                                <button type="button" class="button-link-delete dame-delete-item" style="margin-left: 10px; cursor: pointer; color: #a00; border: none; background: none; font-size: 1.5em; line-height: 1; vertical-align: middle;">&times;</button>
                             </li>
                             <?php
                         }
