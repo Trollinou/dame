@@ -925,7 +925,7 @@ function dame_render_cours_builder_metabox( $post ) {
     wp_nonce_field( 'dame_save_cours_meta', 'dame_cours_metabox_nonce' );
 
     // Enqueue the script for the course builder
-    wp_enqueue_script('dame-course-builder', plugin_dir_url(__FILE__) . 'js/course-builder.js', array('jquery', 'jquery-ui-sortable'), DAME_VERSION, true);
+    wp_enqueue_script('dame-course-builder', plugin_dir_url(__FILE__) . 'js/course-builder.js', array('jquery', 'jquery-ui-sortable', 'jquery-ui-draggable'), DAME_VERSION, true);
 
     $course_items = get_post_meta( $post->ID, '_dame_course_items', true );
     if ( ! is_array( $course_items ) ) {
