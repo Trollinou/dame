@@ -839,11 +839,11 @@ function dame_render_exercice_details_metabox( $post ) {
             </td>
         </tr>
         <tr>
-            <th><label for="dame_solution"><?php _e( 'Solution', 'dame' ); ?></label></th>
+            <th><label for="dame_exercice_solution"><?php _e( 'Solution', 'dame' ); ?></label></th>
             <td>
                 <?php
-                wp_editor( $solution, 'dame_solution', array(
-                    'textarea_name' => 'dame_solution',
+                wp_editor( $solution, 'dame_exercice_solution', array(
+                    'textarea_name' => 'dame_exercice_solution',
                     'media_buttons' => false,
                     'textarea_rows' => 10,
                 ) );
@@ -880,8 +880,8 @@ function dame_save_exercice_meta( $post_id ) {
     if ( isset( $_POST['dame_question_type'] ) ) {
         update_post_meta( $post_id, '_dame_question_type', sanitize_key( $_POST['dame_question_type'] ) );
     }
-    if ( isset( $_POST['dame_solution'] ) ) {
-        update_post_meta( $post_id, '_dame_solution', wp_kses_post( $_POST['dame_solution'] ) );
+    if ( isset( $_POST['dame_exercice_solution'] ) ) {
+        update_post_meta( $post_id, '_dame_solution', wp_kses_post( $_POST['dame_exercice_solution'] ) );
     }
     if ( isset( $_POST['dame_answers'] ) && is_array( $_POST['dame_answers'] ) ) {
         $sanitized_answers = array();
