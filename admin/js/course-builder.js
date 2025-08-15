@@ -137,8 +137,21 @@
         // Remove selected items from the course list
         $('#dame-remove-from-course').on('click', function() {
             courseList.find('option:selected').each(function() {
-                // Just moving it back is fine, it will be gone on next difficulty change, which is expected.
-                $(this).remove().appendTo(availableList);
+                const option = $(this);
+                const value = option.val();
+                const type = value.split(':')[0]; // 'lecon' or 'exercice'
+                const optgroupLabel = (type === 'lecon') ? i18n.lessons : i18n.exercices;
+
+                let optgroup = availableList.find('optgroup[label="' + optgroupLabel + '"]');
+
+                if (optgroup.length === 0) {
+                    // Create the optgroup if it doesn't exist
+                    optgroup = $('<optgroup>').attr('label', optgroupLabel);
+                    availableList.append(optgroup);
+                }
+
+                // Append the option to the correct optgroup
+                option.remove().appendTo(optgroup);
             });
             syncHiddenInputs(); // Sync after removing
         });
