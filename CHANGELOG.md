@@ -7,14 +7,17 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 ### 2.0.0 (15/08/2025)
 
 *   **Fonctionnalité majeure : Module de contenu échiquéen**
-    *   **CPT Leçons :** Ajout d'un type de contenu "Leçon" réservé aux membres. Les entraîneurs peuvent suivre la complétion.
-    *   **CPT Exercices :** Ajout d'un type de contenu "Exercice" avec gestion de la difficulté, types de questions (QCM, Vrai/Faux), et solution.
-    *   **CPT Cours :** Ajout d'un type de contenu "Cours" permettant aux entraîneurs de créer des parcours pédagogiques en assemblant leçons et exercices.
-    *   **Interface d'exercices publique :** Une nouvelle interface accessible via shortcode `[dame_exercices]` permet aux utilisateurs de s'entraîner sur des exercices aléatoires, filtrés par catégorie et difficulté, avec un compteur de score.
-    *   **Constructeur de cours :** Une interface en glisser-déposer permet de construire les cours de manière intuitive.
-    *   **Taxonomie partagée :** Une nouvelle taxonomie "Catégories d'échecs" a été créée pour organiser tout le contenu pédagogique.
-    *   **Permissions granulaires :** La création de contenu est réservée aux rôles Entraîneur et Administrateur.
-    *   **Compatibilité :** Le contenu (leçons, exercices, solutions) est compatible avec les shortcodes, notamment ceux du plugin RPB Chessboard.
+    *   **CPT Leçons :** Ajout d'un type de contenu "Leçon" réservé aux membres, avec suivi de la complétion.
+    *   **CPT Exercices :** Ajout d'un type de contenu "Exercice" avec gestion de la difficulté, types de questions, et solution.
+    *   **CPT Cours :** Ajout d'un type de contenu "Cours" pour créer des parcours pédagogiques.
+    *   **Interface d'exercices publique :** Ajout d'un shortcode `[dame_exercices]` pour un entraînement interactif avec filtres et score.
+    *   **Constructeur de cours :** Remplacement de l'interface de création de cours par un système de double liste robuste et fiable pour l'ajout, la suppression et le réordonnancement des leçons/exercices.
+    *   **Taxonomie et Permissions :** Création d'une taxonomie partagée et de permissions granulaires pour la gestion du nouveau contenu.
+*   **Améliorations et Correctifs de la v2.0.0**
+    *   **Correctif :** Le champ "Solution" de l'éditeur d'exercices est maintenant toujours accessible, corrigeant un bug de rendu CSS spécifique à Safari.
+    *   **Correctif :** Les permaliens pour les nouveaux types de contenu fonctionnent désormais correctement après l'activation/mise à jour du plugin grâce à un rafraîchissement programmé des règles de réécriture.
+    *   **Correctif :** Le formulaire de réponse (QCM) s'affiche maintenant correctement sur les pages d'exercices individuelles, et pas seulement dans le shortcode.
+    *   **Amélioration :** Le retour de réponse pour les exercices incorrects affiche maintenant la ou les bonnes réponses pour une meilleure valeur pédagogique.
 
 ### 1.16.3 (13/08/2025)
 

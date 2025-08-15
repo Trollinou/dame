@@ -27,7 +27,7 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 *   **Leçons :** Un type de contenu pour les leçons d'échecs, visible uniquement par les membres du club. Les administrateurs et entraîneurs peuvent suivre quelles leçons ont été complétées par les membres.
 *   **Exercices :** Un type de contenu pour les exercices d'échecs interactifs avec différents types de questions (Vrai/Faux, QCM), niveaux de difficulté, et une solution. Les exercices sont accessibles à tous les visiteurs.
 *   **Constructeur d'exercices :** Une interface publique permet aux visiteurs de s'entraîner sur des exercices aléatoires en fonction de la catégorie et de la difficulté, avec un suivi du score.
-*   **Cours :** Permet aux entraîneurs de construire des cours structurés en combinant des leçons et des exercices existants via une interface en glisser-déposer.
+*   **Cours :** Permet aux entraîneurs de construire des cours structurés en combinant des leçons et des exercices existants via une interface à double liste.
 *   **Catégories d'échecs :** Une taxonomie hiérarchique partagée pour organiser les leçons, exercices et cours.
 *   **Compatibilité RPB Chessboard :** Le contenu des leçons, exercices (y compris les réponses et solutions) est compatible avec les shortcodes du plugin RPB Chessboard.
 
