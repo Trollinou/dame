@@ -4,6 +4,10 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.0.1 (15/08/2025)
+
+*   **Changement :** Le nom du plugin devient "Dossier et Apprentissage des Membres Échiquéens" pour mieux refléter l'ajout des fonctionnalités pédagogiques.
+
 ### 2.0.0 (15/08/2025)
 
 *   **Fonctionnalité majeure : Module de contenu échiquéen**

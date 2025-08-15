@@ -2,7 +2,7 @@
 /**
  * File for registering the Adherent Custom Post Type.
  *
- * @package DAME
+ * @package DAME - Dossier et Apprentissage des Membres Échiquéens
  */
 
 // If this file is called directly, abort.

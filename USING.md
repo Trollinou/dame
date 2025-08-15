@@ -1,6 +1,6 @@
 # Guide d'utilisation des fonctionnalités Échiquéennes
 
-Ce document explique comment utiliser les nouvelles fonctionnalités de Leçons, Exercices et Cours dans le plugin DAME.
+Ce document explique comment utiliser les nouvelles fonctionnalités de Leçons, Exercices et Cours dans le plugin DAME - Dossier et Apprentissage des Membres Échiquéens.
 
 ## 1. Comment utiliser les Exercices interactifs
 

@@ -2,7 +2,7 @@
 /**
  * File for handling menu manipulations.
  *
- * @package DAME
+ * @package DAME - Dossier et Apprentissage des Membres Échiquéens
  */
 
 // If this file is called directly, abort.
