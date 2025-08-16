@@ -141,7 +141,7 @@ function dame_fetch_exercice_ajax_handler() {
                     ?>
                     <label>
                         <input type="<?php echo $input_type; ?>" name="dame_answer[]" value="<?php echo esc_attr($index); ?>">
-                        <?php echo dame_chess_pieces_shortcodes_filter( wp_kses_post( $answer['text'] ) ); ?>
+                        <?php echo wp_kses_post( dame_chess_pieces_shortcodes_filter( $answer['text'] ) ); ?>
                     </label><br>
                     <?php
                 }
@@ -213,7 +213,7 @@ function dame_check_answer_ajax_handler() {
         $correct_answer_texts = array();
         foreach($correct_answers_indices as $index) {
             if(isset($all_answers[$index]['text'])) {
-                $correct_answer_texts[] = '<li>' . dame_chess_pieces_shortcodes_filter(wp_kses_post($all_answers[$index]['text'])) . '</li>';
+                $correct_answer_texts[] = '<li>' . wp_kses_post(dame_chess_pieces_shortcodes_filter($all_answers[$index]['text'])) . '</li>';
             }
         }
         $response_data['message'] = __('Réponse incorrecte.', 'dame');
