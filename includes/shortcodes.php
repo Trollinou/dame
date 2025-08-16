@@ -228,3 +228,40 @@ function dame_check_answer_ajax_handler() {
 }
 add_action( 'wp_ajax_dame_check_answer', 'dame_check_answer_ajax_handler' );
 add_action( 'wp_ajax_nopriv_dame_check_answer', 'dame_check_answer_ajax_handler' );
+
+
+/**
+ * Replaces chess piece shortcodes with their corresponding Unicode characters.
+ *
+ * This function is hooked into `the_content`, `widget_text_content`, and `comment_text`
+ * to ensure that chess piece representations are consistent across the site.
+ *
+ * @param string $content The content to filter.
+ * @return string The filtered content with chess piece shortcodes replaced.
+ */
+function dame_chess_pieces_shortcodes_filter( $content ) {
+    $chess_pieces = array(
+        // Pièces Blanches
+        '[RB]' => '♔', // U+2654 - Roi Blanc
+        '[DB]' => '♕', // U+2655 - Dame Blanche
+        '[TB]' => '♖', // U+2656 - Tour Blanche
+        '[FB]' => '♗', // U+2657 - Fou Blanc
+        '[CB]' => '♘', // U+2658 - Cavalier Blanc
+        '[PB]' => '♙', // U+2659 - Pion Blanc
+        // Pièces Noires
+        '[RN]' => '♚', // U+265A - Roi Noir
+        '[DN]' => '♛', // U+265B - Dame Noire
+        '[TN]' => '♜', // U+265C - Tour Noire
+        '[FN]' => '♝', // U+265D - Fou Noir
+        '[CN]' => '♞', // U+265E - Cavalier Noir
+        '[PN]' => '♟', // U+265F - Pion Noir
+    );
+
+    // Using str_replace is efficient for simple replacements.
+    // The keys and values are extracted to be used in the function.
+    return str_replace( array_keys( $chess_pieces ), array_values( $chess_pieces ), $content );
+}
+
+add_filter( 'the_content', 'dame_chess_pieces_shortcodes_filter' );
+add_filter( 'widget_text_content', 'dame_chess_pieces_shortcodes_filter' ); // For block-based widgets
+add_filter( 'comment_text', 'dame_chess_pieces_shortcodes_filter' );
