@@ -1,0 +1,8 @@
+/**
+ * DAME Public-Facing Styles
+ */
+
+.dame-chess-piece {
+    font-size: 1.4em;
+    vertical-align: middle;
+}

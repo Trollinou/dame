@@ -1025,7 +1025,7 @@ function dame_save_exercice_meta( $post_id ) {
             // Ignore empty answer fields
             if ( ! empty( $answer['text'] ) ) {
                 $sanitized_answers[] = array(
-                    'text'    => sanitize_text_field( $answer['text'] ),
+                    'text'    => wp_kses_post( $answer['text'] ),
                     'correct' => isset( $answer['correct'] ) ? true : false,
                 );
             }

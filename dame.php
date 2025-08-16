@@ -54,6 +54,7 @@ function dame_perform_upgrade( $old_version, $new_version ) {
 
 // Include plugin files
 require_once plugin_dir_path( __FILE__ ) . 'includes/roles.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/assets.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/cpt.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/taxonomies.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/data-lists.php';

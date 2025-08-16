@@ -242,19 +242,19 @@ add_action( 'wp_ajax_nopriv_dame_check_answer', 'dame_check_answer_ajax_handler'
 function dame_chess_pieces_shortcodes_filter( $content ) {
     $chess_pieces = array(
         // Pièces Blanches
-        '[RB]' => '♔', // U+2654 - Roi Blanc
-        '[DB]' => '♕', // U+2655 - Dame Blanche
-        '[TB]' => '♖', // U+2656 - Tour Blanche
-        '[FB]' => '♗', // U+2657 - Fou Blanc
-        '[CB]' => '♘', // U+2658 - Cavalier Blanc
-        '[PB]' => '♙', // U+2659 - Pion Blanc
+        '[RB]' => '<span class="dame-chess-piece">♔</span>', // U+2654 - Roi Blanc
+        '[DB]' => '<span class="dame-chess-piece">♕</span>', // U+2655 - Dame Blanche
+        '[TB]' => '<span class="dame-chess-piece">♖</span>', // U+2656 - Tour Blanche
+        '[FB]' => '<span class="dame-chess-piece">♗</span>', // U+2657 - Fou Blanc
+        '[CB]' => '<span class="dame-chess-piece">♘</span>', // U+2658 - Cavalier Blanc
+        '[PB]' => '<span class="dame-chess-piece">♙</span>', // U+2659 - Pion Blanc
         // Pièces Noires
-        '[RN]' => '♚', // U+265A - Roi Noir
-        '[DN]' => '♛', // U+265B - Dame Noire
-        '[TN]' => '♜', // U+265C - Tour Noire
-        '[FN]' => '♝', // U+265D - Fou Noir
-        '[CN]' => '♞', // U+265E - Cavalier Noir
-        '[PN]' => '♟', // U+265F - Pion Noir
+        '[RN]' => '<span class="dame-chess-piece">♚</span>', // U+265A - Roi Noir
+        '[DN]' => '<span class="dame-chess-piece">♛</span>', // U+265B - Dame Noire
+        '[TN]' => '<span class="dame-chess-piece">♜</span>', // U+265C - Tour Noire
+        '[FN]' => '<span class="dame-chess-piece">♝</span>', // U+265D - Fou Noir
+        '[CN]' => '<span class="dame-chess-piece">♞</span>', // U+265E - Cavalier Noir
+        '[PN]' => '<span class="dame-chess-piece">♟</span>', // U+265F - Pion Noir
     );
 
     // Using str_replace is efficient for simple replacements.
