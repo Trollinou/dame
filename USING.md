@@ -20,9 +20,26 @@ Lorsque les utilisateurs visiteront cette page, ils verront une interface leur p
 -   Lancer une série d'exercices aléatoires basés sur ces critères.
 -   Voir leur score (bonnes réponses / exercices tentés).
 
-C'est le seul shortcode qui a été ajouté.
+Ce shortcode est le principal pour les fonctionnalités interactives. D'autres shortcodes sont également disponibles pour l'affichage des pièces d'échecs.
 
-## 2. Comment ajouter une Leçon, un Exercice ou un Cours à un Menu
+## 2. Shortcodes pour les pièces d'échecs
+
+En plus du shortcode `[dame_exercices]`, le plugin fournit des shortcodes pour afficher facilement les symboles des pièces d'échecs dans n'importe quel contenu (articles, pages, leçons, etc.).
+
+Voici la liste des shortcodes disponibles :
+
+| Pièce | Blanc | Noir |
+| :--- | :---: | :--: |
+| Roi | `[RB]` | `[RN]` |
+| Dame | `[DB]` | `[DN]` |
+| Tour | `[TB]` | `[TN]` |
+| Fou | `[FB]` | `[FN]` |
+| Cavalier | `[CB]` | `[CN]` |
+| Pion | `[PB]` | `[PN]` |
+
+Lorsque vous écrivez l'un de ces shortcodes dans votre éditeur, il sera automatiquement remplacé par le symbole correspondant (par exemple, `[RB]` deviendra ♔).
+
+## 3. Comment ajouter une Leçon, un Exercice ou un Cours à un Menu
 
 Vous pouvez ajouter des liens directs vers n'importe quelle Leçon, Exercice ou Cours publié directement dans vos menus de navigation.
 
@@ -36,7 +53,7 @@ Vous pouvez ajouter des liens directs vers n'importe quelle Leçon, Exercice ou 
 
 Vous pouvez également ajouter des liens vers les **archives** de ces contenus (la liste de toutes les leçons, par exemple) ou vers les **catégories** que vous avez créées.
 
-## 3. Gestion des Catégories
+## 4. Gestion des Catégories
 
 Les Leçons, Exercices et Cours partagent les mêmes catégories. Vous pouvez les gérer depuis le menu de chaque type de contenu :
 -   `Leçons > Catégories d'échecs`
@@ -45,7 +62,7 @@ Les Leçons, Exercices et Cours partagent les mêmes catégories. Vous pouvez le
 
 Depuis cet écran, vous pouvez ajouter, modifier, supprimer des catégories et les organiser de manière hiérarchique (en définissant des catégories parentes).
 
-## 4. Rôles et Permissions
+## 5. Rôles et Permissions
 
 Pour rappel, voici comment les permissions sont gérées :
 -   **Leçons :**

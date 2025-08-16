@@ -4,6 +4,10 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.0.3 (16/08/2025)
+
+*   **Fonctionnalité :** Ajout de shortcodes pour afficher les pièces d'échecs. Il suffit d'écrire `[RB]` pour le Roi Blanc, `[RN]` for le Roi Noir, etc. Les shortcodes sont disponibles pour toutes les pièces et les deux couleurs.
+
 ### 2.0.2 (15/08/2025)
 
 *   **Fonctionnalité :** Ajout d'un champ "Difficulté" obligatoire (de 1 à 6) pour les Leçons, Exercices et Cours pour une classification cohérente.
