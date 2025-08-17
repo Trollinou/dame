@@ -138,10 +138,13 @@ function dame_fetch_exercice_ajax_handler() {
             if ( !empty($answers) && is_array($answers) ) {
                 echo '<div class="dame-answers">';
                 foreach ($answers as $index => $answer) {
+                    error_log('DAME DEBUG: Raw answer text from DB: ' . print_r($answer['text'], true));
+                    $filtered_text = dame_chess_pieces_shortcodes_filter( $answer['text'] );
+                    error_log('DAME DEBUG: Filtered answer text: ' . print_r($filtered_text, true));
                     ?>
                     <label>
                         <input type="<?php echo $input_type; ?>" name="dame_answer[]" value="<?php echo esc_attr($index); ?>">
-                        <?php echo wp_kses_post( do_shortcode( dame_chess_pieces_shortcodes_filter( $answer['text'] ) ) ); ?>
+                        <?php echo wp_kses_post( $filtered_text ); ?>
                     </label><br>
                     <?php
                 }
@@ -213,7 +216,10 @@ function dame_check_answer_ajax_handler() {
         $correct_answer_texts = array();
         foreach($correct_answers_indices as $index) {
             if(isset($all_answers[$index]['text'])) {
-                $correct_answer_texts[] = '<li>' . wp_kses_post(do_shortcode(dame_chess_pieces_shortcodes_filter($all_answers[$index]['text']))) . '</li>';
+                error_log('DAME DEBUG (check_answer): Raw answer text from DB: ' . print_r($all_answers[$index]['text'], true));
+                $filtered_text = dame_chess_pieces_shortcodes_filter($all_answers[$index]['text']);
+                error_log('DAME DEBUG (check_answer): Filtered answer text: ' . print_r($filtered_text, true));
+                $correct_answer_texts[] = '<li>' . wp_kses_post($filtered_text) . '</li>';
             }
         }
         $response_data['message'] = __('Réponse incorrecte.', 'dame');
