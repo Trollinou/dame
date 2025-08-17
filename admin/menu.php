@@ -88,3 +88,20 @@ function dame_add_apprentissage_menu() {
     );
 }
 add_action( 'admin_menu', 'dame_add_apprentissage_menu' );
+
+/**
+ * Corrects the highlighting for the "Catégories" submenu.
+ *
+ * @param string $parent_file The parent file.
+ * @return string The corrected parent file.
+ */
+function dame_apprentissage_menu_highlight( $parent_file ) {
+    global $current_screen;
+
+    if ( $current_screen->taxonomy === 'dame_chess_category' ) {
+        $parent_file = 'dame-apprentissage';
+    }
+
+    return $parent_file;
+}
+add_filter( 'parent_file', 'dame_apprentissage_menu_highlight' );
