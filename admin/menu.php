@@ -63,3 +63,28 @@ function dame_reorder_admin_submenu() {
     $submenu[ $parent_slug ] = $new_submenu;
 }
 add_action( 'admin_menu', 'dame_reorder_admin_submenu', 999 );
+
+/**
+ * Adds the main "Apprentissage" menu.
+ */
+function dame_add_apprentissage_menu() {
+    add_menu_page(
+        __( "Apprentissage", 'dame' ),
+        __( "Apprentissage", 'dame' ),
+        'edit_posts', // Capability required
+        'dame-apprentissage', // Menu slug
+        '', // Callback function - left empty as it will be handled by the first submenu item
+        'dashicons-welcome-learn', // Icon
+        22 // Position
+    );
+
+    // Add a submenu for Categories
+    add_submenu_page(
+        'dame-apprentissage',
+        __( "Catégories", 'dame' ),
+        __( "Catégories", 'dame' ),
+        'manage_options', // or a more specific capability
+        'edit-tags.php?taxonomy=dame_chess_category&post_type=dame_lecon'
+    );
+}
+add_action( 'admin_menu', 'dame_add_apprentissage_menu' );

@@ -1,6 +1,6 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 2.0.4
+**Version:** 2.1.0
 **Auteur:** Etienne
 **Licence:** GPL v2 or later
 
@@ -32,6 +32,8 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 *   **Constructeur d'exercices :** Une interface publique permet aux visiteurs de s'entraîner sur des exercices aléatoires en fonction de la catégorie et de la difficulté, avec un suivi du score.
 *   **Catégories d'échecs :** Une taxonomie hiérarchique partagée pour organiser les leçons, exercices et cours.
 *   **Compatibilité RPB Chessboard :** Le contenu des leçons, exercices (y compris les réponses et solutions) est compatible avec les shortcodes du plugin RPB Chessboard.
+*   **Menu "Apprentissage" Unifié :** Les menus "Leçons", "Exercices" et "Cours" ont été regroupés sous un menu unique "Apprentissage" pour une interface plus claire.
+*   **Sauvegarde et Restauration :** Une fonctionnalité permet de sauvegarder l'ensemble des leçons, exercices, et cours dans un fichier compressé, et de les restaurer, remplaçant les données existantes.
 
 ## Configuration
 

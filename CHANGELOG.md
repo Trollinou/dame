@@ -4,6 +4,11 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.1.0 (17/08/2025)
+
+*   **Fonctionnalité :** Ajout d'une fonctionnalité de sauvegarde et de restauration pour les contenus d'apprentissage (Leçons, Exercices, Cours) dans un format compressé.
+*   **Amélioration :** Remplacement des menus "Leçons", "Exercices" et "Cours" par un menu unique "Apprentissage" pour une meilleure organisation. Les CPTs et la taxonomie "Catégories" sont maintenant accessibles depuis ce menu.
+
 ### 2.0.4 (16/08/2025)
 
 *   **Fonctionnalité :** Les réponses aux QCM sont maintenant surlignées en vert (correct) ou en rouge (incorrect) après la soumission.
