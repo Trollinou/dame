@@ -20,7 +20,7 @@
     border: 1px solid #c3e6cb;
 }
 
-.dame-answers label.incorrect-answer {
-    background-color: #f8d7da; /* Light red */
-    border: 1px solid #f5c6cb;
+.dame-answers label.user-incorrect-choice {
+    color: #dc3545; /* Bootstrap's standard danger color */
+    text-decoration: line-through;
 }

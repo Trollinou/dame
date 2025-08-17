@@ -23,37 +23,36 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        // Disable all inputs and the submit button
                         const inputs = $('#dame-exercice-form input[name="dame_answer[]"]');
-                        inputs.prop('disabled', true);
-                        submitButton.hide();
-
                         const userSelected = response.data.user_selected_indices || [];
                         const correctAnswers = response.data.correct_indices || [];
 
-                        // Highlight selected answers
+                        // Disable all inputs and the submit button
+                        inputs.prop('disabled', true);
+                        submitButton.hide();
+
+                        // Apply highlighting
                         inputs.each(function() {
                             const input = $(this);
                             const inputValue = parseInt(input.val(), 10);
                             const label = input.closest('label');
+                            const isSelected = userSelected.includes(inputValue);
+                            const isCorrect = correctAnswers.includes(inputValue);
 
-                            if (userSelected.includes(inputValue)) {
-                                if (correctAnswers.includes(inputValue)) {
-                                    label.addClass('correct-answer');
-                                } else {
-                                    label.addClass('incorrect-answer');
-                                }
+                            if (isCorrect) {
+                                label.addClass('correct-answer'); // Highlight all correct answers green
+                            }
+                            if (isSelected && !isCorrect) {
+                                label.addClass('user-incorrect-choice'); // Strike through user's incorrect choices
                             }
                         });
 
+                        // Display feedback message
                         let feedbackHtml = '';
                         if (response.data.correct) {
                             feedbackHtml = '<p style="color:green;">' + response.data.message + '</p>';
                         } else {
                             feedbackHtml = '<p style="color:red;">' + response.data.message + '</p>';
-                            if (response.data.correct_answers) {
-                                feedbackHtml += '<p>' + "La bonne réponse était :" + '</p>' + response.data.correct_answers;
-                            }
                         }
                         feedbackDiv.html(feedbackHtml);
                         solutionDiv.html(response.data.solution).show();

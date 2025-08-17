@@ -212,16 +212,9 @@ function dame_check_answer_ajax_handler() {
     if ($is_correct) {
         $response_data['message'] = __('Bonne réponse !', 'dame');
     } else {
-        $correct_answer_texts = array();
-        foreach($correct_answers_indices as $index) {
-            if(isset($all_answers[$index]['text'])) {
-                $correct_answer_texts[] = '<li>' . wp_kses_post(dame_chess_pieces_shortcodes_filter($all_answers[$index]['text'])) . '</li>';
-            }
-        }
         $response_data['message'] = __('Réponse incorrecte.', 'dame');
-        if(!empty($correct_answer_texts)) {
-             $response_data['correct_answers'] = '<ul>' . implode('', $correct_answer_texts) . '</ul>';
-        }
+        // The textual list of correct answers is no longer sent.
+        // This is now handled by highlighting the correct answers directly in the form.
     }
 
     wp_send_json_success($response_data);
