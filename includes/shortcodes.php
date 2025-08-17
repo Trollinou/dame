@@ -204,7 +204,9 @@ function dame_check_answer_ajax_handler() {
 
     $response_data = array(
         'correct' => $is_correct,
-        'solution' => $solution_html
+        'solution' => $solution_html,
+        'user_selected_indices' => $user_answers_indices,
+        'correct_indices' => $correct_answers_indices,
     );
 
     if ($is_correct) {

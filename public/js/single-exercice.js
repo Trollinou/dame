@@ -23,7 +23,29 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        let message = '';
+                        // Disable all inputs and the submit button
+                        const inputs = $('#dame-exercice-form input[name="dame_answer[]"]');
+                        inputs.prop('disabled', true);
+                        submitButton.hide();
+
+                        const userSelected = response.data.user_selected_indices || [];
+                        const correctAnswers = response.data.correct_indices || [];
+
+                        // Highlight selected answers
+                        inputs.each(function() {
+                            const input = $(this);
+                            const inputValue = parseInt(input.val(), 10);
+                            const label = input.closest('label');
+
+                            if (userSelected.includes(inputValue)) {
+                                if (correctAnswers.includes(inputValue)) {
+                                    label.addClass('correct-answer');
+                                } else {
+                                    label.addClass('incorrect-answer');
+                                }
+                            }
+                        });
+
                         let feedbackHtml = '';
                         if (response.data.correct) {
                             feedbackHtml = '<p style="color:green;">' + response.data.message + '</p>';
@@ -35,7 +57,7 @@
                         }
                         feedbackDiv.html(feedbackHtml);
                         solutionDiv.html(response.data.solution).show();
-                        submitButton.hide();
+
                     } else {
                         feedbackDiv.html('<p style="color:red;">' + response.data + '</p>');
                         submitButton.prop('disabled', false);
