@@ -74,7 +74,7 @@ function dame_add_apprentissage_menu() {
         'edit_posts', // Capability required
         'dame-apprentissage', // Menu slug
         '', // Callback function - left empty as it will be handled by the first submenu item
-        'dashicons-welcome-learn', // Icon
+        'dashicons-book', // Icon
         22 // Position
     );
 
