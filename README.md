@@ -1,6 +1,6 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 2.0.2
+**Version:** 2.0.4
 **Auteur:** Etienne
 **Licence:** GPL v2 or later
 
@@ -27,6 +27,7 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 *   **Système de Difficulté Unifié :** Les Leçons, Exercices et Cours partagent maintenant un système de difficulté obligatoire (de 1 à 6). Une icône colorée dans les listes d'administration permet de visualiser rapidement le niveau de chaque contenu.
 *   **Leçons :** Un type de contenu pour les leçons d'échecs, visible uniquement par les membres du club. Les administrateurs et entraîneurs peuvent suivre quelles leçons ont été complétées par les membres.
 *   **Exercices :** Un type de contenu pour les exercices d'échecs interactifs avec différents types de questions (Vrai/Faux, QCM) et une solution.
+*   **Feedback sur les réponses :** Les réponses aux exercices QCM sont maintenant surlignées (vert/rouge) et les options sont désactivées après la soumission pour un retour d'information immédiat.
 *   **Cours :** Permet aux entraîneurs de construire des cours structurés en combinant des leçons et des exercices. Le constructeur de cours, intelligent, ne propose que les contenus dont le niveau de difficulté correspond à celui du cours.
 *   **Constructeur d'exercices :** Une interface publique permet aux visiteurs de s'entraîner sur des exercices aléatoires en fonction de la catégorie et de la difficulté, avec un suivi du score.
 *   **Catégories d'échecs :** Une taxonomie hiérarchique partagée pour organiser les leçons, exercices et cours.

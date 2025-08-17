@@ -1,0 +1,26 @@
+/**
+ * DAME Public-Facing Styles
+ */
+
+.dame-chess-piece {
+    font-size: 2.2em;
+    vertical-align: baseline;
+}
+
+.dame-answers label {
+    padding: 5px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 5px;
+    transition: background-color 0.3s;
+}
+
+.dame-answers label.correct-answer {
+    background-color: #d4edda; /* Light green */
+    border: 1px solid #c3e6cb;
+}
+
+.dame-answers label.user-incorrect-choice {
+    color: #dc3545; /* Bootstrap's standard danger color */
+    text-decoration: line-through;
+}

@@ -4,6 +4,13 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.0.4 (16/08/2025)
+
+*   **Fonctionnalité :** Les réponses aux QCM sont maintenant surlignées en vert (correct) ou en rouge (incorrect) après la soumission.
+*   **Fonctionnalité :** Les champs de réponse des QCM sont désactivés après la soumission pour empêcher la modification.
+*   **Amélioration :** La taille des pièces d'échecs affichées via les shortcodes a été augmentée pour une meilleure lisibilité.
+*   **Correctif :** Correction d'un bug majeur qui empêchait les shortcodes de s'afficher correctement dans les réponses des QCM.
+
 ### 2.0.3 (16/08/2025)
 
 *   **Fonctionnalité :** Ajout de shortcodes pour afficher les pièces d'échecs. Il suffit d'écrire `[RB]` pour le Roi Blanc, `[RN]` for le Roi Noir, etc. Les shortcodes sont disponibles pour toutes les pièces et les deux couleurs.

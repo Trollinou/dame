@@ -1024,8 +1024,10 @@ function dame_save_exercice_meta( $post_id ) {
         foreach ( $_POST['dame_answers'] as $answer ) {
             // Ignore empty answer fields
             if ( ! empty( $answer['text'] ) ) {
+                // The answer text is not sanitized here to allow for shortcode syntax.
+                // It is sanitized on output in the AJAX handlers using wp_kses_post().
                 $sanitized_answers[] = array(
-                    'text'    => sanitize_text_field( $answer['text'] ),
+                    'text'    => $answer['text'],
                     'correct' => isset( $answer['correct'] ) ? true : false,
                 );
             }

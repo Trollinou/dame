@@ -23,19 +23,40 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        let message = '';
+                        const inputs = $('#dame-exercice-form input[name="dame_answer[]"]');
+                        const userSelected = response.data.user_selected_indices || [];
+                        const correctAnswers = response.data.correct_indices || [];
+
+                        // Disable all inputs and the submit button
+                        inputs.prop('disabled', true);
+                        submitButton.hide();
+
+                        // Apply highlighting
+                        inputs.each(function() {
+                            const input = $(this);
+                            const inputValue = parseInt(input.val(), 10);
+                            const label = input.closest('label');
+                            const isSelected = userSelected.includes(inputValue);
+                            const isCorrect = correctAnswers.includes(inputValue);
+
+                            if (isCorrect) {
+                                label.addClass('correct-answer'); // Highlight all correct answers green
+                            }
+                            if (isSelected && !isCorrect) {
+                                label.addClass('user-incorrect-choice'); // Strike through user's incorrect choices
+                            }
+                        });
+
+                        // Display feedback message
                         let feedbackHtml = '';
                         if (response.data.correct) {
                             feedbackHtml = '<p style="color:green;">' + response.data.message + '</p>';
                         } else {
                             feedbackHtml = '<p style="color:red;">' + response.data.message + '</p>';
-                            if (response.data.correct_answers) {
-                                feedbackHtml += '<p>' + "La bonne réponse était :" + '</p>' + response.data.correct_answers;
-                            }
                         }
                         feedbackDiv.html(feedbackHtml);
                         solutionDiv.html(response.data.solution).show();
-                        submitButton.hide();
+
                     } else {
                         feedbackDiv.html('<p style="color:red;">' + response.data + '</p>');
                         submitButton.prop('disabled', false);

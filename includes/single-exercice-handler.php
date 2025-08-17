@@ -38,7 +38,7 @@ function dame_display_single_exercice_form( $content ) {
                         ?>
                         <label>
                             <input type="<?php echo $input_type; ?>" name="dame_answer[]" value="<?php echo esc_attr($index); ?>">
-                            <?php echo do_shortcode( wp_kses_post( $answer['text'] ) ); ?>
+                            <?php echo wp_kses_post( dame_chess_pieces_shortcodes_filter( $answer['text'] ) ); ?>
                         </label><br>
                         <?php
                     }

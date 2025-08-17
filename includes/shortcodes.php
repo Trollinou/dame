@@ -141,7 +141,7 @@ function dame_fetch_exercice_ajax_handler() {
                     ?>
                     <label>
                         <input type="<?php echo $input_type; ?>" name="dame_answer[]" value="<?php echo esc_attr($index); ?>">
-                        <?php echo do_shortcode( wp_kses_post( $answer['text'] ) ); ?>
+                        <?php echo wp_kses_post( dame_chess_pieces_shortcodes_filter( $answer['text'] ) ); ?>
                     </label><br>
                     <?php
                 }
@@ -204,22 +204,17 @@ function dame_check_answer_ajax_handler() {
 
     $response_data = array(
         'correct' => $is_correct,
-        'solution' => $solution_html
+        'solution' => $solution_html,
+        'user_selected_indices' => $user_answers_indices,
+        'correct_indices' => $correct_answers_indices,
     );
 
     if ($is_correct) {
         $response_data['message'] = __('Bonne réponse !', 'dame');
     } else {
-        $correct_answer_texts = array();
-        foreach($correct_answers_indices as $index) {
-            if(isset($all_answers[$index]['text'])) {
-                $correct_answer_texts[] = '<li>' . do_shortcode(wp_kses_post($all_answers[$index]['text'])) . '</li>';
-            }
-        }
         $response_data['message'] = __('Réponse incorrecte.', 'dame');
-        if(!empty($correct_answer_texts)) {
-             $response_data['correct_answers'] = '<ul>' . implode('', $correct_answer_texts) . '</ul>';
-        }
+        // The textual list of correct answers is no longer sent.
+        // This is now handled by highlighting the correct answers directly in the form.
     }
 
     wp_send_json_success($response_data);
@@ -242,19 +237,19 @@ add_action( 'wp_ajax_nopriv_dame_check_answer', 'dame_check_answer_ajax_handler'
 function dame_chess_pieces_shortcodes_filter( $content ) {
     $chess_pieces = array(
         // Pièces Blanches
-        '[RB]' => '♔', // U+2654 - Roi Blanc
-        '[DB]' => '♕', // U+2655 - Dame Blanche
-        '[TB]' => '♖', // U+2656 - Tour Blanche
-        '[FB]' => '♗', // U+2657 - Fou Blanc
-        '[CB]' => '♘', // U+2658 - Cavalier Blanc
-        '[PB]' => '♙', // U+2659 - Pion Blanc
+        '[RB]' => '<span class="dame-chess-piece">♔</span>', // U+2654 - Roi Blanc
+        '[DB]' => '<span class="dame-chess-piece">♕</span>', // U+2655 - Dame Blanche
+        '[TB]' => '<span class="dame-chess-piece">♖</span>', // U+2656 - Tour Blanche
+        '[FB]' => '<span class="dame-chess-piece">♗</span>', // U+2657 - Fou Blanc
+        '[CB]' => '<span class="dame-chess-piece">♘</span>', // U+2658 - Cavalier Blanc
+        '[PB]' => '<span class="dame-chess-piece">♙</span>', // U+2659 - Pion Blanc
         // Pièces Noires
-        '[RN]' => '♚', // U+265A - Roi Noir
-        '[DN]' => '♛', // U+265B - Dame Noire
-        '[TN]' => '♜', // U+265C - Tour Noire
-        '[FN]' => '♝', // U+265D - Fou Noir
-        '[CN]' => '♞', // U+265E - Cavalier Noir
-        '[PN]' => '♟', // U+265F - Pion Noir
+        '[RN]' => '<span class="dame-chess-piece">♚</span>', // U+265A - Roi Noir
+        '[DN]' => '<span class="dame-chess-piece">♛</span>', // U+265B - Dame Noire
+        '[TN]' => '<span class="dame-chess-piece">♜</span>', // U+265C - Tour Noire
+        '[FN]' => '<span class="dame-chess-piece">♝</span>', // U+265D - Fou Noir
+        '[CN]' => '<span class="dame-chess-piece">♞</span>', // U+265E - Cavalier Noir
+        '[PN]' => '<span class="dame-chess-piece">♟</span>', // U+265F - Pion Noir
     );
 
     // Using str_replace is efficient for simple replacements.
