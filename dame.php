@@ -3,8 +3,10 @@
  * Plugin Name:       DAME - Dossier et Apprentissage des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           2.1.0
- * Author:            Etienne
+ * Version:           2.1.1
+ * Requires at least: 6.8
+ * Requires PHP:      8.2
+ * Author:            Etienne Gagnon
  * Author URI:
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -17,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '2.1.0' );
+define( 'DAME_VERSION', '2.1.1' );
 
 /**
  * Handles plugin updates.
