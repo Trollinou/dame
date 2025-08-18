@@ -4,6 +4,10 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.1.1 (18/08/2025)
+
+*   **Amélioration :** Le plugin requiert désormais WordPress 6.8 et PHP 8.2 au minimum.
+
 ### 2.1.0 (17/08/2025)
 
 *   **Fonctionnalité :** Ajout d'une fonctionnalité de sauvegarde et de restauration pour les contenus d'apprentissage (Leçons, Exercices, Cours) dans un format compressé.
