@@ -410,12 +410,15 @@ function dame_handle_export_action() {
         wp_reset_postdata();
     }
 
-    $filename = 'dame-export-' . date( 'Y-m-d' ) . '.json';
+    $filename = 'dame-adherents-backup-' . date( 'Y-m-d' ) . '.json.gz';
+    $data_to_compress = json_encode( $export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
+    $compressed_data = gzcompress( $data_to_compress );
 
     ob_clean();
-    header( 'Content-Type: application/json; charset=utf-8' );
-    header( 'Content-Disposition: attachment; filename=' . $filename );
-    echo json_encode( $export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
+    header( 'Content-Type: application/octet-stream' );
+    header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+    header( 'Content-Length: ' . strlen( $compressed_data ) );
+    echo $compressed_data;
     exit;
 }
 add_action( 'admin_init', 'dame_handle_export_action' );
@@ -438,16 +441,21 @@ function dame_handle_import_action() {
     }
 
     $file = $_FILES['dame_import_file'];
-    if ( 'application/json' !== $file['type'] ) {
-        dame_add_admin_notice( __( "Le fichier téléversé n'est pas un fichier JSON valide.", "dame" ), 'error' );
+    $filename = $file['name'];
+    $file_ext = pathinfo( $filename, PATHINFO_EXTENSION );
+    $file_ext_double = pathinfo( str_replace( '.gz', '', $filename ), PATHINFO_EXTENSION );
+
+    if ( $file_ext !== 'gz' || $file_ext_double !== 'json' ) {
+        dame_add_admin_notice( __( "Le fichier de sauvegarde téléversé n'est pas valide (format .json.gz attendu).", "dame" ), 'error' );
         return;
     }
 
-    $json_data = file_get_contents( $file['tmp_name'] );
+    $compressed_data = file_get_contents( $file['tmp_name'] );
+    $json_data = gzuncompress( $compressed_data );
     $import_data = json_decode( $json_data, true );
 
     if ( json_last_error() !== JSON_ERROR_NONE ) {
-        dame_add_admin_notice( __( "Erreur lors de la lecture des données JSON.", "dame" ), 'error' );
+        dame_add_admin_notice( __( "Erreur lors de la lecture des données de la sauvegarde.", "dame" ), 'error' );
         return;
     }
 

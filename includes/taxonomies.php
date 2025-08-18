@@ -36,6 +36,7 @@ function dame_register_chess_category_taxonomy() {
         'query_var'         => true,
         'rewrite'           => array( 'slug' => 'chess-category' ),
         'show_in_rest'      => true, // Available in block editor
+        'show_in_menu'      => false,
     );
 
     // We will register this for the CPTs later
