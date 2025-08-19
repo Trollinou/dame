@@ -4,6 +4,11 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.1.2 (19/08/2025)
+
+*   **Fonctionnalité :** Ajout d'une option dans les réglages SMTP pour rendre configurable la taille des lots d'envoi d'emails.
+*   **Amélioration :** Si la taille des lots est mise à 0, tous les emails sont envoyés en une seule fois. Le comportement par défaut reste à 20 si l'option n'est pas modifiée.
+
 ### 2.1.1 (18/08/2025)
 
 *   **Amélioration :** Le plugin requiert désormais WordPress 6.8 et PHP 8.2 au minimum.
