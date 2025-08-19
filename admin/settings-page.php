@@ -114,6 +114,14 @@ function dame_register_settings() {
         'dame_mailing_section'
     );
 
+    add_settings_field(
+        'dame_smtp_batch_size',
+        __( "Taille des lots d'envoi", 'dame' ),
+        'dame_smtp_batch_size_callback',
+        'dame_mailing_section_group',
+        'dame_mailing_section'
+    );
+
     add_settings_section(
         'dame_uninstall_section',
         __( 'Désinstallation', 'dame' ),
@@ -220,6 +228,10 @@ function dame_options_sanitize( $input ) {
         }
     }
 
+    if ( isset( $input['smtp_batch_size'] ) ) {
+        $sanitized_input['smtp_batch_size'] = absint( $input['smtp_batch_size'] );
+    }
+
     $sanitized_input['delete_on_uninstall'] = isset( $input['delete_on_uninstall'] ) ? 1 : 0;
     return $sanitized_input;
 }
@@ -292,6 +304,17 @@ function dame_smtp_password_callback() {
     <input type="password" id="dame_smtp_password" name="dame_options[smtp_password]" value="" class="regular-text" autocomplete="new-password" />
     <p class="description">
         <?php esc_html_e( 'Laissez vide pour ne pas modifier le mot de passe existant.', 'dame' ); ?>
+    </p>
+    <?php
+}
+
+function dame_smtp_batch_size_callback() {
+    $options = get_option( 'dame_options' );
+    $smtp_batch_size = isset( $options['smtp_batch_size'] ) ? $options['smtp_batch_size'] : 20;
+    ?>
+    <input type="number" id="dame_smtp_batch_size" name="dame_options[smtp_batch_size]" value="<?php echo esc_attr( $smtp_batch_size ); ?>" class="small-text" min="0" />
+    <p class="description">
+        <?php esc_html_e( "Nombre d'emails à envoyer dans chaque lot. Mettre à 0 pour envoyer tous les emails en une seule fois (non recommandé pour un grand nombre de destinataires).", 'dame' ); ?>
     </p>
     <?php
 }

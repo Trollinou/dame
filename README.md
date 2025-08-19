@@ -1,6 +1,6 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 2.1.1
+**Version:** 2.1.2
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -18,7 +18,7 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 ## Fonctionnalités (v1.16.2)
 
 *   **Configuration SMTP :** Il est désormais possible de configurer un serveur SMTP externe pour l'envoi d'emails, améliorant ainsi la fiabilité et la délivrabilité.
-*   **Envoi d'emails par lots :** La fonctionnalité "Envoyer un article" envoie désormais les emails par lots de 20 pour éviter les limitations des serveurs d'hébergement lors de l'envoi à un grand nombre de destinataires.
+*   **Envoi d'emails par lots configurable :** La fonctionnalité "Envoyer un article" envoie les emails par lots. La taille de ces lots (par défaut 20) est maintenant configurable depuis les options SMTP, permettant d'ajuster le débit d'envoi en fonction des limitations du serveur. Un réglage à 0 envoie tous les emails en une seule fois.
 *   **Filtrage des Adhérents :** Des filtres ont été ajoutés à la liste des adhérents pour permettre un tri par groupe (École d'échecs, Pôle Excellence, etc.) et par statut d'adhésion.
 *   **Assignation des comptes :** Ajout d'un écran pour lier facilement un adhérent à un compte utilisateur WordPress et lui assigner un rôle.
 *   **Import CSV des Adhérents :** Importez des adhérents à partir d'un fichier CSV.
@@ -53,6 +53,7 @@ Pour configurer le SMTP, allez dans `Réglages > Options DAME` et remplissez les
 *   **Chiffrement :** Le type de chiffrement à utiliser (SSL ou TLS). Sélectionnez "Aucun" si votre serveur ne l'utilise pas.
 *   **Nom d'utilisateur SMTP :** Votre nom d'utilisateur pour le serveur SMTP (souvent votre adresse email complète).
 *   **Mot de passe SMTP :** Le mot de passe associé à votre nom d'utilisateur SMTP. Le mot de passe n'est pas affiché après avoir été enregistré. Si vous laissez ce champ vide lors d'une modification, l'ancien mot de passe sera conservé.
+*   **Taille des lots d'envoi :** Définit le nombre d'emails à envoyer dans chaque lot. La valeur par défaut est 20. Vous pouvez ajuster ce nombre en fonction des limites de votre hébergeur. Mettez la valeur à `0` pour envoyer tous les emails en une seule fois (non recommandé pour un grand nombre de destinataires).
 
 **Note :** L'adresse email renseignée dans le champ "Email de l'expéditeur" doit correspondre à l'adresse email utilisée pour l'authentification SMTP.
 

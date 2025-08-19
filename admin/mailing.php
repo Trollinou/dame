@@ -183,7 +183,14 @@ function dame_handle_send_email() {
 
     // Restore robust BCC implementation
     global $dame_bcc_emails;
-    $email_chunks = array_chunk( $recipient_emails, 20 );
+
+    $batch_size = isset( $options['smtp_batch_size'] ) ? absint( $options['smtp_batch_size'] ) : 20;
+
+    if ( $batch_size > 0 ) {
+        $email_chunks = array_chunk( $recipient_emails, $batch_size );
+    } else {
+        $email_chunks = array( $recipient_emails );
+    }
 
     foreach ( $email_chunks as $chunk ) {
         $dame_bcc_emails = $chunk;
