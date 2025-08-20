@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier et Apprentissage des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           2.1.4
+ * Version:           2.2.0
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Etienne Gagnon
@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '2.1.4' );
+define( 'DAME_VERSION', '2.2.0' );
 
 /**
  * Handles plugin updates.
@@ -46,6 +46,59 @@ function dame_perform_upgrade( $old_version, $new_version ) {
             dame_add_capabilities_to_roles();
         }
         // Flush rewrite rules for the new CPTs
+        flush_rewrite_rules();
+    }
+
+    if ( version_compare( $old_version, '2.2.0', '<' ) ) {
+        // Create the terms for the new taxonomy.
+        $anterior_season_term = wp_insert_term( 'Saison antérieure', 'dame_saison_adhesion' );
+
+        // Determine the current season name (e.g., "Saison 2025/2026").
+        $current_month     = (int) date( 'n' );
+        $current_year      = (int) date( 'Y' );
+        $season_start_year = ( $current_month >= 9 ) ? $current_year : $current_year - 1;
+        $season_end_year   = $season_start_year + 1;
+        $current_season_name = sprintf( 'Saison %d/%d', $season_start_year, $season_end_year );
+
+        $current_season_term = wp_insert_term( $current_season_name, 'dame_saison_adhesion' );
+
+        // Store the ID of the current season tag as the active one.
+        if ( ! is_wp_error( $current_season_term ) ) {
+            update_option( 'dame_current_season_tag_id', $current_season_term['term_id'] );
+        } elseif ( isset( $current_season_term->error_data['term_exists'] ) ) {
+            update_option( 'dame_current_season_tag_id', $current_season_term->error_data['term_exists'] );
+        }
+
+        // Get all adherents to migrate them.
+        $adherents_query = new WP_Query(
+            array(
+                'post_type'      => 'adherent',
+                'posts_per_page' => -1,
+                'post_status'    => 'any',
+                'fields'         => 'ids', // We only need the IDs.
+            )
+        );
+
+        if ( $adherents_query->have_posts() ) {
+            $anterior_term_id = ! is_wp_error( $anterior_season_term ) ? $anterior_season_term['term_id'] : $anterior_season_term->get_error_data( 'term_exists' );
+            $current_term_id  = ! is_wp_error( $current_season_term ) ? $current_season_term['term_id'] : $current_season_term->get_error_data( 'term_exists' );
+
+            foreach ( $adherents_query->posts as $adherent_id ) {
+                $status = get_post_meta( $adherent_id, '_dame_membership_status', true );
+
+                // Assign the correct season tag.
+                if ( 'A' === $status && $current_term_id ) {
+                    wp_set_object_terms( $adherent_id, (int) $current_term_id, 'dame_saison_adhesion' );
+                } elseif ( in_array( $status, array( 'E', 'X' ), true ) && $anterior_term_id ) {
+                    wp_set_object_terms( $adherent_id, (int) $anterior_term_id, 'dame_saison_adhesion' );
+                }
+
+                // Delete old meta data.
+                delete_post_meta( $adherent_id, '_dame_membership_status' );
+                delete_post_meta( $adherent_id, '_dame_membership_date' );
+            }
+        }
+        // Flush rewrite rules after the migration.
         flush_rewrite_rules();
     }
 

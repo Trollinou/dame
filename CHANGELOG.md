@@ -4,6 +4,16 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.2.0 (20/08/2025)
+
+*   **Refonte majeure du système d'adhésion**
+    *   **Fonctionnalité :** Le statut d'adhésion est désormais géré par des "tags" de saison (ex: "Saison 2025/2026") au lieu d'un statut fixe (Actif, Expiré, Ancien).
+    *   **Fonctionnalité :** Une nouvelle taxonomie "Saison d'adhésion" est ajoutée et associée aux adhérents.
+    *   **Amélioration :** La page des adhérents affiche désormais le statut "Actif" (si l'adhérent possède le tag de la saison en cours) ou "Non adhérent". Une nouvelle colonne "Saisons d'adhésion" affiche toutes les saisons passées et présentes d'un membre sous forme de pastilles.
+    *   **Amélioration :** Les filtres de la liste des adhérents ont été mis à jour pour permettre de filtrer par "Adhésion active" (Oui/Non).
+    *   **Amélioration :** La fonction de "Réinitialisation Annuelle" a été complètement réécrite. Elle permet désormais de créer le tag pour la nouvelle saison et de le définir comme saison "active". Elle ne modifie plus le statut des anciens membres.
+    *   **Obsolète :** Le champ "Date d'adhésion" et les statuts "Expiré" et "Ancien" ont été supprimés et migrés vers le nouveau système de tags.
+
 ### 2.1.4 (20/08/2025)
 
 *   **Fonctionnalité :** Ajout d'un champ 'Profession' pour l'adhérent ainsi que pour chaque représentant légal.

@@ -18,14 +18,14 @@ if ( ! defined( 'WPINC' ) ) {
  */
 function dame_set_adherent_columns( $columns ) {
     $new_columns = array(
-        'cb' => $columns['cb'],
-        'title' => __( 'Nom de l\'adhérent', 'dame' ),
-        'dame_license_number' => __( 'Licence', 'dame' ),
-        'dame_email' => __( 'Email', 'dame' ),
-        'dame_phone' => __( 'Téléphone', 'dame' ),
-        'dame_classification' => __( 'Classification', 'dame' ),
+        'cb'                   => $columns['cb'],
+        'title'                => __( 'Nom de l\'adhérent', 'dame' ),
         'dame_membership_status' => __( 'Statut Adhésion', 'dame' ),
-        'dame_membership_date' => __( 'Date d\'adhésion', 'dame' ),
+        'dame_saisons'         => __( 'Saisons d\'adhésion', 'dame' ),
+        'dame_license_number'  => __( 'Licence', 'dame' ),
+        'dame_email'           => __( 'Email', 'dame' ),
+        'dame_phone'           => __( 'Téléphone', 'dame' ),
+        'dame_classification'  => __( 'Classification', 'dame' ),
     );
     return $new_columns;
 }
@@ -54,15 +54,10 @@ function dame_render_adherent_columns( $column, $post_id ) {
             echo esc_html( $phone );
             break;
 
-        case 'dame_membership_date':
-            $date = get_post_meta( $post_id, '_dame_membership_date', true );
-            echo esc_html( $date );
-            break;
-
         case 'dame_classification':
-            $classifications = [];
+            $classifications = array();
             if ( get_post_meta( $post_id, '_dame_is_junior', true ) ) {
-            $classifications[] = __( 'École d\'échecs', 'dame' );
+                $classifications[] = __( 'École d\'échecs', 'dame' );
             }
             if ( get_post_meta( $post_id, '_dame_is_pole_excellence', true ) ) {
                 $classifications[] = __( 'Pôle Excellence', 'dame' );
@@ -71,14 +66,26 @@ function dame_render_adherent_columns( $column, $post_id ) {
             break;
 
         case 'dame_membership_status':
-            $status_key = get_post_meta( $post_id, '_dame_membership_status', true );
-            $status_options = [
-                'N' => __( 'Non Adhérent (N)', 'dame' ),
-                'A' => __( 'Actif (A)', 'dame' ),
-                'E' => __( 'Expiré (E)', 'dame' ),
-                'X' => __( 'Ancien (X)', 'dame' ),
-            ];
-            echo esc_html( $status_options[ $status_key ] ?? '' );
+            $current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+            if ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post_id ) ) {
+                echo '<span style="color: green; font-weight: bold;">' . esc_html__( 'Actif', 'dame' ) . '</span>';
+            } else {
+                echo esc_html__( 'Non adhérent', 'dame' );
+            }
+            break;
+
+        case 'dame_saisons':
+            $saisons = get_the_terms( $post_id, 'dame_saison_adhesion' );
+            if ( ! empty( $saisons ) && ! is_wp_error( $saisons ) ) {
+                $saison_names = array();
+                foreach ( $saisons as $saison ) {
+                    $saison_names[] = '<span style="display: inline-block; background-color: #e0e0e0; color: #333; padding: 2px 8px; margin: 2px; border-radius: 4px; font-size: 0.9em;">' . esc_html( $saison->name ) . '</span>';
+                }
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                echo implode( ' ', $saison_names );
+            } else {
+                echo '—';
+            }
             break;
     }
 }
@@ -92,7 +99,7 @@ function dame_add_adherent_filters() {
     global $typenow;
 
     if ( 'adherent' === $typenow ) {
-        // Group filter
+        // Group filter (unchanged).
         $current_group = $_GET['dame_group_filter'] ?? '';
         ?>
         <select name="dame_group_filter">
@@ -104,20 +111,13 @@ function dame_add_adherent_filters() {
         </select>
         <?php
 
-        // Status filter
-        $current_status = $_GET['dame_status_filter'] ?? '';
-        $status_options = [
-            'N' => __( 'Non Adhérent (N)', 'dame' ),
-            'A' => __( 'Actif (A)', 'dame' ),
-            'E' => __( 'Expiré (E)', 'dame' ),
-            'X' => __( 'Ancien (X)', 'dame' ),
-        ];
+        // New Membership Status filter.
+        $current_status = $_GET['dame_membership_filter'] ?? '';
         ?>
-        <select name="dame_status_filter">
-            <option value=""><?php _e( 'Tous les statuts', 'dame' ); ?></option>
-            <?php foreach ( $status_options as $key => $label ) : ?>
-                <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $current_status ); ?>><?php echo esc_html( $label ); ?></option>
-            <?php endforeach; ?>
+        <select name="dame_membership_filter">
+            <option value=""><?php _e( 'Tous les statuts d\'adhésion', 'dame' ); ?></option>
+            <option value="active" <?php selected( 'active', $current_status ); ?>><?php _e( 'Adhésion active', 'dame' ); ?></option>
+            <option value="inactive" <?php selected( 'inactive', $current_status ); ?>><?php _e( 'Adhésion inactive', 'dame' ); ?></option>
         </select>
         <?php
     }
@@ -136,13 +136,14 @@ function dame_filter_adherent_query( $query ) {
 
     if ( is_admin() && 'edit.php' === $pagenow && 'adherent' === $post_type && $query->is_main_query() ) {
         $meta_query = $query->get( 'meta_query' ) ?: array();
+        $tax_query  = $query->get( 'tax_query' ) ?: array();
 
-        // Group filter
+        // Group filter (unchanged).
         if ( isset( $_GET['dame_group_filter'] ) && '' !== $_GET['dame_group_filter'] ) {
-            $group = sanitize_key( $_GET['dame_group_filter'] );
+            $group     = sanitize_key( $_GET['dame_group_filter'] );
             $group_key = '';
 
-            switch($group) {
+            switch ( $group ) {
                 case 'juniors':
                     $group_key = '_dame_is_junior';
                     break;
@@ -159,26 +160,47 @@ function dame_filter_adherent_query( $query ) {
 
             if ( ! empty( $group_key ) ) {
                 $meta_query[] = array(
-                    'key' => $group_key,
+                    'key'   => $group_key,
                     'value' => '1',
                 );
             }
         }
 
-        // Status filter
-        if ( isset( $_GET['dame_status_filter'] ) && '' !== $_GET['dame_status_filter'] ) {
-            $status = sanitize_key( $_GET['dame_status_filter'] );
-            $meta_query[] = array(
-                'key' => '_dame_membership_status',
-                'value' => $status,
-            );
+        // New Membership Status filter.
+        if ( isset( $_GET['dame_membership_filter'] ) && ! empty( $_GET['dame_membership_filter'] ) ) {
+            $status_filter         = sanitize_key( $_GET['dame_membership_filter'] );
+            $current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+
+            if ( $current_season_tag_id ) {
+                if ( 'active' === $status_filter ) {
+                    $tax_query[] = array(
+                        'taxonomy' => 'dame_saison_adhesion',
+                        'field'    => 'term_id',
+                        'terms'    => (int) $current_season_tag_id,
+                    );
+                } elseif ( 'inactive' === $status_filter ) {
+                    $tax_query[] = array(
+                        'taxonomy' => 'dame_saison_adhesion',
+                        'field'    => 'term_id',
+                        'terms'    => (int) $current_season_tag_id,
+                        'operator' => 'NOT IN',
+                    );
+                }
+            }
         }
 
         if ( count( $meta_query ) > 0 ) {
-            if( ! isset( $meta_query['relation'] ) ) {
+            if ( ! isset( $meta_query['relation'] ) ) {
                 $meta_query['relation'] = 'AND';
             }
             $query->set( 'meta_query', $meta_query );
+        }
+
+        if ( count( $tax_query ) > 0 ) {
+            if ( ! isset( $tax_query['relation'] ) ) {
+                $tax_query['relation'] = 'AND';
+            }
+            $query->set( 'tax_query', $tax_query );
         }
     }
 }
