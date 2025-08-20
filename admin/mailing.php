@@ -265,19 +265,22 @@ function dame_get_emails_for_adherent( $adherent_id ) {
 
     // Get the adherent's own email
     $member_email = get_post_meta( $adherent_id, '_dame_email', true );
-    if ( ! empty( $member_email ) && is_email( $member_email ) ) {
+    $member_refuses_comms = get_post_meta( $adherent_id, '_dame_email_refuses_comms', true );
+    if ( ! empty( $member_email ) && is_email( $member_email ) && '1' !== $member_refuses_comms ) {
         $emails[] = $member_email;
     }
 
     // Get legal representative 1's email
     $rep1_email = get_post_meta( $adherent_id, '_dame_legal_rep_1_email', true );
-    if ( ! empty( $rep1_email ) && is_email( $rep1_email ) ) {
+    $rep1_refuses_comms = get_post_meta( $adherent_id, '_dame_legal_rep_1_email_refuses_comms', true );
+    if ( ! empty( $rep1_email ) && is_email( $rep1_email ) && '1' !== $rep1_refuses_comms ) {
         $emails[] = $rep1_email;
     }
 
     // Get legal representative 2's email
     $rep2_email = get_post_meta( $adherent_id, '_dame_legal_rep_2_email', true );
-    if ( ! empty( $rep2_email ) && is_email( $rep2_email ) ) {
+    $rep2_refuses_comms = get_post_meta( $adherent_id, '_dame_legal_rep_2_email_refuses_comms', true );
+    if ( ! empty( $rep2_email ) && is_email( $rep2_email ) && '1' !== $rep2_refuses_comms ) {
         $emails[] = $rep2_email;
     }
 

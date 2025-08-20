@@ -252,6 +252,7 @@ function dame_render_adherent_details_metabox( $post ) {
 	$license_number = $get_value( 'dame_license_number' );
 	$phone = $get_value( 'dame_phone_number' );
 	$email = $get_value( 'dame_email' );
+	$email_refuses_comms = $get_value( 'dame_email_refuses_comms' );
 	$address_1 = $get_value( 'dame_address_1' );
 	$address_2 = $get_value( 'dame_address_2' );
 	$postal_code = $get_value( 'dame_postal_code' );
@@ -298,7 +299,13 @@ function dame_render_adherent_details_metabox( $post ) {
 		</tr>
 		<tr>
 			<th><label for="dame_email"><?php _e( 'Email', 'dame' ); ?></label></th>
-			<td><input type="email" id="dame_email" name="dame_email" value="<?php echo esc_attr( $email ); ?>" class="regular-text" /></td>
+			<td>
+				<input type="email" id="dame_email" name="dame_email" value="<?php echo esc_attr( $email ); ?>" class="regular-text" />
+				<label>
+					<input type="checkbox" name="dame_email_refuses_comms" value="1" <?php checked( $email_refuses_comms, '1' ); ?> />
+					<?php _e( 'Refus mailing', 'dame' ); ?>
+				</label>
+			</td>
 		</tr>
 		<tr>
 			<th><label for="dame_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
@@ -391,6 +398,7 @@ function dame_render_legal_rep_metabox( $post ) {
 	$rep1_first_name = get_post_meta( $post->ID, '_dame_legal_rep_1_first_name', true );
 	$rep1_last_name = get_post_meta( $post->ID, '_dame_legal_rep_1_last_name', true );
 	$rep1_email = get_post_meta( $post->ID, '_dame_legal_rep_1_email', true );
+	$rep1_email_refuses_comms = get_post_meta( $post->ID, '_dame_legal_rep_1_email_refuses_comms', true );
 	$rep1_phone = get_post_meta( $post->ID, '_dame_legal_rep_1_phone', true );
 	$rep1_address_1 = get_post_meta( $post->ID, '_dame_legal_rep_1_address_1', true );
 	$rep1_address_2 = get_post_meta( $post->ID, '_dame_legal_rep_1_address_2', true );
@@ -401,6 +409,7 @@ function dame_render_legal_rep_metabox( $post ) {
 	$rep2_first_name = get_post_meta( $post->ID, '_dame_legal_rep_2_first_name', true );
 	$rep2_last_name = get_post_meta( $post->ID, '_dame_legal_rep_2_last_name', true );
 	$rep2_email = get_post_meta( $post->ID, '_dame_legal_rep_2_email', true );
+	$rep2_email_refuses_comms = get_post_meta( $post->ID, '_dame_legal_rep_2_email_refuses_comms', true );
 	$rep2_phone = get_post_meta( $post->ID, '_dame_legal_rep_2_phone', true );
 	$rep2_address_1 = get_post_meta( $post->ID, '_dame_legal_rep_2_address_1', true );
 	$rep2_address_2 = get_post_meta( $post->ID, '_dame_legal_rep_2_address_2', true );
@@ -421,7 +430,13 @@ function dame_render_legal_rep_metabox( $post ) {
 		</tr>
 		<tr>
 			<th><label for="dame_legal_rep_1_email"><?php _e( 'Email', 'dame' ); ?></label></th>
-			<td><input type="email" id="dame_legal_rep_1_email" name="dame_legal_rep_1_email" value="<?php echo esc_attr( $rep1_email ); ?>" class="regular-text" /></td>
+			<td>
+				<input type="email" id="dame_legal_rep_1_email" name="dame_legal_rep_1_email" value="<?php echo esc_attr( $rep1_email ); ?>" class="regular-text" />
+				<label>
+					<input type="checkbox" name="dame_legal_rep_1_email_refuses_comms" value="1" <?php checked( $rep1_email_refuses_comms, '1' ); ?> />
+					<?php _e( 'Refus mailing', 'dame' ); ?>
+				</label>
+			</td>
 		</tr>
 		<tr>
 			<th><label for="dame_legal_rep_1_phone"><?php _e( 'Téléphone', 'dame' ); ?></label></th>
@@ -464,7 +479,13 @@ function dame_render_legal_rep_metabox( $post ) {
 		</tr>
 		<tr>
 			<th><label for="dame_legal_rep_2_email"><?php _e( 'Email', 'dame' ); ?></label></th>
-			<td><input type="email" id="dame_legal_rep_2_email" name="dame_legal_rep_2_email" value="<?php echo esc_attr( $rep2_email ); ?>" class="regular-text" /></td>
+			<td>
+				<input type="email" id="dame_legal_rep_2_email" name="dame_legal_rep_2_email" value="<?php echo esc_attr( $rep2_email ); ?>" class="regular-text" />
+				<label>
+					<input type="checkbox" name="dame_legal_rep_2_email_refuses_comms" value="1" <?php checked( $rep2_email_refuses_comms, '1' ); ?> />
+					<?php _e( 'Refus mailing', 'dame' ); ?>
+				</label>
+			</td>
 		</tr>
 		<tr>
 			<th><label for="dame_legal_rep_2_phone"><?php _e( 'Téléphone', 'dame' ); ?></label></th>
@@ -771,6 +792,9 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_legal_rep_2_address_1' => 'sanitize_text_field', 'dame_legal_rep_2_address_2' => 'sanitize_text_field',
 		'dame_legal_rep_2_postal_code' => 'sanitize_text_field', 'dame_legal_rep_2_city' => 'sanitize_text_field',
 
+		'dame_email_refuses_comms' => 'absint',
+		'dame_legal_rep_1_email_refuses_comms' => 'absint',
+		'dame_legal_rep_2_email_refuses_comms' => 'absint',
 		'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint', 'dame_is_benevole' => 'absint', 'dame_is_elu_local' => 'absint',
 		'dame_arbitre_level' => 'sanitize_text_field',
 		'dame_membership_status' => 'sanitize_text_field',
