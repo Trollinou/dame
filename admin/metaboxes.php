@@ -624,11 +624,23 @@ function dame_render_classification_metabox( $post ) {
 			echo '<p style="margin-top: 10px; margin-bottom: 5px;"><strong>' . esc_html__( 'Historique des saisons :', 'dame' ) . '</strong></p>';
 			echo '<div>';
 			foreach ( $saisons as $saison ) {
-				echo '<span style="display: inline-block; background-color: #e0e0e0; color: #333; padding: 2px 8px; margin: 2px 2px 2px 0; border-radius: 4px; font-size: 0.9em;">' . esc_html( $saison->name ) . '</span>';
+				if ( $saison->term_id !== (int) $current_season_tag_id ) {
+					echo '<span style="display: inline-block; background-color: #e0e0e0; color: #333; padding: 2px 8px; margin: 2px 2px 2px 0; border-radius: 4px; font-size: 0.9em;">' . esc_html( $saison->name ) . '</span>';
+				}
 			}
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '</div>';
 		}
+
+		// --- Add a simple control to set Active/Inactive status ---
+		echo '<p style="margin-top: 10px;">';
+		echo '<label for="dame_membership_status_control"><strong>' . esc_html__( 'Gérer l\'adhésion pour la saison en cours', 'dame' ) . '</strong></label>';
+		echo '<select id="dame_membership_status_control" name="dame_membership_status_control" style="width:100%;">';
+		$is_active = ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post->ID ) );
+		echo '<option value="active" ' . selected( $is_active, true, false ) . '>' . esc_html__( 'Actif', 'dame' ) . '</option>';
+		echo '<option value="inactive" ' . selected( $is_active, false, false ) . '>' . esc_html__( 'Non adhérent', 'dame' ) . '</option>';
+		echo '</select>';
+		echo '</p>';
 		?>
 	</div>
 	<hr>
@@ -774,6 +786,19 @@ function dame_save_adherent_meta( $post_id ) {
 			'post_name'  => sanitize_title( $new_title ), // Also update the slug
 		) );
 		add_action( 'save_post_adherent', 'dame_save_adherent_meta' );
+	}
+
+	// --- Handle Membership Status Control ---
+	if ( isset( $_POST['dame_membership_status_control'] ) ) {
+		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+		if ( $current_season_tag_id ) {
+			$status_action = sanitize_key( $_POST['dame_membership_status_control'] );
+			if ( 'active' === $status_action ) {
+				wp_add_object_terms( $post_id, (int) $current_season_tag_id, 'dame_saison_adhesion' );
+			} elseif ( 'inactive' === $status_action ) {
+				wp_remove_object_terms( $post_id, (int) $current_season_tag_id, 'dame_saison_adhesion' );
+			}
+		}
 	}
 
 	// --- Sanitize and Save Data ---
