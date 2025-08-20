@@ -4,6 +4,10 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.1.4 (20/08/2025)
+
+*   **Fonctionnalité :** Ajout d'un champ 'Profession' pour l'adhérent ainsi que pour chaque représentant légal.
+
 ### 2.1.3 (20/08/2025)
 
 *   **Fonctionnalité :** Ajout d'une case à cocher "Refus mailing" pour chaque email (adhérent et représentants légaux) afin de gérer les préférences de communication.
