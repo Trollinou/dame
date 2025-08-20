@@ -583,19 +583,11 @@ function dame_render_classification_metabox( $post ) {
 	};
 
 	$license_number = $get_value( 'dame_license_number' );
-	$membership_status = $get_value( 'dame_membership_status' );
-	$status_options = [
-		'N' => __( 'Non Adhérent (N)', 'dame' ),
-		'A' => __( 'Actif (A)', 'dame' ),
-		'E' => __( 'Expiré (E)', 'dame' ),
-		'X' => __( 'Ancien (X)', 'dame' ),
-	];
 
 	$license_type = get_post_meta( $post->ID, '_dame_license_type', true );
 	if ( ! $license_type ) {
 		$license_type = 'A';
 	}
-	$membership_date = get_post_meta( $post->ID, '_dame_membership_date', true );
 
 	$is_junior = get_post_meta( $post->ID, '_dame_is_junior', true );
 	$is_pole_excellence = get_post_meta( $post->ID, '_dame_is_pole_excellence', true );
@@ -614,30 +606,54 @@ function dame_render_classification_metabox( $post ) {
 	$arbitre_options = ['Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2'];
 
 	?>
+	<div>
+		<?php
+		// --- Display current status and season history ---
+		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+
+		// --- Add a simple control to set Active/Inactive status ---
+		echo '<p>';
+		echo '<label for="dame_membership_status_control"><strong>' . esc_html__( 'Adhésion pour la saison actuelle', 'dame' ) . '</strong></label>';
+		echo '<select id="dame_membership_status_control" name="dame_membership_status_control" style="width:100%;">';
+		$is_active = ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post->ID ) );
+		echo '<option value="active" ' . selected( $is_active, true, false ) . '>' . esc_html__( 'Actif', 'dame' ) . '</option>';
+		echo '<option value="inactive" ' . selected( $is_active, false, false ) . '>' . esc_html__( 'Non adhérent', 'dame' ) . '</option>';
+		echo '</select>';
+		echo '</p>';
+
+		$saisons = get_the_terms( $post->ID, 'dame_saison_adhesion' );
+		if ( ! empty( $saisons ) && ! is_wp_error( $saisons ) ) {
+			// Check if there are any past seasons to display
+			$past_saisons = array_filter(
+				$saisons,
+				function( $saison ) use ( $current_season_tag_id ) {
+					return $saison->term_id !== (int) $current_season_tag_id;
+				}
+			);
+
+			if ( ! empty( $past_saisons ) ) {
+				echo '<p style="margin-top: 10px; margin-bottom: 5px;"><strong>' . esc_html__( 'Historique des saisons :', 'dame' ) . '</strong></p>';
+				echo '<div>';
+				foreach ( $past_saisons as $saison ) {
+					echo '<span style="display: inline-block; background-color: #e0e0e0; color: #333; padding: 2px 8px; margin: 2px 2px 2px 0; border-radius: 4px; font-size: 0.9em;">' . esc_html( $saison->name ) . '</span>';
+				}
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo '</div>';
+			}
+		}
+		?>
+	</div>
+	<hr>
 	<p>
 		<label for="dame_license_number"><strong><?php _e( 'Numéro de licence', 'dame' ); ?></strong></label>
 		<input type="text" id="dame_license_number" name="dame_license_number" value="<?php echo esc_attr( $license_number ); ?>" style="width:100%;" placeholder="A12345" pattern="[A-Z][0-9]{5}" />
 	</p>
 	<p>
-		<label for="dame_membership_status"><strong><?php _e( 'État de l\'adhésion', 'dame' ); ?></strong></label>
-		<select id="dame_membership_status" name="dame_membership_status" style="width:100%;">
-			<?php foreach ( $status_options as $key => $label ) : ?>
-				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $membership_status, $key ); ?>><?php echo esc_html( $label ); ?></option>
-			<?php endforeach; ?>
-		</select>
+		<label><strong><?php _e( 'Type de licence', 'dame' ); ?></strong></label><br>
+		<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="A" <?php checked( $license_type, 'A' ); ?> /> A</label>
+		<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="B" <?php checked( $license_type, 'B' ); ?> /> B</label>
+		<label><input type="radio" name="dame_license_type" value="Non précisé" <?php checked( $license_type, 'Non précisé' ); ?> /> <?php _e( 'Non précisé', 'dame' ); ?></label>
 	</p>
-	<div id="dame_membership_details_wrapper">
-		<p>
-			<label><strong><?php _e( 'Type de licence', 'dame' ); ?></strong></label><br>
-			<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="A" <?php checked( $license_type, 'A' ); ?> /> A</label>
-			<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="B" <?php checked( $license_type, 'B' ); ?> /> B</label>
-			<label><input type="radio" name="dame_license_type" value="Non précisé" <?php checked( $license_type, 'Non précisé' ); ?> /> <?php _e( 'Non précisé', 'dame' ); ?></label>
-		</p>
-		<p>
-			<label for="dame_membership_date"><strong><?php _e( 'Date d\'adhésion', 'dame' ); ?></strong></label><br>
-			<input type="date" id="dame_membership_date" name="dame_membership_date" value="<?php echo esc_attr( $membership_date ); ?>" style="width:100%;" />
-		</p>
-	</div>
 	<hr>
 	<p>
 		<input type="checkbox" id="dame_is_junior" name="dame_is_junior" value="1" <?php checked( $is_junior, '1' ); ?> />
@@ -742,14 +758,6 @@ function dame_save_adherent_meta( $post_id ) {
 		$errors[] = __( "Le format de l'email du représentant légal 2 est invalide.", 'dame' );
 	}
 
-	// Custom validation for active members
-	if ( isset( $_POST['dame_membership_status'] ) && 'A' === $_POST['dame_membership_status'] ) {
-		if ( empty( $_POST['dame_license_type'] ) ) {
-			$errors[] = __( 'Le type de licence est obligatoire pour un membre actif.', 'dame' );
-		}
-	}
-
-
 	if ( ! empty( $errors ) ) {
 		set_transient( 'dame_error_message', implode( '<br>', $errors ), 10 );
 
@@ -764,11 +772,6 @@ function dame_save_adherent_meta( $post_id ) {
 		return;
 	}
 	delete_transient( 'dame_post_data_' . $post_id );
-
-	// --- Automatic Status Update ---
-	if ( ! empty( $_POST['dame_membership_date'] ) && ( ! isset( $_POST['dame_membership_status'] ) || 'N' === $_POST['dame_membership_status'] ) ) {
-		$_POST['dame_membership_status'] = 'A';
-	}
 
 	// --- Title Generation ---
 	$first_name = sanitize_text_field( $_POST['dame_first_name'] );
@@ -785,6 +788,19 @@ function dame_save_adherent_meta( $post_id ) {
 		add_action( 'save_post_adherent', 'dame_save_adherent_meta' );
 	}
 
+	// --- Handle Membership Status Control ---
+	if ( isset( $_POST['dame_membership_status_control'] ) ) {
+		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+		if ( $current_season_tag_id ) {
+			$status_action = sanitize_key( $_POST['dame_membership_status_control'] );
+			if ( 'active' === $status_action ) {
+				wp_add_object_terms( $post_id, (int) $current_season_tag_id, 'dame_saison_adhesion' );
+			} elseif ( 'inactive' === $status_action ) {
+				wp_remove_object_terms( $post_id, (int) $current_season_tag_id, 'dame_saison_adhesion' );
+			}
+		}
+	}
+
 	// --- Sanitize and Save Data ---
 	$fields = [
 		'dame_first_name' => 'sanitize_text_field', 'dame_last_name' => 'sanitize_text_field',
@@ -793,7 +809,7 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_email' => 'sanitize_email', 'dame_address_1' => 'sanitize_text_field',
 		'dame_address_2' => 'sanitize_text_field', 'dame_postal_code' => 'sanitize_text_field',
 		'dame_city' => 'sanitize_text_field', 'dame_phone_number' => 'sanitize_text_field',
-		'dame_membership_date' => 'sanitize_text_field', 'dame_sexe' => 'sanitize_text_field',
+		'dame_sexe' => 'sanitize_text_field',
 		'dame_profession' => 'sanitize_text_field',
 		'dame_country' => 'sanitize_text_field', 'dame_region' => 'sanitize_text_field', 'dame_department' => 'sanitize_text_field',
 		'dame_school_name' => 'sanitize_text_field', 'dame_school_ academy' => 'sanitize_text_field',
@@ -815,7 +831,6 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_legal_rep_2_email_refuses_comms' => 'absint',
 		'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint', 'dame_is_benevole' => 'absint', 'dame_is_elu_local' => 'absint',
 		'dame_arbitre_level' => 'sanitize_text_field',
-		'dame_membership_status' => 'sanitize_text_field',
 		'dame_license_type' => 'sanitize_text_field',
 		'dame_autre_telephone' => 'sanitize_text_field',
 		'dame_taille_vetements' => 'sanitize_text_field',

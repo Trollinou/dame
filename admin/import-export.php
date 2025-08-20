@@ -22,16 +22,6 @@ function dame_handle_csv_export_action() {
 		wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", 'dame' ) );
 	}
 
-	$adherents_args = array(
-		'post_type'      => 'adherent',
-		'posts_per_page' => -1,
-		'post_status'    => 'any',
-		'orderby'        => 'title',
-		'order'          => 'ASC',
-	);
-
-	$adherents_query = new WP_Query( $adherents_args );
-
 	$filename = 'dame-export-adherents-' . date( 'Y-m-d' ) . '.csv';
 
 	ob_clean();
@@ -43,11 +33,22 @@ function dame_handle_csv_export_action() {
 	// Add BOM to fix UTF-8 in Excel.
 	fprintf( $output, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
 
+	// --- Dynamic Headers ---
+	// 1. Get all seasons and sort them.
+	$all_seasons = get_terms(
+		array(
+			'taxonomy'   => 'dame_saison_adhesion',
+			'hide_empty' => false,
+			'orderby'    => 'name',
+			'order'      => 'DESC',
+		)
+	);
+
+	// 2. Build the header array.
 	$headers = array(
 		__( 'Nom', 'dame' ), __( 'Prénom', 'dame' ), __( 'Date de naissance', 'dame' ), __( 'Code postal de naissance', 'dame' ), __( 'Commune de naissance', 'dame' ), __( 'Sexe', 'dame' ), __( 'Profession', 'dame' ), __( 'Adresse email', 'dame' ), __( 'Numéro de téléphone', 'dame' ),
 		__( 'Adresse 1', 'dame' ), __( 'Adresse 2', 'dame' ), __( 'Code Postal', 'dame' ), __( 'Ville', 'dame' ), __( 'Pays', 'dame' ), __( 'Numéro de licence', 'dame' ),
-		__( 'Etat de l\'adhésion', 'dame' ), __( 'Type de licence', 'dame' ), __( 'Date d\'adhésion', 'dame' ), __( 'Ecole d\'échecs (O/N)', 'dame' ),
-		__( 'Pôle excellence (O/N)', 'dame' ), __( 'Bénévole (O/N)', 'dame' ), __( 'Elu local (O/N)', 'dame' ), __( 'Arbitre', 'dame' ),
+		__( 'Type de licence', 'dame' ), __( 'Ecole d\'échecs (O/N)', 'dame' ), __( 'Pôle excellence (O/N)', 'dame' ), __( 'Bénévole (O/N)', 'dame' ), __( 'Elu local (O/N)', 'dame' ), __( 'Arbitre', 'dame' ),
 		__( 'Représentant légal 1 - Nom', 'dame' ), __( 'Représentant légal 1 - Prénom', 'dame' ), __( 'Représentant légal 1 - Profession', 'dame' ), __( 'Représentant légal 1 - Email', 'dame' ), __( 'Représentant légal 1 - Téléphone', 'dame' ),
 		__( 'Représentant légal 1 - Adresse 1', 'dame' ), __( 'Représentant légal 1 - Adresse 2', 'dame' ), __( 'Représentant légal 1 - Code Postal', 'dame' ), __( 'Représentant légal 1 - Ville', 'dame' ),
 		__( 'Représentant légal 2 - Nom', 'dame' ), __( 'Représentant légal 2 - Prénom', 'dame' ), __( 'Représentant légal 2 - Profession', 'dame' ), __( 'Représentant légal 2 - Email', 'dame' ), __( 'Représentant légal 2 - Téléphone', 'dame' ),
@@ -55,34 +56,46 @@ function dame_handle_csv_export_action() {
 		__( 'Autre téléphone', 'dame' ), __( 'Taille vêtements', 'dame' ), __( 'Allergies', 'dame' ), __( 'Régime alimentaire', 'dame' ), __( 'Moyen de locomotion', 'dame' ),
 	);
 
+	// 3. Add dynamic season headers.
+	if ( ! is_wp_error( $all_seasons ) ) {
+		foreach ( $all_seasons as $season ) {
+			$headers[] = sprintf( __( 'Adhérent %s', 'dame' ), $season->name );
+		}
+	}
+
 	fputcsv( $output, $headers, ';' );
+
+	// --- Dynamic Rows ---
+	$adherents_query = new WP_Query(
+		array(
+			'post_type'      => 'adherent',
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		)
+	);
 
 	if ( $adherents_query->have_posts() ) {
 		while ( $adherents_query->have_posts() ) {
 			$adherents_query->the_post();
 			$post_id = get_the_ID();
 
+			// Get adherent's seasons
+			$adherent_seasons_slugs = wp_get_post_terms( $post_id, 'dame_saison_adhesion', array( 'fields' => 'slugs' ) );
+			if ( is_wp_error( $adherent_seasons_slugs ) ) {
+				$adherent_seasons_slugs = array();
+			}
+
 			// Format dates.
 			$birth_date             = get_post_meta( $post_id, '_dame_birth_date', true );
 			$formatted_birth_date   = $birth_date ? date( 'd/m/Y', strtotime( $birth_date ) ) : '';
-
-			$membership_date             = get_post_meta( $post_id, '_dame_membership_date', true );
-			$formatted_membership_date = $membership_date ? date( 'd/m/Y', strtotime( $membership_date ) ) : '';
 
 			// Format booleans.
 			$is_ecole_echecs    = get_post_meta( $post_id, '_dame_is_junior', true ) ? 'O' : 'N';
 			$is_pole_excellence = get_post_meta( $post_id, '_dame_is_pole_excellence', true ) ? 'O' : 'N';
 			$is_benevole        = get_post_meta( $post_id, '_dame_is_benevole', true ) ? 'O' : 'N';
 			$is_elu_local       = get_post_meta( $post_id, '_dame_is_elu_local', true ) ? 'O' : 'N';
-
-			$status_options = [
-				'N' => __( 'Non Adhérent (N)', 'dame' ),
-				'A' => __( 'Actif (A)', 'dame' ),
-				'E' => __( 'Expiré (E)', 'dame' ),
-				'X' => __( 'Ancien (X)', 'dame' ),
-			];
-			$membership_status_key   = get_post_meta( $post_id, '_dame_membership_status', true );
-			$membership_status_label = isset( $status_options[ $membership_status_key ] ) ? $status_options[ $membership_status_key ] : $membership_status_key;
 
 			$row = array(
 				get_post_meta( $post_id, '_dame_last_name', true ),
@@ -100,9 +113,7 @@ function dame_handle_csv_export_action() {
 				get_post_meta( $post_id, '_dame_city', true ),
 				get_post_meta( $post_id, '_dame_country', true ),
 				get_post_meta( $post_id, '_dame_license_number', true ),
-				$membership_status_label,
 				get_post_meta( $post_id, '_dame_license_type', true ),
-				$formatted_membership_date,
 				$is_ecole_echecs,
 				$is_pole_excellence,
 				$is_benevole,
@@ -132,6 +143,13 @@ function dame_handle_csv_export_action() {
 				get_post_meta( $post_id, '_dame_diet', true ),
 				get_post_meta( $post_id, '_dame_transport', true ),
 			);
+
+			// Add dynamic season data
+			if ( ! is_wp_error( $all_seasons ) ) {
+				foreach ( $all_seasons as $season ) {
+					$row[] = in_array( $season->slug, $adherent_seasons_slugs, true ) ? 'O' : 'N';
+				}
+			}
 
 			fputcsv( $output, $row, ';' );
 		}
@@ -375,40 +393,73 @@ function dame_handle_export_action() {
         wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", "dame" ) );
     }
 
-    $adherents_args = array(
-        'post_type'      => 'adherent',
-        'posts_per_page' => -1,
-        'post_status'    => 'any',
+    $export_data = array(
+        'adherents'      => array(),
+        'taxonomy_terms' => array(),
+        'options'        => array(),
     );
 
-    $adherents_query = new WP_Query( $adherents_args );
-    $export_data = array();
+    // 1. Export the taxonomy terms
+    $saison_terms = get_terms(
+        array(
+            'taxonomy'   => 'dame_saison_adhesion',
+            'hide_empty' => false,
+        )
+    );
+    if ( ! is_wp_error( $saison_terms ) ) {
+        foreach ( $saison_terms as $term ) {
+            $export_data['taxonomy_terms'][] = array(
+                'name'        => $term->name,
+                'slug'        => $term->slug,
+                'description' => $term->description,
+            );
+        }
+    }
+
+    // 2. Export the options
+    $current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+    if ( $current_season_tag_id ) {
+        $term = get_term( $current_season_tag_id );
+        if ( $term && ! is_wp_error( $term ) ) {
+            $export_data['options']['dame_current_season_tag_slug'] = $term->slug;
+        }
+    }
+
+    // 3. Export adherents and their term relationships
+    $adherents_query = new WP_Query(
+        array(
+            'post_type'      => 'adherent',
+            'posts_per_page' => -1,
+            'post_status'    => 'any',
+        )
+    );
 
     if ( $adherents_query->have_posts() ) {
         while ( $adherents_query->have_posts() ) {
             $adherents_query->the_post();
-            $post_id = get_the_ID();
+            $post_id     = get_the_ID();
             $member_data = array(
                 'post_title' => get_the_title(),
+                'meta_data'  => array(),
+                'saisons'    => array(),
             );
 
-            $meta_keys = [
-                '_dame_first_name', '_dame_last_name', '_dame_birth_date', '_dame_birth_postal_code', '_dame_birth_city', '_dame_sexe', '_dame_profession', '_dame_license_number',
-                '_dame_phone_number', '_dame_email', '_dame_address_1', '_dame_address_2', '_dame_postal_code',
-                '_dame_city', '_dame_country', '_dame_region', '_dame_department', '_dame_school_name', '_dame_school_academy',
-                '_dame_legal_rep_1_first_name', '_dame_legal_rep_1_last_name', '_dame_legal_rep_1_profession', '_dame_legal_rep_1_email', '_dame_legal_rep_1_phone',
-                '_dame_legal_rep_1_address_1', '_dame_legal_rep_1_address_2', '_dame_legal_rep_1_postal_code', '_dame_legal_rep_1_city',
-                '_dame_legal_rep_2_first_name', '_dame_legal_rep_2_last_name', '_dame_legal_rep_2_profession', '_dame_legal_rep_2_email', '_dame_legal_rep_2_phone',
-                '_dame_legal_rep_2_address_1', '_dame_legal_rep_2_address_2', '_dame_legal_rep_2_postal_code', '_dame_legal_rep_2_city',
-                '_dame_membership_date', '_dame_is_junior', '_dame_is_pole_excellence', '_dame_is_benevole', '_dame_is_elu_local', '_dame_linked_wp_user',
-                '_dame_arbitre_level', '_dame_membership_status', '_dame_autre_telephone', '_dame_taille_vetements',
-				'_dame_allergies', '_dame_diet', '_dame_transport'
-            ];
-
-            foreach ( $meta_keys as $meta_key ) {
-                $member_data[ $meta_key ] = get_post_meta( $post_id, $meta_key, true );
+            // Get all post meta
+            $all_meta = get_post_meta( $post_id );
+            foreach ( $all_meta as $key => $value ) {
+                // We only care about our own meta keys
+                if ( strpos( $key, '_dame_' ) === 0 ) {
+                    $member_data['meta_data'][ $key ] = maybe_unserialize( $value[0] );
+                }
             }
-            $export_data[] = $member_data;
+
+            // Get assigned season slugs
+            $adherent_saisons = wp_get_post_terms( $post_id, 'dame_saison_adhesion', array( 'fields' => 'slugs' ) );
+            if ( ! is_wp_error( $adherent_saisons ) ) {
+                $member_data['saisons'] = $adherent_saisons;
+            }
+
+            $export_data['adherents'][] = $member_data;
         }
         wp_reset_postdata();
     }
@@ -435,69 +486,88 @@ function dame_handle_import_action() {
     }
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", "dame" ) );
+        wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", 'dame' ) );
     }
 
     if ( ! isset( $_FILES['dame_import_file'] ) || $_FILES['dame_import_file']['error'] !== UPLOAD_ERR_OK ) {
-        dame_add_admin_notice( __( "Erreur lors du téléversement du fichier.", "dame" ), 'error' );
+        dame_add_admin_notice( __( 'Erreur lors du téléversement du fichier.', 'dame' ), 'error' );
         return;
     }
 
-    $file = $_FILES['dame_import_file'];
-    $filename = $file['name'];
-    $file_ext = pathinfo( $filename, PATHINFO_EXTENSION );
+    $file            = $_FILES['dame_import_file'];
+    $filename        = $file['name'];
+    $file_ext        = pathinfo( $filename, PATHINFO_EXTENSION );
     $file_ext_double = pathinfo( str_replace( '.gz', '', $filename ), PATHINFO_EXTENSION );
 
-    if ( $file_ext !== 'gz' || $file_ext_double !== 'json' ) {
-        dame_add_admin_notice( __( "Le fichier de sauvegarde téléversé n'est pas valide (format .json.gz attendu).", "dame" ), 'error' );
+    if ( 'gz' !== $file_ext || 'json' !== $file_ext_double ) {
+        dame_add_admin_notice( __( "Le fichier de sauvegarde téléversé n'est pas valide (format .json.gz attendu).", 'dame' ), 'error' );
         return;
     }
 
     $compressed_data = file_get_contents( $file['tmp_name'] );
-    $json_data = gzuncompress( $compressed_data );
-    $import_data = json_decode( $json_data, true );
+    $json_data       = gzuncompress( $compressed_data );
+    $import_data     = json_decode( $json_data, true );
 
     if ( json_last_error() !== JSON_ERROR_NONE ) {
-        dame_add_admin_notice( __( "Erreur lors de la lecture des données de la sauvegarde.", "dame" ), 'error' );
+        dame_add_admin_notice( __( 'Erreur lors de la lecture des données de la sauvegarde.', 'dame' ), 'error' );
         return;
     }
 
-    // Clear existing adherents before import
-    $existing_adherents_args = array( 'post_type' => 'adherent', 'posts_per_page' => -1, 'fields' => 'ids' );
-    $existing_adherents = get_posts( $existing_adherents_args );
+    // --- Clear existing data ---
+    // 1. Delete adherents
+    $existing_adherents = get_posts( array( 'post_type' => 'adherent', 'posts_per_page' => -1, 'fields' => 'ids' ) );
     foreach ( $existing_adherents as $adherent_id ) {
         wp_delete_post( $adherent_id, true ); // true to bypass trash
     }
+    // 2. Delete season terms
+    $existing_terms = get_terms( array( 'taxonomy' => 'dame_saison_adhesion', 'hide_empty' => false, 'fields' => 'ids' ) );
+    foreach ( $existing_terms as $term_id ) {
+        wp_delete_term( $term_id, 'dame_saison_adhesion' );
+    }
 
+    // --- Import new data ---
+    // 1. Import taxonomy terms
+    if ( ! empty( $import_data['taxonomy_terms'] ) ) {
+        foreach ( $import_data['taxonomy_terms'] as $term_data ) {
+            wp_insert_term( $term_data['name'], 'dame_saison_adhesion', array(
+                'slug'        => $term_data['slug'],
+                'description' => $term_data['description'],
+            ) );
+        }
+    }
+
+    // 2. Import adherents and their relationships
     $imported_count = 0;
-    $meta_keys = [
-        '_dame_first_name', '_dame_last_name', '_dame_birth_date', '_dame_birth_postal_code', '_dame_birth_city', '_dame_sexe', '_dame_profession', '_dame_license_number',
-        '_dame_phone_number', '_dame_email', '_dame_address_1', '_dame_address_2', '_dame_postal_code',
-        '_dame_city', '_dame_country', '_dame_region', '_dame_department', '_dame_school_name', '_dame_school_academy',
-        '_dame_legal_rep_1_first_name', '_dame_legal_rep_1_last_name', '_dame_legal_rep_1_profession', '_dame_legal_rep_1_email', '_dame_legal_rep_1_phone',
-        '_dame_legal_rep_1_address_1', '_dame_legal_rep_1_address_2', '_dame_legal_rep_1_postal_code', '_dame_legal_rep_1_city',
-        '_dame_legal_rep_2_first_name', '_dame_legal_rep_2_last_name', '_dame_legal_rep_2_profession', '_dame_legal_rep_2_email', '_dame_legal_rep_2_phone',
-        '_dame_legal_rep_2_address_1', '_dame_legal_rep_2_address_2', '_dame_legal_rep_2_postal_code', '_dame_legal_rep_2_city',
-                '_dame_membership_date', '_dame_is_junior', '_dame_is_pole_excellence', '_dame_is_benevole', '_dame_is_elu_local', '_dame_linked_wp_user',
-        '_dame_arbitre_level', '_dame_membership_status', '_dame_autre_telephone', '_dame_taille_vetements',
-		'_dame_allergies', '_dame_diet', '_dame_transport'
-    ];
+    if ( ! empty( $import_data['adherents'] ) ) {
+        foreach ( $import_data['adherents'] as $member_data ) {
+            $post_data = array(
+                'post_title'  => sanitize_text_field( $member_data['post_title'] ),
+                'post_type'   => 'adherent',
+                'post_status' => 'publish',
+            );
+            $post_id   = wp_insert_post( $post_data );
 
-    foreach ( $import_data as $member_data ) {
-        $post_data = array(
-            'post_title'  => sanitize_text_field( $member_data['post_title'] ),
-            'post_type'   => 'adherent',
-            'post_status' => 'publish',
-        );
-        $post_id = wp_insert_post( $post_data );
-
-        if ( $post_id ) {
-            foreach ( $meta_keys as $meta_key ) {
-                if ( isset( $member_data[ $meta_key ] ) ) {
-                    update_post_meta( $post_id, $meta_key, sanitize_text_field( $member_data[ $meta_key ] ) );
+            if ( $post_id ) {
+                // Restore meta data
+                if ( ! empty( $member_data['meta_data'] ) ) {
+                    foreach ( $member_data['meta_data'] as $key => $value ) {
+                        update_post_meta( $post_id, $key, $value );
+                    }
                 }
+                // Restore season terms
+                if ( ! empty( $member_data['saisons'] ) ) {
+                    wp_set_object_terms( $post_id, $member_data['saisons'], 'dame_saison_adhesion' );
+                }
+                $imported_count++;
             }
-            $imported_count++;
+        }
+    }
+
+    // 3. Restore options
+    if ( ! empty( $import_data['options']['dame_current_season_tag_slug'] ) ) {
+        $term = get_term_by( 'slug', $import_data['options']['dame_current_season_tag_slug'], 'dame_saison_adhesion' );
+        if ( $term && ! is_wp_error( $term ) ) {
+            update_option( 'dame_current_season_tag_id', $term->term_id );
         }
     }
 
