@@ -22,16 +22,6 @@ function dame_handle_csv_export_action() {
 		wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", 'dame' ) );
 	}
 
-	$adherents_args = array(
-		'post_type'      => 'adherent',
-		'posts_per_page' => -1,
-		'post_status'    => 'any',
-		'orderby'        => 'title',
-		'order'          => 'ASC',
-	);
-
-	$adherents_query = new WP_Query( $adherents_args );
-
 	$filename = 'dame-export-adherents-' . date( 'Y-m-d' ) . '.csv';
 
 	ob_clean();
@@ -43,11 +33,22 @@ function dame_handle_csv_export_action() {
 	// Add BOM to fix UTF-8 in Excel.
 	fprintf( $output, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
 
+	// --- Dynamic Headers ---
+	// 1. Get all seasons and sort them.
+	$all_seasons = get_terms(
+		array(
+			'taxonomy'   => 'dame_saison_adhesion',
+			'hide_empty' => false,
+			'orderby'    => 'name',
+			'order'      => 'DESC',
+		)
+	);
+
+	// 2. Build the header array.
 	$headers = array(
 		__( 'Nom', 'dame' ), __( 'Prénom', 'dame' ), __( 'Date de naissance', 'dame' ), __( 'Code postal de naissance', 'dame' ), __( 'Commune de naissance', 'dame' ), __( 'Sexe', 'dame' ), __( 'Profession', 'dame' ), __( 'Adresse email', 'dame' ), __( 'Numéro de téléphone', 'dame' ),
 		__( 'Adresse 1', 'dame' ), __( 'Adresse 2', 'dame' ), __( 'Code Postal', 'dame' ), __( 'Ville', 'dame' ), __( 'Pays', 'dame' ), __( 'Numéro de licence', 'dame' ),
-		__( 'Etat de l\'adhésion', 'dame' ), __( 'Type de licence', 'dame' ), __( 'Date d\'adhésion', 'dame' ), __( 'Ecole d\'échecs (O/N)', 'dame' ),
-		__( 'Pôle excellence (O/N)', 'dame' ), __( 'Bénévole (O/N)', 'dame' ), __( 'Elu local (O/N)', 'dame' ), __( 'Arbitre', 'dame' ),
+		__( 'Type de licence', 'dame' ), __( 'Ecole d\'échecs (O/N)', 'dame' ), __( 'Pôle excellence (O/N)', 'dame' ), __( 'Bénévole (O/N)', 'dame' ), __( 'Elu local (O/N)', 'dame' ), __( 'Arbitre', 'dame' ),
 		__( 'Représentant légal 1 - Nom', 'dame' ), __( 'Représentant légal 1 - Prénom', 'dame' ), __( 'Représentant légal 1 - Profession', 'dame' ), __( 'Représentant légal 1 - Email', 'dame' ), __( 'Représentant légal 1 - Téléphone', 'dame' ),
 		__( 'Représentant légal 1 - Adresse 1', 'dame' ), __( 'Représentant légal 1 - Adresse 2', 'dame' ), __( 'Représentant légal 1 - Code Postal', 'dame' ), __( 'Représentant légal 1 - Ville', 'dame' ),
 		__( 'Représentant légal 2 - Nom', 'dame' ), __( 'Représentant légal 2 - Prénom', 'dame' ), __( 'Représentant légal 2 - Profession', 'dame' ), __( 'Représentant légal 2 - Email', 'dame' ), __( 'Représentant légal 2 - Téléphone', 'dame' ),
@@ -55,34 +56,46 @@ function dame_handle_csv_export_action() {
 		__( 'Autre téléphone', 'dame' ), __( 'Taille vêtements', 'dame' ), __( 'Allergies', 'dame' ), __( 'Régime alimentaire', 'dame' ), __( 'Moyen de locomotion', 'dame' ),
 	);
 
+	// 3. Add dynamic season headers.
+	if ( ! is_wp_error( $all_seasons ) ) {
+		foreach ( $all_seasons as $season ) {
+			$headers[] = sprintf( __( 'Adhérent %s', 'dame' ), $season->name );
+		}
+	}
+
 	fputcsv( $output, $headers, ';' );
+
+	// --- Dynamic Rows ---
+	$adherents_query = new WP_Query(
+		array(
+			'post_type'      => 'adherent',
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		)
+	);
 
 	if ( $adherents_query->have_posts() ) {
 		while ( $adherents_query->have_posts() ) {
 			$adherents_query->the_post();
 			$post_id = get_the_ID();
 
+			// Get adherent's seasons
+			$adherent_seasons_slugs = wp_get_post_terms( $post_id, 'dame_saison_adhesion', array( 'fields' => 'slugs' ) );
+			if ( is_wp_error( $adherent_seasons_slugs ) ) {
+				$adherent_seasons_slugs = array();
+			}
+
 			// Format dates.
 			$birth_date             = get_post_meta( $post_id, '_dame_birth_date', true );
 			$formatted_birth_date   = $birth_date ? date( 'd/m/Y', strtotime( $birth_date ) ) : '';
-
-			$membership_date             = get_post_meta( $post_id, '_dame_membership_date', true );
-			$formatted_membership_date = $membership_date ? date( 'd/m/Y', strtotime( $membership_date ) ) : '';
 
 			// Format booleans.
 			$is_ecole_echecs    = get_post_meta( $post_id, '_dame_is_junior', true ) ? 'O' : 'N';
 			$is_pole_excellence = get_post_meta( $post_id, '_dame_is_pole_excellence', true ) ? 'O' : 'N';
 			$is_benevole        = get_post_meta( $post_id, '_dame_is_benevole', true ) ? 'O' : 'N';
 			$is_elu_local       = get_post_meta( $post_id, '_dame_is_elu_local', true ) ? 'O' : 'N';
-
-			$status_options = [
-				'N' => __( 'Non Adhérent (N)', 'dame' ),
-				'A' => __( 'Actif (A)', 'dame' ),
-				'E' => __( 'Expiré (E)', 'dame' ),
-				'X' => __( 'Ancien (X)', 'dame' ),
-			];
-			$membership_status_key   = get_post_meta( $post_id, '_dame_membership_status', true );
-			$membership_status_label = isset( $status_options[ $membership_status_key ] ) ? $status_options[ $membership_status_key ] : $membership_status_key;
 
 			$row = array(
 				get_post_meta( $post_id, '_dame_last_name', true ),
@@ -100,9 +113,7 @@ function dame_handle_csv_export_action() {
 				get_post_meta( $post_id, '_dame_city', true ),
 				get_post_meta( $post_id, '_dame_country', true ),
 				get_post_meta( $post_id, '_dame_license_number', true ),
-				$membership_status_label,
 				get_post_meta( $post_id, '_dame_license_type', true ),
-				$formatted_membership_date,
 				$is_ecole_echecs,
 				$is_pole_excellence,
 				$is_benevole,
@@ -132,6 +143,13 @@ function dame_handle_csv_export_action() {
 				get_post_meta( $post_id, '_dame_diet', true ),
 				get_post_meta( $post_id, '_dame_transport', true ),
 			);
+
+			// Add dynamic season data
+			if ( ! is_wp_error( $all_seasons ) ) {
+				foreach ( $all_seasons as $season ) {
+					$row[] = in_array( $season->slug, $adherent_seasons_slugs, true ) ? 'O' : 'N';
+				}
+			}
 
 			fputcsv( $output, $row, ';' );
 		}
