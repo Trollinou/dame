@@ -583,19 +583,11 @@ function dame_render_classification_metabox( $post ) {
 	};
 
 	$license_number = $get_value( 'dame_license_number' );
-	$membership_status = $get_value( 'dame_membership_status' );
-	$status_options = [
-		'N' => __( 'Non Adhérent (N)', 'dame' ),
-		'A' => __( 'Actif (A)', 'dame' ),
-		'E' => __( 'Expiré (E)', 'dame' ),
-		'X' => __( 'Ancien (X)', 'dame' ),
-	];
 
 	$license_type = get_post_meta( $post->ID, '_dame_license_type', true );
 	if ( ! $license_type ) {
 		$license_type = 'A';
 	}
-	$membership_date = get_post_meta( $post->ID, '_dame_membership_date', true );
 
 	$is_junior = get_post_meta( $post->ID, '_dame_is_junior', true );
 	$is_pole_excellence = get_post_meta( $post->ID, '_dame_is_pole_excellence', true );
@@ -619,25 +611,11 @@ function dame_render_classification_metabox( $post ) {
 		<input type="text" id="dame_license_number" name="dame_license_number" value="<?php echo esc_attr( $license_number ); ?>" style="width:100%;" placeholder="A12345" pattern="[A-Z][0-9]{5}" />
 	</p>
 	<p>
-		<label for="dame_membership_status"><strong><?php _e( 'État de l\'adhésion', 'dame' ); ?></strong></label>
-		<select id="dame_membership_status" name="dame_membership_status" style="width:100%;">
-			<?php foreach ( $status_options as $key => $label ) : ?>
-				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $membership_status, $key ); ?>><?php echo esc_html( $label ); ?></option>
-			<?php endforeach; ?>
-		</select>
+		<label><strong><?php _e( 'Type de licence', 'dame' ); ?></strong></label><br>
+		<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="A" <?php checked( $license_type, 'A' ); ?> /> A</label>
+		<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="B" <?php checked( $license_type, 'B' ); ?> /> B</label>
+		<label><input type="radio" name="dame_license_type" value="Non précisé" <?php checked( $license_type, 'Non précisé' ); ?> /> <?php _e( 'Non précisé', 'dame' ); ?></label>
 	</p>
-	<div id="dame_membership_details_wrapper">
-		<p>
-			<label><strong><?php _e( 'Type de licence', 'dame' ); ?></strong></label><br>
-			<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="A" <?php checked( $license_type, 'A' ); ?> /> A</label>
-			<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="B" <?php checked( $license_type, 'B' ); ?> /> B</label>
-			<label><input type="radio" name="dame_license_type" value="Non précisé" <?php checked( $license_type, 'Non précisé' ); ?> /> <?php _e( 'Non précisé', 'dame' ); ?></label>
-		</p>
-		<p>
-			<label for="dame_membership_date"><strong><?php _e( 'Date d\'adhésion', 'dame' ); ?></strong></label><br>
-			<input type="date" id="dame_membership_date" name="dame_membership_date" value="<?php echo esc_attr( $membership_date ); ?>" style="width:100%;" />
-		</p>
-	</div>
 	<hr>
 	<p>
 		<input type="checkbox" id="dame_is_junior" name="dame_is_junior" value="1" <?php checked( $is_junior, '1' ); ?> />
@@ -742,14 +720,6 @@ function dame_save_adherent_meta( $post_id ) {
 		$errors[] = __( "Le format de l'email du représentant légal 2 est invalide.", 'dame' );
 	}
 
-	// Custom validation for active members
-	if ( isset( $_POST['dame_membership_status'] ) && 'A' === $_POST['dame_membership_status'] ) {
-		if ( empty( $_POST['dame_license_type'] ) ) {
-			$errors[] = __( 'Le type de licence est obligatoire pour un membre actif.', 'dame' );
-		}
-	}
-
-
 	if ( ! empty( $errors ) ) {
 		set_transient( 'dame_error_message', implode( '<br>', $errors ), 10 );
 
@@ -764,11 +734,6 @@ function dame_save_adherent_meta( $post_id ) {
 		return;
 	}
 	delete_transient( 'dame_post_data_' . $post_id );
-
-	// --- Automatic Status Update ---
-	if ( ! empty( $_POST['dame_membership_date'] ) && ( ! isset( $_POST['dame_membership_status'] ) || 'N' === $_POST['dame_membership_status'] ) ) {
-		$_POST['dame_membership_status'] = 'A';
-	}
 
 	// --- Title Generation ---
 	$first_name = sanitize_text_field( $_POST['dame_first_name'] );
@@ -793,7 +758,7 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_email' => 'sanitize_email', 'dame_address_1' => 'sanitize_text_field',
 		'dame_address_2' => 'sanitize_text_field', 'dame_postal_code' => 'sanitize_text_field',
 		'dame_city' => 'sanitize_text_field', 'dame_phone_number' => 'sanitize_text_field',
-		'dame_membership_date' => 'sanitize_text_field', 'dame_sexe' => 'sanitize_text_field',
+		'dame_sexe' => 'sanitize_text_field',
 		'dame_profession' => 'sanitize_text_field',
 		'dame_country' => 'sanitize_text_field', 'dame_region' => 'sanitize_text_field', 'dame_department' => 'sanitize_text_field',
 		'dame_school_name' => 'sanitize_text_field', 'dame_school_ academy' => 'sanitize_text_field',
@@ -815,7 +780,6 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_legal_rep_2_email_refuses_comms' => 'absint',
 		'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint', 'dame_is_benevole' => 'absint', 'dame_is_elu_local' => 'absint',
 		'dame_arbitre_level' => 'sanitize_text_field',
-		'dame_membership_status' => 'sanitize_text_field',
 		'dame_license_type' => 'sanitize_text_field',
 		'dame_autre_telephone' => 'sanitize_text_field',
 		'dame_taille_vetements' => 'sanitize_text_field',
