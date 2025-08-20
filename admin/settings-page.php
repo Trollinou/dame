@@ -412,6 +412,9 @@ function dame_reset_button_callback() {
                 resetButton.addEventListener('click', function(e) {
                     if (!confirm("<?php echo esc_js( __( 'Êtes-vous sûr de vouloir initialiser la nouvelle saison ? Cela définira un nouveau tag comme saison active.', 'dame' ) ); ?>")) {
                         e.preventDefault();
+                    } else {
+                        // On confirmation, disable the button to prevent double-clicks.
+                        resetButton.disabled = true;
                     }
                 });
             }
