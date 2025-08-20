@@ -1,6 +1,6 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 2.1.2
+**Version:** 2.1.3
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -17,6 +17,7 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 
 ## Fonctionnalités (v1.16.2)
 
+*   **Préférences de Communication :** Une case à cocher "Refus mailing" est disponible pour chaque email (adhérent et représentants légaux), permettant d'exclure de manière ciblée les adresses des envois groupés.
 *   **Configuration SMTP :** Il est désormais possible de configurer un serveur SMTP externe pour l'envoi d'emails, améliorant ainsi la fiabilité et la délivrabilité.
 *   **Envoi d'emails par lots configurable :** La fonctionnalité "Envoyer un article" envoie les emails par lots. La taille de ces lots (par défaut 20) est maintenant configurable depuis les options SMTP, permettant d'ajuster le débit d'envoi en fonction des limitations du serveur. Un réglage à 0 envoie tous les emails en une seule fois.
 *   **Filtrage des Adhérents :** Des filtres ont été ajoutés à la liste des adhérents pour permettre un tri par groupe (École d'échecs, Pôle Excellence, etc.) et par statut d'adhésion.

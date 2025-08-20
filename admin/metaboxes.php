@@ -303,7 +303,7 @@ function dame_render_adherent_details_metabox( $post ) {
 				<input type="email" id="dame_email" name="dame_email" value="<?php echo esc_attr( $email ); ?>" class="regular-text" />
 				<label>
 					<input type="checkbox" name="dame_email_refuses_comms" value="1" <?php checked( $email_refuses_comms, '1' ); ?> />
-					<?php _e( 'Refuse les communications du club', 'dame' ); ?>
+					<?php _e( 'Refus mailing', 'dame' ); ?>
 				</label>
 			</td>
 		</tr>
@@ -434,7 +434,7 @@ function dame_render_legal_rep_metabox( $post ) {
 				<input type="email" id="dame_legal_rep_1_email" name="dame_legal_rep_1_email" value="<?php echo esc_attr( $rep1_email ); ?>" class="regular-text" />
 				<label>
 					<input type="checkbox" name="dame_legal_rep_1_email_refuses_comms" value="1" <?php checked( $rep1_email_refuses_comms, '1' ); ?> />
-					<?php _e( 'Refuse les communications du club', 'dame' ); ?>
+					<?php _e( 'Refus mailing', 'dame' ); ?>
 				</label>
 			</td>
 		</tr>
@@ -483,7 +483,7 @@ function dame_render_legal_rep_metabox( $post ) {
 				<input type="email" id="dame_legal_rep_2_email" name="dame_legal_rep_2_email" value="<?php echo esc_attr( $rep2_email ); ?>" class="regular-text" />
 				<label>
 					<input type="checkbox" name="dame_legal_rep_2_email_refuses_comms" value="1" <?php checked( $rep2_email_refuses_comms, '1' ); ?> />
-					<?php _e( 'Refuse les communications du club', 'dame' ); ?>
+					<?php _e( 'Refus mailing', 'dame' ); ?>
 				</label>
 			</td>
 		</tr>
