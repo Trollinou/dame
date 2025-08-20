@@ -8,7 +8,6 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 *   **Fonctionnalité :** Ajout d'une case à cocher "Refus mailing" pour chaque email (adhérent et représentants légaux) afin de gérer les préférences de communication.
 *   **Amélioration :** La fonctionnalité "Envoyer un article" exclut désormais les adresses email ayant activé le refus de mailing.
-*   **Changement :** Le libellé 'Refuse les communications du club' a été remplacé par 'Refus mailing' pour plus de clarté.
 
 ### 2.1.2 (19/08/2025)
 
