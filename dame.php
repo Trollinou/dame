@@ -30,7 +30,7 @@ function dame_check_for_updates() {
         dame_perform_upgrade( $current_version, DAME_VERSION );
     }
 }
-add_action( 'plugins_loaded', 'dame_check_for_updates' );
+add_action( 'init', 'dame_check_for_updates', 99 );
 
 /**
  * Perform the upgrade procedures.

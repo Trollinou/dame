@@ -606,6 +606,32 @@ function dame_render_classification_metabox( $post ) {
 	$arbitre_options = ['Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2'];
 
 	?>
+	<div>
+		<?php
+		// --- Display current status and season history ---
+		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+		echo '<p>';
+		echo '<strong>' . esc_html__( 'Statut actuel :', 'dame' ) . '</strong> ';
+		if ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post->ID ) ) {
+			echo '<span style="color: green; font-weight: bold;">' . esc_html__( 'Actif', 'dame' ) . '</span>';
+		} else {
+			echo esc_html__( 'Non adhérent', 'dame' );
+		}
+		echo '</p>';
+
+		$saisons = get_the_terms( $post->ID, 'dame_saison_adhesion' );
+		if ( ! empty( $saisons ) && ! is_wp_error( $saisons ) ) {
+			echo '<p style="margin-top: 10px; margin-bottom: 5px;"><strong>' . esc_html__( 'Historique des saisons :', 'dame' ) . '</strong></p>';
+			echo '<div>';
+			foreach ( $saisons as $saison ) {
+				echo '<span style="display: inline-block; background-color: #e0e0e0; color: #333; padding: 2px 8px; margin: 2px 2px 2px 0; border-radius: 4px; font-size: 0.9em;">' . esc_html( $saison->name ) . '</span>';
+			}
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '</div>';
+		}
+		?>
+	</div>
+	<hr>
 	<p>
 		<label for="dame_license_number"><strong><?php _e( 'Numéro de licence', 'dame' ); ?></strong></label>
 		<input type="text" id="dame_license_number" name="dame_license_number" value="<?php echo esc_attr( $license_number ); ?>" style="width:100%;" placeholder="A12345" pattern="[A-Z][0-9]{5}" />
