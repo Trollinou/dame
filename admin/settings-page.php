@@ -160,9 +160,10 @@ function dame_handle_annual_reset() {
             return;
         }
 
-        // Determine the new season name based on the current date. A new season starts in September.
+        // Determine the upcoming season name. A new season starts in September.
         $current_month     = (int) date( 'n' );
-        $season_start_year = ( $current_month >= 9 ) ? (int) date( 'Y' ) : (int) date( 'Y' ) - 1;
+        $current_year      = (int) date( 'Y' );
+        $season_start_year = ( $current_month >= 9 ) ? $current_year + 1 : $current_year;
         $season_end_year   = $season_start_year + 1;
         $new_season_name   = sprintf( 'Saison %d/%d', $season_start_year, $season_end_year );
 
@@ -362,8 +363,16 @@ function dame_delete_on_uninstall_callback() {
  * Callbacks for Annual Reset Section
  */
 function dame_reset_section_callback() {
-    echo '<p>' . esc_html__( 'Cette action permet de créer le tag de la saison d\'adhésion pour l\'année en cours.', 'dame' ) . '</p>';
-    echo '<p><strong>' . esc_html__( 'Processus : Un nouveau tag de saison (ex: "Saison 2025/2026") est créé et défini comme saison "active" pour les nouvelles inscriptions. Les adhérents de la saison précédente apparaîtront comme "Non adhérent" jusqu\'à ce qu\'ils renouvellent leur adhésion et reçoivent le nouveau tag.', 'dame' ) . '</strong></p>';
+    echo '<p>' . esc_html__( 'Cette action prépare le système pour la prochaine saison d\'adhésion.', 'dame' ) . '</p>';
+
+    // Determine the upcoming season name to inform the user.
+    $current_month     = (int) date( 'n' );
+    $current_year      = (int) date( 'Y' );
+    $season_start_year = ( $current_month >= 9 ) ? $current_year + 1 : $current_year;
+    $season_end_year   = $season_start_year + 1;
+    $next_season_name  = sprintf( 'Saison %d/%d', $season_start_year, $season_end_year );
+
+    echo '<p><strong>' . sprintf( esc_html__( 'Processus : En cliquant sur le bouton, vous allez créer le tag pour la saison "%s" et le définir comme saison "active" pour les nouvelles inscriptions.', 'dame' ), esc_html( $next_season_name ) ) . '</strong></p>';
 
     $current_season_tag_id = get_option( 'dame_current_season_tag_id' );
     if ( $current_season_tag_id ) {
