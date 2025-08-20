@@ -414,7 +414,10 @@ function dame_reset_button_callback() {
                         e.preventDefault();
                     } else {
                         // On confirmation, disable the button to prevent double-clicks.
-                        resetButton.disabled = true;
+                        // Use a timeout to ensure the form submission is not interrupted.
+                        setTimeout(function() {
+                            resetButton.disabled = true;
+                        }, 0);
                     }
                 });
             }
