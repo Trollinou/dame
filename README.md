@@ -1,63 +1,56 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 2.1.3
+**Version:** 2.2.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
 ## Description
 
-DAME est un plugin WordPress conçu pour gérer une base de données d'adhérents pour un club, une association ou toute autre organisation. Il fournit une interface d'administration simple et intégrée pour gérer les informations des membres, leurs classifications et leurs liens avec les comptes utilisateurs WordPress.
+DAME est un plugin WordPress conçu pour gérer une base de données d'adhérents pour un club, une association ou toute autre organisation. Il fournit une interface d'administration simple et intégrée pour gérer les informations des membres, leurs classifications, leurs adhésions par saison, et leurs liens avec les comptes utilisateurs WordPress.
 
-Ce plugin a été développé en suivant les meilleures pratiques de WordPress en matière de sécurité, de performance, de maintenabilité et d'évolutivité. Il inclut un mécanisme de mise à jour qui permettra de gérer les migrations de données pour les futures versions.
+Ce plugin a été développé en suivant les meilleures pratiques de WordPress en matière de sécurité, de performance, de maintenabilité et d'évolutivité.
 
 ## Prérequis
 
 *   **WordPress :** 6.8 ou supérieur
 *   **PHP :** 8.2 ou supérieur
 
-## Fonctionnalités (v1.16.2)
+## Fonctionnalités Principales
 
-*   **Préférences de Communication :** Une case à cocher "Refus mailing" est disponible pour chaque email (adhérent et représentants légaux), permettant d'exclure de manière ciblée les adresses des envois groupés.
-*   **Configuration SMTP :** Il est désormais possible de configurer un serveur SMTP externe pour l'envoi d'emails, améliorant ainsi la fiabilité et la délivrabilité.
-*   **Envoi d'emails par lots configurable :** La fonctionnalité "Envoyer un article" envoie les emails par lots. La taille de ces lots (par défaut 20) est maintenant configurable depuis les options SMTP, permettant d'ajuster le débit d'envoi en fonction des limitations du serveur. Un réglage à 0 envoie tous les emails en une seule fois.
-*   **Filtrage des Adhérents :** Des filtres ont été ajoutés à la liste des adhérents pour permettre un tri par groupe (École d'échecs, Pôle Excellence, etc.) et par statut d'adhésion.
-*   **Assignation des comptes :** Ajout d'un écran pour lier facilement un adhérent à un compte utilisateur WordPress et lui assigner un rôle.
-*   **Import CSV des Adhérents :** Importez des adhérents à partir d'un fichier CSV.
-*   **Page d'Import/Export dédiée :** Les fonctionnalités d'import et d'export ont été centralisées.
-*   **Champs de données étendus** et **Améliorations de la saisie et de l'import**.
-*   **Export CSV et JSON complets**.
-*   **Rôles Utilisateurs Personnalisés :** Ajoute les rôles "Membre" et "Entraineur".
+### Gestion des Adhésions par Saison
 
-### Fonctionnalités (Échecs)
+Le système de gestion des adhésions a été entièrement repensé pour offrir plus de flexibilité et un meilleur suivi historique.
 
-*   **Système de Difficulté Unifié :** Les Leçons, Exercices et Cours partagent maintenant un système de difficulté obligatoire (de 1 à 6). Une icône colorée dans les listes d'administration permet de visualiser rapidement le niveau de chaque contenu.
-*   **Leçons :** Un type de contenu pour les leçons d'échecs, visible uniquement par les membres du club. Les administrateurs et entraîneurs peuvent suivre quelles leçons ont été complétées par les membres.
-*   **Exercices :** Un type de contenu pour les exercices d'échecs interactifs avec différents types de questions (Vrai/Faux, QCM) et une solution.
-*   **Feedback sur les réponses :** Les réponses aux exercices QCM sont maintenant surlignées (vert/rouge) et les options sont désactivées après la soumission pour un retour d'information immédiat.
-*   **Cours :** Permet aux entraîneurs de construire des cours structurés en combinant des leçons et des exercices. Le constructeur de cours, intelligent, ne propose que les contenus dont le niveau de difficulté correspond à celui du cours.
-*   **Constructeur d'exercices :** Une interface publique permet aux visiteurs de s'entraîner sur des exercices aléatoires en fonction de la catégorie et de la difficulté, avec un suivi du score.
-*   **Catégories d'échecs :** Une taxonomie hiérarchique partagée pour organiser les leçons, exercices et cours.
-*   **Compatibilité RPB Chessboard :** Le contenu des leçons, exercices (y compris les réponses et solutions) est compatible avec les shortcodes du plugin RPB Chessboard.
-*   **Menu "Apprentissage" Unifié :** Les menus "Leçons", "Exercices" et "Cours" ont été regroupés sous un menu unique "Apprentissage" pour une interface plus claire.
-*   **Sauvegarde et Restauration :** Une fonctionnalité permet de sauvegarder l'ensemble des leçons, exercices, et cours dans un fichier compressé, et de les restaurer, remplaçant les données existantes.
+*   **Adhésion par Tags de Saison :** L'ancien système de statut (Actif, Ancien, etc.) est remplacé par une taxonomie "Saison d'adhésion". Chaque membre se voit attribuer un "tag" pour chaque saison à laquelle il adhère (ex: "Saison 2024/2025").
+*   **Statut Dynamique :** Un membre est considéré comme "Actif" s'il possède le tag de la saison en cours. Sinon, il est "Non adhérent".
+*   **Historique des Adhésions :** Toutes les saisons d'adhésion d'un membre sont conservées et visibles sous forme de "pastilles" sur sa fiche et dans la liste des adhérents.
+*   **Gestion Simplifiée :** Sur la fiche d'un adhérent, un simple menu déroulant "Adhésion pour la saison actuelle" permet de le marquer comme "Actif" ou "Non adhérent", ce qui ajoute ou retire automatiquement le tag de la saison en cours.
+*   **Filtres Avancés :** La liste des adhérents peut être filtrée pour n'afficher que les membres "Actifs", "Inactifs", ou tous les membres ayant adhéré à une saison spécifique (ex: tous les adhérents de la "Saison 2023/2024").
+*   **Réinitialisation Annuelle Intelligente :** La fonction de "Réinitialisation Annuelle" (`Réglages > Options DAME`) ne modifie plus les anciens membres. Son rôle est désormais de créer le tag pour la nouvelle saison qui commence et de le définir comme saison "active".
 
-## Configuration
+### Gestion des Données des Membres
 
-### Envoi d'emails (SMTP)
+*   **Gestion des Données Personnelles :** Fiche détaillée pour chaque membre (coordonnées, date de naissance, etc.).
+*   **Représentants Légaux :** Gestion des informations pour les représentants légaux des membres mineurs.
+*   **Classification :** Catégorisation des membres (École d'échecs, Pôle Excellence, Bénévole, etc.).
+*   **Assignation de Compte Utilisateur :** Outil pour lier un dossier d'adhérent à un compte utilisateur WordPress.
+*   **Import / Export :** Outils complets pour importer des membres depuis un fichier CSV et exporter toutes les données en CSV ou JSON.
 
-Pour garantir une bonne délivrabilité des emails envoyés via le plugin (par exemple, via la fonction "Envoyer un article"), il est fortement recommandé de configurer un serveur SMTP. Sans cette configuration, le plugin utilisera la fonction d'envoi par défaut de WordPress, qui peut être peu fiable sur certains hébergements.
+### Module Pédagogique (Échecs)
 
-Pour configurer le SMTP, allez dans `Réglages > Options DAME` et remplissez les champs suivants dans la section "Paramètres d'envoi d'email" :
+*   **Contenus Pédagogiques :** Gestion de Leçons, Exercices et Cours avec un système de difficulté unifié.
+*   **Constructeur de Cours :** Interface visuelle pour assembler des leçons et des exercices en un parcours pédagogique.
+*   **Suivi de Progression :** Les entraîneurs peuvent suivre les leçons complétées par les membres.
+*   **Exercices Interactifs :** Interface publique pour s'entraîner sur les exercices avec feedback immédiat.
+*   **Sauvegarde et Restauration :** Outil pour sauvegarder et restaurer l'ensemble du contenu pédagogique.
 
-*   **Hôte SMTP :** L'adresse de votre serveur SMTP (ex: `smtp.votreserveur.com`).
-*   **Port SMTP :** Le port utilisé par votre serveur SMTP (ex: `465` pour SSL, `587` pour TLS).
-*   **Chiffrement :** Le type de chiffrement à utiliser (SSL ou TLS). Sélectionnez "Aucun" si votre serveur ne l'utilise pas.
-*   **Nom d'utilisateur SMTP :** Votre nom d'utilisateur pour le serveur SMTP (souvent votre adresse email complète).
-*   **Mot de passe SMTP :** Le mot de passe associé à votre nom d'utilisateur SMTP. Le mot de passe n'est pas affiché après avoir été enregistré. Si vous laissez ce champ vide lors d'une modification, l'ancien mot de passe sera conservé.
-*   **Taille des lots d'envoi :** Définit le nombre d'emails à envoyer dans chaque lot. La valeur par défaut est 20. Vous pouvez ajuster ce nombre en fonction des limites de votre hébergeur. Mettez la valeur à `0` pour envoyer tous les emails en une seule fois (non recommandé pour un grand nombre de destinataires).
+### Administration et Configuration
 
-**Note :** L'adresse email renseignée dans le champ "Email de l'expéditeur" doit correspondre à l'adresse email utilisée pour l'authentification SMTP.
+*   **Préférences de Communication :** Gestion du consentement au mailing pour chaque adresse email.
+*   **Configuration SMTP :** Permet de configurer un serveur SMTP externe pour fiabiliser l'envoi d'emails.
+*   **Envoi d'emails par Lots :** La taille des lots d'envoi est configurable pour s'adapter aux contraintes des hébergeurs.
+*   **Désinstallation Sécurisée :** Les données sont conservées par défaut lors de la désinstallation, mais peuvent être supprimées via une option.
 
-## Désinstallation
+## Configuration SMTP
 
-La suppression des données lors de la désinstallation du plugin peut être activée depuis la page d'options (`Réglages > Options DAME`). Par défaut, les données sont conservées par sécurité.
+Pour garantir une bonne délivrabilité des emails envoyés via le plugin, il est fortement recommandé de configurer un serveur SMTP. Allez dans `Réglages > Options DAME` et remplissez les champs de la section "Paramètres d'envoi d'email".
