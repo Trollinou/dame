@@ -148,24 +148,27 @@ function dame_handle_annual_reset() {
             wp_die( 'Security check failed.' );
         }
 
-        $current_year = date( 'Y' );
-        $last_reset_year = get_option( 'dame_last_reset_year' );
-        if ( $current_year === $last_reset_year ) {
-            add_action(
-                'admin_notices',
-                function() {
-                    echo '<div class="error"><p>' . esc_html__( 'La réinitialisation a déjà été effectuée cette année.', 'dame' ) . '</p></div>';
-                }
-            );
-            return;
-        }
-
         // Determine the upcoming season name. A new season starts in September.
         $current_month     = (int) date( 'n' );
         $current_year      = (int) date( 'Y' );
         $season_start_year = ( $current_month >= 9 ) ? $current_year + 1 : $current_year;
         $season_end_year   = $season_start_year + 1;
         $new_season_name   = sprintf( 'Saison %d/%d', $season_start_year, $season_end_year );
+
+        // New, more robust check: see if the next season's tag already exists.
+        if ( term_exists( $new_season_name, 'dame_saison_adhesion' ) ) {
+            add_action(
+                'admin_notices',
+                function() use ( $new_season_name ) {
+                    $message = sprintf(
+                        esc_html__( 'L\'opération ne peut être effectuée car la saison "%s" a déjà été créée.', 'dame' ),
+                        esc_html( $new_season_name )
+                    );
+                    echo '<div class="error"><p>' . $message . '</p></div>';
+                }
+            );
+            return;
+        }
 
         $new_season_term = wp_insert_term( $new_season_name, 'dame_saison_adhesion' );
 
@@ -191,7 +194,6 @@ function dame_handle_annual_reset() {
         }
 
         update_option( 'dame_current_season_tag_id', $new_season_id );
-        update_option( 'dame_last_reset_year', $current_year );
 
         add_action(
             'admin_notices',
@@ -381,15 +383,16 @@ function dame_reset_section_callback() {
             echo '<p>' . sprintf( esc_html__( 'Saison active actuelle : %s', 'dame' ), '<strong>' . esc_html( $current_season_term->name ) . '</strong>' ) . '</p>';
         }
     }
-
-    $last_reset_year = get_option( 'dame_last_reset_year', __( 'jamais', 'dame' ) );
-    echo '<p>' . sprintf( esc_html__( 'Dernière initialisation de saison effectuée pour l\'année civile : %s', 'dame' ), '<strong>' . esc_html( $last_reset_year ) . '</strong>' ) . '</p>';
 }
 
 function dame_reset_button_callback() {
-    $current_year    = date( 'Y' );
-    $last_reset_year = get_option( 'dame_last_reset_year' );
-    $disabled        = ( $current_year === $last_reset_year ) ? 'disabled' : '';
+    // Determine the upcoming season name to check if it exists.
+    $current_month     = (int) date( 'n' );
+    $current_year      = (int) date( 'Y' );
+    $season_start_year = ( $current_month >= 9 ) ? $current_year + 1 : $current_year;
+    $next_season_name  = sprintf( 'Saison %d/%d', $season_start_year, $season_start_year + 1 );
+
+    $disabled = term_exists( $next_season_name, 'dame_saison_adhesion' ) ? 'disabled' : '';
     ?>
     <form method="post">
         <input type="hidden" name="dame_action" value="annual_reset" />
@@ -398,9 +401,9 @@ function dame_reset_button_callback() {
         <p class="description">
             <?php
             if ( $disabled ) {
-                esc_html_e( 'L\'initialisation de la saison a déjà été effectuée pour cette année civile.', 'dame' );
+                echo esc_html( sprintf( __( 'La saison "%s" a déjà été créée.', 'dame' ), $next_season_name ) );
             } else {
-                esc_html_e( 'Cette action ne peut être effectuée qu\'une fois par année civile.', 'dame' );
+                echo esc_html( sprintf( __( 'Cette action créera la saison "%s".', 'dame' ), $next_season_name ) );
             }
             ?>
         </p>
