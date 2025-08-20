@@ -7,6 +7,8 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 ### 2.1.4 (20/08/2025)
 
 *   **Fonctionnalité :** Ajout d'un champ 'Profession' pour l'adhérent ainsi que pour chaque représentant légal.
+*   **Amélioration :** Le champ 'Profession' est maintenant inclus dans les exports CSV et les sauvegardes JSON.
+*   **Amélioration :** Dans le formulaire de l'adhérent, le champ "Numéro de téléphone" est maintenant positionné après l'email pour une meilleure cohérence.
 
 ### 2.1.3 (20/08/2025)
 

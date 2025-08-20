@@ -299,10 +299,6 @@ function dame_render_adherent_details_metabox( $post ) {
 			<td><input type="text" id="dame_profession" name="dame_profession" value="<?php echo esc_attr( $profession ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_phone_number"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label></th>
-			<td><input type="tel" id="dame_phone_number" name="dame_phone_number" value="<?php echo esc_attr( $phone ); ?>" class="regular-text" /></td>
-		</tr>
-		<tr>
 			<th><label for="dame_email"><?php _e( 'Email', 'dame' ); ?></label></th>
 			<td>
 				<input type="email" id="dame_email" name="dame_email" value="<?php echo esc_attr( $email ); ?>" class="regular-text" />
@@ -311,6 +307,10 @@ function dame_render_adherent_details_metabox( $post ) {
 					<?php _e( 'Refus mailing', 'dame' ); ?>
 				</label>
 			</td>
+		</tr>
+		<tr>
+			<th><label for="dame_phone_number"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label></th>
+			<td><input type="tel" id="dame_phone_number" name="dame_phone_number" value="<?php echo esc_attr( $phone ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
 			<th><label for="dame_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
