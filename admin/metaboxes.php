@@ -610,37 +610,37 @@ function dame_render_classification_metabox( $post ) {
 		<?php
 		// --- Display current status and season history ---
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-		echo '<p>';
-		echo '<strong>' . esc_html__( 'Statut actuel :', 'dame' ) . '</strong> ';
-		if ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post->ID ) ) {
-			echo '<span style="color: green; font-weight: bold;">' . esc_html__( 'Actif', 'dame' ) . '</span>';
-		} else {
-			echo esc_html__( 'Non adhérent', 'dame' );
-		}
-		echo '</p>';
-
-		$saisons = get_the_terms( $post->ID, 'dame_saison_adhesion' );
-		if ( ! empty( $saisons ) && ! is_wp_error( $saisons ) ) {
-			echo '<p style="margin-top: 10px; margin-bottom: 5px;"><strong>' . esc_html__( 'Historique des saisons :', 'dame' ) . '</strong></p>';
-			echo '<div>';
-			foreach ( $saisons as $saison ) {
-				if ( $saison->term_id !== (int) $current_season_tag_id ) {
-					echo '<span style="display: inline-block; background-color: #e0e0e0; color: #333; padding: 2px 8px; margin: 2px 2px 2px 0; border-radius: 4px; font-size: 0.9em;">' . esc_html( $saison->name ) . '</span>';
-				}
-			}
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo '</div>';
-		}
 
 		// --- Add a simple control to set Active/Inactive status ---
-		echo '<p style="margin-top: 10px;">';
-		echo '<label for="dame_membership_status_control"><strong>' . esc_html__( 'Gérer l\'adhésion pour la saison en cours', 'dame' ) . '</strong></label>';
+		echo '<p>';
+		echo '<label for="dame_membership_status_control"><strong>' . esc_html__( 'Adhésion pour la saison actuelle', 'dame' ) . '</strong></label>';
 		echo '<select id="dame_membership_status_control" name="dame_membership_status_control" style="width:100%;">';
 		$is_active = ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post->ID ) );
 		echo '<option value="active" ' . selected( $is_active, true, false ) . '>' . esc_html__( 'Actif', 'dame' ) . '</option>';
 		echo '<option value="inactive" ' . selected( $is_active, false, false ) . '>' . esc_html__( 'Non adhérent', 'dame' ) . '</option>';
 		echo '</select>';
 		echo '</p>';
+
+		$saisons = get_the_terms( $post->ID, 'dame_saison_adhesion' );
+		if ( ! empty( $saisons ) && ! is_wp_error( $saisons ) ) {
+			// Check if there are any past seasons to display
+			$past_saisons = array_filter(
+				$saisons,
+				function( $saison ) use ( $current_season_tag_id ) {
+					return $saison->term_id !== (int) $current_season_tag_id;
+				}
+			);
+
+			if ( ! empty( $past_saisons ) ) {
+				echo '<p style="margin-top: 10px; margin-bottom: 5px;"><strong>' . esc_html__( 'Historique des saisons :', 'dame' ) . '</strong></p>';
+				echo '<div>';
+				foreach ( $past_saisons as $saison ) {
+					echo '<span style="display: inline-block; background-color: #e0e0e0; color: #333; padding: 2px 8px; margin: 2px 2px 2px 0; border-radius: 4px; font-size: 0.9em;">' . esc_html( $saison->name ) . '</span>';
+				}
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo '</div>';
+			}
+		}
 		?>
 	</div>
 	<hr>

@@ -120,6 +120,27 @@ function dame_add_adherent_filters() {
             <option value="inactive" <?php selected( 'inactive', $current_status ); ?>><?php _e( 'Adhésion inactive', 'dame' ); ?></option>
         </select>
         <?php
+
+        // New Season filter.
+        $saisons = get_terms(
+            array(
+                'taxonomy'   => 'dame_saison_adhesion',
+                'hide_empty' => false,
+                'orderby'    => 'name',
+                'order'      => 'DESC',
+            )
+        );
+        if ( ! is_wp_error( $saisons ) && ! empty( $saisons ) ) {
+            $current_saison = $_GET['dame_saison_filter'] ?? '';
+            ?>
+            <select name="dame_saison_filter">
+                <option value=""><?php _e( 'Toutes les saisons', 'dame' ); ?></option>
+                <?php foreach ( $saisons as $saison ) : ?>
+                    <option value="<?php echo esc_attr( $saison->term_id ); ?>" <?php selected( $saison->term_id, $current_saison ); ?>><?php echo esc_html( $saison->name ); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <?php
+        }
     }
 }
 add_action( 'restrict_manage_posts', 'dame_add_adherent_filters' );
@@ -186,6 +207,18 @@ function dame_filter_adherent_query( $query ) {
                         'operator' => 'NOT IN',
                     );
                 }
+            }
+        }
+
+        // New Season filter.
+        if ( isset( $_GET['dame_saison_filter'] ) && ! empty( $_GET['dame_saison_filter'] ) ) {
+            $saison_id = absint( $_GET['dame_saison_filter'] );
+            if ( $saison_id > 0 ) {
+                $tax_query[] = array(
+                    'taxonomy' => 'dame_saison_adhesion',
+                    'field'    => 'term_id',
+                    'terms'    => $saison_id,
+                );
             }
         }
 
