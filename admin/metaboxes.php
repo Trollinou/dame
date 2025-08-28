@@ -1472,11 +1472,11 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 			'Prénom' => array( 'key' => 'dame_first_name', 'type' => 'text', 'required' => true ),
 			'Nom' => array( 'key' => 'dame_last_name', 'type' => 'text', 'required' => true ),
 			'Date de naissance' => array( 'key' => 'dame_birth_date', 'type' => 'date', 'required' => true ),
-			'Commune de naissance' => array( 'key' => 'dame_birth_city', 'type' => 'text' ),
+			'Commune de naissance' => array( 'key' => 'dame_birth_city', 'type' => 'text_autocomplete' ),
 			'Sexe' => array( 'key' => 'dame_sexe', 'type' => 'radio', 'options' => array( 'Masculin', 'Féminin', 'Non précisé' ) ),
 			'Email' => array( 'key' => 'dame_email', 'type' => 'email' ),
 			'Numéro de téléphone' => array( 'key' => 'dame_phone_number', 'type' => 'tel' ),
-			'Adresse' => array( 'key' => 'dame_address_1', 'type' => 'text' ),
+			'Adresse' => array( 'key' => 'dame_address_1', 'type' => 'text_autocomplete' ),
 			'Complément' => array( 'key' => 'dame_address_2', 'type' => 'text' ),
 			'Code Postal' => array( 'key' => 'dame_postal_code', 'type' => 'text' ),
 			'Ville' => array( 'key' => 'dame_city', 'type' => 'text' ),
@@ -1488,7 +1488,7 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 			'Nom' => array( 'key' => 'dame_legal_rep_1_last_name', 'type' => 'text' ),
 			'Email' => array( 'key' => 'dame_legal_rep_1_email', 'type' => 'email' ),
 			'Téléphone' => array( 'key' => 'dame_legal_rep_1_phone', 'type' => 'tel' ),
-			'Adresse' => array( 'key' => 'dame_legal_rep_1_address_1', 'type' => 'text' ),
+			'Adresse' => array( 'key' => 'dame_legal_rep_1_address_1', 'type' => 'text_autocomplete' ),
 			'Complément' => array( 'key' => 'dame_legal_rep_1_address_2', 'type' => 'text' ),
 			'Code Postal' => array( 'key' => 'dame_legal_rep_1_postal_code', 'type' => 'text' ),
 			'Ville' => array( 'key' => 'dame_legal_rep_1_city', 'type' => 'text' ),
@@ -1499,7 +1499,7 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 			'Nom' => array( 'key' => 'dame_legal_rep_2_last_name', 'type' => 'text' ),
 			'Email' => array( 'key' => 'dame_legal_rep_2_email', 'type' => 'email' ),
 			'Téléphone' => array( 'key' => 'dame_legal_rep_2_phone', 'type' => 'tel' ),
-			'Adresse' => array( 'key' => 'dame_legal_rep_2_address_1', 'type' => 'text' ),
+			'Adresse' => array( 'key' => 'dame_legal_rep_2_address_1', 'type' => 'text_autocomplete' ),
 			'Complément' => array( 'key' => 'dame_legal_rep_2_address_2', 'type' => 'text' ),
 			'Code Postal' => array( 'key' => 'dame_legal_rep_2_postal_code', 'type' => 'text' ),
 			'Ville' => array( 'key' => 'dame_legal_rep_2_city', 'type' => 'text' ),
@@ -1530,7 +1530,14 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 					echo '<label style="margin-right: 15px;"><input type="radio" name="' . esc_attr( $key ) . '" value="' . esc_attr( $option ) . '" ' . checked( $value, $option, false ) . ' /> ' . esc_html( $option ) . '</label>';
 				}
 			} else {
-				echo '<input type="' . esc_attr( $config['type'] ) . '" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" value="' . esc_attr( $value ) . '" class="regular-text" />';
+				$is_autocomplete = ( 'text_autocomplete' === $config['type'] );
+				if ( $is_autocomplete ) {
+					echo '<div class="dame-autocomplete-wrapper">';
+				}
+				echo '<input type="text" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" value="' . esc_attr( $value ) . '" class="regular-text" />';
+				if ( $is_autocomplete ) {
+					echo '</div>';
+				}
 			}
 
 			echo '</td></tr>';
