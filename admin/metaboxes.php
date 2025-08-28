@@ -1460,84 +1460,80 @@ function dame_render_pre_inscription_actions_metabox( $post, $metabox ) {
  * @param WP_Post $post The post object.
  */
 function dame_render_pre_inscription_details_metabox( $post ) {
-	// Re-using the same function as before, no changes needed here for now.
+	wp_nonce_field( 'dame_save_pre_inscription_meta', 'dame_pre_inscription_metabox_nonce' );
+
 	$get_value = function( $field_name ) use ( $post ) {
 		return get_post_meta( $post->ID, '_' . $field_name, true );
 	};
 
-	$fields_adherent = array(
-		'Prénom' => 'dame_first_name',
-		'Nom' => 'dame_last_name',
-		'Date de naissance' => 'dame_birth_date',
-		'Commune de naissance' => 'dame_birth_city',
-		'Sexe' => 'dame_sexe',
-		'Email' => 'dame_email',
-		'Numéro de téléphone' => 'dame_phone_number',
-		'Adresse' => 'dame_address_1',
-		'Complément' => 'dame_address_2',
-		'Code Postal' => 'dame_postal_code',
-		'Ville' => 'dame_city',
-		'Taille de vêtements' => 'dame_taille_vetements',
-		'Profession' => 'dame_profession',
+	// To avoid repetition, we define field groups.
+	$field_groups = array(
+		'Informations Adhérent' => array(
+			'Prénom' => array( 'key' => 'dame_first_name', 'type' => 'text', 'required' => true ),
+			'Nom' => array( 'key' => 'dame_last_name', 'type' => 'text', 'required' => true ),
+			'Date de naissance' => array( 'key' => 'dame_birth_date', 'type' => 'date', 'required' => true ),
+			'Commune de naissance' => array( 'key' => 'dame_birth_city', 'type' => 'text' ),
+			'Sexe' => array( 'key' => 'dame_sexe', 'type' => 'radio', 'options' => array( 'Masculin', 'Féminin', 'Non précisé' ) ),
+			'Email' => array( 'key' => 'dame_email', 'type' => 'email' ),
+			'Numéro de téléphone' => array( 'key' => 'dame_phone_number', 'type' => 'tel' ),
+			'Adresse' => array( 'key' => 'dame_address_1', 'type' => 'text' ),
+			'Complément' => array( 'key' => 'dame_address_2', 'type' => 'text' ),
+			'Code Postal' => array( 'key' => 'dame_postal_code', 'type' => 'text' ),
+			'Ville' => array( 'key' => 'dame_city', 'type' => 'text' ),
+			'Taille de vêtements' => array( 'key' => 'dame_taille_vetements', 'type' => 'select', 'options' => array( 'Non renseigné', '8/10', '10/12', '12/14', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL' ) ),
+			'Profession' => array( 'key' => 'dame_profession', 'type' => 'text' ),
+		),
+		'Représentant Légal 1' => array(
+			'Prénom' => array( 'key' => 'dame_legal_rep_1_first_name', 'type' => 'text' ),
+			'Nom' => array( 'key' => 'dame_legal_rep_1_last_name', 'type' => 'text' ),
+			'Email' => array( 'key' => 'dame_legal_rep_1_email', 'type' => 'email' ),
+			'Téléphone' => array( 'key' => 'dame_legal_rep_1_phone', 'type' => 'tel' ),
+			'Adresse' => array( 'key' => 'dame_legal_rep_1_address_1', 'type' => 'text' ),
+			'Complément' => array( 'key' => 'dame_legal_rep_1_address_2', 'type' => 'text' ),
+			'Code Postal' => array( 'key' => 'dame_legal_rep_1_postal_code', 'type' => 'text' ),
+			'Ville' => array( 'key' => 'dame_legal_rep_1_city', 'type' => 'text' ),
+			'Profession' => array( 'key' => 'dame_legal_rep_1_profession', 'type' => 'text' ),
+		),
+		'Représentant Légal 2' => array(
+			'Prénom' => array( 'key' => 'dame_legal_rep_2_first_name', 'type' => 'text' ),
+			'Nom' => array( 'key' => 'dame_legal_rep_2_last_name', 'type' => 'text' ),
+			'Email' => array( 'key' => 'dame_legal_rep_2_email', 'type' => 'email' ),
+			'Téléphone' => array( 'key' => 'dame_legal_rep_2_phone', 'type' => 'tel' ),
+			'Adresse' => array( 'key' => 'dame_legal_rep_2_address_1', 'type' => 'text' ),
+			'Complément' => array( 'key' => 'dame_legal_rep_2_address_2', 'type' => 'text' ),
+			'Code Postal' => array( 'key' => 'dame_legal_rep_2_postal_code', 'type' => 'text' ),
+			'Ville' => array( 'key' => 'dame_legal_rep_2_city', 'type' => 'text' ),
+			'Profession' => array( 'key' => 'dame_legal_rep_2_profession', 'type' => 'text' ),
+		),
 	);
 
-	$fields_rep1 = array(
-		'Rep. 1 - Prénom' => 'dame_legal_rep_1_first_name',
-		'Rep. 1 - Nom' => 'dame_legal_rep_1_last_name',
-		'Rep. 1 - Email' => 'dame_legal_rep_1_email',
-		'Rep. 1 - Téléphone' => 'dame_legal_rep_1_phone',
-		'Rep. 1 - Adresse' => 'dame_legal_rep_1_address_1',
-		'Rep. 1 - Complément' => 'dame_legal_rep_1_address_2',
-		'Rep. 1 - Code Postal' => 'dame_legal_rep_1_postal_code',
-		'Rep. 1 - Ville' => 'dame_legal_rep_1_city',
-		'Rep. 1 - Profession' => 'dame_legal_rep_1_profession',
-	);
-
-	$fields_rep2 = array(
-		'Rep. 2 - Prénom' => 'dame_legal_rep_2_first_name',
-		'Rep. 2 - Nom' => 'dame_legal_rep_2_last_name',
-		'Rep. 2 - Email' => 'dame_legal_rep_2_email',
-		'Rep. 2 - Téléphone' => 'dame_legal_rep_2_phone',
-		'Rep. 2 - Adresse' => 'dame_legal_rep_2_address_1',
-		'Rep. 2 - Complément' => 'dame_legal_rep_2_address_2',
-		'Rep. 2 - Code Postal' => 'dame_legal_rep_2_postal_code',
-		'Rep. 2 - Ville' => 'dame_legal_rep_2_city',
-		'Rep. 2 - Profession' => 'dame_legal_rep_2_profession',
-	);
-
-	echo '<h3>' . esc_html__( 'Informations Adhérent', 'dame' ) . '</h3>';
-	echo '<table class="form-table">';
-	foreach ( $fields_adherent as $label => $key ) {
-		$value = $get_value( $key );
-		if ( empty( $value ) ) {
-			continue;
-		}
-		echo '<tr><th><label>' . esc_html( $label ) . '</label></th><td><input type="text" value="' . esc_attr( $value ) . '" class="regular-text" disabled></td></tr>';
-	}
-	echo '</table>';
-
-	if ( ! empty( $get_value( 'dame_legal_rep_1_first_name' ) ) ) {
-		echo '<h3>' . esc_html__( 'Représentant Légal 1', 'dame' ) . '</h3>';
+	foreach ( $field_groups as $group_label => $fields ) {
+		echo '<h3>' . esc_html__( $group_label, 'dame' ) . '</h3>';
 		echo '<table class="form-table">';
-		foreach ( $fields_rep1 as $label => $key ) {
+		foreach ( $fields as $label => $config ) {
+			$key = $config['key'];
 			$value = $get_value( $key );
-			if ( empty( $value ) ) {
-				continue;
-			}
-			echo '<tr><th><label>' . esc_html( $label ) . '</label></th><td><input type="text" value="' . esc_attr( $value ) . '" class="regular-text" disabled></td></tr>';
-		}
-		echo '</table>';
-	}
+			$required = isset( $config['required'] ) && $config['required'] ? ' <span class="description">(obligatoire)</span>' : '';
 
-	if ( ! empty( $get_value( 'dame_legal_rep_2_first_name' ) ) ) {
-		echo '<h3>' . esc_html__( 'Représentant Légal 2', 'dame' ) . '</h3>';
-		echo '<table class="form-table">';
-		foreach ( $fields_rep2 as $label => $key ) {
-			$value = $get_value( $key );
-			if ( empty( $value ) ) {
-				continue;
+			echo '<tr>';
+			echo '<th><label for="' . esc_attr( $key ) . '">' . esc_html__( $label, 'dame' ) . $required . '</label></th>';
+			echo '<td>';
+
+			if ( 'select' === $config['type'] ) {
+				echo '<select id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '">';
+				foreach ( $config['options'] as $option ) {
+					echo '<option value="' . esc_attr( $option ) . '" ' . selected( $value, $option, false ) . '>' . esc_html( $option ) . '</option>';
+				}
+				echo '</select>';
+			} elseif ( 'radio' === $config['type'] ) {
+				foreach ( $config['options'] as $option ) {
+					echo '<label style="margin-right: 15px;"><input type="radio" name="' . esc_attr( $key ) . '" value="' . esc_attr( $option ) . '" ' . checked( $value, $option, false ) . ' /> ' . esc_html( $option ) . '</label>';
+				}
+			} else {
+				echo '<input type="' . esc_attr( $config['type'] ) . '" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" value="' . esc_attr( $value ) . '" class="regular-text" />';
 			}
-			echo '<tr><th><label>' . esc_html( $label ) . '</label></th><td><input type="text" value="' . esc_attr( $value ) . '" class="regular-text" disabled></td></tr>';
+
+			echo '</td></tr>';
 		}
 		echo '</table>';
 	}
@@ -1656,26 +1652,67 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
  * @param int $post_id The ID of the post being saved.
  */
 function dame_process_pre_inscription_actions( $post_id ) {
-	// Security checks
-	if ( ! isset( $_POST['dame_pre_inscription_action_nonce'] ) || ! wp_verify_nonce( $_POST['dame_pre_inscription_action_nonce'], 'dame_pre_inscription_process_action' ) ) {
-		return;
+	// If this is a custom action (validate, delete), handle it.
+	if ( isset( $_POST['dame_pre_inscription_action'] ) ) {
+		// Security checks for custom actions
+		if ( ! isset( $_POST['dame_pre_inscription_action_nonce'] ) || ! wp_verify_nonce( $_POST['dame_pre_inscription_action_nonce'], 'dame_pre_inscription_process_action' ) ) {
+			return;
+		}
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+		$action = sanitize_key( $_POST['dame_pre_inscription_action'] );
+	} else {
+		// Otherwise, this is a standard "Update" save action for the metabox fields.
+		// Security checks for standard save
+		if ( ! isset( $_POST['dame_pre_inscription_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_pre_inscription_metabox_nonce'], 'dame_save_pre_inscription_meta' ) ) {
+			return;
+		}
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+		$action = 'save_fields'; // Define a specific action for the switch
 	}
-	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-		return;
-	}
-	if ( ! current_user_can( 'edit_post', $post_id ) ) {
-		return;
-	}
-	if ( ! isset( $_POST['dame_pre_inscription_action'] ) ) {
-		return;
-	}
-
-	$action = sanitize_key( $_POST['dame_pre_inscription_action'] );
 
 	// Unhook this function to prevent infinite loops during post updates.
 	remove_action( 'save_post_dame_pre_inscription', 'dame_process_pre_inscription_actions' );
 
 	switch ( $action ) {
+		case 'save_fields':
+			// Update post title
+			$first_name = sanitize_text_field( $_POST['dame_first_name'] );
+			$last_name  = sanitize_text_field( $_POST['dame_last_name'] );
+			if ( $first_name && $last_name ) {
+				$new_title = strtoupper( $last_name ) . ' ' . $first_name;
+				if ( get_the_title( $post_id ) !== $new_title ) {
+					wp_update_post(
+						array(
+							'ID'         => $post_id,
+							'post_title' => $new_title,
+						)
+					);
+				}
+			}
+
+			$all_field_keys = array(
+				'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_birth_city', 'dame_sexe', 'dame_profession',
+				'dame_email', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
+				'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_phone',
+				'dame_legal_rep_1_address_1', 'dame_legal_rep_1_address_2', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city', 'dame_legal_rep_1_profession',
+				'dame_legal_rep_2_first_name', 'dame_legal_rep_2_last_name', 'dame_legal_rep_2_email', 'dame_legal_rep_2_phone',
+				'dame_legal_rep_2_address_1', 'dame_legal_rep_2_address_2', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city', 'dame_legal_rep_2_profession',
+			);
+			foreach ( $all_field_keys as $key ) {
+				if ( isset( $_POST[ $key ] ) ) {
+					$value = strpos( $key, 'email' ) !== false ? sanitize_email( $_POST[ $key ] ) : sanitize_text_field( $_POST[ $key ] );
+					update_post_meta( $post_id, '_' . $key, $value );
+				}
+			}
+			break;
+
 		case 'delete':
 			wp_delete_post( $post_id, true );
 			wp_safe_redirect( admin_url( 'edit.php?post_type=dame_pre_inscription&message=101' ) ); // Custom message
