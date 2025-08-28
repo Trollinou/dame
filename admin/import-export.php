@@ -572,7 +572,7 @@ function dame_handle_import_action() {
 
     // --- Run migrations on imported data ---
     // This ensures that old backups are brought up to date with the current data structure.
-    $imported_version = isset( $import_data['version'] ) ? $import_data['version'] : '1.0.0'; // Default for backups without a version.
+    $imported_version = isset( $import_data['version'] ) ? $import_data['version'] : '2.2.0'; // Default to 2.2.0 for backups made before this feature.
     if ( function_exists( 'dame_perform_upgrade' ) ) {
         dame_perform_upgrade( $imported_version, DAME_VERSION );
     }
