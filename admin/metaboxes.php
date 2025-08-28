@@ -116,9 +116,11 @@ function dame_enqueue_admin_scripts( $hook ) {
     }
 
     // Ensure editor scripts are loaded for the Exercice CPT solution field
-    if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && 'dame_exercice' === $post->post_type ) {
-        wp_enqueue_editor();
-        // Enqueue admin styles for the z-index fix
+    if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && in_array( $post->post_type, array( 'dame_exercice', 'dame_pre_inscription' ), true ) ) {
+        if ( 'dame_exercice' === $post->post_type ) {
+            wp_enqueue_editor();
+        }
+        // Enqueue admin styles for the z-index fix and reconciliation table
         wp_enqueue_style(
             'dame-admin-styles',
             plugin_dir_url( __FILE__ ) . 'css/admin-styles.css',
@@ -1549,17 +1551,47 @@ function dame_render_pre_inscription_details_metabox( $post ) {
  */
 function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 	$pre_inscription_id = $post->ID;
-	$matched_id = $metabox['args']['matched_id'];
+	$matched_id         = $metabox['args']['matched_id'];
 
-	$fields_to_compare = array(
-		'Email' => 'dame_email',
-		'Numéro de téléphone' => 'dame_phone_number',
-		'Adresse' => 'dame_address_1',
-		'Complément' => 'dame_address_2',
-		'Code Postal' => 'dame_postal_code',
-		'Ville' => 'dame_city',
-		'Taille de vêtements' => 'dame_taille_vetements',
-		'Profession' => 'dame_profession',
+	// Define all possible fields to ensure a comprehensive comparison.
+	$all_fields = array(
+		'Informations Principales' => array(
+			'Prénom'               => 'dame_first_name',
+			'Nom'                  => 'dame_last_name',
+			'Date de naissance'    => 'dame_birth_date',
+			'Commune de naissance' => 'dame_birth_city',
+			'Sexe'                 => 'dame_sexe',
+			'Email'                => 'dame_email',
+			'Numéro de téléphone'  => 'dame_phone_number',
+			'Adresse'              => 'dame_address_1',
+			'Complément'           => 'dame_address_2',
+			'Code Postal'          => 'dame_postal_code',
+			'Ville'                => 'dame_city',
+			'Taille de vêtements'  => 'dame_taille_vetements',
+			'Profession'           => 'dame_profession',
+		),
+		'Représentant Légal 1' => array(
+			'Rep. 1 - Prénom'     => 'dame_legal_rep_1_first_name',
+			'Rep. 1 - Nom'        => 'dame_legal_rep_1_last_name',
+			'Rep. 1 - Email'      => 'dame_legal_rep_1_email',
+			'Rep. 1 - Téléphone'  => 'dame_legal_rep_1_phone',
+			'Rep. 1 - Adresse'    => 'dame_legal_rep_1_address_1',
+			'Rep. 1 - Complément' => 'dame_legal_rep_1_address_2',
+			'Rep. 1 - Code Postal' => 'dame_legal_rep_1_postal_code',
+			'Rep. 1 - Ville'      => 'dame_legal_rep_1_city',
+			'Rep. 1 - Profession' => 'dame_legal_rep_1_profession',
+		),
+		'Représentant Légal 2' => array(
+			'Rep. 2 - Prénom'     => 'dame_legal_rep_2_first_name',
+			'Rep. 2 - Nom'        => 'dame_legal_rep_2_last_name',
+			'Rep. 2 - Email'      => 'dame_legal_rep_2_email',
+			'Rep. 2 - Téléphone'  => 'dame_legal_rep_2_phone',
+			'Rep. 2 - Adresse'    => 'dame_legal_rep_2_address_1',
+			'Rep. 2 - Complément' => 'dame_legal_rep_2_address_2',
+			'Rep. 2 - Code Postal' => 'dame_legal_rep_2_postal_code',
+			'Rep. 2 - Ville'      => 'dame_legal_rep_2_city',
+			'Rep. 2 - Profession' => 'dame_legal_rep_2_profession',
+		),
 	);
 	?>
 	<p><?php printf( __( 'Correspondance trouvée avec l\'adhérent <a href="%s" target="_blank">#%d</a>.', 'dame' ), esc_url( get_edit_post_link( $matched_id ) ), (int) $matched_id ); ?></p>
@@ -1573,23 +1605,38 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 		</thead>
 		<tbody>
 			<?php
-			foreach ( $fields_to_compare as $label => $key_suffix ) {
-				$pre_inscription_value = get_post_meta( $pre_inscription_id, '_' . $key_suffix, true );
-				$adherent_value = get_post_meta( $matched_id, '_' . $key_suffix, true );
+			foreach ( $all_fields as $group_label => $fields ) {
+				$has_data_in_group = false;
+				foreach ( $fields as $key_suffix ) {
+					if ( ! empty( get_post_meta( $pre_inscription_id, '_' . $key_suffix, true ) ) ) {
+						$has_data_in_group = true;
+						break;
+					}
+				}
 
-				// Only show rows where there is a pre-inscription value.
-				if ( empty( $pre_inscription_value ) ) {
+				if ( ! $has_data_in_group ) {
 					continue;
 				}
 
-				$highlight_class = ( $pre_inscription_value !== $adherent_value ) ? 'dame-highlight-diff' : '';
 				?>
-				<tr class="<?php echo esc_attr( $highlight_class ); ?>">
-					<td><strong><?php echo esc_html( $label ); ?></strong></td>
-					<td><?php echo esc_html( $pre_inscription_value ); ?></td>
-					<td><?php echo esc_html( $adherent_value ); ?></td>
+				<tr class="heading">
+					<th colspan="3"><strong><?php echo esc_html( $group_label ); ?></strong></th>
 				</tr>
 				<?php
+				foreach ( $fields as $label => $key_suffix ) {
+					$pre_inscription_value = get_post_meta( $pre_inscription_id, '_' . $key_suffix, true );
+					$adherent_value        = get_post_meta( $matched_id, '_' . $key_suffix, true );
+
+					// Show all fields from the pre-inscription, even if empty, to be comprehensive.
+					$highlight_class = ( (string) $pre_inscription_value !== (string) $adherent_value ) ? 'dame-highlight-diff' : '';
+					?>
+					<tr class="<?php echo esc_attr( $highlight_class ); ?>">
+						<td><strong><?php echo esc_html( $label ); ?></strong></td>
+						<td><?php echo esc_html( $pre_inscription_value ); ?></td>
+						<td><?php echo esc_html( $adherent_value ); ?></td>
+					</tr>
+					<?php
+				}
 			}
 			?>
 		</tbody>
