@@ -4,6 +4,13 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.2.1 (28/08/2025)
+
+*   **Amélioration :** Le champ "Lieu de naissance" est désormais un champ unique qui stocke la commune et son code (ex: "Paris (75000)"). Le champ "Code postal de naissance" a été supprimé de la fiche adhérent et des exports/imports.
+*   **Amélioration UI :** Les libellés "Adresse (Ligne 1)" et "Adresse (Ligne 2)" ont été renommés en "Adresse" et "Complément" sur la fiche adhérent et dans les exports pour plus de clarté.
+*   **Amélioration :** Le champ "Taille vêtements" est maintenant une liste déroulante avec des valeurs prédéfinies (`Non renseigné`, `8/10`, `10/12`, `12/14`, `XS`, `S`, `M`, `L`, `XL`, `XXL`, `XXXL`) pour garantir la cohérence des données. Les valeurs existantes non conformes sont automatiquement converties en "Non renseigné".
+*   **Amélioration UI :** La metabox "Saisons d'adhésion" est maintenant déplacée sous "Classification et Adhésion" et est repliée par défaut pour une interface plus épurée.
+
 ### 2.2.0 (20/08/2025)
 
 *   **Refonte majeure du système d'adhésion**

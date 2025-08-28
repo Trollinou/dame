@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier et Apprentissage des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           2.2.0
+ * Version:           2.2.1
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Etienne Gagnon
@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '2.2.0' );
+define( 'DAME_VERSION', '2.2.1' );
 
 /**
  * Handles plugin updates.
@@ -102,8 +102,37 @@ function dame_perform_upgrade( $old_version, $new_version ) {
         flush_rewrite_rules();
     }
 
+    if ( version_compare( $old_version, '2.2.1', '<' ) ) {
+        dame_v2_2_1_migrate_clothing_sizes();
+    }
+
     // Update the version in the database to the new version.
     update_option( 'dame_plugin_version', $new_version );
+}
+
+/**
+ * Migrates the clothing sizes for version 2.2.1.
+ *
+ * Converts any existing non-standard clothing sizes to 'Non renseigné'.
+ */
+function dame_v2_2_1_migrate_clothing_sizes() {
+    $adherents_query = new WP_Query(
+        array(
+            'post_type'      => 'adherent',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+        )
+    );
+
+    if ( $adherents_query->have_posts() ) {
+        $valid_sizes = array( 'Non renseigné', '8/10', '10/12', '12/14', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL' );
+        foreach ( $adherents_query->posts as $post_id ) {
+            $current_size = get_post_meta( $post_id, '_dame_taille_vetements', true );
+            if ( ! in_array( $current_size, $valid_sizes, true ) ) {
+                update_post_meta( $post_id, '_dame_taille_vetements', 'Non renseigné' );
+            }
+        }
+    }
 }
 
 

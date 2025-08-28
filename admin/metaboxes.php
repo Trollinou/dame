@@ -219,8 +219,33 @@ function dame_add_meta_boxes() {
 		'side',
 		'default'
 	);
+	// We disabled the default metabox for this taxonomy to control its position and state.
+	add_meta_box(
+		'dame_saison_adhesiondiv', // The ID should be the taxonomy slug + 'div'.
+		__( 'Saisons d\'adhésion', 'dame' ),
+		'post_tags_meta_box', // Default WordPress callback for non-hierarchical taxonomies.
+		'adherent',
+		'side',
+		'low', // Lower priority to appear at the bottom of the side column.
+		array( 'taxonomy' => 'dame_saison_adhesion' )
+	);
 }
 add_action( 'add_meta_boxes', 'dame_add_meta_boxes' );
+
+/**
+ * Close the "Saisons d'adhésion" metabox by default by adding the 'closed' class.
+ *
+ * @param array $classes An array of postbox classes.
+ * @return array The modified array of classes.
+ */
+function dame_close_saisons_metabox_by_default( $classes ) {
+	// We check the current screen to make sure we're only affecting the intended metabox.
+	if ( get_current_screen()->id === 'adherent' ) {
+		$classes[] = 'closed';
+	}
+	return $classes;
+}
+add_filter( 'postbox_classes_adherent_dame_saison_adhesiondiv', 'dame_close_saisons_metabox_by_default' );
 
 /**
  * Renders the meta box for adherent's personal details.
@@ -260,7 +285,6 @@ function dame_render_adherent_details_metabox( $post ) {
 	$country = $get_value( 'dame_country' );
 	$region = $get_value( 'dame_region' );
 	$department = $get_value( 'dame_department' );
-	$birth_postal_code = $get_value( 'dame_birth_postal_code' );
 	$birth_city = $get_value( 'dame_birth_city' );
 	$profession = $get_value( 'dame_profession' );
 	?>
@@ -278,11 +302,10 @@ function dame_render_adherent_details_metabox( $post ) {
 			<td><input type="date" id="dame_birth_date" name="dame_birth_date" value="<?php echo esc_attr( $birth_date ); ?>" required="required"/></td>
 		</tr>
 		<tr>
-			<th><label for="dame_birth_postal_code"><?php _e( 'Lieu de naissance', 'dame' ); ?></label></th>
+			<th><label for="dame_birth_city"><?php _e( 'Lieu de naissance', 'dame' ); ?></label></th>
 			<td>
-				<div class="dame-inline-fields dame-autocomplete-wrapper">
-					<input type="text" id="dame_birth_postal_code" name="dame_birth_postal_code" value="<?php echo esc_attr( $birth_postal_code ); ?>" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" class="postal-code" />
-					<input type="text" id="dame_birth_city" name="dame_birth_city" value="<?php echo esc_attr( $birth_city ); ?>" placeholder="<?php _e( 'Commune de naissance', 'dame' ); ?>" class="city" />
+				<div class="dame-autocomplete-wrapper">
+					<input type="text" id="dame_birth_city" name="dame_birth_city" value="<?php echo esc_attr( $birth_city ); ?>" placeholder="<?php _e( 'Commune de naissance (Code)', 'dame' ); ?>" class="regular-text" />
 				</div>
 			</td>
 		</tr>
@@ -313,7 +336,7 @@ function dame_render_adherent_details_metabox( $post ) {
 			<td><input type="tel" id="dame_phone_number" name="dame_phone_number" value="<?php echo esc_attr( $phone ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
+			<th><label for="dame_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
 			<td>
 				<div class="dame-autocomplete-wrapper" style="position: relative;">
 					<input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text" autocomplete="off" />
@@ -321,7 +344,7 @@ function dame_render_adherent_details_metabox( $post ) {
 			</td>
 		</tr>
 		<tr>
-			<th><label for="dame_address_2"><?php _e( 'Adresse (Ligne 2)', 'dame' ); ?></label></th>
+			<th><label for="dame_address_2"><?php _e( 'Complément', 'dame' ); ?></label></th>
 			<td><input type="text" id="dame_address_2" name="dame_address_2" value="<?php echo esc_attr( $address_2 ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
@@ -454,7 +477,7 @@ function dame_render_legal_rep_metabox( $post ) {
 			<td><input type="tel" id="dame_legal_rep_1_phone" name="dame_legal_rep_1_phone" value="<?php echo esc_attr( $rep1_phone ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_1_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
+			<th><label for="dame_legal_rep_1_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
 			<td>
 				<div class="dame-autocomplete-wrapper">
 					<input type="text" id="dame_legal_rep_1_address_1" name="dame_legal_rep_1_address_1" value="<?php echo esc_attr( $rep1_address_1 ); ?>" class="regular-text" autocomplete="off" />
@@ -462,7 +485,7 @@ function dame_render_legal_rep_metabox( $post ) {
 			</td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_1_address_2"><?php _e( 'Adresse (Ligne 2)', 'dame' ); ?></label></th>
+			<th><label for="dame_legal_rep_1_address_2"><?php _e( 'Complément', 'dame' ); ?></label></th>
 			<td><input type="text" id="dame_legal_rep_1_address_2" name="dame_legal_rep_1_address_2" value="<?php echo esc_attr( $rep1_address_2 ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
@@ -507,7 +530,7 @@ function dame_render_legal_rep_metabox( $post ) {
 			<td><input type="tel" id="dame_legal_rep_2_phone" name="dame_legal_rep_2_phone" value="<?php echo esc_attr( $rep2_phone ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_2_address_1"><?php _e( 'Adresse (Ligne 1)', 'dame' ); ?></label></th>
+			<th><label for="dame_legal_rep_2_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
 			<td>
 				<div class="dame-autocomplete-wrapper">
 					<input type="text" id="dame_legal_rep_2_address_1" name="dame_legal_rep_2_address_1" value="<?php echo esc_attr( $rep2_address_1 ); ?>" class="regular-text" autocomplete="off" />
@@ -515,7 +538,7 @@ function dame_render_legal_rep_metabox( $post ) {
 			</td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_2_address_2"><?php _e( 'Adresse (Ligne 2)', 'dame' ); ?></label></th>
+			<th><label for="dame_legal_rep_2_address_2"><?php _e( 'Complément', 'dame' ); ?></label></th>
 			<td><input type="text" id="dame_legal_rep_2_address_2" name="dame_legal_rep_2_address_2" value="<?php echo esc_attr( $rep2_address_2 ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
@@ -539,6 +562,10 @@ function dame_render_legal_rep_metabox( $post ) {
 function dame_render_diverse_info_metabox( $post ) {
 	$autre_telephone  = get_post_meta( $post->ID, '_dame_autre_telephone', true );
 	$taille_vetements = get_post_meta( $post->ID, '_dame_taille_vetements', true );
+	$taille_vetements_options = array( 'Non renseigné', '8/10', '10/12', '12/14', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL' );
+	if ( ! $taille_vetements || ! in_array( $taille_vetements, $taille_vetements_options, true ) ) {
+		$taille_vetements = 'Non renseigné';
+	}
 	$allergies        = get_post_meta( $post->ID, '_dame_allergies', true );
 	$diet             = get_post_meta( $post->ID, '_dame_diet', true );
 	$transport        = get_post_meta( $post->ID, '_dame_transport', true );
@@ -550,7 +577,13 @@ function dame_render_diverse_info_metabox( $post ) {
 		</tr>
 		<tr>
 			<th><label for="dame_taille_vetements"><?php _e( 'Taille vêtements', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_taille_vetements" name="dame_taille_vetements" value="<?php echo esc_attr( $taille_vetements ); ?>" class="regular-text" /></td>
+			<td>
+				<select id="dame_taille_vetements" name="dame_taille_vetements">
+					<?php foreach ( $taille_vetements_options as $option ) : ?>
+						<option value="<?php echo esc_attr( $option ); ?>" <?php selected( $taille_vetements, $option ); ?>><?php echo esc_html( $option ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</td>
 		</tr>
 		<tr>
 			<th><label for="dame_allergies"><?php _e( 'Allergies connues', 'dame' ); ?></label></th>
@@ -802,10 +835,18 @@ function dame_save_adherent_meta( $post_id ) {
 	}
 
 	// --- Sanitize and Save Data ---
+	// Validate clothing size
+	if ( isset( $_POST['dame_taille_vetements'] ) ) {
+		$taille_vetements_options = array( 'Non renseigné', '8/10', '10/12', '12/14', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL' );
+		if ( ! in_array( $_POST['dame_taille_vetements'], $taille_vetements_options, true ) ) {
+			$_POST['dame_taille_vetements'] = 'Non renseigné';
+		}
+	}
+
 	$fields = [
 		'dame_first_name' => 'sanitize_text_field', 'dame_last_name' => 'sanitize_text_field',
 		'dame_birth_date' => 'sanitize_text_field', 'dame_license_number' => 'sanitize_text_field',
-		'dame_birth_postal_code' => 'sanitize_text_field', 'dame_birth_city' => 'sanitize_text_field',
+		'dame_birth_city' => 'sanitize_text_field',
 		'dame_email' => 'sanitize_email', 'dame_address_1' => 'sanitize_text_field',
 		'dame_address_2' => 'sanitize_text_field', 'dame_postal_code' => 'sanitize_text_field',
 		'dame_city' => 'sanitize_text_field', 'dame_phone_number' => 'sanitize_text_field',

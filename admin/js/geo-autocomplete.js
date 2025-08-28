@@ -1,82 +1,63 @@
 document.addEventListener('DOMContentLoaded', function () {
-    function initGeoAutocomplete(postalCodeId, cityId) {
-        const postalCodeInput = document.getElementById(postalCodeId);
+    /**
+     * Initializes autocomplete for a single city field, populating it with "City (Code)".
+     * @param {string} cityId The ID of the city input field.
+     */
+    function initBirthCityAutocomplete(cityId) {
         const cityInput = document.getElementById(cityId);
 
-        if (!postalCodeInput || !cityInput) {
+        if (!cityInput) {
             return;
         }
 
-        const wrapper = cityInput.closest('td');
+        const wrapper = cityInput.closest('.dame-autocomplete-wrapper');
+        if (!wrapper) return;
+
         const resultsContainer = document.createElement('div');
         resultsContainer.className = 'dame-address-suggestions';
         resultsContainer.style.display = 'none';
-        wrapper.style.position = 'relative';
         wrapper.appendChild(resultsContainer);
 
         let debounceTimer;
-
-        function fetchCities(query, type) {
-            let url = 'https://geo.api.gouv.fr/communes?fields=nom,codesPostaux';
-            if (type === 'postalcode') {
-                url += `&codePostal=${encodeURIComponent(query)}`;
-            } else {
-                url += `&nom=${encodeURIComponent(query)}`;
-            }
-
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    resultsContainer.innerHTML = '';
-                    if (data && data.length > 0) {
-                        resultsContainer.style.display = 'block';
-                        data.slice(0, 10).forEach(commune => {
-                            const suggestionDiv = document.createElement('div');
-                            suggestionDiv.classList.add('dame-suggestion-item');
-                            suggestionDiv.textContent = `${commune.nom} (${commune.codesPostaux.join(', ')})`;
-                            suggestionDiv.dataset.city = commune.nom;
-                            suggestionDiv.dataset.postalCode = commune.codesPostaux[0];
-                            resultsContainer.appendChild(suggestionDiv);
-                        });
-                    } else {
-                        resultsContainer.style.display = 'none';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching cities:', error);
-                    resultsContainer.style.display = 'none';
-                });
-        }
-
-        postalCodeInput.addEventListener('keyup', function () {
-            clearTimeout(debounceTimer);
-            const query = this.value;
-
-            if (query.length === 5) {
-                fetchCities(query, 'postalcode');
-            } else {
-                resultsContainer.style.display = 'none';
-            }
-        });
 
         cityInput.addEventListener('keyup', function () {
             clearTimeout(debounceTimer);
             const query = this.value;
 
-            if (query.length >= 5) {
-                debounceTimer = setTimeout(() => {
-                    fetchCities(query, 'city');
-                }, 1000);
-            } else {
+            if (query.length < 3) {
                 resultsContainer.style.display = 'none';
+                return;
             }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`https://geo.api.gouv.fr/communes?fields=nom,code&nom=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsContainer.innerHTML = '';
+                        if (data && data.length > 0) {
+                            resultsContainer.style.display = 'block';
+                            data.slice(0, 10).forEach(commune => {
+                                const suggestionDiv = document.createElement('div');
+                                suggestionDiv.classList.add('dame-suggestion-item');
+                                const suggestionText = `${commune.nom} (${commune.code})`;
+                                suggestionDiv.textContent = suggestionText;
+                                suggestionDiv.dataset.value = suggestionText;
+                                resultsContainer.appendChild(suggestionDiv);
+                            });
+                        } else {
+                            resultsContainer.style.display = 'none';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching cities:', error);
+                        resultsContainer.style.display = 'none';
+                    });
+            }, 500);
         });
 
         resultsContainer.addEventListener('click', function (e) {
             if (e.target.classList.contains('dame-suggestion-item')) {
-                const feature = e.target.dataset;
-                cityInput.value = feature.city;
-                postalCodeInput.value = feature.postalCode;
+                cityInput.value = e.target.dataset.value;
                 resultsContainer.innerHTML = '';
                 resultsContainer.style.display = 'none';
             }
@@ -89,5 +70,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    initGeoAutocomplete('dame_birth_postal_code', 'dame_birth_city');
+    // The old initGeoAutocomplete function was here. It has been removed as it is no longer used.
+
+    // This now uses a dedicated function that only requires the city field.
+    initBirthCityAutocomplete('dame_birth_city');
 });
