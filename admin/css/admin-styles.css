@@ -11,3 +11,7 @@
     position: relative;
     z-index: 10;
 }
+
+.dame-reconciliation-table .dame-highlight-diff td {
+    background-color: #fffbe6; /* Light yellow */
+}
