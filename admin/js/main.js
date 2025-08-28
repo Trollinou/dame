@@ -219,4 +219,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         loadInitialState();
     }
+
+    // Initialize jQuery UI Datepicker for birth date field
+    if (typeof jQuery.fn.datepicker !== 'undefined') {
+        const birthDateField = jQuery('#dame_birth_date');
+        if (birthDateField.length) {
+            birthDateField.datepicker({
+                dateFormat: 'dd/mm/yy',
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "-100:+0"
+            });
+        }
+    }
 });

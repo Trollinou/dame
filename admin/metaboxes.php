@@ -40,7 +40,7 @@ function dame_enqueue_admin_scripts( $hook ) {
 		wp_enqueue_script(
 			'dame-main-js',
 			plugin_dir_url( __FILE__ ) . 'js/main.js',
-			array(),
+			array( 'jquery-ui-datepicker' ),
 			DAME_VERSION,
 			true
 		);
