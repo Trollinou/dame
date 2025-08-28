@@ -36,7 +36,7 @@ add_action( 'admin_notices', 'dame_display_admin_notices' );
  */
 function dame_enqueue_admin_scripts( $hook ) {
 	global $post;
-	if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && 'adherent' === $post->post_type ) {
+	if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && in_array( $post->post_type, array( 'adherent', 'dame_pre_inscription' ), true ) ) {
 		wp_enqueue_script(
 			'dame-main-js',
 			plugin_dir_url( __FILE__ ) . 'js/main.js',
@@ -1622,6 +1622,15 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 				foreach ( $fields as $label => $key_suffix ) {
 					$pre_inscription_value = get_post_meta( $pre_inscription_id, '_' . $key_suffix, true );
 					$adherent_value        = get_post_meta( $matched_id, '_' . $key_suffix, true );
+
+					if ( 'dame_birth_date' === $key_suffix ) {
+						if ( $date = DateTime::createFromFormat( 'Y-m-d', $pre_inscription_value ) ) {
+							$pre_inscription_value = $date->format( 'd/m/Y' );
+						}
+						if ( $date = DateTime::createFromFormat( 'Y-m-d', $adherent_value ) ) {
+							$adherent_value = $date->format( 'd/m/Y' );
+						}
+					}
 
 					// Show all fields from the pre-inscription, even if empty, to be comprehensive.
 					$highlight_class = ( (string) $pre_inscription_value !== (string) $adherent_value ) ? 'dame-highlight-diff' : '';
