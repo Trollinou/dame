@@ -136,7 +136,7 @@ add_action( 'admin_enqueue_scripts', 'dame_enqueue_admin_scripts' );
  */
 function dame_add_admin_styles() {
 	$screen = get_current_screen();
-	if ( 'adherent' !== $screen->post_type ) {
+	if ( ! $screen || ! in_array( $screen->post_type, array( 'adherent', 'dame_pre_inscription' ), true ) ) {
 		return;
 	}
 	?>
