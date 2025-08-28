@@ -30,19 +30,21 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             debounceTimer = setTimeout(() => {
-                fetch(`https://geo.api.gouv.fr/communes?fields=nom,code&nom=${encodeURIComponent(query)}`)
+                fetch(`https://geo.api.gouv.fr/communes?fields=nom,codesPostaux&nom=${encodeURIComponent(query)}`)
                     .then(response => response.json())
                     .then(data => {
                         resultsContainer.innerHTML = '';
                         if (data && data.length > 0) {
                             resultsContainer.style.display = 'block';
                             data.slice(0, 10).forEach(commune => {
-                                const suggestionDiv = document.createElement('div');
-                                suggestionDiv.classList.add('dame-suggestion-item');
-                                const suggestionText = `${commune.nom} (${commune.code})`;
-                                suggestionDiv.textContent = suggestionText;
-                                suggestionDiv.dataset.value = suggestionText;
-                                resultsContainer.appendChild(suggestionDiv);
+                                if (commune.codesPostaux && commune.codesPostaux.length > 0) {
+                                    const suggestionDiv = document.createElement('div');
+                                    suggestionDiv.classList.add('dame-suggestion-item');
+                                    const suggestionText = `${commune.nom} (${commune.codesPostaux[0]})`;
+                                    suggestionDiv.textContent = suggestionText;
+                                    suggestionDiv.dataset.value = suggestionText;
+                                    resultsContainer.appendChild(suggestionDiv);
+                                }
                             });
                         } else {
                             resultsContainer.style.display = 'none';
