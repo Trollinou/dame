@@ -303,58 +303,58 @@ function dame_fiche_inscription_shortcode( $atts ) {
 				<input type="date" id="dame_birth_date" name="dame_birth_date" required>
 			</p>
 
-			<div id="dame-dynamic-fields" style="display:none;">
-				<p>
-					<label for="dame_birth_city"><?php _e( 'Commune de naissance', 'dame' ); ?></label>
-					<div class="dame-autocomplete-wrapper">
-						<input type="text" id="dame_birth_city" name="dame_birth_city" class="regular-text">
-					</div>
-				</p>
-				<p>
-					<label><?php _e( 'Sexe', 'dame' ); ?></label>
-					<br>
-					<label><input type="radio" name="dame_sexe" value="Masculin" checked> <?php _e( 'Masculin', 'dame' ); ?></label>
-					<label><input type="radio" name="dame_sexe" value="Féminin"> <?php _e( 'Féminin', 'dame' ); ?></label>
-					<label><input type="radio" name="dame_sexe" value="Non précisé"> <?php _e( 'Non précisé', 'dame' ); ?></label>
-				</p>
-				<p>
-					<label for="dame_email"><?php _e( 'Email', 'dame' ); ?></label>
-					<input type="email" id="dame_email" name="dame_email">
-				</p>
-				<p>
-					<label for="dame_phone_number"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label>
-					<input type="tel" id="dame_phone_number" name="dame_phone_number">
-				</p>
-				<p>
-					<label for="dame_address_1"><?php _e( 'Adresse', 'dame' ); ?></label>
-					<div class="dame-autocomplete-wrapper">
-						<input type="text" id="dame_address_1" name="dame_address_1">
-					</div>
-				</p>
-				<p>
-					<label for="dame_address_2"><?php _e( 'Complément', 'dame' ); ?></label>
-					<input type="text" id="dame_address_2" name="dame_address_2">
-				</p>
-				<p>
-					<label for="dame_postal_code"><?php _e( 'Code Postal', 'dame' ); ?></label>
-					<input type="text" id="dame_postal_code" name="dame_postal_code" style="width: 8em;">
-				</p>
-				<p>
-					<label for="dame_city"><?php _e( 'Ville', 'dame' ); ?></label>
-					<input type="text" id="dame_city" name="dame_city">
-				</p>
-				<p>
-					<label for="dame_taille_vetements"><?php _e( 'Taille de vêtements', 'dame' ); ?></label>
-					<select id="dame_taille_vetements" name="dame_taille_vetements">
-						<?php
-						$taille_vetements_options = array( 'Non renseigné', '8/10', '10/12', '12/14', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL' );
-						foreach ( $taille_vetements_options as $option ) {
-							echo '<option value="' . esc_attr( $option ) . '">' . esc_html( $option ) . '</option>';
-						}
-						?>
-					</select>
-				</p>
+			<p>
+				<label for="dame_birth_city"><?php _e( 'Commune de naissance', 'dame' ); ?></label>
+				<div class="dame-autocomplete-wrapper">
+					<input type="text" id="dame_birth_city" name="dame_birth_city" class="regular-text">
+				</div>
+			</p>
+			<p>
+				<label><?php _e( 'Sexe', 'dame' ); ?></label>
+				<br>
+				<label><input type="radio" name="dame_sexe" value="Masculin" checked> <?php _e( 'Masculin', 'dame' ); ?></label>
+				<label><input type="radio" name="dame_sexe" value="Féminin"> <?php _e( 'Féminin', 'dame' ); ?></label>
+				<label><input type="radio" name="dame_sexe" value="Non précisé"> <?php _e( 'Non précisé', 'dame' ); ?></label>
+			</p>
+			<p>
+				<label for="dame_email"><?php _e( 'Email', 'dame' ); ?></label>
+				<input type="email" id="dame_email" name="dame_email">
+			</p>
+			<p>
+				<label for="dame_phone_number"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label>
+				<input type="tel" id="dame_phone_number" name="dame_phone_number">
+			</p>
+			<p>
+				<label for="dame_address_1"><?php _e( 'Adresse', 'dame' ); ?></label>
+				<div class="dame-autocomplete-wrapper">
+					<input type="text" id="dame_address_1" name="dame_address_1">
+				</div>
+			</p>
+			<p>
+				<label for="dame_address_2"><?php _e( 'Complément', 'dame' ); ?></label>
+				<input type="text" id="dame_address_2" name="dame_address_2">
+			</p>
+			<p>
+				<label for="dame_postal_code"><?php _e( 'Code Postal', 'dame' ); ?></label>
+				<input type="text" id="dame_postal_code" name="dame_postal_code" style="width: 8em;">
+			</p>
+			<p>
+				<label for="dame_city"><?php _e( 'Ville', 'dame' ); ?></label>
+				<input type="text" id="dame_city" name="dame_city">
+			</p>
+			<p>
+				<label for="dame_taille_vetements"><?php _e( 'Taille de vêtements', 'dame' ); ?></label>
+				<select id="dame_taille_vetements" name="dame_taille_vetements">
+					<?php
+					$taille_vetements_options = array( 'Non renseigné', '8/10', '10/12', '12/14', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL' );
+					foreach ( $taille_vetements_options as $option ) {
+						echo '<option value="' . esc_attr( $option ) . '">' . esc_html( $option ) . '</option>';
+					}
+					?>
+				</select>
+			</p>
 
+			<div id="dame-dynamic-fields" style="display:none;">
 				<div id="dame-adherent-majeur-fields" style="display:none;">
 					<h3><?php _e( 'Informations complémentaires (Majeur)', 'dame' ); ?></h3>
 					<p>
