@@ -46,13 +46,13 @@ function dame_handle_csv_export_action() {
 
 	// 2. Build the header array.
 	$headers = array(
-		__( 'Nom', 'dame' ), __( 'Prénom', 'dame' ), __( 'Date de naissance', 'dame' ), __( 'Code postal de naissance', 'dame' ), __( 'Commune de naissance', 'dame' ), __( 'Sexe', 'dame' ), __( 'Profession', 'dame' ), __( 'Adresse email', 'dame' ), __( 'Numéro de téléphone', 'dame' ),
-		__( 'Adresse 1', 'dame' ), __( 'Adresse 2', 'dame' ), __( 'Code Postal', 'dame' ), __( 'Ville', 'dame' ), __( 'Pays', 'dame' ), __( 'Numéro de licence', 'dame' ),
+		__( 'Nom', 'dame' ), __( 'Prénom', 'dame' ), __( 'Date de naissance', 'dame' ), __( 'Commune de naissance', 'dame' ), __( 'Sexe', 'dame' ), __( 'Profession', 'dame' ), __( 'Adresse email', 'dame' ), __( 'Numéro de téléphone', 'dame' ),
+		__( 'Adresse', 'dame' ), __( 'Complément', 'dame' ), __( 'Code Postal', 'dame' ), __( 'Ville', 'dame' ), __( 'Pays', 'dame' ), __( 'Numéro de licence', 'dame' ),
 		__( 'Type de licence', 'dame' ), __( 'Ecole d\'échecs (O/N)', 'dame' ), __( 'Pôle excellence (O/N)', 'dame' ), __( 'Bénévole (O/N)', 'dame' ), __( 'Elu local (O/N)', 'dame' ), __( 'Arbitre', 'dame' ),
 		__( 'Représentant légal 1 - Nom', 'dame' ), __( 'Représentant légal 1 - Prénom', 'dame' ), __( 'Représentant légal 1 - Profession', 'dame' ), __( 'Représentant légal 1 - Email', 'dame' ), __( 'Représentant légal 1 - Téléphone', 'dame' ),
-		__( 'Représentant légal 1 - Adresse 1', 'dame' ), __( 'Représentant légal 1 - Adresse 2', 'dame' ), __( 'Représentant légal 1 - Code Postal', 'dame' ), __( 'Représentant légal 1 - Ville', 'dame' ),
+		__( 'Représentant légal 1 - Adresse', 'dame' ), __( 'Représentant légal 1 - Complément', 'dame' ), __( 'Représentant légal 1 - Code Postal', 'dame' ), __( 'Représentant légal 1 - Ville', 'dame' ),
 		__( 'Représentant légal 2 - Nom', 'dame' ), __( 'Représentant légal 2 - Prénom', 'dame' ), __( 'Représentant légal 2 - Profession', 'dame' ), __( 'Représentant légal 2 - Email', 'dame' ), __( 'Représentant légal 2 - Téléphone', 'dame' ),
-		__( 'Représentant légal 2 - Adresse 1', 'dame' ), __( 'Représentant légal 2 - Adresse 2', 'dame' ), __( 'Représentant légal 2 - Code Postal', 'dame' ), __( 'Représentant légal 2 - Ville', 'dame' ),
+		__( 'Représentant légal 2 - Adresse', 'dame' ), __( 'Représentant légal 2 - Complément', 'dame' ), __( 'Représentant légal 2 - Code Postal', 'dame' ), __( 'Représentant légal 2 - Ville', 'dame' ),
 		__( 'Autre téléphone', 'dame' ), __( 'Taille vêtements', 'dame' ), __( 'Allergies', 'dame' ), __( 'Régime alimentaire', 'dame' ), __( 'Moyen de locomotion', 'dame' ),
 	);
 
@@ -101,7 +101,6 @@ function dame_handle_csv_export_action() {
 				get_post_meta( $post_id, '_dame_last_name', true ),
 				get_post_meta( $post_id, '_dame_first_name', true ),
 				$formatted_birth_date,
-				get_post_meta( $post_id, '_dame_birth_postal_code', true ),
 				get_post_meta( $post_id, '_dame_birth_city', true ),
 				get_post_meta( $post_id, '_dame_sexe', true ),
 				get_post_meta( $post_id, '_dame_profession', true ),
@@ -209,8 +208,8 @@ function dame_handle_csv_import_action() {
 	}
 
 	$expected_headers = array(
-		'Nom', 'Prénom', 'Date de naissance', 'Code postal de naissance', 'Commune de naissance', 'Sexe', 'Adresse email', 'Numéro de téléphone', 'Adresse 1',
-		'Adresse 2', 'Code Postal', 'Ville', 'Numéro de licence', 'Etat de l\'adhésion',
+		'Nom', 'Prénom', 'Date de naissance', 'Commune de naissance', 'Sexe', 'Adresse email', 'Numéro de téléphone', 'Adresse',
+		'Complément', 'Code Postal', 'Ville', 'Numéro de licence', 'Etat de l\'adhésion',
 		'Autre téléphone', 'Taille vêtements', 'Etablissement scolaire', 'Académie', 'Allergies connu', 'Elu local (O/N)',
 	);
 	$col_map = array_flip( $header );
@@ -220,13 +219,12 @@ function dame_handle_csv_import_action() {
 		'Nom' => '_dame_last_name',
 		'Prénom' => '_dame_first_name',
 		'Date de naissance' => '_dame_birth_date',
-		'Code postal de naissance' => '_dame_birth_postal_code',
 		'Commune de naissance' => '_dame_birth_city',
 		'Sexe' => '_dame_sexe',
 		'Adresse email' => '_dame_email',
 		'Numéro de téléphone' => '_dame_phone_number',
-		'Adresse 1' => '_dame_address_1',
-		'Adresse 2' => '_dame_address_2',
+		'Adresse' => '_dame_address_1',
+		'Complément' => '_dame_address_2',
 		'Code Postal' => '_dame_postal_code',
 		'Ville' => '_dame_city',
 		'Numéro de licence' => '_dame_license_number',
