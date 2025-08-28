@@ -40,11 +40,10 @@ function dame_enqueue_admin_scripts( $hook ) {
 		wp_enqueue_script(
 			'dame-main-js',
 			plugin_dir_url( __FILE__ ) . 'js/main.js',
-			array( 'jquery', 'jquery-ui-datepicker' ),
+			array( 'jquery' ),
 			DAME_VERSION,
 			true
 		);
-		wp_enqueue_style( 'jquery-ui-style', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css' );
 		wp_enqueue_script(
 			'dame-geo-autocomplete-js',
 			plugin_dir_url( __FILE__ ) . 'js/geo-autocomplete.js',
@@ -1531,11 +1530,13 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 					echo '<label style="margin-right: 15px;"><input type="radio" name="' . esc_attr( $key ) . '" value="' . esc_attr( $option ) . '" ' . checked( $value, $option, false ) . ' /> ' . esc_html( $option ) . '</label>';
 				}
 			} else {
+				$type = ( 'text_autocomplete' === $config['type'] ) ? 'text' : $config['type'];
 				$is_autocomplete = ( 'text_autocomplete' === $config['type'] );
+
 				if ( $is_autocomplete ) {
 					echo '<div class="dame-autocomplete-wrapper">';
 				}
-				echo '<input type="text" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" value="' . esc_attr( $value ) . '" class="regular-text" />';
+				echo '<input type="' . esc_attr( $type ) . '" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" value="' . esc_attr( $value ) . '" class="regular-text" />';
 				if ( $is_autocomplete ) {
 					echo '</div>';
 				}
