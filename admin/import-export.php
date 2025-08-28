@@ -392,6 +392,7 @@ function dame_handle_export_action() {
     }
 
     $export_data = array(
+        'version'        => DAME_VERSION,
         'adherents'      => array(),
         'taxonomy_terms' => array(),
         'options'        => array(),
@@ -567,6 +568,13 @@ function dame_handle_import_action() {
         if ( $term && ! is_wp_error( $term ) ) {
             update_option( 'dame_current_season_tag_id', $term->term_id );
         }
+    }
+
+    // --- Run migrations on imported data ---
+    // This ensures that old backups are brought up to date with the current data structure.
+    $imported_version = isset( $import_data['version'] ) ? $import_data['version'] : '1.0.0'; // Default for backups without a version.
+    if ( function_exists( 'dame_perform_upgrade' ) ) {
+        dame_perform_upgrade( $imported_version, DAME_VERSION );
     }
 
     $message = sprintf(
