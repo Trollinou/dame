@@ -220,10 +220,13 @@ document.addEventListener('DOMContentLoaded', function () {
         loadInitialState();
     }
 
-    // Initialize jQuery UI Datepicker for birth date field
-    if (typeof jQuery.fn.datepicker !== 'undefined') {
+    // Initialize jQuery UI Datepicker for birth date field on pre-inscription page only
+    if (typeof jQuery.fn.datepicker !== 'undefined' && document.body.classList.contains('post-type-dame_pre_inscription')) {
         const birthDateField = jQuery('#dame_birth_date');
         if (birthDateField.length) {
+            // WordPress saves date fields in YYYY-MM-DD format. We must ensure the input is of type 'text'
+            // for the jQuery datepicker to properly override it and apply its format.
+            birthDateField.attr('type', 'text');
             birthDateField.datepicker({
                 dateFormat: 'dd/mm/yy',
                 changeMonth: true,

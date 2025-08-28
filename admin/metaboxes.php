@@ -40,10 +40,11 @@ function dame_enqueue_admin_scripts( $hook ) {
 		wp_enqueue_script(
 			'dame-main-js',
 			plugin_dir_url( __FILE__ ) . 'js/main.js',
-			array( 'jquery-ui-datepicker' ),
+			array( 'jquery', 'jquery-ui-datepicker' ),
 			DAME_VERSION,
 			true
 		);
+		wp_enqueue_style( 'jquery-ui-style', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css' );
 		wp_enqueue_script(
 			'dame-geo-autocomplete-js',
 			plugin_dir_url( __FILE__ ) . 'js/geo-autocomplete.js',
