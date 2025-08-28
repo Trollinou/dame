@@ -46,6 +46,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (age >= 18) {
             majeurFields.style.display = 'block';
             mineurFields.style.display = 'none';
+            // Clear all inputs within the minor fields container to prevent submission of hidden data
+            const minorInputs = mineurFields.querySelectorAll('input');
+            minorInputs.forEach(input => {
+                input.value = '';
+            });
         } else {
             majeurFields.style.display = 'none';
             mineurFields.style.display = 'block';
