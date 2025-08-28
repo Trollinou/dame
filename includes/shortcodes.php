@@ -310,24 +310,24 @@ function dame_fiche_inscription_shortcode( $atts ) {
 				</div>
 			</p>
 			<p>
-				<label><?php _e( 'Sexe', 'dame' ); ?></label>
+				<label><?php _e( 'Sexe', 'dame' ); ?> <span class="required">*</span></label>
 				<br>
-				<label><input type="radio" name="dame_sexe" value="Masculin" checked> <?php _e( 'Masculin', 'dame' ); ?></label>
+				<label><input type="radio" name="dame_sexe" value="Masculin" checked required> <?php _e( 'Masculin', 'dame' ); ?></label>
 				<label><input type="radio" name="dame_sexe" value="Féminin"> <?php _e( 'Féminin', 'dame' ); ?></label>
 				<label><input type="radio" name="dame_sexe" value="Non précisé"> <?php _e( 'Non précisé', 'dame' ); ?></label>
 			</p>
 			<p>
-				<label for="dame_email"><?php _e( 'Email', 'dame' ); ?></label>
-				<input type="email" id="dame_email" name="dame_email">
+				<label for="dame_email"><?php _e( 'Email', 'dame' ); ?> <span class="required">*</span></label>
+				<input type="email" id="dame_email" name="dame_email" required>
 			</p>
 			<p>
-				<label for="dame_phone_number"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label>
-				<input type="tel" id="dame_phone_number" name="dame_phone_number">
+				<label for="dame_phone_number"><?php _e( 'Numéro de téléphone', 'dame' ); ?> <span class="required">*</span></label>
+				<input type="tel" id="dame_phone_number" name="dame_phone_number" required>
 			</p>
 			<p>
-				<label for="dame_address_1"><?php _e( 'Adresse', 'dame' ); ?></label>
+				<label for="dame_address_1"><?php _e( 'Adresse', 'dame' ); ?> <span class="required">*</span></label>
 				<div class="dame-autocomplete-wrapper">
-					<input type="text" id="dame_address_1" name="dame_address_1">
+					<input type="text" id="dame_address_1" name="dame_address_1" required>
 				</div>
 			</p>
 			<p>
@@ -339,8 +339,8 @@ function dame_fiche_inscription_shortcode( $atts ) {
 				<input type="text" id="dame_postal_code" name="dame_postal_code" style="width: 8em;">
 			</p>
 			<p>
-				<label for="dame_city"><?php _e( 'Ville', 'dame' ); ?></label>
-				<input type="text" id="dame_city" name="dame_city">
+				<label for="dame_city"><?php _e( 'Ville', 'dame' ); ?> <span class="required">*</span></label>
+				<input type="text" id="dame_city" name="dame_city" required>
 			</p>
 			<p>
 				<label for="dame_taille_vetements"><?php _e( 'Taille de vêtements', 'dame' ); ?></label>
@@ -410,15 +410,24 @@ function dame_handle_pre_inscription_submission() {
 
 	// 2. Validation
 	$errors = array();
-	if ( empty( $_POST['dame_first_name'] ) ) {
-		$errors[] = __( "Le prénom est obligatoire.", 'dame' );
+	$required_fields = array(
+		'dame_first_name' => __( "Le prénom est obligatoire.", 'dame' ),
+		'dame_last_name' => __( "Le nom est obligatoire.", 'dame' ),
+		'dame_birth_date' => __( "La date de naissance est obligatoire.", 'dame' ),
+		'dame_sexe' => __( "Le sexe est obligatoire.", 'dame' ),
+		'dame_email' => __( "L'email est obligatoire.", 'dame' ),
+		'dame_phone_number' => __( "Le numéro de téléphone est obligatoire.", 'dame' ),
+		'dame_address_1' => __( "L'adresse est obligatoire.", 'dame' ),
+		'dame_city' => __( "La ville est obligatoire.", 'dame' ),
+	);
+
+	foreach ( $required_fields as $field_key => $error_message ) {
+		if ( empty( $_POST[ $field_key ] ) ) {
+			$errors[] = $error_message;
+		}
 	}
-	if ( empty( $_POST['dame_last_name'] ) ) {
-		$errors[] = __( "Le nom est obligatoire.", 'dame' );
-	}
-	if ( empty( $_POST['dame_birth_date'] ) ) {
-		$errors[] = __( "La date de naissance est obligatoire.", 'dame' );
-	}
+
+	// Email format validation (only if not empty, required check is above)
 	if ( ! empty( $_POST['dame_email'] ) && ! is_email( $_POST['dame_email'] ) ) {
 		$errors[] = __( "L'adresse email de l'adhérent n'est pas valide.", 'dame' );
 	}
