@@ -94,7 +94,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     messagesDiv.style.color = 'green';
                     messagesDiv.innerHTML = `<p>${data.data.message}</p>`; // Wrap initial message in a paragraph
 
-                    // This part will be updated in the new implementation, but for now, let's assume 'data.data' contains the required info
                     if (data.data.health_questionnaire === 'oui') {
                         const medicalCertMessage = document.createElement('p');
                         medicalCertMessage.style.fontWeight = 'bold';

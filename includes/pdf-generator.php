@@ -52,12 +52,12 @@ function dame_generate_health_form_handler() {
 	$age        = $today->diff( $birth_date )->y;
 
 	// 5. Prepare data for PDF
-	$full_name_adherent = strtoupper( $last_name ) . ' ' . $first_name;
+	$full_name_adherent_for_pdf = strtoupper( $last_name ) . ' ' . $first_name;
 	$current_date       = date( 'd/m/Y' );
 
 	// Handle UTF-8 to Windows-1252 conversion for FPDF standard fonts
-	$full_name_adherent = utf8_decode( $full_name_adherent );
-	$city               = utf8_decode( $city );
+	$full_name_adherent_for_pdf = utf8_decode( $full_name_adherent_for_pdf );
+	$city_for_pdf               = utf8_decode( $city );
 
 	// 6. Generate PDF
 	$pdf = new Fpdi();
@@ -80,13 +80,13 @@ function dame_generate_health_form_handler() {
 	if ( $age >= 18 ) {
 		// Major adherent
 		$pdf->SetXY( 52, 128 );
-		$pdf->Write( 0, $full_name_adherent );
+		$pdf->Write( 0, $full_name_adherent_for_pdf );
 
 		$pdf->SetXY( 32, 142 );
 		$pdf->Write( 0, $current_date );
 
 		$pdf->SetXY( 62, 142 );
-		$pdf->Write( 0, $city );
+		$pdf->Write( 0, $city_for_pdf );
 
 	} else {
 		// Minor adherent
@@ -94,25 +94,26 @@ function dame_generate_health_form_handler() {
 			wp_die( __( "Données du représentant légal manquantes pour un adhérent mineur.", 'dame' ), 400 );
 		}
 
-		$full_name_rep1 = strtoupper( $legal_rep_1_last_name ) . ' ' . $legal_rep_1_first_name;
-		$full_name_rep1 = utf8_decode( $full_name_rep1 );
-		$legal_rep_1_city = utf8_decode( $legal_rep_1_city );
+		$full_name_rep1_for_pdf = strtoupper( $legal_rep_1_last_name ) . ' ' . $legal_rep_1_first_name;
+		$full_name_rep1_for_pdf = utf8_decode( $full_name_rep1_for_pdf );
+		$legal_rep_1_city_for_pdf = utf8_decode( $legal_rep_1_city );
 
 		$pdf->SetXY( 52, 165 );
-		$pdf->Write( 0, $full_name_rep1 );
+		$pdf->Write( 0, $full_name_rep1_for_pdf );
 
 		$pdf->SetXY( 115, 174 );
-		$pdf->Write( 0, $full_name_adherent );
+		$pdf->Write( 0, $full_name_adherent_for_pdf );
 
 		$pdf->SetXY( 32, 212 );
 		$pdf->Write( 0, $current_date );
 
 		$pdf->SetXY( 62, 212 );
-		$pdf->Write( 0, $legal_rep_1_city );
+		$pdf->Write( 0, $legal_rep_1_city_for_pdf );
 	}
 
 	// 7. Output PDF
-	$pdf->Output( 'D', 'attestation_sante.pdf' );
+	$filename = sanitize_file_name( 'attestation_sante_' . $last_name . '_' . $first_name . '.pdf' );
+	$pdf->Output( 'D', $filename );
 	exit;
 }
 
