@@ -94,14 +94,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     messagesDiv.style.color = 'green';
                     messagesDiv.innerHTML = `<p>${data.data.message}</p>`; // Wrap initial message in a paragraph
 
+                    // This part will be updated in the new implementation, but for now, let's assume 'data.data' contains the required info
                     if (data.data.health_questionnaire === 'oui') {
                         const medicalCertMessage = document.createElement('p');
+                        medicalCertMessage.style.fontWeight = 'bold';
+                        medicalCertMessage.style.color = 'red';
                         medicalCertMessage.innerHTML = `Afin de valider votre inscription auprès de la FFE, vous devez nous remettre un certificat médical, daté de moins de 6 mois, déclarant <strong>${data.data.full_name}</strong> apte à la pratique des échecs en et hors compétition.`;
                         messagesDiv.appendChild(medicalCertMessage);
                     } else if (data.data.health_questionnaire === 'non') {
                         const downloadButton = document.createElement('a');
                         downloadButton.href = `${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}`;
-                        downloadButton.className = 'button dame-button'; // Use existing button styles if available
+                        downloadButton.className = 'button dame-button';
                         downloadButton.textContent = 'Télécharger mon attestation de santé à remettre signé';
                         downloadButton.style.marginTop = '1em';
                         downloadButton.style.display = 'inline-block';

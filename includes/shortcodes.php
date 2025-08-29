@@ -513,8 +513,24 @@ function dame_handle_pre_inscription_submission() {
 
 	// 5. Save Meta Data
 	foreach ( $sanitized_data as $key => $value ) {
+		// Skip direct save of health_questionnaire, it will be mapped and saved below.
+		if ( 'dame_health_questionnaire' === $key ) {
+			continue;
+		}
 		update_post_meta( $post_id, '_' . $key, $value );
 	}
+
+	// Map and save the health document status
+	$health_document_status = 'none'; // Default value
+	if ( isset( $sanitized_data['dame_health_questionnaire'] ) ) {
+		if ( 'oui' === $sanitized_data['dame_health_questionnaire'] ) {
+			$health_document_status = 'certificate';
+		} elseif ( 'non' === $sanitized_data['dame_health_questionnaire'] ) {
+			$health_document_status = 'attestation';
+		}
+	}
+	update_post_meta( $post_id, '_dame_health_document', $health_document_status );
+
 
 	// 6. Send Email Notification
 	$options = get_option( 'dame_options' );
@@ -541,7 +557,7 @@ function dame_handle_pre_inscription_submission() {
 			$sanitized_data['dame_first_name'],
 			$sanitized_data['dame_last_name']
 		),
-		'health_questionnaire' => $sanitized_data['dame_health_questionnaire'],
+		'health_questionnaire' => $sanitized_data['dame_health_questionnaire'], // 'oui' or 'non' for the JS logic
 		'post_id'            => $post_id,
 		'full_name'          => strtoupper( $sanitized_data['dame_last_name'] ) . ' ' . $sanitized_data['dame_first_name'],
 		'nonce'              => wp_create_nonce( 'dame_generate_health_form_' . $post_id ),

@@ -167,6 +167,19 @@ function dame_get_academy_list() {
  * @param int|null $exclude_post_id The ID of the post to exclude from the query (the current adherent being edited).
  * @return array An array of user IDs.
  */
+/**
+ * Returns the options for the health document status.
+ *
+ * @return array
+ */
+function dame_get_health_document_options() {
+	return array(
+		'none'         => __( 'Non renseigné', 'dame' ),
+		'attestation'  => __( 'Attestation signée', 'dame' ),
+		'certificate'  => __( 'Certificat médical', 'dame' ),
+	);
+}
+
 function dame_get_assigned_user_ids( $exclude_post_id = null ) {
     global $wpdb;
 
