@@ -696,6 +696,17 @@ function dame_render_classification_metabox( $post ) {
 		<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="B" <?php checked( $license_type, 'B' ); ?> /> B</label>
 		<label><input type="radio" name="dame_license_type" value="Non précisé" <?php checked( $license_type, 'Non précisé' ); ?> /> <?php _e( 'Non précisé', 'dame' ); ?></label>
 	</p>
+	<p>
+		<label for="dame_health_document"><strong><?php _e( 'Document de santé', 'dame' ); ?></strong></label>
+		<select id="dame_health_document" name="dame_health_document" style="width:100%;">
+			<?php
+			$health_document = get_post_meta( $post->ID, '_dame_health_document', true );
+			foreach ( dame_get_health_document_options() as $value => $label ) :
+				?>
+				<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $health_document, $value ); ?>><?php echo esc_html( $label ); ?></option>
+			<?php endforeach; ?>
+		</select>
+	</p>
 	<hr>
 	<p>
 		<input type="checkbox" id="dame_is_junior" name="dame_is_junior" value="1" <?php checked( $is_junior, '1' ); ?> />
@@ -882,6 +893,7 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint', 'dame_is_benevole' => 'absint', 'dame_is_elu_local' => 'absint',
 		'dame_arbitre_level' => 'sanitize_text_field',
 		'dame_license_type' => 'sanitize_text_field',
+		'dame_health_document' => 'sanitize_key',
 		'dame_autre_telephone' => 'sanitize_text_field',
 		'dame_taille_vetements' => 'sanitize_text_field',
 		'dame_allergies' => 'sanitize_text_field',
@@ -1472,6 +1484,7 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 			'Prénom' => array( 'key' => 'dame_first_name', 'type' => 'text', 'required' => true ),
 			'Nom' => array( 'key' => 'dame_last_name', 'type' => 'text', 'required' => true ),
 			'Date de naissance' => array( 'key' => 'dame_birth_date', 'type' => 'date', 'required' => true ),
+			'Document de santé' => array( 'key' => 'dame_health_document', 'type' => 'select', 'options_callback' => 'dame_get_health_document_options' ),
 			'Commune de naissance' => array( 'key' => 'dame_birth_city', 'type' => 'text_autocomplete' ),
 			'Sexe' => array( 'key' => 'dame_sexe', 'type' => 'radio', 'options' => array( 'Masculin', 'Féminin', 'Non précisé' ) ),
 			'Email' => array( 'key' => 'dame_email', 'type' => 'email' ),
@@ -1520,9 +1533,18 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 			echo '<td>';
 
 			if ( 'select' === $config['type'] ) {
+				$options = array();
+				if ( isset( $config['options_callback'] ) && function_exists( $config['options_callback'] ) ) {
+					$options = call_user_func( $config['options_callback'] );
+				} elseif ( isset( $config['options'] ) ) {
+					$options = $config['options'];
+				}
+
 				echo '<select id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '">';
-				foreach ( $config['options'] as $option ) {
-					echo '<option value="' . esc_attr( $option ) . '" ' . selected( $value, $option, false ) . '>' . esc_html( $option ) . '</option>';
+				foreach ( $options as $option_value => $option_label ) {
+					// If options is not associative, use label as value
+					$val = is_int( $option_value ) ? $option_label : $option_value;
+					echo '<option value="' . esc_attr( $val ) . '" ' . selected( $value, $val, false ) . '>' . esc_html( $option_label ) . '</option>';
 				}
 				echo '</select>';
 			} elseif ( 'radio' === $config['type'] ) {
@@ -1574,6 +1596,7 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 			'Ville'                => 'dame_city',
 			'Taille de vêtements'  => 'dame_taille_vetements',
 			'Profession'           => 'dame_profession',
+			'Document de santé'    => 'dame_health_document',
 		),
 		'Représentant Légal 1' => array(
 			'Rep. 1 - Prénom'     => 'dame_legal_rep_1_first_name',
@@ -1632,14 +1655,16 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 					$pre_inscription_value = get_post_meta( $pre_inscription_id, '_' . $key_suffix, true );
 					$adherent_value        = get_post_meta( $matched_id, '_' . $key_suffix, true );
 
+					// Special display formatting for certain fields
 					if ( 'dame_birth_date' === $key_suffix ) {
-						if ( $date = DateTime::createFromFormat( 'Y-m-d', $pre_inscription_value ) ) {
-							$pre_inscription_value = $date->format( 'd/m/Y' );
-						}
-						if ( $date = DateTime::createFromFormat( 'Y-m-d', $adherent_value ) ) {
-							$adherent_value = $date->format( 'd/m/Y' );
-						}
+						if ( $date = DateTime::createFromFormat( 'Y-m-d', $pre_inscription_value ) ) { $pre_inscription_value = $date->format( 'd/m/Y' ); }
+						if ( $date = DateTime::createFromFormat( 'Y-m-d', $adherent_value ) ) { $adherent_value = $date->format( 'd/m/Y' ); }
+					} elseif ( 'dame_health_document' === $key_suffix ) {
+						$options = dame_get_health_document_options();
+						$pre_inscription_value = isset( $options[ $pre_inscription_value ] ) ? $options[ $pre_inscription_value ] : $pre_inscription_value;
+						$adherent_value = isset( $options[ $adherent_value ] ) ? $options[ $adherent_value ] : $adherent_value;
 					}
+
 
 					// Show all fields from the pre-inscription, even if empty, to be comprehensive.
 					$highlight_class = ( (string) $pre_inscription_value !== (string) $adherent_value ) ? 'dame-highlight-diff' : '';
@@ -1703,6 +1728,7 @@ function dame_process_pre_inscription_actions( $post_id ) {
 	$all_field_keys = array(
 		'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_birth_city', 'dame_sexe', 'dame_profession',
 		'dame_email', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
+		'dame_health_document',
 		'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_phone',
 		'dame_legal_rep_1_address_1', 'dame_legal_rep_1_address_2', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city', 'dame_legal_rep_1_profession',
 		'dame_legal_rep_2_first_name', 'dame_legal_rep_2_last_name', 'dame_legal_rep_2_email', 'dame_legal_rep_2_phone',
