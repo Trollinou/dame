@@ -388,6 +388,13 @@ function dame_fiche_inscription_shortcode( $atts ) {
 				</div>
 			</div>
 
+			<h3><?php _e( "Questionnaire de santé", 'dame' ); ?></h3>
+			<p>
+				<label><input type="radio" name="dame_health_questionnaire" value="non" required> <?php _e( "J’ai répondu NON partout", 'dame' ); ?></label>
+				<br>
+				<label><input type="radio" name="dame_health_questionnaire" value="oui"> <?php _e( "J’ai au moins une réponse à OUI", 'dame' ); ?></label>
+			</p>
+
 			<p>
 				<button type="submit"><?php _e( 'Valider ma préinscription', 'dame' ); ?></button>
 			</p>
@@ -411,14 +418,15 @@ function dame_handle_pre_inscription_submission() {
 	// 2. Validation
 	$errors = array();
 	$required_fields = array(
-		'dame_first_name' => __( "Le prénom est obligatoire.", 'dame' ),
-		'dame_last_name' => __( "Le nom est obligatoire.", 'dame' ),
-		'dame_birth_date' => __( "La date de naissance est obligatoire.", 'dame' ),
-		'dame_sexe' => __( "Le sexe est obligatoire.", 'dame' ),
-		'dame_email' => __( "L'email est obligatoire.", 'dame' ),
-		'dame_phone_number' => __( "Le numéro de téléphone est obligatoire.", 'dame' ),
-		'dame_address_1' => __( "L'adresse est obligatoire.", 'dame' ),
-		'dame_city' => __( "La ville est obligatoire.", 'dame' ),
+		'dame_first_name'           => __( "Le prénom est obligatoire.", 'dame' ),
+		'dame_last_name'            => __( "Le nom est obligatoire.", 'dame' ),
+		'dame_birth_date'           => __( "La date de naissance est obligatoire.", 'dame' ),
+		'dame_sexe'                 => __( "Le sexe est obligatoire.", 'dame' ),
+		'dame_email'                => __( "L'email est obligatoire.", 'dame' ),
+		'dame_phone_number'         => __( "Le numéro de téléphone est obligatoire.", 'dame' ),
+		'dame_address_1'            => __( "L'adresse est obligatoire.", 'dame' ),
+		'dame_city'                 => __( "La ville est obligatoire.", 'dame' ),
+		'dame_health_questionnaire' => __( "La réponse au questionnaire de santé est obligatoire.", 'dame' ),
 	);
 
 	foreach ( $required_fields as $field_key => $error_message ) {
@@ -477,6 +485,7 @@ function dame_handle_pre_inscription_submission() {
 		'dame_legal_rep_1_address_1', 'dame_legal_rep_1_address_2', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city', 'dame_legal_rep_1_profession',
 		'dame_legal_rep_2_first_name', 'dame_legal_rep_2_last_name', 'dame_legal_rep_2_email', 'dame_legal_rep_2_phone',
 		'dame_legal_rep_2_address_1', 'dame_legal_rep_2_address_2', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city', 'dame_legal_rep_2_profession',
+		'dame_health_questionnaire',
 	);
 
 	foreach ( $fields_to_sanitize as $field ) {
@@ -526,15 +535,19 @@ function dame_handle_pre_inscription_submission() {
 	wp_mail( $recipient_email, $subject, $body, $headers );
 
 	// 7. Return Success Message
-	wp_send_json_success(
-		array(
-			'message' => sprintf(
-				__( "La préinscription pour %s %s a bien été enregistrée.", 'dame' ),
-				$sanitized_data['dame_first_name'],
-				$sanitized_data['dame_last_name']
-			),
-		)
+	$response_data = array(
+		'message'            => sprintf(
+			__( "La préinscription pour %s %s a bien été enregistrée.", 'dame' ),
+			$sanitized_data['dame_first_name'],
+			$sanitized_data['dame_last_name']
+		),
+		'health_questionnaire' => $sanitized_data['dame_health_questionnaire'],
+		'post_id'            => $post_id,
+		'full_name'          => strtoupper( $sanitized_data['dame_last_name'] ) . ' ' . $sanitized_data['dame_first_name'],
+		'nonce'              => wp_create_nonce( 'dame_generate_health_form_' . $post_id ),
 	);
+
+	wp_send_json_success( $response_data );
 }
 add_action( 'wp_ajax_dame_submit_pre_inscription', 'dame_handle_pre_inscription_submission' );
 add_action( 'wp_ajax_nopriv_dame_submit_pre_inscription', 'dame_handle_pre_inscription_submission' );
