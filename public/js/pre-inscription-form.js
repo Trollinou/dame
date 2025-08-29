@@ -62,6 +62,57 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // The keyup listeners are removed in favor of a direct call from the autocomplete script.
+
+    // Handle Form Submission
+    const form = document.getElementById('dame-pre-inscription-form');
+    const messagesDiv = document.getElementById('dame-form-messages');
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            messagesDiv.style.display = 'none';
+            messagesDiv.innerHTML = '';
+            messagesDiv.style.color = 'red'; // Default to red for errors
+
+            const formData = new FormData(form);
+            formData.append('action', 'dame_submit_pre_inscription');
+
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Envoi en cours...';
+
+            // Assumes `dame_pre_inscription_ajax.ajax_url` is localized
+            fetch(dame_pre_inscription_ajax.ajax_url, {
+                method: 'POST',
+                body: new URLSearchParams(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messagesDiv.style.color = 'red'; // As requested for success message
+                    messagesDiv.innerHTML = data.data.message;
+                    form.reset();
+                    dynamicFields.style.display = 'none';
+                } else {
+                    messagesDiv.innerHTML = data.data.message;
+                }
+                messagesDiv.style.display = 'block';
+                // Scroll to top of the page to make the message visible
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                messagesDiv.innerHTML = 'Une erreur inattendue est survenue.';
+                messagesDiv.style.display = 'block';
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Valider ma préinscription';
+            });
+        });
+    }
 });
 
 function prefillRep1() {
@@ -96,54 +147,3 @@ function prefillRep1() {
         rep1CityInput.value = cityInput.value;
     }
 }
-
-    // The keyup listeners are removed in favor of a direct call from the autocomplete script.
-
-    // Handle Form Submission
-    const form = document.getElementById('dame-pre-inscription-form');
-    const messagesDiv = document.getElementById('dame-form-messages');
-
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        messagesDiv.style.display = 'none';
-        messagesDiv.innerHTML = '';
-        messagesDiv.style.color = 'red'; // Default to red for errors
-
-        const formData = new FormData(form);
-        formData.append('action', 'dame_submit_pre_inscription');
-
-        const submitButton = form.querySelector('button[type="submit"]');
-        submitButton.disabled = true;
-        submitButton.textContent = 'Envoi en cours...';
-
-        // Assumes `dame_pre_inscription_ajax.ajax_url` is localized
-        fetch(dame_pre_inscription_ajax.ajax_url, {
-            method: 'POST',
-            body: new URLSearchParams(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                messagesDiv.style.color = 'red'; // As requested for success message
-                messagesDiv.innerHTML = data.data.message;
-                form.reset();
-                dynamicFields.style.display = 'none';
-            } else {
-                messagesDiv.innerHTML = data.data.message;
-            }
-            messagesDiv.style.display = 'block';
-            // Scroll to top of the page to make the message visible
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            messagesDiv.innerHTML = 'Une erreur inattendue est survenue.';
-            messagesDiv.style.display = 'block';
-        })
-        .finally(() => {
-            submitButton.disabled = false;
-            submitButton.textContent = 'Valider ma préinscription';
-        });
-    });
-});
