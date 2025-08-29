@@ -79,13 +79,13 @@ function dame_generate_health_form_handler() {
 
 	if ( $age >= 18 ) {
 		// Major adherent
-		$pdf->SetXY( 52, 128 );
+		$pdf->SetXY( 54, 128 );
 		$pdf->Write( 0, $full_name_adherent_for_pdf );
 
-		$pdf->SetXY( 32, 142 );
+		$pdf->SetXY( 32, 156 );
 		$pdf->Write( 0, $current_date );
 
-		$pdf->SetXY( 62, 142 );
+		$pdf->SetXY( 62, 156 );
 		$pdf->Write( 0, $city_for_pdf );
 
 	} else {
@@ -98,16 +98,16 @@ function dame_generate_health_form_handler() {
 		$full_name_rep1_for_pdf = utf8_decode( $full_name_rep1_for_pdf );
 		$legal_rep_1_city_for_pdf = utf8_decode( $legal_rep_1_city );
 
-		$pdf->SetXY( 52, 165 );
+		$pdf->SetXY( 54, 181 );
 		$pdf->Write( 0, $full_name_rep1_for_pdf );
 
-		$pdf->SetXY( 115, 174 );
+		$pdf->SetXY( 119, 190 );
 		$pdf->Write( 0, $full_name_adherent_for_pdf );
 
-		$pdf->SetXY( 32, 212 );
+		$pdf->SetXY( 32, 227 );
 		$pdf->Write( 0, $current_date );
 
-		$pdf->SetXY( 62, 212 );
+		$pdf->SetXY( 62, 227 );
 		$pdf->Write( 0, $legal_rep_1_city_for_pdf );
 	}
 
