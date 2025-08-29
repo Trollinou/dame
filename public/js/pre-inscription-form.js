@@ -18,13 +18,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const lastNameInput = document.getElementById('dame_last_name');
 
     // Rep 1 fields
+    const rep1FirstNameInput = document.getElementById('dame_legal_rep_1_first_name');
     const rep1LastNameInput = document.getElementById('dame_legal_rep_1_last_name');
     const rep1EmailInput = document.getElementById('dame_legal_rep_1_email');
     const rep1PhoneInput = document.getElementById('dame_legal_rep_1_phone');
     const rep1Address1Input = document.getElementById('dame_legal_rep_1_address_1');
-    const rep1Address2Input = document.getElementById('dame_legal_rep_1_address_2');
-    const rep1PostalCodeInput = document.getElementById('dame_legal_rep_1_postal_code');
     const rep1CityInput = document.getElementById('dame_legal_rep_1_city');
+    const rep1RequiredInputs = [rep1FirstNameInput, rep1LastNameInput, rep1EmailInput, rep1PhoneInput, rep1Address1Input, rep1CityInput];
 
 
     birthDateInput.addEventListener('change', function () {
@@ -51,10 +51,14 @@ document.addEventListener('DOMContentLoaded', function () {
             minorInputs.forEach(input => {
                 input.value = '';
             });
+            // Make rep 1 fields not required
+            rep1RequiredInputs.forEach(input => input.required = false);
         } else {
             majeurFields.style.display = 'none';
             mineurFields.style.display = 'block';
             prefillRep1();
+            // Make rep 1 fields required
+            rep1RequiredInputs.forEach(input => input.required = true);
         }
     });
 

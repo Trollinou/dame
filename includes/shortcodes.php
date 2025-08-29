@@ -427,6 +427,32 @@ function dame_handle_pre_inscription_submission() {
 		}
 	}
 
+	// Conditional validation for minors
+	if ( ! empty( $_POST['dame_birth_date'] ) ) {
+		$birth_date = DateTime::createFromFormat( 'Y-m-d', $_POST['dame_birth_date'] );
+		if ( $birth_date ) {
+			$today = new DateTime();
+			$age   = $today->diff( $birth_date )->y;
+
+			if ( $age < 18 ) {
+				$rep1_required_fields = array(
+					'dame_legal_rep_1_first_name' => __( "Le prénom du représentant légal 1 est obligatoire.", 'dame' ),
+					'dame_legal_rep_1_last_name'  => __( "Le nom du représentant légal 1 est obligatoire.", 'dame' ),
+					'dame_legal_rep_1_email'      => __( "L'email du représentant légal 1 est obligatoire.", 'dame' ),
+					'dame_legal_rep_1_phone'      => __( "Le téléphone du représentant légal 1 est obligatoire.", 'dame' ),
+					'dame_legal_rep_1_address_1'  => __( "L'adresse du représentant légal 1 est obligatoire.", 'dame' ),
+					'dame_legal_rep_1_city'       => __( "La ville du représentant légal 1 est obligatoire.", 'dame' ),
+				);
+
+				foreach ( $rep1_required_fields as $field_key => $error_message ) {
+					if ( empty( $_POST[ $field_key ] ) ) {
+						$errors[] = $error_message;
+					}
+				}
+			}
+		}
+	}
+
 	// Email format validation (only if not empty, required check is above)
 	if ( ! empty( $_POST['dame_email'] ) && ! is_email( $_POST['dame_email'] ) ) {
 		$errors[] = __( "L'adresse email de l'adhérent n'est pas valide.", 'dame' );
