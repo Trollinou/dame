@@ -1670,137 +1670,122 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
  * @param int $post_id The ID of the post being saved.
  */
 function dame_process_pre_inscription_actions( $post_id ) {
-	// If this is a custom action (validate, delete), handle it.
-	if ( isset( $_POST['dame_pre_inscription_action'] ) ) {
-		// Security checks for custom actions
-		if ( ! isset( $_POST['dame_pre_inscription_action_nonce'] ) || ! wp_verify_nonce( $_POST['dame_pre_inscription_action_nonce'], 'dame_pre_inscription_process_action' ) ) {
-			return;
-		}
-		if ( ! current_user_can( 'edit_post', $post_id ) ) {
-			return;
-		}
-		$action = sanitize_key( $_POST['dame_pre_inscription_action'] );
-	} else {
-		// Otherwise, this is a standard "Update" save action for the metabox fields.
-		// Security checks for standard save
-		if ( ! isset( $_POST['dame_pre_inscription_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_pre_inscription_metabox_nonce'], 'dame_save_pre_inscription_meta' ) ) {
-			return;
-		}
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-			return;
-		}
-		if ( ! current_user_can( 'edit_post', $post_id ) ) {
-			return;
-		}
-		$action = 'save_fields'; // Define a specific action for the switch
+	// Security check for standard save
+	if ( ! isset( $_POST['dame_pre_inscription_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_pre_inscription_metabox_nonce'], 'dame_save_pre_inscription_meta' ) ) {
+		return;
+	}
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
 	}
 
 	// Unhook this function to prevent infinite loops during post updates.
 	remove_action( 'save_post_dame_pre_inscription', 'dame_process_pre_inscription_actions' );
 
-	switch ( $action ) {
-		case 'save_fields':
-			// Update post title
-			$first_name = sanitize_text_field( $_POST['dame_first_name'] );
-			$last_name  = sanitize_text_field( $_POST['dame_last_name'] );
-			if ( $first_name && $last_name ) {
-				$new_title = strtoupper( $last_name ) . ' ' . $first_name;
-				if ( get_the_title( $post_id ) !== $new_title ) {
-					wp_update_post(
-						array(
-							'ID'         => $post_id,
-							'post_title' => $new_title,
-						)
-					);
-				}
-			}
-
-			$all_field_keys = array(
-				'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_birth_city', 'dame_sexe', 'dame_profession',
-				'dame_email', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
-				'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_phone',
-				'dame_legal_rep_1_address_1', 'dame_legal_rep_1_address_2', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city', 'dame_legal_rep_1_profession',
-				'dame_legal_rep_2_first_name', 'dame_legal_rep_2_last_name', 'dame_legal_rep_2_email', 'dame_legal_rep_2_phone',
-				'dame_legal_rep_2_address_1', 'dame_legal_rep_2_address_2', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city', 'dame_legal_rep_2_profession',
+	// --- Step 1: Always save the submitted fields first ---
+	// This ensures any edits made by the admin are saved before further action.
+	$first_name = sanitize_text_field( $_POST['dame_first_name'] );
+	$last_name  = sanitize_text_field( $_POST['dame_last_name'] );
+	if ( $first_name && $last_name ) {
+		$new_title = strtoupper( $last_name ) . ' ' . $first_name;
+		if ( get_the_title( $post_id ) !== $new_title ) {
+			wp_update_post(
+				array(
+					'ID'         => $post_id,
+					'post_title' => $new_title,
+				)
 			);
-			foreach ( $all_field_keys as $key ) {
-				if ( isset( $_POST[ $key ] ) ) {
-					$value = strpos( $key, 'email' ) !== false ? sanitize_email( $_POST[ $key ] ) : sanitize_text_field( $_POST[ $key ] );
-					update_post_meta( $post_id, '_' . $key, $value );
-				}
-			}
-			break;
+		}
+	}
 
-		case 'delete':
-			wp_delete_post( $post_id, true );
-			wp_safe_redirect( admin_url( 'edit.php?post_type=dame_pre_inscription&message=101' ) ); // Custom message
-			exit;
+	$all_field_keys = array(
+		'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_birth_city', 'dame_sexe', 'dame_profession',
+		'dame_email', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
+		'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_phone',
+		'dame_legal_rep_1_address_1', 'dame_legal_rep_1_address_2', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city', 'dame_legal_rep_1_profession',
+		'dame_legal_rep_2_first_name', 'dame_legal_rep_2_last_name', 'dame_legal_rep_2_email', 'dame_legal_rep_2_phone',
+		'dame_legal_rep_2_address_1', 'dame_legal_rep_2_address_2', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city', 'dame_legal_rep_2_profession',
+	);
+	foreach ( $all_field_keys as $key ) {
+		if ( isset( $_POST[ $key ] ) ) {
+			$value = strpos( $key, 'email' ) !== false ? sanitize_email( $_POST[ $key ] ) : sanitize_text_field( $_POST[ $key ] );
+			update_post_meta( $post_id, '_' . $key, $value );
+		}
+	}
 
-		case 'validate_new':
-		case 'validate_update':
-			$pre_inscription_meta = get_post_meta( $post_id );
-			$adherent_meta = array();
-			foreach ( $pre_inscription_meta as $key => $value ) {
-				// We only care about our own plugin's meta keys.
-				if ( strpos( $key, '_dame_' ) === 0 ) {
-					$adherent_meta[ $key ] = maybe_unserialize( $value[0] );
-				}
-			}
+	// --- Step 2: Check if a custom action button was pressed ---
+	if ( isset( $_POST['dame_pre_inscription_action'] ) ) {
+		// Nonce check for the custom action is also required.
+		if ( ! isset( $_POST['dame_pre_inscription_action_nonce'] ) || ! wp_verify_nonce( $_POST['dame_pre_inscription_action_nonce'], 'dame_pre_inscription_process_action' ) ) {
+			return;
+		}
+		$action = sanitize_key( $_POST['dame_pre_inscription_action'] );
 
-			$post_title = strtoupper( $adherent_meta['_dame_last_name'] ) . ' ' . $adherent_meta['_dame_first_name'];
-			$adherent_id = 0;
-			$redirect_message = 0;
+		switch ( $action ) {
+			case 'delete':
+				wp_delete_post( $post_id, true );
+				wp_safe_redirect( admin_url( 'edit.php?post_type=dame_pre_inscription&message=101' ) ); // Custom message
+				exit;
 
-			if ( 'validate_new' === $action ) {
-				$adherent_post_data = array(
-					'post_title'  => $post_title,
-					'post_type'   => 'adherent',
-					'post_status' => 'publish',
-					'meta_input'  => $adherent_meta,
-				);
-				$adherent_id = wp_insert_post( $adherent_post_data, true );
-				$redirect_message = 6; // Post published.
-			} else { // validate_update
-				$adherent_id = isset( $_POST['dame_matched_adherent_id'] ) ? absint( $_POST['dame_matched_adherent_id'] ) : 0;
-				if ( ! $adherent_id ) {
-					// Should not happen if the form is correct, but as a fallback, treat as new.
-					$action = 'validate_new';
-					$adherent_id = wp_insert_post(
-						array(
-							'post_title'  => $post_title,
-							'post_type'   => 'adherent',
-							'post_status' => 'publish',
-							'meta_input'  => $adherent_meta,
-						)
-					);
-				} else {
-					// Update existing adherent
-					wp_update_post( array( 'ID' => $adherent_id, 'post_title' => $post_title ) );
-					foreach ( $adherent_meta as $key => $value ) {
-						update_post_meta( $adherent_id, $key, $value );
+			case 'validate_new':
+			case 'validate_update':
+				// Data is already saved, so we can read it fresh from the DB.
+				$pre_inscription_meta = get_post_meta( $post_id );
+				$adherent_meta = array();
+				foreach ( $pre_inscription_meta as $key => $value ) {
+					if ( strpos( $key, '_dame_' ) === 0 ) {
+						$adherent_meta[ $key ] = maybe_unserialize( $value[0] );
 					}
-					$redirect_message = 1; // Post updated.
 				}
-			}
 
-			if ( is_wp_error( $adherent_id ) ) {
-				// Handle error, maybe set a transient and redirect back.
-				return;
-			}
+				$post_title = get_the_title( $post_id );
+				$adherent_id = 0;
+				$redirect_message = 0;
 
-			// Set adherent to 'Active' for the current season
-			$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-			if ( $current_season_tag_id ) {
-				wp_add_object_terms( $adherent_id, (int) $current_season_tag_id, 'dame_saison_adhesion' );
-			}
+				if ( 'validate_new' === $action ) {
+					$adherent_post_data = array(
+						'post_title'  => $post_title,
+						'post_type'   => 'adherent',
+						'post_status' => 'publish',
+						'meta_input'  => $adherent_meta,
+					);
+					$adherent_id = wp_insert_post( $adherent_post_data, true );
+					$redirect_message = 6; // Post published.
+				} else { // validate_update
+					$adherent_id = isset( $_POST['dame_matched_adherent_id'] ) ? absint( $_POST['dame_matched_adherent_id'] ) : 0;
+					if ( ! $adherent_id ) {
+						// Fallback: treat as new if ID is missing.
+						$adherent_id = wp_insert_post( array( 'post_title' => $post_title, 'post_type' => 'adherent', 'post_status' => 'publish', 'meta_input' => $adherent_meta ) );
+					} else {
+						// Update existing adherent
+						wp_update_post( array( 'ID' => $adherent_id, 'post_title' => $post_title ) );
+						foreach ( $adherent_meta as $key => $value ) {
+							update_post_meta( $adherent_id, $key, $value );
+						}
+						$redirect_message = 1; // Post updated.
+					}
+				}
 
-			// Delete the pre-inscription post
-			wp_delete_post( $post_id, true );
+				if ( is_wp_error( $adherent_id ) ) {
+					return; // Error handling can be improved with an admin notice.
+				}
 
-			// Redirect to the adherent's edit page
-			$redirect_url = get_edit_post_link( $adherent_id, 'raw' );
-			wp_safe_redirect( add_query_arg( 'message', $redirect_message, $redirect_url ) );
-			exit;
+				// Set adherent to 'Active' for the current season
+				$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+				if ( $current_season_tag_id ) {
+					wp_add_object_terms( $adherent_id, (int) $current_season_tag_id, 'dame_saison_adhesion' );
+				}
+
+				// Delete the pre-inscription post
+				wp_delete_post( $post_id, true );
+
+				// Redirect to the adherent's edit page
+				$redirect_url = get_edit_post_link( $adherent_id, 'raw' );
+				wp_safe_redirect( add_query_arg( 'message', $redirect_message, $redirect_url ) );
+				exit;
+		}
 	}
 
 	// Re-hook the function if no action was taken that resulted in an exit.
