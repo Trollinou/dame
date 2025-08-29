@@ -4,6 +4,14 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.3.1 (29/08/2025)
+
+*   **Fonctionnalité majeure : Intègre la gestion du questionnaire de santé**
+    *   **Formulaire de Préinscription :** Intègre la réponse au questionnaire de santé par un statut ('Attestation signée' ou 'Certificat médical')
+    *   **Génération de PDF :** Le nom du fichier PDF généré est maintenant au format `attestation_sante_NOM_Prenom.pdf`
+    *   **Administration (Préinscriptions) :** Le champ "Document de santé" est visible et éditable dans la fiche de préinscription. Il est également affiché dans la vue de rapprochement pour comparer avec un adhérent existant.
+    *   **Administration (Adhérents) :** Le champ "Document de santé" est ajouté à la fiche adhérent dans la section "Classification et Adhésion".
+
 ### 2.3.0 (29/08/2025)
 
 *   **Fonctionnalité majeure : Système de préinscription en ligne**
