@@ -498,6 +498,24 @@ function dame_handle_pre_inscription_submission() {
 		}
 	}
 
+	// If the member is an adult, remove any legal representative data that might have been submitted.
+	if ( isset( $sanitized_data['dame_birth_date'] ) ) {
+		$birth_date = DateTime::createFromFormat( 'Y-m-d', $sanitized_data['dame_birth_date'] );
+		if ( $birth_date ) {
+			$today = new DateTime();
+			$age   = $today->diff( $birth_date )->y;
+
+			if ( $age >= 18 ) {
+				// Unset all legal representative fields for adults.
+				foreach ( $sanitized_data as $key => $value ) {
+					if ( strpos( $key, 'dame_legal_rep_' ) === 0 ) {
+						unset( $sanitized_data[ $key ] );
+					}
+				}
+			}
+		}
+	}
+
 	// 4. Create Pre-inscription Post
 	$post_title = strtoupper( $sanitized_data['dame_last_name'] ) . ' ' . $sanitized_data['dame_first_name'];
 	$post_data = array(

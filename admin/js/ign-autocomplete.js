@@ -69,9 +69,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         cityInput.value = featureProperties.city;
                     }
 
-                    // If the global pre-fill function exists (on the public form) and the minor fields are visible, call it.
-                    const mineurFields = document.getElementById('dame-adherent-mineur-fields');
-                    if (typeof prefillRep1 === 'function' && mineurFields && mineurFields.style.display !== 'none') {
+                    // If the global pre-fill function exists (on the public form), call it.
+                    if (typeof prefillRep1 === 'function') {
                         prefillRep1();
                     }
 
