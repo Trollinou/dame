@@ -4,6 +4,17 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.3.0 (29/08/2025)
+
+*   **Fonctionnalité majeure : Système de préinscription en ligne**
+    *   **Shortcode `[dame_fiche_inscription]` :** Ajout d'un formulaire de préinscription public. Le formulaire affiche dynamiquement les champs requis en fonction de l'âge du futur membre (majeur ou mineur).
+    *   **Gestion des préinscriptions :** Les soumissions sont enregistrées en tant que "Préinscriptions" avec un statut "En attente". Un nouveau menu "Préinscriptions" est disponible pour les administrateurs.
+    *   **Interface de validation :** L'écran de gestion d'une préinscription permet de visualiser toutes les données soumises. Le formulaire est éditable par l'administrateur.
+    *   **Rapprochement automatique :** Le système recherche automatiquement si un adhérent avec le même nom, prénom et date de naissance existe déjà.
+    *   **Tableau de comparaison :** Si un adhérent existant est trouvé, un tableau comparatif est affiché, mettant en évidence les différences entre les données soumises et les données existantes.
+    *   **Actions de validation :** L'administrateur peut "Valider et Créer Adhérent" (pour une nouvelle inscription) ou "Mettre à jour l'adhérent" (si une correspondance a été trouvée). L'adhérent est automatiquement marqué comme "Actif" pour la saison en cours.
+    *   **Intégration :** Les données de préinscription sont incluses dans les sauvegardes et le script de désinstallation.
+
 ### 2.2.1 (28/08/2025)
 
 *   **Amélioration :** Le champ "Lieu de naissance" est désormais un champ unique qui stocke la commune et son code (ex: "Paris (75000)"). Le champ "Code postal de naissance" a été supprimé de la fiche adhérent et des exports/imports.
