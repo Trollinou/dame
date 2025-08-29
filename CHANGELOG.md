@@ -4,6 +4,10 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.3.2 (29/08/2025)
+
+*   **Correctif :** Correction d'un bug où les données d'un adhérent majeur étaient incorrectement copiées sur le représentant légal lors de la préinscription. La vérification est désormais effectuée côté serveur pour garantir qu'aucune donnée de représentant légal n'est sauvegardée pour les membres adultes.
+
 ### 2.3.1 (29/08/2025)
 
 *   **Fonctionnalité majeure : Intègre la gestion du questionnaire de santé**
