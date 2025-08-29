@@ -2,7 +2,27 @@
 
 Ce document explique comment utiliser les nouvelles fonctionnalités de Leçons, Exercices et Cours dans le plugin DAME - Dossier et Apprentissage des Membres Échiquéens.
 
-## 1. Comment utiliser les Exercices interactifs
+## 1. Comment utiliser le formulaire de préinscription
+
+Pour permettre aux nouveaux membres de se préinscrire en ligne, vous pouvez utiliser le shortcode `[dame_fiche_inscription]`.
+
+1.  Allez dans `Pages > Ajouter` dans votre administration WordPress.
+2.  Donnez un titre à votre page (par exemple, "Préinscription" ou "Rejoignez-nous").
+3.  Dans l'éditeur de contenu, insérez le shortcode suivant :
+    ```
+    [dame_fiche_inscription]
+    ```
+4.  Publiez la page.
+
+Le shortcode affichera un formulaire complet de préinscription. Ce formulaire est dynamique :
+-   Il demande d'abord les informations de base (nom, prénom, date de naissance).
+-   Une fois la date de naissance saisie, il calcule l'âge et affiche les champs conditionnels :
+    -   Pour un **majeur**, il demande la profession.
+    -   Pour un **mineur**, il affiche les sections pour un ou deux représentants légaux.
+
+Après soumission, les données sont envoyées aux administrateateurs pour validation dans le menu `Adhérents > Préinscriptions`.
+
+## 2. Comment utiliser les Exercices interactifs
 
 Pour permettre à vos utilisateurs de faire des exercices, vous devez créer une page dédiée à cela.
 
@@ -22,7 +42,7 @@ Lorsque les utilisateurs visiteront cette page, ils verront une interface leur p
 
 Ce shortcode est le principal pour les fonctionnalités interactives. D'autres shortcodes sont également disponibles pour l'affichage des pièces d'échecs.
 
-## 2. Shortcodes pour les pièces d'échecs
+## 3. Shortcodes pour les pièces d'échecs
 
 En plus du shortcode `[dame_exercices]`, le plugin fournit des shortcodes pour afficher facilement les symboles des pièces d'échecs dans n'importe quel contenu (articles, pages, leçons, etc.).
 
@@ -39,7 +59,7 @@ Voici la liste des shortcodes disponibles :
 
 Lorsque vous écrivez l'un de ces shortcodes dans votre éditeur, il sera automatiquement remplacé par le symbole correspondant (par exemple, `[RB]` deviendra ♔).
 
-## 3. Comment ajouter une Leçon, un Exercice ou un Cours à un Menu
+## 4. Comment ajouter une Leçon, un Exercice ou un Cours à un Menu
 
 Vous pouvez ajouter des liens directs vers n'importe quelle Leçon, Exercice ou Cours publié directement dans vos menus de navigation.
 
@@ -53,7 +73,7 @@ Vous pouvez ajouter des liens directs vers n'importe quelle Leçon, Exercice ou 
 
 Vous pouvez également ajouter des liens vers les **archives** de ces contenus (la liste de toutes les leçons, par exemple) ou vers les **catégories** que vous avez créées.
 
-## 4. Gestion des Catégories
+## 5. Gestion des Catégories
 
 Les Leçons, Exercices et Cours partagent les mêmes catégories. Vous pouvez les gérer depuis le menu de chaque type de contenu :
 -   `Leçons > Catégories d'échecs`
@@ -62,7 +82,7 @@ Les Leçons, Exercices et Cours partagent les mêmes catégories. Vous pouvez le
 
 Depuis cet écran, vous pouvez ajouter, modifier, supprimer des catégories et les organiser de manière hiérarchique (en définissant des catégories parentes).
 
-## 5. Rôles et Permissions
+## 6. Rôles et Permissions
 
 Pour rappel, voici comment les permissions sont gérées :
 -   **Leçons :**

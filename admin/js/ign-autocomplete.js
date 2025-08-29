@@ -61,12 +61,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     let streetAddress = featureProperties.fulltext.split(',')[0];
                     addressInput.value = streetAddress.trim();
 
-                    if(postalCodeInput) postalCodeInput.value = featureProperties.zipcode;
-                    if(cityInput) cityInput.value = featureProperties.city;
+                    if (postalCodeInput) {
+                        postalCodeInput.value = featureProperties.zipcode;
+                        postalCodeInput.dispatchEvent(new Event('keyup'));
+                    }
+                    if (cityInput) {
+                        cityInput.value = featureProperties.city;
+                    }
 
-                    if(postalCodeInput && postalCodeInput.id === 'dame_postal_code') {
-                        const event = new Event('keyup');
-                        postalCodeInput.dispatchEvent(event);
+                    // If the global pre-fill function exists (on the public form), call it.
+                    if (typeof prefillRep1 === 'function') {
+                        prefillRep1();
                     }
 
                     resultsContainer.innerHTML = '';

@@ -392,10 +392,11 @@ function dame_handle_export_action() {
     }
 
     $export_data = array(
-        'version'        => DAME_VERSION,
-        'adherents'      => array(),
-        'taxonomy_terms' => array(),
-        'options'        => array(),
+        'version'          => DAME_VERSION,
+        'adherents'        => array(),
+        'pre_inscriptions' => array(),
+        'taxonomy_terms'   => array(),
+        'options'          => array(),
     );
 
     // 1. Export the taxonomy terms
@@ -463,6 +464,35 @@ function dame_handle_export_action() {
         wp_reset_postdata();
     }
 
+    // 4. Export pre-inscriptions
+    $pre_inscriptions_query = new WP_Query(
+        array(
+            'post_type'      => 'dame_pre_inscription',
+            'posts_per_page' => -1,
+            'post_status'    => 'any',
+        )
+    );
+
+    if ( $pre_inscriptions_query->have_posts() ) {
+        while ( $pre_inscriptions_query->have_posts() ) {
+            $pre_inscriptions_query->the_post();
+            $post_id     = get_the_ID();
+            $pre_inscription_data = array(
+                'post_title' => get_the_title(),
+                'meta_data'  => array(),
+            );
+
+            $all_meta = get_post_meta( $post_id );
+            foreach ( $all_meta as $key => $value ) {
+                if ( strpos( $key, '_dame_' ) === 0 ) {
+                    $pre_inscription_data['meta_data'][ $key ] = maybe_unserialize( $value[0] );
+                }
+            }
+            $export_data['pre_inscriptions'][] = $pre_inscription_data;
+        }
+        wp_reset_postdata();
+    }
+
     $filename = 'dame-adherents-backup-' . date( 'Y-m-d' ) . '.json.gz';
     $data_to_compress = json_encode( $export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
     $compressed_data = gzcompress( $data_to_compress );
@@ -513,10 +543,11 @@ function dame_handle_import_action() {
     }
 
     // --- Clear existing data ---
-    // 1. Delete adherents
-    $existing_adherents = get_posts( array( 'post_type' => 'adherent', 'posts_per_page' => -1, 'fields' => 'ids' ) );
-    foreach ( $existing_adherents as $adherent_id ) {
-        wp_delete_post( $adherent_id, true ); // true to bypass trash
+    // 1. Delete adherents and pre-inscriptions
+    $post_types_to_delete = array( 'adherent', 'dame_pre_inscription' );
+    $existing_posts = get_posts( array( 'post_type' => $post_types_to_delete, 'posts_per_page' => -1, 'fields' => 'ids' ) );
+    foreach ( $existing_posts as $post_id_to_delete ) {
+        wp_delete_post( $post_id_to_delete, true ); // true to bypass trash
     }
     // 2. Delete season terms
     $existing_terms = get_terms( array( 'taxonomy' => 'dame_saison_adhesion', 'hide_empty' => false, 'fields' => 'ids' ) );
@@ -567,6 +598,26 @@ function dame_handle_import_action() {
         $term = get_term_by( 'slug', $import_data['options']['dame_current_season_tag_slug'], 'dame_saison_adhesion' );
         if ( $term && ! is_wp_error( $term ) ) {
             update_option( 'dame_current_season_tag_id', $term->term_id );
+        }
+    }
+
+    // 4. Import pre-inscriptions
+    if ( ! empty( $import_data['pre_inscriptions'] ) ) {
+        foreach ( $import_data['pre_inscriptions'] as $pre_inscription_data ) {
+            $post_data = array(
+                'post_title'  => sanitize_text_field( $pre_inscription_data['post_title'] ),
+                'post_type'   => 'dame_pre_inscription',
+                'post_status' => 'pending', // Pre-inscriptions are always pending
+            );
+            $post_id   = wp_insert_post( $post_data );
+
+            if ( $post_id && ! is_wp_error( $post_id ) ) {
+                if ( ! empty( $pre_inscription_data['meta_data'] ) ) {
+                    foreach ( $pre_inscription_data['meta_data'] as $key => $value ) {
+                        update_post_meta( $post_id, $key, $value );
+                    }
+                }
+            }
         }
     }
 

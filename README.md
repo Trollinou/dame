@@ -1,6 +1,6 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 2.2.1
+**Version:** 2.3.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -27,6 +27,13 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 *   **Gestion Simplifiée :** Sur la fiche d'un adhérent, un simple menu déroulant "Adhésion pour la saison actuelle" permet de le marquer comme "Actif" ou "Non adhérent", ce qui ajoute ou retire automatiquement le tag de la saison en cours.
 *   **Filtres Avancés :** La liste des adhérents peut être filtrée pour n'afficher que les membres "Actifs", "Inactifs", ou tous les membres ayant adhéré à une saison spécifique (ex: tous les adhérents de la "Saison 2023/2024").
 *   **Réinitialisation Annuelle Intelligente :** La fonction de "Réinitialisation Annuelle" (`Réglages > Options DAME`) ne modifie plus les anciens membres. Son rôle est désormais de créer le tag pour la nouvelle saison qui commence et de le définir comme saison "active".
+
+### Préinscription en Ligne
+
+*   **Formulaire de Préinscription :** Un shortcode `[dame_fiche_inscription]` permet d'afficher un formulaire public où les futurs membres peuvent s'inscrire. Le formulaire s'adapte dynamiquement pour les adhérents majeurs et mineurs.
+*   **Interface de Validation :** Les administrateurs disposent d'une interface dédiée pour examiner, modifier et valider les préinscriptions.
+*   **Rapprochement Automatique :** Le système détecte les doublons potentiels en comparant les nouvelles inscriptions avec la base de données existante (nom, prénom, date de naissance).
+*   **Mise à Jour Facilitée :** Si un doublon est trouvé, un tableau de comparaison met en évidence les différences et permet de mettre à jour la fiche de l'adhérent existant en un clic.
 
 ### Gestion des Données des Membres
 
