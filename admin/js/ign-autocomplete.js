@@ -67,7 +67,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     if (cityInput) {
                         cityInput.value = featureProperties.city;
-                        cityInput.dispatchEvent(new Event('keyup'));
+                    }
+
+                    // If the global pre-fill function exists (on the public form), call it.
+                    if (typeof prefillRep1 === 'function') {
+                        prefillRep1();
                     }
 
                     resultsContainer.innerHTML = '';
