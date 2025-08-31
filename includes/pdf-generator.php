@@ -193,24 +193,24 @@ function dame_generate_parental_auth_handler() {
 		wp_die( sprintf( __( "Erreur lors du chargement du template PDF : %s", 'dame' ), $e->getMessage() ), 500 );
 	}
 
-	$pdf->SetFont( 'Helvetica', '', 10 );
+	$pdf->SetFont( 'Helvetica', '', 12 );
 	$pdf->SetTextColor( 0, 0, 0 );
 
 	if ( ! empty( $rl1_full_name ) ) {
-		$pdf->SetXY( 50, 75 );
+		$pdf->SetXY( 50, 72 );
 		$pdf->Write( 0, $rl1_full_name );
 	}
 
-	$pdf->SetXY( 85, 88 );
+	$pdf->SetXY( 88, 88 );
 	$pdf->Write( 0, $adherent_full_name );
 
-	$pdf->SetXY( 155, 88 );
+	$pdf->SetXY( 163, 88 );
 	$pdf->Write( 0, $adherent_birth_date_formatted );
 
-	$pdf->SetXY( 30, 192 );
+	$pdf->SetXY( 30, 191 );
 	$pdf->Write( 0, $adherent_city );
 
-	$pdf->SetXY( 27, 202 );
+	$pdf->SetXY( 27, 201 );
 	$pdf->Write( 0, $current_date );
 
 	// --- Legal Rep 1 Data ---
@@ -223,11 +223,11 @@ function dame_generate_parental_auth_handler() {
 		$pdf->Write( 0, utf8_decode( $rl1_first_name ) );
 	}
 	if ( ! empty( $rl1_birth_place ) ) {
-		$pdf->SetXY( 50, 264 );
+		$pdf->SetXY( 48, 264 );
 		$pdf->Write( 0, utf8_decode( $rl1_birth_place ) );
 	}
 	if ( ! empty( $rl1_birth_date ) ) {
-		$pdf->SetXY( 50, 270 );
+		$pdf->SetXY( 54, 270 );
 		$pdf->Write( 0, utf8_decode( date( 'd/m/Y', strtotime( $rl1_birth_date ) ) ) );
 	}
 	if ( ! empty( $rl1_profession ) ) {
@@ -245,11 +245,11 @@ function dame_generate_parental_auth_handler() {
 		$pdf->Write( 0, utf8_decode( $rl2_first_name ) );
 	}
 	if ( ! empty( $rl2_birth_place ) ) {
-		$pdf->SetXY( 150, 264 );
+		$pdf->SetXY( 148, 264 );
 		$pdf->Write( 0, utf8_decode( $rl2_birth_place ) );
 	}
 	if ( ! empty( $rl2_birth_date ) ) {
-		$pdf->SetXY( 150, 270 );
+		$pdf->SetXY( 154, 270 );
 		$pdf->Write( 0, utf8_decode( date( 'd/m/Y', strtotime( $rl2_birth_date ) ) ) );
 	}
 	if ( ! empty( $rl2_profession ) ) {
