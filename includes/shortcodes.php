@@ -371,6 +371,7 @@ function dame_fiche_inscription_shortcode( $atts ) {
 				</div>
 
 				<div id="dame-adherent-mineur-fields" style="display:none;">
+					<p><em><?php _e( 'Dans le cadre de notre politique de prévention des violences sexistes et sexuelles, nous demandons aux parents susceptibles d’accompagner des mineurs de se soumettre à un contrôle d’honorabilité. À cette fin, nous vous remercions de bien vouloir renseigner les deux champs ci-dessous si vous êtes concerné.', 'dame' ); ?></em></p>
 					<h3><?php _e( 'Représentant Légal 1', 'dame' ); ?></h3>
 					<p><label for="dame_legal_rep_1_first_name"><?php _e( 'Prénom', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_first_name" name="dame_legal_rep_1_first_name"></p>
 					<p><label for="dame_legal_rep_1_last_name"><?php _e( 'Nom', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_last_name" name="dame_legal_rep_1_last_name"></p>
