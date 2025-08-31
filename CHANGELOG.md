@@ -1,3 +1,7 @@
+## Description
+
+DAME est un plugin WordPress conçu pour gérer une base de données d'adhérents pour un club, une association ou toute autre organisation. Il fournit une interface d'administration simple et intégrée pour gérer les informations des membres, leurs classifications et leurs liens avec les comptes utilisateurs WordPress.
+
 ## Changelog
 
 ### 2.4.0 (31/08/2025)
@@ -6,10 +10,6 @@
 *   **Fonctionnalité :** Le mécanisme d'auto-complétion pour les communes de naissance est maintenant actif pour les nouveaux champs des représentants légaux.
 *   **Fonctionnalité :** Ajout d'un champ "Contrôle d'honorabilité" pour l'adhérent (dans la section Classification) et pour chaque représentant légal (après la profession). La valeur par défaut est "Non requis".
 *   **Amélioration :** Les nouveaux champs sont intégrés au processus de validation des préinscriptions, incluant la table de comparaison des différences.
-
-## Description
-
-DAME est un plugin WordPress conçu pour gérer une base de données d'adhérents pour un club, une association ou toute autre organisation. Il fournit une interface d'administration simple et intégrée pour gérer les informations des membres, leurs classifications et leurs liens avec les comptes utilisateurs WordPress.
 
 ### 2.3.4 (31/08/2025)
 
