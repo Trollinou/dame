@@ -472,6 +472,32 @@ function dame_render_legal_rep_metabox( $post ) {
 			<td><input type="text" id="dame_legal_rep_1_profession" name="dame_legal_rep_1_profession" value="<?php echo esc_attr( $rep1_profession ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
+			<th><label for="dame_legal_rep_1_honorabilite"><?php _e( 'Contrôle d\'honorabilité', 'dame' ); ?></label></th>
+			<td>
+				<select id="dame_legal_rep_1_honorabilite" name="dame_legal_rep_1_honorabilite">
+					<?php
+					$honorabilite1_options = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
+					$selected_honorabilite1 = get_post_meta( $post->ID, '_dame_legal_rep_1_honorabilite', true ) ?: 'Non requis';
+					foreach ( $honorabilite1_options as $option ) :
+						?>
+						<option value="<?php echo esc_attr( $option ); ?>" <?php selected( $selected_honorabilite1, $option ); ?>><?php echo esc_html( $option ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<th><label for="dame_legal_rep_1_date_naissance"><?php _e( 'Date de naissance', 'dame' ); ?></label></th>
+			<td><input type="date" id="dame_legal_rep_1_date_naissance" name="dame_legal_rep_1_date_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_1_date_naissance', true ) ); ?>" /></td>
+		</tr>
+		<tr>
+			<th><label for="dame_legal_rep_1_commune_naissance"><?php _e( 'Commune de naissance', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-autocomplete-wrapper">
+					<input type="text" id="dame_legal_rep_1_commune_naissance" name="dame_legal_rep_1_commune_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_1_commune_naissance', true ) ); ?>" class="regular-text" />
+				</div>
+			</td>
+		</tr>
+		<tr>
 			<th><label for="dame_legal_rep_1_email"><?php _e( 'Email', 'dame' ); ?></label></th>
 			<td>
 				<input type="email" id="dame_legal_rep_1_email" name="dame_legal_rep_1_email" value="<?php echo esc_attr( $rep1_email ); ?>" class="regular-text" />
@@ -523,6 +549,32 @@ function dame_render_legal_rep_metabox( $post ) {
 		<tr>
 			<th><label for="dame_legal_rep_2_profession"><?php _e( 'Profession', 'dame' ); ?></label></th>
 			<td><input type="text" id="dame_legal_rep_2_profession" name="dame_legal_rep_2_profession" value="<?php echo esc_attr( $rep2_profession ); ?>" class="regular-text" /></td>
+		</tr>
+		<tr>
+			<th><label for="dame_legal_rep_2_honorabilite"><?php _e( 'Contrôle d\'honorabilité', 'dame' ); ?></label></th>
+			<td>
+				<select id="dame_legal_rep_2_honorabilite" name="dame_legal_rep_2_honorabilite">
+					<?php
+					$honorabilite2_options = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
+					$selected_honorabilite2 = get_post_meta( $post->ID, '_dame_legal_rep_2_honorabilite', true ) ?: 'Non requis';
+					foreach ( $honorabilite2_options as $option ) :
+						?>
+						<option value="<?php echo esc_attr( $option ); ?>" <?php selected( $selected_honorabilite2, $option ); ?>><?php echo esc_html( $option ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<th><label for="dame_legal_rep_2_date_naissance"><?php _e( 'Date de naissance', 'dame' ); ?></label></th>
+			<td><input type="date" id="dame_legal_rep_2_date_naissance" name="dame_legal_rep_2_date_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_2_date_naissance', true ) ); ?>" /></td>
+		</tr>
+		<tr>
+			<th><label for="dame_legal_rep_2_commune_naissance"><?php _e( 'Commune de naissance', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-autocomplete-wrapper">
+					<input type="text" id="dame_legal_rep_2_commune_naissance" name="dame_legal_rep_2_commune_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_2_commune_naissance', true ) ); ?>" class="regular-text" />
+				</div>
+			</td>
 		</tr>
 		<tr>
 			<th><label for="dame_legal_rep_2_email"><?php _e( 'Email', 'dame' ); ?></label></th>
@@ -728,6 +780,18 @@ function dame_render_classification_metabox( $post ) {
 	</p>
 	<hr>
 	<p>
+		<label for="dame_adherent_honorabilite"><strong><?php _e( 'Contrôle d\'honorabilité', 'dame' ); ?></strong></label>
+		<select id="dame_adherent_honorabilite" name="dame_adherent_honorabilite" style="width:100%;">
+			<?php
+			$honorabilite_options = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
+			$selected_honorabilite = get_post_meta( $post->ID, '_dame_adherent_honorabilite', true ) ?: 'Non requis';
+			foreach ( $honorabilite_options as $option ) :
+				?>
+				<option value="<?php echo esc_attr( $option ); ?>" <?php selected( $selected_honorabilite, $option ); ?>><?php echo esc_html( $option ); ?></option>
+			<?php endforeach; ?>
+		</select>
+	</p>
+	<p>
 		<label for="dame_arbitre_level"><strong><?php _e( 'Niveau d\'arbitre', 'dame' ); ?></strong></label>
 		<select id="dame_arbitre_level" name="dame_arbitre_level" style="width:100%;">
 			<?php foreach ( $arbitre_options as $option ) : ?>
@@ -881,13 +945,15 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_school_name' => 'sanitize_text_field', 'dame_school_ academy' => 'sanitize_text_field',
 
 		'dame_legal_rep_1_first_name' => 'sanitize_text_field', 'dame_legal_rep_1_last_name' => 'sanitize_text_field',
-		'dame_legal_rep_1_profession' => 'sanitize_text_field',
+		'dame_legal_rep_1_profession' => 'sanitize_text_field', 'dame_legal_rep_1_honorabilite' => 'sanitize_text_field',
+		'dame_legal_rep_1_date_naissance' => 'sanitize_text_field', 'dame_legal_rep_1_commune_naissance' => 'sanitize_text_field',
 		'dame_legal_rep_1_email' => 'sanitize_email', 'dame_legal_rep_1_phone' => 'sanitize_text_field',
 		'dame_legal_rep_1_address_1' => 'sanitize_text_field', 'dame_legal_rep_1_address_2' => 'sanitize_text_field',
 		'dame_legal_rep_1_postal_code' => 'sanitize_text_field', 'dame_legal_rep_1_city' => 'sanitize_text_field',
 
 		'dame_legal_rep_2_first_name' => 'sanitize_text_field', 'dame_legal_rep_2_last_name' => 'sanitize_text_field',
-		'dame_legal_rep_2_profession' => 'sanitize_text_field',
+		'dame_legal_rep_2_profession' => 'sanitize_text_field', 'dame_legal_rep_2_honorabilite' => 'sanitize_text_field',
+		'dame_legal_rep_2_date_naissance' => 'sanitize_text_field', 'dame_legal_rep_2_commune_naissance' => 'sanitize_text_field',
 		'dame_legal_rep_2_email' => 'sanitize_email', 'dame_legal_rep_2_phone' => 'sanitize_text_field',
 		'dame_legal_rep_2_address_1' => 'sanitize_text_field', 'dame_legal_rep_2_address_2' => 'sanitize_text_field',
 		'dame_legal_rep_2_postal_code' => 'sanitize_text_field', 'dame_legal_rep_2_city' => 'sanitize_text_field',
@@ -896,7 +962,7 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_legal_rep_1_email_refuses_comms' => 'absint',
 		'dame_legal_rep_2_email_refuses_comms' => 'absint',
 		'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint', 'dame_is_benevole' => 'absint', 'dame_is_elu_local' => 'absint',
-		'dame_arbitre_level' => 'sanitize_text_field',
+		'dame_adherent_honorabilite' => 'sanitize_text_field', 'dame_arbitre_level' => 'sanitize_text_field',
 		'dame_license_type' => 'sanitize_text_field',
 		'dame_health_document' => 'sanitize_key',
 		'dame_autre_telephone' => 'sanitize_text_field',
@@ -1519,6 +1585,9 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 			'Code Postal' => array( 'key' => 'dame_legal_rep_1_postal_code', 'type' => 'text' ),
 			'Ville' => array( 'key' => 'dame_legal_rep_1_city', 'type' => 'text' ),
 			'Profession' => array( 'key' => 'dame_legal_rep_1_profession', 'type' => 'text' ),
+			'Contrôle d\'honorabilité' => array( 'key' => 'dame_legal_rep_1_honorabilite', 'type' => 'text' ),
+			'Date de naissance' => array( 'key' => 'dame_legal_rep_1_date_naissance', 'type' => 'date' ),
+			'Commune de naissance' => array( 'key' => 'dame_legal_rep_1_commune_naissance', 'type' => 'text' ),
 		),
 		'Représentant Légal 2' => array(
 			'Prénom' => array( 'key' => 'dame_legal_rep_2_first_name', 'type' => 'text' ),
@@ -1530,6 +1599,9 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 			'Code Postal' => array( 'key' => 'dame_legal_rep_2_postal_code', 'type' => 'text' ),
 			'Ville' => array( 'key' => 'dame_legal_rep_2_city', 'type' => 'text' ),
 			'Profession' => array( 'key' => 'dame_legal_rep_2_profession', 'type' => 'text' ),
+			'Contrôle d\'honorabilité' => array( 'key' => 'dame_legal_rep_2_honorabilite', 'type' => 'text' ),
+			'Date de naissance' => array( 'key' => 'dame_legal_rep_2_date_naissance', 'type' => 'date' ),
+			'Commune de naissance' => array( 'key' => 'dame_legal_rep_2_commune_naissance', 'type' => 'text' ),
 		),
 	);
 
@@ -1611,6 +1683,7 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 			'Taille de vêtements'  => 'dame_taille_vetements',
 			'Profession'           => 'dame_profession',
 			'Document de santé'    => 'dame_health_document',
+			'Contrôle d\'honorabilité' => 'dame_adherent_honorabilite',
 		),
 		'Représentant Légal 1' => array(
 			'Rep. 1 - Prénom'     => 'dame_legal_rep_1_first_name',
@@ -1622,6 +1695,9 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 			'Rep. 1 - Code Postal' => 'dame_legal_rep_1_postal_code',
 			'Rep. 1 - Ville'      => 'dame_legal_rep_1_city',
 			'Rep. 1 - Profession' => 'dame_legal_rep_1_profession',
+			'Rep. 1 - Contrôle d\'honorabilité' => 'dame_legal_rep_1_honorabilite',
+			'Rep. 1 - Date de naissance' => 'dame_legal_rep_1_date_naissance',
+			'Rep. 1 - Commune de naissance' => 'dame_legal_rep_1_commune_naissance',
 		),
 		'Représentant Légal 2' => array(
 			'Rep. 2 - Prénom'     => 'dame_legal_rep_2_first_name',
@@ -1633,6 +1709,9 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 			'Rep. 2 - Code Postal' => 'dame_legal_rep_2_postal_code',
 			'Rep. 2 - Ville'      => 'dame_legal_rep_2_city',
 			'Rep. 2 - Profession' => 'dame_legal_rep_2_profession',
+			'Rep. 2 - Contrôle d\'honorabilité' => 'dame_legal_rep_2_honorabilite',
+			'Rep. 2 - Date de naissance' => 'dame_legal_rep_2_date_naissance',
+			'Rep. 2 - Commune de naissance' => 'dame_legal_rep_2_commune_naissance',
 		),
 	);
 	?>
@@ -1740,13 +1819,15 @@ function dame_process_pre_inscription_actions( $post_id ) {
 	}
 
 	$all_field_keys = array(
-		'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_license_type', 'dame_birth_city', 'dame_sexe', 'dame_profession',
+		'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_license_type', 'dame_birth_city', 'dame_sexe', 'dame_profession', 'dame_adherent_honorabilite',
 		'dame_email', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
 		'dame_health_document',
 		'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_phone',
 		'dame_legal_rep_1_address_1', 'dame_legal_rep_1_address_2', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city', 'dame_legal_rep_1_profession',
+		'dame_legal_rep_1_honorabilite', 'dame_legal_rep_1_date_naissance', 'dame_legal_rep_1_commune_naissance',
 		'dame_legal_rep_2_first_name', 'dame_legal_rep_2_last_name', 'dame_legal_rep_2_email', 'dame_legal_rep_2_phone',
 		'dame_legal_rep_2_address_1', 'dame_legal_rep_2_address_2', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city', 'dame_legal_rep_2_profession',
+		'dame_legal_rep_2_honorabilite', 'dame_legal_rep_2_date_naissance', 'dame_legal_rep_2_commune_naissance',
 	);
 	foreach ( $all_field_keys as $key ) {
 		if ( isset( $_POST[ $key ] ) ) {
