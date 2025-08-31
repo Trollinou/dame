@@ -414,6 +414,10 @@ function dame_fiche_inscription_shortcode( $atts ) {
 			</p>
 
 			<p>
+				<em><?php _e( "En validant ma préinscription, je reconnais avoir pris connaissance du règlement intérieur de l’Association Échiquier Lédonien et m’engage à le respecter..", 'dame' ); ?></em>
+			</p>
+
+			<p>
 				<button type="submit"><?php _e( 'Valider ma préinscription', 'dame' ); ?></button>
 			</p>
 
@@ -519,15 +523,17 @@ function dame_handle_pre_inscription_submission() {
 		}
 	}
 
-	// If the member is an adult, remove any legal representative data that might have been submitted.
+	// Determine if member is a minor and clean up data accordingly.
+	$is_minor = false;
 	if ( isset( $sanitized_data['dame_birth_date'] ) ) {
 		$birth_date = DateTime::createFromFormat( 'Y-m-d', $sanitized_data['dame_birth_date'] );
 		if ( $birth_date ) {
-			$today = new DateTime();
-			$age   = $today->diff( $birth_date )->y;
+			$today    = new DateTime();
+			$age      = $today->diff( $birth_date )->y;
+			$is_minor = ( $age < 18 );
 
-			if ( $age >= 18 ) {
-				// Unset all legal representative fields for adults.
+			if ( ! $is_minor ) {
+				// If the member is an adult, remove any legal representative data that might have been submitted.
 				foreach ( $sanitized_data as $key => $value ) {
 					if ( strpos( $key, 'dame_legal_rep_' ) === 0 ) {
 						unset( $sanitized_data[ $key ] );
@@ -600,7 +606,12 @@ function dame_handle_pre_inscription_submission() {
 		'post_id'            => $post_id,
 		'full_name'          => strtoupper( $sanitized_data['dame_last_name'] ) . ' ' . $sanitized_data['dame_first_name'],
 		'nonce'              => wp_create_nonce( 'dame_generate_health_form_' . $post_id ),
+		'is_minor'           => $is_minor,
 	);
+
+	if ( $is_minor ) {
+		$response_data['parental_auth_nonce'] = wp_create_nonce( 'dame_generate_parental_auth_' . $post_id );
+	}
 
 	wp_send_json_success( $response_data );
 }

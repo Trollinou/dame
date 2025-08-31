@@ -139,6 +139,18 @@ document.addEventListener('DOMContentLoaded', function () {
                         downloadButton.style.marginTop = '1em';
                         downloadButton.style.display = 'inline-block';
                         messagesDiv.appendChild(downloadButton);
+
+                        // Add parental authorization download button for minors
+                        if (data.data.is_minor) {
+                            const parentalAuthButton = document.createElement('a');
+                            parentalAuthButton.href = `${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}`;
+                            parentalAuthButton.className = 'button dame-button';
+                            parentalAuthButton.textContent = "Télécharger l'autorisation parentale a remettre signé";
+                            parentalAuthButton.style.marginTop = '1em';
+                            parentalAuthButton.style.marginLeft = '1em'; // Add some space between buttons
+                            parentalAuthButton.style.display = 'inline-block';
+                            messagesDiv.appendChild(parentalAuthButton);
+                        }
                     }
 
                     form.reset();
