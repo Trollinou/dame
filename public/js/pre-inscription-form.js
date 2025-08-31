@@ -8,6 +8,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const majeurFields = document.getElementById('dame-adherent-majeur-fields');
     const mineurFields = document.getElementById('dame-adherent-mineur-fields');
 
+    const healthQuestionnaireLinkContainer = document.getElementById('health-questionnaire-link-container');
+    const healthQuestionnaireLink = document.getElementById('health-questionnaire-link');
+    // We assume the plugin is in wp-content/plugins/dame. This is the most common setup.
+    const pdfBaseUrl = '/wp-content/plugins/dame/public/pdf/';
+    const mineurPDF = pdfBaseUrl + 'questionnaire_sante_mineur.pdf';
+    const majeurPDF = pdfBaseUrl + 'questionnaire_sante_majeur.pdf';
+
     // Adherent fields
     const emailInput = document.getElementById('dame_email');
     const phoneInput = document.getElementById('dame_phone_number');
@@ -31,6 +38,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const birthDate = new Date(this.value);
         if (isNaN(birthDate.getTime())) {
             dynamicFields.style.display = 'none';
+            if (healthQuestionnaireLinkContainer) {
+                healthQuestionnaireLinkContainer.style.display = 'none';
+            }
             return;
         }
 
@@ -53,12 +63,24 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             // Make rep 1 fields not required
             rep1RequiredInputs.forEach(input => input.required = false);
+
+            if (healthQuestionnaireLink) {
+                healthQuestionnaireLink.href = majeurPDF;
+                healthQuestionnaireLink.textContent = 'Consulter le questionnaire pour Majeur';
+                healthQuestionnaireLinkContainer.style.display = 'inline';
+            }
         } else {
             majeurFields.style.display = 'none';
             mineurFields.style.display = 'block';
             prefillRep1();
             // Make rep 1 fields required
             rep1RequiredInputs.forEach(input => input.required = true);
+
+            if (healthQuestionnaireLink) {
+                healthQuestionnaireLink.href = mineurPDF;
+                healthQuestionnaireLink.textContent = 'Consulter le questionnaire pour Mineur';
+                healthQuestionnaireLinkContainer.style.display = 'inline';
+            }
         }
     });
 

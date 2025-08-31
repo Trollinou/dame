@@ -395,7 +395,12 @@ function dame_fiche_inscription_shortcode( $atts ) {
 				</div>
 			</div>
 
-			<h3><?php _e( "Questionnaire de santé", 'dame' ); ?></h3>
+			<h3>
+				<?php _e( "Questionnaire de santé", 'dame' ); ?>
+				<span id="health-questionnaire-link-container" style="display: none; margin-left: 10px; font-weight: normal;">
+					<a href="#" id="health-questionnaire-link" target="_blank" style="font-size: initial; color: blue; text-decoration: underline;"></a>
+				</span>
+			</h3>
 			<p>
 				<label><input type="radio" name="dame_health_questionnaire" value="non" required> <?php _e( "J’ai répondu NON partout", 'dame' ); ?></label>
 				<br>
