@@ -182,6 +182,7 @@ function dame_generate_parental_auth_handler() {
 	// 5. Generate PDF
 	$pdf = new Fpdi();
 	$pdf->AddPage();
+	$pdf->SetAutoPageBreak( true, 0 );
 
 	try {
 		$template_path = plugin_dir_path( __DIR__ ) . 'public/pdf/el_autorisation_parentale.pdf';
