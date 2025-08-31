@@ -1585,7 +1585,6 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 			'Code Postal' => array( 'key' => 'dame_legal_rep_1_postal_code', 'type' => 'text' ),
 			'Ville' => array( 'key' => 'dame_legal_rep_1_city', 'type' => 'text' ),
 			'Profession' => array( 'key' => 'dame_legal_rep_1_profession', 'type' => 'text' ),
-			'Contrôle d\'honorabilité' => array( 'key' => 'dame_legal_rep_1_honorabilite', 'type' => 'text' ),
 			'Date de naissance' => array( 'key' => 'dame_legal_rep_1_date_naissance', 'type' => 'date' ),
 			'Commune de naissance' => array( 'key' => 'dame_legal_rep_1_commune_naissance', 'type' => 'text' ),
 		),
@@ -1599,7 +1598,6 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 			'Code Postal' => array( 'key' => 'dame_legal_rep_2_postal_code', 'type' => 'text' ),
 			'Ville' => array( 'key' => 'dame_legal_rep_2_city', 'type' => 'text' ),
 			'Profession' => array( 'key' => 'dame_legal_rep_2_profession', 'type' => 'text' ),
-			'Contrôle d\'honorabilité' => array( 'key' => 'dame_legal_rep_2_honorabilite', 'type' => 'text' ),
 			'Date de naissance' => array( 'key' => 'dame_legal_rep_2_date_naissance', 'type' => 'date' ),
 			'Commune de naissance' => array( 'key' => 'dame_legal_rep_2_commune_naissance', 'type' => 'text' ),
 		),
@@ -1683,7 +1681,6 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 			'Taille de vêtements'  => 'dame_taille_vetements',
 			'Profession'           => 'dame_profession',
 			'Document de santé'    => 'dame_health_document',
-			'Contrôle d\'honorabilité' => 'dame_adherent_honorabilite',
 		),
 		'Représentant Légal 1' => array(
 			'Rep. 1 - Prénom'     => 'dame_legal_rep_1_first_name',
@@ -1695,7 +1692,6 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 			'Rep. 1 - Code Postal' => 'dame_legal_rep_1_postal_code',
 			'Rep. 1 - Ville'      => 'dame_legal_rep_1_city',
 			'Rep. 1 - Profession' => 'dame_legal_rep_1_profession',
-			'Rep. 1 - Contrôle d\'honorabilité' => 'dame_legal_rep_1_honorabilite',
 			'Rep. 1 - Date de naissance' => 'dame_legal_rep_1_date_naissance',
 			'Rep. 1 - Commune de naissance' => 'dame_legal_rep_1_commune_naissance',
 		),
@@ -1709,7 +1705,6 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 			'Rep. 2 - Code Postal' => 'dame_legal_rep_2_postal_code',
 			'Rep. 2 - Ville'      => 'dame_legal_rep_2_city',
 			'Rep. 2 - Profession' => 'dame_legal_rep_2_profession',
-			'Rep. 2 - Contrôle d\'honorabilité' => 'dame_legal_rep_2_honorabilite',
 			'Rep. 2 - Date de naissance' => 'dame_legal_rep_2_date_naissance',
 			'Rep. 2 - Commune de naissance' => 'dame_legal_rep_2_commune_naissance',
 		),
@@ -1819,15 +1814,15 @@ function dame_process_pre_inscription_actions( $post_id ) {
 	}
 
 	$all_field_keys = array(
-		'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_license_type', 'dame_birth_city', 'dame_sexe', 'dame_profession', 'dame_adherent_honorabilite',
+		'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_license_type', 'dame_birth_city', 'dame_sexe', 'dame_profession',
 		'dame_email', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
 		'dame_health_document',
 		'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_phone',
 		'dame_legal_rep_1_address_1', 'dame_legal_rep_1_address_2', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city', 'dame_legal_rep_1_profession',
-		'dame_legal_rep_1_honorabilite', 'dame_legal_rep_1_date_naissance', 'dame_legal_rep_1_commune_naissance',
+		'dame_legal_rep_1_date_naissance', 'dame_legal_rep_1_commune_naissance',
 		'dame_legal_rep_2_first_name', 'dame_legal_rep_2_last_name', 'dame_legal_rep_2_email', 'dame_legal_rep_2_phone',
 		'dame_legal_rep_2_address_1', 'dame_legal_rep_2_address_2', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city', 'dame_legal_rep_2_profession',
-		'dame_legal_rep_2_honorabilite', 'dame_legal_rep_2_date_naissance', 'dame_legal_rep_2_commune_naissance',
+		'dame_legal_rep_2_date_naissance', 'dame_legal_rep_2_commune_naissance',
 	);
 	foreach ( $all_field_keys as $key ) {
 		if ( isset( $_POST[ $key ] ) ) {
