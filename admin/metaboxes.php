@@ -1489,7 +1489,14 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 			'Prénom' => array( 'key' => 'dame_first_name', 'type' => 'text', 'required' => true ),
 			'Nom' => array( 'key' => 'dame_last_name', 'type' => 'text', 'required' => true ),
 			'Date de naissance' => array( 'key' => 'dame_birth_date', 'type' => 'date', 'required' => true ),
-			'Type de licence' => array( 'key' => 'dame_license_type', 'type' => 'text' ),
+			'Type de licence' => array(
+				'key'     => 'dame_license_type',
+				'type'    => 'select',
+				'options' => array(
+					'A' => __( 'Licence A (Cours + Compétition)', 'dame' ),
+					'B' => __( 'Licence B (Jeu libre)', 'dame' ),
+				),
+			),
 			'Document de santé' => array( 'key' => 'dame_health_document', 'type' => 'select', 'options_callback' => 'dame_get_health_document_options' ),
 			'Commune de naissance' => array( 'key' => 'dame_birth_city', 'type' => 'text_autocomplete' ),
 			'Sexe' => array( 'key' => 'dame_sexe', 'type' => 'radio', 'options' => array( 'Masculin', 'Féminin', 'Non précisé' ) ),
