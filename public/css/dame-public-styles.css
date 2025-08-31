@@ -71,3 +71,11 @@
 .dame-suggestion-item:hover {
     background-color: #f1f1f1;
 }
+
+/* Style for health questionnaire link */
+#health-questionnaire-link:hover {
+    background-color: #eaf8ff; /* A very light, non-intrusive blue */
+    border-radius: 3px;
+    padding: 2px 4px;
+    text-decoration: none; /* Remove underline on hover for a cleaner look */
+}
