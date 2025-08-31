@@ -692,8 +692,10 @@ function dame_render_classification_metabox( $post ) {
 	</p>
 	<p>
 		<label><strong><?php _e( 'Type de licence', 'dame' ); ?></strong></label><br>
-		<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="A" <?php checked( $license_type, 'A' ); ?> /> A</label>
-		<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="B" <?php checked( $license_type, 'B' ); ?> /> B</label>
+		<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="A" <?php checked( $license_type, 'A' ); ?> /> <?php _e( 'Licence A (Cours + Compétition)', 'dame' ); ?></label>
+		<br>
+		<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="B" <?php checked( $license_type, 'B' ); ?> /> <?php _e( 'Licence B (Jeu libre)', 'dame' ); ?></label>
+		<br>
 		<label><input type="radio" name="dame_license_type" value="Non précisé" <?php checked( $license_type, 'Non précisé' ); ?> /> <?php _e( 'Non précisé', 'dame' ); ?></label>
 	</p>
 	<p>
@@ -795,6 +797,9 @@ function dame_save_adherent_meta( $post_id ) {
 	}
 	if ( empty( $_POST['dame_birth_date'] ) ) {
 		$errors[] = __( 'La date de naissance est obligatoire.', 'dame' );
+	}
+	if ( empty( $_POST['dame_license_type'] ) ) {
+		$errors[] = __( 'Le type de licence est obligatoire.', 'dame' );
 	}
 	if ( ! empty( $_POST['dame_license_number'] ) && ! preg_match( '/^[A-Z][0-9]{5}$/', $_POST['dame_license_number'] ) ) {
 		$errors[] = __( 'Le format du numéro de licence est invalide. Il doit être une lettre majuscule suivie de 5 chiffres (ex: A12345).', 'dame' );
@@ -1484,6 +1489,7 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 			'Prénom' => array( 'key' => 'dame_first_name', 'type' => 'text', 'required' => true ),
 			'Nom' => array( 'key' => 'dame_last_name', 'type' => 'text', 'required' => true ),
 			'Date de naissance' => array( 'key' => 'dame_birth_date', 'type' => 'date', 'required' => true ),
+			'Type de licence' => array( 'key' => 'dame_license_type', 'type' => 'text' ),
 			'Document de santé' => array( 'key' => 'dame_health_document', 'type' => 'select', 'options_callback' => 'dame_get_health_document_options' ),
 			'Commune de naissance' => array( 'key' => 'dame_birth_city', 'type' => 'text_autocomplete' ),
 			'Sexe' => array( 'key' => 'dame_sexe', 'type' => 'radio', 'options' => array( 'Masculin', 'Féminin', 'Non précisé' ) ),
@@ -1586,6 +1592,7 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 			'Prénom'               => 'dame_first_name',
 			'Nom'                  => 'dame_last_name',
 			'Date de naissance'    => 'dame_birth_date',
+			'Type de licence'      => 'dame_license_type',
 			'Commune de naissance' => 'dame_birth_city',
 			'Sexe'                 => 'dame_sexe',
 			'Email'                => 'dame_email',
@@ -1726,7 +1733,7 @@ function dame_process_pre_inscription_actions( $post_id ) {
 	}
 
 	$all_field_keys = array(
-		'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_birth_city', 'dame_sexe', 'dame_profession',
+		'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_license_type', 'dame_birth_city', 'dame_sexe', 'dame_profession',
 		'dame_email', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
 		'dame_health_document',
 		'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_phone',
