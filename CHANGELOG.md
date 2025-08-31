@@ -4,6 +4,11 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.3.4 (31/08/2025)
+
+*   **Fonctionnalité :** Ajout d'un lien dynamique vers le questionnaire de santé sur le formulaire de préinscription. Le lien s'adapte automatiquement pour les membres majeurs ou mineurs en fonction de la date de naissance saisie.
+*   **Amélioration UI :** Le lien du questionnaire de santé dispose désormais d'un effet de survol avec un fond bleu (`#3ec0f0`) pour une meilleure visibilité et expérience utilisateur.
+
 ### 2.3.3 (31/08/2025)
 
 *   **Fonctionnalité :** Ajout du champ "Type de licence" (Licence A ou B) au formulaire de préinscription. Ce champ est maintenant obligatoire.
