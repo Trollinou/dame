@@ -302,6 +302,13 @@ function dame_fiche_inscription_shortcode( $atts ) {
 				<label for="dame_birth_date"><?php _e( 'Date de naissance', 'dame' ); ?> <span class="required">*</span></label>
 				<input type="date" id="dame_birth_date" name="dame_birth_date" required>
 			</p>
+			<p>
+				<label for="dame_license_type"><?php _e( 'Type de licence', 'dame' ); ?> <span class="required">*</span></label>
+				<select id="dame_license_type" name="dame_license_type" required>
+					<option value="A"><?php _e( 'Licence A (Cours + Compétition)', 'dame' ); ?></option>
+					<option value="B"><?php _e( 'Licence B (Jeu libre)', 'dame' ); ?></option>
+				</select>
+			</p>
 
 			<p>
 				<label for="dame_birth_city"><?php _e( 'Commune de naissance', 'dame' ); ?></label>
@@ -421,6 +428,7 @@ function dame_handle_pre_inscription_submission() {
 		'dame_first_name'           => __( "Le prénom est obligatoire.", 'dame' ),
 		'dame_last_name'            => __( "Le nom est obligatoire.", 'dame' ),
 		'dame_birth_date'           => __( "La date de naissance est obligatoire.", 'dame' ),
+		'dame_license_type'         => __( "Le type de licence est obligatoire.", 'dame' ),
 		'dame_sexe'                 => __( "Le sexe est obligatoire.", 'dame' ),
 		'dame_email'                => __( "L'email est obligatoire.", 'dame' ),
 		'dame_phone_number'         => __( "Le numéro de téléphone est obligatoire.", 'dame' ),
@@ -479,7 +487,7 @@ function dame_handle_pre_inscription_submission() {
 	// 3. Sanitize Data
 	$sanitized_data = array();
 	$fields_to_sanitize = array(
-		'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_birth_city', 'dame_sexe', 'dame_profession',
+		'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_license_type', 'dame_birth_city', 'dame_sexe', 'dame_profession',
 		'dame_email', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
 		'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_phone',
 		'dame_legal_rep_1_address_1', 'dame_legal_rep_1_address_2', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city', 'dame_legal_rep_1_profession',

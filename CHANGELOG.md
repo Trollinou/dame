@@ -4,6 +4,12 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.3.3 (31/08/2025)
+
+*   **Fonctionnalité :** Ajout du champ "Type de licence" (Licence A ou B) au formulaire de préinscription. Ce champ est maintenant obligatoire.
+*   **Amélioration :** Le type de licence est désormais visible et modifiable dans la fiche de préinscription de l'interface d'administration.
+*   **Amélioration :** Les libellés pour le type de licence dans la fiche adhérent sont plus descriptifs ("Licence A (Cours + Compétition)").
+
 ### 2.3.2 (29/08/2025)
 
 *   **Correctif :** Correction d'un bug où les données d'un adhérent majeur étaient incorrectement copiées sur le représentant légal lors de la préinscription. La vérification est désormais effectuée côté serveur pour garantir qu'aucune donnée de représentant légal n'est sauvegardée pour les membres adultes.
