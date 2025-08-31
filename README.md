@@ -27,6 +27,7 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 *   **Gestion Simplifiée :** Sur la fiche d'un adhérent, un simple menu déroulant "Adhésion pour la saison actuelle" permet de le marquer comme "Actif" ou "Non adhérent", ce qui ajoute ou retire automatiquement le tag de la saison en cours.
 *   **Filtres Avancés :** La liste des adhérents peut être filtrée pour n'afficher que les membres "Actifs", "Inactifs", ou tous les membres ayant adhéré à une saison spécifique (ex: tous les adhérents de la "Saison 2023/2024").
 *   **Réinitialisation Annuelle Intelligente :** La fonction de "Réinitialisation Annuelle" (`Réglages > Options DAME`) ne modifie plus les anciens membres. Son rôle est désormais de créer le tag pour la nouvelle saison qui commence et de le définir comme saison "active".
+*   **Système de suivi de l'honorabilité :** Les champs de date de naissance et de commune de naissance sont saisissable pour les adherents et/ou représetnant legaux afin de suivre le processus de contrôle d'honorabilité s'il sont amené à accompagner des mineurs.
 
 ### Préinscription en Ligne
 
