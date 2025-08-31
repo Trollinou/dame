@@ -4,6 +4,14 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.4.1 (31/08/2025)
+
+*   **Fonctionnalité :** Ajout de la génération d'un PDF d'autorisation parentale pour les adhérents mineurs lors de la préinscription.
+*   **Fonctionnalité :** Un bouton de téléchargement pour l'autorisation parentale apparaît à côté de l'attestation de santé si l'adhérent est mineur.
+*   **Amélioration :** Ajout d'un texte informatif sur le règlement intérieur juste avant le bouton de validation du formulaire de préinscription.
+*   **Correctif :** Résolution d'un problème de compatibilité avec le format de compression du template PDF `el_autorisation_parentale.pdf`.
+*   **Correctif :** Correction d'un bug où le contenu au bas de la page du PDF d'autorisation parentale était poussé sur une nouvelle page.
+
 ### 2.4.0 (31/08/2025)
 
 *   **Fonctionnalité :** Ajout des champs optionnels "Date de naissance" et "Commune de naissance" pour les représentants légaux 1 et 2 dans les formulaires de préinscription et d'adhérent.
