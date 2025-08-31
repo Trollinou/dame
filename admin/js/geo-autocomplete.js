@@ -76,4 +76,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // This now uses a dedicated function that only requires the city field.
     initBirthCityAutocomplete('dame_birth_city');
+    initBirthCityAutocomplete('dame_legal_rep_1_commune_naissance');
+    initBirthCityAutocomplete('dame_legal_rep_2_commune_naissance');
 });

@@ -1,4 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // We call the autocomplete initializers here, as this script is loaded
+    // after dame-geo-autocomplete.js, ensuring the function is available.
+    if (typeof initBirthCityAutocomplete === 'function') {
+        initBirthCityAutocomplete('dame_birth_city');
+        initBirthCityAutocomplete('dame_legal_rep_1_commune_naissance');
+        initBirthCityAutocomplete('dame_legal_rep_2_commune_naissance');
+    }
+
+
     const birthDateInput = document.getElementById('dame_birth_date');
     if (!birthDateInput) {
         return;
