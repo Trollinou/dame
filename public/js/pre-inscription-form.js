@@ -153,8 +153,37 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
 
-                    form.reset();
+                    // Instead of resetting, hide the form to show the success message and new options
+                    form.style.display = 'none';
                     dynamicFields.style.display = 'none';
+
+                    // Create a container for the new action buttons
+                    const actionButtonsContainer = document.createElement('div');
+                    actionButtonsContainer.style.marginTop = '1em';
+
+                    // 1. Add PayAsso button if the URL is provided in the settings
+                    if (data.data.payment_url) {
+                        const paymentButton = document.createElement('a');
+                        paymentButton.href = data.data.payment_url;
+                        paymentButton.className = 'button dame-button';
+                        paymentButton.textContent = 'Aller sur PayAsso pour votre règlement';
+                        paymentButton.target = '_blank'; // Open in a new tab
+                        paymentButton.style.textDecoration = 'none';
+                        paymentButton.style.marginRight = '1em';
+                        actionButtonsContainer.appendChild(paymentButton);
+                    }
+
+                    // 2. Add "New Adhesion" button
+                    const newAdhesionButton = document.createElement('button');
+                    newAdhesionButton.id = 'dame-new-adhesion-button';
+                    newAdhesionButton.type = 'button'; // Important to prevent form submission
+                    newAdhesionButton.className = 'button dame-button';
+                    newAdhesionButton.textContent = 'Saisir une nouvelle adhésion';
+                    actionButtonsContainer.appendChild(newAdhesionButton);
+
+                    // Add the buttons container after all other messages
+                    messagesDiv.appendChild(actionButtonsContainer);
+
                 } else {
                     messagesDiv.style.color = 'red';
                     messagesDiv.innerHTML = data.data.message;
@@ -172,6 +201,42 @@ document.addEventListener('DOMContentLoaded', function () {
                 submitButton.disabled = false;
                 submitButton.textContent = 'Valider ma préinscription';
             });
+        });
+
+        // Event delegation for the "Saisir une nouvelle adhésion" button
+        messagesDiv.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'dame-new-adhesion-button') {
+                e.preventDefault();
+
+                // Fields to clear for the new adhesion
+                document.getElementById('dame_first_name').value = '';
+                document.getElementById('dame_last_name').value = '';
+                document.getElementById('dame_birth_date').value = '';
+                document.getElementById('dame_birth_city').value = '';
+
+                // Also clear radio buttons for health questionnaire
+                const healthRadios = form.querySelectorAll('input[name="dame_health_questionnaire"]');
+                healthRadios.forEach(radio => radio.checked = false);
+
+                // Hide the dynamic fields section until a new birth date is entered
+                const dynamicFields = document.getElementById('dame-dynamic-fields');
+                if (dynamicFields) {
+                    dynamicFields.style.display = 'none';
+                    // Clear all inputs within the dynamic sections as well
+                    const dynamicInputs = dynamicFields.querySelectorAll('input');
+                    dynamicInputs.forEach(input => input.value = '');
+                }
+
+                // Hide the success message area
+                messagesDiv.style.display = 'none';
+                messagesDiv.innerHTML = '';
+
+                // Show the form again
+                form.style.display = 'block';
+
+                // Scroll back to the top of the form
+                form.scrollIntoView({ behavior: 'smooth' });
+            }
         });
     }
 });
