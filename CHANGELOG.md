@@ -6,7 +6,9 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ### 2.4.3 (01/09/2025)
 
-*   **Fonctionnalité :** Réécriture du mode de sélection des destinataires pour l'envoi des Mailling.
+*   **Amélioration :** Dans la fonction "Envoyer un article", le filtre par statut ("Actif", "Expiré", "Ancien") est remplacé par une liste déroulante des saisons d'adhésion, permettant une sélection multiple.
+*   **Amélioration :** La logique de sélection des destinataires est maintenant une UNION entre les saisons et les classifications (ex: École d'échecs), au lieu d'une intersection.
+*   **Fonctionnalité :** La saison en cours est maintenant sélectionnée par défaut dans la nouvelle liste déroulante des saisons.
 
 ### 2.4.2 (01/09/2025)
 
