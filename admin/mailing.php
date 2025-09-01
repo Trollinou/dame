@@ -55,73 +55,69 @@ function dame_handle_send_email() {
 
     if ( 'group' === $selection_method ) {
         $groups = isset( $_POST['dame_recipient_group'] ) ? (array) array_map( 'sanitize_key', $_POST['dame_recipient_group'] ) : array();
-        $statuses = isset( $_POST['dame_membership_status'] ) ? (array) array_map( 'sanitize_key', $_POST['dame_membership_status'] ) : array();
+        $seasons = isset( $_POST['dame_recipient_seasons'] ) ? (array) array_map( 'absint', $_POST['dame_recipient_seasons'] ) : array();
 
-        if ( empty( $groups ) && empty( $statuses ) ) {
+        if ( empty( $groups ) && empty( $seasons ) ) {
             add_action( 'admin_notices', function() {
-                echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner au moins un filtre (groupe ou état d'adhésion).", 'dame' ) . '</p></div>';
+                echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner au moins un filtre (saison ou groupe).", 'dame' ) . '</p></div>';
             });
             return;
         }
 
-        $meta_query = array( 'relation' => 'OR' );
+        $season_adherent_ids = array();
+        $group_adherent_ids = array();
 
-        if ( ! empty( $statuses ) ) {
-            $meta_query[] = array(
-                'key'     => '_dame_membership_status',
-                'value'   => $statuses,
-                'compare' => 'IN',
+        // Get adherents by season
+        if ( ! empty( $seasons ) ) {
+            $season_query_args = array(
+                'post_type'      => 'adherent',
+                'posts_per_page' => -1,
+                'fields'         => 'ids',
+                'tax_query'      => array(
+                    array(
+                        'taxonomy' => 'dame_saison_adhesion',
+                        'field'    => 'term_id',
+                        'terms'    => $seasons,
+                        'operator' => 'IN',
+                    ),
+                ),
             );
+            $season_adherent_ids = get_posts( $season_query_args );
         }
 
+        // Get adherents by group
         if ( ! empty( $groups ) ) {
-            $group_query = array( 'relation' => 'OR' );
+            $group_meta_query = array( 'relation' => 'OR' );
             foreach ( $groups as $group ) {
                 switch ( $group ) {
                     case 'juniors':
-                        $group_query[] = array(
-                            'key'     => '_dame_is_junior',
-                            'value'   => '1',
-                            'compare' => '=',
-                        );
+                        $group_meta_query[] = array( 'key' => '_dame_is_junior', 'value' => '1' );
                         break;
                     case 'pole_excellence':
-                        $group_query[] = array(
-                            'key'     => '_dame_is_pole_excellence',
-                            'value'   => '1',
-                            'compare' => '=',
-                        );
+                        $group_meta_query[] = array( 'key' => '_dame_is_pole_excellence', 'value' => '1' );
                         break;
                     case 'benevoles':
-                        $group_query[] = array(
-                            'key'     => '_dame_is_benevole',
-                            'value'   => '1',
-                            'compare' => '=',
-                        );
+                        $group_meta_query[] = array( 'key' => '_dame_is_benevole', 'value' => '1' );
                         break;
                     case 'elus_locaux':
-                        $group_query[] = array(
-                            'key'     => '_dame_is_elu_local',
-                            'value'   => '1',
-                            'compare' => '=',
-                        );
+                        $group_meta_query[] = array( 'key' => '_dame_is_elu_local', 'value' => '1' );
                         break;
                 }
             }
-            if ( count( $group_query ) > 1 ) {
-                $meta_query[] = $group_query;
+
+            if ( count( $group_meta_query ) > 1 ) {
+                $group_query_args = array(
+                    'post_type'      => 'adherent',
+                    'posts_per_page' => -1,
+                    'fields'         => 'ids',
+                    'meta_query'     => $group_meta_query,
+                );
+                $group_adherent_ids = get_posts( $group_query_args );
             }
         }
 
-        if ( count( $meta_query ) > 1 ) {
-            $query_args = array(
-                'post_type' => 'adherent',
-                'posts_per_page' => -1,
-                'fields' => 'ids',
-                'meta_query' => $meta_query,
-            );
-            $adherent_ids = get_posts( $query_args );
-        }
+        // Merge and get unique IDs
+        $adherent_ids = array_unique( array_merge( $season_adherent_ids, $group_adherent_ids ) );
 
     } elseif ( 'manual' === $selection_method ) {
         $adherent_ids = isset( $_POST['dame_manual_recipients'] ) ? (array) array_map( 'absint', $_POST['dame_manual_recipients'] ) : array();
@@ -359,11 +355,27 @@ function dame_render_mailing_page() {
                             <fieldset>
                                 <legend class="screen-reader-text"><span><?php esc_html_e( "Filtres de destinataires", 'dame' ); ?></span></legend>
 
-                                <div id="dame-status-filter" style="margin-bottom: 15px;">
-                                    <strong style="vertical-align: middle;"><?php esc_html_e( "Adhérents :", 'dame' ); ?></strong>
-                                    <label style="margin-left: 10px; font-weight: normal;"><input type="checkbox" name="dame_membership_status[]" value="A"> <?php esc_html_e( "Actif", 'dame' ); ?></label>
-                                    <label style="margin-left: 10px; font-weight: normal;"><input type="checkbox" name="dame_membership_status[]" value="E"> <?php esc_html_e( "Expiré", 'dame' ); ?></label>
-                                    <label style="margin-left: 10px; font-weight: normal;"><input type="checkbox" name="dame_membership_status[]" value="X"> <?php esc_html_e( "Ancien", 'dame' ); ?></label>
+                                <div id="dame-season-filter" style="margin-bottom: 15px;">
+                                    <label for="dame_recipient_seasons" style="font-weight: bold; display: block; margin-bottom: 5px;"><?php esc_html_e( "Saison d'adhesion", 'dame' ); ?></label>
+                                    <?php
+                                    $seasons = get_terms( array(
+                                        'taxonomy'   => 'dame_saison_adhesion',
+                                        'hide_empty' => false,
+                                        'orderby'    => 'name',
+                                        'order'      => 'DESC',
+                                    ) );
+
+                                    if ( ! empty( $seasons ) && ! is_wp_error( $seasons ) ) {
+                                        echo '<select id="dame_recipient_seasons" name="dame_recipient_seasons[]" multiple="multiple" style="width: 100%; max-width: 400px; height: 120px;">';
+                                        foreach ( $seasons as $season ) {
+                                            echo '<option value="' . esc_attr( $season->term_id ) . '">' . esc_html( $season->name ) . '</option>';
+                                        }
+                                        echo '</select>';
+                                        echo '<p class="description" style="margin-top: 5px;">' . esc_html__( 'Maintenez la touche (Ctrl) ou (Cmd) enfoncée pour sélectionner plusieurs saisons.', 'dame' ) . '</p>';
+                                    } else {
+                                        echo '<p>' . esc_html__( "Aucune saison d'adhésion trouvée.", 'dame' ) . '</p>';
+                                    }
+                                    ?>
                                 </div>
 
                                 <hr style="margin: 15px 0;">
