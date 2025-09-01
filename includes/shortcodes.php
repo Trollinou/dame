@@ -370,7 +370,9 @@ function dame_fiche_inscription_shortcode( $atts ) {
 				</div>
 
 				<div id="dame-adherent-mineur-fields" style="display:none;">
-					<h3><?php _e( 'Représentant Légal 1', 'dame' ); ?></h3>
+					<h3 style="display: flex; align-items: center; flex-wrap: wrap;"><?php _e( 'Représentant Légal 1', 'dame' ); ?>
+						<button type="button" class="dame-copy-button" data-rep-id="1" style="background-color: #3ec0f0; color: white; border: none; padding: 5px 10px; margin-left: 10px; cursor: pointer; font-size: 0.8em; white-space: nowrap; margin-top: 5px; margin-bottom: 5px;"><?php _e( "Recopier depuis l'adhérent", 'dame' ); ?></button>
+					</h3>
 					<p><label for="dame_legal_rep_1_first_name"><?php _e( 'Prénom', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_first_name" name="dame_legal_rep_1_first_name"></p>
 					<p><label for="dame_legal_rep_1_last_name"><?php _e( 'Nom', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_last_name" name="dame_legal_rep_1_last_name"></p>
 					<p><label for="dame_legal_rep_1_email"><?php _e( 'Email', 'dame' ); ?></label><input type="email" id="dame_legal_rep_1_email" name="dame_legal_rep_1_email"></p>
@@ -384,7 +386,9 @@ function dame_fiche_inscription_shortcode( $atts ) {
 					<p><label for="dame_legal_rep_1_date_naissance"><?php _e( 'Date de naissance', 'dame' ); ?></label><input type="date" id="dame_legal_rep_1_date_naissance" name="dame_legal_rep_1_date_naissance"></p>
 					<p><label for="dame_legal_rep_1_commune_naissance"><?php _e( 'Commune de naissance', 'dame' ); ?></label><div class="dame-autocomplete-wrapper"><input type="text" id="dame_legal_rep_1_commune_naissance" name="dame_legal_rep_1_commune_naissance"></div></p>
 
-					<h3><?php _e( 'Représentant Légal 2', 'dame' ); ?></h3>
+					<h3 style="display: flex; align-items: center; flex-wrap: wrap;"><?php _e( 'Représentant Légal 2', 'dame' ); ?>
+						<button type="button" class="dame-copy-button" data-rep-id="2" style="background-color: #3ec0f0; color: white; border: none; padding: 5px 10px; margin-left: 10px; cursor: pointer; font-size: 0.8em; white-space: nowrap; margin-top: 5px; margin-bottom: 5px;"><?php _e( "Recopier depuis l'adhérent", 'dame' ); ?></button>
+					</h3>
 					<p><label for="dame_legal_rep_2_first_name"><?php _e( 'Prénom', 'dame' ); ?></label><input type="text" id="dame_legal_rep_2_first_name" name="dame_legal_rep_2_first_name"></p>
 					<p><label for="dame_legal_rep_2_last_name"><?php _e( 'Nom', 'dame' ); ?></label><input type="text" id="dame_legal_rep_2_last_name" name="dame_legal_rep_2_last_name"></p>
 					<p><label for="dame_legal_rep_2_email"><?php _e( 'Email', 'dame' ); ?></label><input type="email" id="dame_legal_rep_2_email" name="dame_legal_rep_2_email"></p>

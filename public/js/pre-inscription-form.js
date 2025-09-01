@@ -81,7 +81,6 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             majeurFields.style.display = 'none';
             mineurFields.style.display = 'block';
-            prefillRep1();
             // Make rep 1 fields required
             rep1RequiredInputs.forEach(input => input.required = true);
 
@@ -239,11 +238,19 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // Add event listeners for copy buttons
+    const copyButtons = document.querySelectorAll('.dame-copy-button');
+    copyButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const repId = this.getAttribute('data-rep-id');
+            copyAdherentData(repId);
+        });
+    });
 });
 
-function prefillRep1() {
-    // Define all elements here again to ensure they are available in the global scope
-    // and to avoid errors if the function is called before DOMContentLoaded.
+function copyAdherentData(repId) {
+    // Adherent fields
     const lastNameInput = document.getElementById('dame_last_name');
     const emailInput = document.getElementById('dame_email');
     const phoneInput = document.getElementById('dame_phone_number');
@@ -252,24 +259,24 @@ function prefillRep1() {
     const postalCodeInput = document.getElementById('dame_postal_code');
     const cityInput = document.getElementById('dame_city');
 
-    const rep1LastNameInput = document.getElementById('dame_legal_rep_1_last_name');
-    const rep1EmailInput = document.getElementById('dame_legal_rep_1_email');
-    const rep1PhoneInput = document.getElementById('dame_legal_rep_1_phone');
-    const rep1Address1Input = document.getElementById('dame_legal_rep_1_address_1');
-    const rep1Address2Input = document.getElementById('dame_legal_rep_1_address_2');
-    const rep1PostalCodeInput = document.getElementById('dame_legal_rep_1_postal_code');
-    const rep1CityInput = document.getElementById('dame_legal_rep_1_city');
+    // Rep fields
+    const repLastNameInput = document.getElementById('dame_legal_rep_' + repId + '_last_name');
+    const repEmailInput = document.getElementById('dame_legal_rep_' + repId + '_email');
+    const repPhoneInput = document.getElementById('dame_legal_rep_' + repId + '_phone');
+    const repAddress1Input = document.getElementById('dame_legal_rep_' + repId + '_address_1');
+    const repAddress2Input = document.getElementById('dame_legal_rep_' + repId + '_address_2');
+    const repPostalCodeInput = document.getElementById('dame_legal_rep_' + repId + '_postal_code');
+    const repCityInput = document.getElementById('dame_legal_rep_' + repId + '_city');
 
-    // Check if all elements exist before trying to copy values
-    if (lastNameInput && emailInput && phoneInput && address1Input && address2Input && postalCodeInput && cityInput &&
-        rep1LastNameInput && rep1EmailInput && rep1PhoneInput && rep1Address1Input && rep1Address2Input && rep1PostalCodeInput && rep1CityInput) {
+    if (lastNameInput && emailInput && phoneInput && address1Input && postalCodeInput && cityInput &&
+        repLastNameInput && repEmailInput && repPhoneInput && repAddress1Input && repPostalCodeInput && repCityInput) {
 
-        rep1LastNameInput.value = lastNameInput.value;
-        rep1EmailInput.value = emailInput.value;
-        rep1PhoneInput.value = phoneInput.value;
-        rep1Address1Input.value = address1Input.value;
-        rep1Address2Input.value = address2Input.value;
-        rep1PostalCodeInput.value = postalCodeInput.value;
-        rep1CityInput.value = cityInput.value;
+        repLastNameInput.value = lastNameInput.value;
+        repEmailInput.value = emailInput.value;
+        repPhoneInput.value = phoneInput.value;
+        repAddress1Input.value = address1Input.value;
+        repAddress2Input.value = address2Input.value;
+        repPostalCodeInput.value = postalCodeInput.value;
+        repCityInput.value = cityInput.value;
     }
 }
