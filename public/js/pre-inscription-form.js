@@ -132,32 +132,33 @@ document.addEventListener('DOMContentLoaded', function () {
                                 Afin de valider votre inscription auprès de la FFE, vous devez nous remettre un certificat médical, daté de moins de 6 mois, déclarant <strong>${data.data.full_name}</strong> apte à la pratique des échecs en et hors compétition.
                             </p>`;
                     } else if (data.data.health_questionnaire === 'non') {
-                        successHtml += `<div style="margin-top: 1em;">`;
+                        // Styled PDF download links
+                        successHtml += `<div style="margin-top: 1.5em; margin-bottom: 1.5em;">`;
                         successHtml += `
-                            <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" class="button dame-button" style="display: inline-block; text-decoration: none;">
-                                Télécharger mon attestation de santé à remettre signé
+                            <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" style="display: block; color: blue; text-decoration: underline; margin-bottom: 0.5em;">
+                                &#x1F4E5; Télécharger mon attestation de santé à remettre signé
                             </a>`;
 
                         if (data.data.is_minor) {
                             successHtml += `
-                                <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}" class="button dame-button" style="display: inline-block; text-decoration: none; margin-left: 1em;">
-                                    Télécharger l'autorisation parentale a remettre signé
+                                <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}" style="display: block; color: blue; text-decoration: underline; margin-left: 1.5em;">
+                                    &#x1F4E5; Télécharger l'autorisation parentale a remettre signé
                                 </a>`;
                         }
                         successHtml += `</div>`;
                     }
 
                     // New Action Buttons (combined in a single div for layout)
-                    successHtml += `<div style="margin-top: 1em;">`;
+                    successHtml += `<div style="margin-top: 1em; display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">`;
                     if (data.data.payment_url) {
                         successHtml += `
-                            <a href="${data.data.payment_url}" target="_blank" class="button dame-button" style="text-decoration: none; margin-right: 1em;">
-                                Aller sur PayAsso pour votre règlement
+                            <a href="${data.data.payment_url}" target="_blank" class="button dame-button" style="text-decoration: none; padding: 10px 15px; font-size: 1.1em; border-radius: 8px;">
+                                &#x1F4B3; Aller sur PayAsso pour votre règlement &#x1F4B3;
                             </a>`;
                     }
                     successHtml += `
-                        <button id="dame-new-adhesion-button" type="button" class="button dame-button">
-                            Saisir une nouvelle adhésion
+                        <button id="dame-new-adhesion-button" type="button" class="button dame-button" style="background-color: #fe0007; color: white; border: none; border-radius: 8px; padding: 8px 12px;">
+                            &#x1F501; Saisir une nouvelle adhésion
                         </button>`;
                     successHtml += `</div>`;
 
