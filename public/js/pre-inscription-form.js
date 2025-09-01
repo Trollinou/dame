@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         // Styled PDF download links
                         successHtml += `<div style="margin-top: 1.5em; margin-bottom: 1.5em;">`;
                         successHtml += `
-                            <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" style="display: block; color: blue; text-decoration: underline; margin-bottom: 0.5em;">
+                            <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" style="display: block; color: blue; text-decoration: underline; margin-bottom: 0.5em; margin-left: 1.5em;">
                                 &#x1F4E5; Télécharger mon attestation de santé à remettre signé
                             </a>`;
 
@@ -148,18 +148,20 @@ document.addEventListener('DOMContentLoaded', function () {
                         successHtml += `</div>`;
                     }
 
-                    // New Action Buttons (combined in a single div for layout)
-                    successHtml += `<div style="margin-top: 1em; display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">`;
+                    // New Action Buttons (Reordered and stacked)
+                    successHtml += `<div style="margin-top: 1em;">`;
+
+                    successHtml += `
+                        <button id="dame-new-adhesion-button" type="button" class="button dame-button" style="background-color: #fe0007; color: white; border: none; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; display: block;">
+                            &#x1F501; Saisir une nouvelle adhésion
+                        </button>`;
+
                     if (data.data.payment_url) {
                         successHtml += `
-                            <a href="${data.data.payment_url}" target="_blank" class="button dame-button" style="text-decoration: none; padding: 10px 15px; font-size: 1.1em; border-radius: 8px;">
+                            <a href="${data.data.payment_url}" target="_blank" class="button dame-button" style="text-decoration: none; padding: 10px 15px; font-size: 1.1em; border-radius: 8px; display: inline-block;">
                                 &#x1F4B3; Aller sur PayAsso pour votre règlement &#x1F4B3;
                             </a>`;
                     }
-                    successHtml += `
-                        <button id="dame-new-adhesion-button" type="button" class="button dame-button" style="background-color: #fe0007; color: white; border: none; border-radius: 8px; padding: 8px 12px;">
-                            &#x1F501; Saisir une nouvelle adhésion
-                        </button>`;
                     successHtml += `</div>`;
 
                     // Set the content once
