@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         console.error('Error fetching cities:', error);
                         resultsContainer.style.display = 'none';
                     });
-            }, 500);
+            }, 250);
         });
 
         resultsContainer.addEventListener('click', function (e) {
