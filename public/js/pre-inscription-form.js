@@ -132,8 +132,14 @@ document.addEventListener('DOMContentLoaded', function () {
                                 Afin de valider votre inscription auprès de la FFE, vous devez nous remettre un certificat médical, daté de moins de 6 mois, déclarant <strong>${data.data.full_name}</strong> apte à la pratique des échecs en et hors compétition.
                             </p>`;
                     } else if (data.data.health_questionnaire === 'non') {
+                        const senderEmail = data.data.sender_email;
+                        const emailLink = senderEmail ? `<a href="mailto:${senderEmail}">${senderEmail}</a>` : 'l\'email du club';
+                        const messageText = `Vous trouverez ci-après le(s) document(s) à signer, puis à nous remettre en main propre ou à nous renvoyer à l’adresse ${emailLink}`;
+
+                        successHtml += `<p style="margin-top: 1.5em;">${messageText}</p>`;
+
                         // Styled PDF download links
-                        successHtml += `<div style="margin-top: 1.5em; margin-bottom: 1.5em;">`;
+                        successHtml += `<div style="margin-bottom: 1.5em;">`;
                         successHtml += `
                             <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" style="display: block; color: blue; text-decoration: underline; margin-bottom: 0.5em; margin-left: 1.5em;">
                                 &#x1F4E5; Télécharger mon attestation de santé à remettre signé

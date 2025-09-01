@@ -597,6 +597,7 @@ function dame_handle_pre_inscription_submission() {
 	// 7. Return Success Message
 	$options = get_option( 'dame_options' );
 	$payment_url = isset( $options['payment_url'] ) ? $options['payment_url'] : '';
+	$sender_email = isset( $options['sender_email'] ) && ! empty( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
 
 	$response_data = array(
 		'message'            => sprintf(
@@ -610,6 +611,7 @@ function dame_handle_pre_inscription_submission() {
 		'nonce'              => wp_create_nonce( 'dame_generate_health_form_' . $post_id ),
 		'is_minor'           => $is_minor,
 		'payment_url'        => $payment_url,
+		'sender_email'       => $sender_email,
 	);
 
 	if ( $is_minor ) {
