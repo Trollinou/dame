@@ -4,6 +4,12 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.4.4 (01/09/2025)
+
+*   **Amélioration :** Le remplissage automatique des données du représentant légal pour les adhérents mineurs est remplacé par des boutons manuels. Cela donne à l'utilisateur plus de contrôle sur le remplissage du formulaire.
+*   **Amélioration UI :** Les boutons de copie sont placés sur la même ligne que le titre de la section pour un design plus compact.
+*   **Amélioration UI :** La sélection du sexe dans le formulaire de préinscription s'affiche désormais sur une seule ligne.
+
 ### 2.4.3 (01/09/2025)
 
 *   **Amélioration :** Dans la fonction "Envoyer un article", le filtre par statut ("Actif", "Expiré", "Ancien") est remplacé par une liste déroulante des saisons d'adhésion, permettant une sélection multiple.
