@@ -282,9 +282,8 @@ function dame_fiche_inscription_shortcode( $atts ) {
 	ob_start();
 	?>
 	<div id="dame-pre-inscription-form-wrapper">
+		<div id="dame-form-messages" style="display:none; padding: 1em; margin-bottom: 1em;"></div>
 		<form id="dame-pre-inscription-form" class="dame-form">
-
-			<div id="dame-form-messages" style="display:none; padding: 1em; margin-bottom: 1em;"></div>
 
 			<?php wp_nonce_field( 'dame_pre_inscription_nonce', 'dame_nonce' ); ?>
 
