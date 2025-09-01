@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 clearTimeout(debounceTimer);
                 const query = this.value;
 
-                if (query.length < 10) {
+                if (query.length < 5) {
                     resultsContainer.innerHTML = '';
                     resultsContainer.style.display = 'none';
                     return;
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             console.error('Error fetching address suggestions:', error);
                             resultsContainer.style.display = 'none';
                         });
-                }, 1000);
+                }, 250);
             });
 
             resultsContainer.addEventListener('click', function(e) {
