@@ -123,67 +123,50 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 if (data.success) {
                     messagesDiv.style.color = 'green';
-                    messagesDiv.innerHTML = `<p>${data.data.message}</p>`; // Wrap initial message in a paragraph
+                    let successHtml = `<p>${data.data.message}</p>`;
 
+                    // PDF/Certificate Message
                     if (data.data.health_questionnaire === 'oui') {
-                        const medicalCertMessage = document.createElement('p');
-                        medicalCertMessage.style.fontWeight = 'bold';
-                        medicalCertMessage.style.color = 'red';
-                        medicalCertMessage.innerHTML = `Afin de valider votre inscription auprès de la FFE, vous devez nous remettre un certificat médical, daté de moins de 6 mois, déclarant <strong>${data.data.full_name}</strong> apte à la pratique des échecs en et hors compétition.`;
-                        messagesDiv.appendChild(medicalCertMessage);
+                        successHtml += `
+                            <p style="font-weight: bold; color: red; margin-top: 1em;">
+                                Afin de valider votre inscription auprès de la FFE, vous devez nous remettre un certificat médical, daté de moins de 6 mois, déclarant <strong>${data.data.full_name}</strong> apte à la pratique des échecs en et hors compétition.
+                            </p>`;
                     } else if (data.data.health_questionnaire === 'non') {
-                        const downloadButton = document.createElement('a');
-                        downloadButton.href = `${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}`;
-                        downloadButton.className = 'button dame-button';
-                        downloadButton.textContent = 'Télécharger mon attestation de santé à remettre signé';
-                        downloadButton.style.marginTop = '1em';
-                        downloadButton.style.display = 'inline-block';
-                        messagesDiv.appendChild(downloadButton);
+                        successHtml += `<div style="margin-top: 1em;">`;
+                        successHtml += `
+                            <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" class="button dame-button" style="display: inline-block; text-decoration: none;">
+                                Télécharger mon attestation de santé à remettre signé
+                            </a>`;
 
-                        // Add parental authorization download button for minors
                         if (data.data.is_minor) {
-                            const parentalAuthButton = document.createElement('a');
-                            parentalAuthButton.href = `${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}`;
-                            parentalAuthButton.className = 'button dame-button';
-                            parentalAuthButton.textContent = "Télécharger l'autorisation parentale a remettre signé";
-                            parentalAuthButton.style.marginTop = '1em';
-                            parentalAuthButton.style.marginLeft = '1em'; // Add some space between buttons
-                            parentalAuthButton.style.display = 'inline-block';
-                            messagesDiv.appendChild(parentalAuthButton);
+                            successHtml += `
+                                <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}" class="button dame-button" style="display: inline-block; text-decoration: none; margin-left: 1em;">
+                                    Télécharger l'autorisation parentale a remettre signé
+                                </a>`;
                         }
+                        successHtml += `</div>`;
                     }
 
-                    // Instead of resetting, hide the form to show the success message and new options
+                    // New Action Buttons (combined in a single div for layout)
+                    successHtml += `<div style="margin-top: 1em;">`;
+                    if (data.data.payment_url) {
+                        successHtml += `
+                            <a href="${data.data.payment_url}" target="_blank" class="button dame-button" style="text-decoration: none; margin-right: 1em;">
+                                Aller sur PayAsso pour votre règlement
+                            </a>`;
+                    }
+                    successHtml += `
+                        <button id="dame-new-adhesion-button" type="button" class="button dame-button">
+                            Saisir une nouvelle adhésion
+                        </button>`;
+                    successHtml += `</div>`;
+
+                    // Set the content once
+                    messagesDiv.innerHTML = successHtml;
+
+                    // Hide the form
                     form.style.display = 'none';
                     dynamicFields.style.display = 'none';
-
-                    // Create a container for the new action buttons
-                    const actionButtonsContainer = document.createElement('div');
-                    actionButtonsContainer.style.marginTop = '1em';
-
-                    // 1. Add PayAsso button if the URL is provided in the settings
-                    if (data.data.payment_url) {
-                        const paymentButton = document.createElement('a');
-                        paymentButton.href = data.data.payment_url;
-                        paymentButton.className = 'button dame-button';
-                        paymentButton.textContent = 'Aller sur PayAsso pour votre règlement';
-                        paymentButton.target = '_blank'; // Open in a new tab
-                        paymentButton.style.textDecoration = 'none';
-                        paymentButton.style.marginRight = '1em';
-                        actionButtonsContainer.appendChild(paymentButton);
-                    }
-
-                    // 2. Add "New Adhesion" button
-                    const newAdhesionButton = document.createElement('button');
-                    newAdhesionButton.id = 'dame-new-adhesion-button';
-                    newAdhesionButton.type = 'button'; // Important to prevent form submission
-                    newAdhesionButton.className = 'button dame-button';
-                    newAdhesionButton.textContent = 'Saisir une nouvelle adhésion';
-                    actionButtonsContainer.appendChild(newAdhesionButton);
-
-                    // Add the buttons container after all other messages
-                    messagesDiv.appendChild(actionButtonsContainer);
-
                 } else {
                     messagesDiv.style.color = 'red';
                     messagesDiv.innerHTML = data.data.message;
