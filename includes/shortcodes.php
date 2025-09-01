@@ -317,9 +317,9 @@ function dame_fiche_inscription_shortcode( $atts ) {
 			</p>
 			<p>
 				<label><?php _e( 'Sexe', 'dame' ); ?> <span class="required">*</span></label>
-				<label style="margin-left: 15px;"><input type="radio" name="dame_sexe" value="Masculin" checked required> <?php _e( 'Masculin', 'dame' ); ?></label>
-				<label style="margin-left: 15px;"><input type="radio" name="dame_sexe" value="Féminin"> <?php _e( 'Féminin', 'dame' ); ?></label>
-				<label style="margin-left: 15px;"><input type="radio" name="dame_sexe" value="Non précisé"> <?php _e( 'Non précisé', 'dame' ); ?></label>
+				<label style="margin-left: 15px; display: inline-block;"><input type="radio" name="dame_sexe" value="Masculin" checked required> <?php _e( 'Masculin', 'dame' ); ?></label>
+				<label style="margin-left: 15px; display: inline-block;"><input type="radio" name="dame_sexe" value="Féminin"> <?php _e( 'Féminin', 'dame' ); ?></label>
+				<label style="margin-left: 15px; display: inline-block;"><input type="radio" name="dame_sexe" value="Non précisé"> <?php _e( 'Non précisé', 'dame' ); ?></label>
 			</p>
 			<p>
 				<label for="dame_email"><?php _e( 'Email', 'dame' ); ?> <span class="required">*</span></label>
