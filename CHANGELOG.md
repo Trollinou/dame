@@ -4,6 +4,17 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.4.2 (01/09/2025)
+
+*   **Fonctionnalité :** Ajout d'une nouvelle section dans les réglages pour configurer une URL de paiement (ex: PayAsso).
+*   **Fonctionnalité :** Après la soumission du formulaire de préinscription, le formulaire est masqué et de nouvelles options s'affichent.
+*   **Fonctionnalité :** Ajout d'un bouton pour rediriger vers l'URL de paiement configurée.
+*   **Fonctionnalité :** Ajout d'un bouton "Saisir une nouvelle adhésion" qui réinitialise les champs personnels (Nom, Prénom, etc.) tout en conservant les coordonnées pour faciliter les inscriptions multiples (ex: familles).
+*   **Amélioration :** Ajout d'un message d'instruction avant les liens de téléchargement de documents, incluant dynamiquement l'email de contact du club.
+*   **Amélioration UI :** Les boutons d'action post-inscription sont maintenant stylisés et réorganisés pour une meilleure clarté (icônes, couleurs, disposition verticale).
+*   **Correctif :** Résolution d'un bug majeur où les messages et boutons de succès ne s'affichaient pas après la soumission du formulaire en déplaçant le conteneur de message hors du formulaire.
+*   **Correctif :** Résolution d'un bug où le lien de téléchargement de l'autorisation parentale ne s'affichait pas pour les mineurs si le questionnaire de santé nécessitait un certificat médical.
+
 ### 2.4.1 (31/08/2025)
 
 *   **Fonctionnalité :** Ajout de la génération d'un PDF d'autorisation parentale pour les adhérents mineurs lors de la préinscription.

@@ -123,37 +123,66 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 if (data.success) {
                     messagesDiv.style.color = 'green';
-                    messagesDiv.innerHTML = `<p>${data.data.message}</p>`; // Wrap initial message in a paragraph
+                    let successHtml = `<p>${data.data.message}</p>`;
 
+                    // 1. Handle health-related message
                     if (data.data.health_questionnaire === 'oui') {
-                        const medicalCertMessage = document.createElement('p');
-                        medicalCertMessage.style.fontWeight = 'bold';
-                        medicalCertMessage.style.color = 'red';
-                        medicalCertMessage.innerHTML = `Afin de valider votre inscription auprès de la FFE, vous devez nous remettre un certificat médical, daté de moins de 6 mois, déclarant <strong>${data.data.full_name}</strong> apte à la pratique des échecs en et hors compétition.`;
-                        messagesDiv.appendChild(medicalCertMessage);
-                    } else if (data.data.health_questionnaire === 'non') {
-                        const downloadButton = document.createElement('a');
-                        downloadButton.href = `${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}`;
-                        downloadButton.className = 'button dame-button';
-                        downloadButton.textContent = 'Télécharger mon attestation de santé à remettre signé';
-                        downloadButton.style.marginTop = '1em';
-                        downloadButton.style.display = 'inline-block';
-                        messagesDiv.appendChild(downloadButton);
-
-                        // Add parental authorization download button for minors
-                        if (data.data.is_minor) {
-                            const parentalAuthButton = document.createElement('a');
-                            parentalAuthButton.href = `${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}`;
-                            parentalAuthButton.className = 'button dame-button';
-                            parentalAuthButton.textContent = "Télécharger l'autorisation parentale a remettre signé";
-                            parentalAuthButton.style.marginTop = '1em';
-                            parentalAuthButton.style.marginLeft = '1em'; // Add some space between buttons
-                            parentalAuthButton.style.display = 'inline-block';
-                            messagesDiv.appendChild(parentalAuthButton);
-                        }
+                        successHtml += `
+                            <p style="font-weight: bold; color: red; margin-top: 1em;">
+                                Afin de valider votre inscription auprès de la FFE, vous devez nous remettre un certificat médical, daté de moins de 6 mois, déclarant <strong>${data.data.full_name}</strong> apte à la pratique des échecs en et hors compétition.
+                            </p>`;
                     }
 
-                    form.reset();
+                    // 2. Check if any download links are needed
+                    const needsHealthAttestation = data.data.health_questionnaire === 'non';
+                    const needsParentalAuth = data.data.is_minor;
+                    const hasDownloadLinks = needsHealthAttestation || needsParentalAuth;
+
+                    // 3. Add the informational message if there are any download links
+                    if (hasDownloadLinks) {
+                        const senderEmail = data.data.sender_email;
+                        const emailLink = senderEmail ? `<a href="mailto:${senderEmail}">${senderEmail}</a>` : 'l\'email du club';
+                        const messageText = `Vous trouverez ci-après le(s) document(s) à signer, puis à nous remettre en main propre ou à nous renvoyer à l’adresse ${emailLink}`;
+                        successHtml += `<p style="margin-top: 1.5em;">${messageText}</p>`;
+                    }
+
+                    // 4. Add the actual download links
+                    if (hasDownloadLinks) {
+                        successHtml += `<div style="margin-bottom: 1.5em;">`;
+                        if (needsHealthAttestation) {
+                            successHtml += `
+                                <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" style="display: block; color: blue; text-decoration: underline; margin-bottom: 0.5em; margin-left: 1.5em;">
+                                    &#x1F4E5; Télécharger mon attestation de santé à remettre signé
+                                </a>`;
+                        }
+                        if (needsParentalAuth) {
+                            successHtml += `
+                                <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}" style="display: block; color: blue; text-decoration: underline; margin-left: 1.5em;">
+                                    &#x1F4E5; Télécharger l'autorisation parentale a remettre signé
+                                </a>`;
+                        }
+                        successHtml += `</div>`;
+                    }
+
+                    // 5. Add the action buttons
+                    successHtml += `<div style="margin-top: 1em;">`;
+                    successHtml += `
+                        <button id="dame-new-adhesion-button" type="button" class="button dame-button" style="background-color: #fe0007; color: white; border: none; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; display: block;">
+                            &#x1F501; Saisir une nouvelle adhésion
+                        </button>`;
+                    if (data.data.payment_url) {
+                        successHtml += `
+                            <a href="${data.data.payment_url}" target="_blank" class="button dame-button" style="text-decoration: none; padding: 10px 15px; font-size: 1.1em; border-radius: 8px; display: inline-block;">
+                                &#x1F4B3; Aller sur PayAsso pour votre règlement &#x1F4B3;
+                            </a>`;
+                    }
+                    successHtml += `</div>`;
+
+                    // Set the content once
+                    messagesDiv.innerHTML = successHtml;
+
+                    // Hide the form
+                    form.style.display = 'none';
                     dynamicFields.style.display = 'none';
                 } else {
                     messagesDiv.style.color = 'red';
@@ -172,6 +201,42 @@ document.addEventListener('DOMContentLoaded', function () {
                 submitButton.disabled = false;
                 submitButton.textContent = 'Valider ma préinscription';
             });
+        });
+
+        // Event delegation for the "Saisir une nouvelle adhésion" button
+        messagesDiv.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'dame-new-adhesion-button') {
+                e.preventDefault();
+
+                // Fields to clear for the new adhesion
+                document.getElementById('dame_first_name').value = '';
+                document.getElementById('dame_last_name').value = '';
+                document.getElementById('dame_birth_date').value = '';
+                document.getElementById('dame_birth_city').value = '';
+
+                // Also clear radio buttons for health questionnaire
+                const healthRadios = form.querySelectorAll('input[name="dame_health_questionnaire"]');
+                healthRadios.forEach(radio => radio.checked = false);
+
+                // Hide the dynamic fields section until a new birth date is entered
+                const dynamicFields = document.getElementById('dame-dynamic-fields');
+                if (dynamicFields) {
+                    dynamicFields.style.display = 'none';
+                    // Clear all inputs within the dynamic sections as well
+                    const dynamicInputs = dynamicFields.querySelectorAll('input');
+                    dynamicInputs.forEach(input => input.value = '');
+                }
+
+                // Hide the success message area
+                messagesDiv.style.display = 'none';
+                messagesDiv.innerHTML = '';
+
+                // Show the form again
+                form.style.display = 'block';
+
+                // Scroll back to the top of the form
+                form.scrollIntoView({ behavior: 'smooth' });
+            }
         });
     }
 });

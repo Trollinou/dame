@@ -36,6 +36,7 @@ function dame_render_options_page() {
             <?php
             settings_fields( 'dame_options_group' );
             do_settings_sections( 'dame_mailing_section_group' ); // Ajout du groupe de la section mailing
+            do_settings_sections( 'dame_payment_section_group' );
             do_settings_sections( 'dame_uninstall_section_group' );
             submit_button( __( 'Enregistrer les modifications', 'dame' ) );
             ?>
@@ -120,6 +121,22 @@ function dame_register_settings() {
         'dame_smtp_batch_size_callback',
         'dame_mailing_section_group',
         'dame_mailing_section'
+    );
+
+    // Section for payment URL
+    add_settings_section(
+        'dame_payment_section',
+        __( 'Paramètres de paiement', 'dame' ),
+        'dame_payment_section_callback',
+        'dame_payment_section_group'
+    );
+
+    add_settings_field(
+        'dame_payment_url',
+        __( 'URL de paiement (PayAsso)', 'dame' ),
+        'dame_payment_url_callback',
+        'dame_payment_section_group',
+        'dame_payment_section'
     );
 
     add_settings_section(
@@ -251,8 +268,33 @@ function dame_options_sanitize( $input ) {
         $sanitized_input['smtp_batch_size'] = absint( $input['smtp_batch_size'] );
     }
 
+    if ( isset( $input['payment_url'] ) ) {
+        $sanitized_input['payment_url'] = esc_url_raw( $input['payment_url'] );
+    }
+
     $sanitized_input['delete_on_uninstall'] = isset( $input['delete_on_uninstall'] ) ? 1 : 0;
     return $sanitized_input;
+}
+
+/**
+ * Callback for the payment section.
+ */
+function dame_payment_section_callback() {
+    echo '<p>' . esc_html__( "Paramètres relatifs au paiement des adhésions.", 'dame' ) . '</p>';
+}
+
+/**
+ * Callback for the payment_url field.
+ */
+function dame_payment_url_callback() {
+    $options = get_option( 'dame_options' );
+    $payment_url = isset( $options['payment_url'] ) ? $options['payment_url'] : '';
+    ?>
+    <input type="url" id="dame_payment_url" name="dame_options[payment_url]" value="<?php echo esc_attr( $payment_url ); ?>" class="regular-text" placeholder="https://www.payasso.fr/example/form" />
+    <p class="description">
+        <?php esc_html_e( "L'URL complète de la page de paiement. Ce lien sera présenté à l'utilisateur après la soumission de sa préinscription.", 'dame' ); ?>
+    </p>
+    <?php
 }
 
 /**
