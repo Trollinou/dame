@@ -4,6 +4,10 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.4.3 (01/09/2025)
+
+*   **Fonctionnalité :** Réécriture du mode de sélection des destinataires pour l'envoi des Mailling.
+
 ### 2.4.2 (01/09/2025)
 
 *   **Fonctionnalité :** Ajout d'une nouvelle section dans les réglages pour configurer une URL de paiement (ex: PayAsso).
