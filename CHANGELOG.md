@@ -4,6 +4,10 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.4.7 (02/09/2025)
+
+*   **Amélioration :** Mise en forme automatique des noms et prénoms. Les noms de famille sont automatiquement mis en majuscules et les prénoms en casse mixte (ex: Jean-Michel) lors de la saisie dans le formulaire de préinscription, la fiche de préinscription et la fiche adhérent, pour les adhérents et les représentants légaux.
+
 ### 2.4.6 (02/09/2025)
 
 *   **Correctif :** Correction d'un bug où la metabox "Saisons d'adhésion" sur la fiche adhérent n'était pas fonctionnelle. Elle permet désormais d'ajouter et de retirer des saisons de manière interactive, comme attendu.
