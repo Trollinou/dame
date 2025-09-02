@@ -4,6 +4,10 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.4.6 (02/09/2025)
+
+*   **Correctif :** Correction d'un bug où la metabox "Saisons d'adhésion" sur la fiche adhérent n'était pas fonctionnelle. Elle permet désormais d'ajouter et de retirer des saisons de manière interactive, comme attendu.
+
 ### 2.4.5 (02/09/2025)
 
 *   **Fonctionnalité :** Ajout d'une action spéciale sur la fiche adhérent pour annuler une adhésion et renvoyer le membre en pré-inscription. Cette action n'est disponible que si l'adhérent possède uniquement le tag de la saison en cours.
