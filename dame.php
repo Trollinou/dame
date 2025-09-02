@@ -142,6 +142,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/assets.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/cpt.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/taxonomies.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/data-lists.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/utils.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/access-control.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/lesson-completion.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/shortcodes.php';

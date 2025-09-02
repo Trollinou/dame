@@ -1040,17 +1040,19 @@ function dame_save_adherent_meta( $post_id ) {
 	delete_transient( 'dame_post_data_' . $post_id );
 
 	// --- Title Generation ---
-	$first_name = sanitize_text_field( $_POST['dame_first_name'] );
-	$last_name = sanitize_text_field( $_POST['dame_last_name'] );
-	$new_title = strtoupper( $last_name ) . ' ' . $first_name;
+	$first_name = sanitize_text_field( wp_unslash( $_POST['dame_first_name'] ) );
+	$last_name  = sanitize_text_field( wp_unslash( $_POST['dame_last_name'] ) );
+	$new_title  = dame_format_lastname( $last_name ) . ' ' . dame_format_firstname( $first_name );
 
 	if ( get_the_title( $post_id ) !== $new_title ) {
 		remove_action( 'save_post_adherent', 'dame_save_adherent_meta' );
-		wp_update_post( array(
-			'ID'         => $post_id,
-			'post_title' => $new_title,
-			'post_name'  => sanitize_title( $new_title ), // Also update the slug
-		) );
+		wp_update_post(
+			array(
+				'ID'         => $post_id,
+				'post_title' => $new_title,
+				'post_name'  => sanitize_title( $new_title ), // Also update the slug
+			)
+		);
 		add_action( 'save_post_adherent', 'dame_save_adherent_meta' );
 	}
 
@@ -1118,7 +1120,16 @@ function dame_save_adherent_meta( $post_id ) {
 
 	foreach ( $fields as $field_name => $sanitize_callback ) {
 		if ( isset( $_POST[ $field_name ] ) ) {
-			$value = call_user_func( $sanitize_callback, $_POST[ $field_name ] );
+			$value = call_user_func( $sanitize_callback, wp_unslash( $_POST[ $field_name ] ) );
+
+			// Format names after sanitization.
+			if ( 'dame_first_name' === $field_name || 'dame_legal_rep_1_first_name' === $field_name || 'dame_legal_rep_2_first_name' === $field_name ) {
+				$value = dame_format_firstname( $value );
+			}
+			if ( 'dame_last_name' === $field_name || 'dame_legal_rep_1_last_name' === $field_name || 'dame_legal_rep_2_last_name' === $field_name ) {
+				$value = dame_format_lastname( $value );
+			}
+
 			update_post_meta( $post_id, '_' . $field_name, $value );
 		} else {
 			// This handles unchecked checkboxes, which are not present in $_POST.
@@ -1943,10 +1954,10 @@ function dame_process_pre_inscription_actions( $post_id ) {
 
 	// --- Step 1: Always save the submitted fields first ---
 	// This ensures any edits made by the admin are saved before further action.
-	$first_name = sanitize_text_field( $_POST['dame_first_name'] );
-	$last_name  = sanitize_text_field( $_POST['dame_last_name'] );
+	$first_name = sanitize_text_field( wp_unslash( $_POST['dame_first_name'] ) );
+	$last_name  = sanitize_text_field( wp_unslash( $_POST['dame_last_name'] ) );
 	if ( $first_name && $last_name ) {
-		$new_title = strtoupper( $last_name ) . ' ' . $first_name;
+		$new_title = dame_format_lastname( $last_name ) . ' ' . dame_format_firstname( $first_name );
 		if ( get_the_title( $post_id ) !== $new_title ) {
 			wp_update_post(
 				array(
@@ -1970,7 +1981,15 @@ function dame_process_pre_inscription_actions( $post_id ) {
 	);
 	foreach ( $all_field_keys as $key ) {
 		if ( isset( $_POST[ $key ] ) ) {
-			$value = strpos( $key, 'email' ) !== false ? sanitize_email( $_POST[ $key ] ) : sanitize_text_field( $_POST[ $key ] );
+			$value = strpos( $key, 'email' ) !== false ? sanitize_email( wp_unslash( $_POST[ $key ] ) ) : sanitize_text_field( wp_unslash( $_POST[ $key ] ) );
+
+			// Format names after sanitization.
+			if ( 'dame_first_name' === $key || 'dame_legal_rep_1_first_name' === $key || 'dame_legal_rep_2_first_name' === $key ) {
+				$value = dame_format_firstname( $value );
+			}
+			if ( 'dame_last_name' === $key || 'dame_legal_rep_1_last_name' === $key || 'dame_legal_rep_2_last_name' === $key ) {
+				$value = dame_format_lastname( $value );
+			}
 			update_post_meta( $post_id, '_' . $key, $value );
 		}
 	}
