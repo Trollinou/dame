@@ -14,6 +14,12 @@ if ( ! defined( 'WPINC' ) ) {
  * Display admin notices for our CPT.
  */
 function dame_display_admin_notices() {
+	if ( get_transient( 'dame_success_message' ) ) {
+		$message = get_transient( 'dame_success_message' );
+		delete_transient( 'dame_success_message' );
+		echo '<div class="updated"><p>' . wp_kses_post( $message ) . '</p></div>';
+	}
+
 	if ( get_transient( 'dame_error_message' ) ) {
 		$message = get_transient( 'dame_error_message' );
 		delete_transient( 'dame_error_message' );
@@ -185,6 +191,58 @@ add_action( 'admin_head-post-new.php', 'dame_add_admin_styles' );
 
 
 /**
+ * Renders the meta box for special actions.
+ *
+ * @param WP_Post $post The post object.
+ */
+function dame_render_special_actions_metabox( $post ) {
+	// Get the current season tag ID from options.
+	$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+	if ( ! $current_season_tag_id ) {
+		echo '<p>' . esc_html__( "L'action est indisponible car la saison actuelle n'est pas configurée.", 'dame' ) . '</p>';
+		return;
+	}
+
+	// Get all 'dame_saison_adhesion' terms for the current post.
+	$terms = wp_get_object_terms( $post->ID, 'dame_saison_adhesion' );
+
+	// Check the condition: exactly one term, and it must be the current season's term.
+	$is_eligible = false;
+	if ( ! is_wp_error( $terms ) && 1 === count( $terms ) ) {
+		if ( (int) $terms[0]->term_id === (int) $current_season_tag_id ) {
+			$is_eligible = true;
+		}
+	}
+
+	if ( $is_eligible ) {
+		// Security nonce.
+		wp_nonce_field( 'dame_revert_to_pre_inscription_action', 'dame_revert_nonce' );
+		?>
+		<p><?php esc_html_e( "Cette action va supprimer cet adhérent et créer une nouvelle pré-inscription avec ses données. L'adhérent disparaîtra de la liste des adhérents.", 'dame' ); ?></p>
+		<button type="submit" name="dame_revert_to_pre_inscription" value="revert" class="button button-secondary">
+			<?php esc_html_e( "Annuler et renvoyer en pré-inscription", 'dame' ); ?>
+		</button>
+		<script>
+			// Add a confirmation dialog to prevent accidental clicks.
+			document.addEventListener('DOMContentLoaded', function() {
+				const revertButton = document.querySelector('button[name="dame_revert_to_pre_inscription"]');
+				if (revertButton) {
+					revertButton.addEventListener('click', function(e) {
+						if (!confirm("<?php echo esc_js( __( 'Êtes-vous sûr de vouloir annuler cette adhésion et renvoyer cette personne en pré-inscription ? Cette action est irréversible.', 'dame' ) ); ?>")) {
+							e.preventDefault();
+						}
+					});
+				}
+			});
+		</script>
+		<?php
+	} else {
+		echo '<p>' . esc_html__( "Cette action n'est disponible que pour les adhérents qui ont uniquement l'adhésion de la saison en cours.", 'dame' ) . '</p>';
+	}
+}
+
+
+/**
  * Adds the meta boxes for the Adherent CPT.
  */
 function dame_add_meta_boxes() {
@@ -228,6 +286,14 @@ function dame_add_meta_boxes() {
 		'side',
 		'default'
 	);
+	add_meta_box(
+		'dame_special_actions_metabox',
+		__( 'Actions spéciales', 'dame' ),
+		'dame_render_special_actions_metabox',
+		'adherent',
+		'side',
+		'default'
+	);
 	// We disabled the default metabox for this taxonomy to control its position and state.
 	add_meta_box(
 		'dame_saison_adhesiondiv', // The ID should be the taxonomy slug + 'div'.
@@ -255,6 +321,21 @@ function dame_close_saisons_metabox_by_default( $classes ) {
 	return $classes;
 }
 add_filter( 'postbox_classes_adherent_dame_saison_adhesiondiv', 'dame_close_saisons_metabox_by_default' );
+
+/**
+ * Close the "Actions spéciales" metabox by default.
+ *
+ * @param array $classes An array of postbox classes.
+ * @return array The modified array of classes.
+ */
+function dame_close_special_actions_metabox_by_default( $classes ) {
+	if ( get_current_screen()->id === 'adherent' ) {
+		$classes[] = 'closed';
+	}
+	return $classes;
+}
+add_filter( 'postbox_classes_adherent_dame_special_actions_metabox', 'dame_close_special_actions_metabox_by_default' );
+
 
 /**
  * Renders the meta box for adherent's personal details.
@@ -832,6 +913,78 @@ function dame_render_classification_metabox( $post ) {
 		);
 	}
 }
+
+
+/**
+ * Handles the special action of reverting a member to a pre-inscription.
+ *
+ * @param int $post_id The ID of the post being saved.
+ */
+function dame_handle_revert_to_pre_inscription( $post_id ) {
+	// 1. Check if our button was clicked.
+	if ( ! isset( $_POST['dame_revert_to_pre_inscription'] ) || 'revert' !== $_POST['dame_revert_to_pre_inscription'] ) {
+		return;
+	}
+
+	// 2. Security: Verify nonce.
+	if ( ! isset( $_POST['dame_revert_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['dame_revert_nonce'] ), 'dame_revert_to_pre_inscription_action' ) ) {
+		return;
+	}
+
+	// 3. Security: Check user capabilities.
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	// 4. Server-side condition check.
+	$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+	$terms                   = wp_get_object_terms( $post_id, 'dame_saison_adhesion' );
+	$is_eligible             = false;
+	if ( ! is_wp_error( $terms ) && 1 === count( $terms ) && (int) $terms[0]->term_id === (int) $current_season_tag_id ) {
+		$is_eligible = true;
+	}
+
+	if ( ! $is_eligible ) {
+		return; // Should not happen if UI is correct, but important security check.
+	}
+
+	// 5. Unhook this function to prevent infinite loops.
+	remove_action( 'save_post_adherent', 'dame_handle_revert_to_pre_inscription', 10 );
+
+	// 6. Gather all metadata from the adherent.
+	$adherent_meta_raw    = get_post_meta( $post_id );
+	$pre_inscription_meta = array();
+	foreach ( $adherent_meta_raw as $key => $value ) {
+		if ( strpos( $key, '_dame_' ) === 0 ) {
+			$pre_inscription_meta[ $key ] = maybe_unserialize( $value[0] );
+		}
+	}
+
+	// 7. Create the new pre-inscription post.
+	$pre_inscription_post_data = array(
+		'post_title'  => get_the_title( $post_id ),
+		'post_type'   => 'dame_pre_inscription',
+		'post_status' => 'publish',
+		'meta_input'  => $pre_inscription_meta,
+	);
+	$new_post_id               = wp_insert_post( $pre_inscription_post_data, true );
+
+	// 8. If creation was successful, delete the old adherent and redirect.
+	if ( ! is_wp_error( $new_post_id ) ) {
+		wp_delete_post( $post_id, true ); // true = force delete, bypass trash.
+
+		// Add a transient for a success notice.
+		set_transient( 'dame_success_message', __( 'L\'adhérent a bien été renvoyé en pré-inscription.', 'dame' ), 5 );
+
+		// Redirect to the pre-inscriptions list.
+		wp_safe_redirect( admin_url( 'edit.php?post_type=dame_pre_inscription' ) );
+		exit;
+	}
+
+	// 9. Re-hook the function if the action failed.
+	add_action( 'save_post_adherent', 'dame_handle_revert_to_pre_inscription', 10 );
+}
+add_action( 'save_post_adherent', 'dame_handle_revert_to_pre_inscription', 10 );
 
 
 /**
