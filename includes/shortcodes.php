@@ -517,11 +517,31 @@ function dame_handle_pre_inscription_submission() {
 	foreach ( $fields_to_sanitize as $field ) {
 		if ( isset( $_POST[ $field ] ) ) {
 			if ( strpos( $field, 'email' ) !== false ) {
-				$sanitized_data[ $field ] = sanitize_email( $_POST[ $field ] );
+				$sanitized_data[ $field ] = sanitize_email( wp_unslash( $_POST[ $field ] ) );
 			} else {
-				$sanitized_data[ $field ] = sanitize_text_field( $_POST[ $field ] );
+				$sanitized_data[ $field ] = sanitize_text_field( wp_unslash( $_POST[ $field ] ) );
 			}
 		}
+	}
+
+	// Format names after sanitization.
+	if ( ! empty( $sanitized_data['dame_first_name'] ) ) {
+		$sanitized_data['dame_first_name'] = dame_format_firstname( $sanitized_data['dame_first_name'] );
+	}
+	if ( ! empty( $sanitized_data['dame_last_name'] ) ) {
+		$sanitized_data['dame_last_name'] = dame_format_lastname( $sanitized_data['dame_last_name'] );
+	}
+	if ( ! empty( $sanitized_data['dame_legal_rep_1_first_name'] ) ) {
+		$sanitized_data['dame_legal_rep_1_first_name'] = dame_format_firstname( $sanitized_data['dame_legal_rep_1_first_name'] );
+	}
+	if ( ! empty( $sanitized_data['dame_legal_rep_1_last_name'] ) ) {
+		$sanitized_data['dame_legal_rep_1_last_name'] = dame_format_lastname( $sanitized_data['dame_legal_rep_1_last_name'] );
+	}
+	if ( ! empty( $sanitized_data['dame_legal_rep_2_first_name'] ) ) {
+		$sanitized_data['dame_legal_rep_2_first_name'] = dame_format_firstname( $sanitized_data['dame_legal_rep_2_first_name'] );
+	}
+	if ( ! empty( $sanitized_data['dame_legal_rep_2_last_name'] ) ) {
+		$sanitized_data['dame_legal_rep_2_last_name'] = dame_format_lastname( $sanitized_data['dame_legal_rep_2_last_name'] );
 	}
 
 	// Determine if member is a minor and clean up data accordingly.

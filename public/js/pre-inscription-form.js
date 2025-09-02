@@ -94,6 +94,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // The keyup listeners are removed in favor of a direct call from the autocomplete script.
 
+    // Add live formatting for name fields
+    const firstNameInput = document.getElementById('dame_first_name');
+    const rep2FirstNameInput = document.getElementById('dame_legal_rep_2_first_name');
+    const rep2LastNameInput = document.getElementById('dame_legal_rep_2_last_name');
+
+    if (firstNameInput) {
+        firstNameInput.addEventListener('input', formatFirstNameInput);
+    }
+    if (lastNameInput) {
+        lastNameInput.addEventListener('input', formatLastNameInput);
+    }
+    if (rep1FirstNameInput) {
+        rep1FirstNameInput.addEventListener('input', formatFirstNameInput);
+    }
+    if (rep1LastNameInput) {
+        rep1LastNameInput.addEventListener('input', formatLastNameInput);
+    }
+    if (rep2FirstNameInput) {
+        rep2FirstNameInput.addEventListener('input', formatFirstNameInput);
+    }
+    if (rep2LastNameInput) {
+        rep2LastNameInput.addEventListener('input', formatLastNameInput);
+    }
+
     // Handle Form Submission
     const form = document.getElementById('dame-pre-inscription-form');
     const messagesDiv = document.getElementById('dame-form-messages');
@@ -279,4 +303,49 @@ function copyAdherentData(repId) {
         repPostalCodeInput.value = postalCodeInput.value;
         repCityInput.value = cityInput.value;
     }
+}
+
+/**
+ * Formats a string to Mixed Case.
+ * Capitalizes the first letter of each word separated by a space or a hyphen.
+ * @param {string} str The string to format.
+ * @returns {string} The formatted string.
+ */
+function formatToMixedCase(str) {
+    if (!str) return '';
+    // This will capitalize the first letter of each word, where words are separated by spaces or hyphens.
+    let formattedStr = str.toLowerCase().replace(/(^|[\s-])\S/g, function(match) {
+        return match.toUpperCase();
+    });
+    return formattedStr;
+}
+
+/**
+ * Formats the input value of a first name field to Mixed Case.
+ * @param {Event} event The input event.
+ */
+function formatFirstNameInput(event) {
+    const input = event.target;
+    const value = input.value;
+    const formattedValue = formatToMixedCase(value);
+    const cursorPosition = input.selectionStart;
+
+    input.value = formattedValue;
+    // Restore cursor position
+    input.setSelectionRange(cursorPosition, cursorPosition);
+}
+
+/**
+ * Formats the input value of a last name field to uppercase.
+ * @param {Event} event The input event.
+ */
+function formatLastNameInput(event) {
+    const input = event.target;
+    const value = input.value;
+    const formattedValue = value.toUpperCase();
+    const cursorPosition = input.selectionStart;
+
+    input.value = formattedValue;
+    // Restore cursor position
+    input.setSelectionRange(cursorPosition, cursorPosition);
 }
