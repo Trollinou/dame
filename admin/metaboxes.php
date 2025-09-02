@@ -294,16 +294,6 @@ function dame_add_meta_boxes() {
 		'side',
 		'default'
 	);
-	// We disabled the default metabox for this taxonomy to control its position and state.
-	add_meta_box(
-		'dame_saison_adhesiondiv', // The ID should be the taxonomy slug + 'div'.
-		__( 'Saisons d\'adhésion', 'dame' ),
-		'post_tags_meta_box', // Default WordPress callback for non-hierarchical taxonomies.
-		'adherent',
-		'side',
-		'low', // Lower priority to appear at the bottom of the side column.
-		array( 'taxonomy' => 'dame_saison_adhesion' )
-	);
 }
 add_action( 'add_meta_boxes', 'dame_add_meta_boxes' );
 
@@ -320,7 +310,8 @@ function dame_close_saisons_metabox_by_default( $classes ) {
 	}
 	return $classes;
 }
-add_filter( 'postbox_classes_adherent_dame_saison_adhesiondiv', 'dame_close_saisons_metabox_by_default' );
+// The default metabox ID for a non-hierarchical taxonomy is 'tagsdiv-{taxonomy_slug}'.
+add_filter( 'postbox_classes_adherent_tagsdiv-dame_saison_adhesion', 'dame_close_saisons_metabox_by_default' );
 
 /**
  * Close the "Actions spéciales" metabox by default.
