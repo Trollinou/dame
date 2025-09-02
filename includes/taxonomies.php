@@ -76,7 +76,6 @@ function dame_register_membership_season_taxonomy() {
         'query_var'         => true,
         'rewrite'           => array( 'slug' => 'saison-adhesion' ),
         'show_in_rest'      => true,
-        'meta_box_cb'       => false,
     );
 
     register_taxonomy( 'dame_saison_adhesion', 'adherent', $args );
