@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const lastNameInput = document.getElementById('dame_last_name');
 
     // Rep 1 fields
+    const rep1RequiredIndicators = document.querySelectorAll('.dame-rep1-required-indicator');
     const rep1FirstNameInput = document.getElementById('dame_legal_rep_1_first_name');
     const rep1LastNameInput = document.getElementById('dame_legal_rep_1_last_name');
     const rep1EmailInput = document.getElementById('dame_legal_rep_1_email');
@@ -77,8 +78,9 @@ document.addEventListener('DOMContentLoaded', function () {
             minorInputs.forEach(input => {
                 input.value = '';
             });
-            // Make rep 1 fields not required
+            // Make rep 1 fields not required and hide indicators
             rep1RequiredInputs.forEach(input => input.required = false);
+            rep1RequiredIndicators.forEach(indicator => indicator.style.display = 'none');
 
             if (healthQuestionnaireLink) {
                 healthQuestionnaireLink.href = majeurPDF;
@@ -93,8 +95,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (birthCityInput) birthCityInput.required = false;
             if (birthCityRequiredIndicator) birthCityRequiredIndicator.style.display = 'none';
 
-            // Make rep 1 fields required
+            // Make rep 1 fields required and show indicators
             rep1RequiredInputs.forEach(input => input.required = true);
+            rep1RequiredIndicators.forEach(indicator => indicator.style.display = 'inline');
 
             if (healthQuestionnaireLink) {
                 healthQuestionnaireLink.href = mineurPDF;
