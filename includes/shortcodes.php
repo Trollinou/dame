@@ -310,7 +310,7 @@ function dame_fiche_inscription_shortcode( $atts ) {
 			</p>
 
 			<p>
-				<label for="dame_birth_city"><?php _e( 'Commune de naissance', 'dame' ); ?></label>
+				<label for="dame_birth_city"><?php _e( 'Commune de naissance', 'dame' ); ?> <span id="dame_birth_city_required_indicator" class="required" style="display: none;">*</span></label>
 				<div class="dame-autocomplete-wrapper">
 					<input type="text" id="dame_birth_city" name="dame_birth_city" class="regular-text">
 				</div>
@@ -480,6 +480,11 @@ function dame_handle_pre_inscription_submission() {
 					if ( empty( $_POST[ $field_key ] ) ) {
 						$errors[] = $error_message;
 					}
+				}
+			} else {
+				// For adults, birth city is required for the honorability check.
+				if ( empty( $_POST['dame_birth_city'] ) ) {
+					$errors[] = __( "La commune de naissance est obligatoire pour les personnes majeures.", 'dame' );
 				}
 			}
 		}

@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const majeurPDF = pdfBaseUrl + 'questionnaire_sante_majeur.pdf';
 
     // Adherent fields
+    const birthCityInput = document.getElementById('dame_birth_city');
+    const birthCityRequiredIndicator = document.getElementById('dame_birth_city_required_indicator');
     const emailInput = document.getElementById('dame_email');
     const phoneInput = document.getElementById('dame_phone_number');
     const address1Input = document.getElementById('dame_address_1');
@@ -65,6 +67,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (age >= 18) {
             majeurFields.style.display = 'block';
             mineurFields.style.display = 'none';
+
+            // For adults, birth city is required.
+            if (birthCityInput) birthCityInput.required = true;
+            if (birthCityRequiredIndicator) birthCityRequiredIndicator.style.display = 'inline';
+
             // Clear all inputs within the minor fields container to prevent submission of hidden data
             const minorInputs = mineurFields.querySelectorAll('input');
             minorInputs.forEach(input => {
@@ -81,6 +88,11 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             majeurFields.style.display = 'none';
             mineurFields.style.display = 'block';
+
+            // For minors, birth city is not required.
+            if (birthCityInput) birthCityInput.required = false;
+            if (birthCityRequiredIndicator) birthCityRequiredIndicator.style.display = 'none';
+
             // Make rep 1 fields required
             rep1RequiredInputs.forEach(input => input.required = true);
 
