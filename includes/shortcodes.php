@@ -283,7 +283,7 @@ function dame_fiche_inscription_shortcode( $atts ) {
 	?>
 	<div id="dame-pre-inscription-form-wrapper">
 		<div id="dame-form-messages" style="display:none; padding: 1em; margin-bottom: 1em;"></div>
-		<form id="dame-pre-inscription-form" class="dame-form">
+		<form id="dame-pre-inscription-form" class="dame-form" novalidate>
 
 			<?php wp_nonce_field( 'dame_pre_inscription_nonce', 'dame_nonce' ); ?>
 
@@ -310,7 +310,7 @@ function dame_fiche_inscription_shortcode( $atts ) {
 			</p>
 
 			<p>
-				<label for="dame_birth_city"><?php _e( 'Commune de naissance', 'dame' ); ?></label>
+				<label for="dame_birth_city"><?php _e( 'Commune de naissance', 'dame' ); ?> <span id="dame_birth_city_required_indicator" class="required" style="display: none;">*</span></label>
 				<div class="dame-autocomplete-wrapper">
 					<input type="text" id="dame_birth_city" name="dame_birth_city" class="regular-text">
 				</div>
@@ -372,14 +372,14 @@ function dame_fiche_inscription_shortcode( $atts ) {
 					<h4 style="display: flex; align-items: center; flex-wrap: wrap;"><?php _e( 'Représentant Légal 1', 'dame' ); ?>
 						<button type="button" class="dame-copy-button" data-rep-id="1" style="background-color: #3ec0f0; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 5px; white-space: nowrap; font-size: 13px; margin-left: 10px;"><?php _e( '✂️ Recopier les données de l\'Adhérent ✂️', 'dame' ); ?></button>
 					</h4>
-					<p><label for="dame_legal_rep_1_first_name"><?php _e( 'Prénom', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_first_name" name="dame_legal_rep_1_first_name"></p>
-					<p><label for="dame_legal_rep_1_last_name"><?php _e( 'Nom', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_last_name" name="dame_legal_rep_1_last_name"></p>
-					<p><label for="dame_legal_rep_1_email"><?php _e( 'Email', 'dame' ); ?></label><input type="email" id="dame_legal_rep_1_email" name="dame_legal_rep_1_email"></p>
-					<p><label for="dame_legal_rep_1_phone"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label><input type="tel" id="dame_legal_rep_1_phone" name="dame_legal_rep_1_phone"></p>
-					<p><label for="dame_legal_rep_1_address_1"><?php _e( 'Adresse', 'dame' ); ?></label><div class="dame-autocomplete-wrapper"><input type="text" id="dame_legal_rep_1_address_1" name="dame_legal_rep_1_address_1"></div></p>
+					<p><label for="dame_legal_rep_1_first_name"><?php _e( 'Prénom', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><input type="text" id="dame_legal_rep_1_first_name" name="dame_legal_rep_1_first_name"></p>
+					<p><label for="dame_legal_rep_1_last_name"><?php _e( 'Nom', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><input type="text" id="dame_legal_rep_1_last_name" name="dame_legal_rep_1_last_name"></p>
+					<p><label for="dame_legal_rep_1_email"><?php _e( 'Email', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><input type="email" id="dame_legal_rep_1_email" name="dame_legal_rep_1_email"></p>
+					<p><label for="dame_legal_rep_1_phone"><?php _e( 'Numéro de téléphone', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><input type="tel" id="dame_legal_rep_1_phone" name="dame_legal_rep_1_phone"></p>
+					<p><label for="dame_legal_rep_1_address_1"><?php _e( 'Adresse', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><div class="dame-autocomplete-wrapper"><input type="text" id="dame_legal_rep_1_address_1" name="dame_legal_rep_1_address_1"></div></p>
 					<p><label for="dame_legal_rep_1_address_2"><?php _e( 'Complément', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_address_2" name="dame_legal_rep_1_address_2"></p>
 					<p><label for="dame_legal_rep_1_postal_code"><?php _e( 'Code Postal', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_postal_code" name="dame_legal_rep_1_postal_code"></p>
-					<p><label for="dame_legal_rep_1_city"><?php _e( 'Ville', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_city" name="dame_legal_rep_1_city"></p>
+					<p><label for="dame_legal_rep_1_city"><?php _e( 'Ville', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><input type="text" id="dame_legal_rep_1_city" name="dame_legal_rep_1_city"></p>
 					<p><label for="dame_legal_rep_1_profession"><?php _e( 'Profession', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_profession" name="dame_legal_rep_1_profession"></p>
 					<p><em><?php _e( 'Dans le cadre de notre politique de prévention des violences sexistes et sexuelles, nous demandons aux parents susceptibles d’accompagner des mineurs de se soumettre à un contrôle d’honorabilité. À cette fin, nous vous remercions de bien vouloir renseigner les deux champs ci-dessous si vous êtes concerné.', 'dame' ); ?></em></p>
 					<p><label for="dame_legal_rep_1_date_naissance"><?php _e( 'Date de naissance', 'dame' ); ?></label><input type="date" id="dame_legal_rep_1_date_naissance" name="dame_legal_rep_1_date_naissance"></p>
@@ -480,6 +480,11 @@ function dame_handle_pre_inscription_submission() {
 					if ( empty( $_POST[ $field_key ] ) ) {
 						$errors[] = $error_message;
 					}
+				}
+			} else {
+				// For adults, birth city is required for the honorability check.
+				if ( empty( $_POST['dame_birth_city'] ) ) {
+					$errors[] = __( "La commune de naissance est obligatoire pour les personnes majeures.", 'dame' );
 				}
 			}
 		}

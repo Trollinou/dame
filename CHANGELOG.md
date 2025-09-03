@@ -4,6 +4,12 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.4.8 (03/09/2025)
+
+*   **Fonctionnalité :** Le champ "Commune de naissance" est maintenant obligatoire pour les adhérents majeurs afin de permettre le contrôle d'honorabilité.
+*   **Amélioration UI :** Ajout d'un indicateur visuel `(*)` pour les champs qui deviennent obligatoires (Commune de naissance pour les majeurs, et champs du représentant légal pour les mineurs).
+*   **Amélioration UX :** Le formulaire de préinscription affiche maintenant un message d'erreur clair si des champs obligatoires sont manquants lors de la soumission, au lieu de se fier au comportement par défaut du navigateur.
+
 ### 2.4.7 (02/09/2025)
 
 *   **Amélioration :** Mise en forme automatique des noms et prénoms. Les noms de famille sont automatiquement mis en majuscules et les prénoms en casse mixte (ex: Jean-Michel) lors de la saisie dans le formulaire de préinscription, la fiche de préinscription et la fiche adhérent, pour les adhérents et les représentants légaux.

@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const majeurPDF = pdfBaseUrl + 'questionnaire_sante_majeur.pdf';
 
     // Adherent fields
+    const birthCityInput = document.getElementById('dame_birth_city');
+    const birthCityRequiredIndicator = document.getElementById('dame_birth_city_required_indicator');
     const emailInput = document.getElementById('dame_email');
     const phoneInput = document.getElementById('dame_phone_number');
     const address1Input = document.getElementById('dame_address_1');
@@ -34,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const lastNameInput = document.getElementById('dame_last_name');
 
     // Rep 1 fields
+    const rep1RequiredIndicators = document.querySelectorAll('.dame-rep1-required-indicator');
     const rep1FirstNameInput = document.getElementById('dame_legal_rep_1_first_name');
     const rep1LastNameInput = document.getElementById('dame_legal_rep_1_last_name');
     const rep1EmailInput = document.getElementById('dame_legal_rep_1_email');
@@ -65,13 +68,19 @@ document.addEventListener('DOMContentLoaded', function () {
         if (age >= 18) {
             majeurFields.style.display = 'block';
             mineurFields.style.display = 'none';
+
+            // For adults, birth city is required.
+            if (birthCityInput) birthCityInput.required = true;
+            if (birthCityRequiredIndicator) birthCityRequiredIndicator.style.display = 'inline';
+
             // Clear all inputs within the minor fields container to prevent submission of hidden data
             const minorInputs = mineurFields.querySelectorAll('input');
             minorInputs.forEach(input => {
                 input.value = '';
             });
-            // Make rep 1 fields not required
+            // Make rep 1 fields not required and hide indicators
             rep1RequiredInputs.forEach(input => input.required = false);
+            rep1RequiredIndicators.forEach(indicator => indicator.style.display = 'none');
 
             if (healthQuestionnaireLink) {
                 healthQuestionnaireLink.href = majeurPDF;
@@ -81,8 +90,14 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             majeurFields.style.display = 'none';
             mineurFields.style.display = 'block';
-            // Make rep 1 fields required
+
+            // For minors, birth city is not required.
+            if (birthCityInput) birthCityInput.required = false;
+            if (birthCityRequiredIndicator) birthCityRequiredIndicator.style.display = 'none';
+
+            // Make rep 1 fields required and show indicators
             rep1RequiredInputs.forEach(input => input.required = true);
+            rep1RequiredIndicators.forEach(indicator => indicator.style.display = 'inline');
 
             if (healthQuestionnaireLink) {
                 healthQuestionnaireLink.href = mineurPDF;
@@ -129,6 +144,33 @@ document.addEventListener('DOMContentLoaded', function () {
             messagesDiv.style.display = 'none';
             messagesDiv.innerHTML = '';
             messagesDiv.style.color = 'red'; // Default to red for errors
+
+            // Custom client-side validation
+            let firstInvalidField = null;
+            const requiredFields = form.querySelectorAll('[required]');
+
+            requiredFields.forEach(field => {
+                // Check if the field is visible
+                if (field.offsetParent !== null) {
+                    if ((field.type === 'radio' || field.type === 'checkbox')) {
+                        const fieldName = field.name;
+                        if (!form.querySelector(`input[name="${fieldName}"]:checked`)) {
+                            if (!firstInvalidField) firstInvalidField = field;
+                        }
+                    } else if (!field.value.trim()) {
+                        if (!firstInvalidField) firstInvalidField = field;
+                    }
+                }
+            });
+
+            if (firstInvalidField) {
+                messagesDiv.innerHTML = "Veuillez remplir tous les champs obligatoires. Ils sont marqués d'un astérisque (*).";
+                messagesDiv.style.display = 'block';
+                firstInvalidField.focus();
+                // Scroll to the message to make sure it's visible
+                messagesDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return; // Stop form submission
+            }
 
             const formData = new FormData(form);
             formData.append('action', 'dame_submit_pre_inscription');
