@@ -142,6 +142,33 @@ document.addEventListener('DOMContentLoaded', function () {
             messagesDiv.innerHTML = '';
             messagesDiv.style.color = 'red'; // Default to red for errors
 
+            // Custom client-side validation
+            let firstInvalidField = null;
+            const requiredFields = form.querySelectorAll('[required]');
+
+            requiredFields.forEach(field => {
+                // Check if the field is visible
+                if (field.offsetParent !== null) {
+                    if ((field.type === 'radio' || field.type === 'checkbox')) {
+                        const fieldName = field.name;
+                        if (!form.querySelector(`input[name="${fieldName}"]:checked`)) {
+                            if (!firstInvalidField) firstInvalidField = field;
+                        }
+                    } else if (!field.value.trim()) {
+                        if (!firstInvalidField) firstInvalidField = field;
+                    }
+                }
+            });
+
+            if (firstInvalidField) {
+                messagesDiv.innerHTML = "Veuillez remplir tous les champs obligatoires. Ils sont marqués d'un astérisque (*).";
+                messagesDiv.style.display = 'block';
+                firstInvalidField.focus();
+                // Scroll to the message to make sure it's visible
+                messagesDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return; // Stop form submission
+            }
+
             const formData = new FormData(form);
             formData.append('action', 'dame_submit_pre_inscription');
 
