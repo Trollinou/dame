@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier et Apprentissage des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           2.4.8
+ * Version:           2.5.0
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Etienne Gagnon
@@ -19,7 +19,8 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '2.4.8' );
+define( 'DAME_VERSION', '2.5.0' );
+define( 'DAME_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
  * Handles plugin updates.
@@ -141,6 +142,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/roles.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/assets.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/cpt.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/taxonomies.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/cron.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/data-lists.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/utils.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/access-control.php';
@@ -175,3 +177,8 @@ add_action( 'plugins_loaded', 'dame_load_textdomain' );
 // Register hooks
 register_activation_hook( __FILE__, 'dame_add_custom_roles' );
 register_deactivation_hook( __FILE__, 'dame_remove_custom_roles' );
+
+// Cron job for daily backups
+register_activation_hook( __FILE__, 'dame_schedule_backup_event' );
+register_deactivation_hook( __FILE__, 'dame_unschedule_backup_event' );
+add_action( 'dame_daily_backup_event', 'dame_do_scheduled_backup' );

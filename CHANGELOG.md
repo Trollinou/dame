@@ -4,6 +4,12 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.5.0 (09/09/2025)
+
+*   **Fonctionnalité :** Ajout d'un système de sauvegarde journalière automatique. Les bases de données "Adhérents" et "Apprentissage" sont sauvegardées dans des fichiers séparés et envoyées par email.
+*   **Fonctionnalité :** Ajout d'une option dans les réglages pour permettre à l'administrateur de configurer l'heure de la sauvegarde journalière (format HH:MM).
+*   **Amélioration / Technique :** Refactorisation de la logique d'exportation des données pour éliminer la duplication de code entre la sauvegarde manuelle et la nouvelle sauvegarde automatique, améliorant ainsi la maintenabilité.
+
 ### 2.4.8 (03/09/2025)
 
 *   **Fonctionnalité :** Le champ "Commune de naissance" est maintenant obligatoire pour les adhérents majeurs afin de permettre le contrôle d'honorabilité.

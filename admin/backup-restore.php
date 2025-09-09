@@ -11,17 +11,11 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Handles the export of learning data.
+ * Gathers all learning content data for export.
+ *
+ * @return array The complete export data for learning content.
  */
-function dame_handle_backup_action() {
-    if ( ! isset( $_POST['dame_backup_action'] ) || ! isset( $_POST['dame_backup_nonce'] ) || ! wp_verify_nonce( $_POST['dame_backup_nonce'], 'dame_backup_nonce_action' ) ) {
-        return;
-    }
-
-    if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", "dame" ) );
-    }
-
+function dame_get_apprentissage_export_data() {
     $post_types = array( 'dame_lecon', 'dame_exercice', 'dame_cours' );
     $taxonomy = 'dame_chess_category';
 
@@ -68,13 +62,11 @@ function dame_handle_backup_action() {
                 'tax_input'    => array(),
             );
 
-            // Get all post meta
             $meta = get_post_meta( $post_id );
             foreach ( $meta as $key => $value ) {
                 $post_data['meta_input'][ $key ] = maybe_unserialize( $value[0] );
             }
 
-            // Get all terms for the post
             $terms = wp_get_post_terms( $post_id, $taxonomy, array( 'fields' => 'slugs' ) );
             if ( ! is_wp_error( $terms ) ) {
                 $post_data['tax_input'][ $taxonomy ] = $terms;
@@ -84,6 +76,23 @@ function dame_handle_backup_action() {
         }
         wp_reset_postdata();
     }
+
+    return $export_data;
+}
+
+/**
+ * Handles the export of learning data.
+ */
+function dame_handle_backup_action() {
+    if ( ! isset( $_POST['dame_backup_action'] ) || ! isset( $_POST['dame_backup_nonce'] ) || ! wp_verify_nonce( $_POST['dame_backup_nonce'], 'dame_backup_nonce_action' ) ) {
+        return;
+    }
+
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", "dame" ) );
+    }
+
+    $export_data = dame_get_apprentissage_export_data();
 
     $filename = 'dame-apprentissage-backup-' . date( 'Y-m-d' ) . '.json.gz';
     $data_to_compress = json_encode( $export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
