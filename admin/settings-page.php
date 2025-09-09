@@ -36,6 +36,7 @@ function dame_render_options_page() {
             <?php
             settings_fields( 'dame_options_group' );
             do_settings_sections( 'dame_mailing_section_group' ); // Ajout du groupe de la section mailing
+            do_settings_sections( 'dame_backup_section_group' );
             do_settings_sections( 'dame_payment_section_group' );
             do_settings_sections( 'dame_uninstall_section_group' );
             submit_button( __( 'Enregistrer les modifications', 'dame' ) );
@@ -121,6 +122,22 @@ function dame_register_settings() {
         'dame_smtp_batch_size_callback',
         'dame_mailing_section_group',
         'dame_mailing_section'
+    );
+
+    // Section for Backup Settings
+    add_settings_section(
+        'dame_backup_section',
+        __( 'Paramètres de sauvegarde', 'dame' ),
+        'dame_backup_section_callback',
+        'dame_backup_section_group'
+    );
+
+    add_settings_field(
+        'dame_backup_time',
+        __( 'Heure de la sauvegarde journalière', 'dame' ),
+        'dame_backup_time_callback',
+        'dame_backup_section_group',
+        'dame_backup_section'
     );
 
     // Section for payment URL
@@ -272,8 +289,39 @@ function dame_options_sanitize( $input ) {
         $sanitized_input['payment_url'] = esc_url_raw( $input['payment_url'] );
     }
 
+    if ( isset( $input['backup_time'] ) ) {
+        $time = trim( $input['backup_time'] );
+        // Validate HH:MM format and valid time.
+        if ( preg_match( '/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $time ) ) {
+            $sanitized_input['backup_time'] = $time;
+        } else {
+            $sanitized_input['backup_time'] = ''; // Invalid format, save as empty.
+        }
+    }
+
     $sanitized_input['delete_on_uninstall'] = isset( $input['delete_on_uninstall'] ) ? 1 : 0;
     return $sanitized_input;
+}
+
+/**
+ * Callback for the backup section.
+ */
+function dame_backup_section_callback() {
+    echo '<p>' . esc_html__( "Paramètres relatifs à la sauvegarde automatique journalière.", 'dame' ) . '</p>';
+}
+
+/**
+ * Callback for the backup_time field.
+ */
+function dame_backup_time_callback() {
+    $options = get_option( 'dame_options' );
+    $backup_time = isset( $options['backup_time'] ) ? $options['backup_time'] : '';
+    ?>
+    <input type="text" id="dame_backup_time" name="dame_options[backup_time]" value="<?php echo esc_attr( $backup_time ); ?>" class="regular-text" placeholder="HH:MM" style="width: 100px;" />
+    <p class="description">
+        <?php esc_html_e( "Saisir l'heure de déclenchement de la sauvegarde journalière (par ex. 01:00). Utilise le fuseau horaire du serveur.", 'dame' ); ?>
+    </p>
+    <?php
 }
 
 /**

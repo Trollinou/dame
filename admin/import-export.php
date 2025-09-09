@@ -380,17 +380,11 @@ function dame_handle_csv_import_action() {
 add_action( 'admin_init', 'dame_handle_csv_import_action' );
 
 /**
- * Handles the export of member data.
+ * Gathers all adherent-related data for export.
+ *
+ * @return array The complete export data.
  */
-function dame_handle_export_action() {
-    if ( ! isset( $_POST['dame_export_action'] ) || ! isset( $_POST['dame_export_nonce'] ) || ! wp_verify_nonce( $_POST['dame_export_nonce'], 'dame_export_nonce_action' ) ) {
-        return;
-    }
-
-    if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", "dame" ) );
-    }
-
+function dame_get_adherent_export_data() {
     $export_data = array(
         'version'          => DAME_VERSION,
         'adherents'        => array(),
@@ -444,16 +438,13 @@ function dame_handle_export_action() {
                 'saisons'    => array(),
             );
 
-            // Get all post meta
             $all_meta = get_post_meta( $post_id );
             foreach ( $all_meta as $key => $value ) {
-                // We only care about our own meta keys
                 if ( strpos( $key, '_dame_' ) === 0 ) {
                     $member_data['meta_data'][ $key ] = maybe_unserialize( $value[0] );
                 }
             }
 
-            // Get assigned season slugs
             $adherent_saisons = wp_get_post_terms( $post_id, 'dame_saison_adhesion', array( 'fields' => 'slugs' ) );
             if ( ! is_wp_error( $adherent_saisons ) ) {
                 $member_data['saisons'] = $adherent_saisons;
@@ -492,6 +483,23 @@ function dame_handle_export_action() {
         }
         wp_reset_postdata();
     }
+
+    return $export_data;
+}
+
+/**
+ * Handles the export of member data.
+ */
+function dame_handle_export_action() {
+    if ( ! isset( $_POST['dame_export_action'] ) || ! isset( $_POST['dame_export_nonce'] ) || ! wp_verify_nonce( $_POST['dame_export_nonce'], 'dame_export_nonce_action' ) ) {
+        return;
+    }
+
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", "dame" ) );
+    }
+
+    $export_data = dame_get_adherent_export_data();
 
     $filename = 'dame-adherents-backup-' . date( 'Y-m-d' ) . '.json.gz';
     $data_to_compress = json_encode( $export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
