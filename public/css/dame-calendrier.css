@@ -34,6 +34,7 @@
 .dame-calendar-grid {
 	width: 100%;
 	border-collapse: collapse;
+	table-layout: fixed; /* Ensures fixed width columns */
 }
 .dame-calendar-grid th,
 .dame-calendar-grid td {
@@ -47,7 +48,7 @@
 	font-weight: bold;
 }
 .dame-calendar-day {
-	height: 120px;
+	min-height: 120px; /* Allow height to grow */
 	width: 14.28%;
 }
 .dame-calendar-day-empty {
@@ -74,9 +75,8 @@
 	background-color: #f0f8ff;
 	color: #333;
 	text-decoration: none;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	overflow-wrap: break-word; /* Allow text to wrap */
+	word-wrap: break-word; /* Legacy fallback */
 	cursor: pointer;
 }
 .dame-event:hover {
