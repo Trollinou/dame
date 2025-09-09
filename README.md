@@ -1,6 +1,6 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 2.4.8
+**Version:** 2.5.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -58,8 +58,14 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 *   **Préférences de Communication :** Gestion du consentement au mailing pour chaque adresse email.
 *   **Configuration SMTP :** Permet de configurer un serveur SMTP externe pour fiabiliser l'envoi d'emails.
 *   **Envoi d'emails par Lots :** La taille des lots d'envoi est configurable pour s'adapter aux contraintes des hébergeurs.
+*   **Sauvegarde Automatique :** Le plugin effectue une sauvegarde journalière automatique des bases de données "Adhérents" et "Apprentissage". Les fichiers de sauvegarde sont envoyés par email à l'adresse de l'expéditeur configurée.
+*   **Heure de Sauvegarde Configurable :** L'heure de déclenchement de la sauvegarde journalière peut être personnalisée dans les réglages.
 *   **Désinstallation Sécurisée :** Les données sont conservées par défaut lors de la désinstallation, mais peuvent être supprimées via une option.
 
-## Configuration SMTP
+## Configuration
 
 Pour garantir une bonne délivrabilité des emails envoyés via le plugin, il est fortement recommandé de configurer un serveur SMTP. Allez dans `Réglages > Options DAME` et remplissez les champs de la section "Paramètres d'envoi d'email".
+
+### Sauvegarde Automatique
+
+Vous pouvez configurer l'heure de la sauvegarde journalière dans la section "Paramètres de sauvegarde" de la page d'options.
