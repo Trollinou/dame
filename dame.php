@@ -151,10 +151,12 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/shortcodes.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/pdf-generator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/single-exercice-handler.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/single-course-handler.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/single-agenda-handler.php';
 
 if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/menu.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/metaboxes.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/taxonomy-fields.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/columns.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/settings-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/import-export.php';

@@ -654,3 +654,242 @@ add_action( 'wp_ajax_nopriv_dame_submit_pre_inscription', 'dame_handle_pre_inscr
 add_filter( 'the_content', 'dame_chess_pieces_shortcodes_filter' );
 add_filter( 'widget_text_content', 'dame_chess_pieces_shortcodes_filter' ); // For block-based widgets
 add_filter( 'comment_text', 'dame_chess_pieces_shortcodes_filter' );
+
+// =================================================================
+// == AGENDA CALENDAR SHORTCODE
+// =================================================================
+
+/**
+ * Renders the [dame_calendrier] shortcode.
+ *
+ * @param array $atts Shortcode attributes.
+ * @return string The calendar HTML.
+ */
+function dame_render_calendar_shortcode( $atts ) {
+	// For step 5, we will enqueue assets here.
+
+	ob_start();
+	dame_get_calendar_html();
+	return ob_get_clean();
+}
+add_shortcode( 'dame_calendrier', 'dame_render_calendar_shortcode' );
+
+/**
+ * Generates the HTML for the calendar.
+ * Can be called directly or via AJAX.
+ *
+ * @param int $month The month to display.
+ * @param int $year  The year to display.
+ */
+function dame_get_calendar_html( $month = null, $year = null ) {
+	$month = $month ? (int) $month : (int) date( 'm' );
+	$year  = $year ? (int) $year : (int) date( 'Y' );
+
+	$date      = new DateTime( "$year-$month-01" );
+	$month_name = date_i18n( 'F', $date->getTimestamp() );
+	$days_in_month = (int) $date->format( 't' );
+	$first_day_of_week = (int) $date->format( 'N' ); // 1 (Mon) to 7 (Sun)
+
+	// --- Fetch Events ---
+	$first_day_of_month_str = "$year-$month-01";
+	$last_day_of_month_str = "$year-$month-$days_in_month";
+
+	$events_query = new WP_Query(
+		array(
+			'post_type'      => 'dame_agenda',
+			'posts_per_page' => -1,
+			'post_status'    => 'publish',
+			'meta_query'     => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_dame_event_start_date',
+					'value'   => $last_day_of_month_str,
+					'compare' => '<=',
+					'type'    => 'DATE',
+				),
+				array(
+					'key'     => '_dame_event_end_date',
+					'value'   => $first_day_of_month_str,
+					'compare' => '>=',
+					'type'    => 'DATE',
+				),
+			),
+		)
+	);
+
+	$events_by_day = array();
+	if ( $events_query->have_posts() ) {
+		while ( $events_query->have_posts() ) {
+			$events_query->the_post();
+			$event_id    = get_the_ID();
+			$start_date  = get_post_meta( $event_id, '_dame_event_start_date', true );
+			$end_date    = get_post_meta( $event_id, '_dame_event_end_date', true );
+			$event_start = new DateTime( $start_date );
+			$event_end   = new DateTime( $end_date );
+
+			for ( $d = 1; $d <= $days_in_month; $d++ ) {
+				$current_day = new DateTime( "$year-$month-$d" );
+				if ( $current_day >= $event_start && $current_day <= $event_end ) {
+					if ( ! isset( $events_by_day[ $d ] ) ) {
+						$events_by_day[ $d ] = array();
+					}
+					$events_by_day[ $d ][] = dame_prepare_event_data( $event_id );
+				}
+			}
+		}
+		wp_reset_postdata();
+	}
+
+	// --- Navigation ---
+	$prev_month_date = clone $date;
+	$prev_month_date->modify( '-1 month' );
+	$prev_month = $prev_month_date->format( 'm' );
+	$prev_year  = $prev_month_date->format( 'Y' );
+
+	$next_month_date = clone $date;
+	$next_month_date->modify( '+1 month' );
+	$next_month = $next_month_date->format( 'm' );
+	$next_year  = $next_month_date->format( 'Y' );
+
+	// --- Render HTML ---
+	?>
+	<div id="dame-calendar-wrapper" class="dame-calendar" data-month="<?php echo esc_attr( $month ); ?>" data-year="<?php echo esc_attr( $year ); ?>">
+		<div class="dame-calendar-header">
+			<button class="dame-calendar-nav" data-month="<?php echo $prev_month; ?>" data-year="<?php echo $prev_year; ?>">&lt; <?php _e( "Préc", "dame" ); ?></button>
+			<h2><?php echo esc_html( ucfirst( $month_name ) . ' ' . $year ); ?></h2>
+			<button class="dame-calendar-nav" data-month="<?php echo $next_month; ?>" data-year="<?php echo $next_year; ?>"><?php _e( "Suiv", "dame" ); ?> &gt;</button>
+		</div>
+		<table class="dame-calendar-grid">
+			<thead>
+				<tr>
+					<th><?php _e( 'Lun', 'dame' ); ?></th>
+					<th><?php _e( 'Mar', 'dame' ); ?></th>
+					<th><?php _e( 'Mer', 'dame' ); ?></th>
+					<th><?php _e( 'Jeu', 'dame' ); ?></th>
+					<th><?php _e( 'Ven', 'dame' ); ?></th>
+					<th><?php _e( 'Sam', 'dame' ); ?></th>
+					<th><?php _e( 'Dim', 'dame' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<?php
+					// Blank days before the first day of the month
+					for ( $i = 1; $i < $first_day_of_week; $i++ ) {
+						echo '<td class="dame-calendar-day-empty"></td>';
+					}
+
+					$day_of_week = $first_day_of_week;
+					for ( $day = 1; $day <= $days_in_month; $day++ ) {
+						if ( $day_of_week > 7 ) {
+							echo '</tr><tr>';
+							$day_of_week = 1;
+						}
+						?>
+						<td class="dame-calendar-day">
+							<div class="day-number"><?php echo $day; ?></div>
+							<div class="day-events">
+								<?php if ( isset( $events_by_day[ $day ] ) ) : ?>
+									<?php foreach ( $events_by_day[ $day ] as $event ) : ?>
+										<a href="<?php echo esc_url( $event['permalink'] ); ?>"
+										   class="dame-event"
+										   data-title="<?php echo esc_attr( $event['title'] ); ?>"
+										   data-time="<?php echo esc_attr( $event['time_range'] ); ?>"
+										   data-location="<?php echo esc_attr( $event['location'] ); ?>"
+										   data-description="<?php echo esc_attr( $event['description'] ); ?>">
+											<span class="dame-event-dot" style="background-color:<?php echo esc_attr( $event['category_color'] ); ?>;"></span>
+											<?php echo esc_html( $event['title'] ); ?>
+										</a>
+									<?php endforeach; ?>
+								<?php endif; ?>
+							</div>
+						</td>
+						<?php
+						$day_of_week++;
+					}
+
+					// Blank days after the last day of the month
+					while ( $day_of_week <= 7 ) {
+						echo '<td class="dame-calendar-day-empty"></td>';
+						$day_of_week++;
+					}
+					?>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<?php
+}
+
+/**
+ * Helper function to prepare event data for the calendar.
+ *
+ * @param int $event_id The ID of the event post.
+ * @return array The prepared event data.
+ */
+function dame_prepare_event_data( $event_id ) {
+	// Time
+	$start_date = get_post_meta( $event_id, '_dame_event_start_date', true );
+	$end_date   = get_post_meta( $event_id, '_dame_event_end_date', true );
+	$all_day    = get_post_meta( $event_id, '_dame_event_allday', true );
+	$time_range = '';
+	if ( $all_day ) {
+		$time_range = __( 'Journée entière', 'dame' );
+	} else {
+		$start_time = get_post_meta( $event_id, '_dame_event_start_time', true );
+		$end_time   = get_post_meta( $event_id, '_dame_event_end_time', true );
+		$time_range = esc_html( $start_time . ' - ' . $end_time );
+	}
+
+	// Location
+	$location_parts = array(
+		get_post_meta( $event_id, '_dame_event_location_name', true ),
+		get_post_meta( $event_id, '_dame_event_location_address_1', true ),
+		get_post_meta( $event_id, '_dame_event_location_postal_code', true ),
+		get_post_meta( $event_id, '_dame_event_location_city', true ),
+	);
+	$location = implode( ', ', array_filter( $location_parts ) );
+
+	// Category and Color
+	$terms = get_the_terms( $event_id, 'dame_categorie_evenement' );
+	$category_color = '#808080'; // Default grey
+	if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+		$term_id = $terms[0]->term_id;
+		$color   = get_term_meta( $term_id, 'dame_category_color', true );
+		if ( $color ) {
+			$category_color = $color;
+		}
+	}
+
+	// Description (stripped for data attribute)
+	$description = wp_strip_all_tags( get_the_content() );
+	$description = wp_trim_words( $description, 30, '...' );
+
+	return array(
+		'id'             => $event_id,
+		'title'          => get_the_title(),
+		'permalink'      => get_permalink(),
+		'time_range'     => $time_range,
+		'location'       => $location,
+		'description'    => $description,
+		'category_color' => $category_color,
+	);
+}
+
+/**
+ * AJAX handler for fetching a calendar month.
+ */
+function dame_get_calendar_month_ajax_handler() {
+	check_ajax_referer( 'dame_calendar_nonce', 'nonce' );
+
+	$month = isset( $_POST['month'] ) ? intval( $_POST['month'] ) : null;
+	$year  = isset( $_POST['year'] ) ? intval( $_POST['year'] ) : null;
+
+	ob_start();
+	dame_get_calendar_html( $month, $year );
+	$html = ob_get_clean();
+
+	wp_send_json_success( array( 'html' => $html ) );
+}
+add_action( 'wp_ajax_dame_get_calendar_month', 'dame_get_calendar_month_ajax_handler' );
+add_action( 'wp_ajax_nopriv_dame_get_calendar_month', 'dame_get_calendar_month_ajax_handler' );

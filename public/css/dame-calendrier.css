@@ -1,0 +1,125 @@
+/* DAME Calendar General Styles */
+.dame-calendar-wrapper {
+	font-family: sans-serif;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 15px;
+	position: relative; /* For tooltip positioning */
+}
+
+/* Header: Navigation and Title */
+.dame-calendar-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 15px;
+}
+.dame-calendar-header h2 {
+	margin: 0;
+	font-size: 1.5em;
+	font-weight: bold;
+}
+.dame-calendar-nav {
+	background-color: #f5f5f5;
+	border: 1px solid #ccc;
+	padding: 5px 10px;
+	cursor: pointer;
+	border-radius: 3px;
+}
+.dame-calendar-nav:hover {
+	background-color: #e0e0e0;
+}
+
+/* Calendar Grid */
+.dame-calendar-grid {
+	width: 100%;
+	border-collapse: collapse;
+}
+.dame-calendar-grid th,
+.dame-calendar-grid td {
+	border: 1px solid #ddd;
+	padding: 8px;
+	vertical-align: top;
+	text-align: left;
+}
+.dame-calendar-grid th {
+	background-color: #f9f9f9;
+	font-weight: bold;
+}
+.dame-calendar-day {
+	height: 120px;
+	width: 14.28%;
+}
+.dame-calendar-day-empty {
+	background-color: #fafafa;
+}
+.day-number {
+	font-weight: bold;
+	font-size: 0.9em;
+	color: #333;
+	margin-bottom: 5px;
+}
+
+/* Events */
+.day-events {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.dame-event {
+	display: block;
+	font-size: 0.85em;
+	padding: 3px 5px;
+	border-radius: 3px;
+	background-color: #f0f8ff;
+	color: #333;
+	text-decoration: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	cursor: pointer;
+}
+.dame-event:hover {
+	background-color: #e6f2ff;
+}
+.dame-event-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	margin-right: 6px;
+	vertical-align: middle;
+}
+
+/* Hover Tooltip */
+#dame-event-tooltip {
+	position: absolute;
+	z-index: 100;
+	background-color: #333;
+	color: #fff;
+	padding: 10px;
+	border-radius: 5px;
+	max-width: 300px;
+	box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+	pointer-events: none; /* Prevents the tooltip from interfering with mouse events */
+}
+#dame-event-tooltip h4 {
+	margin: 0 0 5px 0;
+	font-size: 1.1em;
+	color: #fff;
+}
+#dame-event-tooltip p {
+	margin: 0 0 3px 0;
+	font-size: 0.9em;
+	line-height: 1.4;
+}
+#dame-event-tooltip .tooltip-meta {
+	font-style: italic;
+	color: #ccc;
+}
+#dame-event-tooltip .tooltip-desc {
+	margin-top: 8px;
+	border-top: 1px solid #555;
+	padding-top: 8px;
+	color: #f0f0f0;
+}

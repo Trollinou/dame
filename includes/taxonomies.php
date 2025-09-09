@@ -81,3 +81,35 @@ function dame_register_membership_season_taxonomy() {
     register_taxonomy( 'dame_saison_adhesion', 'adherent', $args );
 }
 add_action( 'init', 'dame_register_membership_season_taxonomy', 0 );
+
+/**
+ * Register Event Category Taxonomy for the Agenda CPT.
+ */
+function dame_register_event_category_taxonomy() {
+	$labels = array(
+		'name'              => _x( 'Catégories d\'événements', 'taxonomy general name', 'dame' ),
+		'singular_name'     => _x( 'Catégorie d\'événement', 'taxonomy singular name', 'dame' ),
+		'search_items'      => __( 'Rechercher les catégories', 'dame' ),
+		'all_items'         => __( 'Toutes les catégories', 'dame' ),
+		'parent_item'       => __( 'Catégorie parente', 'dame' ),
+		'parent_item_colon' => __( 'Catégorie parente :', 'dame' ),
+		'edit_item'         => __( 'Modifier la catégorie', 'dame' ),
+		'update_item'       => __( 'Mettre à jour la catégorie', 'dame' ),
+		'add_new_item'      => __( 'Ajouter une nouvelle catégorie', 'dame' ),
+		'new_item_name'     => __( 'Nom de la nouvelle catégorie', 'dame' ),
+		'menu_name'         => __( 'Catégories', 'dame' ),
+	);
+
+	$args = array(
+		'hierarchical'      => true,
+		'labels'            => $labels,
+		'show_ui'           => true,
+		'show_admin_column' => true,
+		'query_var'         => true,
+		'rewrite'           => array( 'slug' => 'agenda-categorie' ),
+		'show_in_rest'      => true,
+	);
+
+	register_taxonomy( 'dame_categorie_evenement', array( 'dame_agenda' ), $args );
+}
+add_action( 'init', 'dame_register_event_category_taxonomy', 0 );

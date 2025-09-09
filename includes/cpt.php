@@ -314,3 +314,63 @@ function dame_register_cours_cpt() {
     register_post_type( 'dame_cours', $args );
 }
 add_action( 'init', 'dame_register_cours_cpt', 0 );
+
+/**
+ * Register the Agenda CPT.
+ */
+function dame_register_agenda_cpt() {
+
+	$labels = array(
+		'name'                  => _x( 'Événements', 'Post Type General Name', 'dame' ),
+		'singular_name'         => _x( 'Événement', 'Post Type Singular Name', 'dame' ),
+		'menu_name'             => __( 'Agenda', 'dame' ),
+		'name_admin_bar'        => __( 'Événement', 'dame' ),
+		'archives'              => __( 'Archives des événements', 'dame' ),
+		'attributes'            => __( 'Attributs de l\'événement', 'dame' ),
+		'parent_item_colon'     => __( 'Événement parent :', 'dame' ),
+		'all_items'             => __( 'Tous les événements', 'dame' ),
+		'add_new_item'          => __( 'Ajouter un nouvel événement', 'dame' ),
+		'add_new'               => __( 'Ajouter', 'dame' ),
+		'new_item'              => __( 'Nouvel événement', 'dame' ),
+		'edit_item'             => __( 'Modifier l\'événement', 'dame' ),
+		'update_item'           => __( 'Mettre à jour l\'événement', 'dame' ),
+		'view_item'             => __( 'Voir l\'événement', 'dame' ),
+		'view_items'            => __( 'Voir les événements', 'dame' ),
+		'search_items'          => __( 'Rechercher un événement', 'dame' ),
+		'not_found'             => __( 'Non trouvé', 'dame' ),
+		'not_found_in_trash'    => __( 'Non trouvé dans la corbeille', 'dame' ),
+		'featured_image'        => __( 'Image de l\'événement', 'dame' ),
+		'set_featured_image'    => __( 'Définir l\'image de l\'événement', 'dame' ),
+		'remove_featured_image' => __( 'Supprimer l\'image de l\'événement', 'dame' ),
+		'use_featured_image'    => __( 'Utiliser comme image de l\'événement', 'dame' ),
+		'insert_into_item'      => __( 'Insérer dans l\'événement', 'dame' ),
+		'uploaded_to_this_item' => __( 'Téléversé sur cet événement', 'dame' ),
+		'items_list'            => __( 'Liste des événements', 'dame' ),
+		'items_list_navigation' => __( 'Navigation de la liste des événements', 'dame' ),
+		'filter_items_list'     => __( 'Filtrer la liste des événements', 'dame' ),
+	);
+
+	$args = array(
+		'label'                 => __( 'Événement', 'dame' ),
+		'description'           => __( 'Les événements et compétitions du club', 'dame' ),
+		'labels'                => $labels,
+		'supports'              => array( 'title', 'editor' ),
+		'hierarchical'          => false,
+		'public'                => true,
+		'show_ui'               => true,
+		'show_in_menu'          => true,
+		'menu_position'         => 21,
+		'menu_icon'             => 'dashicons-calendar-alt',
+		'show_in_admin_bar'     => true,
+		'show_in_nav_menus'     => true,
+		'can_export'            => true,
+		'has_archive'           => true,
+		'exclude_from_search'   => false,
+		'publicly_queryable'    => true,
+		'capability_type'       => 'post',
+		'show_in_rest'          => true,
+	);
+
+	register_post_type( 'dame_agenda', $args );
+}
+add_action( 'init', 'dame_register_agenda_cpt', 0 );
