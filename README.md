@@ -1,6 +1,6 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 2.5.0
+**Version:** 2.5.1
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 

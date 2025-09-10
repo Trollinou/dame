@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier et Apprentissage des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           2.5.0
+ * Version:           2.5.1
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Etienne Gagnon
@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '2.5.0' );
+define( 'DAME_VERSION', '2.5.1' );
 define( 'DAME_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -182,3 +182,32 @@ register_deactivation_hook( __FILE__, 'dame_remove_custom_roles' );
 register_activation_hook( __FILE__, 'dame_schedule_backup_event' );
 register_deactivation_hook( __FILE__, 'dame_unschedule_backup_event' );
 add_action( 'dame_daily_backup_event', 'dame_do_scheduled_backup' );
+add_action( 'update_option_dame_options', 'dame_handle_schedule_update', 10, 2 );
+
+/**
+ * Reschedules the backup event if the time has changed in the settings.
+ *
+ * @param mixed $old_value The old option value.
+ * @param mixed $new_value The new option value.
+ */
+function dame_handle_schedule_update( $old_value, $new_value ) {
+    $old_time = isset( $old_value['backup_time'] ) ? $old_value['backup_time'] : '';
+    $new_time = isset( $new_value['backup_time'] ) ? $new_value['backup_time'] : '';
+
+    if ( $old_time !== $new_time ) {
+        dame_schedule_backup_event();
+    }
+}
+
+/**
+ * Ensures the backup event is always scheduled. Acts as a failsafe.
+ */
+function dame_ensure_backup_is_scheduled() {
+    if ( ! is_admin() ) {
+        return;
+    }
+    if ( ! wp_next_scheduled( 'dame_daily_backup_event' ) ) {
+        dame_schedule_backup_event();
+    }
+}
+add_action( 'init', 'dame_ensure_backup_is_scheduled' );
