@@ -1,6 +1,6 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 2.5.1
+**Version:** 2.6.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -32,6 +32,7 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 ### Préinscription en Ligne
 
 *   **Formulaire de Préinscription :** Un shortcode `[dame_fiche_inscription]` permet d'afficher un formulaire public où les futurs membres peuvent s'inscrire. Le formulaire s'adapte dynamiquement pour les adhérents majeurs et mineurs.
+*   **Formulaire de Contact :** Un shortcode `[dame_contact]` permet d'afficher un formulaire de contact simple (Nom, Email, Sujet, Message) qui envoie un email à l'administrateur.
 *   **Génération de PDF :** Génération de l'attestation de réponse négative au questionnaire de santé.
 *   **Interface de Validation :** Les administrateurs disposent d'une interface dédiée pour examiner, modifier et valider les préinscriptions.
 *   **Rapprochement Automatique :** Le système détecte les doublons potentiels en comparant les nouvelles inscriptions avec la base de données existante (nom, prénom, date de naissance).
