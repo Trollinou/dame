@@ -740,10 +740,10 @@ function dame_handle_contact_form_submission() {
     }
 
     // 3. Sanitize Data
-    $name    = sanitize_text_field( $_POST['dame_contact_name'] );
-    $email   = sanitize_email( $_POST['dame_contact_email'] );
-    $subject = sanitize_text_field( $_POST['dame_contact_subject'] );
-    $message = sanitize_textarea_field( $_POST['dame_contact_message'] );
+    $name    = sanitize_text_field( wp_unslash( $_POST['dame_contact_name'] ) );
+    $email   = sanitize_email( wp_unslash( $_POST['dame_contact_email'] ) );
+    $subject = sanitize_text_field( wp_unslash( $_POST['dame_contact_subject'] ) );
+    $message = sanitize_textarea_field( wp_unslash( $_POST['dame_contact_message'] ) );
 
     // 4. Send Email
     $options = get_option( 'dame_options' );
