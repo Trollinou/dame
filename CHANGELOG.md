@@ -4,6 +4,13 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.6.0 (10/09/2025)
+
+*   **Fonctionnalité :** Ajout d'un shortcode `[dame_contact]` pour afficher un formulaire de contact simple.
+*   **Fonctionnalité :** Le formulaire de contact inclut les champs Nom, Courriel, Sujet et Message, et envoie les soumissions par email à l'administrateur du site en utilisant les paramètres SMTP configurés.
+*   **Amélioration :** La soumission du formulaire de contact est gérée en AJAX, fournissant un retour à l'utilisateur sans rechargement de la page.
+*   **Correctif :** Correction d'un bug où les caractères spéciaux (comme les apostrophes) dans le formulaire de contact étaient échappés dans l'email reçu.
+
 ### 2.5.0 (09/09/2025)
 
 *   **Fonctionnalité :** Ajout d'un système de sauvegarde journalière automatique. Les bases de données "Adhérents" et "Apprentissage" sont sauvegardées dans des fichiers séparés et envoyées par email.
