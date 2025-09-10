@@ -1,0 +1,223 @@
+/* DAME Agenda Shortcode Styles */
+#dame-agenda-wrapper {
+    max-width: 900px;
+    margin: 2em auto;
+    font-family: sans-serif;
+}
+
+.dame-agenda-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1em;
+    flex-wrap: wrap;
+}
+
+.dame-agenda-nav {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+}
+
+.dame-agenda-nav h2 {
+    margin: 0;
+    font-size: 1.5em;
+    cursor: pointer;
+}
+
+.dame-agenda-controls {
+    display: flex;
+    gap: 1em;
+    position: relative;
+}
+
+#dame-agenda-search-input {
+    padding: 0.5em;
+}
+
+#dame-agenda-filter-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 1em;
+    z-index: 100;
+    width: 250px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#dame-agenda-filter-panel h5 {
+    margin-top: 0;
+}
+
+#dame-agenda-filter-panel ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#dame-agenda-filter-panel li {
+    margin-bottom: 0.5em;
+}
+
+#dame-agenda-filter-panel label {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.dame-agenda-cat-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+#dame-calendar-container {
+    border: 1px solid #ddd;
+}
+
+.dame-calendar-weekdays,
+#dame-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.dame-calendar-weekdays div {
+    text-align: center;
+    font-weight: bold;
+    padding: 0.5em;
+    background: #f7f7f7;
+    border-bottom: 1px solid #ddd;
+}
+
+.dame-calendar-day {
+    min-height: 120px;
+    border-right: 1px solid #ddd;
+    border-top: 1px solid #ddd;
+    padding: 5px;
+    position: relative;
+}
+
+.dame-calendar-day:nth-child(7n) {
+    border-right: none;
+}
+.dame-calendar-day.other-month {
+    background-color: #f9f9f9;
+    color: #aaa;
+}
+.dame-calendar-day.today .day-number {
+    background-color: #0073aa;
+    color: white;
+    border-radius: 50%;
+    width: 2em;
+    height: 2em;
+    line-height: 2em;
+    text-align: center;
+}
+
+.day-number {
+    font-size: 0.9em;
+    margin-bottom: 5px;
+    text-align: right;
+}
+
+.dame-event {
+    margin-bottom: 3px;
+    padding-left: 5px;
+    font-size: 0.85em;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.dame-event-ponctuel {
+    display: flex;
+    align-items: center;
+    border-left: 5px solid; /* Color will be set inline */
+    padding: 2px 5px;
+}
+
+.dame-event-ponctuel .event-time {
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+.dame-event-duree {
+    background-color: var(--event-color, #ccc);
+    color: white;
+    padding: 2px 8px;
+    margin-left: -5px; /* To align with grid border */
+    margin-right: -5px; /* To align with grid border */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dame-event-duree.start {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+.dame-event-duree.end {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+#dame-event-tooltip {
+    position: absolute;
+    background: #333;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 101;
+    max-width: 300px;
+    pointer-events: none;
+}
+#dame-event-tooltip h4 {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+#dame-event-tooltip p {
+    margin: 0 0 5px;
+}
+
+#dame-month-year-selector {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+.dame-month-year-selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #f7f7f7;
+}
+.dame-month-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 10px;
+}
+.dame-month-grid span {
+    text-align: center;
+    padding: 15px 5px;
+    cursor: pointer;
+}
+.dame-month-grid span:hover {
+    background: #eee;
+}
+.dame-month-grid span.selected {
+    background: #0073aa;
+    color: white;
+}
+.button {
+    background-color: #f7f7f7;
+    border: 1px solid #ccc;
+    padding: 0.5em 1em;
+    cursor: pointer;
+}
+.button:hover {
+    background-color: #e0e0e0;
+}

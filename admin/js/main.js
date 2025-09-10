@@ -219,4 +219,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         loadInitialState();
     }
+
+    // Initialize color picker for taxonomy fields
+    if (typeof jQuery !== 'undefined' && typeof jQuery.fn.wpColorPicker !== 'undefined') {
+        jQuery('.dame-color-picker').wpColorPicker();
+    }
 });

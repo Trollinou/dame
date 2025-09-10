@@ -1,6 +1,6 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 2.6.1
+**Version:** 3.0.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -53,6 +53,14 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 *   **Suivi de Progression :** Les entraîneurs peuvent suivre les leçons complétées par les membres.
 *   **Exercices Interactifs :** Interface publique pour s'entraîner sur les exercices avec feedback immédiat.
 *   **Sauvegarde et Restauration :** Outil pour sauvegarder et restaurer l'ensemble du contenu pédagogique.
+
+### Gestion d'Événements (Agenda)
+
+*   **Calendrier d'Événements :** Un nouveau type de contenu "Agenda" permet de créer et gérer des événements.
+*   **Affichage Calendrier :** Le shortcode `[dame_agenda]` affiche un calendrier mensuel interactif avec navigation, filtres par catégorie et recherche.
+*   **Affichage Liste :** Le shortcode `[dame_liste_agenda nombre="X"]` affiche une liste des X prochains événements.
+*   **Catégories Colorées :** Chaque catégorie d'événement peut être associée à une couleur pour une identification visuelle rapide sur le calendrier.
+*   **Détails Complets :** Les événements peuvent inclure une description, des dates et heures de début/fin, une option "journée entière" et des informations de lieu détaillées.
 
 ### Administration et Configuration
 

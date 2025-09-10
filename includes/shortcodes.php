@@ -773,3 +773,275 @@ add_action( 'wp_ajax_nopriv_dame_contact_submit', 'dame_handle_contact_form_subm
 add_filter( 'the_content', 'dame_chess_pieces_shortcodes_filter' );
 add_filter( 'widget_text_content', 'dame_chess_pieces_shortcodes_filter' ); // For block-based widgets
 add_filter( 'comment_text', 'dame_chess_pieces_shortcodes_filter' );
+
+/**
+ * Renders the [dame_agenda] shortcode.
+ *
+ * @param array $atts Shortcode attributes.
+ * @return string The shortcode output.
+ */
+function dame_agenda_shortcode( $atts ) {
+    // Enqueue scripts and styles
+    wp_enqueue_style( 'dame-agenda-style', plugin_dir_url( __FILE__ ) . '../public/css/agenda.css', array(), DAME_VERSION );
+    wp_enqueue_script( 'dame-agenda-script', plugin_dir_url( __FILE__ ) . '../public/js/agenda.js', array( 'jquery' ), DAME_VERSION, true );
+
+    // Localize script with ajax url and nonce
+    wp_localize_script( 'dame-agenda-script', 'dame_agenda_ajax', array(
+        'ajax_url' => admin_url( 'admin-ajax.php' ),
+        'nonce'    => wp_create_nonce( 'dame_agenda_nonce' ),
+        'i18n'     => array(
+            'all_day' => __( 'Toute la journée', 'dame' ),
+            'months'  => array(
+                __( 'Janvier', 'dame' ), __( 'Février', 'dame' ), __( 'Mars', 'dame' ),
+                __( 'Avril', 'dame' ), __( 'Mai', 'dame' ), __( 'Juin', 'dame' ),
+                __( 'Juillet', 'dame' ), __( 'Août', 'dame' ), __( 'Septembre', 'dame' ),
+                __( 'Octobre', 'dame' ), __( 'Novembre', 'dame' ), __( 'Décembre', 'dame' ),
+            ),
+            'weekdays_short' => array(
+                __( 'Dim', 'dame' ), __( 'Lun', 'dame' ), __( 'Mar', 'dame' ),
+                __( 'Mer', 'dame' ), __( 'Jeu', 'dame' ), __( 'Ven', 'dame' ),
+                __( 'Sam', 'dame' ),
+            ),
+        ),
+    ) );
+
+    // Get all agenda categories for the filter
+    $categories = get_terms( array(
+        'taxonomy'   => 'dame_agenda_category',
+        'hide_empty' => false,
+    ) );
+
+    ob_start();
+    ?>
+    <div id="dame-agenda-wrapper">
+        <div class="dame-agenda-header">
+            <div class="dame-agenda-nav">
+                <button id="dame-agenda-prev-month" class="button">&lt;</button>
+                <h2 id="dame-agenda-current-month" class="dame-agenda-month-picker-toggle"></h2>
+                <button id="dame-agenda-next-month" class="button">&gt;</button>
+            </div>
+            <div class="dame-agenda-controls">
+                 <div class="dame-agenda-search">
+                    <label for="dame-agenda-search-input" class="screen-reader-text"><?php _e( 'Rechercher un événement', 'dame' ); ?></label>
+                    <input type="search" id="dame-agenda-search-input" placeholder="<?php _e( 'Rechercher...', 'dame' ); ?>">
+                </div>
+                <div class="dame-agenda-filter">
+                    <button id="dame-agenda-filter-toggle" class="button"><?php _e( 'Filtres', 'dame' ); ?></button>
+                    <div id="dame-agenda-filter-panel" style="display: none;">
+                        <h5><?php _e( 'Catégories', 'dame' ); ?></h5>
+                        <?php if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) : ?>
+                            <ul>
+                                <?php foreach ( $categories as $category ) :
+                                    $term_meta = get_option( "taxonomy_" . $category->term_id );
+                                    $color = ! empty( $term_meta['color'] ) ? $term_meta['color'] : '#ccc';
+                                ?>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" class="dame-agenda-cat-filter" value="<?php echo esc_attr( $category->term_id ); ?>" checked>
+                                            <span class="dame-agenda-cat-color" style="background-color: <?php echo esc_attr( $color ); ?>"></span>
+                                            <?php echo esc_html( $category->name ); ?>
+                                        </label>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php else: ?>
+                            <p><?php _e( 'Aucune catégorie d\'événement trouvée.', 'dame' ); ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="dame-calendar-container">
+            <div class="dame-calendar-weekdays"></div>
+            <div id="dame-calendar-grid"></div>
+        </div>
+        <div id="dame-event-tooltip" class="dame-tooltip" style="display: none;"></div>
+        <div id="dame-month-year-selector" style="display: none;">
+            <div class="dame-month-year-selector-header">
+                <button id="dame-selector-prev-year">&lt;&lt;</button>
+                <span id="dame-selector-year"></span>
+                <button id="dame-selector-next-year">&gt;&gt;</button>
+            </div>
+            <div class="dame-month-grid"></div>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode( 'dame_agenda', 'dame_agenda_shortcode' );
+
+/**
+ * AJAX handler to fetch agenda events.
+ */
+function dame_get_agenda_events() {
+    check_ajax_referer( 'dame_agenda_nonce', 'nonce' );
+
+    $year = isset( $_POST['year'] ) ? intval( $_POST['year'] ) : date( 'Y' );
+    $month = isset( $_POST['month'] ) ? intval( $_POST['month'] ) : date( 'm' );
+    $categories = isset( $_POST['categories'] ) ? array_map( 'intval', $_POST['categories'] ) : array();
+    $search_term = isset( $_POST['search'] ) ? sanitize_text_field( $_POST['search'] ) : '';
+
+    $start_of_month = new DateTime( "$year-$month-01" );
+    $end_of_month = new DateTime( "$year-$month-01" );
+    $end_of_month->modify( 'last day of this month' );
+
+    $args = array(
+        'post_type'      => 'dame_agenda',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,
+        'meta_query'     => array(
+            'relation' => 'AND',
+            array(
+                'key'     => '_dame_start_date',
+                'value'   => $end_of_month->format( 'Y-m-d' ),
+                'compare' => '<=',
+                'type'    => 'DATE',
+            ),
+            array(
+                'key'     => '_dame_end_date',
+                'value'   => $start_of_month->format( 'Y-m-d' ),
+                'compare' => '>=',
+                'type'    => 'DATE',
+            ),
+        ),
+        'orderby' => 'meta_value',
+        'meta_key' => '_dame_start_date',
+        'order' => 'ASC',
+    );
+
+    if ( ! empty( $categories ) ) {
+        $args['tax_query'] = array(
+            array(
+                'taxonomy' => 'dame_agenda_category',
+                'field'    => 'term_id',
+                'terms'    => $categories,
+            ),
+        );
+    }
+
+    if ( ! empty( $search_term ) ) {
+        $args['s'] = $search_term;
+    }
+
+    $query = new WP_Query( $args );
+    $events = array();
+
+    if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) {
+            $query->the_post();
+            $post_id = get_the_ID();
+            $term = get_the_terms( $post_id, 'dame_agenda_category' );
+            $term_id = !empty($term) ? $term[0]->term_id : 0;
+            $term_meta = get_option( "taxonomy_$term_id" );
+            $color = ! empty( $term_meta['color'] ) ? $term_meta['color'] : '#ccc';
+
+            $events[] = array(
+                'id'          => $post_id,
+                'title'       => get_the_title(),
+                'url'         => get_permalink(),
+                'start_date'  => get_post_meta( $post_id, '_dame_start_date', true ),
+                'start_time'  => get_post_meta( $post_id, '_dame_start_time', true ),
+                'end_date'    => get_post_meta( $post_id, '_dame_end_date', true ),
+                'end_time'    => get_post_meta( $post_id, '_dame_end_time', true ),
+                'all_day'     => get_post_meta( $post_id, '_dame_all_day', true ),
+                'location'    => get_post_meta( $post_id, '_dame_location_name', true ),
+                'description' => get_the_content(),
+                'color'       => $color,
+                'category'    => !empty($term) ? $term[0]->name : '',
+            );
+        }
+    }
+
+    wp_reset_postdata();
+    wp_send_json_success( $events );
+}
+add_action( 'wp_ajax_dame_get_agenda_events', 'dame_get_agenda_events' );
+add_action( 'wp_ajax_nopriv_dame_get_agenda_events', 'dame_get_agenda_events' );
+
+/**
+ * Renders the [dame_liste_agenda] shortcode.
+ *
+ * @param array $atts Shortcode attributes.
+ * @return string The shortcode output.
+ */
+function dame_liste_agenda_shortcode( $atts ) {
+    $atts = shortcode_atts( array(
+        'nombre' => 4,
+    ), $atts, 'dame_liste_agenda' );
+
+    $nombre = intval( $atts['nombre'] );
+
+    $today = date( 'Y-m-d' );
+
+    $args = array(
+        'post_type'      => 'dame_agenda',
+        'post_status'    => 'publish',
+        'posts_per_page' => $nombre,
+        'meta_key'       => '_dame_start_date',
+        'orderby'        => 'meta_value',
+        'order'          => 'ASC',
+        'meta_query'     => array(
+            array(
+                'key'     => '_dame_start_date',
+                'value'   => $today,
+                'compare' => '>=',
+                'type'    => 'DATE',
+            ),
+        ),
+    );
+
+    $query = new WP_Query( $args );
+
+    if ( ! $query->have_posts() ) {
+        return '<p>' . __( 'Aucun événement à venir.', 'dame' ) . '</p>';
+    }
+
+    ob_start();
+    ?>
+    <div class="dame-liste-agenda-wrapper">
+        <?php while ( $query->have_posts() ) : $query->the_post(); ?>
+            <?php
+            $post_id = get_the_ID();
+            $start_date_str = get_post_meta( $post_id, '_dame_start_date', true );
+            $end_date_str = get_post_meta( $post_id, '_dame_end_date', true );
+            $start_time = get_post_meta( $post_id, '_dame_start_time', true );
+            $end_time = get_post_meta( $post_id, '_dame_end_time', true );
+            $all_day = get_post_meta( $post_id, '_dame_all_day', true );
+
+            $start_date = new DateTime( $start_date_str );
+            $end_date = new DateTime( $end_date_str );
+
+            $day_of_week = date_i18n( 'D', $start_date->getTimestamp() );
+            $day_number = $start_date->format( 'd' );
+
+            $date_display = date_i18n( 'j F Y', $start_date->getTimestamp() );
+            if ( $start_date_str !== $end_date_str ) {
+                $date_display = date_i18n( 'j F Y', $start_date->getTimestamp() ) . ' - ' . date_i18n( 'j F Y', $end_date->getTimestamp() );
+            }
+            ?>
+            <div class="dame-liste-agenda-item">
+                <div class="dame-liste-agenda-date-icon">
+                    <div class="date-circle">
+                        <span class="day-of-week"><?php echo esc_html( strtoupper( $day_of_week ) ); ?></span>
+                        <span class="day-number"><?php echo esc_html( $day_number ); ?></span>
+                    </div>
+                </div>
+                <div class="dame-liste-agenda-details">
+                    <h4 class="event-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h4>
+                    <p class="event-date"><?php echo esc_html( $date_display ); ?></p>
+                    <?php if ( ! $all_day ) : ?>
+                        <p class="event-time"><?php echo esc_html( $start_time . ' - ' . $end_time ); ?></p>
+                    <?php endif; ?>
+                    <p class="event-description"><?php echo get_the_excerpt(); ?></p>
+                </div>
+                 <div class="dame-liste-agenda-icon">
+                    <span class="dashicons dashicons-calendar-alt"></span>
+                </div>
+            </div>
+        <?php endwhile; ?>
+    </div>
+    <?php
+    wp_reset_postdata();
+    return ob_get_clean();
+}
+add_shortcode( 'dame_liste_agenda', 'dame_liste_agenda_shortcode' );
