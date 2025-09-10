@@ -4,6 +4,10 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 2.6.1 (10/09/2025)
+
+*   **Correctif Technique :** Remplacement de la fonction `utf8_decode()`, dépréciée en PHP 8.2, par `mb_convert_encoding()` pour assurer la compatibilité et la pérennité du plugin.
+
 ### 2.6.0 (10/09/2025)
 
 *   **Fonctionnalité :** Ajout d'un shortcode `[dame_contact]` pour afficher un formulaire de contact simple.

@@ -56,8 +56,8 @@ function dame_generate_health_form_handler() {
 	$current_date       = date( 'd/m/Y' );
 
 	// Handle UTF-8 to Windows-1252 conversion for FPDF standard fonts
-	$full_name_adherent_for_pdf = utf8_decode( $full_name_adherent_for_pdf );
-	$city_for_pdf               = utf8_decode( $city );
+	$full_name_adherent_for_pdf = mb_convert_encoding( $full_name_adherent_for_pdf, 'ISO-8859-1', 'UTF-8' );
+	$city_for_pdf               = mb_convert_encoding( $city, 'ISO-8859-1', 'UTF-8' );
 
 	// 6. Generate PDF
 	$pdf = new Fpdi();
@@ -95,8 +95,8 @@ function dame_generate_health_form_handler() {
 		}
 
 		$full_name_rep1_for_pdf = strtoupper( $legal_rep_1_last_name ) . ' ' . $legal_rep_1_first_name;
-		$full_name_rep1_for_pdf = utf8_decode( $full_name_rep1_for_pdf );
-		$legal_rep_1_city_for_pdf = utf8_decode( $legal_rep_1_city );
+		$full_name_rep1_for_pdf = mb_convert_encoding( $full_name_rep1_for_pdf, 'ISO-8859-1', 'UTF-8' );
+		$legal_rep_1_city_for_pdf = mb_convert_encoding( $legal_rep_1_city, 'ISO-8859-1', 'UTF-8' );
 
 		$pdf->SetXY( 54, 181 );
 		$pdf->Write( 0, $full_name_rep1_for_pdf );
@@ -170,13 +170,13 @@ function dame_generate_parental_auth_handler() {
 	}
 
 	// 4. Prepare data for PDF
-	$adherent_full_name            = utf8_decode( strtoupper( $last_name ) . ' ' . $first_name );
-	$adherent_birth_date_formatted = utf8_decode( date( 'd/m/Y', strtotime( $birth_date_str ) ) );
-	$adherent_city                 = utf8_decode( $city );
+	$adherent_full_name            = mb_convert_encoding( strtoupper( $last_name ) . ' ' . $first_name, 'ISO-8859-1', 'UTF-8' );
+	$adherent_birth_date_formatted = mb_convert_encoding( date( 'd/m/Y', strtotime( $birth_date_str ) ), 'ISO-8859-1', 'UTF-8' );
+	$adherent_city                 = mb_convert_encoding( $city, 'ISO-8859-1', 'UTF-8' );
 	$current_date                  = date( 'd/m/Y' );
 	$rl1_full_name                 = '';
 	if ( ! empty( $rl1_first_name ) && ! empty( $rl1_last_name ) ) {
-		$rl1_full_name = utf8_decode( strtoupper( $rl1_last_name ) . ' ' . $rl1_first_name );
+		$rl1_full_name = mb_convert_encoding( strtoupper( $rl1_last_name ) . ' ' . $rl1_first_name, 'ISO-8859-1', 'UTF-8' );
 	}
 
 	// 5. Generate PDF
@@ -216,45 +216,45 @@ function dame_generate_parental_auth_handler() {
 	// --- Legal Rep 1 Data ---
 	if ( ! empty( $rl1_last_name ) ) {
 		$pdf->SetXY( 25, 248 );
-		$pdf->Write( 0, utf8_decode( strtoupper( $rl1_last_name ) ) );
+		$pdf->Write( 0, mb_convert_encoding( strtoupper( $rl1_last_name ), 'ISO-8859-1', 'UTF-8' ) );
 	}
 	if ( ! empty( $rl1_first_name ) ) {
 		$pdf->SetXY( 30, 255 );
-		$pdf->Write( 0, utf8_decode( $rl1_first_name ) );
+		$pdf->Write( 0, mb_convert_encoding( $rl1_first_name, 'ISO-8859-1', 'UTF-8' ) );
 	}
 	if ( ! empty( $rl1_birth_place ) ) {
 		$pdf->SetXY( 48, 264 );
-		$pdf->Write( 0, utf8_decode( $rl1_birth_place ) );
+		$pdf->Write( 0, mb_convert_encoding( $rl1_birth_place, 'ISO-8859-1', 'UTF-8' ) );
 	}
 	if ( ! empty( $rl1_birth_date ) ) {
 		$pdf->SetXY( 54, 270 );
-		$pdf->Write( 0, utf8_decode( date( 'd/m/Y', strtotime( $rl1_birth_date ) ) ) );
+		$pdf->Write( 0, mb_convert_encoding( date( 'd/m/Y', strtotime( $rl1_birth_date ) ), 'ISO-8859-1', 'UTF-8' ) );
 	}
 	if ( ! empty( $rl1_profession ) ) {
 		$pdf->SetXY( 35, 279 );
-		$pdf->Write( 0, utf8_decode( $rl1_profession ) );
+		$pdf->Write( 0, mb_convert_encoding( $rl1_profession, 'ISO-8859-1', 'UTF-8' ) );
 	}
 
 	// --- Legal Rep 2 Data ---
 	if ( ! empty( $rl2_last_name ) ) {
 		$pdf->SetXY( 125, 248 );
-		$pdf->Write( 0, utf8_decode( strtoupper( $rl2_last_name ) ) );
+		$pdf->Write( 0, mb_convert_encoding( strtoupper( $rl2_last_name ), 'ISO-8859-1', 'UTF-8' ) );
 	}
 	if ( ! empty( $rl2_first_name ) ) {
 		$pdf->SetXY( 130, 255 );
-		$pdf->Write( 0, utf8_decode( $rl2_first_name ) );
+		$pdf->Write( 0, mb_convert_encoding( $rl2_first_name, 'ISO-8859-1', 'UTF-8' ) );
 	}
 	if ( ! empty( $rl2_birth_place ) ) {
 		$pdf->SetXY( 148, 264 );
-		$pdf->Write( 0, utf8_decode( $rl2_birth_place ) );
+		$pdf->Write( 0, mb_convert_encoding( $rl2_birth_place, 'ISO-8859-1', 'UTF-8' ) );
 	}
 	if ( ! empty( $rl2_birth_date ) ) {
 		$pdf->SetXY( 154, 270 );
-		$pdf->Write( 0, utf8_decode( date( 'd/m/Y', strtotime( $rl2_birth_date ) ) ) );
+		$pdf->Write( 0, mb_convert_encoding( date( 'd/m/Y', strtotime( $rl2_birth_date ) ), 'ISO-8859-1', 'UTF-8' ) );
 	}
 	if ( ! empty( $rl2_profession ) ) {
 		$pdf->SetXY( 135, 279 );
-		$pdf->Write( 0, utf8_decode( $rl2_profession ) );
+		$pdf->Write( 0, mb_convert_encoding( $rl2_profession, 'ISO-8859-1', 'UTF-8' ) );
 	}
 
 	// 6. Output PDF
