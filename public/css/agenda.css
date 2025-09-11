@@ -137,22 +137,17 @@
 }
 
 .dame-event-ponctuel {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
     border-left: 5px solid; /* Color will be set inline */
     padding: 2px 5px;
 }
 
 .dame-event-ponctuel .event-time {
-    font-weight: bold;
-    flex-shrink: 0;
+    font-size: 0.85em;
+    color: #555;
 }
 
 .dame-event-ponctuel .event-title {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-weight: bold;
 }
 
 .dame-event-duree {
@@ -184,19 +179,19 @@
     position: absolute;
     background: #333;
     color: white;
-    padding: 8px;
-    border-radius: 4px;
+    padding: 6px 10px;
+    border-radius: 8px;
     z-index: 101;
-    max-width: 250px;
+    max-width: 220px;
     pointer-events: none;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 #dame-event-tooltip h4 {
-    margin: 0 0 4px;
-    font-size: 1.1em;
+    margin: 0 0 3px;
+    font-size: 1em;
 }
 #dame-event-tooltip p {
-    margin: 0 0 4px;
+    margin: 0 0 3px;
 }
 #dame-event-tooltip .tooltip-description {
     border-top: 1px solid #555;

@@ -138,6 +138,7 @@ jQuery(document).ready(function($) {
                             classList += ' middle';
                         }
 
+                        // Display the title only on the first day of the event, or on the first day of a new week (Sunday).
                         const title = (currentDatePointer.getDay() === 0 || currentDatePointer.getTime() === startDate.getTime()) ? event.title : '&nbsp;';
 
                         eventHtml = `<div class="${classList}" style="background-color: ${event.color};">
@@ -146,8 +147,8 @@ jQuery(document).ready(function($) {
                     } else {
                         const timeText = event.all_day == '1' ? dame_agenda_ajax.i18n.all_day : `${event.start_time} - ${event.end_time}`;
                         eventHtml = `<div class="dame-event dame-event-ponctuel" style="border-left-color: ${event.color};">
-                            <span class="event-time">${timeText}</span>
-                            <span class="event-title">${event.title}</span>
+                            <div class="event-time">${timeText}</div>
+                            <div class="event-title">${event.title}</div>
                         </div>`;
                     }
 
