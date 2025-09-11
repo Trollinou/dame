@@ -120,7 +120,6 @@ jQuery(document).ready(function($) {
             const endDate = new Date(event.end_date + 'T00:00:00');
 
             let currentDatePointer = new Date(startDate);
-
             while (currentDatePointer <= endDate) {
                 const dateStr = currentDatePointer.toISOString().split('T')[0];
                 const dayCell = $(`.dame-calendar-day[data-date="${dateStr}"]`);
@@ -131,14 +130,21 @@ jQuery(document).ready(function($) {
 
                     if (isMultiDay) {
                         let classList = 'dame-event dame-event-duree';
-                        if (currentDatePointer.toDateString() === startDate.toDateString()) classList += ' start';
-                        if (currentDatePointer.toDateString() === endDate.toDateString()) classList += ' end';
+                        if (currentDatePointer.getTime() === startDate.getTime()) {
+                            classList += ' start';
+                        } else if (currentDatePointer.getTime() === endDate.getTime()) {
+                            classList += ' end';
+                        } else {
+                            classList += ' middle';
+                        }
 
-                        eventHtml = `<div class="${classList}" style="--event-color: ${event.color};">
-                            ${event.title}
+                        const title = (currentDatePointer.getDay() === 0 || currentDatePointer.getTime() === startDate.getTime()) ? event.title : '&nbsp;';
+
+                        eventHtml = `<div class="${classList}" style="background-color: ${event.color};">
+                            ${title}
                         </div>`;
                     } else {
-                        const timeText = event.all_day ? dame_agenda_ajax.i18n.all_day : `${event.start_time} - ${event.end_time}`;
+                        const timeText = event.all_day == '1' ? dame_agenda_ajax.i18n.all_day : `${event.start_time} - ${event.end_time}`;
                         eventHtml = `<div class="dame-event dame-event-ponctuel" style="border-left-color: ${event.color};">
                             <span class="event-time">${timeText}</span>
                             <span class="event-title">${event.title}</span>
@@ -187,15 +193,16 @@ jQuery(document).ready(function($) {
         const eventData = $(this).data('event');
         if (!eventData) return;
 
-        const timeText = eventData.all_day ? dame_agenda_ajax.i18n.all_day : `${eventData.start_time} - ${eventData.end_time}`;
+        const timeText = eventData.all_day == '1' ? dame_agenda_ajax.i18n.all_day : `${eventData.start_time} - ${eventData.end_time}`;
 
-        tooltip.html(`
-            <h4>${eventData.title}</h4>
-            <p><strong>Date:</strong> ${eventData.start_date} - ${eventData.end_date}</p>
-            <p><strong>Heure:</strong> ${timeText}</p>
-            <p><strong>Lieu:</strong> ${eventData.location || 'N/A'}</p>
-            <p><strong>Description:</strong> ${eventData.description.substring(0, 150)}...</p>
-        `).show();
+        let tooltipHtml = `<h4>${eventData.title}</h4>`;
+        tooltipHtml += `<p>${timeText}</p>`;
+        if (eventData.location) {
+            tooltipHtml += `<p>${eventData.location}</p>`;
+        }
+        tooltipHtml += `<div class="tooltip-description">${eventData.description}</div>`;
+
+        tooltip.html(tooltipHtml).show();
 
         // Position tooltip
         const top = e.pageY + 10;

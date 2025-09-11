@@ -123,6 +123,11 @@
     text-align: right;
 }
 
+.events-container {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr); /* This will be overridden by spanning events */
+}
+
 .dame-event {
     margin-bottom: 3px;
     padding-left: 5px;
@@ -134,51 +139,69 @@
 .dame-event-ponctuel {
     display: flex;
     align-items: center;
+    gap: 0.5em;
     border-left: 5px solid; /* Color will be set inline */
     padding: 2px 5px;
 }
 
 .dame-event-ponctuel .event-time {
-    margin-right: 5px;
     font-weight: bold;
+    flex-shrink: 0;
+}
+
+.dame-event-ponctuel .event-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dame-event-duree {
     background-color: var(--event-color, #ccc);
     color: white;
     padding: 2px 8px;
-    margin-left: -5px; /* To align with grid border */
-    margin-right: -5px; /* To align with grid border */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-right: -5px; /* Extend to the edge */
+    margin-left: -5px; /* Extend to the edge */
 }
 
 .dame-event-duree.start {
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    margin-left: 0; /* Align with cell padding */
 }
 .dame-event-duree.end {
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    margin-right: 0; /* Align with cell padding */
+}
+.dame-event-duree.middle {
+    border-radius: 0;
 }
 
 #dame-event-tooltip {
     position: absolute;
     background: #333;
     color: white;
-    padding: 10px;
-    border-radius: 5px;
+    padding: 8px;
+    border-radius: 4px;
     z-index: 101;
-    max-width: 300px;
+    max-width: 250px;
     pointer-events: none;
+    font-size: 0.9em;
 }
 #dame-event-tooltip h4 {
-    margin-top: 0;
-    margin-bottom: 5px;
+    margin: 0 0 4px;
+    font-size: 1.1em;
 }
 #dame-event-tooltip p {
-    margin: 0 0 5px;
+    margin: 0 0 4px;
+}
+#dame-event-tooltip .tooltip-description {
+    border-top: 1px solid #555;
+    margin-top: 6px;
+    padding-top: 6px;
 }
 
 #dame-month-year-selector {
@@ -212,12 +235,18 @@
     background: #0073aa;
     color: white;
 }
-.button {
-    background-color: #f7f7f7;
+#dame-agenda-prev-month,
+#dame-agenda-next-month,
+#dame-agenda-filter-toggle {
+    background-color: #f0f0f0;
     border: 1px solid #ccc;
+    color: #333;
     padding: 0.5em 1em;
     cursor: pointer;
+    border-radius: 3px;
 }
-.button:hover {
+#dame-agenda-prev-month:hover,
+#dame-agenda-next-month:hover,
+#dame-agenda-filter-toggle:hover {
     background-color: #e0e0e0;
 }
