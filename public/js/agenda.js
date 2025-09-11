@@ -60,15 +60,16 @@ jQuery(document).ready(function($) {
         calendarGrid.empty();
         weekdaysContainer.empty();
 
-        // Render weekdays
-        dame_agenda_ajax.i18n.weekdays_short.forEach(day => {
+        // Render weekdays (Monday first)
+        const weekdays = dame_agenda_ajax.i18n.weekdays_short.slice(1).concat(dame_agenda_ajax.i18n.weekdays_short.slice(0, 1));
+        weekdays.forEach(day => {
             weekdaysContainer.append(`<div>${day}</div>`);
         });
 
         const firstDayOfMonth = new Date(year, month, 1);
         const lastDayOfMonth = new Date(year, month + 1, 0);
         const daysInMonth = lastDayOfMonth.getDate();
-        const startDayOfWeek = firstDayOfMonth.getDay(); // 0=Sun, 1=Mon...
+        const startDayOfWeek = (firstDayOfMonth.getDay() === 0) ? 6 : firstDayOfMonth.getDay() - 1; // 0=Mon, 6=Sun
 
         // Previous month's days
         const prevLastDay = new Date(year, month, 0).getDate();
@@ -102,7 +103,8 @@ jQuery(document).ready(function($) {
     }
 
     function renderEvents(events) {
-        // Sort events: multi-day first, then by start time
+        const eventLevels = {};
+
         events.sort((a, b) => {
             const aDuration = new Date(a.end_date) - new Date(a.start_date);
             const bDuration = new Date(b.end_date) - new Date(b.start_date);
@@ -118,45 +120,68 @@ jQuery(document).ready(function($) {
         events.forEach(event => {
             const startDate = new Date(event.start_date + 'T00:00:00');
             const endDate = new Date(event.end_date + 'T00:00:00');
+            const isMultiDay = startDate.getTime() !== endDate.getTime();
 
-            let currentDatePointer = new Date(startDate);
-            while (currentDatePointer <= endDate) {
-                const dateStr = currentDatePointer.toISOString().split('T')[0];
-                const dayCell = $(`.dame-calendar-day[data-date="${dateStr}"]`);
-
-                if (dayCell.length) {
-                    const isMultiDay = startDate.toDateString() !== endDate.toDateString();
-                    let eventHtml = '';
-
-                    if (isMultiDay) {
-                        let classList = 'dame-event dame-event-duree';
-                        if (currentDatePointer.getTime() === startDate.getTime()) {
-                            classList += ' start';
-                        } else if (currentDatePointer.getTime() === endDate.getTime()) {
-                            classList += ' end';
-                        } else {
-                            classList += ' middle';
+            if (isMultiDay) {
+                let tempDate = new Date(startDate);
+                while (tempDate <= endDate) {
+                    const dayOfWeek = (tempDate.getDay() === 0) ? 6 : tempDate.getDay() - 1;
+                    if (dayOfWeek === 0 || tempDate.getTime() === startDate.getTime()) {
+                        const dateStr = tempDate.toISOString().split('T')[0];
+                        const dayCell = $(`.dame-calendar-day[data-date="${dateStr}"]`);
+                        if (dayCell.length) {
+                            let span = 1;
+                            let nextDay = new Date(tempDate);
+                            nextDay.setDate(nextDay.getDate() + 1);
+                            while (nextDay <= endDate && ((nextDay.getDay() === 0) ? 6 : nextDay.getDay() - 1) > dayOfWeek) {
+                                span++;
+                                nextDay.setDate(nextDay.getDate() + 1);
+                            }
+                            let level = 0;
+                            let levelFound = false;
+                            while (!levelFound) {
+                                levelFound = true;
+                                for (let i = 0; i < span; i++) {
+                                    let checkDate = new Date(tempDate);
+                                    checkDate.setDate(checkDate.getDate() + i);
+                                    const checkDateStr = checkDate.toISOString().split('T')[0];
+                                    if (eventLevels[checkDateStr] && eventLevels[checkDateStr].includes(level)) {
+                                        levelFound = false;
+                                        level++;
+                                        break;
+                                    }
+                                }
+                            }
+                            for (let i = 0; i < span; i++) {
+                                let occupyDate = new Date(tempDate);
+                                occupyDate.setDate(occupyDate.getDate() + i);
+                                const occupyDateStr = occupyDate.toISOString().split('T')[0];
+                                if (!eventLevels[occupyDateStr]) eventLevels[occupyDateStr] = [];
+                                eventLevels[occupyDateStr].push(level);
+                            }
+                            const topPosition = 30 + (level * 25);
+                            const width = `calc(${span * 100}% - 4px)`;
+                            const eventHtml = `<div class="dame-event dame-event-duree" style="top: ${topPosition}px; width: ${width}; background-color: ${event.color};">
+                                ${event.title}
+                            </div>`;
+                            const eventEl = $(eventHtml).data('event', event);
+                            dayCell.append(eventEl);
                         }
-
-                        // Display the title only on the first day of the event, or on the first day of a new week (Sunday).
-                        const title = (currentDatePointer.getDay() === 0 || currentDatePointer.getTime() === startDate.getTime()) ? event.title : '&nbsp;';
-
-                        eventHtml = `<div class="${classList}" style="background-color: ${event.color};">
-                            ${title}
-                        </div>`;
-                    } else {
-                        const timeText = event.all_day == '1' ? dame_agenda_ajax.i18n.all_day : `${event.start_time} - ${event.end_time}`;
-                        eventHtml = `<div class="dame-event dame-event-ponctuel" style="border-left-color: ${event.color};">
-                            <div class="event-time">${timeText}</div>
-                            <div class="event-title">${event.title}</div>
-                        </div>`;
                     }
-
+                    tempDate.setDate(tempDate.getDate() + span);
+                }
+            } else {
+                const dateStr = startDate.toISOString().split('T')[0];
+                const dayCell = $(`.dame-calendar-day[data-date="${dateStr}"]`);
+                if (dayCell.length) {
+                    const timeText = event.all_day == '1' ? dame_agenda_ajax.i18n.all_day : `${event.start_time} - ${event.end_time}`;
+                    const eventHtml = `<div class="dame-event dame-event-ponctuel" style="border-left-color: ${event.color};">
+                        <div class="event-time">${timeText}</div>
+                        <div class="event-title">${event.title}</div>
+                    </div>`;
                     const eventEl = $(eventHtml).data('event', event);
                     dayCell.find('.events-container').append(eventEl);
                 }
-
-                currentDatePointer.setDate(currentDatePointer.getDate() + 1);
             }
         });
     }
