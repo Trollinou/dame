@@ -97,7 +97,7 @@
     border-right: 1px solid #ddd;
     border-top: 1px solid #ddd;
     padding: 5px;
-    position: relative; /* This is crucial for absolute positioning of events */
+    position: relative;
 }
 
 .dame-calendar-day:nth-child(7n) {
@@ -151,17 +151,28 @@
 }
 
 .dame-event-duree {
-    position: absolute;
-    left: 2px;
-    height: 22px;
     background-color: var(--event-color, #ccc);
     color: white;
     padding: 2px 8px;
     white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
-    border-radius: 4px;
-    z-index: 1;
-    box-sizing: border-box;
+    margin-right: -5px; /* Extend to the edge */
+    margin-left: -5px; /* Extend to the edge */
+}
+
+.dame-event-duree.start {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    margin-left: 0; /* Align with cell padding */
+}
+.dame-event-duree.end {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    margin-right: 0; /* Align with cell padding */
+}
+.dame-event-duree.middle {
+    border-radius: 0;
 }
 
 #dame-event-tooltip {
