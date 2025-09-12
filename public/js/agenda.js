@@ -102,87 +102,121 @@ jQuery(document).ready(function($) {
     }
 
     function renderEvents(events) {
+        const EVENT_HEIGHT = 32; // px
+        const EVENT_SPACING = 2; // px
+        const wp_sow = parseInt(dame_agenda_ajax.start_of_week, 10);
+
         // Sort events: multi-day first, then by start time
         events.sort((a, b) => {
-            const aDuration = new Date(a.end_date) - new Date(a.start_date);
-            const bDuration = new Date(b.end_date) - new Date(b.start_date);
-            if (aDuration > 0 && bDuration === 0) return -1;
-            if (bDuration > 0 && aDuration === 0) return 1;
+            const aIsMulti = (new Date(a.end_date) - new Date(a.start_date)) > 0;
+            const bIsMulti = (new Date(b.end_date) - new Date(b.start_date)) > 0;
+            if (aIsMulti && !bIsMulti) return -1;
+            if (!aIsMulti && bIsMulti) return 1;
             if (a.all_day && !b.all_day) return -1;
-            if (b.all_day && !a.all_day) return 1;
+            if (!a.all_day && b.all_day) return 1;
             if (a.start_time < b.start_time) return -1;
             if (a.start_time > b.start_time) return 1;
             return 0;
         });
 
-        const wp_sow = parseInt(dame_agenda_ajax.start_of_week, 10);
+        const multiDayEvents = events.filter(e => (new Date(e.end_date) - new Date(e.start_date)) > 0);
+        const singleDayEvents = events.filter(e => (new Date(e.end_date) - new Date(e.start_date)) <= 0);
+        const dayLanes = new Map(); // K: 'YYYY-MM-DD', V: Set of occupied lanes [0, 1, 2...]
 
-        events.forEach(event => {
-            const startDate = new Date(event.start_date + 'T00:00:00');
+        // --- 1. Render Multi-day Events ---
+        multiDayEvents.forEach(event => {
+            let currentDatePointer = new Date(event.start_date + 'T00:00:00');
             const endDate = new Date(event.end_date + 'T00:00:00');
-            const isMultiDay = startDate.toDateString() !== endDate.toDateString();
 
-            if (!isMultiDay) {
-                const dateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
-                const dayCell = $(`.dame-calendar-day[data-date="${dateStr}"]`);
-                if (dayCell.length) {
-                    const timeText = event.all_day == '1' ? dame_agenda_ajax.i18n.all_day : `${event.start_time} - ${event.end_time}`;
-                    const eventHtml = `<div class="dame-event dame-event-ponctuel" style="border-left-color: ${event.color};">
-                        <div class="event-time">${timeText}</div>
-                        <div class="event-title">${event.title}</div>
-                    </div>`;
-                    const eventEl = $(eventHtml).data('event', event);
-                    dayCell.find('.events-container').append(eventEl);
-                }
-                return; // continue to next event
-            }
-
-            // --- Logic for multi-day events ---
-            let currentDatePointer = new Date(startDate);
             while (currentDatePointer <= endDate) {
-                const dayOfWeek = currentDatePointer.getDay();
-                const isEventStart = currentDatePointer.getTime() === startDate.getTime();
-                const isWeekStart = dayOfWeek === wp_sow;
+                const isEventStart = currentDatePointer.getTime() === new Date(event.start_date + 'T00:00:00').getTime();
+                const isWeekStart = currentDatePointer.getDay() === wp_sow;
 
                 if (isEventStart || isWeekStart) {
-                    const year = currentDatePointer.getFullYear();
-                    const month = String(currentDatePointer.getMonth() + 1).padStart(2, '0');
-                    const day = String(currentDatePointer.getDate()).padStart(2, '0');
-                    const dateStr = `${year}-${month}-${day}`;
-                    const dayCell = $(`.dame-calendar-day[data-date="${dateStr}"]`);
+                    const segmentStartDate = new Date(currentDatePointer);
+
+                    // Find an available lane for this segment
+                    let laneIndex = 0;
+                    while (true) {
+                        let isLaneOccupied = false;
+                        let tempDate = new Date(segmentStartDate);
+                        while (tempDate <= endDate && tempDate.getDay() !== wp_sow || tempDate.getTime() === segmentStartDate.getTime()) {
+                            const dateStr = `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, '0')}-${String(tempDate.getDate()).padStart(2, '0')}`;
+                            if (dayLanes.has(dateStr) && dayLanes.get(dateStr).has(laneIndex)) {
+                                isLaneOccupied = true;
+                                break;
+                            }
+                            tempDate.setDate(tempDate.getDate() + 1);
+                             if(tempDate.getDay() === wp_sow) break;
+                        }
+                        if (!isLaneOccupied) break;
+                        laneIndex++;
+                    }
+
+                    // Calculate span and render segment
+                    let span = 1;
+                    let lookahead = new Date(segmentStartDate);
+                    lookahead.setDate(lookahead.getDate() + 1);
+                    while (lookahead <= endDate && lookahead.getDay() !== wp_sow) {
+                        span++;
+                        lookahead.setDate(lookahead.getDate() + 1);
+                    }
+
+                    const start_date_str = `${segmentStartDate.getFullYear()}-${String(segmentStartDate.getMonth() + 1).padStart(2, '0')}-${String(segmentStartDate.getDate()).padStart(2, '0')}`;
+                    const dayCell = $(`.dame-calendar-day[data-date="${start_date_str}"]`);
 
                     if (dayCell.length) {
-                        // Calculate how many days this segment spans
-                        let span = 1;
-                        let lookahead = new Date(currentDatePointer);
-                        lookahead.setDate(lookahead.getDate() + 1);
-                        while (lookahead <= endDate && lookahead.getDay() !== wp_sow) {
-                            span++;
-                            lookahead.setDate(lookahead.getDate() + 1);
-                        }
-
                         const width = `calc(${span * 100}% + ${span - 1}px)`;
-
+                        const top = laneIndex * (EVENT_HEIGHT + EVENT_SPACING);
                         let classList = 'dame-event dame-event-duree';
                         if (isEventStart) classList += ' start';
                         if (lookahead > endDate) classList += ' end';
 
-                        const eventHtml = `<div class="${classList}" style="background-color: ${event.color}; width: ${width};">
-                            ${event.title}
-                        </div>`;
+                        const eventHtml = `<div class="${classList}" style="background-color: ${event.color}; width: ${width}; top: ${top}px;">${event.title}</div>`;
+                        dayCell.find('.events-container').append($(eventHtml).data('event', event));
 
-                        const eventEl = $(eventHtml).data('event', event);
-                        dayCell.find('.events-container').append(eventEl);
-
-                        // Advance pointer by the number of days we just spanned
-                        currentDatePointer.setDate(currentDatePointer.getDate() + span);
-                    } else {
-                        // Day cell not visible, just advance one day
-                        currentDatePointer.setDate(currentDatePointer.getDate() + 1);
+                        // Mark lanes as occupied for the entire span
+                        for (let i = 0; i < span; i++) {
+                            let occupiedDate = new Date(segmentStartDate);
+                            occupiedDate.setDate(occupiedDate.getDate() + i);
+                            const occupiedDateStr = `${occupiedDate.getFullYear()}-${String(occupiedDate.getMonth() + 1).padStart(2, '0')}-${String(occupiedDate.getDate()).padStart(2, '0')}`;
+                            if (!dayLanes.has(occupiedDateStr)) dayLanes.set(occupiedDateStr, new Set());
+                            dayLanes.get(occupiedDateStr).add(laneIndex);
+                        }
                     }
+                    currentDatePointer.setDate(currentDatePointer.getDate() + span);
                 } else {
                     currentDatePointer.setDate(currentDatePointer.getDate() + 1);
                 }
+            }
+        });
+
+        // --- 2. Render Single-day Events ---
+        singleDayEvents.forEach(event => {
+            const startDate = new Date(event.start_date + 'T00:00:00');
+            const dateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+            const dayCell = $(`.dame-calendar-day[data-date="${dateStr}"]`);
+
+            if (dayCell.length) {
+                let occupiedLanes = 0;
+                if (dayLanes.has(dateStr)) {
+                    occupiedLanes = Math.max(...dayLanes.get(dateStr)) + 1;
+                }
+                const marginTop = occupiedLanes * (EVENT_HEIGHT + EVENT_SPACING);
+
+                let ponctuelContainer = dayCell.find('.ponctuel-events-container');
+                if (ponctuelContainer.length === 0) {
+                    ponctuelContainer = $('<div class="ponctuel-events-container"></div>');
+                    dayCell.find('.events-container').append(ponctuelContainer);
+                }
+                ponctuelContainer.css('margin-top', `${marginTop}px`);
+
+                const timeText = event.all_day == '1' ? dame_agenda_ajax.i18n.all_day : `${event.start_time} - ${event.end_time}`;
+                const eventHtml = `<div class="dame-event dame-event-ponctuel" style="border-left-color: ${event.color};">
+                    <div class="event-time">${timeText}</div>
+                    <div class="event-title">${event.title}</div>
+                </div>`;
+                ponctuelContainer.append($(eventHtml).data('event', event));
             }
         });
     }
