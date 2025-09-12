@@ -115,56 +115,74 @@ jQuery(document).ready(function($) {
             return 0;
         });
 
+        const wp_sow = parseInt(dame_agenda_ajax.start_of_week, 10);
+
         events.forEach(event => {
             const startDate = new Date(event.start_date + 'T00:00:00');
             const endDate = new Date(event.end_date + 'T00:00:00');
+            const isMultiDay = startDate.toDateString() !== endDate.toDateString();
 
-            let currentDatePointer = new Date(startDate);
-            while (currentDatePointer <= endDate) {
-                const year = currentDatePointer.getFullYear();
-                const month = String(currentDatePointer.getMonth() + 1).padStart(2, '0');
-                const day = String(currentDatePointer.getDate()).padStart(2, '0');
-                const dateStr = `${year}-${month}-${day}`;
-
+            if (!isMultiDay) {
+                const dateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
                 const dayCell = $(`.dame-calendar-day[data-date="${dateStr}"]`);
-
                 if (dayCell.length) {
-                    const isMultiDay = startDate.toDateString() !== endDate.toDateString();
-                    let eventHtml = '';
-
-                    if (isMultiDay) {
-                        let classList = 'dame-event dame-event-duree';
-                        if (currentDatePointer.getTime() === startDate.getTime()) {
-                            classList += ' start';
-                        } else if (currentDatePointer.getTime() === endDate.getTime()) {
-                            classList += ' end';
-                        } else {
-                            classList += ' middle';
-                        }
-
-                        // Display the title only on the first day of the event, or on the first day of a new week.
-                        const js_day = currentDatePointer.getDay();
-                        const wp_sow = parseInt(dame_agenda_ajax.start_of_week, 10);
-                        const is_start_of_event = currentDatePointer.getTime() === startDate.getTime();
-                        const is_start_of_week = (js_day === wp_sow);
-                        const title = (is_start_of_week || is_start_of_event) ? event.title : '&nbsp;';
-
-                        eventHtml = `<div class="${classList}" style="background-color: ${event.color};">
-                            ${title}
-                        </div>`;
-                    } else {
-                        const timeText = event.all_day == '1' ? dame_agenda_ajax.i18n.all_day : `${event.start_time} - ${event.end_time}`;
-                        eventHtml = `<div class="dame-event dame-event-ponctuel" style="border-left-color: ${event.color};">
-                            <div class="event-time">${timeText}</div>
-                            <div class="event-title">${event.title}</div>
-                        </div>`;
-                    }
-
+                    const timeText = event.all_day == '1' ? dame_agenda_ajax.i18n.all_day : `${event.start_time} - ${event.end_time}`;
+                    const eventHtml = `<div class="dame-event dame-event-ponctuel" style="border-left-color: ${event.color};">
+                        <div class="event-time">${timeText}</div>
+                        <div class="event-title">${event.title}</div>
+                    </div>`;
                     const eventEl = $(eventHtml).data('event', event);
                     dayCell.find('.events-container').append(eventEl);
                 }
+                return; // continue to next event
+            }
 
-                currentDatePointer.setDate(currentDatePointer.getDate() + 1);
+            // --- Logic for multi-day events ---
+            let currentDatePointer = new Date(startDate);
+            while (currentDatePointer <= endDate) {
+                const dayOfWeek = currentDatePointer.getDay();
+                const isEventStart = currentDatePointer.getTime() === startDate.getTime();
+                const isWeekStart = dayOfWeek === wp_sow;
+
+                if (isEventStart || isWeekStart) {
+                    const year = currentDatePointer.getFullYear();
+                    const month = String(currentDatePointer.getMonth() + 1).padStart(2, '0');
+                    const day = String(currentDatePointer.getDate()).padStart(2, '0');
+                    const dateStr = `${year}-${month}-${day}`;
+                    const dayCell = $(`.dame-calendar-day[data-date="${dateStr}"]`);
+
+                    if (dayCell.length) {
+                        // Calculate how many days this segment spans
+                        let span = 1;
+                        let lookahead = new Date(currentDatePointer);
+                        lookahead.setDate(lookahead.getDate() + 1);
+                        while (lookahead <= endDate && lookahead.getDay() !== wp_sow) {
+                            span++;
+                            lookahead.setDate(lookahead.getDate() + 1);
+                        }
+
+                        const width = `calc(${span * 100}% + ${span - 1}px)`;
+
+                        let classList = 'dame-event dame-event-duree';
+                        if (isEventStart) classList += ' start';
+                        if (lookahead > endDate) classList += ' end';
+
+                        const eventHtml = `<div class="${classList}" style="background-color: ${event.color}; width: ${width};">
+                            ${event.title}
+                        </div>`;
+
+                        const eventEl = $(eventHtml).data('event', event);
+                        dayCell.find('.events-container').append(eventEl);
+
+                        // Advance pointer by the number of days we just spanned
+                        currentDatePointer.setDate(currentDatePointer.getDate() + span);
+                    } else {
+                        // Day cell not visible, just advance one day
+                        currentDatePointer.setDate(currentDatePointer.getDate() + 1);
+                    }
+                } else {
+                    currentDatePointer.setDate(currentDatePointer.getDate() + 1);
+                }
             }
         });
     }
