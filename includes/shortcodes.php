@@ -785,10 +785,28 @@ function dame_agenda_shortcode( $atts ) {
     wp_enqueue_style( 'dame-agenda-style', plugin_dir_url( __FILE__ ) . '../public/css/agenda.css', array(), DAME_VERSION );
     wp_enqueue_script( 'dame-agenda-script', plugin_dir_url( __FILE__ ) . '../public/js/agenda.js', array( 'jquery' ), DAME_VERSION, true );
 
-    // Localize script with ajax url and nonce
+    // Get WordPress's start_of_week option
+    $start_of_week = intval( get_option( 'start_of_week', 1 ) ); // Default to Monday
+
+    // Create the full weekdays array
+    $weekdays = array(
+        __( 'Dim', 'dame' ), __( 'Lun', 'dame' ), __( 'Mar', 'dame' ),
+        __( 'Mer', 'dame' ), __( 'Jeu', 'dame' ), __( 'Ven', 'dame' ),
+        __( 'Sam', 'dame' ),
+    );
+
+    // Reorder the weekdays array based on the start_of_week setting
+    $ordered_weekdays = array();
+    for ( $i = 0; $i < 7; $i++ ) {
+        $day_index = ( $start_of_week + $i ) % 7;
+        $ordered_weekdays[] = $weekdays[ $day_index ];
+    }
+
+    // Localize script with ajax url, nonce, and dynamic i18n values
     wp_localize_script( 'dame-agenda-script', 'dame_agenda_ajax', array(
         'ajax_url' => admin_url( 'admin-ajax.php' ),
         'nonce'    => wp_create_nonce( 'dame_agenda_nonce' ),
+        'start_of_week' => $start_of_week,
         'i18n'     => array(
             'all_day' => __( 'Toute la journée', 'dame' ),
             'months'  => array(
@@ -797,11 +815,7 @@ function dame_agenda_shortcode( $atts ) {
                 __( 'Juillet', 'dame' ), __( 'Août', 'dame' ), __( 'Septembre', 'dame' ),
                 __( 'Octobre', 'dame' ), __( 'Novembre', 'dame' ), __( 'Décembre', 'dame' ),
             ),
-            'weekdays_short' => array(
-                __( 'Dim', 'dame' ), __( 'Lun', 'dame' ), __( 'Mar', 'dame' ),
-                __( 'Mer', 'dame' ), __( 'Jeu', 'dame' ), __( 'Ven', 'dame' ),
-                __( 'Sam', 'dame' ),
-            ),
+            'weekdays_short' => $ordered_weekdays,
         ),
     ) );
 
@@ -881,8 +895,9 @@ function dame_get_agenda_events() {
     $categories = isset( $_POST['categories'] ) ? array_map( 'intval', $_POST['categories'] ) : array();
     $search_term = isset( $_POST['search'] ) ? sanitize_text_field( $_POST['search'] ) : '';
 
-    $start_of_month = new DateTime( "$year-$month-01" );
-    $end_of_month = new DateTime( "$year-$month-01" );
+    $timezone = wp_timezone();
+    $start_of_month = new DateTime( "$year-$month-01", $timezone );
+    $end_of_month = new DateTime( "$year-$month-01", $timezone );
     $end_of_month->modify( 'last day of this month' );
 
     $args = array(

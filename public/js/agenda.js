@@ -68,7 +68,7 @@ jQuery(document).ready(function($) {
         const firstDayOfMonth = new Date(year, month, 1);
         const lastDayOfMonth = new Date(year, month + 1, 0);
         const daysInMonth = lastDayOfMonth.getDate();
-        const startDayOfWeek = firstDayOfMonth.getDay(); // 0=Sun, 1=Mon...
+        const startDayOfWeek = (firstDayOfMonth.getDay() - dame_agenda_ajax.start_of_week + 7) % 7;
 
         // Previous month's days
         const prevLastDay = new Date(year, month, 0).getDate();
@@ -121,7 +121,11 @@ jQuery(document).ready(function($) {
 
             let currentDatePointer = new Date(startDate);
             while (currentDatePointer <= endDate) {
-                const dateStr = currentDatePointer.toISOString().split('T')[0];
+                const year = currentDatePointer.getFullYear();
+                const month = String(currentDatePointer.getMonth() + 1).padStart(2, '0');
+                const day = String(currentDatePointer.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
+
                 const dayCell = $(`.dame-calendar-day[data-date="${dateStr}"]`);
 
                 if (dayCell.length) {
@@ -138,8 +142,12 @@ jQuery(document).ready(function($) {
                             classList += ' middle';
                         }
 
-                        // Display the title only on the first day of the event, or on the first day of a new week (Sunday).
-                        const title = (currentDatePointer.getDay() === 0 || currentDatePointer.getTime() === startDate.getTime()) ? event.title : '&nbsp;';
+                        // Display the title only on the first day of the event, or on the first day of a new week.
+                        const js_day = currentDatePointer.getDay();
+                        const wp_sow = parseInt(dame_agenda_ajax.start_of_week, 10);
+                        const is_start_of_event = currentDatePointer.getTime() === startDate.getTime();
+                        const is_start_of_week = (js_day === wp_sow);
+                        const title = (is_start_of_week || is_start_of_event) ? event.title : '&nbsp;';
 
                         eventHtml = `<div class="${classList}" style="background-color: ${event.color};">
                             ${title}
