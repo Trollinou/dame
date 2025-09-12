@@ -124,8 +124,8 @@
 }
 
 .events-container {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr); /* This will be overridden by spanning events */
+    position: relative;
+    display: flow-root; /* Creates a new block formatting context to contain absolute children and margin'd static children */
 }
 
 .dame-event {
@@ -151,14 +151,13 @@
 }
 
 .dame-event-duree {
+    position: absolute;
+    z-index: 10;
     background-color: var(--event-color, #ccc);
     color: white;
     padding: 2px 8px;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-right: -5px; /* Extend to the edge */
-    margin-left: -5px; /* Extend to the edge */
+    /* overflow, text-overflow, and margins are removed for spanning */
 }
 
 .dame-event-duree.start {
