@@ -101,6 +101,16 @@ jQuery(document).ready(function($) {
         renderEvents(events);
     }
 
+    /**
+     * Safely parses a 'YYYY-MM-DD' string into a local Date object.
+     * @param {string} dateStr The date string to parse.
+     * @returns {Date}
+     */
+    function parseDateAsLocal(dateStr) {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day);
+    }
+
     function renderEvents(events) {
         const EVENT_HEIGHT = 32; // px
         const EVENT_SPACING = 2; // px
@@ -108,8 +118,8 @@ jQuery(document).ready(function($) {
 
         // Sort events: multi-day first, then by start time
         events.sort((a, b) => {
-            const aIsMulti = (new Date(a.end_date) - new Date(a.start_date)) > 0;
-            const bIsMulti = (new Date(b.end_date) - new Date(b.start_date)) > 0;
+            const aIsMulti = (parseDateAsLocal(a.end_date) - parseDateAsLocal(a.start_date)) > 0;
+            const bIsMulti = (parseDateAsLocal(b.end_date) - parseDateAsLocal(b.start_date)) > 0;
             if (aIsMulti && !bIsMulti) return -1;
             if (!aIsMulti && bIsMulti) return 1;
             if (a.all_day && !b.all_day) return -1;
@@ -119,47 +129,47 @@ jQuery(document).ready(function($) {
             return 0;
         });
 
-        const multiDayEvents = events.filter(e => (new Date(e.end_date) - new Date(e.start_date)) > 0);
-        const singleDayEvents = events.filter(e => (new Date(e.end_date) - new Date(e.start_date)) <= 0);
+        const multiDayEvents = events.filter(e => (parseDateAsLocal(e.end_date) - parseDateAsLocal(e.start_date)) > 0);
+        const singleDayEvents = events.filter(e => (parseDateAsLocal(e.end_date) - parseDateAsLocal(e.start_date)) <= 0);
         const dayLanes = new Map(); // K: 'YYYY-MM-DD', V: Set of occupied lanes [0, 1, 2...]
 
         // --- 1. Render Multi-day Events ---
         multiDayEvents.forEach(event => {
-            let currentDatePointer = new Date(event.start_date + 'T00:00:00');
-            const endDate = new Date(event.end_date + 'T00:00:00');
+            let currentDatePointer = parseDateAsLocal(event.start_date);
+            const endDate = parseDateAsLocal(event.end_date);
+            const eventStartDate = parseDateAsLocal(event.start_date);
 
             while (currentDatePointer <= endDate) {
-                const isEventStart = currentDatePointer.getTime() === new Date(event.start_date + 'T00:00:00').getTime();
+                const isEventStart = currentDatePointer.getTime() === eventStartDate.getTime();
                 const isWeekStart = currentDatePointer.getDay() === wp_sow;
 
                 if (isEventStart || isWeekStart) {
                     const segmentStartDate = new Date(currentDatePointer);
 
-                    // Find an available lane for this segment
-                    let laneIndex = 0;
-                    while (true) {
-                        let isLaneOccupied = false;
-                        let tempDate = new Date(segmentStartDate);
-                        while (tempDate <= endDate && tempDate.getDay() !== wp_sow || tempDate.getTime() === segmentStartDate.getTime()) {
-                            const dateStr = `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, '0')}-${String(tempDate.getDate()).padStart(2, '0')}`;
-                            if (dayLanes.has(dateStr) && dayLanes.get(dateStr).has(laneIndex)) {
-                                isLaneOccupied = true;
-                                break;
-                            }
-                            tempDate.setDate(tempDate.getDate() + 1);
-                             if(tempDate.getDay() === wp_sow) break;
-                        }
-                        if (!isLaneOccupied) break;
-                        laneIndex++;
-                    }
-
-                    // Calculate span and render segment
+                    // Calculate span for the current segment
                     let span = 1;
                     let lookahead = new Date(segmentStartDate);
                     lookahead.setDate(lookahead.getDate() + 1);
                     while (lookahead <= endDate && lookahead.getDay() !== wp_sow) {
                         span++;
                         lookahead.setDate(lookahead.getDate() + 1);
+                    }
+
+                    // Find an available lane for this segment using the calculated span
+                    let laneIndex = 0;
+                    while (true) {
+                        let isLaneOccupied = false;
+                        for (let i = 0; i < span; i++) {
+                            let tempDate = new Date(segmentStartDate);
+                            tempDate.setDate(tempDate.getDate() + i);
+                            const dateStr = `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, '0')}-${String(tempDate.getDate()).padStart(2, '0')}`;
+                            if (dayLanes.has(dateStr) && dayLanes.get(dateStr).has(laneIndex)) {
+                                isLaneOccupied = true;
+                                break;
+                            }
+                        }
+                        if (!isLaneOccupied) break; // Found a free lane
+                        laneIndex++; // Try the next lane
                     }
 
                     const start_date_str = `${segmentStartDate.getFullYear()}-${String(segmentStartDate.getMonth() + 1).padStart(2, '0')}-${String(segmentStartDate.getDate()).padStart(2, '0')}`;
@@ -193,7 +203,7 @@ jQuery(document).ready(function($) {
 
         // --- 2. Render Single-day Events ---
         singleDayEvents.forEach(event => {
-            const startDate = new Date(event.start_date + 'T00:00:00');
+            const startDate = parseDateAsLocal(event.start_date);
             const dateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
             const dayCell = $(`.dame-calendar-day[data-date="${dateStr}"]`);
 

@@ -125,6 +125,7 @@
 
 .events-container {
     position: relative;
+    display: flow-root; /* Creates a new block formatting context to contain absolute children and margin'd static children */
 }
 
 .dame-event {
