@@ -17,9 +17,38 @@ jQuery(document).ready(function($) {
     let currentDate = new Date();
     let searchTimeout;
 
+    /**
+     * Formats a Date object into 'YYYY-MM-DD' string.
+     * @param {Date} date The date to format.
+     * @returns {string}
+     */
+    function formatDate(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
     function fetchAndRenderCalendar() {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth(); // 0-indexed
+
+        // Calculate the exact start and end dates of the visible grid
+        const firstDayOfMonth = new Date(year, month, 1);
+        const lastDayOfMonth = new Date(year, month + 1, 0);
+        const daysInMonth = lastDayOfMonth.getDate();
+        const startDayOfWeek = (firstDayOfMonth.getDay() - dame_agenda_ajax.start_of_week + 7) % 7;
+
+        const gridStartDate = new Date(firstDayOfMonth);
+        gridStartDate.setDate(gridStartDate.getDate() - startDayOfWeek);
+
+        const totalCellsBeforeNextMonth = startDayOfWeek + daysInMonth;
+        const remainingCells = (totalCellsBeforeNextMonth % 7 === 0) ? 0 : 7 - (totalCellsBeforeNextMonth % 7);
+        const totalGridDays = totalCellsBeforeNextMonth + remainingCells;
+
+        const gridEndDate = new Date(gridStartDate);
+        gridEndDate.setDate(gridEndDate.getDate() + totalGridDays - 1);
+
 
         const categories = $('.dame-agenda-cat-filter:checked').map(function() {
             return $(this).val();
@@ -35,8 +64,8 @@ jQuery(document).ready(function($) {
             data: {
                 action: 'dame_get_agenda_events',
                 nonce: dame_agenda_ajax.nonce,
-                year: year,
-                month: month + 1, // WP uses 1-indexed month
+                start_date: formatDate(gridStartDate),
+                end_date: formatDate(gridEndDate),
                 categories: categories,
                 search: searchTerm,
             },
@@ -71,10 +100,17 @@ jQuery(document).ready(function($) {
         const startDayOfWeek = (firstDayOfMonth.getDay() - dame_agenda_ajax.start_of_week + 7) % 7;
 
         // Previous month's days
-        const prevLastDay = new Date(year, month, 0).getDate();
+        // Previous month's days
+        const prevMonthDate = new Date(year, month, 0);
+        const prevYear = prevMonthDate.getFullYear();
+        const prevMonth = prevMonthDate.getMonth();
+        const prevLastDay = prevMonthDate.getDate();
         for (let i = startDayOfWeek; i > 0; i--) {
-            calendarGrid.append(`<div class="dame-calendar-day other-month">
-                <div class="day-number">${prevLastDay - i + 1}</div>
+            const day = prevLastDay - i + 1;
+            const dateStr = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            calendarGrid.append(`<div class="dame-calendar-day other-month" data-date="${dateStr}">
+                <div class="day-number">${day}</div>
+                <div class="events-container"></div>
             </div>`);
         }
 
@@ -90,11 +126,16 @@ jQuery(document).ready(function($) {
         }
 
         // Next month's days
+        const nextMonthDate = new Date(year, month + 1, 1);
+        const nextYear = nextMonthDate.getFullYear();
+        const nextMonth = nextMonthDate.getMonth();
         const totalCells = startDayOfWeek + daysInMonth;
         const remainingCells = (totalCells % 7 === 0) ? 0 : 7 - (totalCells % 7);
-        for (let i = 1; i <= remainingCells; i++) {
-            calendarGrid.append(`<div class="dame-calendar-day other-month">
-                <div class="day-number">${i}</div>
+        for (let day = 1; day <= remainingCells; day++) {
+            const dateStr = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            calendarGrid.append(`<div class="dame-calendar-day other-month" data-date="${dateStr}">
+                <div class="day-number">${day}</div>
+                <div class="events-container"></div>
             </div>`);
         }
 

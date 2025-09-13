@@ -57,6 +57,12 @@
     margin: 0;
 }
 
+/* Add indentation for nested category lists */
+#dame-agenda-filter-panel ul ul {
+    margin-left: 15px;
+    margin-top: 5px;
+}
+
 #dame-agenda-filter-panel li {
     margin-bottom: 0.5em;
 }
@@ -108,13 +114,14 @@
     color: #aaa;
 }
 .dame-calendar-day.today .day-number {
-    background-color: #0073aa;
+    background-color: red;
     color: white;
     border-radius: 50%;
     width: 2em;
     height: 2em;
     line-height: 2em;
     text-align: center;
+    float: right;
 }
 
 .day-number {
@@ -125,7 +132,7 @@
 
 .events-container {
     position: relative;
-    display: flow-root; /* Creates a new block formatting context to contain absolute children and margin'd static children */
+    clear: both; /* This ensures the container moves below any floated elements, like the day number */
 }
 
 .dame-event {

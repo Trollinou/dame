@@ -4,6 +4,14 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 3.0.2 (13/09/2025)
+
+*   **Amélioration de l'affichage de l'agenda `[dame_agenda]`**
+    *   **Fonctionnalité :** Le filtre des catégories est maintenant hiérarchique. Les catégories enfants sont indentées sous leur parent pour une meilleure lisibilité.
+    *   **Fonctionnalité :** Les événements sont maintenant affichés pour tous les jours visibles dans la grille du calendrier, y compris ceux des mois précédent et suivant.
+    *   **Amélioration UI :** Le marqueur du jour courant est maintenant un cercle rouge et est aligné en haut à droite de la cellule, de la même manière que les autres numéros de jour.
+    *   **Correctif :** Correction d'un bug de mise en page où le style du jour courant interférait avec l'affichage des événements dans la même cellule.
+
 ### 3.0.1 (12/09/2025)
 
 *   **Amélioration majeure de l'agenda `[dame_agenda]`**
