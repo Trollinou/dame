@@ -4,7 +4,7 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
-### 3.0.2 (13/09/2025)
+### 3.0.3 (13/09/2025)
 
 *   **Amélioration de l'interface d'administration de l'Agenda**
     *   **Liste des événements :** Ajout de colonnes pour "Date de début", "Date de fin", "Lieu", et "Catégorie". La catégorie est affichée avec un indicateur de couleur pour une meilleure lisibilité.
