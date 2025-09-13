@@ -224,4 +224,57 @@ document.addEventListener('DOMContentLoaded', function () {
     if (typeof jQuery !== 'undefined' && typeof jQuery.fn.wpColorPicker !== 'undefined') {
         jQuery('.dame-color-picker').wpColorPicker();
     }
+
+    // Auto-copy start date to end date for agenda events
+    if (document.body.classList.contains('post-type-dame_agenda')) {
+        const startDateInput = document.getElementById('dame_start_date');
+        const endDateInput = document.getElementById('dame_end_date');
+
+        if (startDateInput && endDateInput) {
+            startDateInput.addEventListener('change', function() {
+                if (this.value && !endDateInput.value) {
+                    endDateInput.value = this.value;
+                }
+            });
+        }
+
+        // Form validation for required fields
+        const postForm = document.getElementById('post');
+        if (postForm) {
+            postForm.addEventListener('submit', function(e) {
+                const startDate = document.getElementById('dame_start_date').value;
+                const endDate = document.getElementById('dame_end_date').value;
+                const categoryCheckboxes = document.querySelectorAll('#dame_agenda_categorychecklist input[type="checkbox"]');
+                let categoryChecked = false;
+
+                for (const checkbox of categoryCheckboxes) {
+                    if (checkbox.checked) {
+                        categoryChecked = true;
+                        break;
+                    }
+                }
+
+                const errors = [];
+                if (!startDate) {
+                    errors.push("La date de début est obligatoire.");
+                }
+                if (!endDate) {
+                    errors.push("La date de fin est obligatoire.");
+                }
+                if (!categoryChecked) {
+                    // Check if the add-new-category-pop is visible, which means the user is adding a new one.
+                    // This is a workaround for when a new category is being added.
+                    const newCategoryInput = document.getElementById('newdame_agenda_category');
+                    if (!newCategoryInput || !newCategoryInput.value) {
+                        errors.push("Veuillez sélectionner au moins une catégorie.");
+                    }
+                }
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    alert(errors.join('\\n'));
+                }
+            });
+        }
+    }
 });

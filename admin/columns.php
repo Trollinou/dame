@@ -333,3 +333,93 @@ foreach ( $cpts as $cpt ) {
     add_filter( "manage_edit-{$cpt}_columns", 'dame_add_difficulty_column' );
     add_action( "manage_{$cpt}_posts_custom_column", 'dame_render_difficulty_column', 10, 2 );
 }
+
+/**
+ * Sets the custom columns for the Agenda CPT.
+ *
+ * @param array $columns The existing columns.
+ * @return array The modified columns.
+ */
+function dame_set_agenda_columns( $columns ) {
+    $new_columns = array(
+        'cb'              => $columns['cb'],
+        'title'           => __( 'Titre', 'dame' ),
+        'dame_category'   => __( 'Catégorie', 'dame' ),
+        'dame_location'   => __( 'Lieu', 'dame' ),
+        'dame_start_date' => __( 'Date de début', 'dame' ),
+        'dame_end_date'   => __( 'Date de fin', 'dame' ),
+        'date'            => $columns['date'],
+    );
+    return $new_columns;
+}
+add_filter( 'manage_edit-dame_agenda_columns', 'dame_set_agenda_columns' );
+
+/**
+ * Renders the content for the custom Agenda columns.
+ *
+ * @param string $column The name of the column to render.
+ * @param int    $post_id The ID of the post.
+ */
+function dame_render_agenda_columns( $column, $post_id ) {
+    switch ( $column ) {
+        case 'dame_start_date':
+            $start_date = get_post_meta( $post_id, '_dame_start_date', true );
+            $start_time = get_post_meta( $post_id, '_dame_start_time', true );
+            $all_day    = get_post_meta( $post_id, '_dame_all_day', true );
+
+            if ( $start_date ) {
+                $timestamp = strtotime( $start_date );
+                echo esc_html( date_i18n( get_option( 'date_format' ), $timestamp ) );
+                if ( ! $all_day && $start_time ) {
+                    echo '<br>' . esc_html( $start_time );
+                }
+            } else {
+                echo '—';
+            }
+            break;
+
+        case 'dame_end_date':
+            $end_date = get_post_meta( $post_id, '_dame_end_date', true );
+            $end_time = get_post_meta( $post_id, '_dame_end_time', true );
+            $all_day  = get_post_meta( $post_id, '_dame_all_day', true );
+
+            if ( $end_date ) {
+                $timestamp = strtotime( $end_date );
+                echo esc_html( date_i18n( get_option( 'date_format' ), $timestamp ) );
+                if ( ! $all_day && $end_time ) {
+                    echo '<br>' . esc_html( $end_time );
+                }
+            } else {
+                echo '—';
+            }
+            break;
+
+        case 'dame_location':
+            $location = get_post_meta( $post_id, '_dame_location_name', true );
+            echo esc_html( $location ? $location : '—' );
+            break;
+
+        case 'dame_category':
+            $categories = get_the_terms( $post_id, 'dame_agenda_category' );
+            if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) {
+                $category_links = array();
+                foreach ( $categories as $category ) {
+                    $term_meta = get_option( "taxonomy_{$category->term_id}" );
+                    $color     = isset( $term_meta['color'] ) && ! empty( $term_meta['color'] ) ? $term_meta['color'] : '#e0e0e0';
+
+                    $category_links[] = sprintf(
+                        '<span style="display: inline-block; background-color: %s; color: %s; padding: 2px 8px; margin: 2px; border-radius: 4px; font-size: 0.9em;">%s</span>',
+                        esc_attr( $color ),
+                        esc_attr( dame_get_contrast_color( $color ) ),
+                        esc_html( $category->name )
+                    );
+                }
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                echo implode( ' ', $category_links );
+            } else {
+                echo '—';
+            }
+            break;
+    }
+}
+add_action( 'manage_dame_agenda_posts_custom_column', 'dame_render_agenda_columns', 10, 2 );

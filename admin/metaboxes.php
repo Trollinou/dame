@@ -1404,6 +1404,14 @@ add_action( 'add_meta_boxes', 'dame_add_cours_meta_boxes' );
  */
 function dame_add_agenda_meta_boxes() {
     add_meta_box(
+        'dame_agenda_description_metabox',
+        __( 'Description', 'dame' ),
+        'dame_render_agenda_description_metabox',
+        'dame_agenda',
+        'normal',
+        'high'
+    );
+    add_meta_box(
         'dame_agenda_details_metabox',
         __( 'Détails de l\'événement', 'dame' ),
         'dame_render_agenda_details_metabox',
@@ -1413,6 +1421,31 @@ function dame_add_agenda_meta_boxes() {
     );
 }
 add_action( 'add_meta_boxes', 'dame_add_agenda_meta_boxes' );
+
+/**
+ * Renders the meta box for the agenda's description.
+ *
+ * @param WP_Post $post The post object.
+ */
+function dame_render_agenda_description_metabox( $post ) {
+    $description = get_post_meta( $post->ID, '_dame_agenda_description', true );
+
+    wp_editor(
+        $description,
+        'dame_agenda_description',
+        array(
+            'textarea_name' => 'dame_agenda_description',
+            'teeny'         => true,
+            'media_buttons' => false,
+            'textarea_rows' => 5,
+            'tinymce'       => array(
+                'toolbar1' => 'bold,italic',
+                'toolbar2' => '',
+                'toolbar3' => '',
+            ),
+        )
+    );
+}
 
 /**
  * Renders the meta box for agenda details.
@@ -1435,6 +1468,12 @@ function dame_render_agenda_details_metabox( $post ) {
     ?>
     <table class="form-table">
         <!-- Date and Time Fields -->
+        <tr>
+            <th><label for="dame_all_day"><?php _e( 'Journée entière', 'dame' ); ?></label></th>
+            <td>
+                <input type="checkbox" id="dame_all_day" name="dame_all_day" value="1" <?php checked( $all_day, '1' ); ?> />
+            </td>
+        </tr>
         <tr>
             <th><label for="dame_start_date"><?php _e( 'Date de début', 'dame' ); ?></label></th>
             <td>
@@ -1717,6 +1756,7 @@ function dame_save_agenda_meta( $post_id ) {
         'dame_address_2'     => 'sanitize_text_field',
         'dame_postal_code'   => 'sanitize_text_field',
         'dame_city'          => 'sanitize_text_field',
+        'dame_agenda_description' => 'wp_kses_post',
     ];
 
     foreach ( $fields as $field_name => $sanitize_callback ) {
