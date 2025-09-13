@@ -1512,12 +1512,6 @@ function dame_render_agenda_details_metabox( $post ) {
                 </span>
             </td>
         </tr>
-        <tr>
-            <th><label for="dame_all_day"><?php _e( 'Journée entière', 'dame' ); ?></label></th>
-            <td>
-                <input type="checkbox" id="dame_all_day" name="dame_all_day" value="1" <?php checked( $all_day, '1' ); ?> />
-            </td>
-        </tr>
 
         <!-- Location Fields -->
         <tr>
