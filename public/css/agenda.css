@@ -1,8 +1,8 @@
 /* DAME Agenda Shortcode Styles */
 #dame-agenda-wrapper {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 2em auto;
-    font-family: sans-serif;
+    /* font-family: sans-serif; */
 }
 
 .dame-agenda-header {
@@ -117,9 +117,9 @@
     background-color: red;
     color: white;
     border-radius: 50%;
-    width: 2em;
-    height: 2em;
-    line-height: 2em;
+    width: 1.8em;
+    height: 1.8em;
+    line-height: 1.8em;
     text-align: center;
     float: right;
 }
@@ -136,25 +136,29 @@
 }
 
 .dame-event {
-    margin-bottom: 3px;
+    margin-bottom: 2px;
     padding-left: 5px;
-    font-size: 0.85em;
+    font-size: 0.80em;
+    font-weight: 600; 
     cursor: pointer;
-    border-radius: 3px;
+    border-radius: 2px;
 }
 
 .dame-event-ponctuel {
-    border-left: 5px solid; /* Color will be set inline */
+    border-left: 3px solid; /* Color will be set inline */
     padding: 2px 5px;
 }
 
 .dame-event-ponctuel .event-time {
-    font-size: 0.85em;
-    color: #555;
+    font-size: 0.7em;
+    font-weight: 500;
+    color: rgba(0,0,0,.55);
 }
 
 .dame-event-ponctuel .event-title {
-    font-weight: bold;
+    font-size: 0.9em;
+    font-weight: 600;
+    color; rgba(0,0,0,.85);
 }
 
 .dame-event-duree {
@@ -183,21 +187,22 @@
 
 #dame-event-tooltip {
     position: absolute;
-    background: #333;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 8px;
+    background: #FFC936;
+    color: #2C2C2C;
+    padding: 3px 5px;
+    border-radius: 5px;
     z-index: 101;
     max-width: 220px;
     pointer-events: none;
-    font-size: 0.85em;
+    font-size: 0.9em;
 }
 #dame-event-tooltip h4 {
     margin: 0 0 3px;
-    font-size: 1em;
+    font-size: 0.9em;
 }
 #dame-event-tooltip p {
     margin: 0 0 3px;
+    font-size: 0.8em;
 }
 #dame-event-tooltip .tooltip-description {
     border-top: 1px solid #555;
