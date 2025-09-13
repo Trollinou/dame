@@ -775,6 +775,56 @@ add_filter( 'widget_text_content', 'dame_chess_pieces_shortcodes_filter' ); // F
 add_filter( 'comment_text', 'dame_chess_pieces_shortcodes_filter' );
 
 /**
+ * Renders a hierarchical checklist of categories for the agenda filter.
+ *
+ * This function recursively generates a nested list of category checkboxes,
+ * preserving the parent-child hierarchy.
+ *
+ * @param array $categories Array of category term objects.
+ * @param int   $parent_id  The ID of the parent category to start from.
+ */
+if ( ! function_exists( 'dame_render_agenda_category_checklist' ) ) {
+	function dame_render_agenda_category_checklist( $categories, $parent_id = 0 ) {
+		// Find categories that are children of the current parent_id.
+		$children = array();
+		foreach ( $categories as $category ) {
+			if ( $category->parent == $parent_id ) {
+				$children[] = $category;
+			}
+		}
+
+		// If no children are found, stop the recursion.
+		if ( empty( $children ) ) {
+			return;
+		}
+
+		// Start a new list for the children.
+		echo '<ul>';
+
+		foreach ( $children as $category ) {
+			$term_meta = get_option( 'taxonomy_' . $category->term_id );
+			$color     = ! empty( $term_meta['color'] ) ? $term_meta['color'] : '#ccc';
+			?>
+			<li>
+				<label>
+					<input type="checkbox" class="dame-agenda-cat-filter" value="<?php echo esc_attr( $category->term_id ); ?>" checked>
+					<span class="dame-agenda-cat-color" style="background-color: <?php echo esc_attr( $color ); ?>"></span>
+					<?php echo esc_html( $category->name ); ?>
+				</label>
+				<?php
+				// Recursively call the function for the current category to render its children.
+				dame_render_agenda_category_checklist( $categories, $category->term_id );
+				?>
+			</li>
+			<?php
+		}
+
+		echo '</ul>';
+	}
+}
+
+
+/**
  * Renders the [dame_agenda] shortcode.
  *
  * @param array $atts Shortcode attributes.
@@ -844,21 +894,8 @@ function dame_agenda_shortcode( $atts ) {
                     <div id="dame-agenda-filter-panel" style="display: none;">
                         <h5><?php _e( 'Catégories', 'dame' ); ?></h5>
                         <?php if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) : ?>
-                            <ul>
-                                <?php foreach ( $categories as $category ) :
-                                    $term_meta = get_option( "taxonomy_" . $category->term_id );
-                                    $color = ! empty( $term_meta['color'] ) ? $term_meta['color'] : '#ccc';
-                                ?>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" class="dame-agenda-cat-filter" value="<?php echo esc_attr( $category->term_id ); ?>" checked>
-                                            <span class="dame-agenda-cat-color" style="background-color: <?php echo esc_attr( $color ); ?>"></span>
-                                            <?php echo esc_html( $category->name ); ?>
-                                        </label>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php else: ?>
+                            <?php dame_render_agenda_category_checklist( $categories ); ?>
+                        <?php else : ?>
                             <p><?php _e( 'Aucune catégorie d\'événement trouvée.', 'dame' ); ?></p>
                         <?php endif; ?>
                     </div>
@@ -890,15 +927,18 @@ add_shortcode( 'dame_agenda', 'dame_agenda_shortcode' );
 function dame_get_agenda_events() {
     check_ajax_referer( 'dame_agenda_nonce', 'nonce' );
 
-    $year = isset( $_POST['year'] ) ? intval( $_POST['year'] ) : date( 'Y' );
-    $month = isset( $_POST['month'] ) ? intval( $_POST['month'] ) : date( 'm' );
+	// Get and validate the start and end dates from the AJAX request.
+	$start_date_str = isset( $_POST['start_date'] ) ? sanitize_text_field( $_POST['start_date'] ) : '';
+	$end_date_str   = isset( $_POST['end_date'] ) ? sanitize_text_field( $_POST['end_date'] ) : '';
+
+	// Basic validation for YYYY-MM-DD format.
+	$date_regex = '/^\d{4}-\d{2}-\d{2}$/';
+	if ( ! preg_match( $date_regex, $start_date_str ) || ! preg_match( $date_regex, $end_date_str ) ) {
+		wp_send_json_error( 'Invalid date format provided.' );
+	}
+
     $categories = isset( $_POST['categories'] ) ? array_map( 'intval', $_POST['categories'] ) : array();
     $search_term = isset( $_POST['search'] ) ? sanitize_text_field( $_POST['search'] ) : '';
-
-    $timezone = wp_timezone();
-    $start_of_month = new DateTime( "$year-$month-01", $timezone );
-    $end_of_month = new DateTime( "$year-$month-01", $timezone );
-    $end_of_month->modify( 'last day of this month' );
 
     $args = array(
         'post_type'      => 'dame_agenda',
@@ -907,14 +947,14 @@ function dame_get_agenda_events() {
         'meta_query'     => array(
             'relation' => 'AND',
             array(
-                'key'     => '_dame_start_date',
-                'value'   => $end_of_month->format( 'Y-m-d' ),
+                'key'     => '_dame_start_date', // Event starts on or before the grid end date.
+                'value'   => $end_date_str,
                 'compare' => '<=',
                 'type'    => 'DATE',
             ),
             array(
-                'key'     => '_dame_end_date',
-                'value'   => $start_of_month->format( 'Y-m-d' ),
+                'key'     => '_dame_end_date',   // Event ends on or after the grid start date.
+                'value'   => $start_date_str,
                 'compare' => '>=',
                 'type'    => 'DATE',
             ),
