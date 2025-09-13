@@ -1738,6 +1738,32 @@ function dame_save_agenda_meta( $post_id ) {
         return;
     }
 
+    // --- Validation ---
+    $errors = [];
+    if ( empty( $_POST['dame_start_date'] ) ) {
+        $errors[] = __( 'La date de début est obligatoire.', 'dame' );
+    }
+    if ( empty( $_POST['dame_end_date'] ) ) {
+        $errors[] = __( 'La date de fin est obligatoire.', 'dame' );
+    }
+    if ( empty( $_POST['tax_input']['dame_agenda_category'] ) || ( is_array( $_POST['tax_input']['dame_agenda_category'] ) && count( array_filter( $_POST['tax_input']['dame_agenda_category'] ) ) === 0 ) ) {
+        $errors[] = __( 'La catégorie est obligatoire.', 'dame' );
+    }
+
+    if ( ! empty( $errors ) ) {
+        set_transient( 'dame_error_message', implode( '<br>', $errors ), 10 );
+
+        // Unhook this function to prevent infinite loops
+        remove_action( 'save_post_dame_agenda', 'dame_save_agenda_meta' );
+
+        // Update the post to be a draft
+        wp_update_post( array( 'ID' => $post_id, 'post_status' => 'draft' ) );
+
+        // Re-hook the function
+        add_action( 'save_post_dame_agenda', 'dame_save_agenda_meta' );
+        return;
+    }
+
     // --- Sanitize and Save Data ---
     $fields = [
         'dame_start_date'    => 'sanitize_text_field',
