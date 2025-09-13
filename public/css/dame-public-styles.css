@@ -87,10 +87,10 @@
 
 .dame-liste-agenda-item {
     display: flex;
-    gap: 1.5em;
-    margin-bottom: 1.5em;
-    padding-bottom: 1.5em;
-    border-bottom: 1px solid #eee;
+    gap: 0.5em;
+    margin-bottom: 0.5em;
+    padding-bottom: 0.5em;
+    /* border-bottom: 1px solid #eee; */
     align-items: flex-start;
 }
 
@@ -104,7 +104,7 @@
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    background-color: #f0f0f0;
+    background-color: rgba(255, 205, 0, 1);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -128,12 +128,13 @@
 }
 
 .dame-liste-agenda-details h4.event-title {
-    margin: 0 0 0.25em;
-    font-size: 1.2em;
+    margin: 0 0 0.1em;
+    font-size: 0.9em;
+    font-weight: bold;
 }
 
 .dame-liste-agenda-details h4.event-title a {
-    color: #d9534f;
+    color: #ff121c;
     text-decoration: none;
     font-weight: bold;
 }
@@ -143,16 +144,17 @@
 }
 
 .dame-liste-agenda-details p {
-    margin: 0 0 0.5em;
-    color: #555;
-    font-size: 0.95em;
+    margin: 0 0 0.1em;
+    color: rgba(0,0,0,.55);
+    font-size: 0.80em;
 }
 
 .dame-liste-agenda-details p.event-time {
     font-style: italic;
+    font-size: 0.75em;
 }
 
 .dame-liste-agenda-icon {
-    font-size: 2em;
+    font-size: 1.5em;
     color: #ccc;
 }
