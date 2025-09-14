@@ -4,6 +4,16 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 3.0.6 (14/09/2025)
+
+*   **Amélioration majeure de l'administration de l'agenda**
+    *   **Refonte des filtres :** Remplacement du filtre par mois par un filtre par plage de dates (mois/année de début à mois/année de fin) pour une sélection plus précise.
+    *   **Personnalisation :** La date de début du filtre est sauvegardée par utilisateur pour être ré-appliquée lors des prochaines visites.
+    *   **Colonnes de la liste :** Réorganisation des colonnes pour une meilleure lisibilité (`Date de début`, `Date de fin`, `Lieu` avant `Catégorie`). La colonne de date de publication a été supprimée.
+    *   **Tri des colonnes :** Les colonnes "Date de début" et "Date de fin" sont maintenant triables.
+    *   **Duplication d'événement :** Ajout d'une action "Dupliquer" qui crée une copie d'un événement en tant que brouillon et redirige directement vers sa page d'édition.
+    *   **Logique de duplication :** La duplication copie toutes les données (description, lieu, heures, etc.) à l'exception des dates de début et de fin pour faciliter la reprogrammation.
+
 ### 3.0.5 (14/09/2025)
 
 *   **Refonte de l'en-tête de l'agenda `[dame_agenda]`**
