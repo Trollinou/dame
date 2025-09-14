@@ -447,38 +447,102 @@ function dame_set_agenda_sortable_columns( $columns ) {
 add_filter( 'manage_edit-dame_agenda_sortable_columns', 'dame_set_agenda_sortable_columns' );
 
 /**
- * Adds custom filters to the Agenda CPT admin list.
+ * Adds custom filters to the Agenda CPT admin list for category and date range.
  */
 function dame_add_agenda_filters() {
-    global $typenow;
+    global $typenow, $wp_locale;
 
-    if ( 'dame_agenda' === $typenow ) {
-        $taxonomy = 'dame_agenda_category';
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $selected = $_GET[ $taxonomy ] ?? '';
-        $terms    = get_terms(
-            array(
-                'taxonomy'   => $taxonomy,
-                'hide_empty' => false,
-                'orderby'    => 'name',
-                'order'      => 'ASC',
-            )
-        );
-
-        if ( $terms && ! is_wp_error( $terms ) ) {
-            echo '<select name="' . esc_attr( $taxonomy ) . '" id="' . esc_attr( $taxonomy ) . '" class="postform">';
-            echo '<option value="">' . esc_html__( 'Toutes les catégories', 'dame' ) . '</option>';
-            foreach ( $terms as $term ) {
-                printf(
-                    '<option value="%s"%s>%s</option>',
-                    esc_attr( $term->slug ),
-                    selected( $selected, $term->slug, false ),
-                    esc_html( $term->name )
-                );
-            }
-            echo '</select>';
-        }
+    if ( 'dame_agenda' !== $typenow ) {
+        return;
     }
+
+    // --- Category Filter (existing) ---
+    $taxonomy   = 'dame_agenda_category';
+    $selected_category = $_GET[ $taxonomy ] ?? '';
+    $category_terms    = get_terms(
+        array(
+            'taxonomy'   => $taxonomy,
+            'hide_empty' => false,
+            'orderby'    => 'name',
+            'order'      => 'ASC',
+        )
+    );
+
+    if ( $category_terms && ! is_wp_error( $category_terms ) ) {
+        echo '<select name="' . esc_attr( $taxonomy ) . '" id="' . esc_attr( $taxonomy ) . '" class="postform">';
+        echo '<option value="">' . esc_html__( 'Toutes les catégories', 'dame' ) . '</option>';
+        foreach ( $category_terms as $term ) {
+            printf(
+                '<option value="%s"%s>%s</option>',
+                esc_attr( $term->slug ),
+                selected( $selected_category, $term->slug, false ),
+                esc_html( $term->name )
+            );
+        }
+        echo '</select>';
+    }
+
+    // --- New Date Range Filter ---
+    global $wpdb;
+
+    // Get all distinct years from event start dates
+    $years = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT YEAR(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = %s ORDER BY meta_value DESC", '_dame_start_date' ) );
+
+    // Get min and max dates for defaults
+    $min_date = $wpdb->get_var( $wpdb->prepare( "SELECT MIN(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = %s", '_dame_start_date' ) );
+    $max_date = $wpdb->get_var( $wpdb->prepare( "SELECT MAX(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = %s", '_dame_start_date' ) );
+
+    $default_start_month = $min_date ? date( 'm', strtotime( $min_date ) ) : date( 'm' );
+    $default_start_year  = $min_date ? date( 'Y', strtotime( $min_date ) ) : date( 'Y' );
+    $default_end_month   = $max_date ? date( 'm', strtotime( $max_date ) ) : date( 'm' );
+    $default_end_year    = $max_date ? date( 'Y', strtotime( $max_date ) ) : date( 'Y' );
+
+    // Get user's saved preference for start date
+    $user_id = get_current_user_id();
+    $saved_start_date = get_user_meta( $user_id, 'dame_agenda_filter_start_date', true );
+    if ( ! empty( $saved_start_date ) && is_array( $saved_start_date ) ) {
+        $default_start_month = $saved_start_date['month'];
+        $default_start_year  = $saved_start_date['year'];
+    }
+
+    // Determine current values from GET or defaults
+    $start_month = $_GET['dame_start_month'] ?? $default_start_month;
+    $start_year  = $_GET['dame_start_year'] ?? $default_start_year;
+    $end_month   = $_GET['dame_end_month'] ?? $default_end_month;
+    $end_year    = $_GET['dame_end_year'] ?? $default_end_year;
+
+    $months = array();
+    for ( $i = 1; $i <= 12; $i++ ) {
+        $months[ sprintf( '%02d', $i ) ] = $wp_locale->get_month( $i );
+    }
+
+    // Render the dropdowns.
+    ?>
+    <label for="dame_start_month" class="screen-reader-text"><?php _e( 'Mois de début', 'dame' ); ?></label>
+    <select name="dame_start_month" id="dame_start_month">
+        <?php foreach ( $months as $month_val => $month_name ) : ?>
+            <option value="<?php echo esc_attr( $month_val ); ?>" <?php selected( $start_month, $month_val ); ?>><?php echo esc_html( $month_name ); ?></option>
+        <?php endforeach; ?>
+    </select>
+    <label for="dame_start_year" class="screen-reader-text"><?php _e( 'Année de début', 'dame' ); ?></label>
+    <select name="dame_start_year" id="dame_start_year">
+        <?php foreach ( $years as $year ) : ?>
+            <option value="<?php echo esc_attr( $year ); ?>" <?php selected( $start_year, $year ); ?>><?php echo esc_html( $year ); ?></option>
+        <?php endforeach; ?>
+    </select>
+    <label for="dame_end_month" class="screen-reader-text"><?php _e( 'Mois de fin', 'dame' ); ?></label>
+    <select name="dame_end_month" id="dame_end_month">
+        <?php foreach ( $months as $month_val => $month_name ) : ?>
+            <option value="<?php echo esc_attr( $month_val ); ?>" <?php selected( $end_month, $month_val ); ?>><?php echo esc_html( $month_name ); ?></option>
+        <?php endforeach; ?>
+    </select>
+    <label for="dame_end_year" class="screen-reader-text"><?php _e( 'Année de fin', 'dame' ); ?></label>
+    <select name="dame_end_year" id="dame_end_year">
+        <?php foreach ( $years as $year ) : ?>
+            <option value="<?php echo esc_attr( $year ); ?>" <?php selected( $end_year, $year ); ?>><?php echo esc_html( $year ); ?></option>
+        <?php endforeach; ?>
+    </select>
+    <?php
 }
 add_action( 'restrict_manage_posts', 'dame_add_agenda_filters' );
 
@@ -509,6 +573,9 @@ function dame_filter_and_sort_agenda_query( $query ) {
     // phpcs:ignore WordPress.Security.NonceVerification.Recommended
     if ( isset( $_GET['dame_agenda_category'] ) && '' !== $_GET['dame_agenda_category'] ) {
         $tax_query = $query->get( 'tax_query' ) ?: array();
+        if (empty($tax_query)) {
+            $tax_query = array('relation' => 'AND');
+        }
         $tax_query[] = array(
             'taxonomy' => 'dame_agenda_category',
             'field'    => 'slug',
@@ -517,37 +584,47 @@ function dame_filter_and_sort_agenda_query( $query ) {
         $query->set( 'tax_query', $tax_query );
     }
 
-    // Handle date filter to use start date instead of publication date.
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-    if ( isset( $_GET['m'] ) && '' !== $_GET['m'] ) {
-        $year  = substr( $_GET['m'], 0, 4 );
-        $month = substr( $_GET['m'], 4, 2 );
+    // --- Handle New Date Range Filter ---
+    $start_month = $_GET['dame_start_month'] ?? '';
+    $start_year  = $_GET['dame_start_year'] ?? '';
+    $end_month   = $_GET['dame_end_month'] ?? '';
+    $end_year    = $_GET['dame_end_year'] ?? '';
 
-        if ( $year && $month ) {
-			$first_day = $year . '-' . $month . '-01';
-			$last_day  = date( 'Y-m-t', strtotime( $first_day ) );
+    // Only filter if at least one parameter is present (the form is always submitted)
+    if ( ! empty( $start_month ) && ! empty( $start_year ) && ! empty( $end_month ) && ! empty( $end_year ) ) {
 
-            $meta_query = $query->get( 'meta_query' ) ?: array();
-            if ( empty( $meta_query ) ) {
-                $meta_query = array( 'relation' => 'AND' );
-            } elseif ( ! isset( $meta_query['relation'] ) ) {
-                $meta_query['relation'] = 'AND';
-            }
-
-            $meta_query[] = array(
-                'key'     => '_dame_start_date',
-                'value'   => array( $first_day, $last_day ),
-                'compare' => 'BETWEEN',
-                'type'    => 'DATE',
-            );
-            $query->set( 'meta_query', $meta_query );
-
-            // Unset the default date query vars.
-            $query->set( 'year', '' );
-            $query->set( 'monthnum', '' );
-            $query->set( 'day', '' );
-            $query->set( 'm', '' );
+        // Persist the user's choice for the start date if filter is actively used.
+        // We check for 'filter_action' which is the name of the filter button.
+        if ( isset( $_GET['filter_action'] ) ) {
+            $user_id = get_current_user_id();
+            update_user_meta( $user_id, 'dame_agenda_filter_start_date', array( 'month' => $start_month, 'year' => $start_year ) );
         }
+
+        $start_date_str = $start_year . '-' . $start_month . '-01';
+        $end_date_str   = $end_year . '-' . $end_month . '-01';
+
+        // Ensure start date is not after end date
+        if ( strtotime( $start_date_str ) > strtotime( $end_date_str ) ) {
+            return; // Or swap them, for now just ignore invalid range
+        }
+
+        $first_day = date( 'Y-m-d', strtotime( $start_date_str ) );
+        $last_day  = date( 'Y-m-t', strtotime( $end_date_str ) );
+
+        $meta_query = $query->get( 'meta_query' ) ?: array();
+        if ( empty( $meta_query ) ) {
+            $meta_query = array( 'relation' => 'AND' );
+        } elseif ( ! isset( $meta_query['relation'] ) ) {
+            $meta_query['relation'] = 'AND';
+        }
+
+        $meta_query[] = array(
+            'key'     => '_dame_start_date',
+            'value'   => array( $first_day, $last_day ),
+            'compare' => 'BETWEEN',
+            'type'    => 'DATE',
+        );
+        $query->set( 'meta_query', $meta_query );
     }
 }
 add_action( 'pre_get_posts', 'dame_filter_and_sort_agenda_query' );
@@ -600,12 +677,19 @@ function dame_duplicate_event_action() {
 
     // Duplicate post meta.
     $all_meta = get_post_meta( $post_id );
+    $keys_to_skip = array( '_dame_start_date', '_dame_end_date' );
+
     if ( ! empty( $all_meta ) ) {
         foreach ( $all_meta as $meta_key => $meta_values ) {
-            // Diagnostic: Temporarily removing the is_protected_meta check to debug.
-            // if ( is_protected_meta( $meta_key ) ) {
-            //  continue;
-            // }
+            // Skip protected meta, but allow our own '_dame_' meta.
+            if ( is_protected_meta( $meta_key ) && strpos( $meta_key, '_dame_' ) !== 0 ) {
+                continue;
+            }
+            // Skip the date fields as requested by the user for a better workflow.
+            if ( in_array( $meta_key, $keys_to_skip, true ) ) {
+                continue;
+            }
+
             foreach ( $meta_values as $meta_value ) {
                 add_post_meta( $new_post_id, $meta_key, $meta_value );
             }
@@ -631,34 +715,15 @@ function dame_duplicate_event_action() {
 add_action( 'admin_action_dame_duplicate_event', 'dame_duplicate_event_action' );
 
 /**
- * Populates the months dropdown filter for the Agenda CPT based on event start dates.
+ * Suppresses the default months dropdown for the Agenda CPT.
  *
- * @global wpdb $wpdb
- * @param object $months The default months list.
- * @return object The modified months list.
+ * @param array $months The default months list.
+ * @return array The modified months list (empty for our CPT).
  */
-function dame_agenda_months_dropdown_results( $months ) {
-    global $wpdb, $typenow;
-
-    if ( 'dame_agenda' === $typenow ) {
-        $months = $wpdb->get_results(
-            $wpdb->prepare(
-                "
-                SELECT DISTINCT YEAR( pm.meta_value ) AS year, MONTH( pm.meta_value ) AS month
-                FROM {$wpdb->postmeta} pm
-                INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-                WHERE pm.meta_key = %s
-                AND p.post_type = %s
-                AND pm.meta_value IS NOT NULL
-                AND pm.meta_value != ''
-                ORDER BY pm.meta_value DESC
-                ",
-                '_dame_start_date',
-                'dame_agenda'
-            )
-        );
+function dame_suppress_months_dropdown( $months, $post_type ) {
+    if ( 'dame_agenda' === $post_type ) {
+        return array();
     }
-
     return $months;
 }
-add_filter( 'months_dropdown_results', 'dame_agenda_months_dropdown_results', 10, 1 );
+add_filter( 'months_dropdown_results', 'dame_suppress_months_dropdown', 10, 2 );

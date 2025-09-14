@@ -134,6 +134,7 @@ function dame_enqueue_admin_scripts( $hook ) {
             DAME_VERSION
         );
     }
+
 }
 add_action( 'admin_enqueue_scripts', 'dame_enqueue_admin_scripts' );
 
