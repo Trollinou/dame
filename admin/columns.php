@@ -602,10 +602,10 @@ function dame_duplicate_event_action() {
     $all_meta = get_post_meta( $post_id );
     if ( ! empty( $all_meta ) ) {
         foreach ( $all_meta as $meta_key => $meta_values ) {
-            // Filter out protected meta keys like _edit_lock
-            if ( is_protected_meta( $meta_key ) ) {
-                continue;
-            }
+            // Diagnostic: Temporarily removing the is_protected_meta check to debug.
+            // if ( is_protected_meta( $meta_key ) ) {
+            //  continue;
+            // }
             foreach ( $meta_values as $meta_value ) {
                 add_post_meta( $new_post_id, $meta_key, $meta_value );
             }
