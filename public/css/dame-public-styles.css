@@ -118,6 +118,11 @@
     color: #888;
 }
 
+.dame-liste-agenda-date-icon .month-abbr {
+    font-size: 0.9em;
+    color: #888;
+}
+
 .dame-liste-agenda-date-icon .day-number {
     font-size: 1.8em;
     color: #333;
@@ -152,6 +157,11 @@
 .dame-liste-agenda-details p.event-time {
     font-style: italic;
     font-size: 0.75em;
+}
+
+.dame-liste-agenda-details .event-description,
+.dame-liste-agenda-details .event-description p {
+    color: #444;
 }
 
 .dame-liste-agenda-icon {
