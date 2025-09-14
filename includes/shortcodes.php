@@ -1067,7 +1067,8 @@ function dame_liste_agenda_shortcode( $atts ) {
             $end_date = new DateTime( $end_date_str );
 
             $day_of_week = date_i18n( 'D', $start_date->getTimestamp() );
-            $day_number = $start_date->format( 'd' );
+            $day_number  = $start_date->format( 'd' );
+            $month_abbr  = date_i18n( 'M', $start_date->getTimestamp() );
 
             $date_display = date_i18n( 'j F Y', $start_date->getTimestamp() );
             if ( $start_date_str !== $end_date_str ) {
@@ -1079,6 +1080,7 @@ function dame_liste_agenda_shortcode( $atts ) {
                     <div class="date-circle">
                         <span class="day-of-week"><?php echo esc_html( strtoupper( $day_of_week ) ); ?></span>
                         <span class="day-number"><?php echo esc_html( $day_number ); ?></span>
+                        <span class="month-abbr"><?php echo esc_html( strtoupper( $month_abbr ) ); ?></span>
                     </div>
                 </div>
                 <div class="dame-liste-agenda-details">
@@ -1087,7 +1089,12 @@ function dame_liste_agenda_shortcode( $atts ) {
                     <?php if ( ! $all_day ) : ?>
                         <p class="event-time"><?php echo esc_html( $start_time . ' - ' . $end_time ); ?></p>
                     <?php endif; ?>
-                    <p class="event-description"><?php echo get_the_excerpt(); ?></p>
+                    <?php
+                    $description = get_post_meta( get_the_ID(), '_dame_agenda_description', true );
+                    if ( ! empty( $description ) ) :
+                    ?>
+                        <div class="event-description"><?php echo apply_filters( 'the_content', $description ); ?></div>
+                    <?php endif; ?>
                 </div>
                  <div class="dame-liste-agenda-icon">
                     <span class="dashicons dashicons-calendar-alt"></span>
