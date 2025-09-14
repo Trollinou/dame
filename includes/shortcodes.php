@@ -879,13 +879,25 @@ function dame_agenda_shortcode( $atts ) {
     ?>
     <div id="dame-agenda-wrapper">
         <div class="dame-agenda-header">
-            <div class="dame-agenda-nav">
-                <button id="dame-agenda-prev-month" class="button">&lt;</button>
+            <div class="dame-agenda-month-display">
                 <h2 id="dame-agenda-current-month" class="dame-agenda-month-picker-toggle"></h2>
-                <button id="dame-agenda-next-month" class="button">&gt;</button>
+                <div id="dame-month-year-selector" style="display: none;">
+                    <div class="dame-month-year-selector-header">
+                        <button id="dame-selector-prev-year">&lt;&lt;</button>
+                        <span id="dame-selector-year"></span>
+                        <button id="dame-selector-next-year">&gt;&gt;</button>
+                    </div>
+                    <div class="dame-month-grid"></div>
+                </div>
             </div>
+
             <div class="dame-agenda-controls">
-                 <div class="dame-agenda-search">
+                <div class="dame-agenda-nav-buttons">
+                    <button id="dame-agenda-prev-month" class="button">&lt;</button>
+                    <button id="dame-agenda-today" class="button"><?php _e( 'Ce mois-ci', 'dame' ); ?></button>
+                    <button id="dame-agenda-next-month" class="button">&gt;</button>
+                </div>
+                <div class="dame-agenda-search">
                     <label for="dame-agenda-search-input" class="screen-reader-text"><?php _e( 'Rechercher un événement', 'dame' ); ?></label>
                     <input type="search" id="dame-agenda-search-input" placeholder="<?php _e( 'Rechercher...', 'dame' ); ?>">
                 </div>
@@ -907,14 +919,6 @@ function dame_agenda_shortcode( $atts ) {
             <div id="dame-calendar-grid"></div>
         </div>
         <div id="dame-event-tooltip" class="dame-tooltip" style="display: none;"></div>
-        <div id="dame-month-year-selector" style="display: none;">
-            <div class="dame-month-year-selector-header">
-                <button id="dame-selector-prev-year">&lt;&lt;</button>
-                <span id="dame-selector-year"></span>
-                <button id="dame-selector-next-year">&gt;&gt;</button>
-            </div>
-            <div class="dame-month-grid"></div>
-        </div>
     </div>
     <?php
     return ob_get_clean();
@@ -1000,7 +1004,7 @@ function dame_get_agenda_events() {
                 'end_time'    => get_post_meta( $post_id, '_dame_end_time', true ),
                 'all_day'     => get_post_meta( $post_id, '_dame_all_day', true ),
                 'location'    => get_post_meta( $post_id, '_dame_location_name', true ),
-                'description' => get_the_content(),
+                'description' => get_post_meta( $post_id, '_dame_agenda_description', true ),
                 'color'       => $color,
                 'category'    => !empty($term) ? $term[0]->name : '',
             );

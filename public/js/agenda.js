@@ -7,6 +7,7 @@ jQuery(document).ready(function($) {
     const currentMonthDisplay = $('#dame-agenda-current-month');
     const prevMonthBtn = $('#dame-agenda-prev-month');
     const nextMonthBtn = $('#dame-agenda-next-month');
+    const todayBtn = $('#dame-agenda-today');
     const filterToggleBtn = $('#dame-agenda-filter-toggle');
     const filterPanel = $('#dame-agenda-filter-panel');
     const searchInput = $('#dame-agenda-search-input');
@@ -283,6 +284,11 @@ jQuery(document).ready(function($) {
         fetchAndRenderCalendar();
     });
 
+    todayBtn.on('click', function() {
+        currentDate = new Date();
+        fetchAndRenderCalendar();
+    });
+
     filterToggleBtn.on('click', function(e) {
         e.stopPropagation();
         filterPanel.toggle();
@@ -355,10 +361,7 @@ jQuery(document).ready(function($) {
     monthPickerToggle.on('click', function(e) {
         e.stopPropagation();
         renderMonthPicker();
-        monthYearPicker.css({
-            top: $(this).offset().top + $(this).outerHeight() + 5,
-            left: $(this).offset().left
-        }).toggle();
+        monthYearPicker.toggle();
     });
 
     $('#dame-selector-prev-year').on('click', function() {
