@@ -114,17 +114,17 @@
 }
 
 .dame-liste-agenda-date-icon .day-of-week {
-    font-size: 0.9em;
-    color: #888;
+    font-size: 0.8em;
+    color: #777;
 }
 
 .dame-liste-agenda-date-icon .month-abbr {
-    font-size: 0.9em;
-    color: #888;
+    font-size: 0.8em;
+    color: #777;
 }
 
 .dame-liste-agenda-date-icon .day-number {
-    font-size: 1.8em;
+    font-size: 1.5em;
     color: #333;
 }
 
