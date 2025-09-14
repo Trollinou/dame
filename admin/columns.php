@@ -344,11 +344,11 @@ function dame_set_agenda_columns( $columns ) {
     $new_columns = array(
         'cb'              => $columns['cb'],
         'title'           => __( 'Titre', 'dame' ),
-        'dame_category'   => __( 'Catégorie', 'dame' ),
-        'dame_location'   => __( 'Lieu', 'dame' ),
-        'dame_start_date' => __( 'Date de début', 'dame' ),
-        'dame_end_date'   => __( 'Date de fin', 'dame' ),
-        'date'            => $columns['date'],
+		'dame_start_date' => __( 'Date de début', 'dame' ),
+		'dame_end_date'   => __( 'Date de fin', 'dame' ),
+		'dame_location'   => __( 'Lieu', 'dame' ),
+		'dame_category'   => __( 'Catégorie', 'dame' ),
+		'dame_actions'    => __( 'Actions', 'dame' ),
     );
     return $new_columns;
 }
@@ -420,6 +420,245 @@ function dame_render_agenda_columns( $column, $post_id ) {
                 echo '—';
             }
             break;
+		case 'dame_actions':
+			$duplicate_url = wp_nonce_url(
+				admin_url( 'admin.php?action=dame_duplicate_event&post=' . $post_id ),
+				'dame_duplicate_event_nonce_' . $post_id,
+				'dame_duplicate_nonce'
+			);
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '<a href="' . esc_url( $duplicate_url ) . '">' . esc_html__( 'Dupliquer', 'dame' ) . '</a>';
+			break;
     }
 }
 add_action( 'manage_dame_agenda_posts_custom_column', 'dame_render_agenda_columns', 10, 2 );
+
+/**
+ * Makes the custom date columns sortable for the Agenda CPT.
+ *
+ * @param array $columns The existing sortable columns.
+ * @return array The modified sortable columns.
+ */
+function dame_set_agenda_sortable_columns( $columns ) {
+    $columns['dame_start_date'] = '_dame_start_date';
+    $columns['dame_end_date']   = '_dame_end_date';
+    return $columns;
+}
+add_filter( 'manage_edit-dame_agenda_sortable_columns', 'dame_set_agenda_sortable_columns' );
+
+/**
+ * Adds custom filters to the Agenda CPT admin list.
+ */
+function dame_add_agenda_filters() {
+    global $typenow;
+
+    if ( 'dame_agenda' === $typenow ) {
+        $taxonomy = 'dame_agenda_category';
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $selected = $_GET[ $taxonomy ] ?? '';
+        $terms    = get_terms(
+            array(
+                'taxonomy'   => $taxonomy,
+                'hide_empty' => false,
+                'orderby'    => 'name',
+                'order'      => 'ASC',
+            )
+        );
+
+        if ( $terms && ! is_wp_error( $terms ) ) {
+            echo '<select name="' . esc_attr( $taxonomy ) . '" id="' . esc_attr( $taxonomy ) . '" class="postform">';
+            echo '<option value="">' . esc_html__( 'Toutes les catégories', 'dame' ) . '</option>';
+            foreach ( $terms as $term ) {
+                printf(
+                    '<option value="%s"%s>%s</option>',
+                    esc_attr( $term->slug ),
+                    selected( $selected, $term->slug, false ),
+                    esc_html( $term->name )
+                );
+            }
+            echo '</select>';
+        }
+    }
+}
+add_action( 'restrict_manage_posts', 'dame_add_agenda_filters' );
+
+/**
+ * Handles sorting and filtering for the Agenda CPT list.
+ *
+ * @param WP_Query $query The main WP_Query instance.
+ */
+function dame_filter_and_sort_agenda_query( $query ) {
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+    if ( ! is_admin() || ! $query->is_main_query() || ! isset( $_GET['post_type'] ) || 'dame_agenda' !== $_GET['post_type'] ) {
+        return;
+    }
+
+    // Handle sorting.
+    $orderby = $query->get( 'orderby' );
+    if ( '_dame_start_date' === $orderby ) {
+        $query->set( 'meta_key', '_dame_start_date' );
+        $query->set( 'orderby', 'meta_value' );
+        $query->set( 'meta_type', 'DATE' );
+    } elseif ( '_dame_end_date' === $orderby ) {
+        $query->set( 'meta_key', '_dame_end_date' );
+        $query->set( 'orderby', 'meta_value' );
+        $query->set( 'meta_type', 'DATE' );
+    }
+
+    // Handle category filter.
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+    if ( isset( $_GET['dame_agenda_category'] ) && '' !== $_GET['dame_agenda_category'] ) {
+        $tax_query = $query->get( 'tax_query' ) ?: array();
+        $tax_query[] = array(
+            'taxonomy' => 'dame_agenda_category',
+            'field'    => 'slug',
+            'terms'    => sanitize_text_field( wp_unslash( $_GET['dame_agenda_category'] ) ),
+        );
+        $query->set( 'tax_query', $tax_query );
+    }
+
+    // Handle date filter to use start date instead of publication date.
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+    if ( isset( $_GET['m'] ) && '' !== $_GET['m'] ) {
+        $year  = substr( $_GET['m'], 0, 4 );
+        $month = substr( $_GET['m'], 4, 2 );
+
+        if ( $year && $month ) {
+			$first_day = $year . '-' . $month . '-01';
+			$last_day  = date( 'Y-m-t', strtotime( $first_day ) );
+
+            $meta_query = $query->get( 'meta_query' ) ?: array();
+            if ( empty( $meta_query ) ) {
+                $meta_query = array( 'relation' => 'AND' );
+            } elseif ( ! isset( $meta_query['relation'] ) ) {
+                $meta_query['relation'] = 'AND';
+            }
+
+            $meta_query[] = array(
+                'key'     => '_dame_start_date',
+                'value'   => array( $first_day, $last_day ),
+                'compare' => 'BETWEEN',
+                'type'    => 'DATE',
+            );
+            $query->set( 'meta_query', $meta_query );
+
+            // Unset the default date query vars.
+            $query->set( 'year', '' );
+            $query->set( 'monthnum', '' );
+            $query->set( 'day', '' );
+            $query->set( 'm', '' );
+        }
+    }
+}
+add_action( 'pre_get_posts', 'dame_filter_and_sort_agenda_query' );
+
+/**
+ * Handles the event duplication action.
+ */
+function dame_duplicate_event_action() {
+    if ( ! isset( $_GET['post'] ) || ! isset( $_GET['dame_duplicate_nonce'] ) ) {
+        wp_die( esc_html__( 'Argument manquant.', 'dame' ) );
+    }
+
+    $post_id = absint( $_GET['post'] );
+    $nonce   = sanitize_key( $_GET['dame_duplicate_nonce'] );
+
+    if ( ! wp_verify_nonce( $nonce, 'dame_duplicate_event_nonce_' . $post_id ) ) {
+        wp_die( esc_html__( 'La vérification de sécurité a échoué.', 'dame' ) );
+    }
+
+    if ( ! current_user_can( 'edit_post', $post_id ) ) {
+        wp_die( esc_html__( 'Vous n\'avez pas la permission de dupliquer cet événement.', 'dame' ) );
+    }
+
+    $post = get_post( $post_id );
+    if ( ! $post ) {
+        wp_die( esc_html__( 'Événement non trouvé.', 'dame' ) );
+    }
+
+    $new_post_author = wp_get_current_user();
+
+    $new_post_args = array(
+        'post_author'    => $new_post_author->ID,
+        'post_content'   => $post->post_content,
+        'post_status'    => 'draft', // Set new post to draft
+        'post_title'     => $post->post_title . ' (Copie)',
+        'post_type'      => $post->post_type,
+    );
+
+    // Temporarily remove the save hook to prevent it from firing with empty $_POST data.
+    remove_action( 'save_post_dame_agenda', 'dame_save_agenda_meta', 10 );
+
+    $new_post_id = wp_insert_post( $new_post_args );
+
+    // Re-add the hook so it works on subsequent saves from the edit screen.
+    add_action( 'save_post_dame_agenda', 'dame_save_agenda_meta', 10, 1 );
+
+    if ( is_wp_error( $new_post_id ) ) {
+        wp_die( $new_post_id->get_error_message() );
+    }
+
+    // Duplicate post meta.
+    $all_meta = get_post_meta( $post_id );
+    if ( ! empty( $all_meta ) ) {
+        foreach ( $all_meta as $meta_key => $meta_values ) {
+            // Filter out protected meta keys like _edit_lock
+            if ( is_protected_meta( $meta_key ) ) {
+                continue;
+            }
+            foreach ( $meta_values as $meta_value ) {
+                add_post_meta( $new_post_id, $meta_key, $meta_value );
+            }
+        }
+    }
+
+    // Duplicate taxonomies.
+    $taxonomies = get_object_taxonomies( $post->post_type );
+    if ( ! empty( $taxonomies ) ) {
+        foreach ( $taxonomies as $taxonomy ) {
+            $terms = wp_get_object_terms( $post_id, $taxonomy, array( 'fields' => 'slugs' ) );
+            if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+                wp_set_object_terms( $new_post_id, $terms, $taxonomy, false );
+            }
+        }
+    }
+
+    // Redirect to the edit screen for the new draft.
+    $redirect_url = get_edit_post_link( $new_post_id, 'raw' );
+    wp_redirect( $redirect_url );
+    exit;
+}
+add_action( 'admin_action_dame_duplicate_event', 'dame_duplicate_event_action' );
+
+/**
+ * Populates the months dropdown filter for the Agenda CPT based on event start dates.
+ *
+ * @global wpdb $wpdb
+ * @param object $months The default months list.
+ * @return object The modified months list.
+ */
+function dame_agenda_months_dropdown_results( $months ) {
+    global $wpdb, $typenow;
+
+    if ( 'dame_agenda' === $typenow ) {
+        $months = $wpdb->get_results(
+            $wpdb->prepare(
+                "
+                SELECT DISTINCT YEAR( pm.meta_value ) AS year, MONTH( pm.meta_value ) AS month
+                FROM {$wpdb->postmeta} pm
+                INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+                WHERE pm.meta_key = %s
+                AND p.post_type = %s
+                AND pm.meta_value IS NOT NULL
+                AND pm.meta_value != ''
+                ORDER BY pm.meta_value DESC
+                ",
+                '_dame_start_date',
+                'dame_agenda'
+            )
+        );
+    }
+
+    return $months;
+}
+add_filter( 'months_dropdown_results', 'dame_agenda_months_dropdown_results', 10, 1 );
