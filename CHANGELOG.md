@@ -4,6 +4,22 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 3.0.5 (14/09/2025)
+
+*   **Refonte de l'en-tête de l'agenda `[dame_agenda]`**
+    *   **Amélioration UI :** Le nom du mois est maintenant positionné à gauche, tandis que les contrôles de navigation, de recherche et de filtre sont regroupés à droite.
+    *   **Fonctionnalité :** La navigation des mois a été repensée en un groupe de boutons `< | Ce mois-ci | >`.
+    *   **Fonctionnalité :** Ajout d'un bouton "Ce mois-ci" pour revenir rapidement au mois en cours.
+    *   **Correctif :** Rétablissement de l'icône de flèche déroulante à côté du nom du mois et de la fonctionnalité de clic pour ouvrir le sélecteur de mois/année.
+
+### 3.0.4 (14/09/2025)
+
+*   **Amélioration de l'agenda `[dame_agenda]`**
+    *   **Correctif :** L'infobulle des événements affiche désormais correctement la description de l'événement.
+    *   **Amélioration UI :** Ajout d'une icône de flèche à côté du nom du mois pour indiquer qu'il est cliquable.
+    *   **Amélioration UI :** La taille du panneau de sélection du mois/année a été réduite pour une apparence plus compacte.
+    *   **Correctif de positionnement :** La logique d'affichage du panneau de sélection du mois/année a été entièrement revue pour utiliser une méthode CSS plus robuste, garantissant qu'il s'affiche toujours correctement sous les contrôles de navigation du calendrier.
+
 ### 3.0.3 (13/09/2025)
 
 *   **Amélioration de l'interface d'administration de l'Agenda**
