@@ -93,40 +93,7 @@ function dame_enqueue_admin_scripts( $hook ) {
 			)
 		);
 	}
-
-    // Enqueue script for the course builder dual list
-    if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && 'dame_cours' === $post->post_type ) {
-        wp_enqueue_script(
-            'dame-course-builder',
-            plugin_dir_url( __FILE__ ) . 'js/course-builder.js',
-            array('jquery'),
-            DAME_VERSION,
-            true
-        );
-        wp_localize_script(
-            'dame-course-builder',
-            'dame_course_builder_data',
-            array(
-                'ajax_url'  => admin_url( 'admin-ajax.php' ),
-                'nonce'     => wp_create_nonce( 'dame_course_builder_nonce' ),
-                'course_id' => $post->ID,
-                'i18n'      => array(
-                    'loading' => __( 'Chargement...', 'dame' ),
-                    'no_content' => __( 'Aucun contenu disponible pour ce niveau de difficulté.', 'dame' ),
-                    'error' => __( 'Une erreur est survenue lors du chargement.', 'dame' ),
-                    'lessons' => __( 'Leçons', 'dame' ),
-                    'exercices' => __( 'Exercices', 'dame' ),
-                ),
-            )
-        );
-    }
-
-    // Ensure editor scripts are loaded for the Exercice CPT solution field
-    if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && in_array( $post->post_type, array( 'dame_exercice', 'dame_pre_inscription' ), true ) ) {
-        if ( 'dame_exercice' === $post->post_type ) {
-            wp_enqueue_editor();
-        }
-        // Enqueue admin styles for the z-index fix and reconciliation table
+    if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && in_array( $post->post_type, array( 'dame_pre_inscription' ), true ) ) {
         wp_enqueue_style(
             'dame-admin-styles',
             plugin_dir_url( __FILE__ ) . 'css/admin-styles.css',
@@ -251,7 +218,7 @@ function dame_add_meta_boxes() {
 		'dame_adherent_details_metabox',
 		__( 'Informations sur l\'adhérent', 'dame' ),
 		'dame_render_adherent_details_metabox',
-		'adherent',
+		'dame_adherent',
 		'normal',
 		'high'
 	);
@@ -259,7 +226,7 @@ function dame_add_meta_boxes() {
 		'dame_school_info_metabox',
 		__( 'Informations Scolaires', 'dame' ),
 		'dame_render_school_info_metabox',
-		'adherent',
+		'dame_adherent',
 		'normal',
 		'default'
 	);
@@ -267,7 +234,7 @@ function dame_add_meta_boxes() {
 		'dame_legal_rep_metabox',
 		__( 'Représentants Légaux (si mineur)', 'dame' ),
 		'dame_render_legal_rep_metabox',
-		'adherent',
+		'dame_adherent',
 		'normal',
 		'default'
 	);
@@ -275,7 +242,7 @@ function dame_add_meta_boxes() {
 		'dame_diverse_info_metabox',
 		__( 'Informations diverses', 'dame' ),
 		'dame_render_diverse_info_metabox',
-		'adherent',
+		'dame_adherent',
 		'normal',
 		'default'
 	);
@@ -283,7 +250,7 @@ function dame_add_meta_boxes() {
 		'dame_classification_metabox',
 		__( 'Classification et Adhésion', 'dame' ),
 		'dame_render_classification_metabox',
-		'adherent',
+		'dame_adherent',
 		'side',
 		'default'
 	);
@@ -291,7 +258,7 @@ function dame_add_meta_boxes() {
 		'dame_special_actions_metabox',
 		__( 'Actions spéciales', 'dame' ),
 		'dame_render_special_actions_metabox',
-		'adherent',
+		'dame_adherent',
 		'side',
 		'default'
 	);
@@ -1153,253 +1120,6 @@ function dame_save_adherent_meta( $post_id ) {
 }
 add_action( 'save_post_adherent', 'dame_save_adherent_meta' );
 
-// --- Meta Box for Lecon CPT ---
-
-/**
- * Adds the meta boxes for the Lecon CPT.
- */
-function dame_add_lecon_meta_boxes() {
-    add_meta_box(
-        'dame_lecon_details_metabox',
-        __( 'Détails de la leçon', 'dame' ),
-        'dame_render_lecon_details_metabox',
-        'dame_lecon',
-        'normal',
-        'high'
-    );
-}
-add_action( 'add_meta_boxes', 'dame_add_lecon_meta_boxes' );
-
-/**
- * Renders the meta box for lecon details.
- *
- * @param WP_Post $post The post object.
- */
-function dame_render_lecon_details_metabox( $post ) {
-    wp_nonce_field( 'dame_save_lecon_meta', 'dame_lecon_metabox_nonce' );
-
-    $difficulty = get_post_meta( $post->ID, '_dame_difficulty', true );
-    ?>
-    <table class="form-table">
-        <tr>
-            <th><label for="dame_difficulty"><?php _e( 'Difficulté', 'dame' ); ?></label></th>
-            <td>
-                <select name="dame_difficulty" id="dame_difficulty">
-                    <option value="" <?php selected( $difficulty, '' ); ?>><?php _e( '— Sélectionner une difficulté —', 'dame' ); ?></option>
-                    <option value="1" <?php selected( $difficulty, 1 ); ?>><?php _e( '1 - Très facile', 'dame' ); ?></option>
-                    <option value="2" <?php selected( $difficulty, 2 ); ?>><?php _e( '2 - Facile', 'dame' ); ?></option>
-                    <option value="3" <?php selected( $difficulty, 3 ); ?>><?php _e( '3 - Modéré', 'dame' ); ?></option>
-                    <option value="4" <?php selected( $difficulty, 4 ); ?>><?php _e( '4 - Difficile', 'dame' ); ?></option>
-                    <option value="5" <?php selected( $difficulty, 5 ); ?>><?php _e( '5 - Très Difficile', 'dame' ); ?></option>
-                    <option value="6" <?php selected( $difficulty, 6 ); ?>><?php _e( '6 - Expert', 'dame' ); ?></option>
-                </select>
-            </td>
-        </tr>
-    </table>
-    <?php
-}
-
-/**
- * Save meta box content for Lecon CPT.
- *
- * @param int $post_id Post ID
- */
-function dame_save_lecon_meta( $post_id ) {
-    // --- Security checks ---
-    if ( ! isset( $_POST['dame_lecon_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_lecon_metabox_nonce'], 'dame_save_lecon_meta' ) ) {
-        return;
-    }
-    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-        return;
-    }
-    if ( ! current_user_can( 'edit_post', $post_id ) ) {
-        return;
-    }
-
-    // --- Validation ---
-    if ( empty( $_POST['dame_difficulty'] ) ) {
-        set_transient( 'dame_error_message', __( 'La difficulté est un champ obligatoire. La lecon n\'a pas été publiée.', 'dame' ), 10 );
-
-        remove_action( 'save_post_dame_lecon', 'dame_save_lecon_meta' );
-        wp_update_post( array( 'ID' => $post_id, 'post_status' => 'draft' ) );
-        add_action( 'save_post_dame_lecon', 'dame_save_lecon_meta' );
-
-        return;
-    }
-
-    // --- Sanitize and Save Data ---
-    if ( isset( $_POST['dame_difficulty'] ) && '' !== $_POST['dame_difficulty'] ) {
-        update_post_meta( $post_id, '_dame_difficulty', intval( $_POST['dame_difficulty'] ) );
-    } else {
-        delete_post_meta( $post_id, '_dame_difficulty' );
-    }
-}
-add_action( 'save_post_dame_lecon', 'dame_save_lecon_meta' );
-
-// --- Meta Box for Exercice CPT ---
-
-/**
- * Adds the meta boxes for the Exercice CPT.
- */
-function dame_add_exercice_meta_boxes() {
-    add_meta_box(
-        'dame_exercice_details_metabox',
-        __( 'Détails de l\'exercice', 'dame' ),
-        'dame_render_exercice_details_metabox',
-        'dame_exercice',
-        'normal',
-        'high'
-    );
-}
-add_action( 'add_meta_boxes', 'dame_add_exercice_meta_boxes' );
-
-/**
- * Renders the meta box for exercice details.
- *
- * @param WP_Post $post The post object.
- */
-function dame_render_exercice_details_metabox( $post ) {
-    wp_nonce_field( 'dame_save_exercice_meta', 'dame_exercice_metabox_nonce' );
-
-    $difficulty = get_post_meta( $post->ID, '_dame_difficulty', true );
-    $question_type = get_post_meta( $post->ID, '_dame_question_type', true );
-    $solution = get_post_meta( $post->ID, '_dame_solution', true );
-    $answers = get_post_meta( $post->ID, '_dame_answers', true );
-    ?>
-    <table class="form-table">
-        <tr>
-            <th><label for="dame_difficulty"><?php _e( 'Difficulté', 'dame' ); ?></label></th>
-            <td>
-                <select name="dame_difficulty" id="dame_difficulty">
-                    <option value="" <?php selected( $difficulty, '' ); ?>><?php _e( '— Sélectionner une difficulté —', 'dame' ); ?></option>
-                    <option value="1" <?php selected( $difficulty, 1 ); ?>><?php _e( '1 - Très facile', 'dame' ); ?></option>
-                    <option value="2" <?php selected( $difficulty, 2 ); ?>><?php _e( '2 - Facile', 'dame' ); ?></option>
-                    <option value="3" <?php selected( $difficulty, 3 ); ?>><?php _e( '3 - Modéré', 'dame' ); ?></option>
-                    <option value="4" <?php selected( $difficulty, 4 ); ?>><?php _e( '4 - Difficile', 'dame' ); ?></option>
-                    <option value="5" <?php selected( $difficulty, 5 ); ?>><?php _e( '5 - Très Difficile', 'dame' ); ?></option>
-                    <option value="6" <?php selected( $difficulty, 6 ); ?>><?php _e( '6 - Expert', 'dame' ); ?></option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <th><?php _e( 'Type de question', 'dame' ); ?></th>
-            <td>
-                <label><input type="radio" name="dame_question_type" value="true_false" <?php checked( $question_type, 'true_false' ); ?>> <?php _e( 'Vrai/Faux', 'dame' ); ?></label><br>
-                <label><input type="radio" name="dame_question_type" value="qcm_single" <?php checked( $question_type, 'qcm_single' ); ?>> <?php _e( 'QCM - Choix unique', 'dame' ); ?></label><br>
-                <label><input type="radio" name="dame_question_type" value="qcm_multiple" <?php checked( $question_type, 'qcm_multiple' ); ?>> <?php _e( 'QCM - Choix multiples', 'dame' ); ?></label>
-            </td>
-        </tr>
-        <tr>
-            <th><?php _e( 'Réponses possibles', 'dame' ); ?></th>
-            <td>
-                <p class="description"><?php _e('Pour chaque réponse, entrez le texte (les shortcodes sont autorisés) et cochez la case si c\'est une réponse correcte.', 'dame'); ?></p>
-                <?php
-                $answers = is_array($answers) ? $answers : array_fill(0, 5, ['text' => '', 'correct' => false]);
-                for ($i = 0; $i < 5; $i++) :
-                    $answer_text = isset($answers[$i]['text']) ? $answers[$i]['text'] : '';
-                    $is_correct = isset($answers[$i]['correct']) ? (bool)$answers[$i]['correct'] : false;
-                ?>
-                <div style="margin-bottom: 15px;">
-                    <label for="dame_answer_text_<?php echo $i; ?>"><?php printf(__('Réponse %d', 'dame'), $i + 1); ?></label>
-                    <input type="text" name="dame_answers[<?php echo $i; ?>][text]" id="dame_answer_text_<?php echo $i; ?>" value="<?php echo esc_attr($answer_text); ?>" style="width: 80%;" />
-                    <label><input type="checkbox" name="dame_answers[<?php echo $i; ?>][correct]" value="1" <?php checked($is_correct); ?> /> <?php _e('Correcte', 'dame'); ?></label>
-                </div>
-                <?php endfor; ?>
-            </td>
-        </tr>
-        <tr>
-            <th><label for="dame_exercice_solution"><?php _e( 'Solution', 'dame' ); ?></label></th>
-            <td>
-                <?php
-                wp_editor( $solution, 'dame_exercice_solution', array(
-                    'textarea_name' => 'dame_exercice_solution',
-                    'media_buttons' => false,
-                    'textarea_rows' => 10,
-                ) );
-                ?>
-                <p class="description"><?php _e('La solution sera affichée après que l\'utilisateur a répondu à l\'exercice.', 'dame'); ?></p>
-            </td>
-        </tr>
-    </table>
-    <?php
-}
-
-/**
- * Save meta box content for Exercice CPT.
- *
- * @param int $post_id Post ID
- */
-function dame_save_exercice_meta( $post_id ) {
-    // --- Security checks ---
-    if ( ! isset( $_POST['dame_exercice_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_exercice_metabox_nonce'], 'dame_save_exercice_meta' ) ) {
-        return;
-    }
-    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-        return;
-    }
-    // The capability check is handled by the CPT definition, but an explicit check is good practice.
-    if ( ! current_user_can( 'edit_post', $post_id ) ) {
-        return;
-    }
-
-    // --- Validation ---
-    if ( empty( $_POST['dame_difficulty'] ) ) {
-        set_transient( 'dame_error_message', __( 'La difficulté est un champ obligatoire. L\'exercice n\'a pas été publié.', 'dame' ), 10 );
-
-        remove_action( 'save_post_dame_exercice', 'dame_save_exercice_meta' );
-        wp_update_post( array( 'ID' => $post_id, 'post_status' => 'draft' ) );
-        add_action( 'save_post_dame_exercice', 'dame_save_exercice_meta' );
-
-        return;
-    }
-
-    // --- Sanitize and Save Data ---
-    if ( isset( $_POST['dame_difficulty'] ) && '' !== $_POST['dame_difficulty'] ) {
-        update_post_meta( $post_id, '_dame_difficulty', intval( $_POST['dame_difficulty'] ) );
-    } else {
-        delete_post_meta( $post_id, '_dame_difficulty' );
-    }
-    if ( isset( $_POST['dame_question_type'] ) ) {
-        update_post_meta( $post_id, '_dame_question_type', sanitize_key( $_POST['dame_question_type'] ) );
-    }
-    if ( isset( $_POST['dame_exercice_solution'] ) ) {
-        update_post_meta( $post_id, '_dame_solution', wp_kses_post( $_POST['dame_exercice_solution'] ) );
-    }
-    if ( isset( $_POST['dame_answers'] ) && is_array( $_POST['dame_answers'] ) ) {
-        $sanitized_answers = array();
-        foreach ( $_POST['dame_answers'] as $answer ) {
-            // Ignore empty answer fields
-            if ( ! empty( $answer['text'] ) ) {
-                // The answer text is not sanitized here to allow for shortcode syntax.
-                // It is sanitized on output in the AJAX handlers using wp_kses_post().
-                $sanitized_answers[] = array(
-                    'text'    => $answer['text'],
-                    'correct' => isset( $answer['correct'] ) ? true : false,
-                );
-            }
-        }
-        update_post_meta( $post_id, '_dame_answers', $sanitized_answers );
-    }
-}
-add_action( 'save_post_dame_exercice', 'dame_save_exercice_meta' );
-
-// --- Meta Box for Cours CPT (Dual List Interface) ---
-
-/**
- * Adds the meta box for the Cours CPT.
- */
-function dame_add_cours_meta_boxes() {
-    add_meta_box(
-        'dame_cours_builder_metabox',
-        __( 'Constructeur de Cours', 'dame' ),
-        'dame_render_cours_builder_metabox',
-        'dame_cours',
-        'normal',
-        'high'
-    );
-}
-add_action( 'add_meta_boxes', 'dame_add_cours_meta_boxes' );
-
 /**
  * Adds the meta boxes for the Agenda CPT.
  */
@@ -1562,165 +1282,6 @@ function dame_render_agenda_details_metabox( $post ) {
     </style>
     <?php
 }
-
-/**
- * Renders the dual list meta box for the course builder.
- *
- * @param WP_Post $post The post object.
- */
-function dame_render_cours_builder_metabox( $post ) {
-    wp_nonce_field( 'dame_save_cours_meta', 'dame_cours_metabox_nonce' );
-
-    $difficulty = get_post_meta( $post->ID, '_dame_difficulty', true );
-    ?>
-    <table class="form-table">
-        <tr>
-            <th><label for="dame_difficulty"><?php _e( 'Difficulté du cours', 'dame' ); ?></label></th>
-            <td>
-                <select name="dame_difficulty" id="dame_difficulty">
-                    <option value="" <?php selected( $difficulty, '' ); ?>><?php _e( '— Sélectionner une difficulté —', 'dame' ); ?></option>
-                    <option value="1" <?php selected( $difficulty, 1 ); ?>><?php _e( '1 - Très facile', 'dame' ); ?></option>
-                    <option value="2" <?php selected( $difficulty, 2 ); ?>><?php _e( '2 - Facile', 'dame' ); ?></option>
-                    <option value="3" <?php selected( $difficulty, 3 ); ?>><?php _e( '3 - Modéré', 'dame' ); ?></option>
-                    <option value="4" <?php selected( $difficulty, 4 ); ?>><?php _e( '4 - Difficile', 'dame' ); ?></option>
-                    <option value="5" <?php selected( $difficulty, 5 ); ?>><?php _e( '5 - Très Difficile', 'dame' ); ?></option>
-                    <option value="6" <?php selected( $difficulty, 6 ); ?>><?php _e( '6 - Expert', 'dame' ); ?></option>
-                </select>
-                <p class="description"><?php _e( 'La difficulté du cours déterminera les leçons et exercices qui peuvent y être inclus.', 'dame' ); ?></p>
-            </td>
-        </tr>
-    </table>
-    <hr>
-    <?php
-
-    // Get current course items
-    $course_items_raw = get_post_meta( $post->ID, '_dame_course_items', true );
-    if ( ! is_array( $course_items_raw ) ) {
-        $course_items_raw = array();
-    }
-    ?>
-    <style>
-        .dame-dual-list-wrapper { display: flex; align-items: center; gap: 15px; }
-        .dame-dual-list-box { flex: 1; }
-        .dame-dual-list-box select { width: 100%; height: 300px; }
-        .dame-dual-list-controls { display: flex; flex-direction: column; gap: 10px; }
-        .dame-dual-list-controls button { width: 100px; }
-        #dame-available-items-select:disabled { background-color: #f0f0f0; }
-    </style>
-    <div class="dame-dual-list-wrapper">
-        <!-- Available Items List -->
-        <div class="dame-dual-list-box">
-            <strong><?php _e( 'Contenus Disponibles', 'dame' ); ?></strong>
-            <select id="dame-available-items-select" multiple disabled></select>
-            <p class="description" id="dame-available-items-placeholder">
-                <?php
-                if ( get_post_meta( $post->ID, '_dame_difficulty', true ) ) {
-                    _e( 'Chargement...', 'dame' );
-                } else {
-                    _e( 'Veuillez d\'abord sélectionner et enregistrer une difficulté pour le cours.', 'dame' );
-                }
-                ?>
-            </p>
-        </div>
-
-        <!-- Controls -->
-        <div class="dame-dual-list-controls">
-            <button type="button" id="dame-add-to-course" class="button">&gt;&gt;</button>
-            <button type="button" id="dame-remove-from-course" class="button">&lt;&lt;</button>
-        </div>
-
-        <!-- Course Items List -->
-        <div class="dame-dual-list-box">
-            <strong><?php _e( 'Contenu du Cours', 'dame' ); ?></strong>
-            <select id="dame-course-items-select" multiple>
-                <?php
-                if ( ! empty( $course_items_raw ) ) {
-                    foreach ( $course_items_raw as $item ) {
-                        $post_obj = get_post( $item['id'] );
-                        if ( $post_obj ) {
-                            $post_type_name = 'dame_' . $item['type'];
-                            $post_type_obj  = get_post_type_object( $post_type_name );
-                            $type_label     = $post_type_obj ? $post_type_obj->labels->singular_name : ucfirst( $item['type'] );
-
-                            $value = esc_attr( $item['type'] . ':' . $item['id'] );
-                            $label = esc_html( $post_obj->post_title . ' (' . $type_label . ')' );
-                            echo "<option value=\"{$value}\">{$label}</option>";
-                        }
-                    }
-                }
-                ?>
-            </select>
-            <div id="dame-course-items-hidden-inputs">
-                <?php
-                if ( ! empty( $course_items_raw ) ) {
-                    foreach ( $course_items_raw as $item ) {
-                        $value = esc_attr( $item['type'] . ':' . $item['id'] );
-                        echo '<input type="hidden" name="dame_course_items[]" value="' . $value . '">';
-                    }
-                }
-                ?>
-            </div>
-        </div>
-
-        <!-- Reorder Controls -->
-        <div class="dame-dual-list-controls">
-            <button type="button" id="dame-move-up" class="button">&#9650;</button>
-            <button type="button" id="dame-move-down" class="button">&#9660;</button>
-        </div>
-    </div>
-    <?php
-}
-
-/**
- * Save meta box content for Cours CPT.
- */
-function dame_save_cours_meta( $post_id ) {
-    if ( ! isset( $_POST['dame_cours_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_cours_metabox_nonce'], 'dame_save_cours_meta' ) ) {
-        return;
-    }
-    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-        return;
-    }
-    if ( ! current_user_can( 'edit_post', $post_id ) ) {
-        return;
-    }
-
-    // --- Validation ---
-    if ( empty( $_POST['dame_difficulty'] ) ) {
-        set_transient( 'dame_error_message', __( 'La difficulté est un champ obligatoire. Le cours n\'a pas été publié.', 'dame' ), 10 );
-
-        remove_action( 'save_post_dame_cours', 'dame_save_cours_meta' );
-        wp_update_post( array( 'ID' => $post_id, 'post_status' => 'draft' ) );
-        add_action( 'save_post_dame_cours', 'dame_save_cours_meta' );
-
-        return;
-    }
-
-    if ( isset( $_POST['dame_difficulty'] ) && '' !== $_POST['dame_difficulty'] ) {
-        update_post_meta( $post_id, '_dame_difficulty', intval( $_POST['dame_difficulty'] ) );
-    } else {
-        delete_post_meta( $post_id, '_dame_difficulty' );
-    }
-
-    if ( isset( $_POST['dame_course_items'] ) && is_array( $_POST['dame_course_items'] ) ) {
-        $sanitized_items = array();
-        foreach ( $_POST['dame_course_items'] as $item ) {
-            // Value is in format "type:id"
-            list($type, $id) = explode(':', sanitize_text_field($item));
-            if ( in_array($type, ['lecon', 'exercice']) && is_numeric($id) ) {
-                $sanitized_items[] = array(
-                    'type' => $type,
-                    'id'   => intval($id),
-                );
-            }
-        }
-        update_post_meta( $post_id, '_dame_course_items', $sanitized_items );
-    } else {
-        // If the list is empty, it means no items are in the course.
-        delete_post_meta( $post_id, '_dame_course_items' );
-    }
-}
-add_action( 'save_post_dame_cours', 'dame_save_cours_meta' );
 
 /**
  * Save meta box content for Agenda CPT.
@@ -2306,61 +1867,3 @@ function dame_process_pre_inscription_actions( $post_id ) {
 	add_action( 'save_post_dame_pre_inscription', 'dame_process_pre_inscription_actions' );
 }
 add_action( 'save_post_dame_pre_inscription', 'dame_process_pre_inscription_actions' );
-
-
-function dame_get_course_builder_items() {
-    check_ajax_referer( 'dame_course_builder_nonce', 'nonce' );
-
-    $difficulty = isset( $_POST['difficulty'] ) ? intval( $_POST['difficulty'] ) : 0;
-    $course_id = isset( $_POST['course_id'] ) ? intval( $_POST['course_id'] ) : 0;
-
-    if ( ! $difficulty ) {
-        wp_send_json_success( array( 'lessons' => array(), 'exercices' => array() ) );
-        return;
-    }
-
-    $used_ids = array();
-    if ( $course_id ) {
-        $course_items_raw = get_post_meta( $course_id, '_dame_course_items', true );
-        if ( is_array( $course_items_raw ) ) {
-            $used_ids = array_map( function($item) { return $item['id']; }, $course_items_raw );
-        }
-    }
-
-    $args = array(
-        'post_type' => array('dame_lecon', 'dame_exercice'),
-        'posts_per_page' => -1,
-        'orderby' => 'title',
-        'order' => 'ASC',
-        'meta_query' => array(
-            array(
-                'key' => '_dame_difficulty',
-                'value' => $difficulty,
-                'compare' => '=',
-            ),
-        ),
-        'post__not_in' => $used_ids,
-    );
-
-    $posts = get_posts( $args );
-
-    $lessons = array();
-    $exercices = array();
-
-    foreach($posts as $post) {
-        if ($post->post_type === 'dame_lecon') {
-            $lessons[] = array(
-                'id' => $post->ID,
-                'title' => $post->post_title,
-            );
-        } else if ($post->post_type === 'dame_exercice') {
-            $exercices[] = array(
-                'id' => $post->ID,
-                'title' => $post->post_title,
-            );
-        }
-    }
-
-    wp_send_json_success( array( 'lessons' => $lessons, 'exercices' => $exercices ) );
-}
-add_action( 'wp_ajax_dame_get_course_builder_items', 'dame_get_course_builder_items' );

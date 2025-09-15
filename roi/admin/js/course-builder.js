@@ -2,12 +2,12 @@
     'use strict';
 
     $(document).ready(function() {
-        const availableList = $('#dame-available-items-select');
-        const courseList = $('#dame-course-items-select');
-        const hiddenInputsContainer = $('#dame-course-items-hidden-inputs');
-        const difficultySelect = $('#dame_difficulty');
-        const availableItemsPlaceholder = $('#dame-available-items-placeholder');
-        const i18n = dame_course_builder_data.i18n;
+        const availableList = $('#roi-available-items-select');
+        const courseList = $('#roi-course-items-select');
+        const hiddenInputsContainer = $('#roi-course-items-hidden-inputs');
+        const difficultySelect = $('#roi_difficulty');
+        const availableItemsPlaceholder = $('#roi-available-items-placeholder');
+        const i18n = roi_course_builder_data.i18n;
 
         function fetchAvailableItems() {
             var difficulty = difficultySelect.val();
@@ -26,13 +26,13 @@
             }
 
             $.ajax({
-                url: dame_course_builder_data.ajax_url,
+                url: roi_course_builder_data.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'dame_get_course_builder_items',
-                    nonce: dame_course_builder_data.nonce,
+                    action: 'roi_get_course_builder_items',
+                    nonce: roi_course_builder_data.nonce,
                     difficulty: difficulty,
-                    course_id: dame_course_builder_data.course_id
+                    course_id: roi_course_builder_data.course_id
                 },
                 success: function(response) {
                     if (response.success) {
@@ -119,7 +119,7 @@
                 hiddenInputsContainer.append(
                     $('<input>', {
                         type: 'hidden',
-                        name: 'dame_course_items[]',
+                        name: 'roi_course_items[]',
                         value: $(this).val()
                     })
                 );
@@ -127,7 +127,7 @@
         }
 
         // Move selected items to the course list
-        $('#dame-add-to-course').on('click', function() {
+        $('#roi-add-to-course').on('click', function() {
             availableList.find('option:selected').each(function() {
                 $(this).remove().appendTo(courseList);
             });
@@ -135,7 +135,7 @@
         });
 
         // Remove selected items from the course list
-        $('#dame-remove-from-course').on('click', function() {
+        $('#roi-remove-from-course').on('click', function() {
             courseList.find('option:selected').each(function() {
                 const option = $(this);
                 const value = option.val();
@@ -157,7 +157,7 @@
         });
 
         // Move selected items up in the course list
-        $('#dame-move-up').on('click', function() {
+        $('#roi-move-up').on('click', function() {
             courseList.find('option:selected').each(function() {
                 const prev = $(this).prev();
                 if (prev.length) {
@@ -168,7 +168,7 @@
         });
 
         // Move selected items down in the course list
-        $('#dame-move-down').on('click', function() {
+        $('#roi-move-down').on('click', function() {
             $(courseList.find('option:selected').get().reverse()).each(function() {
                 const next = $(this).next();
                 if (next.length) {
