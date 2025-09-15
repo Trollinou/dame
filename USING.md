@@ -59,7 +59,45 @@ Voici la liste des shortcodes disponibles :
 
 Lorsque vous écrivez l'un de ces shortcodes dans votre éditeur, il sera automatiquement remplacé par le symbole correspondant (par exemple, `[RB]` deviendra ♔).
 
-## 4. Comment ajouter une Leçon, un Exercice ou un Cours à un Menu
+## 4. Comment utiliser l'Agenda
+
+Le plugin inclut un système d'agenda complet pour gérer vos événements.
+
+### a. Afficher le calendrier complet
+
+Pour afficher le calendrier mensuel interactif, utilisez le shortcode `[dame_agenda]`.
+
+1.  Créez une nouvelle page (ex: "Agenda").
+2.  Insérez le shortcode `[dame_agenda]` dans le contenu.
+3.  Publiez la page.
+
+Le calendrier affichera les événements du mois en cours et permettra aux utilisateurs de :
+-   Naviguer entre les mois.
+-   Cliquer sur le nom du mois pour ouvrir un sélecteur de mois/année.
+-   Filtrer les événements par catégorie.
+-   Rechercher des événements par mot-clé.
+-   Voir les détails d'un événement au survol.
+-   Cliquer sur un événement pour voir sa page de détails.
+
+### b. Afficher une liste des prochains événements
+
+Pour afficher une liste des événements à venir, utilisez le shortcode `[dame_liste_agenda]`.
+
+Ce shortcode est très utile pour une page d'accueil ou une barre latérale.
+
+**Utilisation de base :**
+Affiche les 4 prochains événements.
+```
+[dame_liste_agenda]
+```
+
+**Utilisation avec un nombre personnalisé :**
+Pour afficher un nombre différent d'événements (par exemple, 10), utilisez l'attribut `nombre`.
+```
+[dame_liste_agenda nombre="10"]
+```
+
+## 5. Comment ajouter une Leçon, un Exercice ou un Cours à un Menu
 
 Vous pouvez ajouter des liens directs vers n'importe quelle Leçon, Exercice ou Cours publié directement dans vos menus de navigation.
 

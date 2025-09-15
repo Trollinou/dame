@@ -4,6 +4,74 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 ## Changelog
 
+### 3.0.7 (14/09/2025)
+
+*   **Fonctionnalité :** Ajout d'une fonction de sauvegarde et de restauration pour la base de données de l'Agenda (événements et catégories). La nouvelle option est disponible dans le sous-menu "Sauvegarde / Restauration" de l'Agenda.
+*   **Amélioration :** La sauvegarde automatique journalière inclut désormais également la base de données de l'Agenda.
+
+### 3.0.6 (14/09/2025)
+
+*   **Amélioration majeure de l'administration de l'agenda**
+    *   **Refonte des filtres :** Remplacement du filtre par mois par un filtre par plage de dates (mois/année de début à mois/année de fin) pour une sélection plus précise.
+    *   **Personnalisation :** La date de début du filtre est sauvegardée par utilisateur pour être ré-appliquée lors des prochaines visites.
+    *   **Colonnes de la liste :** Réorganisation des colonnes pour une meilleure lisibilité (`Date de début`, `Date de fin`, `Lieu` avant `Catégorie`). La colonne de date de publication a été supprimée.
+    *   **Tri des colonnes :** Les colonnes "Date de début" et "Date de fin" sont maintenant triables.
+    *   **Duplication d'événement :** Ajout d'une action "Dupliquer" qui crée une copie d'un événement en tant que brouillon et redirige directement vers sa page d'édition.
+    *   **Logique de duplication :** La duplication copie toutes les données (description, lieu, heures, etc.) à l'exception des dates de début et de fin pour faciliter la reprogrammation.
+
+### 3.0.5 (14/09/2025)
+
+*   **Refonte de l'en-tête de l'agenda `[dame_agenda]`**
+    *   **Amélioration UI :** Le nom du mois est maintenant positionné à gauche, tandis que les contrôles de navigation, de recherche et de filtre sont regroupés à droite.
+    *   **Fonctionnalité :** La navigation des mois a été repensée en un groupe de boutons `< | Ce mois-ci | >`.
+    *   **Fonctionnalité :** Ajout d'un bouton "Ce mois-ci" pour revenir rapidement au mois en cours.
+    *   **Correctif :** Rétablissement de l'icône de flèche déroulante à côté du nom du mois et de la fonctionnalité de clic pour ouvrir le sélecteur de mois/année.
+
+### 3.0.4 (14/09/2025)
+
+*   **Amélioration de l'agenda `[dame_agenda]`**
+    *   **Correctif :** L'infobulle des événements affiche désormais correctement la description de l'événement.
+    *   **Amélioration UI :** Ajout d'une icône de flèche à côté du nom du mois pour indiquer qu'il est cliquable.
+    *   **Amélioration UI :** La taille du panneau de sélection du mois/année a été réduite pour une apparence plus compacte.
+    *   **Correctif de positionnement :** La logique d'affichage du panneau de sélection du mois/année a été entièrement revue pour utiliser une méthode CSS plus robuste, garantissant qu'il s'affiche toujours correctement sous les contrôles de navigation du calendrier.
+
+### 3.0.3 (13/09/2025)
+
+*   **Amélioration de l'interface d'administration de l'Agenda**
+    *   **Liste des événements :** Ajout de colonnes pour "Date de début", "Date de fin", "Lieu", et "Catégorie". La catégorie est affichée avec un indicateur de couleur pour une meilleure lisibilité.
+    *   **Édition d'événement :** Remplacement de l'éditeur de blocs Gutenberg par un champ de description simple (avec gras/italique) pour plus de simplicité.
+    *   **Édition d'événement :** La case à cocher "Journée entière" est maintenant positionnée avant la date de début.
+    *   **Édition d'événement :** La date de fin est automatiquement remplie à partir de la date de début si elle est vide.
+    *   **Édition d'événement :** Les champs "Date de début", "Date de fin" et "Catégorie" sont désormais obligatoires, avec validation côté client et serveur.
+*   **Correctif :** Suppression d'une case à cocher "Journée entière" en double sur l'écran d'édition des événements.
+
+### 3.0.2 (13/09/2025)
+
+*   **Amélioration de l'affichage de l'agenda `[dame_agenda]`**
+    *   **Fonctionnalité :** Le filtre des catégories est maintenant hiérarchique. Les catégories enfants sont indentées sous leur parent pour une meilleure lisibilité.
+    *   **Fonctionnalité :** Les événements sont maintenant affichés pour tous les jours visibles dans la grille du calendrier, y compris ceux des mois précédent et suivant.
+    *   **Amélioration UI :** Le marqueur du jour courant est maintenant un cercle rouge et est aligné en haut à droite de la cellule, de la même manière que les autres numéros de jour.
+    *   **Correctif :** Correction d'un bug de mise en page où le style du jour courant interférait avec l'affichage des événements dans la même cellule.
+
+### 3.0.1 (12/09/2025)
+
+*   **Amélioration majeure de l'agenda `[dame_agenda]`**
+    *   **Fonctionnalité :** Le premier jour de la semaine de l'agenda est maintenant synchronisé avec le réglage de WordPress ("La semaine débute le"), assurant que le calendrier commence le lundi pour les sites configurés pour la France.
+    *   **Fonctionnalité :** Les événements s'étalant sur plusieurs jours sont maintenant affichés comme une barre continue qui s'étend visuellement sur la bonne durée, améliorant considérablement la lisibilité.
+    *   **Fonctionnalité :** La mise en page des événements a été revue pour gérer les superpositions. Les événements longs et les événements ponctuels peuvent maintenant coexister sur la même journée sans se cacher mutuellement.
+    *   **Correctif :** Résolution d'un bug critique lié aux fuseaux horaires qui pouvait causer un décalage d'un jour dans l'affichage des événements.
+    *   **Technique :** La logique d'affichage des événements en JavaScript a été entièrement refactorisée pour être plus robuste et pour gérer des scénarios de mise en page complexes.
+
+### 3.0.0 (11/09/2025)
+
+*   **Fonctionnalité majeure : Ajout d'un système de gestion d'événements (Agenda)**
+    *   **CPT Agenda :** Création d'un nouveau type de contenu `Agenda` pour gérer les événements.
+    *   **Taxonomie Catégories d'agenda :** Ajout d'une taxonomie hiérarchique pour les événements, avec un sélecteur de couleur pour chaque catégorie.
+    *   **Champs personnalisés :** Ajout de champs pour la date/heure de début et de fin, une option "journée entière", et un groupe de champs pour le lieu (avec auto-complétion de l'adresse).
+    *   **Shortcode `[dame_liste_agenda]` :** Affiche une liste des événements à venir. Accepte un attribut `nombre` pour limiter le nombre d'événements affichés (ex: `[dame_liste_agenda nombre="5"]`).
+    *   **Shortcode `[dame_agenda]` :** Affiche un calendrier mensuel complet.
+*   **Documentation :** Mise à jour des fichiers `README.md` et `USING.md` pour inclure les nouvelles fonctionnalités de l'agenda.
+
 ### 2.6.1 (10/09/2025)
 
 *   **Correctif Technique :** Remplacement de la fonction `utf8_decode()`, dépréciée en PHP 8.2, par `mb_convert_encoding()` pour assurer la compatibilité et la pérennité du plugin.

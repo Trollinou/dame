@@ -42,7 +42,7 @@ add_action( 'admin_notices', 'dame_display_admin_notices' );
  */
 function dame_enqueue_admin_scripts( $hook ) {
 	global $post;
-	if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && in_array( $post->post_type, array( 'adherent', 'dame_pre_inscription' ), true ) ) {
+	if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && in_array( $post->post_type, array( 'adherent', 'dame_pre_inscription', 'dame_agenda' ), true ) ) {
 		wp_enqueue_script(
 			'dame-main-js',
 			plugin_dir_url( __FILE__ ) . 'js/main.js',
@@ -134,6 +134,7 @@ function dame_enqueue_admin_scripts( $hook ) {
             DAME_VERSION
         );
     }
+
 }
 add_action( 'admin_enqueue_scripts', 'dame_enqueue_admin_scripts' );
 
@@ -1400,6 +1401,169 @@ function dame_add_cours_meta_boxes() {
 add_action( 'add_meta_boxes', 'dame_add_cours_meta_boxes' );
 
 /**
+ * Adds the meta boxes for the Agenda CPT.
+ */
+function dame_add_agenda_meta_boxes() {
+    add_meta_box(
+        'dame_agenda_description_metabox',
+        __( 'Description', 'dame' ),
+        'dame_render_agenda_description_metabox',
+        'dame_agenda',
+        'normal',
+        'high'
+    );
+    add_meta_box(
+        'dame_agenda_details_metabox',
+        __( 'Détails de l\'événement', 'dame' ),
+        'dame_render_agenda_details_metabox',
+        'dame_agenda',
+        'normal',
+        'high'
+    );
+}
+add_action( 'add_meta_boxes', 'dame_add_agenda_meta_boxes' );
+
+/**
+ * Renders the meta box for the agenda's description.
+ *
+ * @param WP_Post $post The post object.
+ */
+function dame_render_agenda_description_metabox( $post ) {
+    $description = get_post_meta( $post->ID, '_dame_agenda_description', true );
+
+    wp_editor(
+        $description,
+        'dame_agenda_description',
+        array(
+            'textarea_name' => 'dame_agenda_description',
+            'teeny'         => true,
+            'media_buttons' => false,
+            'textarea_rows' => 5,
+            'tinymce'       => array(
+                'toolbar1' => 'bold,italic',
+                'toolbar2' => '',
+                'toolbar3' => '',
+            ),
+        )
+    );
+}
+
+/**
+ * Renders the meta box for agenda details.
+ *
+ * @param WP_Post $post The post object.
+ */
+function dame_render_agenda_details_metabox( $post ) {
+    wp_nonce_field( 'dame_save_agenda_meta', 'dame_agenda_metabox_nonce' );
+
+    $start_date = get_post_meta( $post->ID, '_dame_start_date', true );
+    $start_time = get_post_meta( $post->ID, '_dame_start_time', true );
+    $end_date = get_post_meta( $post->ID, '_dame_end_date', true );
+    $end_time = get_post_meta( $post->ID, '_dame_end_time', true );
+    $all_day = get_post_meta( $post->ID, '_dame_all_day', true );
+    $location_name = get_post_meta( $post->ID, '_dame_location_name', true );
+    $address_1 = get_post_meta( $post->ID, '_dame_address_1', true );
+    $address_2 = get_post_meta( $post->ID, '_dame_address_2', true );
+    $postal_code = get_post_meta( $post->ID, '_dame_postal_code', true );
+    $city = get_post_meta( $post->ID, '_dame_city', true );
+    ?>
+    <table class="form-table">
+        <!-- Date and Time Fields -->
+        <tr>
+            <th><label for="dame_all_day"><?php _e( 'Journée entière', 'dame' ); ?></label></th>
+            <td>
+                <input type="checkbox" id="dame_all_day" name="dame_all_day" value="1" <?php checked( $all_day, '1' ); ?> />
+            </td>
+        </tr>
+        <tr>
+            <th><label for="dame_start_date"><?php _e( 'Date de début', 'dame' ); ?></label></th>
+            <td>
+                <input type="date" id="dame_start_date" name="dame_start_date" value="<?php echo esc_attr( $start_date ); ?>" />
+                <span class="dame-time-fields <?php if ( $all_day ) echo 'hidden'; ?>">
+                    <label for="dame_start_time" class="screen-reader-text"><?php _e( 'Heure de début', 'dame' ); ?></label>
+                    <select id="dame_start_time" name="dame_start_time">
+                        <?php
+                        for ( $h = 0; $h < 24; $h++ ) {
+                            for ( $m = 0; $m < 60; $m += 15 ) {
+                                $time_val = sprintf( '%02d:%02d', $h, $m );
+                                echo '<option value="' . esc_attr( $time_val ) . '" ' . selected( $start_time, $time_val, false ) . '>' . esc_html( $time_val ) . '</option>';
+                            }
+                        }
+                        ?>
+                    </select>
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <th><label for="dame_end_date"><?php _e( 'Date de fin', 'dame' ); ?></label></th>
+            <td>
+                <input type="date" id="dame_end_date" name="dame_end_date" value="<?php echo esc_attr( $end_date ); ?>" />
+                 <span class="dame-time-fields <?php if ( $all_day ) echo 'hidden'; ?>">
+                    <label for="dame_end_time" class="screen-reader-text"><?php _e( 'Heure de fin', 'dame' ); ?></label>
+                    <select id="dame_end_time" name="dame_end_time">
+                        <?php
+                        for ( $h = 0; $h < 24; $h++ ) {
+                            for ( $m = 0; $m < 60; $m += 15 ) {
+                                $time_val = sprintf( '%02d:%02d', $h, $m );
+                                echo '<option value="' . esc_attr( $time_val ) . '" ' . selected( $end_time, $time_val, false ) . '>' . esc_html( $time_val ) . '</option>';
+                            }
+                        }
+                        ?>
+                    </select>
+                </span>
+            </td>
+        </tr>
+
+        <!-- Location Fields -->
+        <tr>
+            <th colspan="2"><h4><?php _e( 'Lieu', 'dame' ); ?></h4></th>
+        </tr>
+        <tr>
+            <th><label for="dame_location_name"><?php _e( 'Intitulé du lieu', 'dame' ); ?></label></th>
+            <td><input type="text" id="dame_location_name" name="dame_location_name" value="<?php echo esc_attr( $location_name ); ?>" class="regular-text" /></td>
+        </tr>
+        <tr>
+			<th><label for="dame_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-autocomplete-wrapper" style="position: relative;">
+					<input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text" autocomplete="off" />
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th><label for="dame_address_2"><?php _e( 'Complément', 'dame' ); ?></label></th>
+			<td><input type="text" id="dame_address_2" name="dame_address_2" value="<?php echo esc_attr( $address_2 ); ?>" class="regular-text" /></td>
+		</tr>
+		<tr>
+			<th><label for="dame_postal_code"><?php _e( 'Code Postal / Ville', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-inline-fields">
+					<input type="text" id="dame_postal_code" name="dame_postal_code" value="<?php echo esc_attr( $postal_code ); ?>" class="postal-code" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
+					<input type="text" id="dame_city" name="dame_city" value="<?php echo esc_attr( $city ); ?>" class="city" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
+				</div>
+			</td>
+		</tr>
+    </table>
+    <script>
+    jQuery(document).ready(function($) {
+        function toggleTimeFields() {
+            if ($('#dame_all_day').is(':checked')) {
+                $('.dame-time-fields').hide();
+            } else {
+                $('.dame-time-fields').show();
+            }
+        }
+        toggleTimeFields(); // Initial check
+        $('#dame_all_day').on('change', toggleTimeFields);
+    });
+    </script>
+    <style>
+        .dame-time-fields.hidden { display: none; }
+    </style>
+    <?php
+}
+
+/**
  * Renders the dual list meta box for the course builder.
  *
  * @param WP_Post $post The post object.
@@ -1557,6 +1721,77 @@ function dame_save_cours_meta( $post_id ) {
     }
 }
 add_action( 'save_post_dame_cours', 'dame_save_cours_meta' );
+
+/**
+ * Save meta box content for Agenda CPT.
+ *
+ * @param int $post_id Post ID
+ */
+function dame_save_agenda_meta( $post_id ) {
+    // --- Security checks ---
+    if ( ! isset( $_POST['dame_agenda_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_agenda_metabox_nonce'], 'dame_save_agenda_meta' ) ) {
+        return;
+    }
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+        return;
+    }
+    if ( ! current_user_can( 'edit_post', $post_id ) ) {
+        return;
+    }
+
+    // --- Validation ---
+    $errors = [];
+    if ( empty( $_POST['dame_start_date'] ) ) {
+        $errors[] = __( 'La date de début est obligatoire.', 'dame' );
+    }
+    if ( empty( $_POST['dame_end_date'] ) ) {
+        $errors[] = __( 'La date de fin est obligatoire.', 'dame' );
+    }
+    if ( empty( $_POST['tax_input']['dame_agenda_category'] ) || ( is_array( $_POST['tax_input']['dame_agenda_category'] ) && count( array_filter( $_POST['tax_input']['dame_agenda_category'] ) ) === 0 ) ) {
+        $errors[] = __( 'La catégorie est obligatoire.', 'dame' );
+    }
+
+    if ( ! empty( $errors ) ) {
+        set_transient( 'dame_error_message', implode( '<br>', $errors ), 10 );
+
+        // Unhook this function to prevent infinite loops
+        remove_action( 'save_post_dame_agenda', 'dame_save_agenda_meta' );
+
+        // Update the post to be a draft
+        wp_update_post( array( 'ID' => $post_id, 'post_status' => 'draft' ) );
+
+        // Re-hook the function
+        add_action( 'save_post_dame_agenda', 'dame_save_agenda_meta' );
+        return;
+    }
+
+    // --- Sanitize and Save Data ---
+    $fields = [
+        'dame_start_date'    => 'sanitize_text_field',
+        'dame_start_time'    => 'sanitize_text_field',
+        'dame_end_date'      => 'sanitize_text_field',
+        'dame_end_time'      => 'sanitize_text_field',
+        'dame_all_day'       => 'absint',
+        'dame_location_name' => 'sanitize_text_field',
+        'dame_address_1'     => 'sanitize_text_field',
+        'dame_address_2'     => 'sanitize_text_field',
+        'dame_postal_code'   => 'sanitize_text_field',
+        'dame_city'          => 'sanitize_text_field',
+        'dame_agenda_description' => 'wp_kses_post',
+    ];
+
+    foreach ( $fields as $field_name => $sanitize_callback ) {
+        if ( isset( $_POST[ $field_name ] ) ) {
+            $value = call_user_func( $sanitize_callback, wp_unslash( $_POST[ $field_name ] ) );
+            update_post_meta( $post_id, '_' . $field_name, $value );
+        } else {
+            if ( 'absint' === $sanitize_callback ) {
+                update_post_meta( $post_id, '_' . $field_name, 0 );
+            }
+        }
+    }
+}
+add_action( 'save_post_dame_agenda', 'dame_save_agenda_meta' );
 
 
 // =================================================================
