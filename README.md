@@ -1,6 +1,6 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 3.0.6
+**Version:** 3.0.7
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -61,6 +61,7 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 *   **Affichage Liste :** Le shortcode `[dame_liste_agenda nombre="X"]` affiche une liste des X prochains événements.
 *   **Catégories Colorées :** Chaque catégorie d'événement peut être associée à une couleur pour une identification visuelle rapide sur le calendrier.
 *   **Détails Complets :** Les événements peuvent inclure une description, des dates et heures de début/fin, une option "journée entière" et des informations de lieu détaillées.
+*   **Sauvegarde et Restauration :** Outil pour sauvegarder et restaurer la base de données des événements et de leurs catégories.
 
 ### Administration et Configuration
 
