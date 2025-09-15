@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier et Apprentissage des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           3.0.6
+ * Version:           3.0.7
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Etienne Gagnon
@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '3.0.6' );
+define( 'DAME_VERSION', '3.0.7' );
 define( 'DAME_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -163,6 +163,8 @@ if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/user-assignment.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-page.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda-page.php';
 }
 
 
