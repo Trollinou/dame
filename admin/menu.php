@@ -11,6 +11,38 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
+ * Add the submenus to the Adherent CPT menu.
+ */
+function dame_add_adherent_submenus() {
+    add_submenu_page(
+        'edit.php?post_type=adherent',
+        __( 'Assignation des comptes', 'dame' ),
+        __( 'Assignation des comptes', 'dame' ),
+        'administrator',
+        'dame-user-assignment',
+        'dame_render_user_assignment_page'
+    );
+    add_submenu_page(
+        'edit.php?post_type=adherent',
+        __( 'Envoyer un article', 'dame' ),
+        __( 'Envoyer un article', 'dame' ),
+        'manage_options', // Capability
+        'dame-mailing',
+        'dame_render_mailing_page'
+    );
+    add_submenu_page(
+        'edit.php?post_type=adherent',
+        __( 'Sauvegarde / Restauration', 'dame' ),
+        __( 'Sauvegarde / Restauration', 'dame' ),
+        'manage_options',
+        'dame-backup-restore',
+        'dame_render_backup_restore_page'
+    );
+}
+add_action( 'admin_menu', 'dame_add_adherent_submenus' );
+
+
+/**
  * Reorders the 'Adhérents' submenu to place 'Assignation des comptes' after 'Ajouter'.
  *
  * This function runs late on the 'admin_menu' hook to ensure all submenu items have been added.

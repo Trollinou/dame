@@ -43,7 +43,7 @@ function dame_register_membership_season_taxonomy() {
         'show_in_rest'      => true,
     );
 
-    register_taxonomy( 'dame_saison_adhesion', 'dame_adherent', $args );
+    register_taxonomy( 'dame_saison_adhesion', 'adherent', $args );
 }
 add_action( 'init', 'dame_register_membership_season_taxonomy', 0 );
 

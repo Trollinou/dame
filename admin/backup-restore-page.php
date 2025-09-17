@@ -11,21 +11,6 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Add the Backup/Restore page to the Apprentissage menu.
- */
-function dame_add_backup_restore_page() {
-    add_submenu_page(
-        'dame-apprentissage',
-        __( 'Sauvegarde / Restauration', 'dame' ),
-        __( 'Sauvegarde / Restauration', 'dame' ),
-        'manage_options',
-        'dame-backup-restore',
-        'dame_render_backup_restore_page'
-    );
-}
-add_action( 'admin_menu', 'dame_add_backup_restore_page' );
-
-/**
  * Renders the backup/restore page.
  */
 function dame_render_backup_restore_page() {

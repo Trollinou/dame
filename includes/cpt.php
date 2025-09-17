@@ -66,7 +66,7 @@ function dame_register_adherent_cpt() {
         'show_in_rest'          => true, // Enable block editor support
     );
 
-    register_post_type( 'dame_adherent', $args );
+    register_post_type( 'adherent', $args );
 
 }
 add_action( 'init', 'dame_register_adherent_cpt', 0 );

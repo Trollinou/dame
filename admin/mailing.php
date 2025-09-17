@@ -11,21 +11,6 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Add the mailing page to the Adherent CPT menu.
- */
-function dame_add_mailing_page() {
-    add_submenu_page(
-        'edit.php?post_type=adherent',
-        __( 'Envoyer un article', 'dame' ),
-        __( 'Envoyer un article', 'dame' ),
-        'manage_options', // Capability
-        'dame-mailing',
-        'dame_render_mailing_page'
-    );
-}
-add_action( 'admin_menu', 'dame_add_mailing_page' );
-
-/**
  * Handles the email sending process.
  */
 function dame_handle_send_email() {
