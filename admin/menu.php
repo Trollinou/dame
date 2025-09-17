@@ -30,13 +30,6 @@ function dame_add_adherent_submenus() {
         'dame-mailing',
         'dame_render_mailing_page'
     );
-    add_submenu_page(
-        'edit.php?post_type=adherent',
-        __( 'Toutes les préinscriptions', 'dame' ),
-        __( 'Toutes les préinscriptions', 'dame' ),
-        'manage_options',
-        'edit.php?post_type=dame_pre_inscription'
-    );
 }
 add_action( 'admin_menu', 'dame_add_adherent_submenus' );
 

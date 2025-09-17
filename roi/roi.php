@@ -60,6 +60,8 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/activation.php';
 if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/menu.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/metaboxes.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-page.php';
 }
 
 /**
