@@ -14,6 +14,10 @@ DAME est un plugin WordPress conçu pour gérer une base de données d'adhérent
 
 *   **Amélioration de la recherche de l'agenda :** La barre de recherche du shortcode `[dame_agenda]` a été améliorée pour inclure non seulement le nom de l'événement, mais aussi sa description et le nom de sa catégorie.
 
+### 3.0.8 (16/09/2025)
+
+*   **Amélioration de la recherche de l'agenda :** La barre de recherche du shortcode `[dame_agenda]` a été améliorée pour inclure non seulement le nom de l'événement, mais aussi sa description et le nom de sa catégorie.
+
 ### 3.0.7 (14/09/2025)
 
 *   **Fonctionnalité :** Ajout d'une fonction de sauvegarde et de restauration pour la base de données de l'Agenda (événements et catégories). La nouvelle option est disponible dans le sous-menu "Sauvegarde / Restauration" de l'Agenda.
