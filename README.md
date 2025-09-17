@@ -1,4 +1,4 @@
-# DAME - Dossier et Apprentissage des Membres Échiquéens
+# DAME - Dossier Administratif des Membres Échiquéens
 
 **Version:** 3.1.0
 **Auteur:** Etienne Gagnon
