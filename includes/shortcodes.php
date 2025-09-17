@@ -677,6 +677,76 @@ function dame_agenda_shortcode( $atts ) {
 add_shortcode( 'dame_agenda', 'dame_agenda_shortcode' );
 
 /**
+ * Adds the necessary JOIN clauses to the WP_Query for searching in custom fields and taxonomies.
+ *
+ * @param string   $join  The JOIN clause of the query.
+ * @param WP_Query $query The instance of WP_Query.
+ * @return string The modified JOIN clause.
+ */
+function dame_agenda_search_join( $join, $query ) {
+    global $wpdb;
+    if ( ! empty( $query->get( 'dame_search' ) ) ) {
+        // Use LEFT JOIN to include posts that may not have a description or category.
+        // Join for the description meta field.
+        $join .= $wpdb->prepare(
+            " LEFT JOIN {$wpdb->postmeta} AS dame_desc_meta ON {$wpdb->posts}.ID = dame_desc_meta.post_id AND dame_desc_meta.meta_key = %s",
+            '_dame_agenda_description'
+        );
+        // Joins for the category name.
+        $join .= " LEFT JOIN {$wpdb->term_relationships} AS dame_tr ON {$wpdb->posts}.ID = dame_tr.object_id";
+        $join .= " LEFT JOIN {$wpdb->term_taxonomy} AS dame_tt ON dame_tr.term_taxonomy_id = dame_tt.term_taxonomy_id";
+        $join .= " LEFT JOIN {$wpdb->terms} AS dame_t ON dame_tt.term_id = dame_t.term_id";
+    }
+    return $join;
+}
+
+
+/**
+ * Adds the WHERE clauses to the WP_Query for searching in title, description, and category.
+ *
+ * @param string   $where The WHERE clause of the query.
+ * @param WP_Query $query The instance of WP_Query.
+ * @return string The modified WHERE clause.
+ */
+function dame_agenda_search_where( $where, $query ) {
+    global $wpdb;
+    $search_term = $query->get( 'dame_search' );
+    if ( ! empty( $search_term ) ) {
+        $search_term_like = '%' . $wpdb->esc_like( $search_term ) . '%';
+
+        // Build the OR conditions for the search.
+        $search_where = $wpdb->prepare(
+            "(
+                {$wpdb->posts}.post_title LIKE %s
+                OR dame_desc_meta.meta_value LIKE %s
+                OR (dame_tt.taxonomy = 'dame_agenda_category' AND dame_t.name LIKE %s)
+            )",
+            $search_term_like,
+            $search_term_like,
+            $search_term_like
+        );
+
+        // Append our custom search conditions to the main WHERE clause.
+        $where .= " AND ( " . $search_where . " )";
+    }
+    return $where;
+}
+
+/**
+ * Ensures that the query returns distinct results.
+ *
+ * @param string   $distinct The DISTINCT clause of the query.
+ * @param WP_Query $query    The instance of WP_Query.
+ * @return string The modified DISTINCT clause.
+ */
+function dame_agenda_search_distinct( $distinct, $query ) {
+    if ( ! empty( $query->get( 'dame_search' ) ) ) {
+        return 'DISTINCT';
+    }
+    return $distinct;
+}
+
+/**
  * AJAX handler to fetch agenda events.
  */
 function dame_get_agenda_events() {
@@ -730,10 +800,23 @@ function dame_get_agenda_events() {
     }
 
     if ( ! empty( $search_term ) ) {
-        $args['s'] = $search_term;
+        // Use a custom query var to trigger the search filters.
+        $args['dame_search'] = $search_term;
+
+        // Add the filters to modify the query.
+        add_filter( 'posts_join', 'dame_agenda_search_join', 10, 2 );
+        add_filter( 'posts_where', 'dame_agenda_search_where', 10, 2 );
+        add_filter( 'posts_distinct', 'dame_agenda_search_distinct', 10, 2 );
     }
 
     $query = new WP_Query( $args );
+
+    // Remove the filters immediately after the query to avoid affecting other queries on the site.
+    if ( ! empty( $search_term ) ) {
+        remove_filter( 'posts_join', 'dame_agenda_search_join', 10, 2 );
+        remove_filter( 'posts_where', 'dame_agenda_search_where', 10, 2 );
+        remove_filter( 'posts_distinct', 'dame_agenda_search_distinct', 10, 2 );
+    }
     $events = array();
 
     if ( $query->have_posts() ) {
