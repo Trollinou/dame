@@ -1,23 +1,75 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-Gère une base de données d'adhérents pour un club d'échecs, ainsi que les événements associés.
-
-Version: 3.1.0
+**Version:** 3.1.0
+**Auteur:** Etienne Gagnon
+**Licence:** GPL v2 or later
 
 ## Description
+DAME est un plugin WordPress conçu pour gérer une base de données d'adhérents pour un club, une association ou toute autre organisation. Il fournit une interface d'administration simple et intégrée pour gérer les informations des membres, leurs classifications, leurs adhésions par saison, et leurs liens avec les comptes utilisateurs WordPress.
 
-Ce plugin fournit une interface pour gérer les membres d'un club d'échecs, y compris leurs informations personnelles, leurs adhésions et leurs inscriptions. Il gère également un agenda pour les événements du club.
+Ce plugin a été développé en suivant les meilleures pratiques de WordPress en matière de sécurité, de performance, de maintenabilité et d'évolutivité.
 
-La fonctionnalité de gestion de l'apprentissage (LMS) a été déplacée vers un plugin séparé appelé **ROI (Ressources et Organisation pour l’Initiation aux échecs)**. Pour utiliser les fonctionnalités d'apprentissage, veuillez installer et activer le plugin ROI.
+## Prérequis
 
-## Fonctionnalités
+*   **WordPress :** 6.8 ou supérieur
+*   **PHP :** 8.2 ou supérieur
 
-*   Gestion complète des adhérents
-*   Gestion des préinscriptions
-*   Gestion des saisons d'adhésion
-*   Agenda des événements du club
-*   Exportation et importation des données des adhérents
-*   Envoi d'articles aux membres par email
+## Fonctionnalités Principales
+
+### Gestion des Adhésions par Saison
+
+Le système de gestion des adhésions a été entièrement repensé pour offrir plus de flexibilité et un meilleur suivi historique.
+
+*   **Adhésion par Tags de Saison :** L'ancien système de statut (Actif, Ancien, etc.) est remplacé par une taxonomie "Saison d'adhésion". Chaque membre se voit attribuer un "tag" pour chaque saison à laquelle il adhère (ex: "Saison 2024/2025").
+*   **Statut Dynamique :** Un membre est considéré comme "Actif" s'il possède le tag de la saison en cours. Sinon, il est "Non adhérent".
+*   **Historique des Adhésions :** Toutes les saisons d'adhésion d'un membre sont conservées et visibles sous forme de "pastilles" sur sa fiche et dans la liste des adhérents.
+*   **Gestion Simplifiée :** Sur la fiche d'un adhérent, un simple menu déroulant "Adhésion pour la saison actuelle" permet de le marquer comme "Actif" ou "Non adhérent", ce qui ajoute ou retire automatiquement le tag de la saison en cours.
+*   **Filtres Avancés :** La liste des adhérents peut être filtrée pour n'afficher que les membres "Actifs", "Inactifs", ou tous les membres ayant adhéré à une saison spécifique (ex: tous les adhérents de la "Saison 2023/2024").
+*   **Réinitialisation Annuelle Intelligente :** La fonction de "Réinitialisation Annuelle" (`Réglages > Options DAME`) ne modifie plus les anciens membres. Son rôle est désormais de créer le tag pour la nouvelle saison qui commence et de le définir comme saison "active".
+*   **Système de suivi de l'honorabilité :** Les champs de date de naissance et de commune de naissance sont saisissable pour les adherents et/ou représetnant legaux afin de suivre le processus de contrôle d'honorabilité s'il sont amené à accompagner des mineurs.
+
+### Préinscription en Ligne
+
+*   **Formulaire de Préinscription :** Un shortcode `[dame_fiche_inscription]` permet d'afficher un formulaire public où les futurs membres peuvent s'inscrire. Le formulaire s'adapte dynamiquement pour les adhérents majeurs et mineurs.
+*   **Formulaire de Contact :** Un shortcode `[dame_contact]` permet d'afficher un formulaire de contact simple (Nom, Email, Sujet, Message) qui envoie un email à l'administrateur.
+*   **Génération de PDF :** Génération de l'attestation de réponse négative au questionnaire de santé.
+*   **Interface de Validation :** Les administrateurs disposent d'une interface dédiée pour examiner, modifier et valider les préinscriptions.
+*   **Rapprochement Automatique :** Le système détecte les doublons potentiels en comparant les nouvelles inscriptions avec la base de données existante (nom, prénom, date de naissance).
+*   **Mise à Jour Facilitée :** Si un doublon est trouvé, un tableau de comparaison met en évidence les différences et permet de mettre à jour la fiche de l'adhérent existant en un clic.
+
+### Gestion des Données des Membres
+
+*   **Gestion des Données Personnelles :** Fiche détaillée pour chaque membre (coordonnées, date de naissance, etc.).
+*   **Représentants Légaux :** Gestion des informations pour les représentants légaux des membres mineurs.
+*   **Classification :** Catégorisation des membres (École d'échecs, Pôle Excellence, Bénévole, etc.).
+*   **Assignation de Compte Utilisateur :** Outil pour lier un dossier d'adhérent à un compte utilisateur WordPress.
+*   **Import / Export :** Outils complets pour importer des membres depuis un fichier CSV et exporter toutes les données en CSV ou JSON.
+
+### Gestion d'Événements (Agenda)
+
+*   **Calendrier d'Événements :** Un nouveau type de contenu "Agenda" permet de créer et gérer des événements.
+*   **Affichage Calendrier :** Le shortcode `[dame_agenda]` affiche un calendrier mensuel interactif avec navigation, filtres par catégorie et recherche.
+*   **Affichage Liste :** Le shortcode `[dame_liste_agenda nombre="X"]` affiche une liste des X prochains événements.
+*   **Catégories Colorées :** Chaque catégorie d'événement peut être associée à une couleur pour une identification visuelle rapide sur le calendrier.
+*   **Détails Complets :** Les événements peuvent inclure une description, des dates et heures de début/fin, une option "journée entière" et des informations de lieu détaillées.
+*   **Sauvegarde et Restauration :** Outil pour sauvegarder et restaurer la base de données des événements et de leurs catégories.
+
+### Administration et Configuration
+
+*   **Préférences de Communication :** Gestion du consentement au mailing pour chaque adresse email.
+*   **Configuration SMTP :** Permet de configurer un serveur SMTP externe pour fiabiliser l'envoi d'emails.
+*   **Envoi d'emails par Lots :** La taille des lots d'envoi est configurable pour s'adapter aux contraintes des hébergeurs.
+*   **Sauvegarde Automatique :** Le plugin effectue une sauvegarde journalière automatique des bases de données "Adhérents" et "Apprentissage". Les fichiers de sauvegarde sont envoyés par email à l'adresse de l'expéditeur configurée.
+*   **Heure de Sauvegarde Configurable :** L'heure de déclenchement de la sauvegarde journalière peut être personnalisée dans les réglages.
+*   **Désinstallation Sécurisée :** Les données sont conservées par défaut lors de la désinstallation, mais peuvent être supprimées via une option.
+
+## Configuration
+
+Pour garantir une bonne délivrabilité des emails envoyés via le plugin, il est fortement recommandé de configurer un serveur SMTP. Allez dans `Réglages > Options DAME` et remplissez les champs de la section "Paramètres d'envoi d'email".
+
+### Sauvegarde Automatique
+
+Vous pouvez configurer l'heure de la sauvegarde journalière dans la section "Paramètres de sauvegarde" de la page d'options.
 
 ## Dépendances
 
