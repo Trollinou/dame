@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.1.1 - 2025-09-17
+*   **Refactorisation** : Renommage des fichiers `import-export.php` en `backup-restore-adherent.php` pour une meilleure clarté.
+*   **Refactorisation** : Déplacement des styles CSS de la liste d'agenda du fichier `dame-public-styles.css` vers `agenda.css` pour une meilleure organisation.
+*   **Amélioration** : Le sous-menu "Envoyer un article" est maintenant accessible au rôle "Éditeur" (capability `publish_posts`).
+
 ## Description
 
 DAME est un plugin WordPress conçu pour gérer une base de données d'adhérents pour un club, une association ou toute autre organisation. Il fournit une interface d'administration simple et intégrée pour gérer les informations des membres, leurs classifications et leurs liens avec les comptes utilisateurs WordPress.
