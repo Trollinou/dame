@@ -28,6 +28,7 @@ function dame_handle_send_email() {
 
     $article_id = isset( $_POST['dame_article_to_send'] ) ? absint( $_POST['dame_article_to_send'] ) : 0;
     $selection_method = isset( $_POST['dame_selection_method'] ) ? sanitize_key( $_POST['dame_selection_method'] ) : '';
+    $recipient_gender = isset( $_POST['dame_recipient_gender'] ) ? sanitize_text_field( $_POST['dame_recipient_gender'] ) : 'all';
 
     if ( empty( $article_id ) ) {
         add_action( 'admin_notices', function() {
@@ -66,39 +67,63 @@ function dame_handle_send_email() {
                         'operator' => 'IN',
                     ),
                 ),
+                'meta_query' => array(),
             );
+
+            if ( 'all' !== $recipient_gender ) {
+                $season_query_args['meta_query'][] = array(
+                    'key' => '_dame_sexe',
+                    'value' => $recipient_gender,
+                );
+            }
             $season_adherent_ids = get_posts( $season_query_args );
         }
 
         // Get adherents by group
         if ( ! empty( $groups ) ) {
-            $group_meta_query = array( 'relation' => 'OR' );
+            $meta_query = array(
+                'relation' => 'AND',
+            );
+
+            $group_conditions = array(
+                'relation' => 'OR',
+            );
+
             foreach ( $groups as $group ) {
                 switch ( $group ) {
                     case 'juniors':
-                        $group_meta_query[] = array( 'key' => '_dame_is_junior', 'value' => '1' );
+                        $group_conditions[] = array( 'key' => '_dame_is_junior', 'value' => '1' );
                         break;
                     case 'pole_excellence':
-                        $group_meta_query[] = array( 'key' => '_dame_is_pole_excellence', 'value' => '1' );
+                        $group_conditions[] = array( 'key' => '_dame_is_pole_excellence', 'value' => '1' );
                         break;
                     case 'benevoles':
-                        $group_meta_query[] = array( 'key' => '_dame_is_benevole', 'value' => '1' );
+                        $group_conditions[] = array( 'key' => '_dame_is_benevole', 'value' => '1' );
                         break;
                     case 'elus_locaux':
-                        $group_meta_query[] = array( 'key' => '_dame_is_elu_local', 'value' => '1' );
+                        $group_conditions[] = array( 'key' => '_dame_is_elu_local', 'value' => '1' );
                         break;
                 }
             }
 
-            if ( count( $group_meta_query ) > 1 ) {
-                $group_query_args = array(
-                    'post_type'      => 'adherent',
-                    'posts_per_page' => -1,
-                    'fields'         => 'ids',
-                    'meta_query'     => $group_meta_query,
-                );
-                $group_adherent_ids = get_posts( $group_query_args );
+            if ( count( $group_conditions ) > 1 ) {
+                $meta_query[] = $group_conditions;
             }
+
+            if ( 'all' !== $recipient_gender ) {
+                $meta_query[] = array(
+                    'key'   => '_dame_sexe',
+                    'value' => $recipient_gender,
+                );
+            }
+
+            $group_query_args = array(
+                'post_type'      => 'adherent',
+                'posts_per_page' => -1,
+                'fields'         => 'ids',
+                'meta_query'     => $meta_query,
+            );
+            $group_adherent_ids = get_posts( $group_query_args );
         }
 
         // Merge and get unique IDs
@@ -362,6 +387,17 @@ function dame_render_mailing_page() {
                                         echo '<p>' . esc_html__( "Aucune saison d'adhésion trouvée.", 'dame' ) . '</p>';
                                     }
                                     ?>
+                                </div>
+
+                                <hr style="margin: 15px 0;">
+
+                                <div id="dame-gender-filter" style="margin-bottom: 15px;">
+                                    <label for="dame_recipient_gender" style="font-weight: bold; display: block; margin-bottom: 5px;"><?php esc_html_e( 'Sexe', 'dame' ); ?></label>
+                                    <select id="dame_recipient_gender" name="dame_recipient_gender" style="width: 100%; max-width: 400px;">
+                                        <option value="all" selected><?php esc_html_e( 'Tous', 'dame' ); ?></option>
+                                        <option value="Masculin"><?php esc_html_e( 'Masculin', 'dame' ); ?></option>
+                                        <option value="Féminin"><?php esc_html_e( 'Féminin', 'dame' ); ?></option>
+                                    </select>
                                 </div>
 
                                 <hr style="margin: 15px 0;">
