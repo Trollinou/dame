@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const endDateInput = document.getElementById('dame_end_date');
 
         if (startDateInput && endDateInput) {
-            startDateInput.addEventListener('change', function() {
+            startDateInput.addEventListener('blur', function() {
                 if (this.value && !endDateInput.value) {
                     endDateInput.value = this.value;
                 }
