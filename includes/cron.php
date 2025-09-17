@@ -17,7 +17,7 @@ if ( ! defined( 'WPINC' ) ) {
  */
 function dame_generate_adherent_backup_file() {
     if ( ! function_exists( 'dame_get_adherent_export_data' ) ) {
-        require_once DAME_PLUGIN_DIR . 'admin/import-export.php';
+        require_once DAME_PLUGIN_DIR . 'admin/backup-restore-adherent.php';
     }
 
     $export_data = dame_get_adherent_export_data();

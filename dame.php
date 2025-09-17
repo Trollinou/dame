@@ -154,9 +154,9 @@ if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/metaboxes.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/columns.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/settings-page.php';
-    require_once plugin_dir_path( __FILE__ ) . 'admin/import-export.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-adherent.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/mailing.php';
-    require_once plugin_dir_path( __FILE__ ) . 'admin/import-export-page.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-adherent-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/user-assignment.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda-page.php';
