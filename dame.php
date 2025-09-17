@@ -158,8 +158,6 @@ if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/mailing.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/import-export-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/user-assignment.php';
-    require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore.php';
-    require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda-page.php';
 }

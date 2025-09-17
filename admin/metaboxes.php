@@ -266,6 +266,37 @@ function dame_add_meta_boxes() {
 add_action( 'add_meta_boxes', 'dame_add_meta_boxes' );
 
 /**
+ * Close the "Saisons d'adhésion" metabox by default by adding the 'closed' class.
+ *
+ * @param array $classes An array of postbox classes.
+ * @return array The modified array of classes.
+ */
+function dame_close_saisons_metabox_by_default( $classes ) {
+	// We check the current screen to make sure we're only affecting the intended metabox.
+	if ( get_current_screen()->id === 'adherent' ) {
+		$classes[] = 'closed';
+	}
+	return $classes;
+}
+// The default metabox ID for a non-hierarchical taxonomy is 'tagsdiv-{taxonomy_slug}'.
+add_filter( 'postbox_classes_adherent_tagsdiv-dame_saison_adhesion', 'dame_close_saisons_metabox_by_default' );
+
+/**
+ * Close the "Actions spéciales" metabox by default.
+ *
+ * @param array $classes An array of postbox classes.
+ * @return array The modified array of classes.
+ */
+function dame_close_special_actions_metabox_by_default( $classes ) {
+	if ( get_current_screen()->id === 'adherent' ) {
+		$classes[] = 'closed';
+	}
+	return $classes;
+}
+add_filter( 'postbox_classes_adherent_dame_special_actions_metabox', 'dame_close_special_actions_metabox_by_default' );
+
+
+/**
  * Renders the meta box for adherent's personal details.
  *
  * @param WP_Post $post The post object.
