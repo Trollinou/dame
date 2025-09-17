@@ -32,6 +32,7 @@ function roi_add_apprentissage_menu() {
         'manage_options', // or a more specific capability
         'edit-tags.php?taxonomy=roi_chess_category&post_type=roi_lecon'
     );
+
 }
 add_action( 'admin_menu', 'roi_add_apprentissage_menu' );
 

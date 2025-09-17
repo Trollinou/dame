@@ -10,6 +10,40 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+/**
+ * Adds a transient-based admin notice.
+ *
+ * @param string $message The message to display.
+ * @param string $type    The type of notice ('success', 'warning', 'error', 'info').
+ */
+function roi_add_admin_notice( $message, $type = 'success' ) {
+    $transient_name = 'roi_admin_notice_' . md5( $message );
+    set_transient( $transient_name, array( 'message' => $message, 'type' => $type ), 5 );
+}
+
+/**
+ * Displays admin notices stored in transients.
+ */
+function roi_display_admin_notices() {
+    global $wp_version;
+    $all_transients = get_transient( 'roi_admin_notices' );
+    if ( empty( $all_transients ) ) {
+        return;
+    }
+
+    foreach ( $all_transients as $transient ) {
+        $message = $transient['message'];
+        $type = $transient['type'];
+        ?>
+        <div class="notice notice-<?php echo esc_attr( $type ); ?> is-dismissible">
+            <p><?php echo wp_kses_post( $message ); ?></p>
+        </div>
+        <?php
+    }
+    delete_transient( 'roi_admin_notices' );
+}
+add_action( 'admin_notices', 'roi_display_admin_notices' );
+
 // --- Meta Box for Lecon CPT ---
 
 /**

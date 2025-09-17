@@ -32,11 +32,10 @@ function dame_add_adherent_submenus() {
     );
     add_submenu_page(
         'edit.php?post_type=adherent',
-        __( 'Sauvegarde / Restauration', 'dame' ),
-        __( 'Sauvegarde / Restauration', 'dame' ),
+        __( 'Toutes les préinscriptions', 'dame' ),
+        __( 'Toutes les préinscriptions', 'dame' ),
         'manage_options',
-        'dame-backup-restore',
-        'dame_render_backup_restore_page'
+        'edit.php?post_type=dame_pre_inscription'
     );
 }
 add_action( 'admin_menu', 'dame_add_adherent_submenus' );
