@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier Administratif des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           3.1.0
+ * Version:           3.1.1
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Etienne Gagnon
@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '3.1.0' );
+define( 'DAME_VERSION', '3.1.1' );
 define( 'DAME_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -154,9 +154,9 @@ if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/metaboxes.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/columns.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/settings-page.php';
-    require_once plugin_dir_path( __FILE__ ) . 'admin/import-export.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-adherent.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/mailing.php';
-    require_once plugin_dir_path( __FILE__ ) . 'admin/import-export-page.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-adherent-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/user-assignment.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda-page.php';
