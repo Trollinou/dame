@@ -1,11 +1,10 @@
 # DAME - Dossier et Apprentissage des Membres Échiquéens
 
-**Version:** 3.0.8
+**Version:** 3.1.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
 ## Description
-
 DAME est un plugin WordPress conçu pour gérer une base de données d'adhérents pour un club, une association ou toute autre organisation. Il fournit une interface d'administration simple et intégrée pour gérer les informations des membres, leurs classifications, leurs adhésions par saison, et leurs liens avec les comptes utilisateurs WordPress.
 
 Ce plugin a été développé en suivant les meilleures pratiques de WordPress en matière de sécurité, de performance, de maintenabilité et d'évolutivité.
@@ -46,14 +45,6 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 *   **Assignation de Compte Utilisateur :** Outil pour lier un dossier d'adhérent à un compte utilisateur WordPress.
 *   **Import / Export :** Outils complets pour importer des membres depuis un fichier CSV et exporter toutes les données en CSV ou JSON.
 
-### Module Pédagogique (Échecs)
-
-*   **Contenus Pédagogiques :** Gestion de Leçons, Exercices et Cours avec un système de difficulté unifié.
-*   **Constructeur de Cours :** Interface visuelle pour assembler des leçons et des exercices en un parcours pédagogique.
-*   **Suivi de Progression :** Les entraîneurs peuvent suivre les leçons complétées par les membres.
-*   **Exercices Interactifs :** Interface publique pour s'entraîner sur les exercices avec feedback immédiat.
-*   **Sauvegarde et Restauration :** Outil pour sauvegarder et restaurer l'ensemble du contenu pédagogique.
-
 ### Gestion d'Événements (Agenda)
 
 *   **Calendrier d'Événements :** Un nouveau type de contenu "Agenda" permet de créer et gérer des événements.
@@ -79,3 +70,7 @@ Pour garantir une bonne délivrabilité des emails envoyés via le plugin, il es
 ### Sauvegarde Automatique
 
 Vous pouvez configurer l'heure de la sauvegarde journalière dans la section "Paramètres de sauvegarde" de la page d'options.
+
+## Dépendances
+
+Pour la fonctionnalité LMS, ce plugin nécessite le plugin **ROI**.

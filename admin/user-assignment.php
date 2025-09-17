@@ -77,21 +77,6 @@ function dame_handle_user_assignment() {
 add_action( 'admin_init', 'dame_handle_user_assignment' );
 
 /**
- * Add the user assignment page to the Adherent CPT menu.
- */
-function dame_add_user_assignment_page() {
-    add_submenu_page(
-        'edit.php?post_type=adherent',
-        __( 'Assignation des comptes', 'dame' ),
-        __( 'Assignation des comptes', 'dame' ),
-        'administrator',
-        'dame-user-assignment',
-        'dame_render_user_assignment_page'
-    );
-}
-add_action( 'admin_menu', 'dame_add_user_assignment_page' );
-
-/**
  * Renders the user assignment page.
  */
 function dame_render_user_assignment_page() {

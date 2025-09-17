@@ -2,20 +2,20 @@
     'use strict';
 
     $(document).ready(function() {
-        $('#dame-complete-lesson-btn').on('click', function() {
+        $('#roi-complete-lesson-btn').on('click', function() {
             var $button = $(this);
             var lessonId = $button.data('lesson-id');
-            var $feedbackDiv = $('#dame-lesson-completion-feedback');
+            var $feedbackDiv = $('#roi-lesson-completion-feedback');
 
             $button.prop('disabled', true);
             $feedbackDiv.text('Processing...');
 
             $.ajax({
-                url: dame_ajax.ajax_url,
+                url: roi_ajax.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'dame_complete_lesson',
-                    nonce: dame_ajax.nonce,
+                    action: 'roi_complete_lesson',
+                    nonce: roi_ajax.nonce,
                     lesson_id: lessonId
                 },
                 success: function(response) {

@@ -11,6 +11,30 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
+ * Add the submenus to the Adherent CPT menu.
+ */
+function dame_add_adherent_submenus() {
+    add_submenu_page(
+        'edit.php?post_type=adherent',
+        __( 'Assignation des comptes', 'dame' ),
+        __( 'Assignation des comptes', 'dame' ),
+        'administrator',
+        'dame-user-assignment',
+        'dame_render_user_assignment_page'
+    );
+    add_submenu_page(
+        'edit.php?post_type=adherent',
+        __( 'Envoyer un article', 'dame' ),
+        __( 'Envoyer un article', 'dame' ),
+        'manage_options', // Capability
+        'dame-mailing',
+        'dame_render_mailing_page'
+    );
+}
+add_action( 'admin_menu', 'dame_add_adherent_submenus' );
+
+
+/**
  * Reorders the 'Adhérents' submenu to place 'Assignation des comptes' after 'Ajouter'.
  *
  * This function runs late on the 'admin_menu' hook to ensure all submenu items have been added.
@@ -63,45 +87,3 @@ function dame_reorder_admin_submenu() {
     $submenu[ $parent_slug ] = $new_submenu;
 }
 add_action( 'admin_menu', 'dame_reorder_admin_submenu', 999 );
-
-/**
- * Adds the main "Apprentissage" menu.
- */
-function dame_add_apprentissage_menu() {
-    add_menu_page(
-        __( "Apprentissage", 'dame' ),
-        __( "Apprentissage", 'dame' ),
-        'edit_posts', // Capability required
-        'dame-apprentissage', // Menu slug
-        '', // Callback function - left empty as it will be handled by the first submenu item
-        'dashicons-book', // Icon
-        22 // Position
-    );
-
-    // Add a submenu for Categories
-    add_submenu_page(
-        'dame-apprentissage',
-        __( "Catégories", 'dame' ),
-        __( "Catégories", 'dame' ),
-        'manage_options', // or a more specific capability
-        'edit-tags.php?taxonomy=dame_chess_category&post_type=dame_lecon'
-    );
-}
-add_action( 'admin_menu', 'dame_add_apprentissage_menu' );
-
-/**
- * Corrects the highlighting for the "Catégories" submenu.
- *
- * @param string $parent_file The parent file.
- * @return string The corrected parent file.
- */
-function dame_apprentissage_menu_highlight( $parent_file ) {
-    global $current_screen;
-
-    if ( $current_screen->taxonomy === 'dame_chess_category' ) {
-        $parent_file = 'dame-apprentissage';
-    }
-
-    return $parent_file;
-}
-add_filter( 'parent_file', 'dame_apprentissage_menu_highlight' );

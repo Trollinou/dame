@@ -2,28 +2,28 @@
     'use strict';
 
     $(document).ready(function() {
-        $('#dame-submit-answer').on('click', function() {
+        $('#roi-submit-answer').on('click', function() {
             const submitButton = $(this);
-            const exerciseId = $('#dame-exercice-id').val();
-            const answerData = $('#dame-exercice-form').serialize();
-            const feedbackDiv = $('#dame-exercice-feedback');
-            const solutionDiv = $('#dame-exercice-solution');
+            const exerciseId = $('#roi-exercice-id').val();
+            const answerData = $('#roi-exercice-form').serialize();
+            const feedbackDiv = $('#roi-exercice-feedback');
+            const solutionDiv = $('#roi-exercice-solution');
 
             submitButton.prop('disabled', true);
             feedbackDiv.html('<p>Vérification...</p>');
 
             $.ajax({
-                url: dame_single_exercice_ajax.ajax_url,
+                url: roi_single_exercice_ajax.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'dame_check_answer', // We can reuse the same AJAX action
-                    nonce: dame_single_exercice_ajax.nonce,
+                    action: 'roi_check_answer', // We can reuse the same AJAX action
+                    nonce: roi_single_exercice_ajax.nonce,
                     exercise_id: exerciseId,
                     answer: answerData
                 },
                 success: function(response) {
                     if (response.success) {
-                        const inputs = $('#dame-exercice-form input[name="dame_answer[]"]');
+                        const inputs = $('#roi-exercice-form input[name="roi_answer[]"]');
                         const userSelected = response.data.user_selected_indices || [];
                         const correctAnswers = response.data.correct_indices || [];
 

@@ -2,7 +2,7 @@
 /**
  * File for handling backup and restore of learning content.
  *
- * @package DAME
+ * @package ROI
  */
 
 // If this file is called directly, abort.
@@ -15,9 +15,9 @@ if ( ! defined( 'WPINC' ) ) {
  *
  * @return array The complete export data for learning content.
  */
-function dame_get_apprentissage_export_data() {
-    $post_types = array( 'dame_lecon', 'dame_exercice', 'dame_cours' );
-    $taxonomy = 'dame_chess_category';
+function roi_get_apprentissage_export_data() {
+    $post_types = array( 'roi_lecon', 'roi_exercice', 'roi_cours' );
+    $taxonomy = 'roi_chess_category';
 
     $export_data = array(
         'posts' => array(),
@@ -83,18 +83,18 @@ function dame_get_apprentissage_export_data() {
 /**
  * Handles the export of learning data.
  */
-function dame_handle_backup_action() {
-    if ( ! isset( $_POST['dame_backup_action'] ) || ! isset( $_POST['dame_backup_nonce'] ) || ! wp_verify_nonce( $_POST['dame_backup_nonce'], 'dame_backup_nonce_action' ) ) {
+function roi_handle_backup_action() {
+    if ( ! isset( $_POST['roi_backup_action'] ) || ! isset( $_POST['roi_backup_nonce'] ) || ! wp_verify_nonce( $_POST['roi_backup_nonce'], 'roi_backup_nonce_action' ) ) {
         return;
     }
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", "dame" ) );
+        wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", "roi" ) );
     }
 
-    $export_data = dame_get_apprentissage_export_data();
+    $export_data = roi_get_apprentissage_export_data();
 
-    $filename = 'dame-apprentissage-backup-' . date( 'Y-m-d' ) . '.json.gz';
+    $filename = 'roi-apprentissage-backup-' . date( 'Y-m-d' ) . '.json.gz';
     $data_to_compress = json_encode( $export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
     $compressed_data = gzcompress( $data_to_compress );
 
@@ -105,32 +105,32 @@ function dame_handle_backup_action() {
     echo $compressed_data;
     exit;
 }
-add_action( 'admin_init', 'dame_handle_backup_action' );
+add_action( 'admin_init', 'roi_handle_backup_action' );
 
 /**
  * Handles the import of learning data.
  */
-function dame_handle_restore_action() {
-    if ( ! isset( $_POST['dame_restore_action'] ) || ! isset( $_POST['dame_restore_nonce'] ) || ! wp_verify_nonce( $_POST['dame_restore_nonce'], 'dame_restore_nonce_action' ) ) {
+function roi_handle_restore_action() {
+    if ( ! isset( $_POST['roi_restore_action'] ) || ! isset( $_POST['roi_restore_nonce'] ) || ! wp_verify_nonce( $_POST['roi_restore_nonce'], 'roi_restore_nonce_action' ) ) {
         return;
     }
 
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", "dame" ) );
+        wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", "roi" ) );
     }
 
-    if ( ! isset( $_FILES['dame_restore_file'] ) || $_FILES['dame_restore_file']['error'] !== UPLOAD_ERR_OK ) {
-        dame_add_admin_notice( __( "Erreur lors du téléversement du fichier.", "dame" ), 'error' );
+    if ( ! isset( $_FILES['roi_restore_file'] ) || $_FILES['roi_restore_file']['error'] !== UPLOAD_ERR_OK ) {
+        roi_add_admin_notice( __( "Erreur lors du téléversement du fichier.", "roi" ), 'error' );
         return;
     }
 
-    $file = $_FILES['dame_restore_file'];
+    $file = $_FILES['roi_restore_file'];
     $filename = $file['name'];
     $file_ext = pathinfo( $filename, PATHINFO_EXTENSION );
     $file_ext_double = pathinfo( str_replace( '.gz', '', $filename ), PATHINFO_EXTENSION );
 
     if ( $file_ext !== 'gz' || $file_ext_double !== 'json' ) {
-        dame_add_admin_notice( __( "Le fichier téléversé n'est pas une sauvegarde valide (format .json.gz attendu).", "dame" ), 'error' );
+        roi_add_admin_notice( __( "Le fichier téléversé n'est pas une sauvegarde valide (format .json.gz attendu).", "roi" ), 'error' );
         return;
     }
 
@@ -139,13 +139,13 @@ function dame_handle_restore_action() {
     $import_data = json_decode( $json_data, true );
 
     if ( json_last_error() !== JSON_ERROR_NONE ) {
-        dame_add_admin_notice( __( "Erreur lors de la lecture des données JSON.", "dame" ), 'error' );
+        roi_add_admin_notice( __( "Erreur lors de la lecture des données JSON.", "roi" ), 'error' );
         return;
     }
 
     // Clear existing data
-    $post_types = array( 'dame_lecon', 'dame_exercice', 'dame_cours' );
-    $taxonomy = 'dame_chess_category';
+    $post_types = array( 'roi_lecon', 'roi_exercice', 'roi_cours' );
+    $taxonomy = 'roi_chess_category';
 
     $existing_posts = get_posts( array( 'post_type' => $post_types, 'posts_per_page' => -1, 'fields' => 'ids' ) );
     foreach ( $existing_posts as $post_id ) {
@@ -191,6 +191,6 @@ function dame_handle_restore_action() {
         }
     }
 
-    dame_add_admin_notice( __( "La restauration des données d'apprentissage a été effectuée avec succès.", "dame" ) );
+    roi_add_admin_notice( __( "La restauration des données d'apprentissage a été effectuée avec succès.", "roi" ) );
 }
-add_action( 'admin_init', 'dame_handle_restore_action' );
+add_action( 'admin_init', 'roi_handle_restore_action' );

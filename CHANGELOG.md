@@ -1,8 +1,18 @@
+# Changelog
+
 ## Description
 
 DAME est un plugin WordPress conçu pour gérer une base de données d'adhérents pour un club, une association ou toute autre organisation. Il fournit une interface d'administration simple et intégrée pour gérer les informations des membres, leurs classifications et leurs liens avec les comptes utilisateurs WordPress.
 
-## Changelog
+## 3.1.0 - 2025-09-17
+*   **Refactorisation Majeure**: Séparation de toute la fonctionnalité LMS (Learning Management System) dans un nouveau plugin `roi`.
+*   Le plugin `dame` se concentre maintenant uniquement sur la gestion des adhérents et des événements.
+*   Nettoyage du code et suppression des fonctionnalités déplacées.
+*   Correction de plusieurs bugs de menus suite à la refactorisation.
+
+### 3.0.8 (16/09/2025)
+
+*   **Amélioration de la recherche de l'agenda :** La barre de recherche du shortcode `[dame_agenda]` a été améliorée pour inclure non seulement le nom de l'événement, mais aussi sa description et le nom de sa catégorie.
 
 ### 3.0.8 (16/09/2025)
 

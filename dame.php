@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name:       DAME - Dossier et Apprentissage des Membres Échiquéens
+ * Plugin Name:       DAME - Dossier Administratif des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           3.0.8
+ * Version:           3.1.0
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Etienne Gagnon
@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '3.0.8' );
+define( 'DAME_VERSION', '3.1.0' );
 define( 'DAME_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -146,11 +146,8 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/cron.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/data-lists.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/utils.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/access-control.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/lesson-completion.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/shortcodes.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/pdf-generator.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/single-exercice-handler.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/single-course-handler.php';
 
 if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/menu.php';
@@ -161,8 +158,6 @@ if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/mailing.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/import-export-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/user-assignment.php';
-    require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore.php';
-    require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda-page.php';
 }

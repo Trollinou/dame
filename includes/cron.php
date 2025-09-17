@@ -67,41 +67,12 @@ function dame_generate_agenda_backup_file() {
 }
 
 /**
- * Generates a backup file for the "Apprentissage" data and saves it to a temporary directory.
- *
- * @return string|WP_Error The path to the backup file on success, or a WP_Error object on failure.
- */
-function dame_generate_apprentissage_backup_file() {
-    if ( ! function_exists( 'dame_get_apprentissage_export_data' ) ) {
-        require_once DAME_PLUGIN_DIR . 'admin/backup-restore.php';
-    }
-
-    $export_data = dame_get_apprentissage_export_data();
-    $data_to_compress = json_encode( $export_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
-    $compressed_data = gzcompress( $data_to_compress );
-
-    $upload_dir = wp_upload_dir();
-    $backup_dir = trailingslashit( $upload_dir['basedir'] ) . 'dame-backups';
-    wp_mkdir_p( $backup_dir );
-
-    $filename = 'dame-apprentissage-backup-' . date( 'Y-m-d' ) . '.json.gz';
-    $filepath = trailingslashit( $backup_dir ) . $filename;
-
-    if ( file_put_contents( $filepath, $compressed_data ) === false ) {
-        return new WP_Error( 'file_write_error', __( "Impossible d'écrire le fichier de sauvegarde sur le disque.", 'dame' ) );
-    }
-
-    return $filepath;
-}
-
-/**
  * The main cron job function.
  *
  * Generates both backup files, sends them by email, and cleans up the files.
  */
 function dame_do_scheduled_backup() {
     $adherent_backup_path = dame_generate_adherent_backup_file();
-    $apprentissage_backup_path = dame_generate_apprentissage_backup_file();
     $agenda_backup_path = dame_generate_agenda_backup_file();
 
     $attachments = array();
@@ -109,12 +80,15 @@ function dame_do_scheduled_backup() {
         $attachments[] = $adherent_backup_path;
     }
 
-    if ( ! is_wp_error( $apprentissage_backup_path ) && file_exists( $apprentissage_backup_path ) ) {
-        $attachments[] = $apprentissage_backup_path;
-    }
-
     if ( ! is_wp_error( $agenda_backup_path ) && file_exists( $agenda_backup_path ) ) {
         $attachments[] = $agenda_backup_path;
+    }
+
+    if ( function_exists( 'roi_generate_apprentissage_backup_file' ) ) {
+        $apprentissage_backup_path = roi_generate_apprentissage_backup_file();
+        if ( ! is_wp_error( $apprentissage_backup_path ) && file_exists( $apprentissage_backup_path ) ) {
+            $attachments[] = $apprentissage_backup_path;
+        }
     }
 
     if ( empty( $attachments ) ) {
