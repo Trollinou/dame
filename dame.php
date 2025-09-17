@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       DAME - Dossier et Apprentissage des Membres Échiquéens
+ * Plugin Name:       DAME - Dossier Administratif des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
  * Version:           3.1.0
