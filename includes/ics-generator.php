@@ -129,7 +129,7 @@ function dame_handle_ics_download() {
                 $filename = "{$event_title}.ics";
 
                 header( 'Content-Type: text/calendar; charset=utf-8' );
-                header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+                header( 'Content-Disposition: inline; filename="' . $filename . '"' );
 
                 echo $ics_content;
                 exit;
