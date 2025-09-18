@@ -1263,6 +1263,14 @@ function dame_render_agenda_details_metabox( $post ) {
 				</div>
 			</td>
 		</tr>
+        <tr style="display:none;">
+            <th><label for="dame_latitude"><?php _e( 'Latitude', 'dame' ); ?></label></th>
+            <td><input type="text" id="dame_latitude" name="dame_latitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_latitude', true ) ); ?>" /></td>
+        </tr>
+        <tr style="display:none;">
+            <th><label for="dame_longitude"><?php _e( 'Longitude', 'dame' ); ?></label></th>
+            <td><input type="text" id="dame_longitude" name="dame_longitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_longitude', true ) ); ?>" /></td>
+        </tr>
     </table>
     <script>
     jQuery(document).ready(function($) {
@@ -1338,6 +1346,8 @@ function dame_save_agenda_meta( $post_id ) {
         'dame_address_2'     => 'sanitize_text_field',
         'dame_postal_code'   => 'sanitize_text_field',
         'dame_city'          => 'sanitize_text_field',
+        'dame_latitude'      => 'sanitize_text_field',
+        'dame_longitude'     => 'sanitize_text_field',
         'dame_agenda_description' => 'wp_kses_post',
     ];
 

@@ -248,20 +248,60 @@ function dame_display_event_details( $content ) {
             }
         }
 
-        // Location.
-        if ( ! empty( $location ) ) {
-            $details_html .= '<div class="dame-event-detail-item dame-event-location">';
-            $details_html .= '<h4>' . __( 'Lieu', 'dame' ) . '</h4>';
-            $details_html .= '<p>' . esc_html( $location ) . '</p>';
-            $details_html .= '</div>';
-        }
-
         // Description.
         if ( ! empty( $description ) ) {
             $details_html .= '<div class="dame-event-detail-item dame-event-description">';
             $details_html .= '<h4>' . __( 'Description', 'dame' ) . '</h4>';
             $details_html .= '<div>' . wpautop( wp_kses_post( $description ) ) . '</div>';
             $details_html .= '</div>';
+        }
+
+        // Location.
+        if ( ! empty( $location ) ) {
+            $address_1    = get_post_meta( $post_id, '_dame_address_1', true );
+            $address_2    = get_post_meta( $post_id, '_dame_address_2', true );
+            $postal_code  = get_post_meta( $post_id, '_dame_postal_code', true );
+            $city         = get_post_meta( $post_id, '_dame_city', true );
+            $latitude     = get_post_meta( $post_id, '_dame_latitude', true );
+            $longitude    = get_post_meta( $post_id, '_dame_longitude', true );
+
+            $details_html .= '<div class="dame-event-detail-item dame-event-location">';
+            $details_html .= '<h4>' . __( 'Lieu', 'dame' ) . '</h4>';
+            $details_html .= '<p><strong>' . esc_html( $location ) . '</strong></p>';
+
+            $full_address = '';
+            if ( ! empty( $address_1 ) ) {
+                $full_address .= $address_1 . '<br>';
+            }
+            if ( ! empty( $address_2 ) ) {
+                $full_address .= $address_2 . '<br>';
+            }
+            if ( ! empty( $postal_code ) && ! empty( $city ) ) {
+                $full_address .= $postal_code . ' ' . $city;
+            } elseif ( ! empty( $postal_code ) ) {
+                $full_address .= $postal_code;
+            } elseif ( ! empty( $city ) ) {
+                $full_address .= $city;
+            }
+
+            if ( ! empty( $full_address ) ) {
+                $details_html .= '<p>' . wp_kses_post( $full_address ) . '</p>';
+            }
+
+            $details_html .= '</div>';
+
+            if ( ! empty( $latitude ) && ! empty( $longitude ) ) {
+                $details_html .= '<div class="map-container">';
+                // Embed map
+                $details_html .= '<iframe src="https://maps.google.com/maps?q=' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '&hl=es;z=14&amp;output=embed" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"></iframe>';
+
+                // Navigation buttons
+                $details_html .= '<div class="nav-buttons">';
+                $details_html .= '<a href="https://www.google.com/maps/dir/?api=1&destination=' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '" target="_blank" class="button nav-button">📱 ' . __( 'Calculer l\'itinéraire', 'dame' ) . '</a>';
+                $details_html .= '<a href="geo:' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '?q=' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '(' . esc_attr( $location ) . ')" class="button nav-button">🧭 ' . __( 'Ouvrir dans le GPS', 'dame' ) . '</a>';
+                $details_html .= '</div>';
+                $details_html .= '</div>';
+            }
         }
 
         $details_html .= '</div>';
