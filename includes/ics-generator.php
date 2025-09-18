@@ -60,13 +60,31 @@ function dame_generate_ics_content( $post_id ) {
     }
 
 
-    // Format dates and times for iCalendar
+    // Format dates and times for iCalendar, correctly handling timezones.
     if ($all_day) {
-        $dtstart = gmdate('Ymd', strtotime($start_date_str));
-        $dtend = gmdate('Ymd', strtotime($end_date_str . ' +1 day')); // All-day events end on the next day
+        // For DATE values, the time part is not used.
+        $start_date_obj = new DateTime($start_date_str);
+        $end_date_obj = new DateTime($end_date_str);
+        $end_date_obj->modify('+1 day'); // DTEND is exclusive for all-day events.
+
+        $dtstart = ";VALUE=DATE:" . $start_date_obj->format('Ymd');
+        $dtend = ";VALUE=DATE:" . $end_date_obj->format('Ymd');
     } else {
-        $dtstart = gmdate('Ymd\THis\Z', strtotime($start_date_str . ' ' . $start_time));
-        $dtend = gmdate('Ymd\THis\Z', strtotime($end_date_str . ' ' . $end_time));
+        // For DATETIME, we must specify the timezone to ensure the time is correct globally.
+        $timezone_string = get_option('timezone_string');
+        if ( empty($timezone_string) ) {
+            // A sensible fallback for this plugin, given the user's context.
+            $timezone_string = 'Europe/Paris';
+        }
+        $timezone = new DateTimeZone($timezone_string);
+
+        // Create DateTime objects with the site's timezone to get the correct Unix timestamp.
+        $start_datetime = new DateTime($start_date_str . ' ' . $start_time, $timezone);
+        $end_datetime = new DateTime($end_date_str . ' ' . $end_time, $timezone);
+
+        // Format the timestamp as UTC Zulu time for the ICS file.
+        $dtstart = ":" . gmdate('Ymd\THis\Z', $start_datetime->getTimestamp());
+        $dtend = ":" . gmdate('Ymd\THis\Z', $end_datetime->getTimestamp());
     }
 
     $uid = md5( $post_id ) . '@' . parse_url( home_url(), PHP_URL_HOST );
@@ -81,8 +99,8 @@ function dame_generate_ics_content( $post_id ) {
     $ics_content .= "BEGIN:VEVENT\r\n";
     $ics_content .= "UID:" . $uid . "\r\n";
     $ics_content .= "DTSTAMP:" . $created_date . "\r\n";
-    $ics_content .= "DTSTART:" . $dtstart . "\r\n";
-    $ics_content .= "DTEND:" . $dtend . "\r\n";
+    $ics_content .= "DTSTART" . $dtstart . "\r\n";
+    $ics_content .= "DTEND" . $dtend . "\r\n";
     $ics_content .= "LAST-MODIFIED:" . $last_modified . "\r\n";
     $ics_content .= "SUMMARY:" . str_replace( ',', '\,', $post->post_title ) . "\r\n";
     $ics_content .= "DESCRIPTION:" . str_replace( ',', '\,', strip_tags( $description ) ) . "\r\n";
