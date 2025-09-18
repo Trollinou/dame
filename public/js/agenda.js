@@ -314,6 +314,9 @@ jQuery(document).ready(function($) {
     });
 
     calendarGrid.on('mouseenter', '.dame-event', function(e) {
+        if (window.innerWidth < 768) {
+            return;
+        }
         const eventData = $(this).closest('.dame-event-link').data('event');
         if (!eventData) return;
 

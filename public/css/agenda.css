@@ -28,6 +28,10 @@
     display: flex;
 }
 
+.dame-mobile-text {
+    display: none;
+}
+
 .dame-agenda-nav-buttons .button {
     border: 1px solid #ccc;
     background-color: #f0f0f0;
@@ -465,6 +469,14 @@
     .dame-agenda-secondary-controls {
         width: 100%;
         justify-content: space-between;
+    }
+
+    .dame-desktop-text {
+        display: none;
+    }
+
+    .dame-mobile-text {
+        display: inline;
     }
 }
 

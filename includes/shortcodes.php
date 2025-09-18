@@ -642,7 +642,10 @@ function dame_agenda_shortcode( $atts ) {
                 </div>
                 <div class="dame-agenda-nav-buttons">
                     <button id="dame-agenda-prev-month" class="button">&lt;</button>
-                    <button id="dame-agenda-today" class="button"><?php _e( 'Ce mois-ci', 'dame' ); ?></button>
+                    <button id="dame-agenda-today" class="button">
+                        <span class="dame-desktop-text"><?php _e( 'Aujourd\'hui', 'dame' ); ?></span>
+                        <span class="dame-mobile-text"><?php _e( 'Auj.', 'dame' ); ?></span>
+                    </button>
                     <button id="dame-agenda-next-month" class="button">&gt;</button>
                 </div>
             </div>
