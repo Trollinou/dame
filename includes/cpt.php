@@ -194,3 +194,81 @@ function dame_register_agenda_cpt() {
     register_post_type( 'dame_agenda', $args );
 }
 add_action( 'init', 'dame_register_agenda_cpt', 0 );
+
+/**
+ * Displays event details on the single event page.
+ *
+ * @param string $content The post content.
+ * @return string The modified post content with event details.
+ */
+function dame_display_event_details( $content ) {
+    // Check if we are on a single 'dame_agenda' post page.
+    if ( is_singular( 'dame_agenda' ) && in_the_loop() && is_main_query() ) {
+        $post_id = get_the_ID();
+
+        // Get event meta data.
+        $start_date_str = get_post_meta( $post_id, '_dame_start_date', true );
+        $end_date_str   = get_post_meta( $post_id, '_dame_end_date', true );
+        $start_time     = get_post_meta( $post_id, '_dame_start_time', true );
+        $end_time       = get_post_meta( $post_id, '_dame_end_time', true );
+        $all_day        = get_post_meta( $post_id, '_dame_all_day', true );
+        $location       = get_post_meta( $post_id, '_dame_location_name', true );
+        $description    = get_post_meta( $post_id, '_dame_agenda_description', true );
+
+        $details_html = '<div class="dame-event-details-wrapper">';
+
+        // Date and Time.
+        if ( ! empty( $start_date_str ) ) {
+            $start_date = new DateTime( $start_date_str );
+            $end_date   = new DateTime( $end_date_str );
+
+            $date_display = '';
+            // Check if it's a single day event.
+            if ( $start_date_str === $end_date_str ) {
+                $date_display = date_i18n( get_option( 'date_format' ), $start_date->getTimestamp() );
+            } else {
+                $date_display = sprintf(
+                    __( 'From %s to %s', 'dame' ),
+                    date_i18n( get_option( 'date_format' ), $start_date->getTimestamp() ),
+                    date_i18n( get_option( 'date_format' ), $end_date->getTimestamp() )
+                );
+            }
+
+            $details_html .= '<div class="dame-event-detail-item dame-event-date">';
+            $details_html .= '<h4>' . __( 'Date', 'dame' ) . '</h4>';
+            $details_html .= '<p>' . esc_html( $date_display ) . '</p>';
+            $details_html .= '</div>';
+
+            // Time display.
+            if ( ! $all_day && ! empty( $start_time ) ) {
+                $details_html .= '<div class="dame-event-detail-item dame-event-time">';
+                $details_html .= '<h4>' . __( 'Heure', 'dame' ) . '</h4>';
+                $details_html .= '<p>' . esc_html( $start_time . ( ! empty( $end_time ) ? ' - ' . $end_time : '' ) ) . '</p>';
+                $details_html .= '</div>';
+            }
+        }
+
+        // Location.
+        if ( ! empty( $location ) ) {
+            $details_html .= '<div class="dame-event-detail-item dame-event-location">';
+            $details_html .= '<h4>' . __( 'Lieu', 'dame' ) . '</h4>';
+            $details_html .= '<p>' . esc_html( $location ) . '</p>';
+            $details_html .= '</div>';
+        }
+
+        // Description.
+        if ( ! empty( $description ) ) {
+            $details_html .= '<div class="dame-event-detail-item dame-event-description">';
+            $details_html .= '<h4>' . __( 'Description', 'dame' ) . '</h4>';
+            $details_html .= '<div>' . wpautop( wp_kses_post( $description ) ) . '</div>';
+            $details_html .= '</div>';
+        }
+
+        $details_html .= '</div>';
+
+        // Prepend the details to the original content.
+        $content = $details_html . $content;
+    }
+    return $content;
+}
+add_filter( 'the_content', 'dame_display_event_details' );
