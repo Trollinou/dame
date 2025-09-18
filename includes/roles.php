@@ -12,13 +12,12 @@ if ( ! defined( 'WPINC' ) ) {
 
 function dame_add_custom_roles() {
     // Role: Membre (Member)
-    // Based on Subscriber, but can post comments.
-    $subscriber = get_role( 'subscriber' );
-    if ( $subscriber ) {
-        $capabilities = $subscriber->capabilities;
-        $capabilities['post_comments'] = true; // As requested
-        add_role( 'membre', __( 'Membre', 'dame' ), $capabilities );
-    }
+    // Based on Subscriber capabilities, but can post comments.
+    $membre_capabilities = array(
+        'read'          => true,
+        'post_comments' => true, // As requested
+    );
+    add_role( 'membre', __( 'Membre', 'dame' ), $membre_capabilities );
 
     // Role: Entraineur (Coach)
     // Based on Editor capabilities.
