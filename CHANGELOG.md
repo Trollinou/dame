@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.2 - 2025-09-18
+*   **Correctif** : Résolution d'un bug d'affichage majeur dans l'agenda `[dame_agenda]` où les événements de plusieurs jours commençant à la même date n'étaient pas positionnés correctement et se superposaient.
+*   **Correctif** : Les cases du calendrier s'agrandissent désormais dynamiquement en hauteur pour contenir tous les événements d'une journée sans déborder sur la semaine suivante.
+*   **Amélioration** : La logique de tri et de rendu des événements a été entièrement refactorisée pour être plus robuste et prévisible.
+*   **Correctif** : Le shortcode `[dame_liste_agenda]` charge désormais correctement la feuille de style de l'agenda.
+
 ## 3.1.1 - 2025-09-17
 *   **Refactorisation** : Renommage des fichiers `import-export.php` en `backup-restore-adherent.php` pour une meilleure clarté.
 *   **Refactorisation** : Déplacement des styles CSS de la liste d'agenda du fichier `dame-public-styles.css` vers `agenda.css` pour une meilleure organisation.
