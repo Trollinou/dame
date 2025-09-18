@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.1.5 - 2025-09-18
+## 3.1.4 - 2025-09-18
 *   **Fonctionnalité :** Ajout de la géolocalisation pour les événements. La latitude et la longitude sont maintenant sauvegardées automatiquement lors de la sélection d'une adresse.
 *   **Fonctionnalité :** Ajout d'une carte interactive (Google Maps) sur la page de détail de l'événement.
 *   **Fonctionnalité :** Ajout de boutons pour "Calculer l'itinéraire" et "Ouvrir dans le GPS" avec détection de la plateforme (iOS/Autres) pour une meilleure compatibilité.
