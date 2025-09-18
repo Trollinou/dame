@@ -147,6 +147,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/data-lists.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/utils.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/access-control.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/shortcodes.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/ics-generator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/pdf-generator.php';
 
 if ( is_admin() ) {

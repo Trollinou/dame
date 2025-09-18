@@ -217,6 +217,18 @@ function dame_display_event_details( $content ) {
 
         $details_html = '<div class="dame-event-details-wrapper">';
 
+        // Add to calendar button
+        $ics_download_url = add_query_arg(
+            array(
+                'dame_ics_download' => '1',
+                'event_id'          => $post_id,
+            ),
+            home_url()
+        );
+        $details_html .= '<div class="dame-event-detail-item dame-add-to-calendar">';
+        $details_html .= '<a href="' . esc_url( $ics_download_url ) . '" class="button">📅 ' . __( 'Ajouter à mon agenda', 'dame' ) . '</a>';
+        $details_html .= '</div>';
+
         // Date and Time.
         if ( ! empty( $start_date_str ) ) {
             $start_date = new DateTime( $start_date_str );
