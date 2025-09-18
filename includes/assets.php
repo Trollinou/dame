@@ -21,5 +21,10 @@ function dame_enqueue_public_assets() {
         array(),
         DAME_VERSION
     );
+
+    // Enqueue the agenda script on single event pages for the GPS button functionality.
+    if ( is_singular( 'dame_agenda' ) ) {
+        wp_enqueue_script( 'dame-agenda-script', plugin_dir_url( __FILE__ ) . '../public/js/agenda.js', array( 'jquery' ), DAME_VERSION, true );
+    }
 }
 add_action( 'wp_enqueue_scripts', 'dame_enqueue_public_assets' );
