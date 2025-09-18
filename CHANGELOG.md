@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.2 - 2025-09-18
+*   **Fonctionnalité** : Ajout d'un filtre par sexe (Tous / Masculin / Féminin) sur la page "Envoyer un article". Ce filtre s'applique en plus des filtres par saison et par groupe.
+*   **Correctif** : Correction d'un bug majeur dans le calcul de la saison suivante sur la page des réglages. Le calcul se base maintenant sur la saison active en cours au lieu de la date actuelle, ce qui empêche le système de proposer une année erronée.
+
 ## 3.1.1 - 2025-09-17
 *   **Refactorisation** : Renommage des fichiers `import-export.php` en `backup-restore-adherent.php` pour une meilleure clarté.
 *   **Refactorisation** : Déplacement des styles CSS de la liste d'agenda du fichier `dame-public-styles.css` vers `agenda.css` pour une meilleure organisation.
