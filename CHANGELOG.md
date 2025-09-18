@@ -3,6 +3,7 @@
 ## 3.1.2 - 2025-09-18
 *   **Fonctionnalité** : Ajout d'un filtre par sexe (Tous / Masculin / Féminin) sur la page "Envoyer un article". Ce filtre s'applique en plus des filtres par saison et par groupe.
 *   **Amélioration** : La logique de tri et de rendu des événements a été entièrement refactorisée pour être plus robuste et prévisible.
+*   **Fiabilité** : La création des rôles "Entraineur" et "Membre" ne dépend plus des rôles "Éditeur" et "Abonné". Leurs capacités sont maintenant définies directement dans le plugin pour éviter des erreurs si les rôles de base sont absents ou modifiés.
 *   **Correctif** : Correction d'un bug majeur dans le calcul de la saison suivante sur la page des réglages. Le calcul se base maintenant sur la saison active en cours au lieu de la date actuelle, ce qui empêche le système de proposer une année erronée.
 *   **Correctif** : Résolution d'un bug d'affichage majeur dans l'agenda `[dame_agenda]` où les événements de plusieurs jours commençant à la même date n'étaient pas positionnés correctement et se superposaient.
 *   **Correctif** : Les cases du calendrier s'agrandissent désormais dynamiquement en hauteur pour contenir tous les événements d'une journée sans déborder sur la semaine suivante.
