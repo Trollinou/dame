@@ -56,3 +56,28 @@
     padding: 2px 4px;
     text-decoration: none; /* Remove underline on hover for a cleaner look */
 }
+
+/* Map and Navigation Buttons */
+.map-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px 0; /* Adjusted margin for better integration */
+}
+.nav-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+.nav-button {
+    padding: 10px 15px;
+    background-color: #4285f4;
+    color: white !important; /* Important to override theme link colors */
+    text-decoration: none !important;
+    border-radius: 5px;
+    display: inline-block;
+    text-align: center;
+}
+.nav-button:hover {
+    background-color: #3367d6;
+}

@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    function initAutocomplete(addressId, postalCodeId, cityId) {
+    function initAutocomplete(addressId, postalCodeId, cityId, latitudeId, longitudeId) {
         const addressInput = document.getElementById(addressId);
         if (!addressInput) {
             return;
@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const postalCodeInput = document.getElementById(postalCodeId);
         const cityInput = document.getElementById(cityId);
+        const latitudeInput = document.getElementById(latitudeId);
+        const longitudeInput = document.getElementById(longitudeId);
         const wrapper = addressInput.closest('.dame-autocomplete-wrapper');
 
         if (wrapper) {
@@ -68,6 +70,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (cityInput) {
                         cityInput.value = featureProperties.city;
                     }
+                    if (latitudeInput && featureProperties.y) {
+                        latitudeInput.value = featureProperties.y;
+                    }
+                    if (longitudeInput && featureProperties.x) {
+                        longitudeInput.value = featureProperties.x;
+                    }
+
 
                     // If the global pre-fill function exists (on the public form), call it.
                     if (typeof prefillRep1 === 'function') {
@@ -88,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Initialize for all address fields
-    initAutocomplete('dame_address_1', 'dame_postal_code', 'dame_city');
+    initAutocomplete('dame_address_1', 'dame_postal_code', 'dame_city', 'dame_latitude', 'dame_longitude');
     initAutocomplete('dame_legal_rep_1_address_1', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city');
     initAutocomplete('dame_legal_rep_2_address_1', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city');
 
