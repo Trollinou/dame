@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.1.2 - 2025-09-18
+*   **Fiabilité** : La création des rôles "Entraineur" et "Membre" ne dépend plus des rôles "Éditeur" et "Abonné". Leurs capacités sont maintenant définies directement dans le plugin pour éviter des erreurs si les rôles de base sont absents ou modifiés.
+
 ## 3.1.1 - 2025-09-17
 *   **Refactorisation** : Renommage des fichiers `import-export.php` en `backup-restore-adherent.php` pour une meilleure clarté.
 *   **Refactorisation** : Déplacement des styles CSS de la liste d'agenda du fichier `dame-public-styles.css` vers `agenda.css` pour une meilleure organisation.
