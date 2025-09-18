@@ -298,7 +298,7 @@ function dame_display_event_details( $content ) {
                 // Navigation buttons
                 $details_html .= '<div class="nav-buttons">';
                 $details_html .= '<a href="https://www.google.com/maps/dir/?api=1&destination=' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '" target="_blank" class="button nav-button">📱 ' . __( 'Calculer l\'itinéraire', 'dame' ) . '</a>';
-                $details_html .= '<a href="geo:' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '?q=' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '(' . urlencode( $location ) . ')" class="button nav-button">🧭 ' . __( 'Ouvrir dans le GPS', 'dame' ) . '</a>';
+                $details_html .= '<button id="dame-open-gps" data-lat="' . esc_attr( $latitude ) . '" data-lng="' . esc_attr( $longitude ) . '" class="button nav-button">🧭 ' . __( 'Ouvrir dans le GPS', 'dame' ) . '</button>';
                 $details_html .= '</div>';
                 $details_html .= '</div>';
             }
