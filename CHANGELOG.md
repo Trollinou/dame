@@ -2,7 +2,11 @@
 
 ## 3.1.2 - 2025-09-18
 *   **Fonctionnalité** : Ajout d'un filtre par sexe (Tous / Masculin / Féminin) sur la page "Envoyer un article". Ce filtre s'applique en plus des filtres par saison et par groupe.
+*   **Amélioration** : La logique de tri et de rendu des événements a été entièrement refactorisée pour être plus robuste et prévisible.
 *   **Correctif** : Correction d'un bug majeur dans le calcul de la saison suivante sur la page des réglages. Le calcul se base maintenant sur la saison active en cours au lieu de la date actuelle, ce qui empêche le système de proposer une année erronée.
+*   **Correctif** : Résolution d'un bug d'affichage majeur dans l'agenda `[dame_agenda]` où les événements de plusieurs jours commençant à la même date n'étaient pas positionnés correctement et se superposaient.
+*   **Correctif** : Les cases du calendrier s'agrandissent désormais dynamiquement en hauteur pour contenir tous les événements d'une journée sans déborder sur la semaine suivante.
+*   **Correctif** : Le shortcode `[dame_liste_agenda]` charge désormais correctement la feuille de style de l'agenda.
 
 ## 3.1.1 - 2025-09-17
 *   **Refactorisation** : Renommage des fichiers `import-export.php` en `backup-restore-adherent.php` pour une meilleure clarté.
