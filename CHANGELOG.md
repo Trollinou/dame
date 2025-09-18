@@ -1,11 +1,13 @@
 # Changelog
 
-## 3.1.4 - 2025-09-18
+## 3.1.5 - 2025-09-18
 *   **Fonctionnalité :** Ajout de la géolocalisation pour les événements. La latitude et la longitude sont maintenant sauvegardées automatiquement lors de la sélection d'une adresse.
-*   **Fonctionnalité :** Ajout d'une carte interactive (Google Maps) sur la page de détail de l'événement, avec des boutons pour "Calculer l'itinéraire" et "Ouvrir dans le GPS".
+*   **Fonctionnalité :** Ajout d'une carte interactive (Google Maps) sur la page de détail de l'événement.
+*   **Fonctionnalité :** Ajout de boutons pour "Calculer l'itinéraire" et "Ouvrir dans le GPS" avec détection de la plateforme (iOS/Autres) pour une meilleure compatibilité.
 *   **Amélioration :** L'adresse complète de l'événement (adresse, complément, code postal et ville) est maintenant affichée sur la page de détail.
 *   **Amélioration :** La mise en page de la page de détail de l'événement a été ajustée pour afficher la description avant le lieu.
 *   **Correctif :** Le style des boutons de navigation de la carte utilise maintenant le style du thème pour une meilleure harmonie visuelle.
+*   **Correctif :** Le script pour le bouton GPS est maintenant correctement chargé sur la page de détail de l'événement, corrigeant un bug où le bouton n'était pas fonctionnel.
 
 ## 3.1.3 - 2025-09-18
 *   **Amélioration :** L'affichage de l'agenda (`[dame_agenda]`) est maintenant entièrement responsive et optimisé pour les appareils mobiles.
