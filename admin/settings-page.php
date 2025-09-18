@@ -11,6 +11,37 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
+ * Determines the name of the next season based on the current active season.
+ *
+ * @return string The name of the next season (e.g., "Saison 2025/2026").
+ */
+function dame_get_next_season_name() {
+    $current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+
+    if ( $current_season_tag_id ) {
+        $current_season_term = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
+        if ( $current_season_term && ! is_wp_error( $current_season_term ) ) {
+            // Extract the years from the current season name, e.g., "Saison 2024/2025"
+            if ( preg_match( '/(\d{4})\/(\d{4})/', $current_season_term->name, $matches ) ) {
+                $end_year = (int) $matches[2];
+                $next_season_start_year = $end_year;
+                $next_season_end_year   = $next_season_start_year + 1;
+                return sprintf( 'Saison %d/%d', $next_season_start_year, $next_season_end_year );
+            }
+        }
+    }
+
+    // Fallback for the very first season or if the current season name is in an unexpected format.
+    // A new season is considered to start in September.
+    $current_month     = (int) date( 'n' );
+    $current_year      = (int) date( 'Y' );
+    $season_start_year = ( $current_month >= 9 ) ? $current_year + 1 : $current_year;
+    $season_end_year   = $season_start_year + 1;
+
+    return sprintf( 'Saison %d/%d', $season_start_year, $season_end_year );
+}
+
+/**
  * Add the options page to the Settings menu.
  */
 function dame_add_options_page() {
@@ -182,12 +213,7 @@ function dame_handle_annual_reset() {
             wp_die( 'Security check failed.' );
         }
 
-        // Determine the upcoming season name. A new season starts in September.
-        $current_month     = (int) date( 'n' );
-        $current_year      = (int) date( 'Y' );
-        $season_start_year = ( $current_month >= 9 ) ? $current_year + 1 : $current_year;
-        $season_end_year   = $season_start_year + 1;
-        $new_season_name   = sprintf( 'Saison %d/%d', $season_start_year, $season_end_year );
+        $new_season_name = dame_get_next_season_name();
 
         // New, more robust check: see if the next season's tag already exists.
         if ( term_exists( $new_season_name, 'dame_saison_adhesion' ) ) {
@@ -457,12 +483,7 @@ function dame_delete_on_uninstall_callback() {
 function dame_reset_section_callback() {
     echo '<p>' . esc_html__( 'Cette action prépare le système pour la prochaine saison d\'adhésion.', 'dame' ) . '</p>';
 
-    // Determine the upcoming season name to inform the user.
-    $current_month     = (int) date( 'n' );
-    $current_year      = (int) date( 'Y' );
-    $season_start_year = ( $current_month >= 9 ) ? $current_year + 1 : $current_year;
-    $season_end_year   = $season_start_year + 1;
-    $next_season_name  = sprintf( 'Saison %d/%d', $season_start_year, $season_end_year );
+    $next_season_name = dame_get_next_season_name();
 
     echo '<p><strong>' . sprintf( esc_html__( 'Processus : En cliquant sur le bouton, vous allez créer le tag pour la saison "%s" et le définir comme saison "active" pour les nouvelles inscriptions.', 'dame' ), esc_html( $next_season_name ) ) . '</strong></p>';
 
@@ -476,11 +497,7 @@ function dame_reset_section_callback() {
 }
 
 function dame_reset_button_callback() {
-    // Determine the upcoming season name to check if it exists.
-    $current_month     = (int) date( 'n' );
-    $current_year      = (int) date( 'Y' );
-    $season_start_year = ( $current_month >= 9 ) ? $current_year + 1 : $current_year;
-    $next_season_name  = sprintf( 'Saison %d/%d', $season_start_year, $season_start_year + 1 );
+    $next_season_name = dame_get_next_season_name();
 
     $disabled = term_exists( $next_season_name, 'dame_saison_adhesion' ) ? 'disabled' : '';
     ?>

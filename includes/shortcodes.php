@@ -858,6 +858,9 @@ add_action( 'wp_ajax_nopriv_dame_get_agenda_events', 'dame_get_agenda_events' );
  * @return string The shortcode output.
  */
 function dame_liste_agenda_shortcode( $atts ) {
+	// Enqueue the specific stylesheet for the agenda list.
+	wp_enqueue_style( 'dame-agenda-style', plugin_dir_url( __FILE__ ) . '../public/css/agenda.css', array(), DAME_VERSION );
+
     $atts = shortcode_atts( array(
         'nombre' => 4,
     ), $atts, 'dame_liste_agenda' );
