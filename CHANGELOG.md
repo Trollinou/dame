@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.3 - 2025-09-18
+*   **Amélioration :** L'affichage de l'agenda (`[dame_agenda]`) est maintenant entièrement responsive et optimisé pour les appareils mobiles.
+*   **Amélioration :** Sur mobile, les événements sont affichés sous forme de points ou de barres colorées pour une meilleure lisibilité, tout en restant cliquables.
+*   **Fonctionnalité :** La page de détail d'un événement affiche désormais toutes les informations pertinentes (date, heure, lieu, description).
+*   **Correctif :** Correction de plusieurs problèmes de mise en page sur la vue mobile de l'agenda, notamment le débordement du contenu et l'espacement des événements.
+
 ## 3.1.2 - 2025-09-18
 *   **Fonctionnalité** : Ajout d'un filtre par sexe (Tous / Masculin / Féminin) sur la page "Envoyer un article". Ce filtre s'applique en plus des filtres par saison et par groupe.
 *   **Amélioration** : La logique de tri et de rendu des événements a été entièrement refactorisée pour être plus robuste et prévisible.

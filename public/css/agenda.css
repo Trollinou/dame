@@ -28,6 +28,10 @@
     display: flex;
 }
 
+.dame-mobile-text {
+    display: none;
+}
+
 .dame-agenda-nav-buttons .button {
     border: 1px solid #ccc;
     background-color: #f0f0f0;
@@ -186,6 +190,13 @@
 .events-container {
     position: relative;
     clear: both; /* This ensures the container moves below any floated elements, like the day number */
+}
+
+.dame-event-link,
+.dame-event-link:hover {
+    text-decoration: none;
+    color: inherit;
+    display: block;
 }
 
 .dame-event {
@@ -400,4 +411,102 @@
 .dame-liste-agenda-icon {
     font-size: 1.5em;
     color: #ccc;
+}
+
+@media screen and (max-width: 768px) {
+    .dame-calendar-day {
+        min-height: 40px;
+        font-size: 0.8em;
+        padding: 2px;
+    }
+
+    .ponctuel-events-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .dame-event-link {
+        padding: 2px; /* Increase clickable area */
+    }
+
+    .dame-event-ponctuel {
+        padding: 0;
+        border: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--event-color);
+        margin: 0; /* Margin is handled by padding on link */
+    }
+
+    .dame-event-ponctuel .event-time,
+    .dame-event-ponctuel .event-title {
+        display: none;
+    }
+
+    .dame-event-duree {
+        height: 12px; /* Make it thicker */
+        font-size: 0; /* Hides the text */
+        box-sizing: border-box;
+    }
+
+    .dame-event-duree.start {
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+    }
+    .dame-event-duree.end {
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
+    }
+
+    .dame-agenda-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dame-agenda-primary-controls,
+    .dame-agenda-secondary-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .dame-desktop-text {
+        display: none;
+    }
+
+    .dame-mobile-text {
+        display: inline;
+    }
+}
+
+/* Single Event Page Details */
+.dame-event-details-wrapper {
+    margin: 2em 0;
+    padding: 1.5em;
+    border: 1px solid #eee;
+    border-left-width: 5px;
+    border-left-color: #ffc107;
+    background: #f9f9f9;
+}
+
+.dame-event-detail-item {
+    margin-bottom: 1.5em;
+}
+
+.dame-event-detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.dame-event-detail-item h4 {
+    margin-top: 0;
+    margin-bottom: 0.5em;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.dame-event-detail-item p {
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 1em;
 }

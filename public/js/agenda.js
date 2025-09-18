@@ -127,9 +127,10 @@ jQuery(document).ready(function($) {
         const dayCells = calendarGrid.find('.dame-calendar-day');
         if (dayCells.length === 0) return;
 
+        const isMobile = window.innerWidth < 768;
         const weekCount = Math.ceil(dayCells.length / 7);
-        const DAY_NUMBER_HEIGHT = 40;
-        const MIN_CELL_HEIGHT = 120;
+        const DAY_NUMBER_HEIGHT = isMobile ? 30 : 40;
+        const MIN_CELL_HEIGHT = isMobile ? 40 : 120;
 
         for (let i = 0; i < weekCount; i++) {
             const weekCells = dayCells.slice(i * 7, (i + 1) * 7);
@@ -163,7 +164,9 @@ jQuery(document).ready(function($) {
         // Reset heights before rendering to ensure accurate calculations
         calendarGrid.find('.dame-calendar-day').css('height', '');
 
-        const EVENT_HEIGHT = 32;
+        const isMobile = window.innerWidth < 768;
+        // On mobile, event height is dot (12px) + top/bottom margin (2*2px) = 16px
+        const EVENT_HEIGHT = isMobile ? 16 : 32;
         const EVENT_SPACING = 2;
         const wp_sow = parseInt(dame_agenda_ajax.start_of_week, 10);
 
@@ -230,7 +233,7 @@ jQuery(document).ready(function($) {
                             let classList = 'dame-event dame-event-duree';
                             if (isEventStart) classList += ' start';
                             if (isSegmentEnd) classList += ' end';
-                            const eventHtml = `<div class="${classList}" style="background-color: ${event.color}; width: ${width}; top: ${top}px;">${event.title}</div>`;
+                            const eventHtml = `<a href="${event.url}" class="dame-event-link"><div class="${classList}" style="background-color: ${event.color}; width: ${width}; top: ${top}px;">${event.title}</div></a>`;
                             dayCell.find('.events-container').append($(eventHtml).data('event', event));
                             for (let i = 0; i < span; i++) {
                                 const occupiedDate = new Date(segmentStartDate);
@@ -262,10 +265,12 @@ jQuery(document).ready(function($) {
                         dayCell.find('.events-container').append(ponctuelContainer);
                     }
                     const timeText = event.all_day == '1' ? dame_agenda_ajax.i18n.all_day : `${event.start_time} - ${event.end_time}`;
-                    const eventHtml = `<div class="dame-event dame-event-ponctuel" style="border-left-color: ${event.color};">
-                        <div class="event-time">${timeText}</div>
-                        <div class="event-title">${event.title}</div>
-                    </div>`;
+                    const eventHtml = `<a href="${event.url}" class="dame-event-link">
+                        <div class="dame-event dame-event-ponctuel" style="--event-color: ${event.color}; border-left-color: ${event.color};">
+                            <div class="event-time">${timeText}</div>
+                            <div class="event-title">${event.title}</div>
+                        </div>
+                    </a>`;
                     ponctuelContainer.append($(eventHtml).data('event', event));
                 }
             }
@@ -309,7 +314,10 @@ jQuery(document).ready(function($) {
     });
 
     calendarGrid.on('mouseenter', '.dame-event', function(e) {
-        const eventData = $(this).data('event');
+        if (window.innerWidth < 768) {
+            return;
+        }
+        const eventData = $(this).closest('.dame-event-link').data('event');
         if (!eventData) return;
 
         const timeText = eventData.all_day == '1' ? dame_agenda_ajax.i18n.all_day : `${eventData.start_time} - ${eventData.end_time}`;
@@ -330,11 +338,6 @@ jQuery(document).ready(function($) {
 
     }).on('mouseleave', '.dame-event', function() {
         tooltip.hide();
-    }).on('click', '.dame-event', function() {
-        const eventData = $(this).data('event');
-        if (eventData && eventData.url) {
-            window.location.href = eventData.url;
-        }
     });
 
     // Month/Year Picker
