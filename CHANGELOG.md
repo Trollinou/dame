@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.1.5 - 2025-09-18
+*   **Fonctionnalité :** Ajout d'un bouton "Ajouter à mon agenda" sur la page de détail des événements.
+*   **Fonctionnalité :** Le bouton génère et télécharge un fichier `.ics` contenant les détails de l'événement (titre, description, lieu, dates).
+*   **Amélioration :** Le bouton est positionné à côté de la date de l'événement pour une meilleure expérience utilisateur.
+*   **Correctif :** Résolution d'un bug critique de fuseau horaire qui provoquait un décalage des heures de l'événement lors de l'import dans un agenda. La conversion en UTC est maintenant gérée correctement.
+*   **Amélioration :** L'URL de la page de l'événement est maintenant incluse dans le fichier `.ics`.
+
 ## 3.1.4 - 2025-09-18
 *   **Fonctionnalité :** Ajout de la géolocalisation pour les événements. La latitude et la longitude sont maintenant sauvegardées automatiquement lors de la sélection d'une adresse.
 *   **Fonctionnalité :** Ajout d'une carte interactive (Google Maps) sur la page de détail de l'événement.
