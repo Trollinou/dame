@@ -310,7 +310,7 @@ jQuery(document).ready(function($) {
 
     filterPanel.on('change', '.dame-agenda-cat-filter', fetchAndRenderCalendar);
 
-    searchInput.on('keyup', function() {
+    searchInput.on('keyup input', function() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(fetchAndRenderCalendar, 500);
     });
