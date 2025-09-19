@@ -1,6 +1,7 @@
 # Changelog
 
 ## 3.1.6 - 2025-09-19
+*   **Fonctionnalité :** Ajout d'un menu "DAME" à la barre d'administration de WordPress (Toolbar) pour un accès rapide aux fonctions clés du plugin. Le menu est visible sur le front-end et le back-end pour les utilisateurs connectés et inclut des liens pour "Voir les préinscriptions", "Envoyer un article", et une option pour "Faire une sauvegarde" manuelle (accessible aux administrateurs uniquement).
 *   **Correctif :** Le filtrage des catégories dans l'agenda (`[dame_agenda]`) a été corrigé. La désélection d'une catégorie enfant masque désormais correctement ses événements, même si la catégorie parente reste sélectionnée.
 *   **Correctif :** Le filtre de recherche textuel de l'agenda (`[dame_agenda]`) se réinitialise maintenant correctement lorsque le champ est vidé avec la croix du navigateur.
 
