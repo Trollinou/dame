@@ -2,6 +2,7 @@
 
 ## 3.1.6 - 2025-09-19
 *   **Correctif :** Le filtrage des catégories dans l'agenda (`[dame_agenda]`) a été corrigé. La désélection d'une catégorie enfant masque désormais correctement ses événements, même si la catégorie parente reste sélectionnée.
+*   **Correctif :** Le filtre de recherche textuel de l'agenda (`[dame_agenda]`) se réinitialise maintenant correctement lorsque le champ est vidé avec la croix du navigateur.
 
 ## 3.1.5 - 2025-09-18
 *   **Fonctionnalité :** Ajout d'un bouton "Ajouter à mon agenda" sur la page de détail des événements.
