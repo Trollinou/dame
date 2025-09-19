@@ -766,6 +766,7 @@ function dame_get_agenda_events() {
 	}
 
     $categories = isset( $_POST['categories'] ) ? array_map( 'intval', $_POST['categories'] ) : array();
+	$unchecked_categories = isset( $_POST['unchecked_categories'] ) ? array_map( 'intval', $_POST['unchecked_categories'] ) : array();
     $search_term = isset( $_POST['search'] ) ? sanitize_text_field( $_POST['search'] ) : '';
 
     $args = array(
@@ -792,15 +793,40 @@ function dame_get_agenda_events() {
         'order' => 'ASC',
     );
 
-    if ( ! empty( $categories ) ) {
-        $args['tax_query'] = array(
-            array(
-                'taxonomy' => 'dame_agenda_category',
-                'field'    => 'term_id',
-                'terms'    => $categories,
-            ),
-        );
-    }
+	// If all category filters are unchecked, no events should be returned.
+	// We check if the checked categories array is empty AND the unchecked categories array is not.
+	// This ensures that if there are no categories at all, it doesn't trigger this logic.
+	if ( empty( $categories ) && ! empty( $unchecked_categories ) ) {
+		// Set a condition that cannot be met to return no posts
+		$args['post__in'] = array( 0 );
+	} else {
+		$tax_query = array(
+			'relation' => 'AND',
+		);
+
+		if ( ! empty( $categories ) ) {
+			$tax_query[] = array(
+				'taxonomy' => 'dame_agenda_category',
+				'field'    => 'term_id',
+				'terms'    => $categories,
+				'include_children' => true, // Default, but explicit for clarity
+			);
+		}
+
+		if ( ! empty( $unchecked_categories ) ) {
+			$tax_query[] = array(
+				'taxonomy' => 'dame_agenda_category',
+				'field'    => 'term_id',
+				'terms'    => $unchecked_categories,
+				'operator' => 'NOT IN',
+			);
+		}
+
+		// Only add the tax_query if there are conditions in it
+		if ( count( $tax_query ) > 1 ) {
+			$args['tax_query'] = $tax_query;
+		}
+	}
 
     if ( ! empty( $search_term ) ) {
         // Use a custom query var to trigger the search filters.

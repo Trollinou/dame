@@ -45,6 +45,7 @@ jQuery(document).ready(function($) {
         gridEndDate.setDate(gridEndDate.getDate() + totalGridDays - 1);
 
         const categories = $('.dame-agenda-cat-filter:checked').map(function() { return $(this).val(); }).get();
+        const unchecked_categories = $('.dame-agenda-cat-filter:not(:checked)').map(function() { return $(this).val(); }).get();
         const searchTerm = searchInput.val();
 
         calendarGrid.css('opacity', 0.5);
@@ -58,6 +59,7 @@ jQuery(document).ready(function($) {
                 start_date: formatDate(gridStartDate),
                 end_date: formatDate(gridEndDate),
                 categories: categories,
+                unchecked_categories: unchecked_categories,
                 search: searchTerm,
             },
             success: function(response) {
