@@ -90,10 +90,20 @@ function dame_render_view_adherent_page() {
     $post_id = $adherent->ID;
     ?>
     <div class="wrap">
-        <h1><?php echo esc_html( __( 'Fiche de l\'adhérent : ', 'dame' ) . get_the_title( $post_id ) ); ?></h1>
+        <h1>
+            <?php echo esc_html( __( 'Fiche de l\'adhérent : ', 'dame' ) . get_the_title( $post_id ) ); ?>
+            <a href="edit.php?post_type=adherent" class="page-title-action"><?php _e( 'Retour à la liste', 'dame' ); ?></a>
+        </h1>
+
+        <style>
+            .form-table th, .form-table td {
+                padding-top: 5px;
+                padding-bottom: 5px;
+            }
+        </style>
 
         <?php if ( current_user_can( 'edit_post', $post_id ) ) : ?>
-            <a href="<?php echo esc_url( get_edit_post_link( $post_id ) ); ?>" class="page-title-action"><?php _e( 'Modifier cet adhérent', 'dame' ); ?></a>
+            <a href="<?php echo esc_url( get_edit_post_link( $post_id ) ); ?>" class="button button-primary" style="margin-bottom:20px;"><?php _e( 'Modifier cet adhérent', 'dame' ); ?></a>
         <?php endif; ?>
 
         <div id="poststuff" style="margin-top: 20px;">
