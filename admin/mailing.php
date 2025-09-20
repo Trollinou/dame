@@ -335,7 +335,7 @@ function dame_render_mailing_page() {
                         <td>
                             <div id="dame-articles-list-container">
                                 <?php
-                                $posts = get_posts( array( 'post_type' => 'post', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'date', 'order' => 'DESC' ) );
+                                $posts = get_posts( array( 'post_type' => 'post', 'post_status' => array( 'publish', 'private' ), 'numberposts' => -1, 'orderby' => 'date', 'order' => 'DESC' ) );
                                 if ( ! empty( $posts ) ) {
                                     echo '<select id="dame_article_to_send" name="dame_article_to_send" style="width: 100%; max-width: 400px;">';
                                     foreach ( $posts as $p ) {
@@ -492,7 +492,7 @@ function dame_get_filtered_articles_ajax_handler() {
     // 3. Build query arguments
     $args = array(
         'post_type'      => 'post',
-        'post_status'    => 'publish',
+        'post_status'    => array( 'publish', 'private' ),
         'numberposts'    => -1,
         'orderby'        => 'date',
         'order'          => 'DESC',
