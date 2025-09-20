@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.3.0 - 2025-09-20
+*   **Fonctionnalité :** Ajout d'un système d'envoi automatique d'emails d'anniversaire aux adhérents.
+*   **Fonctionnalité :** Ajout d'une option dans `Réglages > Options DAME` pour définir le slug d'un article (publié ou privé) à utiliser comme modèle pour l'email d'anniversaire.
+*   **Fonctionnalité :** L'email d'anniversaire est personnalisé avec les balises `[NOM]`, `[PRENOM]` et `[AGE]`.
+*   **Fonctionnalité :** Une nouvelle tâche cron journalière envoie les emails d'anniversaire. Un email de résumé est envoyé à l'administrateur.
+*   **Amélioration :** La planification des tâches cron (sauvegarde et anniversaires) utilise maintenant le fuseau horaire de WordPress pour une meilleure fiabilité, corrigeant un bug potentiel de décalage horaire.
+
 ## 3.2.0 - 2025-09-20
 *   **Fonctionnalité :** Ajout d'un nouveau rôle "Membre du Bureau" (staff) avec les permissions d'un "Contributeur" ainsi que l'accès en lecture aux contenus privés et la visibilité sur le menu des Pages.
 *   **Fonctionnalité :** Ajout d'une page de consultation en lecture seule pour les adhérents, accessible depuis la liste des adhérents dans l'administration. La page imite la disposition de l'écran d'édition pour une expérience utilisateur cohérente.
