@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 3.1.6
+**Version:** 3.2.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -36,6 +36,12 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 *   **Interface de Validation :** Les administrateurs disposent d'une interface dédiée pour examiner, modifier et valider les préinscriptions.
 *   **Rapprochement Automatique :** Le système détecte les doublons potentiels en comparant les nouvelles inscriptions avec la base de données existante (nom, prénom, date de naissance).
 *   **Mise à Jour Facilitée :** Si un doublon est trouvé, un tableau de comparaison met en évidence les différences et permet de mettre à jour la fiche de l'adhérent existant en un clic.
+
+### Gestion des Rôles et Permissions
+
+*   **Rôle "Membre du Bureau" :** Ajout d'un rôle `staff` spécialement conçu pour les membres du bureau, avec des droits équivalents à un "Contributeur" mais avec la permission de lire les contenus privés et de voir le menu des Pages.
+*   **Page de Consultation :** Une page de consultation en lecture seule est maintenant disponible pour les fiches adhérents directement depuis l'administration, permettant une visualisation rapide des données sans risque de modification accidentelle.
+*   **Permissions des Menus :** L'accès à certaines fonctionnalités, comme "Envoyer un article", a été affiné pour correspondre précisément aux rôles "Éditeur" et "Administrateur".
 
 ### Gestion des Données des Membres
 

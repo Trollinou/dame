@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.2.0 - 2025-09-20
+*   **Fonctionnalité :** Ajout d'un nouveau rôle "Membre du Bureau" (staff) avec les permissions d'un "Contributeur" ainsi que l'accès en lecture aux contenus privés et la visibilité sur le menu des Pages.
+*   **Fonctionnalité :** Ajout d'une page de consultation en lecture seule pour les adhérents, accessible depuis la liste des adhérents dans l'administration. La page imite la disposition de l'écran d'édition pour une expérience utilisateur cohérente.
+*   **Amélioration :** La fonction "Envoyer un article" liste désormais les articles publiés et privés.
+*   **Sécurité/Permissions :** L'accès aux menus "Envoyer un article" et "Assignation des comptes" est maintenant correctement restreint aux rôles Éditeur et Administrateur (`edit_others_posts`).
+*   **Modification :** La propriété `has_archive` du CPT "Agenda" est maintenant définie à `false`.
+*   **Qualité du code :** La création du rôle "Membre du Bureau" se base maintenant dynamiquement sur les capacités du rôle "Contributeur" de WordPress.
+
 ## 3.1.6 - 2025-09-19
 *   **Fonctionnalité :** Ajout d'un menu "DAME" à la barre d'administration de WordPress (Toolbar) pour un accès rapide aux fonctions clés du plugin. Le menu est visible sur le front-end et le back-end pour les utilisateurs connectés et inclut des liens pour "Voir les préinscriptions", "Envoyer un article", et une option pour "Faire une sauvegarde" manuelle (accessible aux administrateurs uniquement).
 *   **Correctif :** Le filtrage des catégories dans l'agenda (`[dame_agenda]`) a été corrigé. La désélection d'une catégorie enfant masque désormais correctement ses événements, même si la catégorie parente reste sélectionnée.
