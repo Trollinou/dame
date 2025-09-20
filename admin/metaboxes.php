@@ -42,6 +42,19 @@ add_action( 'admin_notices', 'dame_display_admin_notices' );
  */
 function dame_enqueue_admin_scripts( $hook ) {
 	global $post;
+
+	// Check for our view-only mode for adherents
+	if ( ( 'post.php' === $hook ) && isset( $_GET['dame_view'] ) && '1' === $_GET['dame_view'] && isset( $post->post_type ) && 'adherent' === $post->post_type ) {
+		wp_enqueue_script(
+			'dame-readonly-js',
+			plugin_dir_url( __FILE__ ) . 'js/readonly.js',
+			array( 'jquery' ),
+			DAME_VERSION,
+			true
+		);
+		return; // Don't load other scripts in view mode.
+	}
+
 	if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && in_array( $post->post_type, array( 'adherent', 'dame_pre_inscription', 'dame_agenda' ), true ) ) {
 		wp_enqueue_script(
 			'dame-main-js',

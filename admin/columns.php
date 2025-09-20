@@ -727,3 +727,31 @@ function dame_suppress_months_dropdown( $months, $post_type ) {
     return $months;
 }
 add_filter( 'months_dropdown_results', 'dame_suppress_months_dropdown', 10, 2 );
+
+/**
+ * Adds a 'Consulter' action link to the adherent list table.
+ *
+ * @param array   $actions The existing row actions.
+ * @param WP_Post $post    The post object.
+ * @return array The modified row actions.
+ */
+function dame_add_adherent_row_actions( $actions, $post ) {
+    if ( 'adherent' === $post->post_type ) {
+        // CPT is not public, so the default 'View' link is not needed/broken.
+        unset( $actions['view'] );
+
+        $url = add_query_arg(
+            array(
+                'dame_view' => '1',
+            ),
+            get_edit_post_link( $post->ID, 'raw' )
+        );
+
+        $view_link = sprintf( '<a href="%s">%s</a>', esc_url( $url ), __( 'Consulter', 'dame' ) );
+
+        // Add the 'Consulter' link before the 'Edit' link.
+        return array_merge( array( 'dame_view' => $view_link ), $actions );
+    }
+    return $actions;
+}
+add_filter( 'post_row_actions', 'dame_add_adherent_row_actions', 10, 2 );

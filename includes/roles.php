@@ -21,14 +21,17 @@ function dame_add_custom_roles() {
 
     // Role: Membre du Bureau (Staff)
     // Based on Contributor capabilities, but can read private content.
-    $staff_capabilities = array(
-        'delete_posts'       => true,
-        'edit_posts'         => true,
-        'read'               => true,
-        'read_private_pages' => true,
-        'read_private_posts' => true,
-    );
-    add_role( 'staff', __( 'Membre du Bureau', 'dame' ), $staff_capabilities );
+    $contributor_caps = get_role( 'contributor' );
+    if ( $contributor_caps ) {
+        $staff_capabilities = array_merge(
+            $contributor_caps->capabilities,
+            array(
+                'read_private_pages' => true,
+                'read_private_posts' => true,
+            )
+        );
+        add_role( 'staff', __( 'Membre du Bureau', 'dame' ), $staff_capabilities );
+    }
 
     // Role: Entraineur (Coach)
     // Based on Editor capabilities.
