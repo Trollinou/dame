@@ -160,6 +160,7 @@ if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/mailing.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-adherent-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/user-assignment.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/view-adherent-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda-page.php';
 }

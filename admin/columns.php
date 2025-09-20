@@ -742,9 +742,10 @@ function dame_add_adherent_row_actions( $actions, $post ) {
 
         $url = add_query_arg(
             array(
-                'dame_view' => '1',
+                'page'        => 'dame-view-adherent',
+                'adherent_id' => $post->ID,
             ),
-            get_edit_post_link( $post->ID, 'raw' )
+            admin_url( 'admin.php' )
         );
 
         $view_link = sprintf( '<a href="%s">%s</a>', esc_url( $url ), __( 'Consulter', 'dame' ) );
