@@ -18,7 +18,7 @@ function dame_add_adherent_submenus() {
         'edit.php?post_type=adherent',
         __( 'Assignation des comptes', 'dame' ),
         __( 'Assignation des comptes', 'dame' ),
-        'administrator',
+        'edit_others_posts',
         'dame-user-assignment',
         'dame_render_user_assignment_page'
     );

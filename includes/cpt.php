@@ -61,7 +61,7 @@ function dame_register_adherent_cpt() {
         'can_export'            => true,
         'has_archive'           => false,
         'exclude_from_search'   => true,
-        'publicly_queryable'    => false,
+        'publicly_queryable'    => true,
         'capability_type'       => 'post',
         'show_in_rest'          => true, // Enable block editor support
     );
@@ -184,7 +184,7 @@ function dame_register_agenda_cpt() {
         'show_in_admin_bar'     => true,
         'show_in_nav_menus'     => true,
         'can_export'            => true,
-        'has_archive'           => true,
+        'has_archive'           => false,
         'exclude_from_search'   => false,
         'publicly_queryable'    => true,
         'capability_type'       => 'post',
@@ -330,3 +330,30 @@ function dame_display_event_details( $content ) {
     return $content;
 }
 add_filter( 'the_content', 'dame_display_event_details' );
+
+/**
+ * Load a custom template for the single 'adherent' page.
+ *
+ * @param string $template The path of the template to include.
+ * @return string The path of the new template.
+ */
+function dame_adherent_single_template( $template ) {
+    if ( is_singular( 'adherent' ) ) {
+        // Check if user has at least contributor rights (edit_posts capability)
+        if ( current_user_can( 'edit_posts' ) ) {
+            $new_template = DAME_PLUGIN_DIR . 'templates/single-adherent.php';
+            if ( file_exists( $new_template ) ) {
+                return $new_template;
+            }
+        } else {
+            // If the user is not allowed, return a 404
+            global $wp_query;
+            $wp_query->set_404();
+            status_header( 404 );
+            get_template_part( 404 );
+            exit();
+        }
+    }
+    return $template;
+}
+add_filter( 'template_include', 'dame_adherent_single_template' );
