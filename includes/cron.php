@@ -67,6 +67,107 @@ function dame_generate_agenda_backup_file() {
 }
 
 /**
+ * Sends birthday emails to members.
+ */
+function dame_send_birthday_emails() {
+    $options = get_option( 'dame_options' );
+    $article_slug = isset( $options['birthday_article_slug'] ) ? $options['birthday_article_slug'] : '';
+
+    if ( empty( $article_slug ) ) {
+        return; // No article slug configured
+    }
+
+    $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+
+    $today_md = date( 'm-d' );
+    $adherents_query = new WP_Query( array(
+        'post_type' => 'adherent',
+        'posts_per_page' => -1,
+        'meta_query' => array(
+            array(
+                'key' => '_dame_date_naissance',
+                'value' => '....-' . $today_md,
+                'compare' => 'LIKE',
+            ),
+        ),
+    ) );
+
+    if ( ! $adherents_query->have_posts() ) {
+        return; // No birthdays today
+    }
+
+    $posts = get_posts( array(
+        'name'           => $article_slug,
+        'post_type'      => 'post',
+        'post_status'    => array( 'publish', 'private' ),
+        'posts_per_page' => 1,
+    ) );
+
+    if ( ! $posts ) {
+        return; // Article not found
+    }
+    $article = $posts[0];
+
+    $original_content = apply_filters( 'the_content', $article->post_content );
+    $original_subject = $article->post_title;
+    $sent_to = array();
+
+    while ( $adherents_query->have_posts() ) {
+        $adherents_query->the_post();
+        $adherent_id = get_the_ID();
+        $nom = get_the_title();
+        $prenom = get_post_meta( $adherent_id, '_dame_prenom', true );
+        $birth_date_str = get_post_meta( $adherent_id, '_dame_date_naissance', true );
+
+        if ( empty( $prenom ) || empty( $birth_date_str ) ) {
+            continue;
+        }
+
+        try {
+            $birth_date = new DateTime( $birth_date_str );
+            $age = $birth_date->diff( new DateTime( 'now' ) )->y;
+        } catch ( Exception $e ) {
+            continue; // Invalid date format
+        }
+
+        $content = str_replace( '[NOM]', strtoupper( $nom ), $original_content );
+        $content = str_replace( '[PRENOM]', ucwords( strtolower( $prenom ) ), $content );
+        $content = str_replace( '[AGE]', $age, $content );
+        $message = '<div style="margin: 1cm;">' . $content . '</div>';
+
+        $subject = str_replace( '[NOM]', strtoupper( $nom ), $original_subject );
+        $subject = str_replace( '[PRENOM]', ucwords( strtolower( $prenom ) ), $subject );
+        $subject = str_replace( '[AGE]', $age, $subject );
+
+        if ( ! function_exists( 'dame_get_emails_for_adherent' ) ) {
+            require_once DAME_PLUGIN_DIR . 'admin/mailing.php';
+        }
+        $recipient_emails = dame_get_emails_for_adherent( $adherent_id );
+
+        if ( ! empty( $recipient_emails ) ) {
+            $headers = array(
+                'Content-Type: text/html; charset=UTF-8',
+                'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>',
+            );
+            foreach ( $recipient_emails as $email ) {
+                wp_mail( $email, $subject, $message, $headers );
+            }
+            $sent_to[] = "<li>" . esc_html( ucwords( strtolower( $prenom ) ) . ' ' . strtoupper( $nom ) ) . " (" . $age . " ans)</li>";
+        }
+    }
+    wp_reset_postdata();
+
+    if ( ! empty( $sent_to ) ) {
+        $summary_subject = __( "Rapport d'envoi des vœux d'anniversaire", 'dame' );
+        $summary_body = "<p>" . __( "Les vœux d'anniversaire ont été envoyés aujourd'hui aux personnes suivantes :", 'dame' ) . "</p>";
+        $summary_body .= "<ul>" . implode( '', $sent_to ) . "</ul>";
+        $headers = array( 'Content-Type: text/html; charset=UTF-8' );
+        wp_mail( $sender_email, $summary_subject, $summary_body, $headers );
+    }
+}
+
+
+/**
  * The main cron job function.
  *
  * Generates both backup files, sends them by email, and cleans up the files.
@@ -136,9 +237,20 @@ function dame_schedule_backup_event() {
     $options = get_option( 'dame_options' );
     $schedule_time_str = ! empty( $options['backup_time'] ) && preg_match( '/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $options['backup_time'] ) ? $options['backup_time'] : '01:00';
 
-    $first_event_timestamp = strtotime( 'today ' . $schedule_time_str );
-    if ( $first_event_timestamp < time() ) {
-        $first_event_timestamp = strtotime( 'tomorrow ' . $schedule_time_str );
+    // Get WordPress timezone
+    $timezone = wp_timezone();
+    try {
+        $schedule_date = new DateTime( 'today ' . $schedule_time_str, $timezone );
+        if ( $schedule_date->getTimestamp() < time() ) {
+            $schedule_date->modify( '+1 day' );
+        }
+        $first_event_timestamp = $schedule_date->getTimestamp();
+    } catch ( Exception $e ) {
+        // Fallback to the old method in case of an exception
+        $first_event_timestamp = strtotime( 'today ' . $schedule_time_str );
+        if ( $first_event_timestamp < time() ) {
+            $first_event_timestamp = strtotime( 'tomorrow ' . $schedule_time_str );
+        }
     }
 
     wp_schedule_event( $first_event_timestamp, 'daily', 'dame_daily_backup_event' );
@@ -149,4 +261,46 @@ function dame_schedule_backup_event() {
  */
 function dame_unschedule_backup_event() {
     wp_clear_scheduled_hook( 'dame_daily_backup_event' );
+}
+
+/**
+ * Schedules the daily birthday email event if it's not already scheduled.
+ *
+ * The event is scheduled to run 2 hours after the daily backup.
+ */
+function dame_schedule_birthday_event() {
+    if ( wp_next_scheduled( 'dame_birthday_email_event' ) ) {
+        wp_clear_scheduled_hook( 'dame_birthday_email_event' );
+    }
+
+    $options = get_option( 'dame_options' );
+    $backup_time_str = ! empty( $options['backup_time'] ) && preg_match( '/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $options['backup_time'] ) ? $options['backup_time'] : '01:00';
+
+    // Calculate birthday event time (2 hours after backup)
+    $birthday_time_str = date( 'H:i', strtotime( $backup_time_str . ' +2 hours' ) );
+
+    // Get WordPress timezone
+    $timezone = wp_timezone();
+    try {
+        $schedule_date = new DateTime( 'today ' . $birthday_time_str, $timezone );
+        if ( $schedule_date->getTimestamp() < time() ) {
+            $schedule_date->modify( '+1 day' );
+        }
+        $first_event_timestamp = $schedule_date->getTimestamp();
+    } catch ( Exception $e ) {
+        // Fallback to the old method in case of an exception
+        $first_event_timestamp = strtotime( 'today ' . $birthday_time_str );
+        if ( $first_event_timestamp < time() ) {
+            $first_event_timestamp = strtotime( 'tomorrow ' . $birthday_time_str );
+        }
+    }
+
+    wp_schedule_event( $first_event_timestamp, 'daily', 'dame_birthday_email_event' );
+}
+
+/**
+ * Unschedules the daily birthday email event.
+ */
+function dame_unschedule_birthday_event() {
+    wp_clear_scheduled_hook( 'dame_birthday_email_event' );
 }

@@ -182,6 +182,12 @@ register_deactivation_hook( __FILE__, 'dame_remove_custom_roles' );
 register_activation_hook( __FILE__, 'dame_schedule_backup_event' );
 register_deactivation_hook( __FILE__, 'dame_unschedule_backup_event' );
 add_action( 'dame_daily_backup_event', 'dame_do_scheduled_backup' );
+
+// Cron job for birthday emails
+register_activation_hook( __FILE__, 'dame_schedule_birthday_event' );
+register_deactivation_hook( __FILE__, 'dame_unschedule_birthday_event' );
+add_action( 'dame_birthday_email_event', 'dame_send_birthday_emails' );
+
 add_action( 'update_option_dame_options', 'dame_handle_schedule_update', 10, 2 );
 
 /**
@@ -196,6 +202,7 @@ function dame_handle_schedule_update( $old_value, $new_value ) {
 
     if ( $old_time !== $new_time ) {
         dame_schedule_backup_event();
+        dame_schedule_birthday_event();
     }
 }
 
@@ -211,3 +218,16 @@ function dame_ensure_backup_is_scheduled() {
     }
 }
 add_action( 'init', 'dame_ensure_backup_is_scheduled' );
+
+/**
+ * Ensures the birthday email event is always scheduled. Acts as a failsafe.
+ */
+function dame_ensure_birthday_is_scheduled() {
+    if ( ! is_admin() ) {
+        return;
+    }
+    if ( ! wp_next_scheduled( 'dame_birthday_email_event' ) ) {
+        dame_schedule_birthday_event();
+    }
+}
+add_action( 'init', 'dame_ensure_birthday_is_scheduled' );
