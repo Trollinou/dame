@@ -67,6 +67,7 @@ function dame_render_options_page() {
             <?php
             settings_fields( 'dame_options_group' );
             do_settings_sections( 'dame_mailing_section_group' ); // Ajout du groupe de la section mailing
+            do_settings_sections( 'dame_birthday_section_group' );
             do_settings_sections( 'dame_backup_section_group' );
             do_settings_sections( 'dame_payment_section_group' );
             do_settings_sections( 'dame_uninstall_section_group' );
@@ -155,20 +156,28 @@ function dame_register_settings() {
         'dame_mailing_section'
     );
 
+    // Section for Birthday Emails
+    add_settings_section(
+        'dame_birthday_section',
+        __( "Emails d'anniversaire", 'dame' ),
+        'dame_birthday_section_callback',
+        'dame_birthday_section_group'
+    );
+
     add_settings_field(
         'dame_birthday_emails_enabled',
         __( "Activer les emails d'anniversaire", 'dame' ),
         'dame_birthday_emails_enabled_callback',
-        'dame_mailing_section_group',
-        'dame_mailing_section'
+        'dame_birthday_section_group',
+        'dame_birthday_section'
     );
 
     add_settings_field(
         'dame_birthday_article_slug',
         __( "Slug de l'article pour l'anniversaire", 'dame' ),
         'dame_birthday_article_slug_callback',
-        'dame_mailing_section_group',
-        'dame_mailing_section'
+        'dame_birthday_section_group',
+        'dame_birthday_section'
     );
 
     // Section for Backup Settings
@@ -391,6 +400,13 @@ function dame_payment_url_callback() {
         <?php esc_html_e( "L'URL complète de la page de paiement. Ce lien sera présenté à l'utilisateur après la soumission de sa préinscription.", 'dame' ); ?>
     </p>
     <?php
+}
+
+/**
+ * Callback for the birthday section.
+ */
+function dame_birthday_section_callback() {
+    echo '<p>' . esc_html__( "Paramètres pour l'envoi automatique des emails d'anniversaire aux adhérents.", 'dame' ) . '</p>';
 }
 
 /**
