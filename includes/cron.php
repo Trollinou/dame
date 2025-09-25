@@ -71,10 +71,11 @@ function dame_generate_agenda_backup_file() {
  */
 function dame_send_birthday_emails() {
     $options = get_option( 'dame_options' );
+    $enabled = isset( $options['birthday_emails_enabled'] ) ? $options['birthday_emails_enabled'] : 0;
     $article_slug = isset( $options['birthday_article_slug'] ) ? $options['birthday_article_slug'] : '';
 
-    if ( empty( $article_slug ) ) {
-        return; // No article slug configured
+    if ( ! $enabled || empty( $article_slug ) ) {
+        return; // Feature disabled or no article slug configured
     }
 
     $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
@@ -269,11 +270,19 @@ function dame_unschedule_backup_event() {
  * The event is scheduled to run 2 hours after the daily backup.
  */
 function dame_schedule_birthday_event() {
+    // Always clear any existing schedule to ensure we can start fresh or disable it.
     if ( wp_next_scheduled( 'dame_birthday_email_event' ) ) {
         wp_clear_scheduled_hook( 'dame_birthday_email_event' );
     }
 
     $options = get_option( 'dame_options' );
+    $enabled = isset( $options['birthday_emails_enabled'] ) ? $options['birthday_emails_enabled'] : 0;
+
+    // If the feature is disabled, we just unscheduled it and we can stop here.
+    if ( ! $enabled ) {
+        return;
+    }
+
     $backup_time_str = ! empty( $options['backup_time'] ) && preg_match( '/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $options['backup_time'] ) ? $options['backup_time'] : '01:00';
 
     // Calculate birthday event time (2 hours after backup)

@@ -200,8 +200,15 @@ function dame_handle_schedule_update( $old_value, $new_value ) {
     $old_time = isset( $old_value['backup_time'] ) ? $old_value['backup_time'] : '';
     $new_time = isset( $new_value['backup_time'] ) ? $new_value['backup_time'] : '';
 
+    $old_birthday_enabled = isset( $old_value['birthday_emails_enabled'] ) ? $old_value['birthday_emails_enabled'] : 0;
+    $new_birthday_enabled = isset( $new_value['birthday_emails_enabled'] ) ? $new_value['birthday_emails_enabled'] : 0;
+
     if ( $old_time !== $new_time ) {
         dame_schedule_backup_event();
+    }
+
+    // Reschedule birthday event if the backup time or the enabled status changes.
+    if ( $old_time !== $new_time || $old_birthday_enabled !== $new_birthday_enabled ) {
         dame_schedule_birthday_event();
     }
 }
@@ -226,7 +233,11 @@ function dame_ensure_birthday_is_scheduled() {
     if ( ! is_admin() ) {
         return;
     }
-    if ( ! wp_next_scheduled( 'dame_birthday_email_event' ) ) {
+
+    $options = get_option( 'dame_options' );
+    $enabled = isset( $options['birthday_emails_enabled'] ) ? $options['birthday_emails_enabled'] : 0;
+
+    if ( $enabled && ! wp_next_scheduled( 'dame_birthday_email_event' ) ) {
         dame_schedule_birthday_event();
     }
 }
