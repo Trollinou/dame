@@ -967,7 +967,7 @@ function dame_liste_agenda_shortcode( $atts ) {
             }
 
             $is_private = get_post_status( $post_id ) === 'private';
-            $date_circle_style = $is_private ? 'style="background-color: #ffbf8b;"' : '';
+            $date_circle_style = $is_private ? 'style="background-color: #c9a0dc;"' : '';
             ?>
             <div class="dame-liste-agenda-item">
                 <div class="dame-liste-agenda-date-icon">
