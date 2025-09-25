@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.3.0 - 2025-09-20
+## 3.2.3 - 2025-09-25
 *   **Fonctionnalité :** Ajout d'un système d'envoi automatique d'emails d'anniversaire aux adhérents, avec une option pour l'activer ou le désactiver.
 *   **Fonctionnalité :** Ajout d'une option dans `Réglages > Options DAME` pour définir le slug d'un article (publié ou privé) à utiliser comme modèle pour l'email d'anniversaire.
 *   **Fonctionnalité :** L'email d'anniversaire est personnalisé avec les balises `[NOM]`, `[PRENOM]` et `[AGE]`.
