@@ -155,6 +155,22 @@ function dame_register_settings() {
         'dame_mailing_section'
     );
 
+    add_settings_field(
+        'dame_birthday_emails_enabled',
+        __( "Activer les emails d'anniversaire", 'dame' ),
+        'dame_birthday_emails_enabled_callback',
+        'dame_mailing_section_group',
+        'dame_mailing_section'
+    );
+
+    add_settings_field(
+        'dame_birthday_article_slug',
+        __( "Slug de l'article pour l'anniversaire", 'dame' ),
+        'dame_birthday_article_slug_callback',
+        'dame_mailing_section_group',
+        'dame_mailing_section'
+    );
+
     // Section for Backup Settings
     add_settings_section(
         'dame_backup_section',
@@ -311,6 +327,12 @@ function dame_options_sanitize( $input ) {
         $sanitized_input['smtp_batch_size'] = absint( $input['smtp_batch_size'] );
     }
 
+    if ( isset( $input['birthday_article_slug'] ) ) {
+        $sanitized_input['birthday_article_slug'] = sanitize_text_field( $input['birthday_article_slug'] );
+    }
+
+    $sanitized_input['birthday_emails_enabled'] = isset( $input['birthday_emails_enabled'] ) ? 1 : 0;
+
     if ( isset( $input['payment_url'] ) ) {
         $sanitized_input['payment_url'] = esc_url_raw( $input['payment_url'] );
     }
@@ -450,6 +472,34 @@ function dame_smtp_batch_size_callback() {
     <input type="number" id="dame_smtp_batch_size" name="dame_options[smtp_batch_size]" value="<?php echo esc_attr( $smtp_batch_size ); ?>" class="small-text" min="0" />
     <p class="description">
         <?php esc_html_e( "Nombre d'emails à envoyer dans chaque lot. Mettre à 0 pour envoyer tous les emails en une seule fois (non recommandé pour un grand nombre de destinataires).", 'dame' ); ?>
+    </p>
+    <?php
+}
+
+/**
+ * Callback for the birthday emails enabled checkbox.
+ */
+function dame_birthday_emails_enabled_callback() {
+    $options = get_option( 'dame_options' );
+    $checked = isset( $options['birthday_emails_enabled'] ) ? $options['birthday_emails_enabled'] : 0;
+    ?>
+    <label>
+        <input type="checkbox" name="dame_options[birthday_emails_enabled]" value="1" <?php checked( $checked, 1 ); ?> />
+        <?php esc_html_e( 'Cochez cette case pour activer l\'envoi automatique des emails d\'anniversaire.', 'dame' ); ?>
+    </label>
+    <?php
+}
+
+/**
+ * Callback for the birthday article slug field.
+ */
+function dame_birthday_article_slug_callback() {
+    $options = get_option( 'dame_options' );
+    $birthday_article_slug = isset( $options['birthday_article_slug'] ) ? $options['birthday_article_slug'] : '';
+    ?>
+    <input type="text" id="dame_birthday_article_slug" name="dame_options[birthday_article_slug]" value="<?php echo esc_attr( $birthday_article_slug ); ?>" class="regular-text" />
+    <p class="description">
+        <?php esc_html_e( "Saisir le slug de l'article qui sera envoyé pour les anniversaires. Le contenu de l'article peut contenir les balises [NOM], [PRENOM] et [AGE].", 'dame' ); ?>
     </p>
     <?php
 }

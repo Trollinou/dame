@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 3.2.2
+**Version:** 3.3.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -68,6 +68,10 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 *   **Envoi d'emails par Lots :** La taille des lots d'envoi est configurable pour s'adapter aux contraintes des hébergeurs.
 *   **Sauvegarde Automatique :** Le plugin effectue une sauvegarde journalière automatique des bases de données "Adhérents" et "Apprentissage". Les fichiers de sauvegarde sont envoyés par email à l'adresse de l'expéditeur configurée.
 *   **Heure de Sauvegarde Configurable :** L'heure de déclenchement de la sauvegarde journalière peut être personnalisée dans les réglages.
+*   **Emails d'Anniversaire Automatiques :** Une tâche journalière peut envoyer automatiquement un email de vœux aux adhérents le jour de leur anniversaire. La fonctionnalité peut être activée ou désactivée dans les options.
+    *   **Modèle d'Email Personnalisé :** Le contenu de l'email est basé sur un article WordPress (publié ou privé) dont le slug est à définir dans les options.
+    *   **Personnalisation :** Le sujet et le contenu de l'article peuvent inclure les balises `[NOM]`, `[PRENOM]` et `[AGE]` qui seront remplacées par les informations de l'adhérent.
+    *   **Rapport d'Envoi :** Un email de résumé est envoyé à l'adresse de l'expéditeur pour lister les adhérents à qui l'email a été envoyé.
 *   **Désinstallation Sécurisée :** Les données sont conservées par défaut lors de la désinstallation, mais peuvent être supprimées via une option.
 
 ## Configuration

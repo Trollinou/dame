@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier Administratif des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           3.2.2
+ * Version:           3.3.0
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Etienne Gagnon
@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '3.2.2' );
+define( 'DAME_VERSION', '3.3.0' );
 define( 'DAME_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -182,6 +182,12 @@ register_deactivation_hook( __FILE__, 'dame_remove_custom_roles' );
 register_activation_hook( __FILE__, 'dame_schedule_backup_event' );
 register_deactivation_hook( __FILE__, 'dame_unschedule_backup_event' );
 add_action( 'dame_daily_backup_event', 'dame_do_scheduled_backup' );
+
+// Cron job for birthday emails
+register_activation_hook( __FILE__, 'dame_schedule_birthday_event' );
+register_deactivation_hook( __FILE__, 'dame_unschedule_birthday_event' );
+add_action( 'dame_birthday_email_event', 'dame_send_birthday_emails' );
+
 add_action( 'update_option_dame_options', 'dame_handle_schedule_update', 10, 2 );
 
 /**
@@ -194,8 +200,16 @@ function dame_handle_schedule_update( $old_value, $new_value ) {
     $old_time = isset( $old_value['backup_time'] ) ? $old_value['backup_time'] : '';
     $new_time = isset( $new_value['backup_time'] ) ? $new_value['backup_time'] : '';
 
+    $old_birthday_enabled = isset( $old_value['birthday_emails_enabled'] ) ? $old_value['birthday_emails_enabled'] : 0;
+    $new_birthday_enabled = isset( $new_value['birthday_emails_enabled'] ) ? $new_value['birthday_emails_enabled'] : 0;
+
     if ( $old_time !== $new_time ) {
         dame_schedule_backup_event();
+    }
+
+    // Reschedule birthday event if the backup time or the enabled status changes.
+    if ( $old_time !== $new_time || $old_birthday_enabled !== $new_birthday_enabled ) {
+        dame_schedule_birthday_event();
     }
 }
 
@@ -211,3 +225,20 @@ function dame_ensure_backup_is_scheduled() {
     }
 }
 add_action( 'init', 'dame_ensure_backup_is_scheduled' );
+
+/**
+ * Ensures the birthday email event is always scheduled. Acts as a failsafe.
+ */
+function dame_ensure_birthday_is_scheduled() {
+    if ( ! is_admin() ) {
+        return;
+    }
+
+    $options = get_option( 'dame_options' );
+    $enabled = isset( $options['birthday_emails_enabled'] ) ? $options['birthday_emails_enabled'] : 0;
+
+    if ( $enabled && ! wp_next_scheduled( 'dame_birthday_email_event' ) ) {
+        dame_schedule_birthday_event();
+    }
+}
+add_action( 'init', 'dame_ensure_birthday_is_scheduled' );
