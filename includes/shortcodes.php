@@ -965,10 +965,10 @@ function dame_liste_agenda_shortcode( $atts ) {
                         $first_line = strtok( $description, "\n" );
                     ?>
                         <div class="event-description">
-                            <?php echo esc_html( $first_line ); ?>
+                            <p></p><?php echo esc_html( $first_line ); ?>
                             <?php if ( strpos( $description, "\n" ) !== false ) : ?>
                                 <a href="<?php the_permalink(); ?>">...</a>
-                            <?php endif; ?>
+                            <?php endif; ?></div>p>
                         </div>
                     <?php endif; ?>
                 </div>
