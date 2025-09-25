@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.2.1 - 2025-09-25
+*   **Amélioration :** La description des événements dans la liste (`[dame_liste_agenda]`) est maintenant limitée à la première ligne/paragraphe pour une meilleure lisibilité. Un lien "..." est ajouté si la description est plus longue. La mise en forme (gras, italique) est préservée.
+
 ## 3.2.0 - 2025-09-20
 *   **Fonctionnalité :** Ajout d'un nouveau rôle "Membre du Bureau" (staff) avec les permissions d'un "Contributeur" ainsi que l'accès en lecture aux contenus privés et la visibilité sur le menu des Pages.
 *   **Fonctionnalité :** Ajout d'une page de consultation en lecture seule pour les adhérents, accessible depuis la liste des adhérents dans l'administration. La page imite la disposition de l'écran d'édition pour une expérience utilisateur cohérente.
