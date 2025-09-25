@@ -962,8 +962,14 @@ function dame_liste_agenda_shortcode( $atts ) {
                     <?php
                     $description = get_post_meta( get_the_ID(), '_dame_agenda_description', true );
                     if ( ! empty( $description ) ) :
+                        $first_line = strtok( $description, "\n" );
                     ?>
-                        <div class="event-description"><?php echo apply_filters( 'the_content', $description ); ?></div>
+                        <div class="event-description">
+                            <?php echo esc_html( $first_line ); ?>
+                            <?php if ( strpos( $description, "\n" ) !== false ) : ?>
+                                <a href="<?php the_permalink(); ?>">...</a>
+                            <?php endif; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
                  <div class="dame-liste-agenda-icon">
