@@ -235,7 +235,7 @@ jQuery(document).ready(function($) {
                             let classList = 'dame-event dame-event-duree';
                             if (isEventStart) classList += ' start';
                             if (isSegmentEnd) classList += ' end';
-                            const bgColor = event.status === 'private' ? '#ffbf8b' : event.color;
+                            const bgColor = event.status === 'private' ? '#c9a0dc' : event.color;
                             const eventHtml = `<a href="${event.url}" class="dame-event-link"><div class="${classList}" style="background-color: ${bgColor}; width: ${width}; top: ${top}px;">${event.title}</div></a>`;
                             dayCell.find('.events-container').append($(eventHtml).data('event', event));
                             for (let i = 0; i < span; i++) {
@@ -270,7 +270,7 @@ jQuery(document).ready(function($) {
                     const timeText = event.all_day == '1' ? dame_agenda_ajax.i18n.all_day : `${event.start_time} - ${event.end_time}`;
                     let styleAttr = `--event-color: ${event.color}; border-left-color: ${event.color};`;
                     if (event.status === 'private') {
-                        styleAttr += ` background-color: #ffbf8b;`;
+                        styleAttr += ` background-color: #c9a0dc;`;
                     }
                     const eventHtml = `<a href="${event.url}" class="dame-event-link">
                         <div class="dame-event dame-event-ponctuel" style="${styleAttr}">
