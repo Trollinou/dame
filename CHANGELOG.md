@@ -7,6 +7,14 @@
 *   **Fonctionnalité :** Une nouvelle tâche cron journalière envoie les emails d'anniversaire. Un email de résumé est envoyé à l'administrateur.
 *   **Amélioration :** La planification des tâches cron (sauvegarde et anniversaires) utilise maintenant le fuseau horaire de WordPress pour une meilleure fiabilité, corrigeant un bug potentiel de décalage horaire.
 
+## 3.2.2 - 2025-09-25
+*   **Amélioration :** Les événements privés sont maintenant visibles dans les shortcodes `[dame_agenda]` et `[dame_liste_agenda]` pour les utilisateurs connectés avec un rôle autorisé (Membre du Bureau, Administrateur, etc.).
+*   **Amélioration :** Les événements privés sont maintenant visuellement distincts. Dans la vue calendrier, ils ont un fond de couleur `#ffbf8b`. Dans la vue liste, l'icône de la date a ce même fond de couleur.
+*   **Correctif :** Le préfixe "Privé :" a été retiré du titre des événements dans le shortcode `[dame_liste_agenda]`.
+
+## 3.2.1 - 2025-09-25
+*   **Amélioration :** La description des événements dans la liste (`[dame_liste_agenda]`) est maintenant limitée à la première ligne/paragraphe pour une meilleure lisibilité. Un lien "..." est ajouté si la description est plus longue. La mise en forme (gras, italique) est préservée.
+
 ## 3.2.0 - 2025-09-20
 *   **Fonctionnalité :** Ajout d'un nouveau rôle "Membre du Bureau" (staff) avec les permissions d'un "Contributeur" ainsi que l'accès en lecture aux contenus privés et la visibilité sur le menu des Pages.
 *   **Fonctionnalité :** Ajout d'une page de consultation en lecture seule pour les adhérents, accessible depuis la liste des adhérents dans l'administration. La page imite la disposition de l'écran d'édition pour une expérience utilisateur cohérente.
