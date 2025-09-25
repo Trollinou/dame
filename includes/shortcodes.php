@@ -769,9 +769,19 @@ function dame_get_agenda_events() {
 	$unchecked_categories = isset( $_POST['unchecked_categories'] ) ? array_map( 'intval', $_POST['unchecked_categories'] ) : array();
     $search_term = isset( $_POST['search'] ) ? sanitize_text_field( $_POST['search'] ) : '';
 
+    // Show private events only to authorized users.
+    // Role slugs: 'staff' (Membre du Bureau), 'administrator', 'editor', 'entraineur'.
+    $post_status = array( 'publish' );
+    $allowed_roles = array( 'staff', 'administrator', 'editor', 'entraineur' );
+    $current_user = wp_get_current_user();
+
+    if ( array_intersect( $allowed_roles, $current_user->roles ) ) {
+        $post_status[] = 'private';
+    }
+
     $args = array(
         'post_type'      => 'dame_agenda',
-        'post_status'    => 'publish',
+        'post_status'    => $post_status,
         'posts_per_page' => -1,
         'meta_query'     => array(
             'relation' => 'AND',
@@ -860,6 +870,7 @@ function dame_get_agenda_events() {
             $events[] = array(
                 'id'          => $post_id,
                 'title'       => get_the_title(),
+                'status'      => get_post_status( $post_id ),
                 'url'         => get_permalink(),
                 'start_date'  => get_post_meta( $post_id, '_dame_start_date', true ),
                 'start_time'  => get_post_meta( $post_id, '_dame_start_time', true ),
@@ -898,9 +909,19 @@ function dame_liste_agenda_shortcode( $atts ) {
 
     $today = date( 'Y-m-d' );
 
+    // Show private events only to authorized users.
+    // Role slugs: 'staff' (Membre du Bureau), 'administrator', 'editor', 'entraineur'.
+    $post_status = array( 'publish' );
+    $allowed_roles = array( 'staff', 'administrator', 'editor', 'entraineur' );
+    $current_user = wp_get_current_user();
+
+    if ( array_intersect( $allowed_roles, $current_user->roles ) ) {
+        $post_status[] = 'private';
+    }
+
     $args = array(
         'post_type'      => 'dame_agenda',
-        'post_status'    => 'publish',
+        'post_status'    => $post_status,
         'posts_per_page' => $nombre,
         'meta_key'       => '_dame_start_date',
         'orderby'        => 'meta_value',
@@ -944,17 +965,20 @@ function dame_liste_agenda_shortcode( $atts ) {
             if ( $start_date_str !== $end_date_str ) {
                 $date_display = date_i18n( 'j F Y', $start_date->getTimestamp() ) . ' - ' . date_i18n( 'j F Y', $end_date->getTimestamp() );
             }
+
+            $is_private = get_post_status( $post_id ) === 'private';
+            $date_circle_style = $is_private ? 'style="background-color: #ffbf8b;"' : '';
             ?>
             <div class="dame-liste-agenda-item">
                 <div class="dame-liste-agenda-date-icon">
-                    <div class="date-circle">
+                    <div class="date-circle" <?php echo $date_circle_style; ?>>
                         <span class="day-of-week"><?php echo esc_html( strtoupper( $day_of_week ) ); ?></span>
                         <span class="day-number"><?php echo esc_html( $day_number ); ?></span>
                         <span class="month-abbr"><?php echo esc_html( strtoupper( $month_abbr ) ); ?></span>
                     </div>
                 </div>
                 <div class="dame-liste-agenda-details">
-                    <h4 class="event-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h4>
+                    <h4 class="event-title"><a href="<?php the_permalink(); ?>"><?php echo esc_html( get_post_field( 'post_title', get_the_ID() ) ); ?></a></h4>
                     <p class="event-date"><?php echo esc_html( $date_display ); ?></p>
                     <?php if ( ! $all_day ) : ?>
                         <p class="event-time"><?php echo esc_html( $start_time . ' - ' . $end_time ); ?></p>
