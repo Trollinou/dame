@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.2.2 - 2025-09-25
+*   **Amélioration :** Les événements privés sont maintenant visibles dans les shortcodes `[dame_agenda]` et `[dame_liste_agenda]` pour les utilisateurs connectés avec un rôle autorisé (Membre du Bureau, Administrateur, etc.).
+*   **Amélioration :** Les événements privés sont maintenant visuellement distincts. Dans la vue calendrier, ils ont un fond de couleur `#ffbf8b`. Dans la vue liste, l'icône de la date a ce même fond de couleur.
+*   **Correctif :** Le préfixe "Privé :" a été retiré du titre des événements dans le shortcode `[dame_liste_agenda]`.
+
 ## 3.2.1 - 2025-09-25
 *   **Amélioration :** La description des événements dans la liste (`[dame_liste_agenda]`) est maintenant limitée à la première ligne/paragraphe pour une meilleure lisibilité. Un lien "..." est ajouté si la description est plus longue. La mise en forme (gras, italique) est préservée.
 
