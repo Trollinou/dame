@@ -962,8 +962,44 @@ function dame_liste_agenda_shortcode( $atts ) {
                     <?php
                     $description = get_post_meta( get_the_ID(), '_dame_agenda_description', true );
                     if ( ! empty( $description ) ) :
+                        $truncated_description = '';
+                        $permalink = get_permalink();
+                        $read_more_link = '&nbsp;<a href="' . esc_url( $permalink ) . '" class="dame-read-more">...</a>';
+
+                        // Regex to find trailing <br> tags, whitespace, and &nbsp;
+                        $cleanup_regex = '/(?:<br\s*\/?>|\s|&nbsp;)*$/i';
+
+                        // Find the position of the first closing paragraph tag
+                        $first_p_closing_pos = strpos( $description, '</p>' );
+
+                        if ( $first_p_closing_pos !== false ) {
+                            // Paragraph tag exists.
+                            $first_paragraph_content = substr( $description, 0, $first_p_closing_pos );
+                            $rest_of_description = substr( $description, $first_p_closing_pos + strlen('</p>') );
+
+                            if ( trim( $rest_of_description ) !== '' ) {
+                                // More content exists after the first paragraph.
+                                $cleaned_content = preg_replace( $cleanup_regex, '', $first_paragraph_content );
+                                $truncated_description = $cleaned_content . $read_more_link . '</p>';
+                            } else {
+                                // Only one paragraph, so display the whole description.
+                                $truncated_description = $description;
+                            }
+                        } else {
+                            // No paragraph tags, fall back to truncating by the first line break.
+                            $lines = explode( "\n", $description, 2 );
+                            $first_line = $lines[0];
+
+                            if ( isset( $lines[1] ) && trim( $lines[1] ) !== '' ) {
+                                // More lines exist.
+                                $cleaned_line = preg_replace( $cleanup_regex, '', $first_line );
+                                $truncated_description = $cleaned_line . $read_more_link;
+                            } else {
+                                $truncated_description = $first_line;
+                            }
+                        }
                     ?>
-                       <div class="event-description"><?php echo apply_filters( 'the_content', $description ); ?></div>
+                        <div class="event-description"><?php echo apply_filters( 'the_content', $truncated_description ); ?></div>
                     <?php endif; ?>
                 </div>
                  <div class="dame-liste-agenda-icon">
