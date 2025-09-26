@@ -867,21 +867,37 @@ function dame_get_agenda_events() {
             $term_meta = get_option( "taxonomy_$term_id" );
             $color = ! empty( $term_meta['color'] ) ? $term_meta['color'] : '#ccc';
 
-            $events[] = array(
-                'id'          => $post_id,
-                'title'       => get_the_title(),
-                'status'      => get_post_status( $post_id ),
-                'url'         => get_permalink(),
-                'start_date'  => get_post_meta( $post_id, '_dame_start_date', true ),
-                'start_time'  => get_post_meta( $post_id, '_dame_start_time', true ),
-                'end_date'    => get_post_meta( $post_id, '_dame_end_date', true ),
-                'end_time'    => get_post_meta( $post_id, '_dame_end_time', true ),
-                'all_day'     => get_post_meta( $post_id, '_dame_all_day', true ),
-                'location'    => get_post_meta( $post_id, '_dame_location_name', true ),
-                'description' => get_post_meta( $post_id, '_dame_agenda_description', true ),
-                'color'       => $color,
-                'category'    => !empty($term) ? $term[0]->name : '',
-            );
+			$start_date = get_post_meta( $post_id, '_dame_start_date', true );
+			$end_date   = get_post_meta( $post_id, '_dame_end_date', true );
+			$status     = get_post_status( $post_id );
+
+			$event_data = array(
+				'id'          => $post_id,
+				'title'       => get_the_title(),
+				'status'      => $status,
+				'url'         => get_permalink(),
+				'start_date'  => $start_date,
+				'start_time'  => get_post_meta( $post_id, '_dame_start_time', true ),
+				'end_date'    => $end_date,
+				'end_time'    => get_post_meta( $post_id, '_dame_end_time', true ),
+				'all_day'     => get_post_meta( $post_id, '_dame_all_day', true ),
+				'location'    => get_post_meta( $post_id, '_dame_location_name', true ),
+				'description' => get_post_meta( $post_id, '_dame_agenda_description', true ),
+				'color'       => $color,
+				'category'    => ! empty( $term ) ? $term[0]->name : '',
+			);
+
+			// For multi-day events, determine the best contrasting text color.
+			if ( $start_date !== $end_date ) {
+				$event_data['text_color'] = dame_get_text_color_based_on_bg( $color );
+			} else {
+				// For single-day public events, lighten the background color.
+				if ( 'private' !== $status ) {
+					$event_data['background_color'] = dame_lighten_color( $color, 0.33 );
+				}
+			}
+
+			$events[] = $event_data;
         }
     }
 

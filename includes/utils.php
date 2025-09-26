@@ -54,3 +54,70 @@ function dame_get_contrast_color( $hexcolor ) {
     $yiq = ( ( $r * 299 ) + ( $g * 587 ) + ( $b * 114 ) ) / 1000;
     return ( $yiq >= 128 ) ? '#000000' : '#ffffff';
 }
+
+/**
+ * Converts a HEX color to its RGB components.
+ *
+ * @param string $hex_color The color in HEX format (e.g., #a1a1a1 or #a1a).
+ * @return array|null An associative array with r, g, b components, or null if the format is invalid.
+ */
+function dame_hex_to_rgb( $hex_color ) {
+	$hex_color = ltrim( $hex_color, '#' );
+	if ( strlen( $hex_color ) === 3 ) {
+		$r = hexdec( $hex_color[0] . $hex_color[0] );
+		$g = hexdec( $hex_color[1] . $hex_color[1] );
+		$b = hexdec( $hex_color[2] . $hex_color[2] );
+	} elseif ( strlen( $hex_color ) === 6 ) {
+		$r = hexdec( substr( $hex_color, 0, 2 ) );
+		$g = hexdec( substr( $hex_color, 2, 2 ) );
+		$b = hexdec( substr( $hex_color, 4, 2 ) );
+	} else {
+		return null; // Invalid format
+	}
+	return array(
+		'r' => $r,
+		'g' => $g,
+		'b' => $b,
+	);
+}
+
+/**
+ * Determines the best contrasting text color (black or white) based on the background color's luminance.
+ *
+ * @param string $hex_color The background color in HEX format.
+ * @return string The HEX code for the contrasting text color (#000000 for black, #ffffff for white).
+ */
+function dame_get_text_color_based_on_bg( $hex_color ) {
+	$rgb = dame_hex_to_rgb( $hex_color );
+
+	if ( ! $rgb ) {
+		return '#000000'; // Default to black for invalid colors.
+	}
+
+	// Calculate luminance
+	$luminance = ( 0.2126 * $rgb['r'] + 0.7152 * $rgb['g'] + 0.0722 * $rgb['b'] ) / 255;
+
+	// Use a threshold of 0.5 to decide text color
+	return $luminance > 0.5 ? '#000000' : '#ffffff';
+}
+
+/**
+ * Lightens a HEX color by a given percentage.
+ *
+ * @param string $hex_color The color to lighten in HEX format.
+ * @param float  $percentage The percentage to lighten by (e.g., 0.33 for 33%).
+ * @return string The lightened color in HEX format.
+ */
+function dame_lighten_color( $hex_color, $percentage ) {
+	$rgb = dame_hex_to_rgb( $hex_color );
+
+	if ( ! $rgb ) {
+		return $hex_color; // Return original color if invalid
+	}
+
+	$new_r = round( $rgb['r'] + ( 255 - $rgb['r'] ) * $percentage );
+	$new_g = round( $rgb['g'] + ( 255 - $rgb['g'] ) * $percentage );
+	$new_b = round( $rgb['b'] + ( 255 - $rgb['b'] ) * $percentage );
+
+	return sprintf( '#%02x%02x%02x', $new_r, $new_g, $new_b );
+}

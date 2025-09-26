@@ -235,8 +235,14 @@ jQuery(document).ready(function($) {
                             let classList = 'dame-event dame-event-duree';
                             if (isEventStart) classList += ' start';
                             if (isSegmentEnd) classList += ' end';
+
                             const bgColor = event.status === 'private' ? '#c9a0dc' : event.color;
-                            const eventHtml = `<a href="${event.url}" class="dame-event-link"><div class="${classList}" style="background-color: ${bgColor}; width: ${width}; top: ${top}px;">${event.title}</div></a>`;
+                            let styleAttr = `background-color: ${bgColor}; width: ${width}; top: ${top}px;`;
+                            if (event.text_color) {
+                                styleAttr += ` color: ${event.text_color};`;
+                            }
+
+                            const eventHtml = `<a href="${event.url}" class="dame-event-link"><div class="${classList}" style="${styleAttr}">${event.title}</div></a>`;
                             dayCell.find('.events-container').append($(eventHtml).data('event', event));
                             for (let i = 0; i < span; i++) {
                                 const occupiedDate = new Date(segmentStartDate);
@@ -271,7 +277,9 @@ jQuery(document).ready(function($) {
                     let styleAttr = `--event-color: ${event.color}; border-left-color: ${event.color};`;
                     if (event.status === 'private') {
                         styleAttr += ` background-color: #c9a0dc;`;
-                    }
+                    } else if (event.background_color) {
+						styleAttr += ` background-color: ${event.background_color};`;
+					}
                     const eventHtml = `<a href="${event.url}" class="dame-event-link">
                         <div class="dame-event dame-event-ponctuel" style="${styleAttr}">
                             <div class="event-time">${timeText}</div>
