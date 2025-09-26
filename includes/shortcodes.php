@@ -893,7 +893,7 @@ function dame_get_agenda_events() {
 			} else {
 				// For single-day public events, lighten the background color.
 				if ( 'private' !== $status ) {
-					$event_data['background_color'] = dame_lighten_color( $color, 0.33 );
+					$event_data['background_color'] = dame_lighten_color( $color, 0.75 );
 				}
 			}
 
