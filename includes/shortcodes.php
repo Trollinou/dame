@@ -982,6 +982,11 @@ function dame_liste_agenda_shortcode( $atts ) {
                 $date_display = date_i18n( 'j F Y', $start_date->getTimestamp() ) . ' - ' . date_i18n( 'j F Y', $end_date->getTimestamp() );
             }
 
+			if ( ! $all_day && $start_time ) {
+				$time_display = esc_html( $start_time . ' - ' . $end_time );
+				$date_display .= " - <i>$time_display</i>";
+			}
+
             $is_private = get_post_status( $post_id ) === 'private';
             $date_circle_style = $is_private ? 'style="background-color: #c9a0dc;"' : '';
             ?>
@@ -995,10 +1000,7 @@ function dame_liste_agenda_shortcode( $atts ) {
                 </div>
                 <div class="dame-liste-agenda-details">
                     <h4 class="event-title"><a href="<?php the_permalink(); ?>"><?php echo esc_html( get_post_field( 'post_title', get_the_ID() ) ); ?></a></h4>
-                    <p class="event-date"><?php echo esc_html( $date_display ); ?></p>
-                    <?php if ( ! $all_day ) : ?>
-                        <p class="event-time"><?php echo esc_html( $start_time . ' - ' . $end_time ); ?></p>
-                    <?php endif; ?>
+                    <p class="event-date"><?php echo $date_display; ?></p>
                     <?php
                     $description = get_post_meta( get_the_ID(), '_dame_agenda_description', true );
                     if ( ! empty( $description ) ) :
@@ -1041,9 +1043,6 @@ function dame_liste_agenda_shortcode( $atts ) {
                     ?>
                         <div class="event-description"><?php echo apply_filters( 'the_content', $truncated_description ); ?></div>
                     <?php endif; ?>
-                </div>
-                 <div class="dame-liste-agenda-icon">
-                    <span class="dashicons dashicons-calendar-alt"></span>
                 </div>
             </div>
         <?php endwhile; ?>
