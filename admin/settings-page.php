@@ -59,27 +59,51 @@ add_action( 'admin_menu', 'dame_add_options_page' );
  * Renders the options page wrapper.
  */
 function dame_render_options_page() {
+    $active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'saisons';
     ?>
     <div class="wrap">
         <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 
+        <h2 class="nav-tab-wrapper">
+            <a href="?page=dame-settings&tab=saisons" class="nav-tab <?php echo $active_tab === 'saisons' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Saisons', 'dame' ); ?></a>
+            <a href="?page=dame-settings&tab=anniversaires" class="nav-tab <?php echo $active_tab === 'anniversaires' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Anniversaires', 'dame' ); ?></a>
+            <a href="?page=dame-settings&tab=paiements" class="nav-tab <?php echo $active_tab === 'paiements' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Paiements', 'dame' ); ?></a>
+            <a href="?page=dame-settings&tab=sauvegarde" class="nav-tab <?php echo $active_tab === 'sauvegarde' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sauvegarde', 'dame' ); ?></a>
+            <a href="?page=dame-settings&tab=emails" class="nav-tab <?php echo $active_tab === 'emails' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Emails', 'dame' ); ?></a>
+            <a href="?page=dame-settings&tab=desinstallation" class="nav-tab <?php echo $active_tab === 'desinstallation' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Désinstallation', 'dame' ); ?></a>
+        </h2>
+
         <form action="options.php" method="post">
             <?php
             settings_fields( 'dame_options_group' );
-            do_settings_sections( 'dame_mailing_section_group' ); // Ajout du groupe de la section mailing
-            do_settings_sections( 'dame_birthday_section_group' );
-            do_settings_sections( 'dame_backup_section_group' );
-            do_settings_sections( 'dame_payment_section_group' );
-            do_settings_sections( 'dame_uninstall_section_group' );
-            submit_button( __( 'Enregistrer les modifications', 'dame' ) );
+
+            if ( $active_tab === 'saisons' ) {
+                // This is custom UI, not a settings section
+            } elseif ( $active_tab === 'anniversaires' ) {
+                do_settings_sections( 'dame_birthday_section_group' );
+            } elseif ( $active_tab === 'paiements' ) {
+                do_settings_sections( 'dame_payment_section_group' );
+            } elseif ( $active_tab === 'sauvegarde' ) {
+                do_settings_sections( 'dame_backup_section_group' );
+            } elseif ( $active_tab === 'emails' ) {
+                do_settings_sections( 'dame_mailing_section_group' );
+            } elseif ( $active_tab === 'desinstallation' ) {
+                do_settings_sections( 'dame_uninstall_section_group' );
+            }
+
+            // The submit button should only appear on tabs that have settings fields.
+            if ( $active_tab !== 'saisons' ) {
+                submit_button( __( 'Enregistrer les modifications', 'dame' ) );
+            }
             ?>
         </form>
 
-        <hr>
-
-        <h2><?php esc_html_e( 'Gestion de la Saison d\'Adhésion', 'dame' ); ?></h2>
-        <?php dame_annual_reset_section_ui(); ?>
-
+        <?php
+        // The season management UI has its own forms, so it's outside the main form.
+        if ( $active_tab === 'saisons' ) {
+            dame_annual_reset_section_ui();
+        }
+        ?>
     </div>
     <?php
 }
@@ -172,17 +196,17 @@ function dame_register_settings() {
     );
 
     add_settings_field(
-        'dame_birthday_test_email',
-        __( 'Email de test', 'dame' ),
-        'dame_birthday_test_email_callback',
+        'dame_birthday_article_slug',
+        __( "Slug de l'article pour l'anniversaire", 'dame' ),
+        'dame_birthday_article_slug_callback',
         'dame_birthday_section_group',
         'dame_birthday_section'
     );
 
     add_settings_field(
-        'dame_birthday_article_slug',
-        __( "Slug de l'article pour l'anniversaire", 'dame' ),
-        'dame_birthday_article_slug_callback',
+        'dame_birthday_test_email',
+        __( 'Email de test', 'dame' ),
+        'dame_birthday_test_email_callback',
         'dame_birthday_section_group',
         'dame_birthday_section'
     );
@@ -681,10 +705,10 @@ function dame_annual_reset_section_ui() {
 
     $current_season_tag_id = get_option( 'dame_current_season_tag_id' );
     ?>
-    <div style="display: flex; align-items: flex-start; gap: 100px;">
-
-        <!-- Left side: Season Selection -->
-        <div style="flex: 1;">
+    <div>
+        <!-- Top section: Season Selection -->
+        <div>
+            <h3><?php esc_html_e( "Saison Active", 'dame' ); ?></h3>
             <p><?php esc_html_e( "Sélectionnez la saison d'adhésion à utiliser comme saison active sur l'ensemble du site.", 'dame' ); ?></p>
             <form method="post">
                 <input type="hidden" name="dame_action" value="update_current_season">
@@ -706,8 +730,11 @@ function dame_annual_reset_section_ui() {
             </form>
         </div>
 
-        <!-- Right side: Create New Season -->
-        <div style="flex: 1;">
+        <hr style="margin: 20px 0;">
+
+        <!-- Bottom section: Create New Season -->
+        <div>
+            <h3><?php esc_html_e( "Nouvelle Saison", 'dame' ); ?></h3>
             <p><?php esc_html_e( 'Cette action prépare le système pour la prochaine saison d\'adhésion en créant le nouveau tag.', 'dame' ); ?></p>
             <?php
             $next_season_name = dame_get_next_season_name();
@@ -728,7 +755,6 @@ function dame_annual_reset_section_ui() {
                 </p>
             </form>
         </div>
-
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {

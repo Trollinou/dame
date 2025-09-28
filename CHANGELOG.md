@@ -1,10 +1,11 @@
 # Changelog
 
 ## 3.2.6 - 2025-09-28
-*   **Fonctionnalité :** Refonte de la gestion des saisons d'adhésion. Un menu déroulant dans les réglages permet maintenant de sélectionner la saison active parmi toutes les saisons existantes, offrant plus de flexibilité pour la gestion en début/fin d'année.
-*   **Amélioration :** La tâche cron des emails d'anniversaire n'envoie désormais des vœux qu'aux adhérents de la saison active.
-*   **Amélioration :** Durant le mois de septembre, la tâche cron des anniversaires inclut également les adhérents de la saison précédente pour couvrir la période de transition des licences.
-*   **Amélioration :** Le bouton pour créer la saison suivante est conservé et intégré à la nouvelle section de gestion des saisons.
+*   **Amélioration :** Refonte de la page des options en une interface à onglets ("Saisons", "Anniversaires", etc.) pour une meilleure organisation et clarté.
+*   **Fonctionnalité :** La gestion des saisons d'adhésion a été améliorée avec un menu déroulant pour sélectionner la saison active.
+*   **Amélioration :** La tâche cron des emails d'anniversaire filtre désormais les adhérents par saison active (et inclut la saison précédente en septembre).
+*   **Fonctionnalité :** Ajout d'un bouton pour envoyer un email de test d'anniversaire afin de prévisualiser le rendu.
+*   **Amélioration :** La mise en page des onglets "Saisons" et "Anniversaires" a été ajustée pour une meilleure ergonomie.
 
 ## 3.2.5 - 2025-09-28
 *   **Correctif :** La navigation dans l'agenda (`[dame_agenda]`) conserve désormais le mois consulté. Lors d'un retour arrière après avoir cliqué sur un événement ou lors d'un rafraîchissement de la page, l'agenda reste sur le mois précédemment affiché au lieu de revenir au mois actuel.
