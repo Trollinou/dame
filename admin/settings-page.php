@@ -59,28 +59,51 @@ add_action( 'admin_menu', 'dame_add_options_page' );
  * Renders the options page wrapper.
  */
 function dame_render_options_page() {
+    $active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'saisons';
     ?>
     <div class="wrap">
         <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 
+        <h2 class="nav-tab-wrapper">
+            <a href="?page=dame-settings&tab=saisons" class="nav-tab <?php echo $active_tab === 'saisons' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Saisons', 'dame' ); ?></a>
+            <a href="?page=dame-settings&tab=anniversaires" class="nav-tab <?php echo $active_tab === 'anniversaires' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Anniversaires', 'dame' ); ?></a>
+            <a href="?page=dame-settings&tab=paiements" class="nav-tab <?php echo $active_tab === 'paiements' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Paiements', 'dame' ); ?></a>
+            <a href="?page=dame-settings&tab=sauvegarde" class="nav-tab <?php echo $active_tab === 'sauvegarde' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Sauvegarde', 'dame' ); ?></a>
+            <a href="?page=dame-settings&tab=emails" class="nav-tab <?php echo $active_tab === 'emails' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Emails', 'dame' ); ?></a>
+            <a href="?page=dame-settings&tab=desinstallation" class="nav-tab <?php echo $active_tab === 'desinstallation' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Désinstallation', 'dame' ); ?></a>
+        </h2>
+
         <form action="options.php" method="post">
             <?php
             settings_fields( 'dame_options_group' );
-            do_settings_sections( 'dame_mailing_section_group' ); // Ajout du groupe de la section mailing
-            do_settings_sections( 'dame_birthday_section_group' );
-            do_settings_sections( 'dame_backup_section_group' );
-            do_settings_sections( 'dame_payment_section_group' );
-            do_settings_sections( 'dame_uninstall_section_group' );
-            submit_button( __( 'Enregistrer les modifications', 'dame' ) );
+
+            if ( $active_tab === 'saisons' ) {
+                // This is custom UI, not a settings section
+            } elseif ( $active_tab === 'anniversaires' ) {
+                do_settings_sections( 'dame_birthday_section_group' );
+            } elseif ( $active_tab === 'paiements' ) {
+                do_settings_sections( 'dame_payment_section_group' );
+            } elseif ( $active_tab === 'sauvegarde' ) {
+                do_settings_sections( 'dame_backup_section_group' );
+            } elseif ( $active_tab === 'emails' ) {
+                do_settings_sections( 'dame_mailing_section_group' );
+            } elseif ( $active_tab === 'desinstallation' ) {
+                do_settings_sections( 'dame_uninstall_section_group' );
+            }
+
+            // The submit button should only appear on tabs that have settings fields.
+            if ( $active_tab !== 'saisons' ) {
+                submit_button( __( 'Enregistrer les modifications', 'dame' ) );
+            }
             ?>
         </form>
 
-        <hr>
-
-        <h2><?php esc_html_e( 'Réinitialisation Annuelle des Adhésions', 'dame' ); ?></h2>
-        <?php dame_reset_section_callback(); ?>
-        <?php dame_reset_button_callback(); ?>
-
+        <?php
+        // The season management UI has its own forms, so it's outside the main form.
+        if ( $active_tab === 'saisons' ) {
+            dame_annual_reset_section_ui();
+        }
+        ?>
     </div>
     <?php
 }
@@ -180,6 +203,14 @@ function dame_register_settings() {
         'dame_birthday_section'
     );
 
+    add_settings_field(
+        'dame_birthday_test_email',
+        __( 'Email de test', 'dame' ),
+        'dame_birthday_test_email_callback',
+        'dame_birthday_section_group',
+        'dame_birthday_section'
+    );
+
     // Section for Backup Settings
     add_settings_section(
         'dame_backup_section',
@@ -230,38 +261,33 @@ function dame_register_settings() {
 add_action( 'admin_init', 'dame_register_settings' );
 
 /**
- * Handle the annual reset action.
+ * Handle actions related to season management (creation and selection).
  */
-function dame_handle_annual_reset() {
-    if ( isset( $_POST['dame_action'] ) && 'annual_reset' === $_POST['dame_action'] ) {
-        if ( ! isset( $_POST['dame_annual_reset_nonce_field'] ) || ! wp_verify_nonce( $_POST['dame_annual_reset_nonce_field'], 'dame_annual_reset_nonce' ) ) {
-            wp_die( 'Security check failed.' );
-        }
+function dame_handle_season_actions() {
+    // Check for nonce presence and validity for all actions in this section
+    if ( isset( $_POST['dame_season_management_nonce_field'] ) && wp_verify_nonce( $_POST['dame_season_management_nonce_field'], 'dame_season_management_nonce' ) ) {
 
-        $new_season_name = dame_get_next_season_name();
+        // Handle creation of a new season
+        if ( isset( $_POST['dame_action'] ) && 'annual_reset' === $_POST['dame_action'] ) {
+            $new_season_name = dame_get_next_season_name();
 
-        // New, more robust check: see if the next season's tag already exists.
-        if ( term_exists( $new_season_name, 'dame_saison_adhesion' ) ) {
-            add_action(
-                'admin_notices',
-                function() use ( $new_season_name ) {
-                    $message = sprintf(
-                        esc_html__( 'L\'opération ne peut être effectuée car la saison "%s" a déjà été créée.', 'dame' ),
-                        esc_html( $new_season_name )
-                    );
-                    echo '<div class="error"><p>' . $message . '</p></div>';
-                }
-            );
-            return;
-        }
+            if ( term_exists( $new_season_name, 'dame_saison_adhesion' ) ) {
+                add_action(
+                    'admin_notices',
+                    function() use ( $new_season_name ) {
+                        $message = sprintf(
+                            esc_html__( 'L\'opération ne peut être effectuée car la saison "%s" a déjà été créée.', 'dame' ),
+                            esc_html( $new_season_name )
+                        );
+                        echo '<div class="error"><p>' . $message . '</p></div>';
+                    }
+                );
+                return;
+            }
 
-        $new_season_term = wp_insert_term( $new_season_name, 'dame_saison_adhesion' );
+            $new_season_term = wp_insert_term( $new_season_name, 'dame_saison_adhesion' );
 
-        if ( is_wp_error( $new_season_term ) ) {
-            // If the term already exists, we can still set it as active.
-            if ( isset( $new_season_term->error_data['term_exists'] ) ) {
-                $new_season_id = $new_season_term->error_data['term_exists'];
-            } else {
+            if ( is_wp_error( $new_season_term ) ) {
                 add_action(
                     'admin_notices',
                     function() use ( $new_season_term ) {
@@ -274,26 +300,132 @@ function dame_handle_annual_reset() {
                 );
                 return;
             }
-        } else {
-            $new_season_id = $new_season_term['term_id'];
+
+            update_option( 'dame_current_season_tag_id', $new_season_term['term_id'] );
+
+            add_action(
+                'admin_notices',
+                function() use ( $new_season_name ) {
+                    $message = sprintf(
+                        esc_html__( 'Nouvelle saison initialisée avec succès. La saison active est maintenant : %s', 'dame' ),
+                        '<strong>' . esc_html( $new_season_name ) . '</strong>'
+                    );
+                    echo '<div class="updated"><p>' . $message . '</p></div>';
+                }
+            );
         }
 
-        update_option( 'dame_current_season_tag_id', $new_season_id );
+        // Handle updating the current season from the dropdown
+        if ( isset( $_POST['dame_action'] ) && 'update_current_season' === $_POST['dame_action'] ) {
+            if ( isset( $_POST['dame_current_season_selector'] ) ) {
+                $selected_season_id = (int) $_POST['dame_current_season_selector'];
+                $term = get_term( $selected_season_id, 'dame_saison_adhesion' );
 
-        add_action(
-            'admin_notices',
-            function() use ( $new_season_name ) {
-                $message = sprintf(
-                    esc_html__( 'Nouvelle saison initialisée avec succès. La saison active est maintenant : %s', 'dame' ),
-                    '<strong>' . esc_html( $new_season_name ) . '</strong>'
-                );
-                echo '<div class="updated"><p>' . $message . '</p></div>';
+                if ( $term && ! is_wp_error( $term ) ) {
+                    update_option( 'dame_current_season_tag_id', $selected_season_id );
+
+                    add_action(
+                        'admin_notices',
+                        function() use ( $term ) {
+                            $message = sprintf(
+                                esc_html__( 'La saison active a été mise à jour : %s', 'dame' ),
+                                '<strong>' . esc_html( $term->name ) . '</strong>'
+                            );
+                            echo '<div class="updated"><p>' . $message . '</p></div>';
+                        }
+                    );
+                }
             }
-        );
+        }
+    } elseif ( isset( $_POST['dame_action'] ) && ( 'annual_reset' === $_POST['dame_action'] || 'update_current_season' === $_POST['dame_action'] ) ) {
+        // Handle nonce failure
+        wp_die( 'Security check failed.' );
     }
 }
-add_action( 'admin_init', 'dame_handle_annual_reset' );
+add_action( 'admin_init', 'dame_handle_season_actions' );
 
+/**
+ * Handle sending the test birthday email.
+ */
+function dame_handle_send_test_birthday_email() {
+    if ( isset( $_POST['dame_action'] ) && 'send_test_birthday_email' === $_POST['dame_action'] ) {
+        if ( ! isset( $_POST['dame_send_test_birthday_email_nonce_field'] ) || ! wp_verify_nonce( $_POST['dame_send_test_birthday_email_nonce_field'], 'dame_send_test_birthday_email_nonce' ) ) {
+            wp_die( 'Security check failed.' );
+        }
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( 'You do not have permission to perform this action.' );
+        }
+
+        $options = get_option( 'dame_options' );
+        $article_slug = isset( $options['birthday_article_slug'] ) ? $options['birthday_article_slug'] : '';
+
+        if ( empty( $article_slug ) ) {
+            add_action( 'admin_notices', function() {
+                echo '<div class="error"><p>' . esc_html__( "Veuillez d'abord enregistrer un slug d'article pour l'anniversaire.", 'dame' ) . '</p></div>';
+            } );
+            return;
+        }
+
+        $posts = get_posts( array(
+            'name'           => $article_slug,
+            'post_type'      => 'post',
+            'post_status'    => array( 'publish', 'private' ),
+            'posts_per_page' => 1,
+        ) );
+
+        if ( ! $posts ) {
+            add_action( 'admin_notices', function() use ( $article_slug ) {
+                $message = sprintf(
+                    esc_html__( "L'article avec le slug '%s' n'a pas été trouvé.", 'dame' ),
+                    esc_html( $article_slug )
+                );
+                echo '<div class="error"><p>' . $message . '</p></div>';
+            } );
+            return;
+        }
+        $article = $posts[0];
+
+        $current_user = wp_get_current_user();
+        $recipient_email = $current_user->user_email;
+
+        $original_content = apply_filters( 'the_content', $article->post_content );
+        $original_subject = $article->post_title;
+
+        // Replace placeholders with sample data
+        $content = str_replace( '[NOM]', 'DUPONT', $original_content );
+        $content = str_replace( '[PRENOM]', 'Jean', $content );
+        $content = str_replace( '[AGE]', '30', $content );
+        $message = '<div style="margin: 1cm;">' . $content . '</div>';
+
+        $subject = str_replace( '[NOM]', 'DUPONT', $original_subject );
+        $subject = str_replace( '[PRENOM]', 'Jean', $subject );
+        $subject = str_replace( '[AGE]', '30', $subject );
+
+        $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+        $headers = array(
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>',
+        );
+
+        $sent = wp_mail( $recipient_email, $subject, $message, $headers );
+
+        if ( $sent ) {
+            add_action( 'admin_notices', function() use ( $recipient_email ) {
+                $message = sprintf(
+                    esc_html__( "Email de test envoyé avec succès à %s.", 'dame' ),
+                    esc_html( $recipient_email )
+                );
+                echo '<div class="updated"><p>' . $message . '</p></div>';
+            } );
+        } else {
+            add_action( 'admin_notices', function() {
+                echo '<div class="error"><p>' . esc_html__( "Échec de l'envoi de l'email de test. Vérifiez vos réglages SMTP.", 'dame' ) . '</p></div>';
+            } );
+        }
+    }
+}
+add_action( 'admin_init', 'dame_handle_send_test_birthday_email' );
 
 /**
  * Sanitize the options array.
@@ -378,6 +510,22 @@ function dame_backup_time_callback() {
     <p class="description">
         <?php esc_html_e( "Saisir l'heure de déclenchement de la sauvegarde journalière (par ex. 01:00). Utilise le fuseau horaire du serveur.", 'dame' ); ?>
     </p>
+    <?php
+}
+
+/**
+ * Callback for the birthday test email button.
+ */
+function dame_birthday_test_email_callback() {
+    ?>
+    <form method="post">
+        <input type="hidden" name="dame_action" value="send_test_birthday_email" />
+        <?php wp_nonce_field( 'dame_send_test_birthday_email_nonce', 'dame_send_test_birthday_email_nonce_field' ); ?>
+        <?php submit_button( __( "Envoyer un email de test", 'dame' ), 'secondary', 'dame_send_test_email', false ); ?>
+        <p class="description">
+            <?php esc_html_e( "Envoie un exemple de l'email d'anniversaire à votre adresse email.", 'dame' ); ?>
+        </p>
+    </form>
     <?php
 }
 
@@ -544,56 +692,79 @@ function dame_delete_on_uninstall_callback() {
 }
 
 /**
- * Callbacks for Annual Reset Section
+ * Renders the entire UI for the annual season management section.
  */
-function dame_reset_section_callback() {
-    echo '<p>' . esc_html__( 'Cette action prépare le système pour la prochaine saison d\'adhésion.', 'dame' ) . '</p>';
-
-    $next_season_name = dame_get_next_season_name();
-
-    echo '<p><strong>' . sprintf( esc_html__( 'Processus : En cliquant sur le bouton, vous allez créer le tag pour la saison "%s" et le définir comme saison "active" pour les nouvelles inscriptions.', 'dame' ), esc_html( $next_season_name ) ) . '</strong></p>';
+function dame_annual_reset_section_ui() {
+    // Get all available seasons
+    $seasons = get_terms( array(
+        'taxonomy'   => 'dame_saison_adhesion',
+        'hide_empty' => false,
+        'orderby'    => 'name',
+        'order'      => 'DESC',
+    ) );
 
     $current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-    if ( $current_season_tag_id ) {
-        $current_season_term = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
-        if ( $current_season_term && ! is_wp_error( $current_season_term ) ) {
-            echo '<p>' . sprintf( esc_html__( 'Saison active actuelle : %s', 'dame' ), '<strong>' . esc_html( $current_season_term->name ) . '</strong>' ) . '</p>';
-        }
-    }
-}
-
-function dame_reset_button_callback() {
-    $next_season_name = dame_get_next_season_name();
-
-    $disabled = term_exists( $next_season_name, 'dame_saison_adhesion' ) ? 'disabled' : '';
     ?>
-    <form method="post">
-        <input type="hidden" name="dame_action" value="annual_reset" />
-        <?php wp_nonce_field( 'dame_annual_reset_nonce', 'dame_annual_reset_nonce_field' ); ?>
-        <?php submit_button( __( 'Initialiser la nouvelle saison', 'dame' ), 'primary', 'dame_annual_reset', false, $disabled ); ?>
-        <p class="description">
+    <div>
+        <!-- Top section: Season Selection -->
+        <div>
+            <h3><?php esc_html_e( "Saison Active", 'dame' ); ?></h3>
+            <p><?php esc_html_e( "Sélectionnez la saison d'adhésion à utiliser comme saison active sur l'ensemble du site.", 'dame' ); ?></p>
+            <form method="post">
+                <input type="hidden" name="dame_action" value="update_current_season">
+                <?php wp_nonce_field( 'dame_season_management_nonce', 'dame_season_management_nonce_field' ); ?>
+
+                <label for="dame_current_season_selector" style="font-weight: bold;"><?php esc_html_e( 'Saison active :', 'dame' ); ?></label>
+                <select id="dame_current_season_selector" name="dame_current_season_selector" style="margin-right: 10px;">
+                    <?php if ( ! empty( $seasons ) && ! is_wp_error( $seasons ) ) : ?>
+                        <?php foreach ( $seasons as $season ) : ?>
+                            <option value="<?php echo esc_attr( $season->term_id ); ?>" <?php selected( $season->term_id, $current_season_tag_id ); ?>>
+                                <?php echo esc_html( $season->name ); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php else : ?>
+                        <option value=""><?php esc_html_e( 'Aucune saison trouvée', 'dame' ); ?></option>
+                    <?php endif; ?>
+                </select>
+                <?php submit_button( __( 'Changer la saison active', 'dame' ), 'secondary', 'dame_update_season', false ); ?>
+            </form>
+        </div>
+
+        <hr style="margin: 20px 0;">
+
+        <!-- Bottom section: Create New Season -->
+        <div>
+            <h3><?php esc_html_e( "Nouvelle Saison", 'dame' ); ?></h3>
+            <p><?php esc_html_e( 'Cette action prépare le système pour la prochaine saison d\'adhésion en créant le nouveau tag.', 'dame' ); ?></p>
             <?php
-            if ( $disabled ) {
-                echo esc_html( sprintf( __( 'La saison "%s" a déjà été créée.', 'dame' ), $next_season_name ) );
-            } else {
-                echo esc_html( sprintf( __( 'Cette action créera la saison "%s".', 'dame' ), $next_season_name ) );
-            }
+            $next_season_name = dame_get_next_season_name();
+            $disabled = term_exists( $next_season_name, 'dame_saison_adhesion' ) ? 'disabled' : '';
             ?>
-        </p>
-    </form>
+            <form method="post">
+                <input type="hidden" name="dame_action" value="annual_reset" />
+                <?php wp_nonce_field( 'dame_season_management_nonce', 'dame_season_management_nonce_field' ); ?>
+                <?php submit_button( __( 'Initialiser la nouvelle saison', 'dame' ), 'primary', 'dame_annual_reset', false, $disabled ); ?>
+                <p class="description">
+                    <?php
+                    if ( $disabled ) {
+                        echo esc_html( sprintf( __( 'La saison "%s" a déjà été créée.', 'dame' ), $next_season_name ) );
+                    } else {
+                        echo esc_html( sprintf( __( 'Cette action créera et activera la saison "%s".', 'dame' ), $next_season_name ) );
+                    }
+                    ?>
+                </p>
+            </form>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const resetButton = document.getElementById('dame_annual_reset');
             if (resetButton) {
                 resetButton.addEventListener('click', function(e) {
-                    if (!confirm("<?php echo esc_js( __( 'Êtes-vous sûr de vouloir initialiser la nouvelle saison ? Cela définira un nouveau tag comme saison active.', 'dame' ) ); ?>")) {
+                    if (!confirm("<?php echo esc_js( __( 'Êtes-vous sûr de vouloir initialiser la nouvelle saison ? Cela créera un nouveau tag et le définira comme saison active.', 'dame' ) ); ?>")) {
                         e.preventDefault();
                     } else {
-                        // On confirmation, disable the button to prevent double-clicks.
-                        // Use a timeout to ensure the form submission is not interrupted.
-                        setTimeout(function() {
-                            resetButton.disabled = true;
-                        }, 0);
+                        setTimeout(function() { resetButton.disabled = true; }, 0);
                     }
                 });
             }

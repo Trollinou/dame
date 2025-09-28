@@ -80,15 +80,52 @@ function dame_send_birthday_emails() {
 
     $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
 
+    $current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+
+    // If no season is set as active, do nothing.
+    if ( ! $current_season_tag_id ) {
+        return;
+    }
+
+    $season_ids_to_query = array( $current_season_tag_id );
+
+    // If it's September, also include members from the previous season as their licenses are still valid.
+    if ( (int) date( 'n' ) === 9 ) {
+        $current_season_term = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
+
+        if ( $current_season_term && ! is_wp_error( $current_season_term ) ) {
+            // Extract years from the current season name, e.g., "Saison 2024/2025".
+            if ( preg_match( '/(\d{4})\/(\d{4})/', $current_season_term->name, $matches ) ) {
+                $start_year = (int) $matches[1];
+
+                // Construct the previous season's name, e.g., "Saison 2023/2024".
+                $previous_season_name = sprintf( 'Saison %d/%d', $start_year - 1, $start_year );
+                $previous_season_term = get_term_by( 'name', $previous_season_name, 'dame_saison_adhesion' );
+
+                if ( $previous_season_term && ! is_wp_error( $previous_season_term ) ) {
+                    $season_ids_to_query[] = $previous_season_term->term_id;
+                }
+            }
+        }
+    }
+
     $today_md = date( 'm-d' );
     $adherents_query = new WP_Query( array(
-        'post_type' => 'adherent',
+        'post_type'      => 'adherent',
         'posts_per_page' => -1,
-        'meta_query' => array(
+        'meta_query'     => array(
             array(
-                'key' => '_dame_date_naissance',
-                'value' => '....-' . $today_md,
+                'key'     => '_dame_date_naissance',
+                'value'   => '....-' . $today_md,
                 'compare' => 'LIKE',
+            ),
+        ),
+        'tax_query'      => array(
+            array(
+                'taxonomy' => 'dame_saison_adhesion',
+                'field'    => 'term_id',
+                'terms'    => $season_ids_to_query,
+                'operator' => 'IN',
             ),
         ),
     ) );
