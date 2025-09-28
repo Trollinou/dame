@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.2.4 - 2025-09-26
+*   **Amélioration :** La couleur du texte des événements sur plusieurs jours s'adapte maintenant (noir ou blanc) en fonction de la luminance de la couleur de fond pour une meilleure lisibilité.
+*   **Amélioration :** Le fond des événements ponctuels (non privés) est maintenant éclairci de 75% par rapport à la couleur de leur bordure pour un effet visuel plus doux.
+*   **Amélioration :** La mise en page de la liste d'événements (`[dame_liste_agenda]`) a été affinée. L'icône de calendrier a été supprimée et l'heure de l'événement s'affiche maintenant en italique à la suite de la date.
+*   **Correctif :** Résolution d'un problème de mise en page où les titres d'événements longs sur plusieurs jours pouvaient déborder de leur conteneur. Ils sont maintenant correctement tronqués avec des points de suspension.
+*   **Correctif :** Sur la vue mobile de l'agenda, le point indiquant un événement ponctuel utilise maintenant la couleur de base de l'événement au lieu de la couleur de fond éclaircie.
+
 ## 3.2.3 - 2025-09-25
 *   **Fonctionnalité :** Ajout d'un système d'envoi automatique d'emails d'anniversaire aux adhérents, avec une option pour l'activer ou le désactiver.
 *   **Fonctionnalité :** Ajout d'une option dans `Réglages > Options DAME` pour définir le slug d'un article (publié ou privé) à utiliser comme modèle pour l'email d'anniversaire.
