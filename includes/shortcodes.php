@@ -983,8 +983,8 @@ function dame_liste_agenda_shortcode( $atts ) {
             }
 
 			if ( ! $all_day && $start_time ) {
-				$time_display = esc_html( $start_time . ' - ' . $end_time );
-				$date_display .= " - <i>$time_display</i>";
+				$time_display = esc_html( $start_time . '-' . $end_time );
+				$date_display .= "&nbsp;<i>$time_display</i>";
 			}
 
             $is_private = get_post_status( $post_id ) === 'private';
