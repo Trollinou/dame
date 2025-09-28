@@ -236,7 +236,8 @@
     color: white;
     padding: 2px 8px;
     white-space: nowrap;
-    /* overflow, text-overflow, and margins are removed for spanning */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dame-event-duree.start {
@@ -440,7 +441,7 @@
         width: 12px;
         height: 12px;
         border-radius: 50%;
-        background-color: var(--event-color);
+        background-color: var(--event-color) !important;
         margin: 0; /* Margin is handled by padding on link */
     }
 
