@@ -18,6 +18,14 @@ jQuery(document).ready(function($) {
     let currentDate = new Date();
     let searchTimeout;
 
+    function updateURL(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.set('month', `${year}-${month}`);
+        history.pushState({ month: `${year}-${month}` }, '', newUrl);
+    }
+
     function formatDate(date) {
         const y = date.getFullYear();
         const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -297,16 +305,19 @@ jQuery(document).ready(function($) {
     // Event Handlers
     prevMonthBtn.on('click', function() {
         currentDate.setMonth(currentDate.getMonth() - 1);
+        updateURL(currentDate);
         fetchAndRenderCalendar();
     });
 
     nextMonthBtn.on('click', function() {
         currentDate.setMonth(currentDate.getMonth() + 1);
+        updateURL(currentDate);
         fetchAndRenderCalendar();
     });
 
     todayBtn.on('click', function() {
         currentDate = new Date();
+        updateURL(currentDate);
         fetchAndRenderCalendar();
     });
 
@@ -400,7 +411,21 @@ jQuery(document).ready(function($) {
     });
 
 
-    // Initial Load
-    fetchAndRenderCalendar();
+    // Initial Load & History Navigation
+    function handleHistoryChange(event) {
+        const params = new URLSearchParams(window.location.search);
+        const monthParam = params.get('month');
+        if (monthParam) {
+            const [year, month] = monthParam.split('-').map(Number);
+            currentDate = new Date(year, month - 1, 1);
+        } else {
+            currentDate = new Date();
+        }
+        fetchAndRenderCalendar();
+    }
 
+    window.addEventListener('popstate', handleHistoryChange);
+
+    // Initial Load
+    handleHistoryChange();
 });
