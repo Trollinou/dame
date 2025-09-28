@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.5 - 2025-09-28
+*   **Correctif :** La navigation dans l'agenda (`[dame_agenda]`) conserve désormais le mois consulté. Lors d'un retour arrière après avoir cliqué sur un événement ou lors d'un rafraîchissement de la page, l'agenda reste sur le mois précédemment affiché au lieu de revenir au mois actuel.
+*   **Correctif :** Correction d'un bug majeur où toutes les informations saisies dans le formulaire de création d'un événement d'agenda étaient perdues si une erreur de validation survenait (par exemple, un champ obligatoire manquant). Le formulaire se recharge maintenant avec les données précédemment entrées.
+
 ## 3.2.4 - 2025-09-26
 *   **Amélioration :** La couleur du texte des événements sur plusieurs jours s'adapte maintenant (noir ou blanc) en fonction de la luminance de la couleur de fond pour une meilleure lisibilité.
 *   **Amélioration :** Le fond des événements ponctuels (non privés) est maintenant éclairci de 75% par rapport à la couleur de leur bordure pour un effet visuel plus doux.

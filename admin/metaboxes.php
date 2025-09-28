@@ -1149,9 +1149,18 @@ add_action( 'add_meta_boxes', 'dame_add_agenda_meta_boxes' );
  * @param WP_Post $post The post object.
  */
 function dame_render_agenda_description_metabox( $post ) {
-    $description = get_post_meta( $post->ID, '_dame_agenda_description', true );
+	// Check for transient data in case of a validation error on save.
+	$transient_data = get_transient( 'dame_agenda_post_data_' . $post->ID );
+	$description    = '';
+	if ( $transient_data && isset( $transient_data['dame_agenda_description'] ) ) {
+		$description = $transient_data['dame_agenda_description'];
+		// Don't delete the transient here; let the main details metabox handle it
+		// to ensure all metaboxes can access it.
+	} else {
+		$description = get_post_meta( $post->ID, '_dame_agenda_description', true );
+	}
 
-    wp_editor(
+	wp_editor(
         $description,
         'dame_agenda_description',
         array(
@@ -1176,16 +1185,32 @@ function dame_render_agenda_description_metabox( $post ) {
 function dame_render_agenda_details_metabox( $post ) {
     wp_nonce_field( 'dame_save_agenda_meta', 'dame_agenda_metabox_nonce' );
 
-    $start_date = get_post_meta( $post->ID, '_dame_start_date', true );
-    $start_time = get_post_meta( $post->ID, '_dame_start_time', true );
-    $end_date = get_post_meta( $post->ID, '_dame_end_date', true );
-    $end_time = get_post_meta( $post->ID, '_dame_end_time', true );
-    $all_day = get_post_meta( $post->ID, '_dame_all_day', true );
-    $location_name = get_post_meta( $post->ID, '_dame_location_name', true );
-    $address_1 = get_post_meta( $post->ID, '_dame_address_1', true );
-    $address_2 = get_post_meta( $post->ID, '_dame_address_2', true );
-    $postal_code = get_post_meta( $post->ID, '_dame_postal_code', true );
-    $city = get_post_meta( $post->ID, '_dame_city', true );
+	// Check for transient data in case of a validation error on save.
+	$transient_data = get_transient( 'dame_agenda_post_data_' . $post->ID );
+	if ( $transient_data ) {
+		// Clean up the transient so it's only used once.
+		delete_transient( 'dame_agenda_post_data_' . $post->ID );
+	}
+
+	// Helper function to get value from transient first, then from post meta.
+	$get_value = function( $field_name, $default = '' ) use ( $post, $transient_data ) {
+		// For fields like 'dame_start_date', the key in $_POST is 'dame_start_date'.
+		// In post meta, it's '_dame_start_date'. The transient stores it without the underscore.
+		return isset( $transient_data[ $field_name ] )
+			? esc_attr( $transient_data[ $field_name ] )
+			: get_post_meta( $post->ID, '_' . $field_name, true );
+	};
+
+	$start_date    = $get_value( 'dame_start_date' );
+	$start_time    = $get_value( 'dame_start_time' );
+	$end_date      = $get_value( 'dame_end_date' );
+	$end_time      = $get_value( 'dame_end_time' );
+	$all_day       = $get_value( 'dame_all_day' );
+	$location_name = $get_value( 'dame_location_name' );
+	$address_1     = $get_value( 'dame_address_1' );
+	$address_2     = $get_value( 'dame_address_2' );
+	$postal_code   = $get_value( 'dame_postal_code' );
+	$city          = $get_value( 'dame_city' );
     ?>
     <table class="form-table">
         <!-- Date and Time Fields -->
@@ -1323,6 +1348,16 @@ function dame_save_agenda_meta( $post_id ) {
     if ( ! empty( $errors ) ) {
         set_transient( 'dame_error_message', implode( '<br>', $errors ), 10 );
 
+        // Store submitted data in a transient to repopulate the form
+        $post_data_to_save = array();
+        foreach ( $_POST as $key => $value ) {
+            if ( strpos( $key, 'dame_' ) === 0 || $key === 'tax_input' ) {
+                $post_data_to_save[ $key ] = wp_unslash( $value );
+            }
+        }
+        set_transient( 'dame_agenda_post_data_' . $post_id, $post_data_to_save, 60 );
+
+
         // Unhook this function to prevent infinite loops
         remove_action( 'save_post_dame_agenda', 'dame_save_agenda_meta' );
 
@@ -1333,6 +1368,9 @@ function dame_save_agenda_meta( $post_id ) {
         add_action( 'save_post_dame_agenda', 'dame_save_agenda_meta' );
         return;
     }
+
+    // If we are here, it means there are no errors, so we can delete any transient data
+    delete_transient( 'dame_agenda_post_data_' . $post_id );
 
     // --- Sanitize and Save Data ---
     $fields = [
