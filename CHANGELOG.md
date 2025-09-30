@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.2.7 - 2025-09-29
+*   **Correctif :** Le menu "Envoyer un article" est maintenant accessible au rôle "Éditeur", corrigeant un problème de permissions qui le limitait aux administrateurs.
+
 ## 3.2.6 - 2025-09-28
 *   **Amélioration :** Refonte de la page des options en une interface à onglets ("Saisons", "Anniversaires", etc.) pour une meilleure organisation et clarté.
 *   **Fonctionnalité :** La gestion des saisons d'adhésion a été améliorée avec un menu déroulant pour sélectionner la saison active.

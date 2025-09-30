@@ -22,7 +22,7 @@ function dame_handle_send_email() {
         wp_die( 'Security check failed.' );
     }
 
-    if ( ! current_user_can( 'manage_options' ) ) {
+    if ( ! current_user_can( 'edit_others_posts' ) ) {
         wp_die( 'You do not have permission to do this.' );
     }
 
@@ -482,7 +482,7 @@ function dame_get_filtered_articles_ajax_handler() {
         wp_send_json_error( array( 'message' => __( "Vérification de sécurité échouée.", 'dame' ) ), 403 );
     }
 
-    if ( ! current_user_can( 'manage_options' ) ) {
+    if ( ! current_user_can( 'edit_others_posts' ) ) {
         wp_send_json_error( array( 'message' => __( "Vous n'avez pas la permission d'effectuer cette action.", 'dame' ) ), 403 );
     }
 
