@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 3.2.6
+**Version:** 3.2.7
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -85,12 +85,3 @@ Vous pouvez configurer l'heure de la sauvegarde journalière dans la section "Pa
 ## Dépendances
 
 Pour la fonctionnalité LMS, ce plugin nécessite le plugin **ROI**.
-
-## Changelog
-
-### 3.2.6 - 2025-09-28
-*   **Amélioration :** Refonte de la page des options en une interface à onglets ("Saisons", "Anniversaires", etc.) pour une meilleure organisation et clarté.
-*   **Fonctionnalité :** La gestion des saisons d'adhésion a été améliorée avec un menu déroulant pour sélectionner la saison active.
-*   **Amélioration :** La tâche cron des emails d'anniversaire filtre désormais les adhérents par saison active (et inclut la saison précédente en septembre).
-*   **Fonctionnalité :** Ajout d'un bouton pour envoyer un email de test d'anniversaire afin de prévisualiser le rendu.
-*   **Amélioration :** La mise en page des onglets "Saisons" et "Anniversaires" a été ajustée pour une meilleure ergonomie.
