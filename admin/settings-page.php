@@ -77,6 +77,9 @@ function dame_render_options_page() {
             <?php
             settings_fields( 'dame_options_group' );
 
+            // Add a hidden field to identify the active tab
+            echo '<input type="hidden" name="dame_active_tab" value="' . esc_attr( $active_tab ) . '" />';
+
             if ( $active_tab === 'saisons' ) {
                 // This is custom UI, not a settings section
             } elseif ( $active_tab === 'anniversaires' ) {
@@ -428,68 +431,73 @@ function dame_handle_send_test_birthday_email() {
 add_action( 'admin_init', 'dame_handle_send_test_birthday_email' );
 
 /**
- * Sanitize the options array.
+ * Sanitize the options array based on the active tab.
  */
 function dame_options_sanitize( $input ) {
-    $options = get_option( 'dame_options' );
-    $sanitized_input = array();
+    // Get the existing options from the database.
+    $options = get_option( 'dame_options', array() );
 
-    if ( isset( $input['sender_email'] ) ) {
-        $sanitized_input['sender_email'] = sanitize_email( $input['sender_email'] );
+    // Determine which tab is being saved.
+    $active_tab = isset( $_POST['dame_active_tab'] ) ? sanitize_key( $_POST['dame_active_tab'] ) : '';
+
+    $dame_options = isset( $_POST['dame_options'] ) ? $_POST['dame_options'] : array();
+
+    switch ( $active_tab ) {
+        case 'emails':
+            if ( isset( $dame_options['sender_email'] ) ) {
+                $options['sender_email'] = sanitize_email( $dame_options['sender_email'] );
+            }
+            if ( isset( $dame_options['smtp_host'] ) ) {
+                $options['smtp_host'] = sanitize_text_field( $dame_options['smtp_host'] );
+            }
+            if ( isset( $dame_options['smtp_port'] ) ) {
+                $options['smtp_port'] = absint( $dame_options['smtp_port'] );
+            }
+            if ( isset( $dame_options['smtp_encryption'] ) && in_array( $dame_options['smtp_encryption'], array( 'none', 'ssl', 'tls' ) ) ) {
+                $options['smtp_encryption'] = $dame_options['smtp_encryption'];
+            }
+            if ( isset( $dame_options['smtp_username'] ) ) {
+                $options['smtp_username'] = sanitize_text_field( $dame_options['smtp_username'] );
+            }
+            // Only update the password if a new value is provided.
+            if ( ! empty( $dame_options['smtp_password'] ) ) {
+                $options['smtp_password'] = trim( $dame_options['smtp_password'] );
+            }
+            if ( isset( $dame_options['smtp_batch_size'] ) ) {
+                $options['smtp_batch_size'] = absint( $dame_options['smtp_batch_size'] );
+            }
+            break;
+
+        case 'anniversaires':
+            $options['birthday_emails_enabled'] = isset( $dame_options['birthday_emails_enabled'] ) ? 1 : 0;
+            if ( isset( $dame_options['birthday_article_slug'] ) ) {
+                $options['birthday_article_slug'] = sanitize_text_field( $dame_options['birthday_article_slug'] );
+            }
+            break;
+
+        case 'paiements':
+            if ( isset( $dame_options['payment_url'] ) ) {
+                $options['payment_url'] = esc_url_raw( $dame_options['payment_url'] );
+            }
+            break;
+
+        case 'sauvegarde':
+            if ( isset( $dame_options['backup_time'] ) ) {
+                $time = trim( $dame_options['backup_time'] );
+                if ( preg_match( '/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $time ) ) {
+                    $options['backup_time'] = $time;
+                } else {
+                    $options['backup_time'] = ''; // Invalid format, save as empty.
+                }
+            }
+            break;
+
+        case 'desinstallation':
+            $options['delete_on_uninstall'] = isset( $dame_options['delete_on_uninstall'] ) ? 1 : 0;
+            break;
     }
 
-    if ( isset( $input['smtp_host'] ) ) {
-        $sanitized_input['smtp_host'] = sanitize_text_field( $input['smtp_host'] );
-    }
-
-    if ( isset( $input['smtp_port'] ) ) {
-        $sanitized_input['smtp_port'] = absint( $input['smtp_port'] );
-    }
-
-    if ( isset( $input['smtp_encryption'] ) && in_array( $input['smtp_encryption'], array( 'none', 'ssl', 'tls' ) ) ) {
-        $sanitized_input['smtp_encryption'] = $input['smtp_encryption'];
-    }
-
-    if ( isset( $input['smtp_username'] ) ) {
-        $sanitized_input['smtp_username'] = sanitize_text_field( $input['smtp_username'] );
-    }
-
-    // Only update the password if a new value is provided.
-    if ( ! empty( $input['smtp_password'] ) ) {
-        $sanitized_input['smtp_password'] = trim( $input['smtp_password'] );
-    } else {
-        // Keep the old password if the field is empty.
-        if ( isset( $options['smtp_password'] ) ) {
-            $sanitized_input['smtp_password'] = $options['smtp_password'];
-        }
-    }
-
-    if ( isset( $input['smtp_batch_size'] ) ) {
-        $sanitized_input['smtp_batch_size'] = absint( $input['smtp_batch_size'] );
-    }
-
-    if ( isset( $input['birthday_article_slug'] ) ) {
-        $sanitized_input['birthday_article_slug'] = sanitize_text_field( $input['birthday_article_slug'] );
-    }
-
-    $sanitized_input['birthday_emails_enabled'] = isset( $input['birthday_emails_enabled'] ) ? 1 : 0;
-
-    if ( isset( $input['payment_url'] ) ) {
-        $sanitized_input['payment_url'] = esc_url_raw( $input['payment_url'] );
-    }
-
-    if ( isset( $input['backup_time'] ) ) {
-        $time = trim( $input['backup_time'] );
-        // Validate HH:MM format and valid time.
-        if ( preg_match( '/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $time ) ) {
-            $sanitized_input['backup_time'] = $time;
-        } else {
-            $sanitized_input['backup_time'] = ''; // Invalid format, save as empty.
-        }
-    }
-
-    $sanitized_input['delete_on_uninstall'] = isset( $input['delete_on_uninstall'] ) ? 1 : 0;
-    return $sanitized_input;
+    return $options;
 }
 
 /**
