@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.2.8 - 2025-10-02
+*   **Correctif :** Résolution d'un bug critique sur la page des options où l'enregistrement des paramètres dans un onglet effaçait les réglages des autres onglets. La sauvegarde est maintenant correctement ciblée sur l'onglet actif.
+
 ## 3.2.7 - 2025-09-29
 *   **Correctif :** Le menu "Envoyer un article" est maintenant accessible au rôle "Éditeur", corrigeant un problème de permissions qui le limitait aux administrateurs.
 
