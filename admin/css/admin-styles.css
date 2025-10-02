@@ -1,0 +1,4 @@
+.dame-reconciliation-table tr.dame-highlight-diff {
+    background-color: #fffbe5 !important; /* Light yellow background */
+    border-left: 4px solid #ffc107; /* Amber border */
+}
