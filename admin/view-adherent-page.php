@@ -15,13 +15,15 @@ if ( ! defined( 'WPINC' ) ) {
  */
 function dame_add_view_adherent_page() {
     add_submenu_page(
-        false, // No parent slug, so it's hidden.
+        'edit.php?post_type=adherent', // Attach to the Adherent CPT menu.
         __( 'Consulter la fiche Adhérent', 'dame' ),
         __( 'Consulter Adhérent', 'dame' ),
         'edit_posts', // Capability for contributors and up.
         'dame-view-adherent',
         'dame_render_view_adherent_page'
     );
+    // Hide the submenu page immediately.
+    remove_submenu_page( 'edit.php?post_type=adherent', 'dame-view-adherent' );
 }
 add_action( 'admin_menu', 'dame_add_view_adherent_page' );
 
