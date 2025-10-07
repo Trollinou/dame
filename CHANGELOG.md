@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.3.0 - 2025-10-07
+*   **Fonctionnalité :** Remplacement de plusieurs cases à cocher de classification (`École d'échecs`, `Pôle Excellence`, `Bénévole`, `Elu local`) par une nouvelle taxonomie non hiérarchique "Groupes".
+*   **Fonctionnalité :** Création d'un script de migration de données qui s'exécute lors de la mise à jour du plugin pour convertir les anciennes métadonnées vers la nouvelle taxonomie `dame_group`.
+*   **Amélioration :** La metabox "Groupes" sur l'écran d'édition d'un adhérent est maintenant positionnée juste en dessous de "Classification et Adhésion" et est dépliée par défaut pour une saisie plus rapide.
+*   **Amélioration :** L'écran de consultation d'un adhérent affiche désormais les groupes assignés et masque les anciennes classifications.
+*   **Amélioration :** Le filtre de la liste des adhérents a été mis à jour pour utiliser la nouvelle taxonomie "Groupes".
+*   **Amélioration :** La page "Envoyer un article" a été mise à jour pour filtrer les destinataires par la nouvelle taxonomie "Groupes". L'ordre des filtres a été ajusté pour une meilleure ergonomie (Sexe, Saison, Groupes).
+*   **Amélioration :** La fonctionnalité de sauvegarde et de restauration JSON gère désormais correctement la nouvelle taxonomie "Groupes", assurant l'intégrité des données lors des exports et des imports.
+
 ## 3.2.8 - 2025-10-02
 *   **Correctif :** Résolution d'un bug critique sur la page des options où l'enregistrement des paramètres dans un onglet effaçait les réglages des autres onglets. La sauvegarde est maintenant correctement ciblée sur l'onglet actif.
 *   **Correctif :** Rétablissement de la mise en surbrillance des différences lors de la comparaison d'une préinscription avec un adhérent existant.

@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 3.2.8
+**Version:** 3.3.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -47,7 +47,7 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 
 *   **Gestion des Données Personnelles :** Fiche détaillée pour chaque membre (coordonnées, date de naissance, etc.).
 *   **Représentants Légaux :** Gestion des informations pour les représentants légaux des membres mineurs.
-*   **Classification :** Catégorisation des membres (École d'échecs, Pôle Excellence, Bénévole, etc.).
+*   **Classification par Groupes :** Catégorisation flexible des membres (École d'échecs, Pôle Excellence, Bénévole, etc.) via une taxonomie "Groupes" dédiée.
 *   **Assignation de Compte Utilisateur :** Outil pour lier un dossier d'adhérent à un compte utilisateur WordPress.
 *   **Import / Export :** Outils complets pour importer des membres depuis un fichier CSV et exporter toutes les données en CSV ou JSON.
 
