@@ -559,7 +559,14 @@ function dame_handle_import_action() {
     // --- Clear existing data ---
     // 1. Delete adherents and pre-inscriptions
     $post_types_to_delete = array( 'adherent', 'dame_pre_inscription' );
-    $existing_posts = get_posts( array( 'post_type' => $post_types_to_delete, 'posts_per_page' => -1, 'fields' => 'ids' ) );
+    $existing_posts       = get_posts(
+        array(
+            'post_type'      => $post_types_to_delete,
+            'posts_per_page' => -1,
+            'post_status'    => 'any', // Ensure all statuses are included.
+            'fields'         => 'ids',
+        )
+    );
     foreach ( $existing_posts as $post_id_to_delete ) {
         wp_delete_post( $post_id_to_delete, true ); // true to bypass trash
     }
