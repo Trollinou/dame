@@ -8,6 +8,10 @@
 *   **Amélioration :** Le filtre de la liste des adhérents a été mis à jour pour utiliser la nouvelle taxonomie "Groupes".
 *   **Amélioration :** La page "Envoyer un article" a été mise à jour pour filtrer les destinataires par la nouvelle taxonomie "Groupes". L'ordre des filtres a été ajusté pour une meilleure ergonomie (Sexe, Saison, Groupes).
 *   **Amélioration :** La fonctionnalité de sauvegarde et de restauration JSON gère désormais correctement la nouvelle taxonomie "Groupes", assurant l'intégrité des données lors des exports et des imports.
+*   **Correctif :** Résolution d'un bug critique qui provoquait une erreur fatale lors de la restauration de sauvegardes antérieures à la version 3.3.0. La fonction d'import est maintenant rétrocompatible.
+*   **Correctif :** Correction d'un bug où les préinscriptions n'étaient pas correctement supprimées lors d'une restauration, provoquant des doublons.
+*   **Correctif :** Rétablissement des permissions d'accès à la page de consultation d'un adhérent pour les rôles "Éditeur" et "Membre du bureau".
+*   **Correctif :** Résolution de plusieurs notices de dépréciation PHP 8.2 liées à l'enregistrement des pages de menu cachées.
 
 ## 3.2.8 - 2025-10-02
 *   **Correctif :** Résolution d'un bug critique sur la page des options où l'enregistrement des paramètres dans un onglet effaçait les réglages des autres onglets. La sauvegarde est maintenant correctement ciblée sur l'onglet actif.
