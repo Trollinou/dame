@@ -295,6 +295,59 @@ function dame_close_special_actions_metabox_by_default( $classes ) {
 }
 add_filter( 'postbox_classes_adherent_dame_special_actions_metabox', 'dame_close_special_actions_metabox_by_default' );
 
+/**
+ * Open the "Groupes" metabox by default by removing the 'closed' class.
+ *
+ * @param array $classes An array of postbox classes.
+ * @return array The modified array of classes.
+ */
+function dame_open_group_metabox_by_default( $classes ) {
+    // We check the current screen to make sure we're only affecting the intended metabox.
+    if ( get_current_screen()->id === 'adherent' ) {
+        $classes = array_diff( $classes, array('closed') );
+    }
+    return $classes;
+}
+add_filter( 'postbox_classes_adherent_tagsdiv-dame_group', 'dame_open_group_metabox_by_default' );
+
+/**
+ * Reorders the metaboxes on the Adherent edit screen.
+ *
+ * Moves the 'Groupes' taxonomy metabox to appear directly after the
+ * 'Classification et Adhésion' metabox.
+ */
+function dame_reorder_adherent_metaboxes() {
+    global $wp_meta_boxes;
+
+    // Check if we are on the right screen and the metabox exists
+    if ( empty( $wp_meta_boxes['adherent']['side']['default'] ) || ! isset( $wp_meta_boxes['adherent']['side']['default']['tagsdiv-dame_group'] ) ) {
+        return;
+    }
+
+    $side_metaboxes = &$wp_meta_boxes['adherent']['side']['default'];
+    $group_metabox = $side_metaboxes['tagsdiv-dame_group'];
+
+    // Remove it from its current position
+    unset( $side_metaboxes['tagsdiv-dame_group'] );
+
+    // Find the position of the 'Classification' metabox
+    $classification_key = 'dame_classification_metabox';
+    $keys = array_keys( $side_metaboxes );
+    $position = array_search( $classification_key, $keys );
+
+    if ( $position !== false ) {
+        // Insert the 'Groupes' metabox right after the 'Classification' metabox
+        $new_metabox_order = array_slice( $side_metaboxes, 0, $position + 1, true );
+        $new_metabox_order['tagsdiv-dame_group'] = $group_metabox;
+        $new_metabox_order += array_slice( $side_metaboxes, $position + 1, null, true );
+        $side_metaboxes = $new_metabox_order;
+    } else {
+        // If 'Classification' metabox is not found, just add it back at the end
+        $side_metaboxes['tagsdiv-dame_group'] = $group_metabox;
+    }
+}
+add_action( 'add_meta_boxes_adherent', 'dame_reorder_adherent_metaboxes', 99 );
+
 
 /**
  * Renders the meta box for adherent's personal details.
@@ -723,10 +776,6 @@ function dame_render_classification_metabox( $post ) {
 		$license_type = 'A';
 	}
 
-	$is_junior = get_post_meta( $post->ID, '_dame_is_junior', true );
-	$is_pole_excellence = get_post_meta( $post->ID, '_dame_is_pole_excellence', true );
-	$is_benevole = get_post_meta( $post->ID, '_dame_is_benevole', true );
-	$is_elu_local = get_post_meta( $post->ID, '_dame_is_elu_local', true );
 
 	$linked_user = get_post_meta( $post->ID, '_dame_linked_wp_user', true );
 	if ( '' === $linked_user ) {
@@ -800,23 +849,6 @@ function dame_render_classification_metabox( $post ) {
 				<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $health_document, $value ); ?>><?php echo esc_html( $label ); ?></option>
 			<?php endforeach; ?>
 		</select>
-	</p>
-	<hr>
-	<p>
-		<input type="checkbox" id="dame_is_junior" name="dame_is_junior" value="1" <?php checked( $is_junior, '1' ); ?> />
-		<label for="dame_is_junior"><?php _e( 'École d\'échecs', 'dame' ); ?></label>
-	</p>
-	<p>
-		<input type="checkbox" id="dame_is_pole_excellence" name="dame_is_pole_excellence" value="1" <?php checked( $is_pole_excellence, '1' ); ?> />
-		<label for="dame_is_pole_excellence"><?php _e( 'Pôle Excellence', 'dame' ); ?></label>
-	</p>
-	<p>
-		<input type="checkbox" id="dame_is_benevole" name="dame_is_benevole" value="1" <?php checked( $is_benevole, '1' ); ?> />
-		<label for="dame_is_benevole"><?php _e( 'Bénévole', 'dame' ); ?></label>
-	</p>
-	<p>
-		<input type="checkbox" id="dame_is_elu_local" name="dame_is_elu_local" value="1" <?php checked( $is_elu_local, '1' ); ?> />
-		<label for="dame_is_elu_local"><?php _e( 'Elu local', 'dame' ); ?></label>
 	</p>
 	<hr>
 	<p>
@@ -1075,7 +1107,6 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_email_refuses_comms' => 'absint',
 		'dame_legal_rep_1_email_refuses_comms' => 'absint',
 		'dame_legal_rep_2_email_refuses_comms' => 'absint',
-		'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint', 'dame_is_benevole' => 'absint', 'dame_is_elu_local' => 'absint',
 		'dame_adherent_honorabilite' => 'sanitize_text_field', 'dame_arbitre_level' => 'sanitize_text_field',
 		'dame_license_type' => 'sanitize_text_field',
 		'dame_health_document' => 'sanitize_key',

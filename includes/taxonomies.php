@@ -48,6 +48,43 @@ function dame_register_membership_season_taxonomy() {
 add_action( 'init', 'dame_register_membership_season_taxonomy', 0 );
 
 /**
+ * Register Group Taxonomy for Adherents.
+ */
+function dame_register_group_taxonomy() {
+    $labels = array(
+        'name'                       => _x( 'Groupes', 'taxonomy general name', 'dame' ),
+        'singular_name'              => _x( 'Groupe', 'taxonomy singular name', 'dame' ),
+        'search_items'               => __( 'Rechercher les groupes', 'dame' ),
+        'popular_items'              => __( 'Groupes populaires', 'dame' ),
+        'all_items'                  => __( 'Tous les groupes', 'dame' ),
+        'parent_item'                => null,
+        'parent_item_colon'          => null,
+        'edit_item'                  => __( 'Modifier le groupe', 'dame' ),
+        'update_item'                => __( 'Mettre à jour le groupe', 'dame' ),
+        'add_new_item'               => __( 'Ajouter un nouveau groupe', 'dame' ),
+        'new_item_name'              => __( 'Nom du nouveau groupe', 'dame' ),
+        'separate_items_with_commas' => __( 'Séparer les groupes avec des virgules', 'dame' ),
+        'add_or_remove_items'        => __( 'Ajouter ou supprimer des groupes', 'dame' ),
+        'choose_from_most_used'      => __( 'Choisir parmi les groupes les plus utilisés', 'dame' ),
+        'not_found'                  => __( 'Aucun groupe trouvé.', 'dame' ),
+        'menu_name'                  => __( 'Groupes', 'dame' ),
+    );
+
+    $args = array(
+        'hierarchical'      => false,
+        'labels'            => $labels,
+        'show_ui'           => true,
+        'show_admin_column' => true,
+        'query_var'         => true,
+        'rewrite'           => array( 'slug' => 'groupe' ),
+        'show_in_rest'      => true,
+    );
+
+    register_taxonomy( 'dame_group', 'adherent', $args );
+}
+add_action( 'init', 'dame_register_group_taxonomy', 0 );
+
+/**
  * Register Agenda Category Taxonomy
  */
 function dame_register_agenda_category_taxonomy() {

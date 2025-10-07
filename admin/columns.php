@@ -55,14 +55,13 @@ function dame_render_adherent_columns( $column, $post_id ) {
             break;
 
         case 'dame_classification':
-            $classifications = array();
-            if ( get_post_meta( $post_id, '_dame_is_junior', true ) ) {
-                $classifications[] = __( 'École d\'échecs', 'dame' );
+            $groups = get_the_terms( $post_id, 'dame_group' );
+            if ( ! empty( $groups ) && ! is_wp_error( $groups ) ) {
+                $group_names = wp_list_pluck( $groups, 'name' );
+                echo esc_html( implode( ', ', $group_names ) );
+            } else {
+                echo '—';
             }
-            if ( get_post_meta( $post_id, '_dame_is_pole_excellence', true ) ) {
-                $classifications[] = __( 'Pôle Excellence', 'dame' );
-            }
-            echo esc_html( implode( ', ', $classifications ) );
             break;
 
         case 'dame_membership_status':
@@ -99,17 +98,26 @@ function dame_add_adherent_filters() {
     global $typenow;
 
     if ( 'adherent' === $typenow ) {
-        // Group filter (unchanged).
-        $current_group = $_GET['dame_group_filter'] ?? '';
-        ?>
-        <select name="dame_group_filter">
-            <option value=""><?php _e( 'Tous les groupes', 'dame' ); ?></option>
-            <option value="juniors" <?php selected( 'juniors', $current_group ); ?>><?php _e( 'École d\'échecs', 'dame' ); ?></option>
-            <option value="pole_excellence" <?php selected( 'pole_excellence', $current_group ); ?>><?php _e( 'Pôle Excellence', 'dame' ); ?></option>
-            <option value="benevole" <?php selected( 'benevole', $current_group ); ?>><?php _e( 'Bénévole', 'dame' ); ?></option>
-            <option value="elu_local" <?php selected( 'elu_local', $current_group ); ?>><?php _e( 'Elu local', 'dame' ); ?></option>
-        </select>
-        <?php
+        // Group filter for the 'dame_group' taxonomy.
+        $group_terms = get_terms(
+            array(
+                'taxonomy'   => 'dame_group',
+                'hide_empty' => true, // Only show groups that are in use
+                'orderby'    => 'name',
+                'order'      => 'ASC',
+            )
+        );
+        if ( ! is_wp_error( $group_terms ) && ! empty( $group_terms ) ) {
+            $current_group = $_GET['dame_group_filter'] ?? '';
+            ?>
+            <select name="dame_group_filter">
+                <option value=""><?php _e( 'Tous les groupes', 'dame' ); ?></option>
+                <?php foreach ( $group_terms as $term ) : ?>
+                    <option value="<?php echo esc_attr( $term->term_id ); ?>" <?php selected( $term->term_id, $current_group ); ?>><?php echo esc_html( $term->name ); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <?php
+        }
 
         // New Membership Status filter.
         $current_status = $_GET['dame_membership_filter'] ?? '';
@@ -159,30 +167,14 @@ function dame_filter_adherent_query( $query ) {
         $meta_query = $query->get( 'meta_query' ) ?: array();
         $tax_query  = $query->get( 'tax_query' ) ?: array();
 
-        // Group filter (unchanged).
-        if ( isset( $_GET['dame_group_filter'] ) && '' !== $_GET['dame_group_filter'] ) {
-            $group     = sanitize_key( $_GET['dame_group_filter'] );
-            $group_key = '';
-
-            switch ( $group ) {
-                case 'juniors':
-                    $group_key = '_dame_is_junior';
-                    break;
-                case 'pole_excellence':
-                    $group_key = '_dame_is_pole_excellence';
-                    break;
-                case 'benevole':
-                    $group_key = '_dame_is_benevole';
-                    break;
-                case 'elu_local':
-                    $group_key = '_dame_is_elu_local';
-                    break;
-            }
-
-            if ( ! empty( $group_key ) ) {
-                $meta_query[] = array(
-                    'key'   => $group_key,
-                    'value' => '1',
+        // Group filter.
+        if ( isset( $_GET['dame_group_filter'] ) && ! empty( $_GET['dame_group_filter'] ) ) {
+            $group_id = absint( $_GET['dame_group_filter'] );
+            if ( $group_id > 0 ) {
+                $tax_query[] = array(
+                    'taxonomy' => 'dame_group',
+                    'field'    => 'term_id',
+                    'terms'    => $group_id,
                 );
             }
         }

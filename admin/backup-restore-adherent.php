@@ -393,20 +393,24 @@ function dame_get_adherent_export_data() {
         'options'          => array(),
     );
 
-    // 1. Export the taxonomy terms
-    $saison_terms = get_terms(
-        array(
-            'taxonomy'   => 'dame_saison_adhesion',
-            'hide_empty' => false,
-        )
-    );
-    if ( ! is_wp_error( $saison_terms ) ) {
-        foreach ( $saison_terms as $term ) {
-            $export_data['taxonomy_terms'][] = array(
-                'name'        => $term->name,
-                'slug'        => $term->slug,
-                'description' => $term->description,
-            );
+    // 1. Export the taxonomy terms for managed taxonomies
+    $taxonomies_to_export = array( 'dame_saison_adhesion', 'dame_group' );
+    foreach ( $taxonomies_to_export as $taxonomy ) {
+        $terms = get_terms(
+            array(
+                'taxonomy'   => $taxonomy,
+                'hide_empty' => false,
+            )
+        );
+        if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+            $export_data['taxonomy_terms'][ $taxonomy ] = array();
+            foreach ( $terms as $term ) {
+                $export_data['taxonomy_terms'][ $taxonomy ][] = array(
+                    'name'        => $term->name,
+                    'slug'        => $term->slug,
+                    'description' => $term->description,
+                );
+            }
         }
     }
 
@@ -435,7 +439,7 @@ function dame_get_adherent_export_data() {
             $member_data = array(
                 'post_title' => get_the_title(),
                 'meta_data'  => array(),
-                'saisons'    => array(),
+                'taxonomies' => array(),
             );
 
             $all_meta = get_post_meta( $post_id );
@@ -445,9 +449,11 @@ function dame_get_adherent_export_data() {
                 }
             }
 
-            $adherent_saisons = wp_get_post_terms( $post_id, 'dame_saison_adhesion', array( 'fields' => 'slugs' ) );
-            if ( ! is_wp_error( $adherent_saisons ) ) {
-                $member_data['saisons'] = $adherent_saisons;
+            foreach ( $taxonomies_to_export as $taxonomy ) {
+                $terms = wp_get_post_terms( $post_id, $taxonomy, array( 'fields' => 'slugs' ) );
+                if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+                    $member_data['taxonomies'][ $taxonomy ] = $terms;
+                }
             }
 
             $export_data['adherents'][] = $member_data;
@@ -553,24 +559,54 @@ function dame_handle_import_action() {
     // --- Clear existing data ---
     // 1. Delete adherents and pre-inscriptions
     $post_types_to_delete = array( 'adherent', 'dame_pre_inscription' );
-    $existing_posts = get_posts( array( 'post_type' => $post_types_to_delete, 'posts_per_page' => -1, 'fields' => 'ids' ) );
+    $existing_posts       = get_posts(
+        array(
+            'post_type'      => $post_types_to_delete,
+            'posts_per_page' => -1,
+            'post_status'    => 'any', // Ensure all statuses are included.
+            'fields'         => 'ids',
+        )
+    );
     foreach ( $existing_posts as $post_id_to_delete ) {
         wp_delete_post( $post_id_to_delete, true ); // true to bypass trash
     }
-    // 2. Delete season terms
-    $existing_terms = get_terms( array( 'taxonomy' => 'dame_saison_adhesion', 'hide_empty' => false, 'fields' => 'ids' ) );
-    foreach ( $existing_terms as $term_id ) {
-        wp_delete_term( $term_id, 'dame_saison_adhesion' );
+    // 2. Delete terms from managed taxonomies
+    $taxonomies_to_clear = array( 'dame_saison_adhesion', 'dame_group' );
+    foreach ( $taxonomies_to_clear as $taxonomy ) {
+        $existing_terms = get_terms( array( 'taxonomy' => $taxonomy, 'hide_empty' => false, 'fields' => 'ids' ) );
+        if ( ! is_wp_error( $existing_terms ) ) {
+            foreach ( $existing_terms as $term_id ) {
+                wp_delete_term( $term_id, $taxonomy );
+            }
+        }
     }
 
     // --- Import new data ---
     // 1. Import taxonomy terms
-    if ( ! empty( $import_data['taxonomy_terms'] ) ) {
-        foreach ( $import_data['taxonomy_terms'] as $term_data ) {
-            wp_insert_term( $term_data['name'], 'dame_saison_adhesion', array(
-                'slug'        => $term_data['slug'],
-                'description' => $term_data['description'],
-            ) );
+    if ( ! empty( $import_data['taxonomy_terms'] ) && is_array( $import_data['taxonomy_terms'] ) ) {
+        // Backward compatibility check for old backup format (pre-3.3.0)
+        if ( isset( $import_data['taxonomy_terms'][0] ) ) {
+            // This is the old format where terms were in a simple array.
+            // Assume they all belong to 'dame_saison_adhesion'.
+            $old_terms = $import_data['taxonomy_terms'];
+            $import_data['taxonomy_terms'] = array(
+                'dame_saison_adhesion' => $old_terms,
+            );
+        }
+
+        foreach ( $import_data['taxonomy_terms'] as $taxonomy => $terms ) {
+            if ( ! empty( $terms ) && is_array( $terms ) ) {
+                foreach ( $terms as $term_data ) {
+                    wp_insert_term(
+                        $term_data['name'],
+                        $taxonomy,
+                        array(
+                            'slug'        => $term_data['slug'],
+                            'description' => $term_data['description'],
+                        )
+                    );
+                }
+            }
         }
     }
 
@@ -592,8 +628,14 @@ function dame_handle_import_action() {
                         update_post_meta( $post_id, $key, $value );
                     }
                 }
-                // Restore season terms
-                if ( ! empty( $member_data['saisons'] ) ) {
+                // Restore taxonomy terms
+                if ( ! empty( $member_data['taxonomies'] ) && is_array( $member_data['taxonomies'] ) ) {
+                    // New format (v3.3.0+)
+                    foreach ( $member_data['taxonomies'] as $taxonomy => $term_slugs ) {
+                        wp_set_object_terms( $post_id, $term_slugs, $taxonomy );
+                    }
+                } elseif ( ! empty( $member_data['saisons'] ) ) {
+                    // Backward compatibility for old backup format (pre-3.3.0)
                     wp_set_object_terms( $post_id, $member_data['saisons'], 'dame_saison_adhesion' );
                 }
                 $imported_count++;

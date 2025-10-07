@@ -15,13 +15,15 @@ if ( ! defined( 'WPINC' ) ) {
  */
 function dame_add_view_adherent_page() {
     add_submenu_page(
-        null, // No parent slug, so it's hidden.
+        'dame', // Attach to the main DAME menu slug.
         __( 'Consulter la fiche Adhérent', 'dame' ),
         __( 'Consulter Adhérent', 'dame' ),
         'edit_posts', // Capability for contributors and up.
         'dame-view-adherent',
         'dame_render_view_adherent_page'
     );
+    // Hide the submenu page immediately.
+    remove_submenu_page( 'dame', 'dame-view-adherent' );
 }
 add_action( 'admin_menu', 'dame_add_view_adherent_page' );
 
@@ -203,12 +205,23 @@ function dame_render_view_adherent_page() {
                             $classification_fields = [
                                 'Numéro de licence' => '_dame_license_number', 'Type de licence' => '_dame_license_type',
                                 'Document de santé' => '_dame_health_document', 'Niveau d\'arbitre' => '_dame_arbitre_level',
-                                'École d\'échecs' => '_dame_is_junior', 'Pôle Excellence' => '_dame_is_pole_excellence',
-                                'Bénévole' => '_dame_is_benevole', 'Elu local' => '_dame_is_elu_local',
                                 'Contrôle d\'honorabilité' => '_dame_adherent_honorabilite',
                             ];
                             foreach ($classification_fields as $label => $key) {
                                 dame_render_view_p_field( $label, get_post_meta( $post_id, $key, true ) );
+                            }
+                            ?>
+                        </div>
+                    </div>
+                    <div class="postbox">
+                        <h2 class="hndle"><span><?php _e( 'Groupes', 'dame' ); ?></span></h2>
+                        <div class="inside">
+                            <?php
+                            $group_terms = wp_get_post_terms( $post_id, 'dame_group', array( 'fields' => 'names' ) );
+                            if ( ! empty( $group_terms ) && ! is_wp_error( $group_terms ) ) {
+                                echo '<p>' . esc_html( implode( ', ', $group_terms ) ) . '</p>';
+                            } else {
+                                echo '<p>' . esc_html__( 'Aucun groupe assigné.', 'dame' ) . '</p>';
                             }
                             ?>
                         </div>
