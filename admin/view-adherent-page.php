@@ -15,7 +15,7 @@ if ( ! defined( 'WPINC' ) ) {
  */
 function dame_add_view_adherent_page() {
     add_submenu_page(
-        null, // No parent slug, so it's hidden.
+        false, // No parent slug, so it's hidden.
         __( 'Consulter la fiche Adhérent', 'dame' ),
         __( 'Consulter Adhérent', 'dame' ),
         'edit_posts', // Capability for contributors and up.

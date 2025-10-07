@@ -577,6 +577,16 @@ function dame_handle_import_action() {
     // --- Import new data ---
     // 1. Import taxonomy terms
     if ( ! empty( $import_data['taxonomy_terms'] ) && is_array( $import_data['taxonomy_terms'] ) ) {
+        // Backward compatibility check for old backup format
+        if ( isset( $import_data['taxonomy_terms'][0] ) ) {
+            // This is the old format where terms were in a simple array.
+            // Assume they all belong to 'dame_saison_adhesion'.
+            $old_terms = $import_data['taxonomy_terms'];
+            $import_data['taxonomy_terms'] = array(
+                'dame_saison_adhesion' => $old_terms,
+            );
+        }
+
         foreach ( $import_data['taxonomy_terms'] as $taxonomy => $terms ) {
             if ( ! empty( $terms ) && is_array( $terms ) ) {
                 foreach ( $terms as $term_data ) {
@@ -613,9 +623,13 @@ function dame_handle_import_action() {
                 }
                 // Restore taxonomy terms
                 if ( ! empty( $member_data['taxonomies'] ) && is_array( $member_data['taxonomies'] ) ) {
+                    // New format
                     foreach ( $member_data['taxonomies'] as $taxonomy => $term_slugs ) {
                         wp_set_object_terms( $post_id, $term_slugs, $taxonomy );
                     }
+                } elseif ( ! empty( $member_data['saisons'] ) ) {
+                    // Backward compatibility for old backup format
+                    wp_set_object_terms( $post_id, $member_data['saisons'], 'dame_saison_adhesion' );
                 }
                 $imported_count++;
             }
