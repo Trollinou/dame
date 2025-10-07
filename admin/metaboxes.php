@@ -723,10 +723,6 @@ function dame_render_classification_metabox( $post ) {
 		$license_type = 'A';
 	}
 
-	$is_junior = get_post_meta( $post->ID, '_dame_is_junior', true );
-	$is_pole_excellence = get_post_meta( $post->ID, '_dame_is_pole_excellence', true );
-	$is_benevole = get_post_meta( $post->ID, '_dame_is_benevole', true );
-	$is_elu_local = get_post_meta( $post->ID, '_dame_is_elu_local', true );
 
 	$linked_user = get_post_meta( $post->ID, '_dame_linked_wp_user', true );
 	if ( '' === $linked_user ) {
@@ -800,23 +796,6 @@ function dame_render_classification_metabox( $post ) {
 				<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $health_document, $value ); ?>><?php echo esc_html( $label ); ?></option>
 			<?php endforeach; ?>
 		</select>
-	</p>
-	<hr>
-	<p>
-		<input type="checkbox" id="dame_is_junior" name="dame_is_junior" value="1" <?php checked( $is_junior, '1' ); ?> />
-		<label for="dame_is_junior"><?php _e( 'École d\'échecs', 'dame' ); ?></label>
-	</p>
-	<p>
-		<input type="checkbox" id="dame_is_pole_excellence" name="dame_is_pole_excellence" value="1" <?php checked( $is_pole_excellence, '1' ); ?> />
-		<label for="dame_is_pole_excellence"><?php _e( 'Pôle Excellence', 'dame' ); ?></label>
-	</p>
-	<p>
-		<input type="checkbox" id="dame_is_benevole" name="dame_is_benevole" value="1" <?php checked( $is_benevole, '1' ); ?> />
-		<label for="dame_is_benevole"><?php _e( 'Bénévole', 'dame' ); ?></label>
-	</p>
-	<p>
-		<input type="checkbox" id="dame_is_elu_local" name="dame_is_elu_local" value="1" <?php checked( $is_elu_local, '1' ); ?> />
-		<label for="dame_is_elu_local"><?php _e( 'Elu local', 'dame' ); ?></label>
 	</p>
 	<hr>
 	<p>
@@ -1075,7 +1054,6 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_email_refuses_comms' => 'absint',
 		'dame_legal_rep_1_email_refuses_comms' => 'absint',
 		'dame_legal_rep_2_email_refuses_comms' => 'absint',
-		'dame_is_junior' => 'absint', 'dame_is_pole_excellence' => 'absint', 'dame_is_benevole' => 'absint', 'dame_is_elu_local' => 'absint',
 		'dame_adherent_honorabilite' => 'sanitize_text_field', 'dame_arbitre_level' => 'sanitize_text_field',
 		'dame_license_type' => 'sanitize_text_field',
 		'dame_health_document' => 'sanitize_key',

@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier Administratif des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           3.2.8
+ * Version:           3.3.0
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Etienne Gagnon
@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '3.2.8' );
+define( 'DAME_VERSION', '3.3.0' );
 define( 'DAME_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -107,6 +107,10 @@ function dame_perform_upgrade( $old_version, $new_version ) {
         dame_v2_2_1_migrate_clothing_sizes();
     }
 
+    if ( version_compare( $old_version, '3.3.0', '<' ) ) {
+        dame_v3_3_0_migrate_to_group_taxonomy();
+    }
+
     // Update the version in the database to the new version.
     update_option( 'dame_plugin_version', $new_version );
 }
@@ -131,6 +135,61 @@ function dame_v2_2_1_migrate_clothing_sizes() {
             $current_size = get_post_meta( $post_id, '_dame_taille_vetements', true );
             if ( ! in_array( $current_size, $valid_sizes, true ) ) {
                 update_post_meta( $post_id, '_dame_taille_vetements', 'Non renseigné' );
+            }
+        }
+    }
+}
+
+/**
+ * Migrates old classification meta to the new 'dame_group' taxonomy.
+ *
+ * This function is for version 3.3.0.
+ */
+function dame_v3_3_0_migrate_to_group_taxonomy() {
+    // 1. Define and create the terms for the new 'dame_group' taxonomy.
+    $terms_to_create = array(
+        'Ecole d\'échecs',
+        'Pôle Excellence',
+        'Bénévole',
+        'Elu local',
+        'Presse',
+    );
+
+    foreach ( $terms_to_create as $term_name ) {
+        if ( ! term_exists( $term_name, 'dame_group' ) ) {
+            wp_insert_term( $term_name, 'dame_group' );
+        }
+    }
+
+    // 2. Define the mapping from old meta keys to new term names.
+    $meta_to_term_map = array(
+        '_dame_is_junior'          => 'Ecole d\'échecs',
+        '_dame_is_pole_excellence' => 'Pôle Excellence',
+        '_dame_is_benevole'        => 'Bénévole',
+        '_dame_is_elu_local'       => 'Elu local',
+    );
+
+    // 3. Get all adherents to migrate their data.
+    $adherents_query = new WP_Query(
+        array(
+            'post_type'      => 'adherent',
+            'posts_per_page' => -1,
+            'post_status'    => 'any',
+            'fields'         => 'ids', // We only need the IDs.
+        )
+    );
+
+    if ( $adherents_query->have_posts() ) {
+        foreach ( $adherents_query->posts as $adherent_id ) {
+            foreach ( $meta_to_term_map as $meta_key => $term_name ) {
+                // Check if the old meta field exists and is set to '1'.
+                if ( get_post_meta( $adherent_id, $meta_key, true ) === '1' ) {
+                    // Assign the corresponding term from the 'dame_group' taxonomy.
+                    wp_add_object_terms( $adherent_id, $term_name, 'dame_group' );
+
+                    // Delete the old meta field.
+                    delete_post_meta( $adherent_id, $meta_key );
+                }
             }
         }
     }
