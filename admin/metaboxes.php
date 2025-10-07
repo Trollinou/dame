@@ -295,6 +295,59 @@ function dame_close_special_actions_metabox_by_default( $classes ) {
 }
 add_filter( 'postbox_classes_adherent_dame_special_actions_metabox', 'dame_close_special_actions_metabox_by_default' );
 
+/**
+ * Open the "Groupes" metabox by default by removing the 'closed' class.
+ *
+ * @param array $classes An array of postbox classes.
+ * @return array The modified array of classes.
+ */
+function dame_open_group_metabox_by_default( $classes ) {
+    // We check the current screen to make sure we're only affecting the intended metabox.
+    if ( get_current_screen()->id === 'adherent' ) {
+        $classes = array_diff( $classes, array('closed') );
+    }
+    return $classes;
+}
+add_filter( 'postbox_classes_adherent_tagsdiv-dame_group', 'dame_open_group_metabox_by_default' );
+
+/**
+ * Reorders the metaboxes on the Adherent edit screen.
+ *
+ * Moves the 'Groupes' taxonomy metabox to appear directly after the
+ * 'Classification et Adhésion' metabox.
+ */
+function dame_reorder_adherent_metaboxes() {
+    global $wp_meta_boxes;
+
+    // Check if we are on the right screen and the metabox exists
+    if ( empty( $wp_meta_boxes['adherent']['side']['default'] ) || ! isset( $wp_meta_boxes['adherent']['side']['default']['tagsdiv-dame_group'] ) ) {
+        return;
+    }
+
+    $side_metaboxes = &$wp_meta_boxes['adherent']['side']['default'];
+    $group_metabox = $side_metaboxes['tagsdiv-dame_group'];
+
+    // Remove it from its current position
+    unset( $side_metaboxes['tagsdiv-dame_group'] );
+
+    // Find the position of the 'Classification' metabox
+    $classification_key = 'dame_classification_metabox';
+    $keys = array_keys( $side_metaboxes );
+    $position = array_search( $classification_key, $keys );
+
+    if ( $position !== false ) {
+        // Insert the 'Groupes' metabox right after the 'Classification' metabox
+        $new_metabox_order = array_slice( $side_metaboxes, 0, $position + 1, true );
+        $new_metabox_order['tagsdiv-dame_group'] = $group_metabox;
+        $new_metabox_order += array_slice( $side_metaboxes, $position + 1, null, true );
+        $side_metaboxes = $new_metabox_order;
+    } else {
+        // If 'Classification' metabox is not found, just add it back at the end
+        $side_metaboxes['tagsdiv-dame_group'] = $group_metabox;
+    }
+}
+add_action( 'add_meta_boxes_adherent', 'dame_reorder_adherent_metaboxes', 99 );
+
 
 /**
  * Renders the meta box for adherent's personal details.

@@ -40,7 +40,7 @@ function dame_handle_send_email() {
     $adherent_ids = array();
 
     if ( 'group' === $selection_method ) {
-        $groups = isset( $_POST['dame_recipient_group'] ) ? (array) array_map( 'sanitize_key', $_POST['dame_recipient_group'] ) : array();
+        $groups = isset( $_POST['dame_recipient_groups'] ) ? (array) array_map( 'absint', $_POST['dame_recipient_groups'] ) : array();
         $seasons = isset( $_POST['dame_recipient_seasons'] ) ? (array) array_map( 'absint', $_POST['dame_recipient_seasons'] ) : array();
 
         if ( empty( $groups ) && empty( $seasons ) ) {
@@ -81,48 +81,27 @@ function dame_handle_send_email() {
 
         // Get adherents by group
         if ( ! empty( $groups ) ) {
-            $meta_query = array(
-                'relation' => 'AND',
-            );
-
-            $group_conditions = array(
-                'relation' => 'OR',
-            );
-
-            foreach ( $groups as $group ) {
-                switch ( $group ) {
-                    case 'juniors':
-                        $group_conditions[] = array( 'key' => '_dame_is_junior', 'value' => '1' );
-                        break;
-                    case 'pole_excellence':
-                        $group_conditions[] = array( 'key' => '_dame_is_pole_excellence', 'value' => '1' );
-                        break;
-                    case 'benevoles':
-                        $group_conditions[] = array( 'key' => '_dame_is_benevole', 'value' => '1' );
-                        break;
-                    case 'elus_locaux':
-                        $group_conditions[] = array( 'key' => '_dame_is_elu_local', 'value' => '1' );
-                        break;
-                }
-            }
-
-            if ( count( $group_conditions ) > 1 ) {
-                $meta_query[] = $group_conditions;
-            }
-
-            if ( 'all' !== $recipient_gender ) {
-                $meta_query[] = array(
-                    'key'   => '_dame_sexe',
-                    'value' => $recipient_gender,
-                );
-            }
-
             $group_query_args = array(
                 'post_type'      => 'adherent',
                 'posts_per_page' => -1,
                 'fields'         => 'ids',
-                'meta_query'     => $meta_query,
+                'tax_query'      => array(
+                    array(
+                        'taxonomy' => 'dame_group',
+                        'field'    => 'term_id',
+                        'terms'    => $groups,
+                        'operator' => 'IN',
+                    ),
+                ),
+                'meta_query' => array(),
             );
+
+            if ( 'all' !== $recipient_gender ) {
+                $group_query_args['meta_query'][] = array(
+                    'key'   => '_dame_sexe',
+                    'value' => $recipient_gender,
+                );
+            }
             $group_adherent_ids = get_posts( $group_query_args );
         }
 
@@ -365,6 +344,17 @@ function dame_render_mailing_page() {
                             <fieldset>
                                 <legend class="screen-reader-text"><span><?php esc_html_e( "Filtres de destinataires", 'dame' ); ?></span></legend>
 
+                                <div id="dame-gender-filter" style="margin-bottom: 15px;">
+                                    <label for="dame_recipient_gender" style="font-weight: bold; display: block; margin-bottom: 5px;"><?php esc_html_e( 'Sexe', 'dame' ); ?></label>
+                                    <select id="dame_recipient_gender" name="dame_recipient_gender" style="width: 100%; max-width: 400px;">
+                                        <option value="all" selected><?php esc_html_e( 'Tous', 'dame' ); ?></option>
+                                        <option value="Masculin"><?php esc_html_e( 'Masculin', 'dame' ); ?></option>
+                                        <option value="Féminin"><?php esc_html_e( 'Féminin', 'dame' ); ?></option>
+                                    </select>
+                                </div>
+
+                                <hr style="margin: 15px 0;">
+
                                 <div id="dame-season-filter" style="margin-bottom: 15px;">
                                     <label for="dame_recipient_seasons" style="font-weight: bold; display: block; margin-bottom: 5px;"><?php esc_html_e( "Saison d'adhesion", 'dame' ); ?></label>
                                     <?php
@@ -391,36 +381,28 @@ function dame_render_mailing_page() {
 
                                 <hr style="margin: 15px 0;">
 
-                                <div id="dame-gender-filter" style="margin-bottom: 15px;">
-                                    <label for="dame_recipient_gender" style="font-weight: bold; display: block; margin-bottom: 5px;"><?php esc_html_e( 'Sexe', 'dame' ); ?></label>
-                                    <select id="dame_recipient_gender" name="dame_recipient_gender" style="width: 100%; max-width: 400px;">
-                                        <option value="all" selected><?php esc_html_e( 'Tous', 'dame' ); ?></option>
-                                        <option value="Masculin"><?php esc_html_e( 'Masculin', 'dame' ); ?></option>
-                                        <option value="Féminin"><?php esc_html_e( 'Féminin', 'dame' ); ?></option>
-                                    </select>
+                                <div id="dame-group-filter" style="margin-bottom: 15px;">
+                                    <label for="dame_recipient_groups" style="font-weight: bold; display: block; margin-bottom: 5px;"><?php esc_html_e( "Groupes", 'dame' ); ?></label>
+                                    <?php
+                                    $groups = get_terms( array(
+                                        'taxonomy'   => 'dame_group',
+                                        'hide_empty' => false,
+                                        'orderby'    => 'name',
+                                        'order'      => 'ASC',
+                                    ) );
+
+                                    if ( ! empty( $groups ) && ! is_wp_error( $groups ) ) {
+                                        echo '<select id="dame_recipient_groups" name="dame_recipient_groups[]" multiple="multiple" style="width: 100%; max-width: 400px; height: 120px;">';
+                                        foreach ( $groups as $group ) {
+                                            echo '<option value="' . esc_attr( $group->term_id ) . '">' . esc_html( $group->name ) . '</option>';
+                                        }
+                                        echo '</select>';
+                                        echo '<p class="description" style="margin-top: 5px;">' . esc_html__( 'Maintenez la touche (Ctrl) ou (Cmd) enfoncée pour sélectionner plusieurs groupes.', 'dame' ) . '</p>';
+                                    } else {
+                                        echo '<p>' . esc_html__( "Aucun groupe trouvé.", 'dame' ) . '</p>';
+                                    }
+                                    ?>
                                 </div>
-
-                                <hr style="margin: 15px 0;">
-
-                                <label>
-                                    <input type="checkbox" name="dame_recipient_group[]" value="juniors">
-                                    <?php esc_html_e( "École d'échecs", 'dame' ); ?>
-                                </label>
-                                <br>
-                                <label>
-                                    <input type="checkbox" name="dame_recipient_group[]" value="pole_excellence">
-                                    <?php esc_html_e( "Pôle Excellence", 'dame' ); ?>
-                                </label>
-                                <br>
-                                <label>
-                                    <input type="checkbox" name="dame_recipient_group[]" value="benevoles">
-                                    <?php esc_html_e( "Bénévoles", 'dame' ); ?>
-                                </label>
-                                <br>
-                                <label>
-                                    <input type="checkbox" name="dame_recipient_group[]" value="elus_locaux">
-                                    <?php esc_html_e( "Elus locaux", 'dame' ); ?>
-                                </label>
                             </fieldset>
                         </td>
                     </tr>
