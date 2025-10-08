@@ -212,8 +212,10 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/toolbar.php';
 
 if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/menu.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/message-actions.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/metaboxes.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/columns.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/columns-message.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/settings-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-adherent.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/mailing.php';
