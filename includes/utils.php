@@ -180,11 +180,11 @@ function dame_get_adherent_age_category( $birth_date_str, $gender = 'Masculin' )
     } elseif ( $age <= 19 ) {
         $category = 'U20';
     } elseif ( $age <= 49 ) {
-        return 'Seniors';
+        return 'Sénior';
     } elseif ( $age <= 64 ) {
-        return 'Sénior Plus';
+        return 'Sénior+';
     } else {
-        return 'Vétérans';
+        return 'Vétéran';
     }
 
     // Append 'F' for female gender in youth categories.
