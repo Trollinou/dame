@@ -207,3 +207,120 @@ function dame_add_agenda_category_color_column_content( $content, $column_name, 
     return $content;
 }
 add_filter( 'manage_dame_agenda_category_custom_column', 'dame_add_agenda_category_color_column_content', 10, 3 );
+
+
+/**
+ * Add a "Reset" action to the group taxonomy list table.
+ * This action allows removing all adherents from a group.
+ *
+ * @param array    $actions An array of action links.
+ * @param WP_Term  $term    The term object.
+ * @return array   The modified array of action links.
+ */
+function dame_add_group_reset_action( $actions, $term ) {
+    // Check if we are on the 'dame_group' taxonomy screen.
+    if ( 'dame_group' !== $term->taxonomy ) {
+        return $actions;
+    }
+
+    // Check if the user has the required capability.
+    if ( current_user_can( 'manage_categories' ) ) {
+        // Build the URL for the reset action.
+        $reset_url = add_query_arg(
+            array(
+                'action'   => 'dame_reset_group',
+                'taxonomy' => 'dame_group',
+                'tag_ID'   => $term->term_id,
+                '_wpnonce' => wp_create_nonce( 'dame_reset_group_' . $term->term_id ),
+            ),
+            admin_url( 'admin-post.php' )
+        );
+
+        // Add a confirmation dialog.
+        $actions['reset'] = sprintf(
+            '<a href="%s" onclick="return confirm(\'%s\')">%s</a>',
+            esc_url( $reset_url ),
+            esc_js( sprintf( __( 'Êtes-vous sûr de vouloir supprimer tous les adhérents du groupe "%s" ? Cette action est irréversible.', 'dame' ), $term->name ) ),
+            __( 'Réinitialiser', 'dame' )
+        );
+    }
+    return $actions;
+}
+add_filter( 'tag_row_actions', 'dame_add_group_reset_action', 10, 2 );
+
+/**
+ * Handle the group reset action.
+ * This function removes all adherents from a specific group.
+ */
+function dame_handle_reset_group_action() {
+    // Check if the action is correct.
+    if ( ! isset( $_GET['action'] ) || 'dame_reset_group' !== $_GET['action'] ) {
+        return;
+    }
+
+    // Check user capabilities first.
+    if ( ! current_user_can( 'manage_categories' ) ) {
+        wp_die( __( 'Vous n\'avez pas les permissions suffisantes pour effectuer cette action.', 'dame' ) );
+    }
+
+    // Get the term ID and verify the nonce.
+    $term_id = isset( $_GET['tag_ID'] ) ? intval( $_GET['tag_ID'] ) : 0;
+    if ( ! $term_id || ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'dame_reset_group_' . $term_id ) ) {
+        wp_die( __( 'Échec de la vérification de sécurité.', 'dame' ) );
+    }
+
+    // Get all adherents in the group.
+    $adherents = get_posts(
+        array(
+            'post_type'      => 'adherent',
+            'posts_per_page' => -1,
+            'tax_query'      => array(
+                array(
+                    'taxonomy' => 'dame_group',
+                    'field'    => 'term_id',
+                    'terms'    => $term_id,
+                ),
+            ),
+            'fields'         => 'ids', // We only need the post IDs.
+        )
+    );
+
+    // If there are adherents, remove them from the group.
+    if ( ! empty( $adherents ) ) {
+        foreach ( $adherents as $adherent_id ) {
+            wp_remove_object_terms( $adherent_id, $term_id, 'dame_group' );
+        }
+    }
+
+    // Redirect back to the taxonomy list table with a success message.
+    $redirect_url = add_query_arg(
+        array(
+            'taxonomy' => 'dame_group',
+            'message'  => 'group_reset',
+        ),
+        admin_url( 'edit-tags.php' )
+    );
+    wp_redirect( $redirect_url );
+    exit;
+}
+add_action( 'admin_post_dame_reset_group', 'dame_handle_reset_group_action' );
+
+/**
+ * Display an admin notice after a group has been reset.
+ */
+function dame_show_reset_group_notice() {
+    global $pagenow;
+    // Check if we are on the correct page and the message is set.
+    if (
+        'edit-tags.php' === $pagenow &&
+        isset( $_GET['taxonomy'] ) && 'dame_group' === $_GET['taxonomy'] &&
+        isset( $_GET['message'] ) && 'group_reset' === $_GET['message']
+    ) {
+        ?>
+        <div class="notice notice-success is-dismissible">
+            <p><?php _e( 'Le groupe a été réinitialisé avec succès. Tous les adhérents ont été retirés.', 'dame' ); ?></p>
+        </div>
+        <?php
+    }
+}
+add_action( 'admin_notices', 'dame_show_reset_group_notice' );
