@@ -34,7 +34,7 @@ function dame_register_membership_season_taxonomy() {
     );
 
     $args = array(
-        'hierarchical'      => true,
+        'hierarchical'      => false,
         'labels'            => $labels,
         'show_ui'           => true,
         'show_admin_column' => false, // We will handle this column manually.
