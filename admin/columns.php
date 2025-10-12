@@ -21,11 +21,11 @@ function dame_set_adherent_columns( $columns ) {
         'cb'                   => $columns['cb'],
         'title'                => __( 'Nom de l\'adhérent', 'dame' ),
         'dame_age_category'    => __( 'Catégorie d\'âge', 'dame' ),
+        'dame_license_number'  => __( 'Licence', 'dame' ),
+        'dame_phone'           => __( 'Téléphone', 'dame' ),
+        'dame_email'           => __( 'Email', 'dame' ),
         'dame_membership_status' => __( 'Statut Adhésion', 'dame' ),
         'dame_saisons'         => __( 'Saisons d\'adhésion', 'dame' ),
-        'dame_license_number'  => __( 'Licence', 'dame' ),
-        'dame_email'           => __( 'Email', 'dame' ),
-        'dame_phone'           => __( 'Téléphone', 'dame' ),
         'dame_classification'  => __( 'Classification', 'dame' ),
     );
     return $new_columns;
