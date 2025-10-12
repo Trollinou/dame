@@ -40,73 +40,57 @@ function dame_handle_send_email() {
     $adherent_ids = array();
 
     if ( 'group' === $selection_method ) {
-        $groups = isset( $_POST['dame_recipient_groups'] ) ? (array) array_map( 'absint', $_POST['dame_recipient_groups'] ) : array();
-        $seasons = isset( $_POST['dame_recipient_seasons'] ) ? (array) array_map( 'absint', $_POST['dame_recipient_seasons'] ) : array();
+        $groups = isset( $_POST['dame_recipient_groups'] ) ? array_filter( array_map( 'absint', (array) $_POST['dame_recipient_groups'] ) ) : array();
+        $seasons = isset( $_POST['dame_recipient_seasons'] ) ? array_filter( array_map( 'absint', (array) $_POST['dame_recipient_seasons'] ) ) : array();
 
         if ( empty( $groups ) && empty( $seasons ) ) {
             add_action( 'admin_notices', function() {
                 echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner au moins un filtre (saison ou groupe).", 'dame' ) . '</p></div>';
-            });
+            } );
             return;
         }
 
-        $season_adherent_ids = array();
-        $group_adherent_ids = array();
+        $query_args = array(
+            'post_type'      => 'adherent',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'tax_query'      => array(),
+            'meta_query'     => array(),
+        );
 
-        // Get adherents by season
+        $tax_queries = array();
         if ( ! empty( $seasons ) ) {
-            $season_query_args = array(
-                'post_type'      => 'adherent',
-                'posts_per_page' => -1,
-                'fields'         => 'ids',
-                'tax_query'      => array(
-                    array(
-                        'taxonomy' => 'dame_saison_adhesion',
-                        'field'    => 'term_id',
-                        'terms'    => $seasons,
-                        'operator' => 'IN',
-                    ),
-                ),
-                'meta_query' => array(),
+            $tax_queries[] = array(
+                'taxonomy' => 'dame_saison_adhesion',
+                'field'    => 'term_id',
+                'terms'    => $seasons,
+                'operator' => 'IN',
             );
-
-            if ( 'all' !== $recipient_gender ) {
-                $season_query_args['meta_query'][] = array(
-                    'key' => '_dame_sexe',
-                    'value' => $recipient_gender,
-                );
-            }
-            $season_adherent_ids = get_posts( $season_query_args );
         }
 
-        // Get adherents by group
         if ( ! empty( $groups ) ) {
-            $group_query_args = array(
-                'post_type'      => 'adherent',
-                'posts_per_page' => -1,
-                'fields'         => 'ids',
-                'tax_query'      => array(
-                    array(
-                        'taxonomy' => 'dame_group',
-                        'field'    => 'term_id',
-                        'terms'    => $groups,
-                        'operator' => 'IN',
-                    ),
-                ),
-                'meta_query' => array(),
+            $tax_queries[] = array(
+                'taxonomy' => 'dame_group',
+                'field'    => 'term_id',
+                'terms'    => $groups,
+                'operator' => 'IN',
             );
-
-            if ( 'all' !== $recipient_gender ) {
-                $group_query_args['meta_query'][] = array(
-                    'key'   => '_dame_sexe',
-                    'value' => $recipient_gender,
-                );
-            }
-            $group_adherent_ids = get_posts( $group_query_args );
         }
 
-        // Merge and get unique IDs
-        $adherent_ids = array_unique( array_merge( $season_adherent_ids, $group_adherent_ids ) );
+        if ( count( $tax_queries ) > 1 ) {
+            $query_args['tax_query']['relation'] = 'AND';
+        }
+
+        $query_args['tax_query'] = array_merge( $query_args['tax_query'], $tax_queries );
+
+        if ( 'all' !== $recipient_gender ) {
+            $query_args['meta_query'][] = array(
+                'key'   => '_dame_sexe',
+                'value' => $recipient_gender,
+            );
+        }
+
+        $adherent_ids = get_posts( $query_args );
 
     } elseif ( 'manual' === $selection_method ) {
         $adherent_ids = isset( $_POST['dame_manual_recipients'] ) ? (array) array_map( 'absint', $_POST['dame_manual_recipients'] ) : array();
@@ -434,4 +418,3 @@ function dame_render_mailing_page() {
     </script>
     <?php
 }
-
