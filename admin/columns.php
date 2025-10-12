@@ -20,6 +20,7 @@ function dame_set_adherent_columns( $columns ) {
     $new_columns = array(
         'cb'                   => $columns['cb'],
         'title'                => __( 'Nom de l\'adhérent', 'dame' ),
+        'dame_age_category'    => __( 'Catégorie d\'âge', 'dame' ),
         'dame_membership_status' => __( 'Statut Adhésion', 'dame' ),
         'dame_saisons'         => __( 'Saisons d\'adhésion', 'dame' ),
         'dame_license_number'  => __( 'Licence', 'dame' ),
@@ -39,6 +40,12 @@ add_filter( 'manage_edit-adherent_columns', 'dame_set_adherent_columns' );
  */
 function dame_render_adherent_columns( $column, $post_id ) {
     switch ( $column ) {
+        case 'dame_age_category':
+            $birth_date = get_post_meta( $post_id, '_dame_birth_date', true );
+            $gender = get_post_meta( $post_id, '_dame_sexe', true );
+            echo esc_html( dame_get_adherent_age_category( $birth_date, $gender ) );
+            break;
+
         case 'dame_license_number':
             $license = get_post_meta( $post_id, '_dame_license_number', true );
             echo esc_html( $license );

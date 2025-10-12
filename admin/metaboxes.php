@@ -252,7 +252,7 @@ function dame_add_meta_boxes() {
 		'dame_render_classification_metabox',
 		'adherent',
 		'side',
-		'default'
+		'high'
 	);
 	add_meta_box(
 		'dame_special_actions_metabox',
@@ -260,18 +260,18 @@ function dame_add_meta_boxes() {
 		'dame_render_special_actions_metabox',
 		'adherent',
 		'side',
-		'default'
+		'low'
 	);
 
 	// Remove the default taxonomy metabox and add our custom one with checkboxes.
-	remove_meta_box( 'tagsdiv-dame_group', 'adherent', 'side' );
+	remove_meta_box( 'dame_groupdiv', 'adherent', 'side' );
 	add_meta_box(
 		'dame_group_checklist_metabox',
 		__( 'Groupes', 'dame' ),
 		'dame_render_group_checklist_metabox',
 		'adherent',
 		'side',
-		'default'
+		'high'
 	);
 }
 add_action( 'add_meta_boxes', 'dame_add_meta_boxes' );
@@ -364,45 +364,6 @@ function dame_open_group_metabox_by_default( $classes ) {
 // Use the new custom metabox ID.
 add_filter( 'postbox_classes_adherent_dame_group_checklist_metabox', 'dame_open_group_metabox_by_default' );
 
-/**
- * Reorders the metaboxes on the Adherent edit screen.
- *
- * Moves the 'Groupes' taxonomy metabox to appear directly after the
- * 'Classification et Adhésion' metabox.
- */
-function dame_reorder_adherent_metaboxes() {
-	global $wp_meta_boxes;
-
-	$group_metabox_id = 'dame_group_checklist_metabox';
-
-	// Check if we are on the right screen and the metabox exists
-	if ( empty( $wp_meta_boxes['adherent']['side']['default'] ) || ! isset( $wp_meta_boxes['adherent']['side']['default'][ $group_metabox_id ] ) ) {
-		return;
-	}
-
-	$side_metaboxes = &$wp_meta_boxes['adherent']['side']['default'];
-	$group_metabox    = $side_metaboxes[ $group_metabox_id ];
-
-	// Remove it from its current position
-	unset( $side_metaboxes[ $group_metabox_id ] );
-
-	// Find the position of the 'Classification' metabox
-	$classification_key = 'dame_classification_metabox';
-	$keys               = array_keys( $side_metaboxes );
-	$position           = array_search( $classification_key, $keys, true );
-
-	if ( false !== $position ) {
-		// Insert the 'Groupes' metabox right after the 'Classification' metabox
-		$new_metabox_order                         = array_slice( $side_metaboxes, 0, $position + 1, true );
-		$new_metabox_order[ $group_metabox_id ] = $group_metabox;
-		$new_metabox_order                        += array_slice( $side_metaboxes, $position + 1, null, true );
-		$side_metaboxes                            = $new_metabox_order;
-	} else {
-		// If 'Classification' metabox is not found, just add it back at the end
-		$side_metaboxes[ $group_metabox_id ] = $group_metabox;
-	}
-}
-add_action( 'add_meta_boxes_adherent', 'dame_reorder_adherent_metaboxes', 99 );
 
 
 /**
