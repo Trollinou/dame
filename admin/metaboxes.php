@@ -262,8 +262,61 @@ function dame_add_meta_boxes() {
 		'side',
 		'default'
 	);
+
+	// Remove the default taxonomy metabox and add our custom one with checkboxes.
+	remove_meta_box( 'tagsdiv-dame_group', 'adherent', 'side' );
+	add_meta_box(
+		'dame_group_checklist_metabox',
+		__( 'Groupes', 'dame' ),
+		'dame_render_group_checklist_metabox',
+		'adherent',
+		'side',
+		'default'
+	);
 }
 add_action( 'add_meta_boxes', 'dame_add_meta_boxes' );
+
+
+/**
+ * Renders the custom meta box for group selection as a checklist.
+ *
+ * This function mimics the default category metabox, providing a user-friendly
+ * checklist of all available "Groupe" terms.
+ *
+ * @param WP_Post $post The post object.
+ */
+function dame_render_group_checklist_metabox( $post ) {
+	$taxonomy = 'dame_group';
+	?>
+	<div id="taxonomy-<?php echo esc_attr( $taxonomy ); ?>" class="categorydiv">
+		<ul id="<?php echo esc_attr( $taxonomy ); ?>-tabs" class="category-tabs">
+			<li class="tabs"><a href="#<?php echo esc_attr( $taxonomy ); ?>-all"><?php echo esc_html__( 'Tous les groupes', 'dame' ); ?></a></li>
+		</ul>
+
+		<div id="<?php echo esc_attr( $taxonomy ); ?>-all" class="tabs-panel" style="display: block;">
+			<ul id="<?php echo esc_attr( $taxonomy ); ?>checklist" data-wp-lists="list:<?php echo esc_attr( $taxonomy ); ?>" class="categorychecklist form-no-clear">
+				<?php
+				wp_terms_checklist(
+					$post->ID,
+					array(
+						'taxonomy'      => $taxonomy,
+						'popular_cats'  => false,
+						'checked_ontop' => false, // Keep alphabetical order.
+					)
+				);
+				?>
+			</ul>
+		</div>
+		<?php
+		$tax_obj = get_taxonomy( $taxonomy );
+		if ( current_user_can( $tax_obj->cap->manage_terms ) ) {
+			echo '<p style="margin-top:1em;"><a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . $taxonomy ) ) . '">' . esc_html( $tax_obj->labels->add_new_item ) . '</a></p>';
+		}
+		?>
+	</div>
+	<?php
+}
+
 
 /**
  * Close the "Saisons d'adhésion" metabox by default by adding the 'closed' class.
@@ -302,13 +355,14 @@ add_filter( 'postbox_classes_adherent_dame_special_actions_metabox', 'dame_close
  * @return array The modified array of classes.
  */
 function dame_open_group_metabox_by_default( $classes ) {
-    // We check the current screen to make sure we're only affecting the intended metabox.
-    if ( get_current_screen()->id === 'adherent' ) {
-        $classes = array_diff( $classes, array('closed') );
-    }
-    return $classes;
+	// We check the current screen to make sure we're only affecting the intended metabox.
+	if ( get_current_screen()->id === 'adherent' ) {
+		$classes = array_diff( $classes, array( 'closed' ) );
+	}
+	return $classes;
 }
-add_filter( 'postbox_classes_adherent_tagsdiv-dame_group', 'dame_open_group_metabox_by_default' );
+// Use the new custom metabox ID.
+add_filter( 'postbox_classes_adherent_dame_group_checklist_metabox', 'dame_open_group_metabox_by_default' );
 
 /**
  * Reorders the metaboxes on the Adherent edit screen.
@@ -317,34 +371,36 @@ add_filter( 'postbox_classes_adherent_tagsdiv-dame_group', 'dame_open_group_meta
  * 'Classification et Adhésion' metabox.
  */
 function dame_reorder_adherent_metaboxes() {
-    global $wp_meta_boxes;
+	global $wp_meta_boxes;
 
-    // Check if we are on the right screen and the metabox exists
-    if ( empty( $wp_meta_boxes['adherent']['side']['default'] ) || ! isset( $wp_meta_boxes['adherent']['side']['default']['tagsdiv-dame_group'] ) ) {
-        return;
-    }
+	$group_metabox_id = 'dame_group_checklist_metabox';
 
-    $side_metaboxes = &$wp_meta_boxes['adherent']['side']['default'];
-    $group_metabox = $side_metaboxes['tagsdiv-dame_group'];
+	// Check if we are on the right screen and the metabox exists
+	if ( empty( $wp_meta_boxes['adherent']['side']['default'] ) || ! isset( $wp_meta_boxes['adherent']['side']['default'][ $group_metabox_id ] ) ) {
+		return;
+	}
 
-    // Remove it from its current position
-    unset( $side_metaboxes['tagsdiv-dame_group'] );
+	$side_metaboxes = &$wp_meta_boxes['adherent']['side']['default'];
+	$group_metabox    = $side_metaboxes[ $group_metabox_id ];
 
-    // Find the position of the 'Classification' metabox
-    $classification_key = 'dame_classification_metabox';
-    $keys = array_keys( $side_metaboxes );
-    $position = array_search( $classification_key, $keys );
+	// Remove it from its current position
+	unset( $side_metaboxes[ $group_metabox_id ] );
 
-    if ( $position !== false ) {
-        // Insert the 'Groupes' metabox right after the 'Classification' metabox
-        $new_metabox_order = array_slice( $side_metaboxes, 0, $position + 1, true );
-        $new_metabox_order['tagsdiv-dame_group'] = $group_metabox;
-        $new_metabox_order += array_slice( $side_metaboxes, $position + 1, null, true );
-        $side_metaboxes = $new_metabox_order;
-    } else {
-        // If 'Classification' metabox is not found, just add it back at the end
-        $side_metaboxes['tagsdiv-dame_group'] = $group_metabox;
-    }
+	// Find the position of the 'Classification' metabox
+	$classification_key = 'dame_classification_metabox';
+	$keys               = array_keys( $side_metaboxes );
+	$position           = array_search( $classification_key, $keys, true );
+
+	if ( false !== $position ) {
+		// Insert the 'Groupes' metabox right after the 'Classification' metabox
+		$new_metabox_order                         = array_slice( $side_metaboxes, 0, $position + 1, true );
+		$new_metabox_order[ $group_metabox_id ] = $group_metabox;
+		$new_metabox_order                        += array_slice( $side_metaboxes, $position + 1, null, true );
+		$side_metaboxes                            = $new_metabox_order;
+	} else {
+		// If 'Classification' metabox is not found, just add it back at the end
+		$side_metaboxes[ $group_metabox_id ] = $group_metabox;
+	}
 }
 add_action( 'add_meta_boxes_adherent', 'dame_reorder_adherent_metaboxes', 99 );
 

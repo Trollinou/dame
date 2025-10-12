@@ -57,8 +57,8 @@ function dame_register_group_taxonomy() {
         'search_items'               => __( 'Rechercher les groupes', 'dame' ),
         'popular_items'              => __( 'Groupes populaires', 'dame' ),
         'all_items'                  => __( 'Tous les groupes', 'dame' ),
-        'parent_item'                => null,
-        'parent_item_colon'          => null,
+        'parent_item'                => __( 'Groupe parent', 'dame' ),
+        'parent_item_colon'          => __( 'Groupe parent :', 'dame' ),
         'edit_item'                  => __( 'Modifier le groupe', 'dame' ),
         'update_item'                => __( 'Mettre à jour le groupe', 'dame' ),
         'add_new_item'               => __( 'Ajouter un nouveau groupe', 'dame' ),
@@ -71,7 +71,7 @@ function dame_register_group_taxonomy() {
     );
 
     $args = array(
-        'hierarchical'      => false,
+        'hierarchical'      => true,
         'labels'            => $labels,
         'show_ui'           => true,
         'show_admin_column' => true,
