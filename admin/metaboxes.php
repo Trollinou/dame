@@ -806,48 +806,25 @@ function dame_render_classification_metabox( $post ) {
 	$arbitre_options = ['Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2'];
 
 	?>
-	<div>
-		<?php
-		// --- Display current status and season history ---
-		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-
-		// --- Add a simple control to set Active/Inactive status ---
-		echo '<p>';
-		echo '<label for="dame_membership_status_control"><strong>' . esc_html__( 'Adhésion pour la saison actuelle', 'dame' ) . '</strong></label>';
-		echo '<select id="dame_membership_status_control" name="dame_membership_status_control" style="width:100%;">';
-		$is_active = ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post->ID ) );
-		echo '<option value="active" ' . selected( $is_active, true, false ) . '>' . esc_html__( 'Actif', 'dame' ) . '</option>';
-		echo '<option value="inactive" ' . selected( $is_active, false, false ) . '>' . esc_html__( 'Non adhérent', 'dame' ) . '</option>';
-		echo '</select>';
-		echo '</p>';
-
-		$saisons = get_the_terms( $post->ID, 'dame_saison_adhesion' );
-		if ( ! empty( $saisons ) && ! is_wp_error( $saisons ) ) {
-			// Check if there are any past seasons to display
-			$past_saisons = array_filter(
-				$saisons,
-				function( $saison ) use ( $current_season_tag_id ) {
-					return $saison->term_id !== (int) $current_season_tag_id;
-				}
-			);
-
-			if ( ! empty( $past_saisons ) ) {
-				echo '<p style="margin-top: 10px; margin-bottom: 5px;"><strong>' . esc_html__( 'Historique des saisons :', 'dame' ) . '</strong></p>';
-				echo '<div>';
-				foreach ( $past_saisons as $saison ) {
-					echo '<span style="display: inline-block; background-color: #e0e0e0; color: #333; padding: 2px 8px; margin: 2px 2px 2px 0; border-radius: 4px; font-size: 0.9em;">' . esc_html( $saison->name ) . '</span>';
-				}
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo '</div>';
-			}
-		}
-		?>
-	</div>
-	<hr>
 	<p>
 		<label for="dame_license_number"><strong><?php _e( 'Numéro de licence', 'dame' ); ?></strong></label>
 		<input type="text" id="dame_license_number" name="dame_license_number" value="<?php echo esc_attr( $license_number ); ?>" style="width:100%;" placeholder="A12345" pattern="[A-Z][0-9]{5}" />
 	</p>
+	<hr>
+	<?php
+	// --- Display current status and season history ---
+	$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+
+	// --- Add a simple control to set Active/Inactive status ---
+	echo '<p>';
+	echo '<label for="dame_membership_status_control"><strong>' . esc_html__( 'Adhésion pour la saison actuelle', 'dame' ) . '</strong></label>';
+	echo '<select id="dame_membership_status_control" name="dame_membership_status_control" style="width:100%;">';
+	$is_active = ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post->ID ) );
+	echo '<option value="active" ' . selected( $is_active, true, false ) . '>' . esc_html__( 'Actif', 'dame' ) . '</option>';
+	echo '<option value="inactive" ' . selected( $is_active, false, false ) . '>' . esc_html__( 'Non adhérent', 'dame' ) . '</option>';
+	echo '</select>';
+	echo '</p>';
+	?>
 	<p>
 		<label><strong><?php _e( 'Type de licence', 'dame' ); ?></strong></label><br>
 		<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="A" <?php checked( $license_type, 'A' ); ?> /> <?php _e( 'Licence A (Cours + Compétition)', 'dame' ); ?></label>
@@ -867,7 +844,6 @@ function dame_render_classification_metabox( $post ) {
 			<?php endforeach; ?>
 		</select>
 	</p>
-	<hr>
 	<p>
 		<label for="dame_adherent_honorabilite"><strong><?php _e( 'Contrôle d\'honorabilité', 'dame' ); ?></strong></label>
 		<select id="dame_adherent_honorabilite" name="dame_adherent_honorabilite" style="width:100%;">
@@ -880,6 +856,7 @@ function dame_render_classification_metabox( $post ) {
 			<?php endforeach; ?>
 		</select>
 	</p>
+	<hr>
 	<p>
 		<label for="dame_arbitre_level"><strong><?php _e( 'Niveau d\'arbitre', 'dame' ); ?></strong></label>
 		<select id="dame_arbitre_level" name="dame_arbitre_level" style="width:100%;">
