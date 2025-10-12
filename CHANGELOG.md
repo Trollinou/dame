@@ -8,6 +8,8 @@
   - Ajout d'actions pour "Dupliquer" un message, s'envoyer un "email de test", et "Copier en tant qu'article" (brouillon).
   - La liste des messages affiche désormais des colonnes pour la "Date d'envoi", "Auteur de l'envoi", et les "Destinataires".
   - Les critères de sélection des destinataires sont maintenant sauvegardés avec le message pour un historique complet.
+  - Ajout de la possibilité de dupliquer un message en tant qu'article (brouillon).
+  - La colonne "Destinataires" dans la liste des messages affiche désormais les critères de sélection (filtres ou liste manuelle).
 
 ### Amélioration
 - La logique de filtrage des destinataires pour l'envoi de messages a été améliorée. Lorsque des saisons et des groupes sont sélectionnés, le système effectue une intersection (ET) pour un ciblage plus précis.

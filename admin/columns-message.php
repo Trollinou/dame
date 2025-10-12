@@ -89,12 +89,13 @@ function dame_render_message_columns( $column, $post_id ) {
                     echo '—';
                 } else {
                     $count = count( $recipient_ids );
+                    $recipient_posts = get_posts( array( 'post__in' => $recipient_ids, 'post_type' => 'adherent', 'numberposts' => -1, 'orderby' => 'post_title', 'order' => 'ASC' ) );
+                    $recipient_names = wp_list_pluck( $recipient_posts, 'post_title' );
+
                     if ( $count > 15 ) {
-                        $recipient_names = get_posts( array( 'post__in' => $recipient_ids, 'post_type' => 'adherent', 'numberposts' => -1, 'fields' => 'post_title' ) );
                         $tooltip_content = implode( "\n", $recipient_names );
                         echo '<span title="' . esc_attr( $tooltip_content ) . '">' . sprintf( __( '%d destinataires', 'dame' ), $count ) . '</span>';
                     } else {
-                        $recipient_names = get_posts( array( 'post__in' => $recipient_ids, 'post_type' => 'adherent', 'numberposts' => -1, 'fields' => 'post_title' ) );
                         echo implode( ', ', $recipient_names );
                     }
                 }

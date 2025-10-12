@@ -20,8 +20,8 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 
 *   **Gestion des Messages :** Un nouveau type de contenu "Message" permet de créer et de gérer des communications pour les membres. Ces messages sont rédigés avec l'éditeur de blocs de WordPress (Gutenberg) et ne sont pas publics sur le site.
 *   **Envoi Ciblé :** Une page "Envoyer un message" permet de sélectionner un message et de l'envoyer à des destinataires filtrés par saison d'adhésion, par groupe, ou manuellement. La logique de filtrage permet de cibler précisément les adhérents en effectuant une intersection (ET) entre les taxonomies.
-*   **Actions Rapides :** Depuis la liste des messages, il est possible de dupliquer un message pour le réutiliser ou de s'envoyer un email de test pour vérifier le rendu.
-*   **Suivi des Envois :** La liste des messages affiche la date du dernier envoi et l'auteur de l'envoi pour un suivi clair des communications.
+*   **Actions Rapides :** Depuis la liste des messages, il est possible de dupliquer un message pour le réutiliser, de s'envoyer un email de test pour vérifier le rendu, ou de copier un message en tant qu'article (brouillon).
+*   **Suivi des Envois :** La liste des messages affiche la date du dernier envoi, l'auteur de l'envoi, et les destinataires (critères de filtre ou liste manuelle) pour un suivi clair des communications.
 
 ### Gestion des Adhésions par Saison
 
