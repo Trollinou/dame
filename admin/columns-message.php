@@ -23,6 +23,7 @@ function dame_add_message_columns( $columns ) {
         if ( 'title' === $key ) {
             $new_columns['sent_date'] = __( 'Date d\'envoi', 'dame' );
             $new_columns['sending_author'] = __( 'Auteur de l\'envoi', 'dame' );
+            $new_columns['recipients'] = __( 'Destinataires', 'dame' );
         }
     }
     return $new_columns;
@@ -53,6 +54,50 @@ function dame_render_message_columns( $column, $post_id ) {
                 echo esc_html( $author ? $author->display_name : __( 'Utilisateur inconnu', 'dame' ) );
             } else {
                 echo '—';
+            }
+            break;
+
+        case 'recipients':
+            $method = get_post_meta( $post_id, '_dame_recipient_method', true );
+            if ( ! $method ) {
+                echo '—';
+                break;
+            }
+
+            if ( 'group' === $method ) {
+                $seasons = get_post_meta( $post_id, '_dame_recipient_seasons', true );
+                $groups = get_post_meta( $post_id, '_dame_recipient_groups', true );
+                $gender = get_post_meta( $post_id, '_dame_recipient_gender', true );
+
+                $parts = array();
+                if ( ! empty( $seasons ) ) {
+                    $season_names = get_terms( array( 'taxonomy' => 'dame_saison_adhesion', 'include' => $seasons, 'fields' => 'names' ) );
+                    $parts[] = '<strong>' . __( 'Saisons', 'dame' ) . ':</strong> ' . implode( ', ', $season_names );
+                }
+                if ( ! empty( $groups ) ) {
+                    $group_names = get_terms( array( 'taxonomy' => 'dame_group', 'include' => $groups, 'fields' => 'names' ) );
+                    $parts[] = '<strong>' . __( 'Groupes', 'dame' ) . ':</strong> ' . implode( ', ', $group_names );
+                }
+                if ( ! empty( $gender ) && 'all' !== $gender ) {
+                    $parts[] = '<strong>' . __( 'Sexe', 'dame' ) . ':</strong> ' . esc_html( $gender );
+                }
+                echo empty( $parts ) ? '—' : implode( '<br>', $parts );
+
+            } elseif ( 'manual' === $method ) {
+                $recipient_ids = get_post_meta( $post_id, '_dame_manual_recipients', true );
+                if ( empty( $recipient_ids ) ) {
+                    echo '—';
+                } else {
+                    $count = count( $recipient_ids );
+                    if ( $count > 15 ) {
+                        $recipient_names = get_posts( array( 'post__in' => $recipient_ids, 'post_type' => 'adherent', 'numberposts' => -1, 'fields' => 'post_title' ) );
+                        $tooltip_content = implode( "\n", $recipient_names );
+                        echo '<span title="' . esc_attr( $tooltip_content ) . '">' . sprintf( __( '%d destinataires', 'dame' ), $count ) . '</span>';
+                    } else {
+                        $recipient_names = get_posts( array( 'post__in' => $recipient_ids, 'post_type' => 'adherent', 'numberposts' => -1, 'fields' => 'post_title' ) );
+                        echo implode( ', ', $recipient_names );
+                    }
+                }
             }
             break;
     }

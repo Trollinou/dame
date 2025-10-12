@@ -172,6 +172,16 @@ function dame_handle_send_email() {
     update_post_meta( $message_id, '_dame_sent_date', current_time( 'mysql' ) );
     update_post_meta( $message_id, '_dame_sending_author', get_current_user_id() );
 
+    // Store the recipient criteria
+    update_post_meta( $message_id, '_dame_recipient_method', $selection_method );
+    if ( 'group' === $selection_method ) {
+        update_post_meta( $message_id, '_dame_recipient_seasons', isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_seasons'] ) : array() );
+        update_post_meta( $message_id, '_dame_recipient_groups', isset( $_POST['dame_recipient_groups'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_groups'] ) : array() );
+        update_post_meta( $message_id, '_dame_recipient_gender', $recipient_gender );
+    } elseif ( 'manual' === $selection_method ) {
+        update_post_meta( $message_id, '_dame_manual_recipients', isset( $_POST['dame_manual_recipients'] ) ? array_map( 'absint', (array) $_POST['dame_manual_recipients'] ) : array() );
+    }
+
     add_action( 'admin_notices', function() use ( $recipient_emails ) {
         $count = count( $recipient_emails );
         $message = sprintf(

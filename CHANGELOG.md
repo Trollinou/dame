@@ -1,5 +1,22 @@
 # Changelog
 
+## 3.3.2 - 2025-10-12
+### Ajout
+- **Fonctionnalité de Messagerie :** Introduction d'un nouveau type de contenu "Message" pour créer et gérer les communications par email aux membres.
+  - Les messages sont rédigés via l'éditeur de blocs Gutenberg et ne sont pas publics.
+  - La page "Envoyer un article" a été renommée "Envoyer un message" et adaptée pour envoyer ces nouveaux messages.
+  - Ajout d'actions pour "Dupliquer" un message, s'envoyer un "email de test", et "Copier en tant qu'article" (brouillon).
+  - La liste des messages affiche désormais des colonnes pour la "Date d'envoi", "Auteur de l'envoi", et les "Destinataires".
+  - Les critères de sélection des destinataires sont maintenant sauvegardés avec le message pour un historique complet.
+
+### Amélioration
+- La logique de filtrage des destinataires pour l'envoi de messages a été améliorée. Lorsque des saisons et des groupes sont sélectionnés, le système effectue une intersection (ET) pour un ciblage plus précis.
+- Le rôle "Membre du Bureau" a maintenant la permission de publier des articles, leur donnant accès à la fonctionnalité de messagerie.
+
+### Correction
+- Le titre de la page "Envoyer un message" s'affiche désormais correctement.
+- La sélection par défaut de la saison en cours a été retirée de la page d'envoi de message pour éviter les erreurs.
+
 ## 3.3.0 - 2025-10-07
 *   **Fonctionnalité :** Remplacement de plusieurs cases à cocher de classification (`École d'échecs`, `Pôle Excellence`, `Bénévole`, `Elu local`) par une nouvelle taxonomie non hiérarchique "Groupes".
 *   **Fonctionnalité :** Création d'un script de migration de données qui s'exécute lors de la mise à jour du plugin pour convertir les anciennes métadonnées vers la nouvelle taxonomie `dame_group`.
