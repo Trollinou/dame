@@ -347,10 +347,9 @@ function dame_render_mailing_page() {
                                     ) );
 
                                     if ( ! empty( $seasons ) && ! is_wp_error( $seasons ) ) {
-                                        $current_season_id = get_option( 'dame_current_season_tag_id' );
                                         echo '<select id="dame_recipient_seasons" name="dame_recipient_seasons[]" multiple="multiple" style="width: 100%; max-width: 400px; height: 120px;">';
                                         foreach ( $seasons as $season ) {
-                                            echo '<option value="' . esc_attr( $season->term_id ) . '" ' . selected( $current_season_id, $season->term_id, false ) . '>' . esc_html( $season->name ) . '</option>';
+                                            echo '<option value="' . esc_attr( $season->term_id ) . '">' . esc_html( $season->name ) . '</option>';
                                         }
                                         echo '</select>';
                                         echo '<p class="description" style="margin-top: 5px;">' . esc_html__( 'Maintenez la touche (Ctrl) ou (Cmd) enfoncée pour sélectionner plusieurs saisons.', 'dame' ) . '</p>';
