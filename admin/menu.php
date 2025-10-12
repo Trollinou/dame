@@ -26,7 +26,7 @@ function dame_add_adherent_submenus() {
         'edit.php?post_type=adherent',
         __( 'Envoyer un message', 'dame' ),
         __( 'Envoyer un message', 'dame' ),
-        'edit_others_posts', // Capability
+        'publish_posts',
         'dame-mailing',
         'dame_render_mailing_page'
     );

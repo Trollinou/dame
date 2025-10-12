@@ -266,7 +266,7 @@ function dame_get_emails_for_adherent( $adherent_id ) {
 function dame_render_mailing_page() {
     ?>
     <div class="wrap">
-        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+        <h1><?php esc_html_e( 'Envoyer un message', 'dame' ); ?></h1>
         <p><?php esc_html_e( "Cette page vous permet d'envoyer un message à une sélection d'adhérents.", 'dame' ); ?></p>
 
         <form method="post" action="">
