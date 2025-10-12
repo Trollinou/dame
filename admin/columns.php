@@ -20,11 +20,12 @@ function dame_set_adherent_columns( $columns ) {
     $new_columns = array(
         'cb'                   => $columns['cb'],
         'title'                => __( 'Nom de l\'adhérent', 'dame' ),
+        'dame_age_category'    => __( 'Catégorie d\'âge', 'dame' ),
+        'dame_license_number'  => __( 'Licence', 'dame' ),
+        'dame_phone'           => __( 'Téléphone', 'dame' ),
+        'dame_email'           => __( 'Email', 'dame' ),
         'dame_membership_status' => __( 'Statut Adhésion', 'dame' ),
         'dame_saisons'         => __( 'Saisons d\'adhésion', 'dame' ),
-        'dame_license_number'  => __( 'Licence', 'dame' ),
-        'dame_email'           => __( 'Email', 'dame' ),
-        'dame_phone'           => __( 'Téléphone', 'dame' ),
         'dame_classification'  => __( 'Classification', 'dame' ),
     );
     return $new_columns;
@@ -39,6 +40,22 @@ add_filter( 'manage_edit-adherent_columns', 'dame_set_adherent_columns' );
  */
 function dame_render_adherent_columns( $column, $post_id ) {
     switch ( $column ) {
+        case 'dame_age_category':
+            $birth_date_str = get_post_meta( $post_id, '_dame_birth_date', true );
+            $gender         = get_post_meta( $post_id, '_dame_sexe', true );
+            $category       = dame_get_adherent_age_category( $birth_date_str, $gender );
+
+            if ( $birth_date_str ) {
+                $birth_date_obj = DateTime::createFromFormat( 'Y-m-d', $birth_date_str );
+                if ( $birth_date_obj ) {
+                    $formatted_birth_date = $birth_date_obj->format( 'd/m/Y' );
+                    echo '<span title="' . esc_attr( $formatted_birth_date ) . '">' . esc_html( $category ) . '</span>';
+                    break;
+                }
+            }
+            echo esc_html( $category );
+            break;
+
         case 'dame_license_number':
             $license = get_post_meta( $post_id, '_dame_license_number', true );
             echo esc_html( $license );

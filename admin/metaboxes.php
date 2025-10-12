@@ -252,7 +252,7 @@ function dame_add_meta_boxes() {
 		'dame_render_classification_metabox',
 		'adherent',
 		'side',
-		'default'
+		'high'
 	);
 	add_meta_box(
 		'dame_special_actions_metabox',
@@ -260,18 +260,18 @@ function dame_add_meta_boxes() {
 		'dame_render_special_actions_metabox',
 		'adherent',
 		'side',
-		'default'
+		'low'
 	);
 
 	// Remove the default taxonomy metabox and add our custom one with checkboxes.
-	remove_meta_box( 'tagsdiv-dame_group', 'adherent', 'side' );
+	remove_meta_box( 'dame_groupdiv', 'adherent', 'side' );
 	add_meta_box(
 		'dame_group_checklist_metabox',
 		__( 'Groupes', 'dame' ),
 		'dame_render_group_checklist_metabox',
 		'adherent',
 		'side',
-		'default'
+		'high'
 	);
 }
 add_action( 'add_meta_boxes', 'dame_add_meta_boxes' );
@@ -364,45 +364,6 @@ function dame_open_group_metabox_by_default( $classes ) {
 // Use the new custom metabox ID.
 add_filter( 'postbox_classes_adherent_dame_group_checklist_metabox', 'dame_open_group_metabox_by_default' );
 
-/**
- * Reorders the metaboxes on the Adherent edit screen.
- *
- * Moves the 'Groupes' taxonomy metabox to appear directly after the
- * 'Classification et Adhésion' metabox.
- */
-function dame_reorder_adherent_metaboxes() {
-	global $wp_meta_boxes;
-
-	$group_metabox_id = 'dame_group_checklist_metabox';
-
-	// Check if we are on the right screen and the metabox exists
-	if ( empty( $wp_meta_boxes['adherent']['side']['default'] ) || ! isset( $wp_meta_boxes['adherent']['side']['default'][ $group_metabox_id ] ) ) {
-		return;
-	}
-
-	$side_metaboxes = &$wp_meta_boxes['adherent']['side']['default'];
-	$group_metabox    = $side_metaboxes[ $group_metabox_id ];
-
-	// Remove it from its current position
-	unset( $side_metaboxes[ $group_metabox_id ] );
-
-	// Find the position of the 'Classification' metabox
-	$classification_key = 'dame_classification_metabox';
-	$keys               = array_keys( $side_metaboxes );
-	$position           = array_search( $classification_key, $keys, true );
-
-	if ( false !== $position ) {
-		// Insert the 'Groupes' metabox right after the 'Classification' metabox
-		$new_metabox_order                         = array_slice( $side_metaboxes, 0, $position + 1, true );
-		$new_metabox_order[ $group_metabox_id ] = $group_metabox;
-		$new_metabox_order                        += array_slice( $side_metaboxes, $position + 1, null, true );
-		$side_metaboxes                            = $new_metabox_order;
-	} else {
-		// If 'Classification' metabox is not found, just add it back at the end
-		$side_metaboxes[ $group_metabox_id ] = $group_metabox;
-	}
-}
-add_action( 'add_meta_boxes_adherent', 'dame_reorder_adherent_metaboxes', 99 );
 
 
 /**
@@ -845,48 +806,25 @@ function dame_render_classification_metabox( $post ) {
 	$arbitre_options = ['Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2'];
 
 	?>
-	<div>
-		<?php
-		// --- Display current status and season history ---
-		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-
-		// --- Add a simple control to set Active/Inactive status ---
-		echo '<p>';
-		echo '<label for="dame_membership_status_control"><strong>' . esc_html__( 'Adhésion pour la saison actuelle', 'dame' ) . '</strong></label>';
-		echo '<select id="dame_membership_status_control" name="dame_membership_status_control" style="width:100%;">';
-		$is_active = ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post->ID ) );
-		echo '<option value="active" ' . selected( $is_active, true, false ) . '>' . esc_html__( 'Actif', 'dame' ) . '</option>';
-		echo '<option value="inactive" ' . selected( $is_active, false, false ) . '>' . esc_html__( 'Non adhérent', 'dame' ) . '</option>';
-		echo '</select>';
-		echo '</p>';
-
-		$saisons = get_the_terms( $post->ID, 'dame_saison_adhesion' );
-		if ( ! empty( $saisons ) && ! is_wp_error( $saisons ) ) {
-			// Check if there are any past seasons to display
-			$past_saisons = array_filter(
-				$saisons,
-				function( $saison ) use ( $current_season_tag_id ) {
-					return $saison->term_id !== (int) $current_season_tag_id;
-				}
-			);
-
-			if ( ! empty( $past_saisons ) ) {
-				echo '<p style="margin-top: 10px; margin-bottom: 5px;"><strong>' . esc_html__( 'Historique des saisons :', 'dame' ) . '</strong></p>';
-				echo '<div>';
-				foreach ( $past_saisons as $saison ) {
-					echo '<span style="display: inline-block; background-color: #e0e0e0; color: #333; padding: 2px 8px; margin: 2px 2px 2px 0; border-radius: 4px; font-size: 0.9em;">' . esc_html( $saison->name ) . '</span>';
-				}
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo '</div>';
-			}
-		}
-		?>
-	</div>
-	<hr>
 	<p>
 		<label for="dame_license_number"><strong><?php _e( 'Numéro de licence', 'dame' ); ?></strong></label>
 		<input type="text" id="dame_license_number" name="dame_license_number" value="<?php echo esc_attr( $license_number ); ?>" style="width:100%;" placeholder="A12345" pattern="[A-Z][0-9]{5}" />
 	</p>
+	<hr>
+	<?php
+	// --- Display current status and season history ---
+	$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+
+	// --- Add a simple control to set Active/Inactive status ---
+	echo '<p>';
+	echo '<label for="dame_membership_status_control"><strong>' . esc_html__( 'Adhésion pour la saison actuelle', 'dame' ) . '</strong></label>';
+	echo '<select id="dame_membership_status_control" name="dame_membership_status_control" style="width:100%;">';
+	$is_active = ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post->ID ) );
+	echo '<option value="active" ' . selected( $is_active, true, false ) . '>' . esc_html__( 'Actif', 'dame' ) . '</option>';
+	echo '<option value="inactive" ' . selected( $is_active, false, false ) . '>' . esc_html__( 'Non adhérent', 'dame' ) . '</option>';
+	echo '</select>';
+	echo '</p>';
+	?>
 	<p>
 		<label><strong><?php _e( 'Type de licence', 'dame' ); ?></strong></label><br>
 		<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="A" <?php checked( $license_type, 'A' ); ?> /> <?php _e( 'Licence A (Cours + Compétition)', 'dame' ); ?></label>
@@ -906,7 +844,6 @@ function dame_render_classification_metabox( $post ) {
 			<?php endforeach; ?>
 		</select>
 	</p>
-	<hr>
 	<p>
 		<label for="dame_adherent_honorabilite"><strong><?php _e( 'Contrôle d\'honorabilité', 'dame' ); ?></strong></label>
 		<select id="dame_adherent_honorabilite" name="dame_adherent_honorabilite" style="width:100%;">
@@ -919,6 +856,7 @@ function dame_render_classification_metabox( $post ) {
 			<?php endforeach; ?>
 		</select>
 	</p>
+	<hr>
 	<p>
 		<label for="dame_arbitre_level"><strong><?php _e( 'Niveau d\'arbitre', 'dame' ); ?></strong></label>
 		<select id="dame_arbitre_level" name="dame_arbitre_level" style="width:100%;">
