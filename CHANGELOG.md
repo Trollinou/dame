@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.3.1 - 2025-10-12
+*   **Amélioration :** Remplacement de la saisie de la taxonomie "Groupes" par une liste de cases à cocher pour une sélection plus intuitive et rapide.
+*   **Correctif :** La taxonomie "Groupes" est maintenant hiérarchique pour correspondre à la nouvelle interface de sélection, corrigeant un bug où les IDs des termes étaient enregistrés comme de nouveaux termes.
+*   **Correctif :** Rétablissement de la taxonomie "Saison d'adhésion" en mode non-hiérarchique, corrigeant une régression introduite lors du précédent correctif.
+
 ## 3.3.0 - 2025-10-07
 *   **Fonctionnalité :** Remplacement de plusieurs cases à cocher de classification (`École d'échecs`, `Pôle Excellence`, `Bénévole`, `Elu local`) par une nouvelle taxonomie non hiérarchique "Groupes".
 *   **Fonctionnalité :** Création d'un script de migration de données qui s'exécute lors de la mise à jour du plugin pour convertir les anciennes métadonnées vers la nouvelle taxonomie `dame_group`.
