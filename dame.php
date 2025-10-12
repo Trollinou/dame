@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier Administratif des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           3.3.1
+ * Version:           3.3.2
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Etienne Gagnon
@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '3.3.1' );
+define( 'DAME_VERSION', '3.3.2' );
 define( 'DAME_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -212,8 +212,10 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/toolbar.php';
 
 if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/menu.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/message-actions.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/metaboxes.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/columns.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/columns-message.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/settings-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-adherent.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/mailing.php';

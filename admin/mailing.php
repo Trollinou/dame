@@ -26,13 +26,13 @@ function dame_handle_send_email() {
         wp_die( 'You do not have permission to do this.' );
     }
 
-    $article_id = isset( $_POST['dame_article_to_send'] ) ? absint( $_POST['dame_article_to_send'] ) : 0;
+    $message_id = isset( $_POST['dame_message_to_send'] ) ? absint( $_POST['dame_message_to_send'] ) : 0;
     $selection_method = isset( $_POST['dame_selection_method'] ) ? sanitize_key( $_POST['dame_selection_method'] ) : '';
     $recipient_gender = isset( $_POST['dame_recipient_gender'] ) ? sanitize_text_field( $_POST['dame_recipient_gender'] ) : 'all';
 
-    if ( empty( $article_id ) ) {
+    if ( empty( $message_id ) ) {
         add_action( 'admin_notices', function() {
-            echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner un article à envoyer.", 'dame' ) . '</p></div>';
+            echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner un message à envoyer.", 'dame' ) . '</p></div>';
         });
         return;
     }
@@ -40,73 +40,57 @@ function dame_handle_send_email() {
     $adherent_ids = array();
 
     if ( 'group' === $selection_method ) {
-        $groups = isset( $_POST['dame_recipient_groups'] ) ? (array) array_map( 'absint', $_POST['dame_recipient_groups'] ) : array();
-        $seasons = isset( $_POST['dame_recipient_seasons'] ) ? (array) array_map( 'absint', $_POST['dame_recipient_seasons'] ) : array();
+        $groups = isset( $_POST['dame_recipient_groups'] ) ? array_filter( array_map( 'absint', (array) $_POST['dame_recipient_groups'] ) ) : array();
+        $seasons = isset( $_POST['dame_recipient_seasons'] ) ? array_filter( array_map( 'absint', (array) $_POST['dame_recipient_seasons'] ) ) : array();
 
         if ( empty( $groups ) && empty( $seasons ) ) {
             add_action( 'admin_notices', function() {
                 echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner au moins un filtre (saison ou groupe).", 'dame' ) . '</p></div>';
-            });
+            } );
             return;
         }
 
-        $season_adherent_ids = array();
-        $group_adherent_ids = array();
+        $query_args = array(
+            'post_type'      => 'adherent',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'tax_query'      => array(),
+            'meta_query'     => array(),
+        );
 
-        // Get adherents by season
+        $tax_queries = array();
         if ( ! empty( $seasons ) ) {
-            $season_query_args = array(
-                'post_type'      => 'adherent',
-                'posts_per_page' => -1,
-                'fields'         => 'ids',
-                'tax_query'      => array(
-                    array(
-                        'taxonomy' => 'dame_saison_adhesion',
-                        'field'    => 'term_id',
-                        'terms'    => $seasons,
-                        'operator' => 'IN',
-                    ),
-                ),
-                'meta_query' => array(),
+            $tax_queries[] = array(
+                'taxonomy' => 'dame_saison_adhesion',
+                'field'    => 'term_id',
+                'terms'    => $seasons,
+                'operator' => 'IN',
             );
-
-            if ( 'all' !== $recipient_gender ) {
-                $season_query_args['meta_query'][] = array(
-                    'key' => '_dame_sexe',
-                    'value' => $recipient_gender,
-                );
-            }
-            $season_adherent_ids = get_posts( $season_query_args );
         }
 
-        // Get adherents by group
         if ( ! empty( $groups ) ) {
-            $group_query_args = array(
-                'post_type'      => 'adherent',
-                'posts_per_page' => -1,
-                'fields'         => 'ids',
-                'tax_query'      => array(
-                    array(
-                        'taxonomy' => 'dame_group',
-                        'field'    => 'term_id',
-                        'terms'    => $groups,
-                        'operator' => 'IN',
-                    ),
-                ),
-                'meta_query' => array(),
+            $tax_queries[] = array(
+                'taxonomy' => 'dame_group',
+                'field'    => 'term_id',
+                'terms'    => $groups,
+                'operator' => 'IN',
             );
-
-            if ( 'all' !== $recipient_gender ) {
-                $group_query_args['meta_query'][] = array(
-                    'key'   => '_dame_sexe',
-                    'value' => $recipient_gender,
-                );
-            }
-            $group_adherent_ids = get_posts( $group_query_args );
         }
 
-        // Merge and get unique IDs
-        $adherent_ids = array_unique( array_merge( $season_adherent_ids, $group_adherent_ids ) );
+        if ( count( $tax_queries ) > 1 ) {
+            $query_args['tax_query']['relation'] = 'AND';
+        }
+
+        $query_args['tax_query'] = array_merge( $query_args['tax_query'], $tax_queries );
+
+        if ( 'all' !== $recipient_gender ) {
+            $query_args['meta_query'][] = array(
+                'key'   => '_dame_sexe',
+                'value' => $recipient_gender,
+            );
+        }
+
+        $adherent_ids = get_posts( $query_args );
 
     } elseif ( 'manual' === $selection_method ) {
         $adherent_ids = isset( $_POST['dame_manual_recipients'] ) ? (array) array_map( 'absint', $_POST['dame_manual_recipients'] ) : array();
@@ -144,7 +128,7 @@ function dame_handle_send_email() {
         return;
     }
 
-    $article = get_post( $article_id );
+    $article = get_post( $message_id );
     $subject = $article->post_title;
     $content = apply_filters( 'the_content', $article->post_content );
     $message = '<div style="margin: 1cm;">' . $content . '</div>';
@@ -182,6 +166,20 @@ function dame_handle_send_email() {
         wp_mail( $sender_email, $subject, $message, $headers );
         // It's good practice to clean up the global after each mail call.
         $dame_bcc_emails = null;
+    }
+
+    // Record the sent date and author
+    update_post_meta( $message_id, '_dame_sent_date', current_time( 'mysql' ) );
+    update_post_meta( $message_id, '_dame_sending_author', get_current_user_id() );
+
+    // Store the recipient criteria
+    update_post_meta( $message_id, '_dame_recipient_method', $selection_method );
+    if ( 'group' === $selection_method ) {
+        update_post_meta( $message_id, '_dame_recipient_seasons', isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_seasons'] ) : array() );
+        update_post_meta( $message_id, '_dame_recipient_groups', isset( $_POST['dame_recipient_groups'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_groups'] ) : array() );
+        update_post_meta( $message_id, '_dame_recipient_gender', $recipient_gender );
+    } elseif ( 'manual' === $selection_method ) {
+        update_post_meta( $message_id, '_dame_manual_recipients', isset( $_POST['dame_manual_recipients'] ) ? array_map( 'absint', (array) $_POST['dame_manual_recipients'] ) : array() );
     }
 
     add_action( 'admin_notices', function() use ( $recipient_emails ) {
@@ -278,8 +276,8 @@ function dame_get_emails_for_adherent( $adherent_id ) {
 function dame_render_mailing_page() {
     ?>
     <div class="wrap">
-        <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-        <p><?php esc_html_e( "Cette page vous permet d'envoyer un article du site à une sélection d'adhérents.", 'dame' ); ?></p>
+        <h1><?php esc_html_e( 'Envoyer un message', 'dame' ); ?></h1>
+        <p><?php esc_html_e( "Cette page vous permet d'envoyer un message à une sélection d'adhérents.", 'dame' ); ?></p>
 
         <form method="post" action="">
             <?php wp_nonce_field( 'dame_send_email_nonce', 'dame_send_email_nonce_field' ); ?>
@@ -287,45 +285,22 @@ function dame_render_mailing_page() {
             <table class="form-table">
                 <tbody>
                     <tr>
-                        <th scope="row"><?php esc_html_e( "Filtrer par catégorie", 'dame' ); ?></th>
-                        <td>
-                            <fieldset id="dame-category-filter">
-                                <legend class="screen-reader-text"><span><?php esc_html_e( "Catégories", 'dame' ); ?></span></legend>
-                                <?php
-                                $categories = get_categories( array( 'hide_empty' => false ) );
-                                if ( ! empty( $categories ) ) {
-                                    foreach ( $categories as $category ) {
-                                        echo '<label style="margin-right: 15px; font-weight: normal;">';
-                                        echo '<input type="checkbox" name="dame_article_categories[]" value="' . esc_attr( $category->term_id ) . '">';
-                                        echo ' ' . esc_html( $category->name );
-                                        echo '</label>';
-                                    }
-                                } else {
-                                    echo '<p>' . esc_html__( "Aucune catégorie trouvée.", 'dame' ) . '</p>';
-                                }
-                                ?>
-                            </fieldset>
-                        </td>
-                    </tr>
-                    <tr>
                         <th scope="row">
-                            <label for="dame_article_to_send"><?php esc_html_e( "Article à envoyer", 'dame' ); ?></label>
+                            <label for="dame_message_to_send"><?php esc_html_e( "Message à envoyer", 'dame' ); ?></label>
                         </th>
                         <td>
-                            <div id="dame-articles-list-container">
-                                <?php
-                                $posts = get_posts( array( 'post_type' => 'post', 'post_status' => array( 'publish', 'private' ), 'numberposts' => -1, 'orderby' => 'date', 'order' => 'DESC' ) );
-                                if ( ! empty( $posts ) ) {
-                                    echo '<select id="dame_article_to_send" name="dame_article_to_send" style="width: 100%; max-width: 400px;">';
-                                    foreach ( $posts as $p ) {
-                                        echo '<option value="' . esc_attr( $p->ID ) . '">' . esc_html( $p->post_title ) . '</option>';
-                                    }
-                                    echo '</select>';
-                                } else {
-                                    echo '<p>' . esc_html__( "Aucun article publié trouvé.", 'dame' ) . '</p>';
+                            <?php
+                            $messages = get_posts( array( 'post_type' => 'dame_message', 'post_status' => array( 'publish', 'private' ), 'numberposts' => -1, 'orderby' => 'date', 'order' => 'DESC' ) );
+                            if ( ! empty( $messages ) ) {
+                                echo '<select id="dame_message_to_send" name="dame_message_to_send" style="width: 100%; max-width: 400px;">';
+                                foreach ( $messages as $p ) {
+                                    echo '<option value="' . esc_attr( $p->ID ) . '">' . esc_html( $p->post_title ) . '</option>';
                                 }
-                                ?>
-                            </div>
+                                echo '</select>';
+                            } else {
+                                echo '<p>' . esc_html__( "Aucun message trouvé.", 'dame' ) . '</p>';
+                            }
+                            ?>
                         </td>
                     </tr>
                     <tr valign="top">
@@ -366,10 +341,9 @@ function dame_render_mailing_page() {
                                     ) );
 
                                     if ( ! empty( $seasons ) && ! is_wp_error( $seasons ) ) {
-                                        $current_season_id = get_option( 'dame_current_season_tag_id' );
                                         echo '<select id="dame_recipient_seasons" name="dame_recipient_seasons[]" multiple="multiple" style="width: 100%; max-width: 400px; height: 120px;">';
                                         foreach ( $seasons as $season ) {
-                                            echo '<option value="' . esc_attr( $season->term_id ) . '" ' . selected( $current_season_id, $season->term_id, false ) . '>' . esc_html( $season->name ) . '</option>';
+                                            echo '<option value="' . esc_attr( $season->term_id ) . '">' . esc_html( $season->name ) . '</option>';
                                         }
                                         echo '</select>';
                                         echo '<p class="description" style="margin-top: 5px;">' . esc_html__( 'Maintenez la touche (Ctrl) ou (Cmd) enfoncée pour sélectionner plusieurs saisons.', 'dame' ) . '</p>';
@@ -454,57 +428,3 @@ function dame_render_mailing_page() {
     </script>
     <?php
 }
-
-/**
- * AJAX handler for fetching filtered articles.
- */
-function dame_get_filtered_articles_ajax_handler() {
-    // 1. Security checks
-    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'dame_filter_articles_nonce' ) ) {
-        wp_send_json_error( array( 'message' => __( "Vérification de sécurité échouée.", 'dame' ) ), 403 );
-    }
-
-    if ( ! current_user_can( 'edit_others_posts' ) ) {
-        wp_send_json_error( array( 'message' => __( "Vous n'avez pas la permission d'effectuer cette action.", 'dame' ) ), 403 );
-    }
-
-    // 2. Get and sanitize categories
-    $category_ids = isset( $_POST['categories'] ) && is_array( $_POST['categories'] ) ? array_map( 'absint', $_POST['categories'] ) : array();
-
-    // 3. Build query arguments
-    $args = array(
-        'post_type'      => 'post',
-        'post_status'    => array( 'publish', 'private' ),
-        'numberposts'    => -1,
-        'orderby'        => 'date',
-        'order'          => 'DESC',
-    );
-
-    if ( ! empty( $category_ids ) ) {
-        $args['tax_query'] = array(
-            array(
-                'taxonomy' => 'category',
-                'field'    => 'term_id',
-                'terms'    => $category_ids,
-                'operator' => 'IN',
-            ),
-        );
-    }
-
-    // 4. Fetch posts
-    $posts = get_posts( $args );
-    $results = array();
-
-    if ( ! empty( $posts ) ) {
-        foreach ( $posts as $p ) {
-            $results[] = array(
-                'ID'         => $p->ID,
-                'post_title' => esc_html( get_the_title( $p->ID ) ),
-            );
-        }
-    }
-
-    // 5. Send response
-    wp_send_json_success( $results );
-}
-add_action( 'wp_ajax_dame_get_filtered_articles', 'dame_get_filtered_articles_ajax_handler' );
