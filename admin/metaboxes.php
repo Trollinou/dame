@@ -1445,14 +1445,26 @@ function dame_render_agenda_participants_metabox( $post ) {
 		return;
 	}
 
-	// 3. Display a checklist.
+	// 3. Sort adherents to show selected ones first.
+	$selected_list = array();
+	$unselected_list = array();
+	foreach ( $adherents as $adherent ) {
+		if ( in_array( $adherent->ID, $selected_participants, true ) ) {
+			$selected_list[] = $adherent;
+		} else {
+			$unselected_list[] = $adherent;
+		}
+	}
+	$sorted_adherents = array_merge( $selected_list, $unselected_list );
+
+	// 4. Display a checklist.
 	echo '<div class="dame-participants-checklist" style="max-height: 250px; overflow-y: auto;">';
 	echo '<ul>';
-	foreach ( $adherents as $adherent ) {
-		$checked = in_array( $adherent->ID, $selected_participants ) ? 'checked' : '';
+	foreach ( $sorted_adherents as $adherent ) {
+		$checked = in_array( $adherent->ID, $selected_participants, true ) ? 'checked="checked"' : '';
 		echo '<li>';
 		echo '<label>';
-		echo '<input type="checkbox" name="dame_event_participants[]" value="' . esc_attr( $adherent->ID ) . '" ' . esc_attr( $checked ) . '> ';
+		echo '<input type="checkbox" name="dame_event_participants[]" value="' . esc_attr( $adherent->ID ) . '" ' . $checked . '> ';
 		echo esc_html( $adherent->post_title );
 		echo '</label>';
 		echo '</li>';
