@@ -1457,21 +1457,36 @@ function dame_render_agenda_participants_metabox( $post ) {
 	}
 	$sorted_adherents = array_merge( $selected_list, $unselected_list );
 
-	// 4. Display a checklist.
-	echo '<div class="dame-participants-checklist" style="max-height: 250px; overflow-y: auto;">';
-	echo '<ul>';
-	foreach ( $sorted_adherents as $adherent ) {
-		$checked = in_array( $adherent->ID, $selected_participants, true ) ? 'checked="checked"' : '';
-		echo '<li>';
-		echo '<label>';
-		echo '<input type="checkbox" name="dame_event_participants[]" value="' . esc_attr( $adherent->ID ) . '" ' . $checked . '> ';
-		echo esc_html( $adherent->post_title );
-		echo '</label>';
-		echo '</li>';
-	}
-	echo '</ul>';
-	echo '</div>';
-	echo '<p class="description">' . esc_html__( 'Seuls les adhérents avec une adhésion active pour la saison en cours sont listés.', 'dame' ) . '</p>';
+	// 4. Display a checklist with a filter field.
+	?>
+	<input type="text" id="dame_participant_filter" placeholder="<?php esc_attr_e( 'Filtrer par nom...', 'dame' ); ?>" style="width: 100%; margin-bottom: 5px;">
+	<div class="dame-participants-checklist" style="max-height: 250px; overflow-y: auto;">
+		<ul id="dame_participants_list">
+			<?php
+			foreach ( $sorted_adherents as $adherent ) {
+				$checked = in_array( $adherent->ID, $selected_participants, true ) ? 'checked="checked"' : '';
+				echo '<li>';
+				echo '<label>';
+				echo '<input type="checkbox" name="dame_event_participants[]" value="' . esc_attr( $adherent->ID ) . '" ' . $checked . '> ';
+				echo esc_html( $adherent->post_title );
+				echo '</label>';
+				echo '</li>';
+			}
+			?>
+		</ul>
+	</div>
+	<p class="description"><?php esc_html_e( 'Seuls les adhérents avec une adhésion active pour la saison en cours sont listés.', 'dame' ); ?></p>
+	<script>
+	jQuery(document).ready(function($) {
+		$('#dame_participant_filter').on('keyup', function() {
+			var value = $(this).val().toLowerCase();
+			$('#dame_participants_list li').filter(function() {
+				$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+			});
+		});
+	});
+	</script>
+	<?php
 }
 
 /**
