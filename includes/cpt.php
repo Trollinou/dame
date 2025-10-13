@@ -266,6 +266,26 @@ function dame_display_event_details( $content ) {
             }
         }
 
+        // Competition info.
+        $competition_type = get_post_meta( $post_id, '_dame_competition_type', true );
+        if ( $competition_type && 'non' !== $competition_type ) {
+            $competition_level = get_post_meta( $post_id, '_dame_competition_level', true );
+            $type_label = ( 'individuelle' === $competition_type ) ? __( 'Individuelle', 'dame' ) : __( 'Par équipe', 'dame' );
+            $level_label = '';
+            if ( 'departementale' === $competition_level ) {
+                $level_label = __( 'Départementale', 'dame' );
+            } elseif ( 'regionale' === $competition_level ) {
+                $level_label = __( 'Régionale', 'dame' );
+            } elseif ( 'nationale' === $competition_level ) {
+                $level_label = __( 'Nationale', 'dame' );
+            }
+
+            $details_html .= '<div class="dame-event-detail-item dame-event-competition">';
+            $details_html .= '<h4>' . __( 'Compétition', 'dame' ) . '</h4>';
+            $details_html .= '<p>' . esc_html( $type_label . ' - ' . $level_label ) . '</p>';
+            $details_html .= '</div>';
+        }
+
         // Description.
         if ( ! empty( $description ) ) {
             $details_html .= '<div class="dame-event-detail-item dame-event-description">';
@@ -306,6 +326,10 @@ function dame_display_event_details( $content ) {
                 $details_html .= '<p>' . wp_kses_post( $full_address ) . '</p>';
             }
 
+            if ( ! empty( $latitude ) && ! empty( $longitude ) ) {
+                $details_html .= '<p class="dame-gps-coords">(' . esc_html( $latitude ) . ', ' . esc_html( $longitude ) . ')</p>';
+            }
+
             $details_html .= '</div>';
 
             if ( ! empty( $latitude ) && ! empty( $longitude ) ) {
@@ -318,6 +342,25 @@ function dame_display_event_details( $content ) {
                 $details_html .= '<a href="https://www.google.com/maps/dir/?api=1&destination=' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '" target="_blank" class="button nav-button">📱 ' . __( 'Calculer l\'itinéraire', 'dame' ) . '</a>';
                 $details_html .= '<button id="dame-open-gps" data-lat="' . esc_attr( $latitude ) . '" data-lng="' . esc_attr( $longitude ) . '" class="button nav-button">🧭 ' . __( 'Ouvrir dans le GPS', 'dame' ) . '</button>';
                 $details_html .= '</div>';
+                $details_html .= '</div>';
+            }
+        }
+
+        // Participants.
+        $participants = get_post_meta( $post_id, '_dame_event_participants', true );
+        if ( ! empty( $participants ) && is_array( $participants ) ) {
+            $participant_names = array();
+            foreach ( $participants as $participant_id ) {
+                $participant_title = get_the_title( $participant_id );
+                if ( $participant_title ) {
+                    $participant_names[] = esc_html( $participant_title );
+                }
+            }
+
+            if ( ! empty( $participant_names ) ) {
+                $details_html .= '<div class="dame-event-detail-item dame-event-participants">';
+                $details_html .= '<h4>' . __( 'Participants', 'dame' ) . '</h4>';
+                $details_html .= '<ul><li>' . implode( '</li><li>', $participant_names ) . '</li></ul>';
                 $details_html .= '</div>';
             }
         }

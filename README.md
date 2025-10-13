@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 3.3.2
+**Version:** 3.3.3
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -60,6 +60,9 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 
 ### Gestion d'Événements (Agenda)
 
+*   **Enrichissement des données d'événement :** Il est maintenant possible de spécifier si un événement est une compétition (individuelle ou par équipe) et son niveau (départementale, régionale, nationale).
+*   **Suivi des Participants :** Association des adhérents (avec adhésion active) aux événements pour suivre leur participation. L'interface de sélection est optimisée avec un champ de recherche et un tri qui place les participants déjà sélectionnés en tête de liste.
+*   **Affichage des détails amélioré :** La page publique d'un événement affiche maintenant les informations sur la compétition, les coordonnées GPS, et la liste des participants.
 *   **Calendrier d'Événements :** Un nouveau type de contenu "Agenda" permet de créer et gérer des événements.
 *   **Affichage Calendrier :** Le shortcode `[dame_agenda]` affiche un calendrier mensuel interactif avec navigation, filtres par catégorie et recherche.
 *   **Affichage Liste :** Le shortcode `[dame_liste_agenda nombre="X"]` affiche une liste des X prochains événements.
