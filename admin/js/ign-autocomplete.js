@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    function initAutocomplete(addressId, postalCodeId, cityId, latitudeId, longitudeId) {
+    function initAutocomplete(addressId, postalCodeId, cityId, latitudeId, longitudeId, distanceId, travelTimeId) {
         const addressInput = document.getElementById(addressId);
         if (!addressInput) {
             return;
@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const cityInput = document.getElementById(cityId);
         const latitudeInput = document.getElementById(latitudeId);
         const longitudeInput = document.getElementById(longitudeId);
+        const distanceInput = document.getElementById(distanceId);
+        const travelTimeInput = document.getElementById(travelTimeId);
         const wrapper = addressInput.closest('.dame-autocomplete-wrapper');
 
         if (wrapper) {
@@ -77,6 +79,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         longitudeInput.value = featureProperties.x;
                     }
 
+                    if (distanceInput && travelTimeInput && latitudeInput.value && longitudeInput.value) {
+                        calculateRoute(latitudeInput.value, longitudeInput.value, distanceInput, travelTimeInput);
+                    }
+
 
                     // If the global pre-fill function exists (on the public form), call it.
                     if (typeof prefillRep1 === 'function') {
@@ -96,8 +102,34 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function calculateRoute(destLat, destLng, distanceInput, travelTimeInput) {
+        const startLat = dame_admin_data.assoc_latitude;
+        const startLng = dame_admin_data.assoc_longitude;
+
+        if (!startLat || !startLng) {
+            return;
+        }
+
+        const url = `https://wxs.ign.fr/essentiels/itineraire/rest/route.json?origin=${startLng},${startLat}&destination=${destLng},${destLat}&method=fastest&graph=Voiture`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.distance && data.duration) {
+                    const distanceInKm = (data.distance / 1000).toFixed(2);
+                    const durationInMinutes = Math.round(data.duration / 60);
+                    const hours = Math.floor(durationInMinutes / 60);
+                    const minutes = durationInMinutes % 60;
+
+                    distanceInput.value = `${distanceInKm} km`;
+                    travelTimeInput.value = `${hours}h ${minutes}min`;
+                }
+            })
+            .catch(error => console.error('Error calculating route:', error));
+    }
+
     // Initialize for all address fields
-    initAutocomplete('dame_address_1', 'dame_postal_code', 'dame_city', 'dame_latitude', 'dame_longitude');
+    initAutocomplete('dame_address_1', 'dame_postal_code', 'dame_city', 'dame_latitude', 'dame_longitude', 'dame_distance', 'dame_travel_time');
     initAutocomplete('dame_legal_rep_1_address_1', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city');
     initAutocomplete('dame_legal_rep_2_address_1', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city');
     initAutocomplete('dame_assoc_address_1', 'dame_assoc_postal_code', 'dame_assoc_city', 'dame_assoc_latitude', 'dame_assoc_longitude');

@@ -302,6 +302,8 @@ function dame_display_event_details( $content ) {
             $city         = get_post_meta( $post_id, '_dame_city', true );
             $latitude     = get_post_meta( $post_id, '_dame_latitude', true );
             $longitude    = get_post_meta( $post_id, '_dame_longitude', true );
+            $distance     = get_post_meta( $post_id, '_dame_distance', true );
+            $travel_time  = get_post_meta( $post_id, '_dame_travel_time', true );
 
             $details_html .= '<div class="dame-event-detail-item dame-event-location">';
             $details_html .= '<h4>' . __( 'Lieu', 'dame' ) . '</h4>';
@@ -328,6 +330,10 @@ function dame_display_event_details( $content ) {
 
             if ( ! empty( $latitude ) && ! empty( $longitude ) ) {
                 $details_html .= '<p class="dame-gps-coords">(' . esc_html( $latitude ) . ', ' . esc_html( $longitude ) . ')</p>';
+            }
+
+            if ( ! empty( $distance ) && ! empty( $travel_time ) ) {
+                $details_html .= '<p class="dame-travel-info">' . sprintf( __( 'Distance: %s - Temps de trajet: %s', 'dame' ), esc_html( $distance ), esc_html( $travel_time ) ) . '</p>';
             }
 
             $details_html .= '</div>';
