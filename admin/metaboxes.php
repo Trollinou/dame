@@ -1171,7 +1171,7 @@ function dame_add_agenda_meta_boxes() {
         'dame_render_agenda_details_metabox',
         'dame_agenda',
         'normal',
-        'high'
+        'core'
     );
 	add_meta_box(
 		'dame_agenda_participants_metabox',
@@ -1179,7 +1179,7 @@ function dame_add_agenda_meta_boxes() {
 		'dame_render_agenda_participants_metabox',
 		'dame_agenda',
 		'side',
-		'default'
+		'high'
 	);
 }
 add_action( 'add_meta_boxes', 'dame_add_agenda_meta_boxes' );
