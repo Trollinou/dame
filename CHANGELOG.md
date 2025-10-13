@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.3.3 - 2025-10-13
+### Ajout
+- **Onglet Association :** Ajout d'un nouvel onglet "Association" dans `Réglages > Options DAME`. Cet onglet, positionné en premier, permet de centraliser l'adresse postale de l'association.
+- **Autocomplétion d'adresse :** Le champ d'adresse de l'association bénéficie de l'autocomplétion via l'API Geo Gouv, qui remplit automatiquement les champs de code postal, ville, latitude et longitude.
+- **Champs Latitude et Longitude :** Ajout de champs non modifiables pour stocker la latitude et la longitude de l'association, en vue de leur utilisation dans de futures fonctionnalités.
+
 ## 3.3.2 - 2025-10-12
 ### Ajout
 - **Fonctionnalité de Messagerie :** Introduction d'un nouveau type de contenu "Message" pour créer et gérer les communications par email aux membres.
