@@ -92,6 +92,14 @@ function dame_enqueue_admin_scripts( $hook ) {
 				'generic_error'     => __( "Une erreur est survenue lors de la récupération des articles.", 'dame' ),
 			)
 		);
+	} elseif ( 'settings_page_dame-settings' === $hook ) {
+		wp_enqueue_script(
+			'dame-autocomplete-js',
+			plugin_dir_url( __FILE__ ) . 'js/ign-autocomplete.js',
+			array(),
+			DAME_VERSION,
+			true
+		);
 	}
     if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && in_array( $post->post_type, array( 'dame_pre_inscription' ), true ) ) {
         wp_enqueue_style(

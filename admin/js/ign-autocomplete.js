@@ -100,6 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initAutocomplete('dame_address_1', 'dame_postal_code', 'dame_city', 'dame_latitude', 'dame_longitude');
     initAutocomplete('dame_legal_rep_1_address_1', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city');
     initAutocomplete('dame_legal_rep_2_address_1', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city');
+    initAutocomplete('dame_assoc_address_1', 'dame_assoc_postal_code', 'dame_assoc_city', 'dame_assoc_latitude', 'dame_assoc_longitude');
 
 
     /**

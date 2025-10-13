@@ -59,12 +59,13 @@ add_action( 'admin_menu', 'dame_add_options_page' );
  * Renders the options page wrapper.
  */
 function dame_render_options_page() {
-    $active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'saisons';
+    $active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'association';
     ?>
     <div class="wrap">
         <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 
         <h2 class="nav-tab-wrapper">
+            <a href="?page=dame-settings&tab=association" class="nav-tab <?php echo $active_tab === 'association' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Association', 'dame' ); ?></a>
             <a href="?page=dame-settings&tab=saisons" class="nav-tab <?php echo $active_tab === 'saisons' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Saisons', 'dame' ); ?></a>
             <a href="?page=dame-settings&tab=anniversaires" class="nav-tab <?php echo $active_tab === 'anniversaires' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Anniversaires', 'dame' ); ?></a>
             <a href="?page=dame-settings&tab=paiements" class="nav-tab <?php echo $active_tab === 'paiements' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Paiements', 'dame' ); ?></a>
@@ -80,7 +81,9 @@ function dame_render_options_page() {
             // Add a hidden field to identify the active tab
             echo '<input type="hidden" name="dame_active_tab" value="' . esc_attr( $active_tab ) . '" />';
 
-            if ( $active_tab === 'saisons' ) {
+            if ( $active_tab === 'association' ) {
+                do_settings_sections( 'dame_association_section_group' );
+            } elseif ( $active_tab === 'saisons' ) {
                 // This is custom UI, not a settings section
             } elseif ( $active_tab === 'anniversaires' ) {
                 do_settings_sections( 'dame_birthday_section_group' );
@@ -116,6 +119,62 @@ function dame_render_options_page() {
  */
 function dame_register_settings() {
     register_setting( 'dame_options_group', 'dame_options', 'dame_options_sanitize' );
+
+    // Section for Association
+    add_settings_section(
+        'dame_association_section',
+        __( "Informations de l'association", 'dame' ),
+        'dame_association_section_callback',
+        'dame_association_section_group'
+    );
+
+    add_settings_field(
+        'dame_assoc_address_1',
+        __( 'Adresse', 'dame' ),
+        'dame_assoc_address_1_callback',
+        'dame_association_section_group',
+        'dame_association_section'
+    );
+
+    add_settings_field(
+        'dame_assoc_address_2',
+        __( 'Complément', 'dame' ),
+        'dame_assoc_address_2_callback',
+        'dame_association_section_group',
+        'dame_association_section'
+    );
+
+    add_settings_field(
+        'dame_assoc_postal_code',
+        __( 'Code Postal', 'dame' ),
+        'dame_assoc_postal_code_callback',
+        'dame_association_section_group',
+        'dame_association_section'
+    );
+
+    add_settings_field(
+        'dame_assoc_city',
+        __( 'Ville', 'dame' ),
+        'dame_assoc_city_callback',
+        'dame_association_section_group',
+        'dame_association_section'
+    );
+
+    add_settings_field(
+        'dame_assoc_latitude',
+        __( 'Latitude', 'dame' ),
+        'dame_assoc_latitude_callback',
+        'dame_association_section_group',
+        'dame_association_section'
+    );
+
+    add_settings_field(
+        'dame_assoc_longitude',
+        __( 'Longitude', 'dame' ),
+        'dame_assoc_longitude_callback',
+        'dame_association_section_group',
+        'dame_association_section'
+    );
 
     // Section pour le mailing
     add_settings_section(
@@ -443,6 +502,27 @@ function dame_options_sanitize( $input ) {
     $dame_options = isset( $_POST['dame_options'] ) ? $_POST['dame_options'] : array();
 
     switch ( $active_tab ) {
+        case 'association':
+            if ( isset( $dame_options['assoc_address_1'] ) ) {
+                $options['assoc_address_1'] = sanitize_text_field( $dame_options['assoc_address_1'] );
+            }
+            if ( isset( $dame_options['assoc_address_2'] ) ) {
+                $options['assoc_address_2'] = sanitize_text_field( $dame_options['assoc_address_2'] );
+            }
+            if ( isset( $dame_options['assoc_postal_code'] ) ) {
+                $options['assoc_postal_code'] = sanitize_text_field( $dame_options['assoc_postal_code'] );
+            }
+            if ( isset( $dame_options['assoc_city'] ) ) {
+                $options['assoc_city'] = sanitize_text_field( $dame_options['assoc_city'] );
+            }
+            if ( isset( $dame_options['assoc_latitude'] ) ) {
+                $options['assoc_latitude'] = sanitize_text_field( $dame_options['assoc_latitude'] );
+            }
+            if ( isset( $dame_options['assoc_longitude'] ) ) {
+                $options['assoc_longitude'] = sanitize_text_field( $dame_options['assoc_longitude'] );
+            }
+            break;
+
         case 'emails':
             if ( isset( $dame_options['sender_email'] ) ) {
                 $options['sender_email'] = sanitize_email( $dame_options['sender_email'] );
@@ -499,6 +579,67 @@ function dame_options_sanitize( $input ) {
 
     return $options;
 }
+
+/**
+ * Callback for the association section.
+ */
+function dame_association_section_callback() {
+    echo '<p>' . esc_html__( "Saisir ici les informations relatives à l'adresse de l'association. L'autocomplétion est activée sur le champ Adresse.", 'dame' ) . '</p>';
+}
+
+/**
+ * Callbacks for Association settings fields.
+ */
+function dame_assoc_address_1_callback() {
+    $options = get_option( 'dame_options' );
+    $value = isset( $options['assoc_address_1'] ) ? $options['assoc_address_1'] : '';
+    ?>
+    <div class="dame-autocomplete-wrapper" style="position: relative;">
+        <input type="text" id="dame_assoc_address_1" name="dame_options[assoc_address_1]" value="<?php echo esc_attr( $value ); ?>" class="regular-text" autocomplete="off" />
+    </div>
+    <?php
+}
+
+function dame_assoc_address_2_callback() {
+    $options = get_option( 'dame_options' );
+    $value = isset( $options['assoc_address_2'] ) ? $options['assoc_address_2'] : '';
+    ?>
+    <input type="text" id="dame_assoc_address_2" name="dame_options[assoc_address_2]" value="<?php echo esc_attr( $value ); ?>" class="regular-text" />
+    <?php
+}
+
+function dame_assoc_postal_code_callback() {
+    $options = get_option( 'dame_options' );
+    $value = isset( $options['assoc_postal_code'] ) ? $options['assoc_postal_code'] : '';
+    ?>
+    <input type="text" id="dame_assoc_postal_code" name="dame_options[assoc_postal_code]" value="<?php echo esc_attr( $value ); ?>" class="regular-text" />
+    <?php
+}
+
+function dame_assoc_city_callback() {
+    $options = get_option( 'dame_options' );
+    $value = isset( $options['assoc_city'] ) ? $options['assoc_city'] : '';
+    ?>
+    <input type="text" id="dame_assoc_city" name="dame_options[assoc_city]" value="<?php echo esc_attr( $value ); ?>" class="regular-text" />
+    <?php
+}
+
+function dame_assoc_latitude_callback() {
+    $options = get_option( 'dame_options' );
+    $value = isset( $options['assoc_latitude'] ) ? $options['assoc_latitude'] : '';
+    ?>
+    <input type="text" id="dame_assoc_latitude" name="dame_options[assoc_latitude]" value="<?php echo esc_attr( $value ); ?>" class="regular-text" readonly="readonly" />
+    <?php
+}
+
+function dame_assoc_longitude_callback() {
+    $options = get_option( 'dame_options' );
+    $value = isset( $options['assoc_longitude'] ) ? $options['assoc_longitude'] : '';
+    ?>
+    <input type="text" id="dame_assoc_longitude" name="dame_options[assoc_longitude]" value="<?php echo esc_attr( $value ); ?>" class="regular-text" readonly="readonly" />
+    <?php
+}
+
 
 /**
  * Callback for the backup section.
