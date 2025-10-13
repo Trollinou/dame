@@ -70,7 +70,7 @@ function dame_enqueue_admin_scripts( $hook ) {
 		wp_enqueue_script(
 			'dame-autocomplete-js',
 			plugin_dir_url( __FILE__ ) . 'js/ign-autocomplete.js',
-			array(),
+			array('dame-main-js'),
 			DAME_VERSION,
 			true
 		);
