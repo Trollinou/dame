@@ -110,16 +110,16 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const url = `https://wxs.ign.fr/essentiels/itineraire/rest/route.json?origin=${startLng},${startLat}&destination=${destLng},${destLat}&method=fastest&graph=Voiture`;
+        const url = `https://data.geopf.fr/navigation/itineraire?resource=bdtopo-osrm&start=${startLng},${startLat}&end=${destLng},${destLat}&profile=car&optimization=fastest&distanceUnit=kilometer&timeUnit=hour`;
 
         fetch(url)
             .then(response => response.json())
             .then(data => {
                 if (data.distance && data.duration) {
-                    const distanceInKm = (data.distance / 1000).toFixed(2);
-                    const durationInMinutes = Math.round(data.duration / 60);
-                    const hours = Math.floor(durationInMinutes / 60);
-                    const minutes = durationInMinutes % 60;
+                    const distanceInKm = data.distance.toFixed(2);
+                    const durationInHours = data.duration;
+                    const hours = Math.floor(durationInHours);
+                    const minutes = Math.round((durationInHours - hours) * 60);
 
                     distanceInput.value = `${distanceInKm} km`;
                     travelTimeInput.value = `${hours}h ${minutes}min`;
