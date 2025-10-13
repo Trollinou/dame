@@ -2,9 +2,16 @@
 
 ## 3.3.3 - 2025-10-13
 ### Ajout
+- **Gestion des événements :** Il est désormais possible de spécifier si un événement est une compétition (individuelle ou par équipe) et son niveau (départementale, régionale, nationale).
+- **Suivi des participants :** Une nouvelle metabox permet d'associer des adhérents (avec une adhésion active) à un événement pour suivre leur participation.
 - **Onglet Association :** Ajout d'un nouvel onglet "Association" dans `Réglages > Options DAME`. Cet onglet, positionné en premier, permet de centraliser l'adresse postale de l'association.
 - **Autocomplétion d'adresse :** Le champ d'adresse de l'association bénéficie de l'autocomplétion via l'API Geo Gouv, qui remplit automatiquement les champs de code postal, ville, latitude et longitude.
 - **Champs Latitude et Longitude :** Ajout de champs non modifiables pour stocker la latitude et la longitude de l'association, en vue de leur utilisation dans de futures fonctionnalités.
+
+### Amélioration
+- **Affichage des événements :** La page publique d'un événement affiche maintenant les informations sur la compétition, les coordonnées GPS (latitude/longitude) et la liste des participants.
+- **Interface d'édition d'événement :** Les champs de latitude et de longitude sont maintenant visibles mais non modifiables dans la métaboxe des détails de l'événement.
+- **Interface de sélection des participants :** La liste des participants dans la métaboxe est maintenant dotée d'un champ de recherche pour filtrer les adhérents par nom. De plus, les participants déjà sélectionnés sont affichés en premier pour une meilleure visibilité.
 
 ## 3.3.2 - 2025-10-12
 ### Ajout
