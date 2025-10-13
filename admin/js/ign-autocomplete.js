@@ -130,6 +130,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Initialize for all address fields
     initAutocomplete('dame_address_1', 'dame_postal_code', 'dame_city', 'dame_latitude', 'dame_longitude', 'dame_distance', 'dame_travel_time');
+
+    const calculateButton = document.getElementById('dame_calculate_route_button');
+    if (calculateButton) {
+        calculateButton.addEventListener('click', function() {
+            const lat = document.getElementById('dame_latitude').value;
+            const lng = document.getElementById('dame_longitude').value;
+            const distanceInput = document.getElementById('dame_distance');
+            const travelTimeInput = document.getElementById('dame_travel_time');
+
+            if (lat && lng) {
+                calculateRoute(lat, lng, distanceInput, travelTimeInput);
+            }
+        });
+    }
+
     initAutocomplete('dame_legal_rep_1_address_1', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city');
     initAutocomplete('dame_legal_rep_2_address_1', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city');
     initAutocomplete('dame_assoc_address_1', 'dame_assoc_postal_code', 'dame_assoc_city', 'dame_assoc_latitude', 'dame_assoc_longitude');

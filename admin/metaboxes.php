@@ -1402,6 +1402,7 @@ function dame_render_agenda_details_metabox( $post ) {
 				<div class="dame-inline-fields">
 					<input type="text" id="dame_distance" name="dame_distance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_distance', true ) ); ?>" readonly="readonly" placeholder="<?php _e( 'Distance (km)', 'dame' ); ?>" />
 					<input type="text" id="dame_travel_time" name="dame_travel_time" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_travel_time', true ) ); ?>" readonly="readonly" placeholder="<?php _e( 'Temps de trajet', 'dame' ); ?>" />
+					<button type="button" id="dame_calculate_route_button" class="button"><?php _e( 'Calculer', 'dame' ); ?></button>
 				</div>
 			</td>
 		</tr>
