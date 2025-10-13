@@ -1165,6 +1165,14 @@ function dame_add_agenda_meta_boxes() {
         'normal',
         'high'
     );
+	add_meta_box(
+		'dame_agenda_participants_metabox',
+		__( 'Participants', 'dame' ),
+		'dame_render_agenda_participants_metabox',
+		'dame_agenda',
+		'side',
+		'default'
+	);
 }
 add_action( 'add_meta_boxes', 'dame_add_agenda_meta_boxes' );
 
@@ -1176,30 +1184,84 @@ add_action( 'add_meta_boxes', 'dame_add_agenda_meta_boxes' );
 function dame_render_agenda_description_metabox( $post ) {
 	// Check for transient data in case of a validation error on save.
 	$transient_data = get_transient( 'dame_agenda_post_data_' . $post->ID );
-	$description    = '';
-	if ( $transient_data && isset( $transient_data['dame_agenda_description'] ) ) {
-		$description = $transient_data['dame_agenda_description'];
-		// Don't delete the transient here; let the main details metabox handle it
-		// to ensure all metaboxes can access it.
-	} else {
-		$description = get_post_meta( $post->ID, '_dame_agenda_description', true );
-	}
+
+	// Helper function to get value from transient first, then from post meta.
+	$get_value = function( $field_name, $default = '' ) use ( $post, $transient_data ) {
+		$meta_key = 'dame_' . $field_name;
+		return isset( $transient_data[ $meta_key ] )
+			? esc_attr( $transient_data[ $meta_key ] )
+			: get_post_meta( $post->ID, '_' . $meta_key, true );
+	};
+
+	$competition_type    = $get_value( 'competition_type', 'non' );
+	$competition_level   = $get_value( 'competition_level', 'departementale' );
+	$description         = $get_value( 'agenda_description' );
+
+	?>
+	<style>
+		.dame-radio-group { display: flex; gap: 1em; margin-bottom: 0.5em; }
+		.dame-radio-group label { display: flex; align-items: center; gap: 0.2em; }
+		#dame_competition_level_wrapper { margin-left: 1em; }
+	</style>
+	<table class="form-table">
+		<tr>
+			<th><label><?php _e( 'Type de compétition', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-radio-group">
+					<label><input type="radio" name="dame_competition_type" value="non" <?php checked( $competition_type, 'non' ); ?>> <?php _e( 'Non', 'dame' ); ?></label>
+					<label><input type="radio" name="dame_competition_type" value="individuelle" <?php checked( $competition_type, 'individuelle' ); ?>> <?php _e( 'Individuelle', 'dame' ); ?></label>
+					<label><input type="radio" name="dame_competition_type" value="equipe" <?php checked( $competition_type, 'equipe' ); ?>> <?php _e( 'Par équipe', 'dame' ); ?></label>
+				</div>
+			</td>
+		</tr>
+		<tr id="dame_competition_level_wrapper">
+			<th><label><?php _e( 'Niveau de compétition', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-radio-group">
+					<label><input type="radio" name="dame_competition_level" value="departementale" <?php checked( $competition_level, 'departementale' ); ?>> <?php _e( 'Départementale', 'dame' ); ?></label>
+					<label><input type="radio" name="dame_competition_level" value="regionale" <?php checked( $competition_level, 'regionale' ); ?>> <?php _e( 'Régionale', 'dame' ); ?></label>
+					<label><input type="radio" name="dame_competition_level" value="nationale" <?php checked( $competition_level, 'nationale' ); ?>> <?php _e( 'Nationale', 'dame' ); ?></label>
+				</div>
+			</td>
+		</tr>
+	</table>
+	<?php
 
 	wp_editor(
-        $description,
-        'dame_agenda_description',
-        array(
-            'textarea_name' => 'dame_agenda_description',
-            'teeny'         => true,
-            'media_buttons' => false,
-            'textarea_rows' => 5,
-            'tinymce'       => array(
-                'toolbar1' => 'bold,italic',
-                'toolbar2' => '',
-                'toolbar3' => '',
-            ),
-        )
-    );
+		$description,
+		'dame_agenda_description',
+		array(
+			'textarea_name' => 'dame_agenda_description',
+			'teeny'         => true,
+			'media_buttons' => false,
+			'textarea_rows' => 5,
+			'tinymce'       => array(
+				'toolbar1' => 'bold,italic',
+				'toolbar2' => '',
+				'toolbar3' => '',
+			),
+		)
+	);
+	?>
+	<script>
+	jQuery(document).ready(function($) {
+		function toggleCompetitionLevel() {
+			var competitionType = $('input[name="dame_competition_type"]:checked').val();
+			if (competitionType === 'non') {
+				$('#dame_competition_level_wrapper').hide();
+			} else {
+				$('#dame_competition_level_wrapper').show();
+			}
+		}
+		// Run on page load
+		toggleCompetitionLevel();
+		// Run on change
+		$('input[name="dame_competition_type"]').on('change', function() {
+			toggleCompetitionLevel();
+		});
+	});
+	</script>
+	<?php
 }
 
 /**
@@ -1313,15 +1375,16 @@ function dame_render_agenda_details_metabox( $post ) {
 				</div>
 			</td>
 		</tr>
-        <tr style="display:none;">
-            <th><label for="dame_latitude"><?php _e( 'Latitude', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_latitude" name="dame_latitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_latitude', true ) ); ?>" /></td>
-        </tr>
-        <tr style="display:none;">
-            <th><label for="dame_longitude"><?php _e( 'Longitude', 'dame' ); ?></label></th>
-            <td><input type="text" id="dame_longitude" name="dame_longitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_longitude', true ) ); ?>" /></td>
-        </tr>
-    </table>
+		<tr>
+			<th><label for="dame_latitude"><?php _e( 'Latitude / Longitude', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-inline-fields">
+					<input type="text" id="dame_latitude" name="dame_latitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_latitude', true ) ); ?>" readonly="readonly" placeholder="<?php _e( 'Latitude', 'dame' ); ?>" />
+					<input type="text" id="dame_longitude" name="dame_longitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_longitude', true ) ); ?>" readonly="readonly" placeholder="<?php _e( 'Longitude', 'dame' ); ?>" />
+				</div>
+			</td>
+		</tr>
+	</table>
     <script>
     jQuery(document).ready(function($) {
         function toggleTimeFields() {
@@ -1339,6 +1402,64 @@ function dame_render_agenda_details_metabox( $post ) {
         .dame-time-fields.hidden { display: none; }
     </style>
     <?php
+}
+
+
+/**
+ * Renders the meta box for selecting event participants.
+ *
+ * @param WP_Post $post The post object.
+ */
+function dame_render_agenda_participants_metabox( $post ) {
+	// 1. Get the ID of the current season's term.
+	$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+
+	if ( ! $current_season_tag_id ) {
+		echo '<p>' . esc_html__( 'La saison actuelle n\'est pas configurée. Impossible de lister les adhérents.', 'dame' ) . '</p>';
+		return;
+	}
+
+	// 2. Query for adherents who have the current season's term.
+	$args = array(
+		'post_type'      => 'adherent',
+		'posts_per_page' => -1,
+		'orderby'        => 'title',
+		'order'          => 'ASC',
+		'tax_query'      => array(
+			array(
+				'taxonomy' => 'dame_saison_adhesion',
+				'field'    => 'term_id',
+				'terms'    => $current_season_tag_id,
+			),
+		),
+	);
+
+	$adherents = get_posts( $args );
+	$selected_participants = get_post_meta( $post->ID, '_dame_event_participants', true );
+	if ( ! is_array( $selected_participants ) ) {
+		$selected_participants = array();
+	}
+
+	if ( empty( $adherents ) ) {
+		echo '<p>' . esc_html__( 'Aucun adhérent actif pour la saison en cours.', 'dame' ) . '</p>';
+		return;
+	}
+
+	// 3. Display a checklist.
+	echo '<div class="dame-participants-checklist" style="max-height: 250px; overflow-y: auto;">';
+	echo '<ul>';
+	foreach ( $adherents as $adherent ) {
+		$checked = in_array( $adherent->ID, $selected_participants ) ? 'checked' : '';
+		echo '<li>';
+		echo '<label>';
+		echo '<input type="checkbox" name="dame_event_participants[]" value="' . esc_attr( $adherent->ID ) . '" ' . esc_attr( $checked ) . '> ';
+		echo esc_html( $adherent->post_title );
+		echo '</label>';
+		echo '</li>';
+	}
+	echo '</ul>';
+	echo '</div>';
+	echo '<p class="description">' . esc_html__( 'Seuls les adhérents avec une adhésion active pour la saison en cours sont listés.', 'dame' ) . '</p>';
 }
 
 /**
@@ -1404,6 +1525,8 @@ function dame_save_agenda_meta( $post_id ) {
         'dame_end_date'      => 'sanitize_text_field',
         'dame_end_time'      => 'sanitize_text_field',
         'dame_all_day'       => 'absint',
+        'dame_competition_type' => 'sanitize_key',
+        'dame_competition_level' => 'sanitize_key',
         'dame_location_name' => 'sanitize_text_field',
         'dame_address_1'     => 'sanitize_text_field',
         'dame_address_2'     => 'sanitize_text_field',
@@ -1424,6 +1547,15 @@ function dame_save_agenda_meta( $post_id ) {
             }
         }
     }
+
+	// --- Save Participants ---
+	if ( isset( $_POST['dame_event_participants'] ) ) {
+		$participant_ids = array_map( 'intval', $_POST['dame_event_participants'] );
+		update_post_meta( $post_id, '_dame_event_participants', $participant_ids );
+	} else {
+		// If no participants are selected, save an empty array.
+		update_post_meta( $post_id, '_dame_event_participants', array() );
+	}
 }
 add_action( 'save_post_dame_agenda', 'dame_save_agenda_meta' );
 
