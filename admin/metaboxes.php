@@ -1240,11 +1240,12 @@ function dame_render_agenda_description_metabox( $post ) {
 		'dame_agenda_description',
 		array(
 			'textarea_name' => 'dame_agenda_description',
-			'teeny'         => true,
+			'teeny'         => false,
 			'media_buttons' => false,
 			'textarea_rows' => 5,
+			'quicktags'     => false,
 			'tinymce'       => array(
-				'toolbar1' => 'bold,italic',
+				'toolbar1' => 'undo redo | cut copy pastetext | bold italic underline strikethrough | bullist numlist | alignleft aligncenter alignright | forecolor formatselect | removeformat',
 				'toolbar2' => '',
 				'toolbar3' => '',
 			),
