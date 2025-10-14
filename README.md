@@ -62,7 +62,8 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 
 *   **Enrichissement des données d'événement :** Il est maintenant possible de spécifier si un événement est une compétition (individuelle ou par équipe) et son niveau (départementale, régionale, nationale).
 *   **Suivi des Participants :** Association des adhérents (avec adhésion active) aux événements pour suivre leur participation. L'interface de sélection est optimisée avec un champ de recherche et un tri qui place les participants déjà sélectionnés en tête de liste.
-*   **Affichage des détails amélioré :** La page publique d'un événement affiche maintenant les informations sur la compétition, les coordonnées GPS, et la liste des participants.
+*   **Calcul de Trajet :** Lors de la saisie de l'adresse d'un événement, la distance et le temps de trajet en voiture depuis l'adresse de l'association (configurée dans les réglages) sont automatiquement calculés et affichés. Un bouton manuel "Calculer" permet de rafraîchir ces informations.
+*   **Affichage des détails amélioré :** La page publique d'un événement affiche maintenant les informations sur la compétition, les coordonnées GPS, la distance, le temps de trajet et la liste des participants.
 *   **Calendrier d'Événements :** Un nouveau type de contenu "Agenda" permet de créer et gérer des événements.
 *   **Affichage Calendrier :** Le shortcode `[dame_agenda]` affiche un calendrier mensuel interactif avec navigation, filtres par catégorie et recherche.
 *   **Affichage Liste :** Le shortcode `[dame_liste_agenda nombre="X"]` affiche une liste des X prochains événements.

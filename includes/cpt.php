@@ -295,8 +295,8 @@ function dame_display_event_details( $content ) {
         }
 
         // Location.
-        if ( ! empty( $location ) ) {
-            $address_1    = get_post_meta( $post_id, '_dame_address_1', true );
+        $address_1    = get_post_meta( $post_id, '_dame_address_1', true );
+        if ( ! empty( $location ) || ! empty( $address_1 ) ) {
             $address_2    = get_post_meta( $post_id, '_dame_address_2', true );
             $postal_code  = get_post_meta( $post_id, '_dame_postal_code', true );
             $city         = get_post_meta( $post_id, '_dame_city', true );
@@ -307,7 +307,8 @@ function dame_display_event_details( $content ) {
 
             $details_html .= '<div class="dame-event-detail-item dame-event-location">';
             $details_html .= '<h4>' . __( 'Lieu', 'dame' ) . '</h4>';
-            $details_html .= '<p><strong>' . esc_html( $location ) . '</strong></p>';
+            $location_title = ! empty( $location ) ? $location : $address_1;
+            $details_html .= '<p><strong>' . esc_html( $location_title ) . '</strong></p>';
 
             $full_address = '';
             if ( ! empty( $address_1 ) ) {

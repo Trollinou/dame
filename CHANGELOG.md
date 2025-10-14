@@ -9,6 +9,8 @@
 - **Champs Latitude et Longitude :** Ajout de champs non modifiables pour stocker la latitude et la longitude de l'association, en vue de leur utilisation dans de futures fonctionnalités.
 
 ### Amélioration
+- **Calcul de trajet :** Lors de la saisie de l'adresse d'un événement, la distance et le temps de trajet en voiture depuis l'adresse de l'association sont automatiquement calculés et affichés. Un bouton manuel permet de relancer le calcul. Ces informations sont également visibles sur la page publique de l'événement.
+- **Affichage du lieu :** Si le champ "Intitulé du lieu" d'un événement est laissé vide, l'adresse de l'événement est utilisée comme titre par défaut sur la page publique, assurant que les informations de localisation sont toujours visibles.
 - **Affichage des événements :** La page publique d'un événement affiche maintenant les informations sur la compétition, les coordonnées GPS (latitude/longitude) et la liste des participants.
 - **Interface d'édition d'événement :** Les champs de latitude et de longitude sont maintenant visibles mais non modifiables dans la métaboxe des détails de l'événement.
 - **Interface de sélection des participants :** La liste des participants dans la métaboxe est maintenant dotée d'un champ de recherche pour filtrer les adhérents par nom. De plus, les participants déjà sélectionnés sont affichés en premier pour une meilleure visibilité.
