@@ -45,14 +45,14 @@ function dame_enqueue_admin_scripts( $hook ) {
 	if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && in_array( $post->post_type, array( 'adherent', 'dame_pre_inscription', 'dame_agenda' ), true ) ) {
 		wp_enqueue_script(
 			'dame-main-js',
-			plugin_dir_url( __FILE__ ) . 'js/main.js',
+			plugin_dir_url( __FILE__ ) . '../js/main.js',
 			array( 'jquery' ),
 			DAME_VERSION,
 			true
 		);
 		wp_enqueue_script(
 			'dame-geo-autocomplete-js',
-			plugin_dir_url( __FILE__ ) . 'js/geo-autocomplete.js',
+			plugin_dir_url( __FILE__ ) . '../js/geo-autocomplete.js',
 			array(),
 			DAME_VERSION,
 			true
@@ -69,7 +69,7 @@ function dame_enqueue_admin_scripts( $hook ) {
 		);
 		wp_enqueue_script(
 			'dame-autocomplete-js',
-			plugin_dir_url( __FILE__ ) . 'js/ign-autocomplete.js',
+			plugin_dir_url( __FILE__ ) . '../js/ign-autocomplete.js',
 			array('dame-main-js'),
 			DAME_VERSION,
 			true
@@ -78,7 +78,7 @@ function dame_enqueue_admin_scripts( $hook ) {
 		// Ensure main.js is enqueued for the mailing page as well
 		wp_enqueue_script(
 			'dame-main-js',
-			plugin_dir_url( __FILE__ ) . 'js/main.js',
+			plugin_dir_url( __FILE__ ) . '../js/main.js',
 			array(),
 			DAME_VERSION,
 			true
@@ -98,7 +98,7 @@ function dame_enqueue_admin_scripts( $hook ) {
 	} elseif ( 'settings_page_dame-settings' === $hook ) {
 		wp_enqueue_script(
 			'dame-autocomplete-js',
-			plugin_dir_url( __FILE__ ) . 'js/ign-autocomplete.js',
+			plugin_dir_url( __FILE__ ) . '../js/ign-autocomplete.js',
 			array(),
 			DAME_VERSION,
 			true
@@ -107,7 +107,7 @@ function dame_enqueue_admin_scripts( $hook ) {
     if ( ( 'post.php' === $hook || 'post-new.php' === $hook ) && isset( $post->post_type ) && in_array( $post->post_type, array( 'dame_pre_inscription' ), true ) ) {
         wp_enqueue_style(
             'dame-admin-styles',
-            plugin_dir_url( __FILE__ ) . 'css/admin-styles.css',
+            plugin_dir_url( __FILE__ ) . '../css/admin-styles.css',
             array(),
             DAME_VERSION
         );
