@@ -57,17 +57,20 @@ function dame_enqueue_admin_scripts( $hook ) {
 			DAME_VERSION,
 			true
 		);
+		$options = get_option( 'dame_options' );
 		wp_localize_script(
 			'dame-main-js',
 			'dame_admin_data',
 			array(
 				'department_region_mapping' => dame_get_department_region_mapping(),
+				'assoc_latitude'            => isset( $options['assoc_latitude'] ) ? $options['assoc_latitude'] : '',
+				'assoc_longitude'           => isset( $options['assoc_longitude'] ) ? $options['assoc_longitude'] : '',
 			)
 		);
 		wp_enqueue_script(
 			'dame-autocomplete-js',
 			plugin_dir_url( __FILE__ ) . 'js/ign-autocomplete.js',
-			array(),
+			array('dame-main-js'),
 			DAME_VERSION,
 			true
 		);
@@ -1393,6 +1396,16 @@ function dame_render_agenda_details_metabox( $post ) {
 				</div>
 			</td>
 		</tr>
+		<tr>
+			<th><label for="dame_distance"><?php _e( 'Distance / Temps de trajet', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-inline-fields">
+					<input type="text" id="dame_distance" name="dame_distance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_distance', true ) ); ?>" readonly="readonly" placeholder="<?php _e( 'Distance (km)', 'dame' ); ?>" />
+					<input type="text" id="dame_travel_time" name="dame_travel_time" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_travel_time', true ) ); ?>" readonly="readonly" placeholder="<?php _e( 'Temps de trajet', 'dame' ); ?>" />
+					<button type="button" id="dame_calculate_route_button" class="button"><?php _e( 'Calculer', 'dame' ); ?></button>
+				</div>
+			</td>
+		</tr>
 	</table>
     <script>
     jQuery(document).ready(function($) {
@@ -1570,6 +1583,8 @@ function dame_save_agenda_meta( $post_id ) {
         'dame_city'          => 'sanitize_text_field',
         'dame_latitude'      => 'sanitize_text_field',
         'dame_longitude'     => 'sanitize_text_field',
+        'dame_distance'      => 'sanitize_text_field',
+        'dame_travel_time'   => 'sanitize_text_field',
         'dame_agenda_description' => 'wp_kses_post',
     ];
 
