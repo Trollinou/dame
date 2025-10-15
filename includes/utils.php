@@ -204,7 +204,8 @@ function dame_get_adherent_age_category( $birth_date_str, $gender = 'Masculin' )
  */
 function dame_get_adherent_age_category_key( $birth_date_str, $gender = 'Masculin' ) {
     $category = dame_get_adherent_age_category( $birth_date_str, $gender );
-    return sanitize_key( $category );
+    $key = str_replace( '+', '-plus', $category );
+    return sanitize_key( $key );
 }
 
 /**
@@ -214,23 +215,23 @@ function dame_get_adherent_age_category_key( $birth_date_str, $gender = 'Masculi
  */
 function dame_get_all_age_categories() {
     return array(
-        'u8'       => 'U8',
-        'u8f'      => 'U8F',
-        'u10'      => 'U10',
-        'u10f'     => 'U10F',
-        'u12'      => 'U12',
-        'u12f'     => 'U12F',
-        'u14'      => 'U14',
-        'u14f'     => 'U14F',
-        'u16'      => 'U16',
-        'u16f'     => 'U16F',
-        'u18'      => 'U18',
-        'u18f'     => 'U18F',
-        'u20'      => 'U20',
-        'u20f'     => 'U20F',
-        'senior'   => 'Sénior',
-        'senior+'  => 'Sénior+',
-        'veteran'  => 'Vétéran',
+        'u8'          => 'U8',
+        'u8f'         => 'U8F',
+        'u10'         => 'U10',
+        'u10f'        => 'U10F',
+        'u12'         => 'U12',
+        'u12f'        => 'U12F',
+        'u14'         => 'U14',
+        'u14f'        => 'U14F',
+        'u16'         => 'U16',
+        'u16f'        => 'U16F',
+        'u18'         => 'U18',
+        'u18f'        => 'U18F',
+        'u20'         => 'U20',
+        'u20f'        => 'U20F',
+        'senior'      => 'Sénior',
+        'senior-plus' => 'Sénior+',
+        'veteran'     => 'Vétéran',
     );
 }
 
@@ -262,16 +263,16 @@ function dame_get_birth_date_range_for_category( $category_key ) {
     $reference_date = new DateTime( $season_end_year . '-01-01' );
 
     $age_map = array(
-        'u8'      => array( 'min' => 0, 'max' => 7 ),
-        'u10'     => array( 'min' => 8, 'max' => 9 ),
-        'u12'     => array( 'min' => 10, 'max' => 11 ),
-        'u14'     => array( 'min' => 12, 'max' => 13 ),
-        'u16'     => array( 'min' => 14, 'max' => 15 ),
-        'u18'     => array( 'min' => 16, 'max' => 17 ),
-        'u20'     => array( 'min' => 18, 'max' => 19 ),
-        'senior'  => array( 'min' => 20, 'max' => 49 ),
-        'senior+' => array( 'min' => 50, 'max' => 64 ),
-        'veteran' => array( 'min' => 65, 'max' => 999 ),
+        'u8'          => array( 'min' => 0, 'max' => 7 ),
+        'u10'         => array( 'min' => 8, 'max' => 9 ),
+        'u12'         => array( 'min' => 10, 'max' => 11 ),
+        'u14'         => array( 'min' => 12, 'max' => 13 ),
+        'u16'         => array( 'min' => 14, 'max' => 15 ),
+        'u18'         => array( 'min' => 16, 'max' => 17 ),
+        'u20'         => array( 'min' => 18, 'max' => 19 ),
+        'senior'      => array( 'min' => 20, 'max' => 49 ),
+        'senior-plus' => array( 'min' => 50, 'max' => 64 ),
+        'veteran'     => array( 'min' => 65, 'max' => 999 ),
     );
 
     // Remove 'f' from category key for age map lookup

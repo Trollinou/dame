@@ -288,6 +288,49 @@ function dame_filter_adherent_query( $query ) {
 }
 add_action( 'pre_get_posts', 'dame_filter_adherent_query' );
 
+
+/**
+ * Extends the search functionality for the Adherent CPT to include email fields.
+ *
+ * @param WP_Query $query The WP_Query instance.
+ */
+function dame_adherent_search( $query ) {
+    if ( ! is_admin() || ! $query->is_main_query() || ! $query->is_search() ) {
+        return;
+    }
+
+    if ( 'adherent' !== $query->get( 'post_type' ) ) {
+        return;
+    }
+
+    $search_term = $query->get( 's' );
+    if ( empty( $search_term ) ) {
+        return;
+    }
+
+    $meta_query = $query->get( 'meta_query' ) ?: array();
+    $meta_query['relation'] = 'OR';
+
+    $meta_query[] = array(
+        'key'     => '_dame_email',
+        'value'   => $search_term,
+        'compare' => 'LIKE',
+    );
+    $meta_query[] = array(
+        'key'     => '_dame_legal_rep_1_email',
+        'value'   => $search_term,
+        'compare' => 'LIKE',
+    );
+    $meta_query[] = array(
+        'key'     => '_dame_legal_rep_2_email',
+        'value'   => $search_term,
+        'compare' => 'LIKE',
+    );
+
+    $query->set( 'meta_query', $meta_query );
+}
+add_action( 'pre_get_posts', 'dame_adherent_search' );
+
 /**
  * Adds a 'Consulter' action link to the adherent list table.
  *
