@@ -109,15 +109,15 @@ function dame_send_birthday_emails() {
         }
     }
 
-    $today_md = date( 'm-d' );
+    $today_dm = date( 'd/m' );
     $adherents_query = new WP_Query( array(
         'post_type'      => 'adherent',
         'posts_per_page' => -1,
         'meta_query'     => array(
             array(
                 'key'     => '_dame_date_naissance',
-                'value'   => '%-' . $today_md,
-                'compare' => 'LIKE',
+                'value'   => '^' . $today_dm,
+                'compare' => 'REGEXP',
             ),
         ),
         'tax_query'      => array(
