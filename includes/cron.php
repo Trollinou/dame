@@ -109,14 +109,14 @@ function dame_send_birthday_emails() {
         }
     }
 
-    $today_dm = date( 'd/m' );
+    $today_md = date( 'm-d' );
     $adherents_query = new WP_Query( array(
         'post_type'      => 'adherent',
         'posts_per_page' => -1,
         'meta_query'     => array(
             array(
-                'key'     => '_dame_date_naissance',
-                'value'   => '^' . $today_dm,
+                'key'     => '_dame_birth_date',
+                'value'   => '-'. $today_md . '$',
                 'compare' => 'REGEXP',
             ),
         ),
@@ -153,9 +153,9 @@ function dame_send_birthday_emails() {
     while ( $adherents_query->have_posts() ) {
         $adherents_query->the_post();
         $adherent_id = get_the_ID();
-        $nom = get_the_title();
-        $prenom = get_post_meta( $adherent_id, '_dame_prenom', true );
-        $birth_date_str = get_post_meta( $adherent_id, '_dame_date_naissance', true );
+        $nom = get_post_meta( $adherent_id, 'dame_last_name', true );
+        $prenom = get_post_meta( $adherent_id, 'dame_first_name', true );
+        $birth_date_str = get_post_meta( $adherent_id, 'dame_birth_date', true );
 
         if ( empty( $prenom ) || empty( $birth_date_str ) ) {
             continue;
