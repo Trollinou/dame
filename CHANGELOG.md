@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.3.4 - 2025-10-15
+### Amélioration
+- **Qualité du code :** Remaniement majeur de la structure des fichiers dans les répertoires `/admin` et `/includes`. Les fichiers monolithiques volumineux (`metaboxes.php`, `columns.php`, `settings-page.php`, `cpt.php`, `shortcodes.php`) ont été découpés en modules plus petits et logiques, organisés par fonctionnalité dans de nouveaux sous-répertoires. Cela améliore considérablement la lisibilité, l'organisation et la maintenabilité du code.
+
+### Correction
+- **Bug de sauvegarde :** Correction d'un bug qui empêchait la sauvegarde du champ "Académie" (`_dame_school_academy`) sur la fiche d'un adhérent. La cause était une coquille dans le nom du champ lors du processus de sauvegarde.
+- **Chemins des scripts :** Correction d'une régression introduite par le remaniement où les chemins vers certains fichiers JavaScript et CSS de l'administration étaient incorrects, provoquant des erreurs 404 et cassant des fonctionnalités comme l'autocomplétion des adresses.
+
 ## 3.3.3 - 2025-10-13
 ### Ajout
 - **Gestion des événements :** Il est désormais possible de spécifier si un événement est une compétition (individuelle ou par équipe) et son niveau (départementale, régionale, nationale).
