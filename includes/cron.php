@@ -116,7 +116,7 @@ function dame_send_birthday_emails() {
         'meta_query'     => array(
             array(
                 'key'     => '_dame_date_naissance',
-                'value'   => '....-' . $today_md,
+                'value'   => '%-' . $today_md,
                 'compare' => 'LIKE',
             ),
         ),
