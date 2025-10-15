@@ -331,6 +331,21 @@ function dame_adherent_search_where( $where, $query ) {
 }
 add_filter( 'posts_where', 'dame_adherent_search_where', 10, 2 );
 
+/**
+ * Ensures that the search results for Adherent CPT are distinct.
+ *
+ * @param string   $distinct The DISTINCT clause of the query.
+ * @param WP_Query $query    The WP_Query instance.
+ * @return string The modified DISTINCT clause.
+ */
+function dame_adherent_search_distinct( $distinct, $query ) {
+    if ( is_admin() && 'adherent' === $query->get( 'post_type' ) && $query->is_search() ) {
+        return 'DISTINCT';
+    }
+    return $distinct;
+}
+add_filter( 'posts_distinct', 'dame_adherent_search_distinct', 10, 2 );
+
 
 /**
  * Adds a 'Consulter' action link to the adherent list table.

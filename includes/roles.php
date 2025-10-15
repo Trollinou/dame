@@ -34,14 +34,6 @@ function dame_add_custom_roles() {
         add_role( 'staff', __( 'Membre du Bureau', 'dame' ), $staff_capabilities );
     }
 
-    $staff_role = get_role( 'staff' );
-    if ( $staff_role ) {
-        $staff_role->add_cap( 'publish_posts' );
-        $staff_role->add_cap( 'edit_posts' );
-        $staff_role->add_cap( 'edit_published_posts' );
-        $staff_role->add_cap( 'edit_others_posts' );
-    }
-
     // Role: Entraineur (Coach)
     // Based on Editor capabilities.
     $editor_capabilities = array(
