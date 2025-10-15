@@ -128,7 +128,7 @@ function dame_birthday_settings_enqueue_scripts( $hook ) {
     // }
 
     $screen = get_current_screen();
-    if ( ! $screen || 'toplevel_page_dame-settings' !== $screen->id ) {
+    if ( ! $screen || 'settings_page_dame-settings' !== $screen->id ) {
         return;
     }
 
