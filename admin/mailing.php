@@ -180,11 +180,12 @@ function dame_handle_send_email() {
     // Store the recipient criteria
     update_post_meta( $message_id, '_dame_recipient_method', $selection_method );
     if ( 'group' === $selection_method ) {
-        update_post_meta( $message_id, '_dame_recipient_seasons', isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_seasons'] ) : array() );
-        update_post_meta( $message_id, '_dame_recipient_groups', isset( $_POST['dame_recipient_groups'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_groups'] ) : array() );
+        update_post_meta( $message_id, '_dame_recipient_seasons', $seasons );
+        update_post_meta( $message_id, '_dame_recipient_groups_saisonnier', $saisonnier_groups );
+        update_post_meta( $message_id, '_dame_recipient_groups_permanent', $permanent_groups );
         update_post_meta( $message_id, '_dame_recipient_gender', $recipient_gender );
     } elseif ( 'manual' === $selection_method ) {
-        update_post_meta( $message_id, '_dame_manual_recipients', isset( $_POST['dame_manual_recipients'] ) ? array_map( 'absint', (array) $_POST['dame_manual_recipients'] ) : array() );
+        update_post_meta( $message_id, '_dame_manual_recipients', $adherent_ids );
     }
 
     add_action( 'admin_notices', function() use ( $recipient_emails ) {
@@ -387,7 +388,7 @@ function dame_render_mailing_page() {
                                             echo '<option value="' . esc_attr( $group->term_id ) . '">' . esc_html( $group->name ) . '</option>';
                                         }
                                         echo '</select>';
-                                        echo '<p class="description" style="margin-top: 5px;">' . esc_html__( 'Intersection with Adhesion Season and Gender.', 'dame' ) . '</p>';
+                                        echo '<p class="description" style="margin-top: 5px;">' . esc_html__( 'Intersection avec la Saison d\'adhésion et le Sexe.', 'dame' ) . '</p>';
                                     } else {
                                         echo '<p>' . esc_html__( "Aucun groupe saisonnier trouvé.", 'dame' ) . '</p>';
                                     }
@@ -418,7 +419,7 @@ function dame_render_mailing_page() {
                                             echo '<option value="' . esc_attr( $group->term_id ) . '">' . esc_html( $group->name ) . '</option>';
                                         }
                                         echo '</select>';
-                                        echo '<p class="description" style="margin-top: 5px;">' . esc_html__( 'Union with the rest of the selection.', 'dame' ) . '</p>';
+                                        echo '<p class="description" style="margin-top: 5px;">' . esc_html__( 'Union avec le reste de la sélection.', 'dame' ) . '</p>';
                                     } else {
                                         echo '<p>' . esc_html__( "Aucun groupe permanent trouvé.", 'dame' ) . '</p>';
                                     }

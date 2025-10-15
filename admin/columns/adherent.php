@@ -247,20 +247,6 @@ function dame_filter_adherent_query( $query ) {
             }
         }
 
-        if ( count( $meta_query ) > 0 ) {
-            if ( ! isset( $meta_query['relation'] ) ) {
-                $meta_query['relation'] = 'AND';
-            }
-            $query->set( 'meta_query', $meta_query );
-        }
-
-        if ( count( $tax_query ) > 0 ) {
-            if ( ! isset( $tax_query['relation'] ) ) {
-                $tax_query['relation'] = 'AND';
-            }
-            $query->set( 'tax_query', $tax_query );
-        }
-
         // Age Category filter.
         if ( isset( $_GET['dame_age_category_filter'] ) && ! empty( $_GET['dame_age_category_filter'] ) ) {
             $age_category_filter = sanitize_key( $_GET['dame_age_category_filter'] );
@@ -283,6 +269,20 @@ function dame_filter_adherent_query( $query ) {
                     );
                 }
             }
+        }
+
+        if ( count( $meta_query ) > 0 ) {
+            if ( ! isset( $meta_query['relation'] ) ) {
+                $meta_query['relation'] = 'AND';
+            }
+            $query->set( 'meta_query', $meta_query );
+        }
+
+        if ( count( $tax_query ) > 0 ) {
+            if ( ! isset( $tax_query['relation'] ) ) {
+                $tax_query['relation'] = 'AND';
+            }
+            $query->set( 'tax_query', $tax_query );
         }
     }
 }
