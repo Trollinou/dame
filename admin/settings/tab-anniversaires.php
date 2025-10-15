@@ -133,7 +133,14 @@ function dame_birthday_settings_enqueue_scripts( $hook ) {
     }
 
     // A faire plus finement aussi
-    $active_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'association';
+    if ( isset( $_GET['tab'] ) ) {
+        $active_tab = sanitize_key( $_GET['tab'] );
+    } elseif ( isset( $_POST['dame_active_tab'] ) ) {
+        $active_tab = sanitize_key( $_POST['dame_active_tab'] );
+    } else {
+        $active_tab = 'association';
+    }
+
     if ( 'anniversaires' !== $active_tab ) {
         return;
     }
