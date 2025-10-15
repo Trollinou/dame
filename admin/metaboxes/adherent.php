@@ -934,7 +934,7 @@ function dame_save_adherent_meta( $post_id ) {
 		'dame_sexe' => 'sanitize_text_field',
 		'dame_profession' => 'sanitize_text_field',
 		'dame_country' => 'sanitize_text_field', 'dame_region' => 'sanitize_text_field', 'dame_department' => 'sanitize_text_field',
-		'dame_school_name' => 'sanitize_text_field', 'dame_school_ academy' => 'sanitize_text_field',
+		'dame_school_name' => 'sanitize_text_field', 'dame_school_academy' => 'sanitize_text_field',
 
 		'dame_legal_rep_1_first_name' => 'sanitize_text_field', 'dame_legal_rep_1_last_name' => 'sanitize_text_field',
 		'dame_legal_rep_1_profession' => 'sanitize_text_field', 'dame_legal_rep_1_honorabilite' => 'sanitize_text_field',
