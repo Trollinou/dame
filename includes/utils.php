@@ -194,3 +194,105 @@ function dame_get_adherent_age_category( $birth_date_str, $gender = 'Masculin' )
 
     return $category;
 }
+
+/**
+ * Returns a key for the age category.
+ *
+ * @param string $birth_date_str The birth date in 'Y-m-d' format.
+ * @param string $gender The gender ('Féminin' or 'Masculin').
+ * @return string The calculated age category key.
+ */
+function dame_get_adherent_age_category_key( $birth_date_str, $gender = 'Masculin' ) {
+    $category = dame_get_adherent_age_category( $birth_date_str, $gender );
+    return sanitize_key( $category );
+}
+
+/**
+ * Returns a list of all possible age categories.
+ *
+ * @return array An array of age categories.
+ */
+function dame_get_all_age_categories() {
+    return array(
+        'u8'       => 'U8',
+        'u8f'      => 'U8F',
+        'u10'      => 'U10',
+        'u10f'     => 'U10F',
+        'u12'      => 'U12',
+        'u12f'     => 'U12F',
+        'u14'      => 'U14',
+        'u14f'     => 'U14F',
+        'u16'      => 'U16',
+        'u16f'     => 'U16F',
+        'u18'      => 'U18',
+        'u18f'     => 'U18F',
+        'u20'      => 'U20',
+        'u20f'     => 'U20F',
+        'senior'   => 'Sénior',
+        'senior+'  => 'Sénior+',
+        'veteran'  => 'Vétéran',
+    );
+}
+
+/**
+ * Calculates the birth date range for a given age category.
+ *
+ * @param string $category_key The key of the age category.
+ * @return array|null An array containing the start and end dates of the birth range, or null.
+ */
+function dame_get_birth_date_range_for_category( $category_key ) {
+    // Get the current season tag ID from options.
+    $current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+    if ( ! $current_season_tag_id ) {
+        return null;
+    }
+
+    $season_term = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
+    if ( is_wp_error( $season_term ) || ! $season_term ) {
+        return null;
+    }
+
+    // Season name is expected to be in "YYYY/YYYY" format, e.g., "2023/2024".
+    $season_name = $season_term->name;
+    $years = explode( '/', $season_name );
+    if ( count( $years ) !== 2 || ! is_numeric( $years[1] ) ) {
+        return null;
+    }
+    $season_end_year = (int) $years[1];
+    $reference_date = new DateTime( $season_end_year . '-01-01' );
+
+    $age_map = array(
+        'u8'      => array( 'min' => 0, 'max' => 7 ),
+        'u10'     => array( 'min' => 8, 'max' => 9 ),
+        'u12'     => array( 'min' => 10, 'max' => 11 ),
+        'u14'     => array( 'min' => 12, 'max' => 13 ),
+        'u16'     => array( 'min' => 14, 'max' => 15 ),
+        'u18'     => array( 'min' => 16, 'max' => 17 ),
+        'u20'     => array( 'min' => 18, 'max' => 19 ),
+        'senior'  => array( 'min' => 20, 'max' => 49 ),
+        'senior+' => array( 'min' => 50, 'max' => 64 ),
+        'veteran' => array( 'min' => 65, 'max' => 999 ),
+    );
+
+    // Remove 'f' from category key for age map lookup
+    $age_key = rtrim( $category_key, 'f' );
+
+    if ( ! isset( $age_map[ $age_key ] ) ) {
+        return null;
+    }
+
+    $min_age = $age_map[ $age_key ]['min'];
+    $max_age = $age_map[ $age_key ]['max'];
+
+    $end_date = clone $reference_date;
+    $end_date->modify( "-$min_age years" );
+
+    $start_date = clone $reference_date;
+    $start_date->modify( "-" . ( $max_age + 1 ) . " years" );
+    $start_date->modify( "+1 day" );
+
+    return array(
+        'start' => $start_date->format( 'Y-m-d' ),
+        'end'   => $end_date->format( 'Y-m-d' ),
+    );
+}

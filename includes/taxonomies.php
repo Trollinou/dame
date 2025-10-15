@@ -85,6 +85,85 @@ function dame_register_group_taxonomy() {
 add_action( 'init', 'dame_register_group_taxonomy', 0 );
 
 /**
+ * Add a "Type" field to the "Add New Group" form.
+ */
+function dame_group_add_form_fields() {
+    ?>
+    <div class="form-field">
+        <label for="term_meta[group_type]"><?php _e( 'Type de groupe', 'dame' ); ?></label>
+        <select name="term_meta[group_type]" id="term_meta[group_type]">
+            <option value="saisonnier" selected><?php _e( 'Saisonnier', 'dame' ); ?></option>
+            <option value="permanent"><?php _e( 'Permanent', 'dame' ); ?></option>
+        </select>
+        <p class="description"><?php _e( 'Saisonnier : membres actifs. Permanent : contacts extérieurs (bénévoles, élus, presse).', 'dame' ); ?></p>
+    </div>
+    <?php
+}
+add_action( 'dame_group_add_form_fields', 'dame_group_add_form_fields', 10, 2 );
+
+/**
+ * Add a "Type" field to the "Edit Group" form.
+ */
+function dame_group_edit_form_fields( $term ) {
+    $group_type = get_term_meta( $term->term_id, '_dame_group_type', true );
+    if ( empty( $group_type ) ) {
+        $group_type = 'saisonnier'; // Default value
+    }
+    ?>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="term_meta[group_type]"><?php _e( 'Type de groupe', 'dame' ); ?></label></th>
+        <td>
+            <select name="term_meta[group_type]" id="term_meta[group_type]">
+                <option value="saisonnier" <?php selected( $group_type, 'saisonnier' ); ?>><?php _e( 'Saisonnier', 'dame' ); ?></option>
+                <option value="permanent" <?php selected( $group_type, 'permanent' ); ?>><?php _e( 'Permanent', 'dame' ); ?></option>
+            </select>
+            <p class="description"><?php _e( 'Saisonnier : membres actifs. Permanent : contacts extérieurs (bénévoles, élus, presse).', 'dame' ); ?></p>
+        </td>
+    </tr>
+    <?php
+}
+add_action( 'dame_group_edit_form_fields', 'dame_group_edit_form_fields', 10, 2 );
+
+/**
+ * Save the "Type" field for the Group taxonomy.
+ */
+function dame_save_group_type( $term_id ) {
+    if ( isset( $_POST['term_meta']['group_type'] ) ) {
+        $group_type = sanitize_key( $_POST['term_meta']['group_type'] );
+        update_term_meta( $term_id, '_dame_group_type', $group_type );
+    }
+}
+add_action( 'edited_dame_group', 'dame_save_group_type', 10, 2 );
+add_action( 'create_dame_group', 'dame_save_group_type', 10, 2 );
+
+
+/**
+ * Add a "Type" column to the group list table.
+ */
+function dame_add_group_type_column( $columns ) {
+    $columns['group_type'] = __( 'Type', 'dame' );
+    return $columns;
+}
+add_filter( 'manage_edit-dame_group_columns', 'dame_add_group_type_column' );
+
+/**
+ * Display the content for the "Type" column.
+ */
+function dame_render_group_type_column( $content, $column_name, $term_id ) {
+    if ( 'group_type' === $column_name ) {
+        $group_type = get_term_meta( $term_id, '_dame_group_type', true );
+        if ( 'permanent' === $group_type ) {
+            $content = __( 'Permanent', 'dame' );
+        } else {
+            $content = __( 'Saisonnier', 'dame' ); // Default
+        }
+    }
+    return $content;
+}
+add_filter( 'manage_dame_group_custom_column', 'dame_render_group_type_column', 10, 3 );
+
+
+/**
  * Register Agenda Category Taxonomy
  */
 function dame_register_agenda_category_taxonomy() {

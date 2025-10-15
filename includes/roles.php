@@ -30,6 +30,8 @@ function dame_add_custom_roles() {
                 'read_private_posts' => true,
                 'edit_pages'         => true,
                 'publish_posts'      => true,
+                'edit_posts'         => true,
+                'edit_others_posts'  => true,
             )
         );
         add_role( 'staff', __( 'Membre du Bureau', 'dame' ), $staff_capabilities );

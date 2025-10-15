@@ -113,6 +113,9 @@ add_action( 'manage_adherent_posts_custom_column', 'dame_render_adherent_columns
 function dame_add_adherent_filters() {
     global $typenow;
 
+    // The date filter is not necessary
+    add_filter( 'months_dropdown_results', '__return_empty_array' );
+
     if ( 'adherent' === $typenow ) {
         // Group filter for the 'dame_group' taxonomy.
         $group_terms = get_terms(
@@ -161,6 +164,20 @@ function dame_add_adherent_filters() {
                 <option value=""><?php _e( 'Toutes les saisons', 'dame' ); ?></option>
                 <?php foreach ( $saisons as $saison ) : ?>
                     <option value="<?php echo esc_attr( $saison->term_id ); ?>" <?php selected( $saison->term_id, $current_saison ); ?>><?php echo esc_html( $saison->name ); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <?php
+        }
+
+        // Age Category filter.
+        $age_categories = dame_get_all_age_categories();
+        if ( ! empty( $age_categories ) ) {
+            $current_age_category = $_GET['dame_age_category_filter'] ?? '';
+            ?>
+            <select name="dame_age_category_filter">
+                <option value=""><?php _e( 'Toutes les catégories d\'âge', 'dame' ); ?></option>
+                <?php foreach ( $age_categories as $key => $label ) : ?>
+                    <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $current_age_category ); ?>><?php echo esc_html( $label ); ?></option>
                 <?php endforeach; ?>
             </select>
             <?php
@@ -242,6 +259,30 @@ function dame_filter_adherent_query( $query ) {
                 $tax_query['relation'] = 'AND';
             }
             $query->set( 'tax_query', $tax_query );
+        }
+
+        // Age Category filter.
+        if ( isset( $_GET['dame_age_category_filter'] ) && ! empty( $_GET['dame_age_category_filter'] ) ) {
+            $age_category_filter = sanitize_key( $_GET['dame_age_category_filter'] );
+            $gender_filter = ( strpos( $age_category_filter, 'f' ) !== false ) ? 'Féminin' : 'Masculin';
+
+            $date_range = dame_get_birth_date_range_for_category( $age_category_filter );
+
+            if ( $date_range ) {
+                $meta_query[] = array(
+                    'key'     => '_dame_birth_date',
+                    'value'   => array( $date_range['start'], $date_range['end'] ),
+                    'compare' => 'BETWEEN',
+                    'type'    => 'DATE',
+                );
+
+                if ( strpos( $age_category_filter, 'f' ) !== false ) {
+                    $meta_query[] = array(
+                        'key'   => '_dame_sexe',
+                        'value' => 'Féminin',
+                    );
+                }
+            }
         }
     }
 }
