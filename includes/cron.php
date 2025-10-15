@@ -153,9 +153,9 @@ function dame_send_birthday_emails() {
     while ( $adherents_query->have_posts() ) {
         $adherents_query->the_post();
         $adherent_id = get_the_ID();
-        $nom = get_post_meta( $adherent_id, 'dame_last_name', true );
-        $prenom = get_post_meta( $adherent_id, 'dame_first_name', true );
-        $birth_date_str = get_post_meta( $adherent_id, 'dame_birth_date', true );
+        $nom = get_post_meta( $adherent_id, '_dame_last_name', true );
+        $prenom = get_post_meta( $adherent_id, '_dame_first_name', true );
+        $birth_date_str = get_post_meta( $adherent_id, '_dame_birth_date', true );
 
         if ( empty( $prenom ) || empty( $birth_date_str ) ) {
             continue;
