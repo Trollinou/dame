@@ -115,9 +115,9 @@ function dame_send_birthday_emails() {
         'posts_per_page' => -1,
         'meta_query'     => array(
             array(
-                'key'     => '_dame_date_naissance',
-                'value'   => '....-' . $today_md,
-                'compare' => 'LIKE',
+                'key'     => '_dame_birth_date',
+                'value'   => '-'. $today_md . '$',
+                'compare' => 'REGEXP',
             ),
         ),
         'tax_query'      => array(
@@ -153,9 +153,9 @@ function dame_send_birthday_emails() {
     while ( $adherents_query->have_posts() ) {
         $adherents_query->the_post();
         $adherent_id = get_the_ID();
-        $nom = get_the_title();
-        $prenom = get_post_meta( $adherent_id, '_dame_prenom', true );
-        $birth_date_str = get_post_meta( $adherent_id, '_dame_date_naissance', true );
+        $nom = get_post_meta( $adherent_id, '_dame_last_name', true );
+        $prenom = get_post_meta( $adherent_id, '_dame_first_name', true );
+        $birth_date_str = get_post_meta( $adherent_id, '_dame_birth_date', true );
 
         if ( empty( $prenom ) || empty( $birth_date_str ) ) {
             continue;

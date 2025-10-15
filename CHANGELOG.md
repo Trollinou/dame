@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.3.5 - 2025-10-15
+### Correction
+- **Tâche Cron des Anniversaires :** Correction d'une série de bugs qui empêchaient l'envoi des emails d'anniversaire. La requête de base de données a été fiabilisée pour gérer différents formats de date et noms de champs, résolvant un problème où aucun adhérent n'était trouvé.
+- **Bouton d'email de test :** Correction d'un bug où le bouton "Envoyer un email de test" sur la page des réglages des anniversaires ne donnait pas de retour clair. Il utilise maintenant AJAX pour un retour immédiat ("Email envoyé" ou "Échec") sans recharger la page.
+
 ## 3.3.4 - 2025-10-15
 ### Amélioration
 - **Qualité du code :** Remaniement majeur de la structure des fichiers dans les répertoires `/admin` et `/includes`. Les fichiers monolithiques volumineux (`metaboxes.php`, `columns.php`, `settings-page.php`, `cpt.php`, `shortcodes.php`) ont été découpés en modules plus petits et logiques, organisés par fonctionnalité dans de nouveaux sous-répertoires. Cela améliore considérablement la lisibilité, l'organisation et la maintenabilité du code.

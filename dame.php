@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '3.3.4' );
+define( 'DAME_VERSION', '3.3.5' );
 define( 'DAME_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 /**

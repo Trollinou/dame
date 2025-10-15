@@ -48,87 +48,122 @@ add_action( 'admin_init', 'dame_register_birthday_settings' );
 
 
 /**
- * Handle sending the test birthday email.
+ * Handle sending the test birthday email via AJAX.
  */
-function dame_handle_send_test_birthday_email() {
-    if ( isset( $_POST['dame_action'] ) && 'send_test_birthday_email' === $_POST['dame_action'] ) {
-        if ( ! isset( $_POST['dame_send_test_birthday_email_nonce_field'] ) || ! wp_verify_nonce( $_POST['dame_send_test_birthday_email_nonce_field'], 'dame_send_test_birthday_email_nonce' ) ) {
-            wp_die( 'Security check failed.' );
-        }
+function dame_handle_send_test_birthday_email_ajax() {
+    check_ajax_referer( 'dame_send_test_birthday_email_nonce' );
 
-        if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( 'You do not have permission to perform this action.' );
-        }
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'dame' ) ) );
+    }
 
-        $options = get_option( 'dame_options' );
-        $article_slug = isset( $options['birthday_article_slug'] ) ? $options['birthday_article_slug'] : '';
+    $options = get_option( 'dame_options' );
+    $article_slug = isset( $options['birthday_article_slug'] ) ? $options['birthday_article_slug'] : '';
 
-        if ( empty( $article_slug ) ) {
-            add_action( 'admin_notices', function() {
-                echo '<div class="error"><p>' . esc_html__( "Veuillez d'abord enregistrer un slug d'article pour l'anniversaire.", 'dame' ) . '</p></div>';
-            } );
-            return;
-        }
+    if ( empty( $article_slug ) ) {
+        wp_send_json_error( array( 'message' => __( "Veuillez d'abord enregistrer un slug d'article pour l'anniversaire.", 'dame' ) ) );
+    }
 
-        $posts = get_posts( array(
-            'name'           => $article_slug,
-            'post_type'      => 'post',
-            'post_status'    => array( 'publish', 'private' ),
-            'posts_per_page' => 1,
-        ) );
+    $posts = get_posts( array(
+        'name'           => $article_slug,
+        'post_type'      => 'post',
+        'post_status'    => array( 'publish', 'private' ),
+        'posts_per_page' => 1,
+    ) );
 
-        if ( ! $posts ) {
-            add_action( 'admin_notices', function() use ( $article_slug ) {
-                $message = sprintf(
-                    esc_html__( "L'article avec le slug '%s' n'a pas été trouvé.", 'dame' ),
-                    esc_html( $article_slug )
-                );
-                echo '<div class="error"><p>' . $message . '</p></div>';
-            } );
-            return;
-        }
-        $article = $posts[0];
-
-        $current_user = wp_get_current_user();
-        $recipient_email = $current_user->user_email;
-
-        $original_content = apply_filters( 'the_content', $article->post_content );
-        $original_subject = $article->post_title;
-
-        // Replace placeholders with sample data
-        $content = str_replace( '[NOM]', 'DUPONT', $original_content );
-        $content = str_replace( '[PRENOM]', 'Jean', $content );
-        $content = str_replace( '[AGE]', '30', $content );
-        $message = '<div style="margin: 1cm;">' . $content . '</div>';
-
-        $subject = str_replace( '[NOM]', 'DUPONT', $original_subject );
-        $subject = str_replace( '[PRENOM]', 'Jean', $subject );
-        $subject = str_replace( '[AGE]', '30', $subject );
-
-        $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
-        $headers = array(
-            'Content-Type: text/html; charset=UTF-8',
-            'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>',
+    if ( ! $posts ) {
+        $error_message = sprintf(
+            esc_html__( "L'article avec le slug '%s' n'a pas été trouvé.", 'dame' ),
+            esc_html( $article_slug )
         );
+        wp_send_json_error( array( 'message' => $error_message ) );
+    }
+    $article = $posts[0];
 
-        $sent = wp_mail( $recipient_email, $subject, $message, $headers );
+    $current_user = wp_get_current_user();
+    $recipient_email = $current_user->user_email;
 
-        if ( $sent ) {
-            add_action( 'admin_notices', function() use ( $recipient_email ) {
-                $message = sprintf(
-                    esc_html__( "Email de test envoyé avec succès à %s.", 'dame' ),
-                    esc_html( $recipient_email )
-                );
-                echo '<div class="updated"><p>' . $message . '</p></div>';
-            } );
-        } else {
-            add_action( 'admin_notices', function() {
-                echo '<div class="error"><p>' . esc_html__( "Échec de l'envoi de l'email de test. Vérifiez vos réglages SMTP.", 'dame' ) . '</p></div>';
-            } );
-        }
+    $original_content = apply_filters( 'the_content', $article->post_content );
+    $original_subject = $article->post_title;
+
+    // Replace placeholders with sample data
+    $content = str_replace( '[NOM]', 'DUPONT', $original_content );
+    $content = str_replace( '[PRENOM]', 'Jean', $content );
+    $content = str_replace( '[AGE]', '30', $content );
+    $message = '<div style="margin: 1cm;">' . $content . '</div>';
+
+    $subject = str_replace( '[NOM]', 'DUPONT', $original_subject );
+    $subject = str_replace( '[PRENOM]', 'Jean', $subject );
+    $subject = str_replace( '[AGE]', '30', $subject );
+
+    $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+    $headers = array(
+        'Content-Type: text/html; charset=UTF-8',
+        'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>',
+    );
+
+    $sent = wp_mail( $recipient_email, $subject, $message, $headers );
+
+    if ( $sent ) {
+        $success_message = sprintf(
+            esc_html__( "Email de test envoyé avec succès à %s.", 'dame' ),
+            esc_html( $recipient_email )
+        );
+        wp_send_json_success( array( 'message' => $success_message ) );
+    } else {
+        wp_send_json_error( array( 'message' => __( "Échec de l'envoi de l'email de test. Vérifiez vos réglages SMTP.", 'dame' ) ) );
     }
 }
-add_action( 'admin_init', 'dame_handle_send_test_birthday_email' );
+add_action( 'wp_ajax_dame_send_test_birthday_email', 'dame_handle_send_test_birthday_email_ajax' );
+
+/**
+ * Enqueue scripts for the birthday settings tab.
+ *
+ * @param string $hook The current admin page.
+ */
+function dame_birthday_settings_enqueue_scripts( $hook ) {
+    // a faire plus finement
+    // if ( 'toplevel_page_dame-settings' !== $hook ) {
+    //     return;
+    // }
+
+    $screen = get_current_screen();
+    if ( ! $screen || 'settings_page_dame-settings' !== $screen->id ) {
+        return;
+    }
+
+    // A faire plus finement aussi
+    if ( isset( $_GET['tab'] ) ) {
+        $active_tab = sanitize_key( $_GET['tab'] );
+    } elseif ( isset( $_POST['dame_active_tab'] ) ) {
+        $active_tab = sanitize_key( $_POST['dame_active_tab'] );
+    } else {
+        $active_tab = 'association';
+    }
+
+    if ( 'anniversaires' !== $active_tab ) {
+        return;
+    }
+
+    wp_enqueue_script(
+        'dame-settings-anniversaires',
+        plugin_dir_url( __FILE__ ) . '../js/settings-anniversaires.js',
+        array( 'jquery' ),
+        DAME_VERSION,
+        true
+    );
+
+    wp_localize_script(
+        'dame-settings-anniversaires',
+        'dame_settings_anniversaires',
+        array(
+            'ajax_url'        => admin_url( 'admin-ajax.php' ),
+            'nonce'           => wp_create_nonce( 'dame_send_test_birthday_email_nonce' ),
+            'sending_message' => esc_html__( 'Envoi en cours...', 'dame' ),
+        )
+    );
+}
+add_action( 'admin_enqueue_scripts', 'dame_birthday_settings_enqueue_scripts' );
 
 
 /**
@@ -171,13 +206,12 @@ function dame_birthday_article_slug_callback() {
  */
 function dame_birthday_test_email_callback() {
     ?>
-    <form method="post">
-        <input type="hidden" name="dame_action" value="send_test_birthday_email" />
-        <?php wp_nonce_field( 'dame_send_test_birthday_email_nonce', 'dame_send_test_birthday_email_nonce_field' ); ?>
-        <?php submit_button( __( "Envoyer un email de test", 'dame' ), 'secondary', 'dame_send_test_email', false ); ?>
-        <p class="description">
-            <?php esc_html_e( "Envoie un exemple de l'email d'anniversaire à votre adresse email.", 'dame' ); ?>
-        </p>
-    </form>
+    <button type="button" id="dame-send-test-birthday-email" class="button button-secondary">
+        <?php esc_html_e( "Envoyer un email de test", 'dame' ); ?>
+    </button>
+    <span id="dame-send-test-birthday-email-message" style="margin-left: 10px;"></span>
+    <p class="description">
+        <?php esc_html_e( "Envoie un exemple de l'email d'anniversaire à votre adresse email.", 'dame' ); ?>
+    </p>
     <?php
 }
