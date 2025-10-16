@@ -28,23 +28,3 @@ function dame_enqueue_public_assets() {
     }
 }
 add_action( 'wp_enqueue_scripts', 'dame_enqueue_public_assets' );
-
-/**
- * Enqueues admin scripts and styles.
- *
- * @param string $hook The current admin page hook.
- */
-function dame_enqueue_admin_assets( $hook ) {
-    global $post;
-
-    // For CPT list view pages.
-    if ( 'edit.php' === $hook && isset( $_GET['post_type'] ) && 'adherent' === $_GET['post_type'] ) {
-        wp_enqueue_style(
-            'dame-admin-styles',
-            plugin_dir_url( __FILE__ ) . '../admin/css/main.css',
-            array(),
-            DAME_VERSION
-        );
-    }
-}
-add_action( 'admin_enqueue_scripts', 'dame_enqueue_admin_assets' );
