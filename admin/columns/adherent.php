@@ -291,61 +291,33 @@ add_action( 'pre_get_posts', 'dame_filter_adherent_query' );
 /**
  * Extends the search functionality for the Adherent CPT to include email fields.
  *
- * @param string   $join    The JOIN clause of the query.
- * @param WP_Query $query   The WP_Query instance.
- * @return string The modified JOIN clause.
+ * @param string   $search    The search query.
+ * @param WP_Query $query     The WP_Query instance.
+ * @return string The modified search query.
  */
-function dame_adherent_search_join( $join, $query ) {
+function dame_adherent_search( $search, $query ) {
     global $wpdb;
-    if ( is_admin() && 'adherent' === $query->get( 'post_type' ) && $query->is_search() ) {
-        $join .= "
-        LEFT JOIN {$wpdb->postmeta} AS email_meta ON {$wpdb->posts}.ID = email_meta.post_id AND email_meta.meta_key IN ('_dame_email', '_dame_legal_rep_1_email', '_dame_legal_rep_2_email')
-        ";
-    }
-    return $join;
-}
-add_filter( 'posts_join', 'dame_adherent_search_join', 10, 2 );
 
-/**
- * Modifies the WHERE clause of the query to include email fields in the search.
- *
- * @param string   $where   The WHERE clause of the query.
- * @param WP_Query $query   The WP_Query instance.
- * @return string The modified WHERE clause.
- */
-function dame_adherent_search_where( $where, $query ) {
-    global $wpdb;
-    if ( is_admin() && 'adherent' === $query->get( 'post_type' ) && $query->is_search() ) {
+    if ( $query->is_search() && $query->get( 'post_type' ) === 'adherent' ) {
         $search_term = $query->get( 's' );
         if ( ! empty( $search_term ) ) {
-            $search_term = '%' . $wpdb->esc_like( $search_term ) . '%';
-            $where = preg_replace(
-                "/\({$wpdb->posts}.post_title LIKE '(.+?)'\)/",
-                "({$wpdb->posts}.post_title LIKE '$1' OR email_meta.meta_value LIKE %s)",
-                $where
-            );
-            $where = $wpdb->prepare( $where, $search_term );
+            $search_term_like = '%' . $wpdb->esc_like( $search_term ) . '%';
+            $search = " AND (
+                ({$wpdb->posts}.post_title LIKE %s)
+                OR EXISTS (
+                    SELECT 1 FROM {$wpdb->postmeta}
+                    WHERE post_id = {$wpdb->posts}.ID
+                    AND meta_key IN ('_dame_email', '_dame_legal_rep_1_email', '_dame_legal_rep_2_email')
+                    AND meta_value LIKE %s
+                )
+            )";
+            return $wpdb->prepare( $search, $search_term_like, $search_term_like );
         }
     }
-    return $where;
-}
-add_filter( 'posts_where', 'dame_adherent_search_where', 10, 2 );
 
-/**
- * Ensures that the search results for Adherent CPT are distinct.
- *
- * @param string   $distinct The DISTINCT clause of the query.
- * @param WP_Query $query    The WP_Query instance.
- * @return string The modified DISTINCT clause.
- */
-function dame_adherent_search_distinct( $distinct, $query ) {
-    if ( is_admin() && 'adherent' === $query->get( 'post_type' ) && $query->is_search() ) {
-        return 'DISTINCT';
-    }
-    return $distinct;
+    return $search;
 }
-add_filter( 'posts_distinct', 'dame_adherent_search_distinct', 10, 2 );
-
+add_filter( 'posts_search', 'dame_adherent_search', 10, 2 );
 
 /**
  * Adds a 'Consulter' action link to the adherent list table.

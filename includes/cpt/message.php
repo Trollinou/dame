@@ -56,19 +56,6 @@ function dame_register_message_cpt() {
         'exclude_from_search'   => true,
         'publicly_queryable'    => false,
         'capability_type'       => 'post',
-        'capabilities' => array(
-            'edit_posts' => 'edit_posts',
-            'edit_others_posts' => 'edit_others_posts',
-            'publish_posts' => 'publish_posts',
-            'read_private_posts' => 'read_private_posts',
-            'delete_posts' => 'delete_posts',
-            'delete_private_posts' => 'delete_private_posts',
-            'delete_published_posts' => 'delete_published_posts',
-            'delete_others_posts' => 'delete_others_posts',
-            'edit_private_posts' => 'edit_private_posts',
-            'edit_published_posts' => 'edit_published_posts',
-            'create_posts' => 'edit_posts',
-        ),
         'show_in_rest'          => true, // Enable block editor support
     );
 
