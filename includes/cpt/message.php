@@ -55,7 +55,17 @@ function dame_register_message_cpt() {
         'has_archive'           => false,
         'exclude_from_search'   => true,
         'publicly_queryable'    => false,
-        'capability_type'       => 'post',
+        'capability_type'       => 'dame_message',
+        'capabilities'          => array(
+            'edit_post'           => 'edit_dame_message',
+            'read_post'           => 'read_dame_message',
+            'delete_post'         => 'delete_dame_message',
+            'edit_posts'          => 'edit_dame_messages',
+            'edit_others_posts'   => 'edit_others_dame_messages',
+            'publish_posts'       => 'publish_dame_messages',
+            'read_private_posts'  => 'read_private_dame_messages',
+            'create_posts'        => 'edit_dame_messages',
+        ),
         'show_in_rest'          => true, // Enable block editor support
     );
 

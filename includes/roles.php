@@ -66,6 +66,21 @@ function dame_add_custom_roles() {
     );
     add_role( 'entraineur', __( 'Entraineur', 'dame' ), $editor_capabilities );
 
+    // Assign custom capabilities to roles.
+    $roles_to_modify = array( 'administrator', 'editor', 'staff' );
+    foreach ( $roles_to_modify as $role_name ) {
+        $role = get_role( $role_name );
+        if ( $role ) {
+            $role->add_cap( 'edit_dame_message' );
+            $role->add_cap( 'read_dame_message' );
+            $role->add_cap( 'delete_dame_message' );
+            $role->add_cap( 'edit_dame_messages' );
+            $role->add_cap( 'edit_others_dame_messages' );
+            $role->add_cap( 'publish_dame_messages' );
+            $role->add_cap( 'read_private_dame_messages' );
+        }
+    }
+
     // Flush rewrite rules to register CPT slugs
     flush_rewrite_rules();
 

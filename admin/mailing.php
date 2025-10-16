@@ -22,7 +22,7 @@ function dame_handle_send_email() {
         wp_die( 'Security check failed.' );
     }
 
-    if ( ! current_user_can( 'publish_posts' ) ) {
+    if ( ! current_user_can( 'publish_dame_messages' ) ) {
         wp_die( 'You do not have permission to do this.' );
     }
 
