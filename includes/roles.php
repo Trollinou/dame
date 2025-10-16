@@ -29,7 +29,6 @@ function dame_add_custom_roles() {
                 'read_private_pages' => true,
                 'read_private_posts' => true,
                 'edit_pages'         => true,
-                'publish_posts'      => true,
             )
         );
         add_role( 'staff', __( 'Membre du Bureau', 'dame' ), $staff_capabilities );
@@ -66,6 +65,21 @@ function dame_add_custom_roles() {
         'upload_files'           => true,
     );
     add_role( 'entraineur', __( 'Entraineur', 'dame' ), $editor_capabilities );
+
+    // Assign custom capabilities to roles.
+    $roles_to_modify = array( 'administrator', 'editor', 'staff' );
+    foreach ( $roles_to_modify as $role_name ) {
+        $role = get_role( $role_name );
+        if ( $role ) {
+            $role->add_cap( 'edit_dame_message' );
+            $role->add_cap( 'read_dame_message' );
+            $role->add_cap( 'delete_dame_message' );
+            $role->add_cap( 'edit_dame_messages' );
+            $role->add_cap( 'edit_others_dame_messages' );
+            $role->add_cap( 'publish_dame_messages' );
+            $role->add_cap( 'read_private_dame_messages' );
+        }
+    }
 
     // Flush rewrite rules to register CPT slugs
     flush_rewrite_rules();

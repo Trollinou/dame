@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.3.6 - 2025-10-16
+### Amélioration
+- **Recherche des adhérents :** La recherche a été étendue pour inclure l'email de l'adhérent et ceux de ses représentants légaux. La requête a été optimisée pour éviter les résultats en double et l'affichage de contenus non pertinents (articles, pages).
+- **Filtres de la liste des adhérents :** Le filtre par date, jugé non nécessaire, a été complètement retiré de l'interface.
+- **Logique des groupes et de la messagerie :**
+    - Les "Groupes" d'adhérents peuvent maintenant être typés comme "Saisonnier" (membres actifs) ou "Permanent" (contacts extérieurs comme les bénévoles, élus, etc.).
+    - La logique d'envoi de message a été revue pour permettre des requêtes complexes : `("Genre" ET "Saison d'adhésion" ET "Groupe Saisonnier") OU "Groupe Permanent"`.
+    - L'interface d'envoi de message a été mise à jour pour refléter cette nouvelle distinction avec deux champs de sélection de groupes.
+- **Permissions :** Le rôle "Membre du Bureau" (staff) peut désormais créer, modifier et envoyer des messages sans avoir de droits étendus sur les autres contenus du site. Cela a été réalisé en créant un jeu de permissions personnalisées uniquement pour les messages.
+
+### Correction
+- **Filtre par catégorie d'âge :** Correction d'un bug qui empêchait le filtre sur certaines catégories (ex: "Sénior+") de fonctionner correctement.
+- **Affichage des destinataires :** La colonne "Destinataires" dans la liste des messages envoyés affiche maintenant correctement les groupes "Saisonniers" et "Permanents" qui ont été sélectionnés.
+
 ## 3.3.5 - 2025-10-15
 ### Correction
 - **Tâche Cron des Anniversaires :** Correction d'une série de bugs qui empêchaient l'envoi des emails d'anniversaire. La requête de base de données a été fiabilisée pour gérer différents formats de date et noms de champs, résolvant un problème où aucun adhérent n'était trouvé.

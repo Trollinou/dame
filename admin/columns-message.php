@@ -66,17 +66,36 @@ function dame_render_message_columns( $column, $post_id ) {
 
             if ( 'group' === $method ) {
                 $seasons = get_post_meta( $post_id, '_dame_recipient_seasons', true );
-                $groups = get_post_meta( $post_id, '_dame_recipient_groups', true );
+                $saisonnier_groups = get_post_meta( $post_id, '_dame_recipient_groups_saisonnier', true );
+                $permanent_groups = get_post_meta( $post_id, '_dame_recipient_groups_permanent', true );
+                $legacy_groups = get_post_meta( $post_id, '_dame_recipient_groups', true );
                 $gender = get_post_meta( $post_id, '_dame_recipient_gender', true );
 
                 $parts = array();
                 if ( ! empty( $seasons ) ) {
                     $season_names = get_terms( array( 'taxonomy' => 'dame_saison_adhesion', 'include' => $seasons, 'fields' => 'names' ) );
-                    $parts[] = '<strong>' . __( 'Saisons', 'dame' ) . ':</strong> ' . implode( ', ', $season_names );
+                    if ( ! is_wp_error( $season_names ) && ! empty( $season_names ) ) {
+                        $parts[] = '<strong>' . __( 'Saisons', 'dame' ) . ':</strong> ' . implode( ', ', $season_names );
+                    }
                 }
-                if ( ! empty( $groups ) ) {
-                    $group_names = get_terms( array( 'taxonomy' => 'dame_group', 'include' => $groups, 'fields' => 'names' ) );
-                    $parts[] = '<strong>' . __( 'Groupes', 'dame' ) . ':</strong> ' . implode( ', ', $group_names );
+                if ( ! empty( $saisonnier_groups ) ) {
+                    $group_names = get_terms( array( 'taxonomy' => 'dame_group', 'include' => $saisonnier_groups, 'fields' => 'names' ) );
+                    if ( ! is_wp_error( $group_names ) && ! empty( $group_names ) ) {
+                        $parts[] = '<strong>' . __( 'Groupes Saisonniers', 'dame' ) . ':</strong> ' . implode( ', ', $group_names );
+                    }
+                }
+                if ( ! empty( $permanent_groups ) ) {
+                    $group_names = get_terms( array( 'taxonomy' => 'dame_group', 'include' => $permanent_groups, 'fields' => 'names' ) );
+                    if ( ! is_wp_error( $group_names ) && ! empty( $group_names ) ) {
+                        $parts[] = '<strong>' . __( 'Groupes Permanents', 'dame' ) . ':</strong> ' . implode( ', ', $group_names );
+                    }
+                }
+                // Backward compatibility for old group meta
+                if ( ! empty( $legacy_groups ) && empty( $saisonnier_groups ) && empty( $permanent_groups ) ) {
+                    $group_names = get_terms( array( 'taxonomy' => 'dame_group', 'include' => $legacy_groups, 'fields' => 'names' ) );
+                    if ( ! is_wp_error( $group_names ) && ! empty( $group_names ) ) {
+                        $parts[] = '<strong>' . __( 'Groupes', 'dame' ) . ':</strong> ' . implode( ', ', $group_names );
+                    }
                 }
                 if ( ! empty( $gender ) && 'all' !== $gender ) {
                     $parts[] = '<strong>' . __( 'Sexe', 'dame' ) . ':</strong> ' . esc_html( $gender );

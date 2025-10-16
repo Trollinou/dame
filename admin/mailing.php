@@ -22,7 +22,7 @@ function dame_handle_send_email() {
         wp_die( 'Security check failed.' );
     }
 
-    if ( ! current_user_can( 'edit_others_posts' ) ) {
+    if ( ! current_user_can( 'publish_dame_messages' ) ) {
         wp_die( 'You do not have permission to do this.' );
     }
 
@@ -40,57 +40,62 @@ function dame_handle_send_email() {
     $adherent_ids = array();
 
     if ( 'group' === $selection_method ) {
-        $groups = isset( $_POST['dame_recipient_groups'] ) ? array_filter( array_map( 'absint', (array) $_POST['dame_recipient_groups'] ) ) : array();
-        $seasons = isset( $_POST['dame_recipient_seasons'] ) ? array_filter( array_map( 'absint', (array) $_POST['dame_recipient_seasons'] ) ) : array();
+        $saisonnier_groups = isset( $_POST['dame_recipient_groups_saisonnier'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_groups_saisonnier'] ) : array();
+        $permanent_groups = isset( $_POST['dame_recipient_groups_permanent'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_groups_permanent'] ) : array();
+        $seasons = isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_seasons'] ) : array();
 
-        if ( empty( $groups ) && empty( $seasons ) ) {
-            add_action( 'admin_notices', function() {
-                echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner au moins un filtre (saison ou groupe).", 'dame' ) . '</p></div>';
-            } );
-            return;
-        }
+        $saisonnier_adherent_ids = array();
+        $permanent_adherent_ids = array();
 
-        $query_args = array(
-            'post_type'      => 'adherent',
-            'posts_per_page' => -1,
-            'fields'         => 'ids',
-            'tax_query'      => array(),
-            'meta_query'     => array(),
-        );
-
-        $tax_queries = array();
-        if ( ! empty( $seasons ) ) {
-            $tax_queries[] = array(
-                'taxonomy' => 'dame_saison_adhesion',
-                'field'    => 'term_id',
-                'terms'    => $seasons,
-                'operator' => 'IN',
+        // Query for ("Genre" AND "Saison d'adhesion" AND "Saisonnier")
+        if ( ! empty( $saisonnier_groups ) && ! empty( $seasons ) ) {
+            $saisonnier_query_args = array(
+                'post_type'      => 'adherent',
+                'posts_per_page' => -1,
+                'fields'         => 'ids',
+                'tax_query'      => array(
+                    'relation' => 'AND',
+                    array(
+                        'taxonomy' => 'dame_saison_adhesion',
+                        'field'    => 'term_id',
+                        'terms'    => $seasons,
+                    ),
+                    array(
+                        'taxonomy' => 'dame_group',
+                        'field'    => 'term_id',
+                        'terms'    => $saisonnier_groups,
+                    ),
+                ),
+                'meta_query'     => array(),
             );
+
+            if ( 'all' !== $recipient_gender ) {
+                $saisonnier_query_args['meta_query'][] = array(
+                    'key'   => '_dame_sexe',
+                    'value' => $recipient_gender,
+                );
+            }
+            $saisonnier_adherent_ids = get_posts( $saisonnier_query_args );
         }
 
-        if ( ! empty( $groups ) ) {
-            $tax_queries[] = array(
-                'taxonomy' => 'dame_group',
-                'field'    => 'term_id',
-                'terms'    => $groups,
-                'operator' => 'IN',
+        // Query for "Permanent"
+        if ( ! empty( $permanent_groups ) ) {
+            $permanent_query_args = array(
+                'post_type'      => 'adherent',
+                'posts_per_page' => -1,
+                'fields'         => 'ids',
+                'tax_query'      => array(
+                    array(
+                        'taxonomy' => 'dame_group',
+                        'field'    => 'term_id',
+                        'terms'    => $permanent_groups,
+                    ),
+                ),
             );
+            $permanent_adherent_ids = get_posts( $permanent_query_args );
         }
 
-        if ( count( $tax_queries ) > 1 ) {
-            $query_args['tax_query']['relation'] = 'AND';
-        }
-
-        $query_args['tax_query'] = array_merge( $query_args['tax_query'], $tax_queries );
-
-        if ( 'all' !== $recipient_gender ) {
-            $query_args['meta_query'][] = array(
-                'key'   => '_dame_sexe',
-                'value' => $recipient_gender,
-            );
-        }
-
-        $adherent_ids = get_posts( $query_args );
+        $adherent_ids = array_unique( array_merge( $saisonnier_adherent_ids, $permanent_adherent_ids ) );
 
     } elseif ( 'manual' === $selection_method ) {
         $adherent_ids = isset( $_POST['dame_manual_recipients'] ) ? (array) array_map( 'absint', $_POST['dame_manual_recipients'] ) : array();
@@ -175,11 +180,12 @@ function dame_handle_send_email() {
     // Store the recipient criteria
     update_post_meta( $message_id, '_dame_recipient_method', $selection_method );
     if ( 'group' === $selection_method ) {
-        update_post_meta( $message_id, '_dame_recipient_seasons', isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_seasons'] ) : array() );
-        update_post_meta( $message_id, '_dame_recipient_groups', isset( $_POST['dame_recipient_groups'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_groups'] ) : array() );
+        update_post_meta( $message_id, '_dame_recipient_seasons', $seasons );
+        update_post_meta( $message_id, '_dame_recipient_groups_saisonnier', $saisonnier_groups );
+        update_post_meta( $message_id, '_dame_recipient_groups_permanent', $permanent_groups );
         update_post_meta( $message_id, '_dame_recipient_gender', $recipient_gender );
     } elseif ( 'manual' === $selection_method ) {
-        update_post_meta( $message_id, '_dame_manual_recipients', isset( $_POST['dame_manual_recipients'] ) ? array_map( 'absint', (array) $_POST['dame_manual_recipients'] ) : array() );
+        update_post_meta( $message_id, '_dame_manual_recipients', $adherent_ids );
     }
 
     add_action( 'admin_notices', function() use ( $recipient_emails ) {
@@ -355,25 +361,67 @@ function dame_render_mailing_page() {
 
                                 <hr style="margin: 15px 0;">
 
-                                <div id="dame-group-filter" style="margin-bottom: 15px;">
-                                    <label for="dame_recipient_groups" style="font-weight: bold; display: block; margin-bottom: 5px;"><?php esc_html_e( "Groupes", 'dame' ); ?></label>
+                                <div id="dame-group-saisonnier-filter" style="margin-bottom: 15px;">
+                                    <label for="dame_recipient_groups_saisonnier" style="font-weight: bold; display: block; margin-bottom: 5px;"><?php esc_html_e( "Groupes Saisonniers", 'dame' ); ?></label>
                                     <?php
-                                    $groups = get_terms( array(
+                                    $saisonnier_groups = get_terms( array(
                                         'taxonomy'   => 'dame_group',
                                         'hide_empty' => false,
                                         'orderby'    => 'name',
                                         'order'      => 'ASC',
+                                        'meta_query' => array(
+                                            'relation' => 'OR',
+                                            array(
+                                                'key'   => '_dame_group_type',
+                                                'value' => 'saisonnier',
+                                            ),
+                                             array(
+                                                'key'     => '_dame_group_type',
+                                                'compare' => 'NOT EXISTS',
+                                            ),
+                                        ),
                                     ) );
 
-                                    if ( ! empty( $groups ) && ! is_wp_error( $groups ) ) {
-                                        echo '<select id="dame_recipient_groups" name="dame_recipient_groups[]" multiple="multiple" style="width: 100%; max-width: 400px; height: 120px;">';
-                                        foreach ( $groups as $group ) {
+                                    if ( ! empty( $saisonnier_groups ) && ! is_wp_error( $saisonnier_groups ) ) {
+                                        echo '<select id="dame_recipient_groups_saisonnier" name="dame_recipient_groups_saisonnier[]" multiple="multiple" style="width: 100%; max-width: 400px; height: 120px;">';
+                                        foreach ( $saisonnier_groups as $group ) {
                                             echo '<option value="' . esc_attr( $group->term_id ) . '">' . esc_html( $group->name ) . '</option>';
                                         }
                                         echo '</select>';
-                                        echo '<p class="description" style="margin-top: 5px;">' . esc_html__( 'Maintenez la touche (Ctrl) ou (Cmd) enfoncée pour sélectionner plusieurs groupes.', 'dame' ) . '</p>';
+                                        echo '<p class="description" style="margin-top: 5px;">' . esc_html__( 'Intersection avec la Saison d\'adhésion et le Sexe.', 'dame' ) . '</p>';
                                     } else {
-                                        echo '<p>' . esc_html__( "Aucun groupe trouvé.", 'dame' ) . '</p>';
+                                        echo '<p>' . esc_html__( "Aucun groupe saisonnier trouvé.", 'dame' ) . '</p>';
+                                    }
+                                    ?>
+                                </div>
+
+                                <hr style="margin: 15px 0;">
+
+                                <div id="dame-group-permanent-filter" style="margin-bottom: 15px;">
+                                    <label for="dame_recipient_groups_permanent" style="font-weight: bold; display: block; margin-bottom: 5px;"><?php esc_html_e( "Groupes Permanents", 'dame' ); ?></label>
+                                    <?php
+                                    $permanent_groups = get_terms( array(
+                                        'taxonomy'   => 'dame_group',
+                                        'hide_empty' => false,
+                                        'orderby'    => 'name',
+                                        'order'      => 'ASC',
+                                        'meta_query' => array(
+                                            array(
+                                                'key'   => '_dame_group_type',
+                                                'value' => 'permanent',
+                                            ),
+                                        ),
+                                    ) );
+
+                                    if ( ! empty( $permanent_groups ) && ! is_wp_error( $permanent_groups ) ) {
+                                        echo '<select id="dame_recipient_groups_permanent" name="dame_recipient_groups_permanent[]" multiple="multiple" style="width: 100%; max-width: 400px; height: 120px;">';
+                                        foreach ( $permanent_groups as $group ) {
+                                            echo '<option value="' . esc_attr( $group->term_id ) . '">' . esc_html( $group->name ) . '</option>';
+                                        }
+                                        echo '</select>';
+                                        echo '<p class="description" style="margin-top: 5px;">' . esc_html__( 'Union avec le reste de la sélection.', 'dame' ) . '</p>';
+                                    } else {
+                                        echo '<p>' . esc_html__( "Aucun groupe permanent trouvé.", 'dame' ) . '</p>';
                                     }
                                     ?>
                                 </div>

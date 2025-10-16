@@ -106,6 +106,17 @@ function dame_render_adherent_columns( $column, $post_id ) {
 }
 add_action( 'manage_adherent_posts_custom_column', 'dame_render_adherent_columns', 10, 2 );
 
+/**
+ * Removes the date filter from the Adherent CPT admin list.
+ */
+function dame_remove_adherent_date_filter() {
+    $screen = get_current_screen();
+    if ( 'edit-adherent' === $screen->id ) {
+        add_filter( 'months_dropdown_results', '__return_empty_array' );
+    }
+}
+add_action( 'load-edit.php', 'dame_remove_adherent_date_filter' );
+
 
 /**
  * Adds custom filters to the Adherent CPT admin list.
@@ -161,6 +172,20 @@ function dame_add_adherent_filters() {
                 <option value=""><?php _e( 'Toutes les saisons', 'dame' ); ?></option>
                 <?php foreach ( $saisons as $saison ) : ?>
                     <option value="<?php echo esc_attr( $saison->term_id ); ?>" <?php selected( $saison->term_id, $current_saison ); ?>><?php echo esc_html( $saison->name ); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <?php
+        }
+
+        // Age Category filter.
+        $age_categories = dame_get_all_age_categories();
+        if ( ! empty( $age_categories ) ) {
+            $current_age_category = $_GET['dame_age_category_filter'] ?? '';
+            ?>
+            <select name="dame_age_category_filter">
+                <option value=""><?php _e( 'Toutes les catégories d\'âge', 'dame' ); ?></option>
+                <?php foreach ( $age_categories as $key => $label ) : ?>
+                    <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $current_age_category ); ?>><?php echo esc_html( $label ); ?></option>
                 <?php endforeach; ?>
             </select>
             <?php
@@ -230,6 +255,30 @@ function dame_filter_adherent_query( $query ) {
             }
         }
 
+        // Age Category filter.
+        if ( isset( $_GET['dame_age_category_filter'] ) && ! empty( $_GET['dame_age_category_filter'] ) ) {
+            $age_category_filter = sanitize_key( $_GET['dame_age_category_filter'] );
+            $gender_filter = ( strpos( $age_category_filter, 'f' ) !== false ) ? 'Féminin' : 'Masculin';
+
+            $date_range = dame_get_birth_date_range_for_category( $age_category_filter );
+
+            if ( $date_range ) {
+                $meta_query[] = array(
+                    'key'     => '_dame_birth_date',
+                    'value'   => array( $date_range['start'], $date_range['end'] ),
+                    'compare' => 'BETWEEN',
+                    'type'    => 'DATE',
+                );
+
+                if ( strpos( $age_category_filter, 'f' ) !== false ) {
+                    $meta_query[] = array(
+                        'key'   => '_dame_sexe',
+                        'value' => 'Féminin',
+                    );
+                }
+            }
+        }
+
         if ( count( $meta_query ) > 0 ) {
             if ( ! isset( $meta_query['relation'] ) ) {
                 $meta_query['relation'] = 'AND';
@@ -246,6 +295,37 @@ function dame_filter_adherent_query( $query ) {
     }
 }
 add_action( 'pre_get_posts', 'dame_filter_adherent_query' );
+
+/**
+ * Extends the search functionality for the Adherent CPT to include email fields.
+ *
+ * @param string   $search    The search query.
+ * @param WP_Query $query     The WP_Query instance.
+ * @return string The modified search query.
+ */
+function dame_adherent_search( $search, $query ) {
+    global $wpdb;
+
+    if ( $query->is_search() && $query->get( 'post_type' ) === 'adherent' ) {
+        $search_term = $query->get( 's' );
+        if ( ! empty( $search_term ) ) {
+            $search_term_like = '%' . $wpdb->esc_like( $search_term ) . '%';
+            $search = " AND (
+                ({$wpdb->posts}.post_title LIKE %s)
+                OR EXISTS (
+                    SELECT 1 FROM {$wpdb->postmeta}
+                    WHERE post_id = {$wpdb->posts}.ID
+                    AND meta_key IN ('_dame_email', '_dame_legal_rep_1_email', '_dame_legal_rep_2_email')
+                    AND meta_value LIKE %s
+                )
+            )";
+            return $wpdb->prepare( $search, $search_term_like, $search_term_like );
+        }
+    }
+
+    return $search;
+}
+add_filter( 'posts_search', 'dame_adherent_search', 10, 2 );
 
 /**
  * Adds a 'Consulter' action link to the adherent list table.

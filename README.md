@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 3.3.4
+**Version:** 3.3.6
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -19,7 +19,7 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 ### Messagerie
 
 *   **Gestion des Messages :** Un nouveau type de contenu "Message" permet de créer et de gérer des communications pour les membres. Ces messages sont rédigés avec l'éditeur de blocs de WordPress (Gutenberg) et ne sont pas publics sur le site.
-*   **Envoi Ciblé :** Une page "Envoyer un message" permet de sélectionner un message et de l'envoyer à des destinataires filtrés par saison d'adhésion, par groupe, ou manuellement. La logique de filtrage permet de cibler précisément les adhérents en effectuant une intersection (ET) entre les taxonomies.
+*   **Envoi Ciblé :** Une page "Envoyer un message" permet de sélectionner un message et de l'envoyer à des destinataires filtrés. La logique de filtrage avancée permet de combiner les critères : `("Genre" ET "Saison d'adhésion" ET "Groupe Saisonnier") OU "Groupe Permanent"`.
 *   **Actions Rapides :** Depuis la liste des messages, il est possible de dupliquer un message pour le réutiliser, de s'envoyer un email de test pour vérifier le rendu, ou de copier un message en tant qu'article (brouillon).
 *   **Suivi des Envois :** La liste des messages affiche la date du dernier envoi, l'auteur de l'envoi, et les destinataires (critères de filtre ou liste manuelle) pour un suivi clair des communications.
 
@@ -47,8 +47,8 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 ### Gestion des Rôles et Permissions
 
 *   **Rôle "Membre du Bureau" :** Ajout d'un rôle `staff` spécialement conçu pour les membres du bureau, avec des droits équivalents à un "Contributeur" mais avec la permission de lire les contenus privés et de voir le menu des Pages.
+*   **Permissions Personnalisées pour les Messages :** Le plugin utilise maintenant un jeu de permissions personnalisées pour la gestion des messages (ex: `publish_dame_messages`). Ces permissions sont attribuées aux rôles `Administrator`, `Editor`, et `Staff`, leur permettant de gérer les messages sans avoir de droits sur les autres contenus du site.
 *   **Page de Consultation :** Une page de consultation en lecture seule est maintenant disponible pour les fiches adhérents directement depuis l'administration, permettant une visualisation rapide des données sans risque de modification accidentelle.
-*   **Permissions des Menus :** L'accès à certaines fonctionnalités, comme "Envoyer un message", a été affiné pour correspondre précisément aux rôles "Éditeur" et "Administrateur".
 
 ### Gestion des Données des Membres
 
