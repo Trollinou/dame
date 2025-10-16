@@ -106,15 +106,23 @@ function dame_render_adherent_columns( $column, $post_id ) {
 }
 add_action( 'manage_adherent_posts_custom_column', 'dame_render_adherent_columns', 10, 2 );
 
+/**
+ * Removes the date filter from the Adherent CPT admin list.
+ */
+function dame_remove_adherent_date_filter() {
+    $screen = get_current_screen();
+    if ( 'edit-adherent' === $screen->id ) {
+        add_filter( 'months_dropdown_results', '__return_empty_array' );
+    }
+}
+add_action( 'load-edit.php', 'dame_remove_adherent_date_filter' );
+
 
 /**
  * Adds custom filters to the Adherent CPT admin list.
  */
 function dame_add_adherent_filters() {
     global $typenow;
-
-    // The date filter is not necessary
-    add_filter( 'months_dropdown_results', '__return_empty_array' );
 
     if ( 'adherent' === $typenow ) {
         // Group filter for the 'dame_group' taxonomy.
