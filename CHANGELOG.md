@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.3.7 - 2025-10-24
+### Correction
+- **Messagerie :** Correction d'un bug majeur qui empêchait l'envoi de messages aux adhérents lorsqu'une saison était sélectionnée mais qu'aucun groupe n'était spécifié. Il est désormais possible d'envoyer un message à tous les membres d'une saison, sans avoir à sélectionner un groupe.
+
 ## 3.3.6 - 2025-10-16
 ### Amélioration
 - **Recherche des adhérents :** La recherche a été étendue pour inclure l'email de l'adhérent et ceux de ses représentants légaux. La requête a été optimisée pour éviter les résultats en double et l'affichage de contenus non pertinents (articles, pages).
