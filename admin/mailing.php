@@ -48,7 +48,7 @@ function dame_handle_send_email() {
         $permanent_adherent_ids = array();
 
         // Query for ("Genre" AND "Saison d'adhesion" AND "Saisonnier")
-        if ( ! empty( $saisonnier_groups ) && ! empty( $seasons ) ) {
+        if ( ! empty( $seasons ) ) {
             $saisonnier_query_args = array(
                 'post_type'      => 'adherent',
                 'posts_per_page' => -1,
@@ -60,14 +60,17 @@ function dame_handle_send_email() {
                         'field'    => 'term_id',
                         'terms'    => $seasons,
                     ),
-                    array(
-                        'taxonomy' => 'dame_group',
-                        'field'    => 'term_id',
-                        'terms'    => $saisonnier_groups,
-                    ),
                 ),
                 'meta_query'     => array(),
             );
+
+            if ( ! empty( $saisonnier_groups ) ) {
+                $saisonnier_query_args['tax_query'][] = array(
+                    'taxonomy' => 'dame_group',
+                    'field'    => 'term_id',
+                    'terms'    => $saisonnier_groups,
+                );
+            }
 
             if ( 'all' !== $recipient_gender ) {
                 $saisonnier_query_args['meta_query'][] = array(
