@@ -84,3 +84,39 @@
     vertical-align: middle; /* Align button vertically with the text */
     margin-left: 10px; /* Add some space next to the date */
 }
+
+/* Sondage Styles */
+.dame-sondage-wrapper {
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.dame-sondage-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.dame-sondage-table th,
+.dame-sondage-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.dame-sondage-table th {
+    background-color: #f2f2f2;
+}
+
+.sondage-timeslot-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: normal;
+}
+
+.sondage-timeslot-label input {
+    margin-right: 5px;
+}

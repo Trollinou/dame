@@ -1,5 +1,23 @@
 # Changelog
 
+## 3.3.8 - 2025-11-13
+### Ajout
+- **Module de Sondage (type Doodle) :** Ajout d'une nouvelle fonctionnalité de sondage de disponibilité.
+  - Nouveau CPT "Sondage" pour créer des sondages avec des dates et des créneaux horaires.
+  - Interface d'administration pour ajouter/supprimer dynamiquement des dates et créneaux.
+  - La configuration d'un sondage est verrouillée après le premier vote pour garantir l'intégrité des données.
+  - Shortcode `[dame_sondage slug="..."]` pour afficher les sondages sur le site.
+  - Système de vote pour les utilisateurs connectés et les visiteurs.
+  - Les votes des utilisateurs connectés sont liés à leur profil.
+  - Les visiteurs peuvent modifier leur vote durant leur session (basé sur un cookie).
+  - Vue des résultats pour l'administrateur avec un tableau récapitulatif et une liste des participants.
+  - Ajout d'une colonne "Slug" à la liste des sondages pour une référence facile.
+  - Pré-remplissage intelligent des créneaux horaires pour accélérer la création.
+  - Le nombre de participants est affiché à côté de chaque créneau sur la page de vote (ex: "5 inscrits").
+### Amélioration
+- Le bouton "Supprimer" pour une réponse de sondage redirige maintenant correctement vers la page d'édition du sondage.
+- Le message de succès sur le formulaire de vote s'affiche maintenant de manière cohérente à côté du bouton de soumission pour tous les utilisateurs.
+
 ## 3.3.7 - 2025-10-24
 ### Correction
 - **Messagerie :** Correction d'un bug majeur qui empêchait l'envoi de messages aux adhérents lorsqu'une saison était sélectionnée mais qu'aucun groupe n'était spécifié. Il est désormais possible d'envoyer un message à tous les membres d'une saison, sans avoir à sélectionner un groupe.

@@ -16,3 +16,4 @@ require_once __DIR__ . '/metaboxes/common.php';
 require_once __DIR__ . '/metaboxes/adherent.php';
 require_once __DIR__ . '/metaboxes/agenda.php';
 require_once __DIR__ . '/metaboxes/pre-inscription.php';
+require_once __DIR__ . '/metaboxes/sondage.php';

@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 3.3.6
+**Version:** 3.3.8
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -15,6 +15,15 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 *   **PHP :** 8.2 ou supérieur
 
 ## Fonctionnalités Principales
+
+### Sondages (type Doodle)
+
+*   **Création de Sondages :** Un nouveau type de contenu "Sondage" permet de créer des sondages de disponibilité. L'interface d'administration permet d'ajouter dynamiquement des dates et des plages horaires.
+*   **Affichage par Shortcode :** Le shortcode `[dame_sondage slug="..."]` affiche le formulaire de vote sur n'importe quelle page ou article. Le slug est visible dans une colonne dédiée sur la liste des sondages.
+*   **Vote Interactif :** Les utilisateurs (connectés ou non) peuvent soumettre leurs disponibilités. Le formulaire affiche le nombre de participants déjà inscrits pour chaque créneau (ex: `14h00 - 15h00 (5 inscrits)`).
+*   **Modification des Votes :** Les utilisateurs connectés peuvent modifier leur vote à tout moment. Les visiteurs non connectés peuvent également modifier leur vote tant qu'ils n'ont pas fermé leur navigateur.
+*   **Consultation des Résultats :** L'écran d'édition d'un sondage présente un tableau récapitulatif des résultats (qui est disponible pour quel créneau) et une liste des participants avec la possibilité de supprimer des votes individuellement.
+*   **Intégrité des Données :** La configuration d'un sondage est automatiquement verrouillée dès qu'il reçoit sa première réponse pour garantir la cohérence des résultats.
 
 ### Messagerie
 
