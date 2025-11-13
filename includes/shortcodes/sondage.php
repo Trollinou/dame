@@ -35,6 +35,31 @@ function dame_sondage_shortcode( $atts ) {
         return '<p>' . __( 'Ce sondage n\'a pas encore été configuré.', 'dame' ) . '</p>';
     }
 
+    // Get all responses to calculate counts for each time slot
+    $all_responses = get_posts( array(
+        'post_type' => 'sondage_reponse',
+        'post_parent' => $sondage->ID,
+        'posts_per_page' => -1,
+        'fields' => 'ids',
+    ) );
+
+    $response_counts = array();
+    foreach ( $all_responses as $response_id ) {
+        $responses_data = get_post_meta( $response_id, '_dame_sondage_responses', true );
+        if ( ! empty( $responses_data ) ) {
+            foreach ( $responses_data as $date_index => $time_slots ) {
+                foreach ( $time_slots as $time_index => $value ) {
+                    if ( ! isset( $response_counts[ $date_index ][ $time_index ] ) ) {
+                        $response_counts[ $date_index ][ $time_index ] = 0;
+                    }
+                    if ( $value == '1' ) {
+                        $response_counts[ $date_index ][ $time_index ]++;
+                    }
+                }
+            }
+        }
+    }
+
     $current_user_id = get_current_user_id();
     $user_has_voted = false;
     $user_responses = array();
@@ -127,10 +152,11 @@ function dame_sondage_shortcode( $atts ) {
                                             if ( isset( $user_responses[ $date_index ][ $time_index ] ) && $user_responses[ $date_index ][ $time_index ] == '1' ) {
                                                 $checked = 'checked';
                                             }
+                                            $count = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
                                             ?>
                                             <label class="sondage-timeslot-label">
                                                 <input type="checkbox" name="sondage_responses[<?php echo esc_attr( $date_index ); ?>][<?php echo esc_attr( $time_index ); ?>]" value="1" <?php echo $checked; ?>>
-                                                <?php echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ); ?>
+                                                <?php echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ); ?> (<?php echo (int) $count; ?>)
                                             </label>
                                         <?php endforeach; ?>
                                     <?php else : ?>

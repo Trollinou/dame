@@ -32,17 +32,24 @@ jQuery( document ).ready( function( $ ) {
     $( '#sondage-dates-wrapper' ).on( 'click', '.add-sondage-time-slot', function() {
         const dateGroup = $( this ).closest( '.sondage-date-group' );
         const dateIndex = dateGroup.index();
-        const timeIndex = dateGroup.find( '.sondage-time-slot-group' ).length;
+        const timeSlotsWrapper = dateGroup.find( '.sondage-time-slots-wrapper' );
+        const timeIndex = timeSlotsWrapper.find( '.sondage-time-slot-group' ).length;
+
+        let previousEndTime = '';
+        if ( timeIndex > 0 ) {
+            previousEndTime = timeSlotsWrapper.find( '.sondage-time-slot-group' ).last().find( 'input[type="time"]' ).eq( 1 ).val();
+        }
+
         const newTimeSlot = `
             <div class="sondage-time-slot-group">
                 <label>Plage horaire:</label>
-                <input type="time" name="_dame_sondage_data[` + dateIndex + `][time_slots][` + timeIndex + `][start]" value="" step="900">
+                <input type="time" name="_dame_sondage_data[` + dateIndex + `][time_slots][` + timeIndex + `][start]" value="` + previousEndTime + `" step="900">
                 <span>-</span>
                 <input type="time" name="_dame_sondage_data[` + dateIndex + `][time_slots][` + timeIndex + `][end]" value="" step="900">
                 <button type="button" class="button remove-sondage-time-slot">Supprimer</button>
             </div>
         `;
-        dateGroup.find( '.sondage-time-slots-wrapper' ).append( newTimeSlot );
+        timeSlotsWrapper.append( newTimeSlot );
     } );
 
     // Remove Time Slot

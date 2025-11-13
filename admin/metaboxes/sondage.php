@@ -128,8 +128,17 @@ function dame_handle_delete_sondage_response() {
 
     wp_trash_post( $response_id );
 
-    $redirect_url = remove_query_arg( array( 'action', 'response_id', '_wpnonce' ), wp_get_referer() );
-    $redirect_url = add_query_arg( 'message', '101', $redirect_url ); // Custom message for response deleted
+    $sondage_id = isset( $_GET['sondage_id'] ) ? intval( $_GET['sondage_id'] ) : 0;
+
+    if ( $sondage_id ) {
+        $redirect_url = get_edit_post_link( $sondage_id, 'raw' );
+        $redirect_url = add_query_arg( 'message', '101', $redirect_url );
+    } else {
+        // Fallback to the referer if sondage_id is not available for some reason
+        $redirect_url = remove_query_arg( array( 'action', 'response_id', '_wpnonce', 'sondage_id' ), wp_get_referer() );
+        $redirect_url = add_query_arg( 'message', '101', $redirect_url );
+    }
+
     wp_safe_redirect( $redirect_url );
     exit;
 }
@@ -370,6 +379,7 @@ function dame_render_sondage_results_metabox( $post ) {
                         $delete_url = add_query_arg( array(
                             'action'      => 'dame_delete_sondage_response',
                             'response_id' => $response->ID,
+                            'sondage_id'  => $post->ID,
                             '_wpnonce'    => wp_create_nonce( 'dame_delete_response_' . $response->ID ),
                         ), $delete_url );
                     ?>

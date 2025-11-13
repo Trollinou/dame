@@ -14,5 +14,6 @@ if ( ! defined( 'WPINC' ) ) {
 // Include the new modular files.
 require_once __DIR__ . '/columns/adherent.php';
 require_once __DIR__ . '/columns/agenda.php';
+require_once __DIR__ . '/columns/sondage.php';
 require_once __DIR__ . '/columns/user.php';
 require_once __DIR__ . '/columns/cpt-common.php';
