@@ -52,8 +52,21 @@ function dame_sondage_shortcode( $atts ) {
             $user_responses = get_post_meta( $existing_response[0]->ID, '_dame_sondage_responses', true );
         }
     } else {
-        if ( isset( $_COOKIE[ 'dame_sondage_voted_' . $sondage->ID ] ) ) {
-            $user_has_voted = true;
+        $cookie_name = 'dame_sondage_response_' . $sondage->ID;
+        if ( isset( $_COOKIE[ $cookie_name ] ) ) {
+            $guest_response_id = sanitize_text_field( $_COOKIE[ $cookie_name ] );
+            $existing_response = get_posts( array(
+                'post_type'   => 'sondage_reponse',
+                'post_status' => 'publish',
+                'post_parent' => $sondage->ID,
+                'posts_per_page' => 1,
+                'meta_key'    => '_dame_guest_response_id',
+                'meta_value'  => $guest_response_id,
+            ) );
+            if ( ! empty( $existing_response ) ) {
+                $user_has_voted = true;
+                $user_responses = get_post_meta( $existing_response[0]->ID, '_dame_sondage_responses', true );
+            }
         }
     }
 
@@ -67,35 +80,31 @@ function dame_sondage_shortcode( $atts ) {
             </div>
         <?php endif; ?>
 
-        <?php if ( isset( $_GET['vote'] ) && 'success' === $_GET['vote'] ) : ?>
+        <?php if ( isset( $_GET['vote'] ) && 'success' === $_GET['vote'] && ! ( is_user_logged_in() && $user_has_voted ) ) : ?>
             <div class="sondage-success-message">
                 <p><?php _e( 'Merci, votre réponse a été enregistrée.', 'dame' ); ?></p>
             </div>
         <?php endif; ?>
 
-        <?php if ( $user_has_voted && ! is_user_logged_in() ) : ?>
-             <div class="sondage-already-voted-message">
-                <p><?php _e( 'Vous avez déjà participé à ce sondage.', 'dame' ); ?></p>
-            </div>
-        <?php else : ?>
-            <form id="dame-sondage-form-<?php echo esc_attr( $sondage->ID ); ?>" class="dame-sondage-form" method="post">
-                <input type="hidden" name="sondage_id" value="<?php echo esc_attr( $sondage->ID ); ?>">
-                <?php wp_nonce_field( 'dame_submit_sondage_response_' . $sondage->ID, 'dame_sondage_nonce' ); ?>
+        <form id="dame-sondage-form-<?php echo esc_attr( $sondage->ID ); ?>" class="dame-sondage-form" method="post">
+            <input type="hidden" name="sondage_id" value="<?php echo esc_attr( $sondage->ID ); ?>">
+            <?php wp_nonce_field( 'dame_submit_sondage_response_' . $sondage->ID, 'dame_sondage_nonce' ); ?>
 
-                <p>
-                    <label for="sondage_name"><?php _e( 'Votre nom :', 'dame' ); ?></label>
-                    <?php
-                    $current_user = wp_get_current_user();
-                    if ( is_user_logged_in() ) {
-                        $user_name = $current_user->display_name;
-                        echo '<input type="text" id="sondage_name" name="sondage_name" value="' . esc_attr( $user_name ) . '" readonly required>';
-                    } else {
-                        echo '<input type="text" id="sondage_name" name="sondage_name" value="" required>';
-                    }
-                    ?>
-                </p>
+            <p>
+                <label for="sondage_name"><?php _e( 'Votre nom :', 'dame' ); ?></label>
+                <?php
+                $current_user = wp_get_current_user();
+                if ( is_user_logged_in() ) {
+                    $user_name = $current_user->display_name;
+                    echo '<input type="text" id="sondage_name" name="sondage_name" value="' . esc_attr( $user_name ) . '" readonly required>';
+                } else {
+                    $guest_name = ! empty( $existing_response ) ? $existing_response[0]->post_title : '';
+                    echo '<input type="text" id="sondage_name" name="sondage_name" value="' . esc_attr( $guest_name ) . '" required>';
+                }
+                ?>
+            </p>
 
-                <table class="dame-sondage-table">
+            <table class="dame-sondage-table">
                     <thead>
                         <tr>
                             <th><?php _e( 'Date', 'dame' ); ?></th>
@@ -135,9 +144,11 @@ function dame_sondage_shortcode( $atts ) {
 
                 <p>
                     <input type="submit" name="submit_sondage" value="<?php echo $user_has_voted ? __( 'Mettre à jour', 'dame' ) : __( 'Voter', 'dame' ); ?>">
+                    <?php if ( is_user_logged_in() && isset( $_GET['vote'] ) && 'success' === $_GET['vote'] && $user_has_voted ) : ?>
+                        <span class="sondage-success-message-inline" style="margin-left: 10px; color: green;"><?php _e( 'Merci, votre réponse a été enregistrée.', 'dame' ); ?></span>
+                    <?php endif; ?>
                 </p>
             </form>
-        <?php endif; ?>
     </div>
     <?php
     return ob_get_clean();
@@ -185,8 +196,22 @@ function dame_handle_sondage_submission() {
             $existing_response_id = $existing_responses[0];
         }
     } else {
-        // For non-logged-in users, we can't reliably check for updates.
-        // The cookie check should prevent new submissions, but this logic handles the save.
+        $cookie_name = 'dame_sondage_response_' . $sondage_id;
+        if ( isset( $_COOKIE[ $cookie_name ] ) ) {
+            $guest_response_id = sanitize_text_field( $_COOKIE[ $cookie_name ] );
+            $existing_responses = get_posts( array(
+                'post_type'   => 'sondage_reponse',
+                'post_status' => 'publish',
+                'post_parent' => $sondage_id,
+                'posts_per_page' => 1,
+                'fields'      => 'ids',
+                'meta_key'    => '_dame_guest_response_id',
+                'meta_value'  => $guest_response_id,
+            ) );
+            if ( ! empty( $existing_responses ) ) {
+                $existing_response_id = $existing_responses[0];
+            }
+        }
     }
 
     $post_data = array(
@@ -209,9 +234,12 @@ function dame_handle_sondage_submission() {
         update_post_meta( $response_id, '_dame_sondage_responses', $sanitized_responses );
 
         if ( ! $user_id ) {
-            // Set a cookie for non-logged-in users to prevent re-voting.
+            $cookie_name = 'dame_sondage_response_' . $sondage_id;
+            $cookie_value = isset( $_COOKIE[$cookie_name] ) ? $_COOKIE[$cookie_name] : uniqid( 'sondage_' . $sondage_id . '_' );
+
+            update_post_meta( $response_id, '_dame_guest_response_id', $cookie_value );
             // Cookie is valid for 1 year.
-            setcookie( 'dame_sondage_voted_' . $sondage_id, '1', time() + YEAR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
+            setcookie( $cookie_name, $cookie_value, time() + YEAR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
         }
     }
 

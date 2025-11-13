@@ -39,9 +39,23 @@ function dame_render_sondage_config_metabox( $post ) {
     if ( empty( $sondage_data ) ) {
         $sondage_data = array();
     }
+
+    $responses_exist = (bool) get_posts( array(
+        'post_type' => 'sondage_reponse',
+        'post_parent' => $post->ID,
+        'posts_per_page' => 1,
+        'fields' => 'ids',
+    ) );
+
+    $is_locked = $responses_exist;
     ?>
     <div id="sondage-config-container">
-        <p><?php _e( 'Ajoutez les dates et les plages horaires pour ce sondage.', 'dame' ); ?></p>
+        <?php if ( $is_locked ) : ?>
+            <p><strong><?php _e( 'Ce sondage est verrouillé car il a déjà reçu des réponses. Vous ne pouvez plus modifier les dates ou les plages horaires.', 'dame' ); ?></strong></p>
+        <?php else : ?>
+            <p><?php _e( 'Ajoutez les dates et les plages horaires pour ce sondage.', 'dame' ); ?></p>
+        <?php endif; ?>
+
         <div id="sondage-dates-wrapper">
             <?php
             if ( ! empty( $sondage_data ) ) {
@@ -52,8 +66,10 @@ function dame_render_sondage_config_metabox( $post ) {
                         <h4><?php echo esc_html( sprintf( __( 'Date %d', 'dame' ), $date_key + 1 ) ); ?></h4>
                         <p>
                             <label for="sondage_date_<?php echo esc_attr( $date_key ); ?>"><?php _e( 'Date:', 'dame' ); ?></label>
-                            <input type="date" id="sondage_date_<?php echo esc_attr( $date_key ); ?>" name="_dame_sondage_data[<?php echo esc_attr( $date_key ); ?>][date]" value="<?php echo esc_attr( $date_info['date'] ); ?>" class="sondage-date-input">
-                            <button type="button" class="button remove-sondage-date"><?php _e( 'Supprimer cette date', 'dame' ); ?></button>
+                            <input type="date" id="sondage_date_<?php echo esc_attr( $date_key ); ?>" name="_dame_sondage_data[<?php echo esc_attr( $date_key ); ?>][date]" value="<?php echo esc_attr( $date_info['date'] ); ?>" class="sondage-date-input" <?php disabled( $is_locked ); ?>>
+                            <?php if ( ! $is_locked ) : ?>
+                                <button type="button" class="button remove-sondage-date"><?php _e( 'Supprimer cette date', 'dame' ); ?></button>
+                            <?php endif; ?>
                         </p>
                         <div class="sondage-time-slots-wrapper">
                             <?php
@@ -62,29 +78,76 @@ function dame_render_sondage_config_metabox( $post ) {
                                     ?>
                                     <div class="sondage-time-slot-group">
                                         <label><?php _e( 'Plage horaire:', 'dame' ); ?></label>
-                                        <input type="time" name="_dame_sondage_data[<?php echo esc_attr( $date_key ); ?>][time_slots][<?php echo esc_attr( $time_key ); ?>][start]" value="<?php echo esc_attr( $time_slot['start'] ); ?>" step="900">
+                                        <input type="time" name="_dame_sondage_data[<?php echo esc_attr( $date_key ); ?>][time_slots][<?php echo esc_attr( $time_key ); ?>][start]" value="<?php echo esc_attr( $time_slot['start'] ); ?>" step="900" <?php disabled( $is_locked ); ?>>
                                         <span>-</span>
-                                        <input type="time" name="_dame_sondage_data[<?php echo esc_attr( $date_key ); ?>][time_slots][<?php echo esc_attr( $time_key ); ?>][end]" value="<?php echo esc_attr( $time_slot['end'] ); ?>" step="900">
-                                        <button type="button" class="button remove-sondage-time-slot"><?php _e( 'Supprimer', 'dame' ); ?></button>
+                                        <input type="time" name="_dame_sondage_data[<?php echo esc_attr( $date_key ); ?>][time_slots][<?php echo esc_attr( $time_key ); ?>][end]" value="<?php echo esc_attr( $time_slot['end'] ); ?>" step="900" <?php disabled( $is_locked ); ?>>
+                                        <?php if ( ! $is_locked ) : ?>
+                                            <button type="button" class="button remove-sondage-time-slot"><?php _e( 'Supprimer', 'dame' ); ?></button>
+                                        <?php endif; ?>
                                     </div>
                                     <?php
                                 }
                             }
                             ?>
                         </div>
-                        <button type="button" class="button add-sondage-time-slot"><?php _e( 'Ajouter une plage horaire', 'dame' ); ?></button>
+                        <?php if ( ! $is_locked ) : ?>
+                            <button type="button" class="button add-sondage-time-slot"><?php _e( 'Ajouter une plage horaire', 'dame' ); ?></button>
+                        <?php endif; ?>
                     </div>
                     <?php
                 }
             }
             ?>
         </div>
-        <p>
-            <button type="button" id="add-sondage-date" class="button button-primary"><?php _e( 'Ajouter une date', 'dame' ); ?></button>
-        </p>
+        <?php if ( ! $is_locked ) : ?>
+            <p>
+                <button type="button" id="add-sondage-date" class="button button-primary"><?php _e( 'Ajouter une date', 'dame' ); ?></button>
+            </p>
+        <?php endif; ?>
     </div>
     <?php
 }
+
+/**
+ * Handle the deletion of a sondage response.
+ */
+function dame_handle_delete_sondage_response() {
+    if ( ! isset( $_GET['action'], $_GET['response_id'], $_GET['_wpnonce'] ) || 'dame_delete_sondage_response' !== $_GET['action'] ) {
+        return;
+    }
+
+    $response_id = intval( $_GET['response_id'] );
+
+    if ( ! wp_verify_nonce( $_GET['_wpnonce'], 'dame_delete_response_' . $response_id ) ) {
+        wp_die( __( 'Security check failed.', 'dame' ) );
+    }
+
+    if ( ! current_user_can( 'delete_post', $response_id ) ) {
+        wp_die( __( 'You do not have permission to delete this response.', 'dame' ) );
+    }
+
+    wp_trash_post( $response_id );
+
+    $redirect_url = remove_query_arg( array( 'action', 'response_id', '_wpnonce' ), wp_get_referer() );
+    $redirect_url = add_query_arg( 'message', '101', $redirect_url ); // Custom message for response deleted
+    wp_safe_redirect( $redirect_url );
+    exit;
+}
+add_action( 'admin_post_dame_delete_sondage_response', 'dame_handle_delete_sondage_response' );
+
+/**
+ * Display a custom admin notice when a response is deleted.
+ *
+ * @param string $messages
+ * @return string
+ */
+function dame_sondage_admin_notices( $messages ) {
+    if ( isset( $_GET['message'] ) && '101' === $_GET['message'] ) {
+        $messages['post'][101] = __( 'Réponse supprimée.', 'dame' );
+    }
+    return $messages;
+}
+add_filter( 'post_updated_messages', 'dame_sondage_admin_notices' );
 
 /**
  * Save the meta box data for sondage.
@@ -92,6 +155,18 @@ function dame_render_sondage_config_metabox( $post ) {
  * @param int $post_id The ID of the post being saved.
  */
 function dame_save_sondage_metabox_data( $post_id ) {
+    // Check if the sondage is locked
+    $responses_exist = (bool) get_posts( array(
+        'post_type' => 'sondage_reponse',
+        'post_parent' => $post_id,
+        'posts_per_page' => 1,
+        'fields' => 'ids',
+    ) );
+
+    if ( $responses_exist ) {
+        return; // Don't save any changes if responses exist
+    }
+
     if ( ! isset( $_POST['dame_sondage_metabox_nonce'] ) ) {
         return;
     }
@@ -290,10 +365,18 @@ function dame_render_sondage_results_metabox( $post ) {
             </thead>
             <tbody>
                 <?php foreach ( $responses as $response ) : ?>
+                    <?php
+                        $delete_url = admin_url( 'admin-post.php' );
+                        $delete_url = add_query_arg( array(
+                            'action'      => 'dame_delete_sondage_response',
+                            'response_id' => $response->ID,
+                            '_wpnonce'    => wp_create_nonce( 'dame_delete_response_' . $response->ID ),
+                        ), $delete_url );
+                    ?>
                     <tr>
                         <td><?php echo esc_html( $response->post_title ); ?></td>
                         <td>
-                            <a href="<?php echo get_delete_post_link( $response->ID, '', true ); ?>" class="button button-small button-danger" onclick="return confirm('<?php _e( 'Êtes-vous sûr de vouloir supprimer cette réponse ?', 'dame' ); ?>');">
+                            <a href="<?php echo esc_url( $delete_url ); ?>" class="button button-small button-danger" onclick="return confirm('<?php _e( 'Êtes-vous sûr de vouloir supprimer cette réponse ?', 'dame' ); ?>');">
                                 <?php _e( 'Supprimer', 'dame' ); ?>
                             </a>
                         </td>
