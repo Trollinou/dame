@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.3.7 - 2025-11-13
+## 3.3.8 - 2025-11-13
 ### Ajout
 - **Module de Sondage (type Doodle) :** Ajout d'une nouvelle fonctionnalité de sondage de disponibilité.
   - Nouveau CPT "Sondage" pour créer des sondages avec des dates et des créneaux horaires.
