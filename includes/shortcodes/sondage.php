@@ -105,12 +105,6 @@ function dame_sondage_shortcode( $atts ) {
             </div>
         <?php endif; ?>
 
-        <?php if ( isset( $_GET['vote'] ) && 'success' === $_GET['vote'] && ! ( is_user_logged_in() && $user_has_voted ) ) : ?>
-            <div class="sondage-success-message">
-                <p><?php _e( 'Merci, votre réponse a été enregistrée.', 'dame' ); ?></p>
-            </div>
-        <?php endif; ?>
-
         <form id="dame-sondage-form-<?php echo esc_attr( $sondage->ID ); ?>" class="dame-sondage-form" method="post">
             <input type="hidden" name="sondage_id" value="<?php echo esc_attr( $sondage->ID ); ?>">
             <?php wp_nonce_field( 'dame_submit_sondage_response_' . $sondage->ID, 'dame_sondage_nonce' ); ?>
@@ -156,7 +150,7 @@ function dame_sondage_shortcode( $atts ) {
                                             ?>
                                             <label class="sondage-timeslot-label">
                                                 <input type="checkbox" name="sondage_responses[<?php echo esc_attr( $date_index ); ?>][<?php echo esc_attr( $time_index ); ?>]" value="1" <?php echo $checked; ?>>
-                                                <?php echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ); ?> (<?php echo (int) $count; ?>)
+                                                <?php echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ); ?> (<?php printf( _n( '%d inscrit', '%d inscrits', $count, 'dame' ), $count ); ?>)
                                             </label>
                                         <?php endforeach; ?>
                                     <?php else : ?>
@@ -170,7 +164,7 @@ function dame_sondage_shortcode( $atts ) {
 
                 <p>
                     <input type="submit" name="submit_sondage" value="<?php echo $user_has_voted ? __( 'Mettre à jour', 'dame' ) : __( 'Voter', 'dame' ); ?>">
-                    <?php if ( is_user_logged_in() && isset( $_GET['vote'] ) && 'success' === $_GET['vote'] && $user_has_voted ) : ?>
+                    <?php if ( isset( $_GET['vote'] ) && 'success' === $_GET['vote'] ) : ?>
                         <span class="sondage-success-message-inline" style="margin-left: 10px; color: green;"><?php _e( 'Merci, votre réponse a été enregistrée.', 'dame' ); ?></span>
                     <?php endif; ?>
                 </p>

@@ -1,5 +1,23 @@
 # Changelog
 
+## 3.3.7 - 2025-11-13
+### Added
+- **Sondage (Poll) Module:** Added a new Doodle-like polling feature.
+  - New "Sondages" CPT for creating polls with dates and time slots.
+  - Admin UI for dynamically adding/removing dates and time slots.
+  - Poll configuration is locked once the first vote is cast to ensure data integrity.
+  - Shortcode `[dame_sondage slug="..."]` to display polls on the frontend.
+  - Voting system for both logged-in and guest users.
+  - Logged-in users' votes are tied to their profile.
+  - Guest users can modify their vote within the same browser session (cookie-based).
+  - Admin results view with an aggregated table and a list of participants.
+  - "Slug" column added to the poll list screen for easy shortcode reference.
+  - Intelligent pre-filling of time slots in the admin UI to speed up creation.
+  - Participant count is displayed next to each time slot on the voting page (e.g., "5 inscrits").
+### Changed
+- The "Delete" button for poll responses now correctly redirects back to the poll edit screen.
+- The success message on the voting form is now consistently displayed next to the submit button for all users.
+
 ## 3.3.7 - 2025-10-24
 ### Correction
 - **Messagerie :** Correction d'un bug majeur qui empêchait l'envoi de messages aux adhérents lorsqu'une saison était sélectionnée mais qu'aucun groupe n'était spécifié. Il est désormais possible d'envoyer un message à tous les membres d'une saison, sans avoir à sélectionner un groupe.
