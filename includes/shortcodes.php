@@ -15,3 +15,4 @@ if ( ! defined( 'WPINC' ) ) {
 require_once __DIR__ . '/shortcodes/fiche-inscription.php';
 require_once __DIR__ . '/shortcodes/contact.php';
 require_once __DIR__ . '/shortcodes/agenda.php';
+require_once __DIR__ . '/shortcodes/sondage.php';
