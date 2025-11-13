@@ -1,22 +1,22 @@
 # Changelog
 
 ## 3.3.7 - 2025-11-13
-### Added
-- **Sondage (Poll) Module:** Added a new Doodle-like polling feature.
-  - New "Sondages" CPT for creating polls with dates and time slots.
-  - Admin UI for dynamically adding/removing dates and time slots.
-  - Poll configuration is locked once the first vote is cast to ensure data integrity.
-  - Shortcode `[dame_sondage slug="..."]` to display polls on the frontend.
-  - Voting system for both logged-in and guest users.
-  - Logged-in users' votes are tied to their profile.
-  - Guest users can modify their vote within the same browser session (cookie-based).
-  - Admin results view with an aggregated table and a list of participants.
-  - "Slug" column added to the poll list screen for easy shortcode reference.
-  - Intelligent pre-filling of time slots in the admin UI to speed up creation.
-  - Participant count is displayed next to each time slot on the voting page (e.g., "5 inscrits").
-### Changed
-- The "Delete" button for poll responses now correctly redirects back to the poll edit screen.
-- The success message on the voting form is now consistently displayed next to the submit button for all users.
+### Ajout
+- **Module de Sondage (type Doodle) :** Ajout d'une nouvelle fonctionnalité de sondage de disponibilité.
+  - Nouveau CPT "Sondage" pour créer des sondages avec des dates et des créneaux horaires.
+  - Interface d'administration pour ajouter/supprimer dynamiquement des dates et créneaux.
+  - La configuration d'un sondage est verrouillée après le premier vote pour garantir l'intégrité des données.
+  - Shortcode `[dame_sondage slug="..."]` pour afficher les sondages sur le site.
+  - Système de vote pour les utilisateurs connectés et les visiteurs.
+  - Les votes des utilisateurs connectés sont liés à leur profil.
+  - Les visiteurs peuvent modifier leur vote durant leur session (basé sur un cookie).
+  - Vue des résultats pour l'administrateur avec un tableau récapitulatif et une liste des participants.
+  - Ajout d'une colonne "Slug" à la liste des sondages pour une référence facile.
+  - Pré-remplissage intelligent des créneaux horaires pour accélérer la création.
+  - Le nombre de participants est affiché à côté de chaque créneau sur la page de vote (ex: "5 inscrits").
+### Amélioration
+- Le bouton "Supprimer" pour une réponse de sondage redirige maintenant correctement vers la page d'édition du sondage.
+- Le message de succès sur le formulaire de vote s'affiche maintenant de manière cohérente à côté du bouton de soumission pour tous les utilisateurs.
 
 ## 3.3.7 - 2025-10-24
 ### Correction
