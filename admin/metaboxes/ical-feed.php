@@ -38,7 +38,7 @@ function dame_render_ical_feed_metabox( $post ) {
     }
 
     $categories = get_terms( array(
-        'taxonomy'   => 'categorie_agenda',
+        'taxonomy'   => 'dame_agenda_category',
         'hide_empty' => false,
     ) );
 

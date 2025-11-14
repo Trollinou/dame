@@ -97,7 +97,7 @@ function dame_handle_ical_feed_request() {
             if ( ! empty( $categories ) && is_array( $categories ) ) {
                 $args['tax_query'] = array(
                     array(
-                        'taxonomy' => 'categorie_agenda',
+                        'taxonomy' => 'dame_agenda_category',
                         'field'    => 'term_id',
                         'terms'    => $categories,
                     ),
