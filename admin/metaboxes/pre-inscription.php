@@ -37,10 +37,14 @@ function dame_add_pre_inscription_meta_boxes() {
 	$pre_inscription_id = get_the_ID();
 	$first_name         = get_post_meta( $pre_inscription_id, '_dame_first_name', true );
 	$last_name          = get_post_meta( $pre_inscription_id, '_dame_last_name', true );
+	$birth_name         = get_post_meta( $pre_inscription_id, '_dame_birth_name', true );
 	$birth_date         = get_post_meta( $pre_inscription_id, '_dame_birth_date', true );
 	$matched_adherent_id = 0;
 
-	if ( $first_name && $last_name && $birth_date ) {
+	$name_to_match = ! empty( $birth_name ) ? $birth_name : $last_name;
+	$name_key_to_match = ! empty( $birth_name ) ? '_dame_birth_name' : '_dame_last_name';
+
+	if ( $first_name && $name_to_match && $birth_date ) {
 		$adherent_query = new WP_Query(
 			array(
 				'post_type'      => 'adherent',
@@ -54,8 +58,8 @@ function dame_add_pre_inscription_meta_boxes() {
 						'compare' => '=',
 					),
 					array(
-						'key'     => '_dame_last_name',
-						'value'   => $last_name,
+						'key'     => $name_key_to_match,
+						'value'   => $name_to_match,
 						'compare' => '=',
 					),
 					array(
@@ -158,9 +162,20 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 	// To avoid repetition, we define field groups.
 	$field_groups = array(
 		'Informations Adhérent' => array(
+			'Nom de naissance' => array( 'key' => 'dame_birth_name', 'type' => 'text', 'required' => true ),
+			'Nom d\'usage' => array( 'key' => 'dame_last_name', 'type' => 'text', 'required' => false ),
 			'Prénom' => array( 'key' => 'dame_first_name', 'type' => 'text', 'required' => true ),
-			'Nom' => array( 'key' => 'dame_last_name', 'type' => 'text', 'required' => true ),
+			'Sexe' => array( 'key' => 'dame_sexe', 'type' => 'radio', 'options' => array( 'Masculin', 'Féminin', 'Non précisé' ), 'required' => true ),
 			'Date de naissance' => array( 'key' => 'dame_birth_date', 'type' => 'date', 'required' => true ),
+			'Lieu de naissance' => array( 'key' => 'dame_birth_city', 'type' => 'text_autocomplete' ),
+			'Numéro de téléphone' => array( 'key' => 'dame_phone_number', 'type' => 'tel' ),
+			'Email' => array( 'key' => 'dame_email', 'type' => 'email' ),
+			'Profession' => array( 'key' => 'dame_profession', 'type' => 'text' ),
+			'Adresse' => array( 'key' => 'dame_address_1', 'type' => 'text_autocomplete' ),
+			'Complément' => array( 'key' => 'dame_address_2', 'type' => 'text' ),
+			'Code Postal' => array( 'key' => 'dame_postal_code', 'type' => 'text' ),
+			'Ville' => array( 'key' => 'dame_city', 'type' => 'text' ),
+			'Taille de vêtements' => array( 'key' => 'dame_taille_vetements', 'type' => 'select', 'options' => array( 'Non renseigné', '8/10', '10/12', '12/14', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL' ) ),
 			'Type de licence' => array(
 				'key'     => 'dame_license_type',
 				'type'    => 'select',
@@ -170,42 +185,34 @@ function dame_render_pre_inscription_details_metabox( $post ) {
 				),
 			),
 			'Document de santé' => array( 'key' => 'dame_health_document', 'type' => 'select', 'options_callback' => 'dame_get_health_document_options' ),
-			'Commune de naissance' => array( 'key' => 'dame_birth_city', 'type' => 'text_autocomplete' ),
-			'Sexe' => array( 'key' => 'dame_sexe', 'type' => 'radio', 'options' => array( 'Masculin', 'Féminin', 'Non précisé' ) ),
-			'Email' => array( 'key' => 'dame_email', 'type' => 'email' ),
-			'Numéro de téléphone' => array( 'key' => 'dame_phone_number', 'type' => 'tel' ),
-			'Adresse' => array( 'key' => 'dame_address_1', 'type' => 'text_autocomplete' ),
-			'Complément' => array( 'key' => 'dame_address_2', 'type' => 'text' ),
-			'Code Postal' => array( 'key' => 'dame_postal_code', 'type' => 'text' ),
-			'Ville' => array( 'key' => 'dame_city', 'type' => 'text' ),
-			'Taille de vêtements' => array( 'key' => 'dame_taille_vetements', 'type' => 'select', 'options' => array( 'Non renseigné', '8/10', '10/12', '12/14', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL' ) ),
-			'Profession' => array( 'key' => 'dame_profession', 'type' => 'text' ),
 		),
 		'Représentant Légal 1' => array(
+			'Nom de naissance' => array( 'key' => 'dame_legal_rep_1_last_name', 'type' => 'text' ),
 			'Prénom' => array( 'key' => 'dame_legal_rep_1_first_name', 'type' => 'text' ),
-			'Nom' => array( 'key' => 'dame_legal_rep_1_last_name', 'type' => 'text' ),
+			'Date de naissance' => array( 'key' => 'dame_legal_rep_1_date_naissance', 'type' => 'date' ),
+			'Lieu de naissance' => array( 'key' => 'dame_legal_rep_1_commune_naissance', 'type' => 'text' ),
+			'Contrôle d\'honorabilité' => array( 'key' => 'dame_legal_rep_1_honorabilite', 'type' => 'text' ),
+			'Numéro de téléphone' => array( 'key' => 'dame_legal_rep_1_phone', 'type' => 'tel' ),
 			'Email' => array( 'key' => 'dame_legal_rep_1_email', 'type' => 'email' ),
-			'Téléphone' => array( 'key' => 'dame_legal_rep_1_phone', 'type' => 'tel' ),
+			'Profession' => array( 'key' => 'dame_legal_rep_1_profession', 'type' => 'text' ),
 			'Adresse' => array( 'key' => 'dame_legal_rep_1_address_1', 'type' => 'text_autocomplete' ),
 			'Complément' => array( 'key' => 'dame_legal_rep_1_address_2', 'type' => 'text' ),
 			'Code Postal' => array( 'key' => 'dame_legal_rep_1_postal_code', 'type' => 'text' ),
 			'Ville' => array( 'key' => 'dame_legal_rep_1_city', 'type' => 'text' ),
-			'Profession' => array( 'key' => 'dame_legal_rep_1_profession', 'type' => 'text' ),
-			'Date de naissance' => array( 'key' => 'dame_legal_rep_1_date_naissance', 'type' => 'date' ),
-			'Commune de naissance' => array( 'key' => 'dame_legal_rep_1_commune_naissance', 'type' => 'text' ),
 		),
 		'Représentant Légal 2' => array(
+			'Nom de naissance' => array( 'key' => 'dame_legal_rep_2_last_name', 'type' => 'text' ),
 			'Prénom' => array( 'key' => 'dame_legal_rep_2_first_name', 'type' => 'text' ),
-			'Nom' => array( 'key' => 'dame_legal_rep_2_last_name', 'type' => 'text' ),
+			'Date de naissance' => array( 'key' => 'dame_legal_rep_2_date_naissance', 'type' => 'date' ),
+			'Lieu de naissance' => array( 'key' => 'dame_legal_rep_2_commune_naissance', 'type' => 'text' ),
+			'Contrôle d\'honorabilité' => array( 'key' => 'dame_legal_rep_2_honorabilite', 'type' => 'text' ),
+			'Numéro de téléphone' => array( 'key' => 'dame_legal_rep_2_phone', 'type' => 'tel' ),
 			'Email' => array( 'key' => 'dame_legal_rep_2_email', 'type' => 'email' ),
-			'Téléphone' => array( 'key' => 'dame_legal_rep_2_phone', 'type' => 'tel' ),
+			'Profession' => array( 'key' => 'dame_legal_rep_2_profession', 'type' => 'text' ),
 			'Adresse' => array( 'key' => 'dame_legal_rep_2_address_1', 'type' => 'text_autocomplete' ),
 			'Complément' => array( 'key' => 'dame_legal_rep_2_address_2', 'type' => 'text' ),
 			'Code Postal' => array( 'key' => 'dame_legal_rep_2_postal_code', 'type' => 'text' ),
 			'Ville' => array( 'key' => 'dame_legal_rep_2_city', 'type' => 'text' ),
-			'Profession' => array( 'key' => 'dame_legal_rep_2_profession', 'type' => 'text' ),
-			'Date de naissance' => array( 'key' => 'dame_legal_rep_2_date_naissance', 'type' => 'date' ),
-			'Commune de naissance' => array( 'key' => 'dame_legal_rep_2_commune_naissance', 'type' => 'text' ),
 		),
 	);
 
@@ -272,47 +279,50 @@ function dame_render_pre_inscription_reconciliation_metabox( $post, $metabox ) {
 	// Define all possible fields to ensure a comprehensive comparison.
 	$all_fields = array(
 		'Informations Principales' => array(
+			'Nom de naissance'     => 'dame_birth_name',
+			'Nom d\'usage'          => 'dame_last_name',
 			'Prénom'               => 'dame_first_name',
-			'Nom'                  => 'dame_last_name',
-			'Date de naissance'    => 'dame_birth_date',
-			'Type de licence'      => 'dame_license_type',
-			'Commune de naissance' => 'dame_birth_city',
 			'Sexe'                 => 'dame_sexe',
-			'Email'                => 'dame_email',
+			'Date de naissance'    => 'dame_birth_date',
+			'Lieu de naissance'    => 'dame_birth_city',
 			'Numéro de téléphone'  => 'dame_phone_number',
+			'Email'                => 'dame_email',
+			'Profession'           => 'dame_profession',
 			'Adresse'              => 'dame_address_1',
 			'Complément'           => 'dame_address_2',
 			'Code Postal'          => 'dame_postal_code',
 			'Ville'                => 'dame_city',
 			'Taille de vêtements'  => 'dame_taille_vetements',
-			'Profession'           => 'dame_profession',
+			'Type de licence'      => 'dame_license_type',
 			'Document de santé'    => 'dame_health_document',
 		),
 		'Représentant Légal 1' => array(
-			'Rep. 1 - Prénom'     => 'dame_legal_rep_1_first_name',
-			'Rep. 1 - Nom'        => 'dame_legal_rep_1_last_name',
-			'Rep. 1 - Email'      => 'dame_legal_rep_1_email',
-			'Rep. 1 - Téléphone'  => 'dame_legal_rep_1_phone',
-			'Rep. 1 - Adresse'    => 'dame_legal_rep_1_address_1',
-			'Rep. 1 - Complément' => 'dame_legal_rep_1_address_2',
-			'Rep. 1 - Code Postal' => 'dame_legal_rep_1_postal_code',
-			'Rep. 1 - Ville'      => 'dame_legal_rep_1_city',
-			'Rep. 1 - Profession' => 'dame_legal_rep_1_profession',
+			'Rep. 1 - Nom de naissance' => 'dame_legal_rep_1_last_name',
+			'Rep. 1 - Prénom'           => 'dame_legal_rep_1_first_name',
 			'Rep. 1 - Date de naissance' => 'dame_legal_rep_1_date_naissance',
-			'Rep. 1 - Commune de naissance' => 'dame_legal_rep_1_commune_naissance',
+			'Rep. 1 - Lieu de naissance' => 'dame_legal_rep_1_commune_naissance',
+			'Rep. 1 - Contrôle d\'honorabilité' => 'dame_legal_rep_1_honorabilite',
+			'Rep. 1 - Numéro de téléphone'  => 'dame_legal_rep_1_phone',
+			'Rep. 1 - Email'            => 'dame_legal_rep_1_email',
+			'Rep. 1 - Profession'       => 'dame_legal_rep_1_profession',
+			'Rep. 1 - Adresse'          => 'dame_legal_rep_1_address_1',
+			'Rep. 1 - Complément'       => 'dame_legal_rep_1_address_2',
+			'Rep. 1 - Code Postal'      => 'dame_legal_rep_1_postal_code',
+			'Rep. 1 - Ville'            => 'dame_legal_rep_1_city',
 		),
 		'Représentant Légal 2' => array(
-			'Rep. 2 - Prénom'     => 'dame_legal_rep_2_first_name',
-			'Rep. 2 - Nom'        => 'dame_legal_rep_2_last_name',
-			'Rep. 2 - Email'      => 'dame_legal_rep_2_email',
-			'Rep. 2 - Téléphone'  => 'dame_legal_rep_2_phone',
-			'Rep. 2 - Adresse'    => 'dame_legal_rep_2_address_1',
-			'Rep. 2 - Complément' => 'dame_legal_rep_2_address_2',
-			'Rep. 2 - Code Postal' => 'dame_legal_rep_2_postal_code',
-			'Rep. 2 - Ville'      => 'dame_legal_rep_2_city',
-			'Rep. 2 - Profession' => 'dame_legal_rep_2_profession',
+			'Rep. 2 - Nom de naissance' => 'dame_legal_rep_2_last_name',
+			'Rep. 2 - Prénom'           => 'dame_legal_rep_2_first_name',
 			'Rep. 2 - Date de naissance' => 'dame_legal_rep_2_date_naissance',
-			'Rep. 2 - Commune de naissance' => 'dame_legal_rep_2_commune_naissance',
+			'Rep. 2 - Lieu de naissance' => 'dame_legal_rep_2_commune_naissance',
+			'Rep. 2 - Contrôle d\'honorabilité' => 'dame_legal_rep_2_honorabilite',
+			'Rep. 2 - Numéro de téléphone'  => 'dame_legal_rep_2_phone',
+			'Rep. 2 - Email'            => 'dame_legal_rep_2_email',
+			'Rep. 2 - Profession'       => 'dame_legal_rep_2_profession',
+			'Rep. 2 - Adresse'          => 'dame_legal_rep_2_address_1',
+			'Rep. 2 - Complément'       => 'dame_legal_rep_2_address_2',
+			'Rep. 2 - Code Postal'      => 'dame_legal_rep_2_postal_code',
+			'Rep. 2 - Ville'            => 'dame_legal_rep_2_city',
 		),
 	);
 	?>
@@ -405,6 +415,10 @@ function dame_process_pre_inscription_actions( $post_id ) {
 
 	// --- Step 1: Always save the submitted fields first ---
 	// This ensures any edits made by the admin are saved before further action.
+	if ( empty( $_POST['dame_last_name'] ) && ! empty( $_POST['dame_birth_name'] ) ) {
+		$_POST['dame_last_name'] = $_POST['dame_birth_name'];
+	}
+
 	$first_name = sanitize_text_field( wp_unslash( $_POST['dame_first_name'] ) );
 	$last_name  = sanitize_text_field( wp_unslash( $_POST['dame_last_name'] ) );
 	if ( $first_name && $last_name ) {
@@ -420,9 +434,9 @@ function dame_process_pre_inscription_actions( $post_id ) {
 	}
 
 	$all_field_keys = array(
-		'dame_first_name', 'dame_last_name', 'dame_birth_date', 'dame_license_type', 'dame_birth_city', 'dame_sexe', 'dame_profession',
+		'dame_first_name', 'dame_last_name', 'dame_birth_name', 'dame_birth_date', 'dame_license_type', 'dame_birth_city', 'dame_sexe', 'dame_profession',
 		'dame_email', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
-		'dame_health_document',
+		'dame_health_document', 'dame_legal_rep_1_honorabilite', 'dame_legal_rep_2_honorabilite',
 		'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_phone',
 		'dame_legal_rep_1_address_1', 'dame_legal_rep_1_address_2', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city', 'dame_legal_rep_1_profession',
 		'dame_legal_rep_1_date_naissance', 'dame_legal_rep_1_commune_naissance',
@@ -438,7 +452,7 @@ function dame_process_pre_inscription_actions( $post_id ) {
 			if ( 'dame_first_name' === $key || 'dame_legal_rep_1_first_name' === $key || 'dame_legal_rep_2_first_name' === $key ) {
 				$value = dame_format_firstname( $value );
 			}
-			if ( 'dame_last_name' === $key || 'dame_legal_rep_1_last_name' === $key || 'dame_legal_rep_2_last_name' === $key ) {
+			if ( 'dame_last_name' === $key || 'dame_legal_rep_1_last_name' === $key || 'dame_legal_rep_2_last_name' === $key || 'dame_birth_name' === $key ) {
 				$value = dame_format_lastname( $value );
 			}
 			update_post_meta( $post_id, '_' . $key, $value );

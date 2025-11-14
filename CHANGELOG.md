@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.3.9 - 2025-11-13
+### Ajout
+- **Champ "Nom de naissance" :** Ajout d'un champ "Nom de naissance" obligatoire pour les adhérents et les pré-inscriptions.
+- **Migration des données :** Un script de mise à jour copie automatiquement le nom existant dans le nouveau champ "Nom de naissance" pour tous les adhérents et pré-inscriptions existants. Cette migration est également appliquée lors de la restauration d'une sauvegarde plus ancienne.
+
+### Amélioration
+- **Nom d'usage :** Le champ "Nom" existant est renommé en "Nom d'usage" et devient facultatif. S'il est laissé vide, il prend automatiquement la valeur du "Nom de naissance" lors de la sauvegarde.
+- **Représentants légaux :** Le champ "Nom" des représentants légaux est renommé en "Nom de naissance" pour correspondre aux exigences du contrôle d'honorabilité.
+- **Ordre des champs :** L'ordre des champs a été entièrement revu sur tous les écrans (édition, visualisation, pré-inscription) pour suivre l'ordre des documents d'identité : Nom de naissance, Nom d'usage, Prénom, Sexe, Date de naissance, etc.
+- **Scripts :** Les scripts qui copiaient le nom de l'enfant vers le représentant légal copient désormais le "Nom de naissance".
+- **Exports :** L'export CSV inclut maintenant le "Nom de naissance" et le "Nom d'usage" dans le bon ordre.
+
+### Correction
+- Le libellé "Commune de Naissance" a été uniformisé en "Lieu de Naissance" sur toutes les interfaces.
+
 ## 3.3.8 - 2025-11-13
 ### Ajout
 - **Module de Sondage (type Doodle) :** Ajout d'une nouvelle fonctionnalité de sondage de disponibilité.
