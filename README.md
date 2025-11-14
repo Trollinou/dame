@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 3.3.8
+**Version:** 3.3.10
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -15,6 +15,17 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 *   **PHP :** 8.2 ou supérieur
 
 ## Fonctionnalités Principales
+
+### Flux iCalendar
+
+*   **Abonnement aux Événements :** Le plugin propose désormais des flux iCalendar (.ics) pour permettre aux utilisateurs de s'abonner aux événements de l'Agenda directement depuis leur application de calendrier (Google Calendar, Outlook, Apple Calendar, etc.).
+*   **Flux Public et Privé :** Deux flux globaux sont disponibles par défaut :
+    *   `/feed/agenda/public` : Inclut tous les événements publics.
+    *   `/feed/agenda/prive` : Inclut tous les événements privés (accessible uniquement aux utilisateurs connectés ayant les permissions nécessaires).
+*   **Flux Personnalisés :** Une nouvelle interface d'administration (`Agenda > Flux iCalendar`) permet de créer un nombre illimité de flux personnalisés.
+    *   Chaque flux personnalisé peut être configuré pour inclure uniquement les événements publics appartenant à une ou plusieurs catégories spécifiques.
+    *   Les URL de ces flux sont générées automatiquement à partir du titre du flux (ex: `/feed/agenda/competitions-regionales`).
+*   **Mise à Jour Automatique :** Les calendriers s'abonnant à ces flux se mettront à jour automatiquement pour refléter les ajouts, modifications ou suppressions d'événements.
 
 ### Sondages (type Doodle)
 
