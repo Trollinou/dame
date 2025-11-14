@@ -36,7 +36,7 @@ add_filter( 'manage_dame_ical_feed_posts_columns', 'dame_add_ical_feed_columns' 
 function dame_render_ical_feed_columns( $column_name, $post_id ) {
     if ( 'subscription_url' === $column_name ) {
         $feed_slug = get_post_field( 'post_name', $post_id );
-        $feed_url = home_url( '/feed/agenda/' . $feed_slug );
+        $feed_url = home_url( '/feed/agenda/' . $feed_slug . '.ics' );
         echo '<input type="text" value="' . esc_attr( $feed_url ) . '" readonly onfocus="this.select();" style="width: 100%;">';
     }
 }
@@ -51,12 +51,12 @@ function dame_display_default_ical_feeds() {
         $default_feeds = array(
             array(
                 'title' => __( 'Flux public global', 'dame' ),
-                'url' => home_url( '/feed/agenda/public' ),
+                'url' => home_url( '/feed/agenda/public.ics' ),
                 'description' => __( 'Contient tous les événements publics.', 'dame' ),
             ),
             array(
                 'title' => __( 'Flux privé global', 'dame' ),
-                'url' => home_url( '/feed/agenda/prive' ),
+                'url' => home_url( '/feed/agenda/prive.ics' ),
                 'description' => __( 'Contient tous les événements privés.', 'dame' ),
             ),
         );

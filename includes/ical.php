@@ -42,7 +42,7 @@ add_action( 'save_post_agenda', 'dame_update_ical_meta' );
  */
 function dame_init_ical_feeds() {
     add_feed( 'agenda', 'dame_handle_ical_feed_request' );
-    add_rewrite_rule( '^feed/agenda/([^/]+)/?$', 'index.php?feed=agenda&dame_feed_slug=$matches[1]', 'top' );
+    add_rewrite_rule( '^feed/agenda/([^/]+)\.ics$', 'index.php?feed=agenda&dame_feed_slug=$matches[1]', 'top' );
 }
 add_action( 'init', 'dame_init_ical_feeds' );
 
@@ -73,15 +73,18 @@ function dame_handle_ical_feed_request() {
         'post_status'    => 'publish',
     );
 
+    // Remove .ics from the slug for processing
+    $feed_slug_base = preg_replace( '/\.ics$/', '', $feed_slug );
+
     $feed_details = array(
         'name' => '',
         'url'  => home_url( '/feed/agenda/' . $feed_slug ),
     );
 
-    if ( 'public' === $feed_slug ) {
+    if ( 'public' === $feed_slug_base ) {
         $feed_details['name'] = __( 'Tous les événements publics', 'dame' );
         // Args are already set for public events.
-    } elseif ( 'prive' === $feed_slug ) {
+    } elseif ( 'prive' === $feed_slug_base ) {
         $feed_details['name'] = __( 'Tous les événements privés', 'dame' );
         $args['post_status'] = 'private';
         if ( ! is_user_logged_in() ) {
@@ -90,7 +93,7 @@ function dame_handle_ical_feed_request() {
             dame_generate_ical_feed( array(), $feed_details );
         }
     } else {
-        $feed_post = get_page_by_path( $feed_slug, OBJECT, 'dame_ical_feed' );
+        $feed_post = get_page_by_path( $feed_slug_base, OBJECT, 'dame_ical_feed' );
         if ( $feed_post ) {
             $feed_details['name'] = $feed_post->post_title;
             $categories = get_post_meta( $feed_post->ID, '_dame_ical_feed_categories', true );
@@ -165,25 +168,6 @@ function dame_generate_ical_feed( $event_posts, $feed_details ) {
     echo "REFRESH-INTERVAL;VALUE=DURATION:P1D\r\n";
     echo "X-WR-CALNAME:" . $feed_details['name'] . "\r\n";
 
-    // VTIMEZONE for Europe/Paris
-    echo "BEGIN:VTIMEZONE\r\n";
-    echo "TZID:Europe/Paris\r\n";
-    echo "BEGIN:DAYLIGHT\r\n";
-    echo "TZOFFSETFROM:+0100\r\n";
-    echo "TZOFFSETTO:+0200\r\n";
-    echo "TZNAME:CEST\r\n";
-    echo "DTSTART:19700329T020000\r\n";
-    echo "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3\r\n";
-    echo "END:DAYLIGHT\r\n";
-    echo "BEGIN:STANDARD\r\n";
-    echo "TZOFFSETFROM:+0200\r\n";
-    echo "TZOFFSETTO:+0100\r\n";
-    echo "TZNAME:CET\r\n";
-    echo "DTSTART:19701025T030000\r\n";
-    echo "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10\r\n";
-    echo "END:STANDARD\r\n";
-    echo "END:VTIMEZONE\r\n";
-
     foreach ( $event_posts as $post ) {
         $post_id = $post->ID;
 
@@ -192,23 +176,34 @@ function dame_generate_ical_feed( $event_posts, $feed_details ) {
         $dtstamp = gmdate('Ymd\THis\Z', strtotime($post->post_modified_gmt));
 
         $start_date_str = get_post_meta( $post_id, '_dame_start_date', true );
-        $end_date_str = get_post_meta( $post_id, '_dame_end_date', true );
-        $start_time = get_post_meta( $post_id, '_dame_start_time', true );
-        $end_time = get_post_meta( $post_id, '_dame_end_time', true );
-        $all_day = get_post_meta( $post_id, '_dame_all_day', true );
+        $end_date_str   = get_post_meta( $post_id, '_dame_end_date', true );
+        $start_time     = get_post_meta( $post_id, '_dame_start_time', true );
+        $end_time       = get_post_meta( $post_id, '_dame_end_time', true );
+        $all_day        = get_post_meta( $post_id, '_dame_all_day', true );
 
-        if ($all_day) {
-            $start_date_obj = new DateTime($start_date_str);
-            $end_date_obj = new DateTime($end_date_str);
-            $end_date_obj->modify('+1 day');
-            $dtstart = ";VALUE=DATE:" . $start_date_obj->format('Ymd');
-            $dtend = ";VALUE=DATE:" . $end_date_obj->format('Ymd');
+        if ( $all_day ) {
+            $start_date_obj = new DateTime( $start_date_str );
+            $end_date_obj   = new DateTime( $end_date_str );
+            // For all-day events, DTEND is exclusive, so we add one day.
+            $end_date_obj->modify( '+1 day' );
+            $dtstart = ';VALUE=DATE:' . $start_date_obj->format( 'Ymd' );
+            $dtend   = ';VALUE=DATE:' . $end_date_obj->format( 'Ymd' );
         } else {
-            $dtstart = ";TZID=Europe/Paris:" . date('Ymd\THis', strtotime($start_date_str . ' ' . $start_time));
-            $dtend = ";TZID=Europe/Paris:" . date('Ymd\THis', strtotime($end_date_str . ' ' . $end_time));
+            // For timed events, we convert the site's local time to UTC (Zulu time).
+            $timezone_string = get_option( 'timezone_string' );
+            if ( empty( $timezone_string ) ) {
+                $timezone_string = 'Europe/Paris'; // Fallback
+            }
+            $timezone = new DateTimeZone( $timezone_string );
+
+            $start_datetime = new DateTime( $start_date_str . ' ' . $start_time, $timezone );
+            $end_datetime   = new DateTime( $end_date_str . ' ' . $end_time, $timezone );
+
+            $dtstart = ':' . gmdate( 'Ymd\THis\Z', $start_datetime->getTimestamp() );
+            $dtend   = ':' . gmdate( 'Ymd\THis\Z', $end_datetime->getTimestamp() );
         }
 
-        $description = $format_for_ics(strip_tags( get_post_meta( $post_id, '_dame_agenda_description', true ) ));
+        $description = $format_for_ics( strip_tags( get_post_meta( $post_id, '_dame_agenda_description', true ) ) );
         $location = $format_for_ics(get_post_meta($post_id, '_dame_location_name', true));
         $summary = $format_for_ics($post->post_title);
 
