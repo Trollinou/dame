@@ -1,0 +1,264 @@
+<?php
+/**
+ * Functions for generating iCalendar feeds.
+ *
+ * @package DAME
+ */
+
+// If this file is called directly, abort.
+if ( ! defined( 'WPINC' ) ) {
+    die;
+}
+
+/**
+ * Updates iCalendar metadata for an event when it is saved.
+ *
+ * - Ensures a stable, unique UID exists.
+ * - Increments the sequence number to notify clients of updates.
+ *
+ * @param int $post_id The post ID.
+ */
+function dame_update_ical_meta( $post_id ) {
+    // If this is just a revision, don't do anything.
+    if ( wp_is_post_revision( $post_id ) ) {
+        return;
+    }
+
+    // Check for a UID, create if it doesn't exist.
+    if ( ! get_post_meta( $post_id, '_dame_ical_uid', true ) ) {
+        // Generate a new UUID.
+        $uid = wp_generate_uuid4() . '@' . parse_url( home_url(), PHP_URL_HOST );
+        update_post_meta( $post_id, '_dame_ical_uid', $uid );
+    }
+
+    // Increment sequence number.
+    $sequence = (int) get_post_meta( $post_id, '_dame_ical_sequence', true );
+    update_post_meta( $post_id, '_dame_ical_sequence', $sequence + 1 );
+}
+add_action( 'save_post_agenda', 'dame_update_ical_meta' );
+
+/**
+ * Initializes the iCalendar feeds.
+ */
+function dame_init_ical_feeds() {
+    add_feed( 'agenda', 'dame_handle_ical_feed_request' );
+    add_rewrite_rule( '^feed/agenda/([^/]+)\.ics$', 'index.php?feed=agenda&dame_feed_slug=$matches[1]', 'top' );
+}
+add_action( 'init', 'dame_init_ical_feeds' );
+
+/**
+ * Adds the custom query variable for the feed slug.
+ *
+ * @param array $vars The array of query variables.
+ * @return array The modified array of query variables.
+ */
+function dame_add_ical_query_vars( $vars ) {
+    $vars[] = 'dame_feed_slug';
+    return $vars;
+}
+add_filter( 'query_vars', 'dame_add_ical_query_vars' );
+
+/**
+ * Handles the request for an iCalendar feed.
+ */
+function dame_handle_ical_feed_request() {
+    $feed_slug = get_query_var( 'dame_feed_slug' );
+    if ( ! $feed_slug ) {
+        return;
+    }
+
+    $args = array(
+        'post_type'      => 'dame_agenda',
+        'posts_per_page' => -1,
+        'post_status'    => 'publish',
+    );
+
+    // Remove .ics from the slug for processing
+    $feed_slug_base = preg_replace( '/\.ics$/', '', $feed_slug );
+
+    $feed_details = array(
+        'name' => '',
+        'url'  => home_url( '/feed/agenda/' . $feed_slug ),
+    );
+
+    if ( 'public' === $feed_slug_base ) {
+        $feed_details['name'] = __( 'Tous les événements publics', 'dame' );
+        // Args are already set for public events.
+    } elseif ( 'prive' === $feed_slug_base ) {
+        $feed_details['name'] = __( 'Tous les événements privés', 'dame' );
+        $args['post_status'] = 'private';
+        if ( ! is_user_logged_in() ) {
+            // Optional: You might want to return a 403 Forbidden status here.
+            // For now, we just return an empty feed.
+            dame_generate_ical_feed( array(), $feed_details );
+        }
+    } else {
+        $feed_post = get_page_by_path( $feed_slug_base, OBJECT, 'dame_ical_feed' );
+        if ( $feed_post ) {
+            $feed_details['name'] = $feed_post->post_title;
+            $categories = get_post_meta( $feed_post->ID, '_dame_ical_feed_categories', true );
+            if ( ! empty( $categories ) && is_array( $categories ) ) {
+                $args['tax_query'] = array(
+                    array(
+                        'taxonomy' => 'dame_agenda_category',
+                        'field'    => 'term_id',
+                        'terms'    => $categories,
+                    ),
+                );
+            } else {
+                // If a feed has no categories, return no events.
+                dame_generate_ical_feed( array(), $feed_details );
+            }
+        } else {
+            // Invalid feed slug, return a 404.
+            global $wp_query;
+            $wp_query->set_404();
+            status_header( 404 );
+            return;
+        }
+    }
+
+    $event_posts = get_posts( $args );
+    dame_generate_ical_feed( $event_posts, $feed_details );
+}
+
+/**
+ * Flushes rewrite rules on plugin activation.
+ */
+function dame_flush_rewrite_rules_on_activation() {
+    dame_init_ical_feeds();
+    flush_rewrite_rules();
+}
+register_activation_hook( DAME_PLUGIN_DIR . 'dame.php', 'dame_flush_rewrite_rules_on_activation' );
+
+
+/**
+ * Generates and outputs a full iCalendar feed based on a set of events.
+ *
+ * @param array $event_posts Array of WP_Post objects for the events.
+ * @param array $feed_details Associative array with feed metadata (name, url).
+ */
+function dame_generate_ical_feed( $event_posts, $feed_details ) {
+    header( 'Content-Type: text/calendar; charset=utf-8' );
+    header( 'Content-Disposition: inline; filename="' . sanitize_title( $feed_details['name'] ) . '.ics"' );
+
+    // Helper function for escaping and folding lines.
+    $format_for_ics = function( $text ) {
+        $text = str_replace( '\\', '\\\\', $text );
+        $text = str_replace( ',', '\,', $text );
+        $text = str_replace( ';', '\;', $text );
+        $text = preg_replace( "/\r\n|\n|\r/", "\n", $text );
+        $text = str_replace( "\n", '\n', $text );
+        return $text;
+    };
+
+    $fold_line = function( $line ) {
+        $line = preg_replace('/(?=.)/u', '$0', $line); // Make sure we count multibyte characters correctly
+        $line = str_replace("\r\n", "\n", $line);
+        $line = wordwrap($line, 75, "\r\n ", true);
+        return $line;
+    };
+
+    echo "BEGIN:VCALENDAR\r\n";
+    echo "VERSION:2.0\r\n";
+    echo "PRODID:-//DAME Plugin//NONSGML v1.0//EN\r\n";
+    echo "CALSCALE:GREGORIAN\r\n";
+    echo $fold_line( "NAME:" . $feed_details['name'] ) . "\r\n";
+    echo "SOURCE:" . $feed_details['url'] . "\r\n";
+    echo "REFRESH-INTERVAL;VALUE=DURATION:P1D\r\n";
+    echo "X-WR-CALNAME:" . $feed_details['name'] . "\r\n";
+
+    foreach ( $event_posts as $post ) {
+        $post_id = $post->ID;
+
+        // Ensure UID and Sequence exist, creating them on-the-fly if necessary.
+        $uid = get_post_meta( $post_id, '_dame_ical_uid', true );
+        if ( empty( $uid ) ) {
+            $uid = wp_generate_uuid4() . '@' . parse_url( home_url(), PHP_URL_HOST );
+            update_post_meta( $post_id, '_dame_ical_uid', $uid );
+        }
+
+        $sequence = (int) get_post_meta( $post_id, '_dame_ical_sequence', true );
+        if ( $sequence === 0 ) {
+            $sequence = 1;
+            update_post_meta( $post_id, '_dame_ical_sequence', $sequence );
+        }
+
+        $dtstamp = gmdate('Ymd\THis\Z', strtotime($post->post_modified_gmt));
+
+        $start_date_str = get_post_meta( $post_id, '_dame_start_date', true );
+        $end_date_str   = get_post_meta( $post_id, '_dame_end_date', true );
+        $start_time     = get_post_meta( $post_id, '_dame_start_time', true );
+        $end_time       = get_post_meta( $post_id, '_dame_end_time', true );
+        $all_day        = get_post_meta( $post_id, '_dame_all_day', true );
+
+        if ( $all_day ) {
+            $start_date_obj = new DateTime( $start_date_str );
+            $end_date_obj   = new DateTime( $end_date_str );
+            // For all-day events, DTEND is exclusive, so we add one day.
+            $end_date_obj->modify( '+1 day' );
+            $dtstart = ';VALUE=DATE:' . $start_date_obj->format( 'Ymd' );
+            $dtend   = ';VALUE=DATE:' . $end_date_obj->format( 'Ymd' );
+        } else {
+            // For timed events, we convert the site's local time to UTC (Zulu time).
+            $timezone_string = get_option( 'timezone_string' );
+            if ( empty( $timezone_string ) ) {
+                $timezone_string = 'Europe/Paris'; // Fallback
+            }
+            $timezone = new DateTimeZone( $timezone_string );
+
+            $start_datetime = new DateTime( $start_date_str . ' ' . $start_time, $timezone );
+            $end_datetime   = new DateTime( $end_date_str . ' ' . $end_time, $timezone );
+
+            $dtstart = ':' . gmdate( 'Ymd\THis\Z', $start_datetime->getTimestamp() );
+            $dtend   = ':' . gmdate( 'Ymd\THis\Z', $end_datetime->getTimestamp() );
+        }
+
+        $description = $format_for_ics( strip_tags( get_post_meta( $post_id, '_dame_agenda_description', true ) ) );
+
+        // Build full location string
+        $location_name = get_post_meta( $post_id, '_dame_location_name', true );
+        $address_1     = get_post_meta( $post_id, '_dame_address_1', true );
+        $address_2     = get_post_meta( $post_id, '_dame_address_2', true );
+        $postal_code   = get_post_meta( $post_id, '_dame_postal_code', true );
+        $city          = get_post_meta( $post_id, '_dame_city', true );
+
+        $full_address = '';
+        if ( ! empty( $address_1 ) ) { $full_address .= $address_1 . ', '; }
+        if ( ! empty( $address_2 ) ) { $full_address .= $address_2 . ', '; }
+        if ( ! empty( $postal_code ) ) { $full_address .= $postal_code . ' '; }
+        if ( ! empty( $city ) ) { $full_address .= $city; }
+        $full_address = trim( $full_address, ', ' );
+
+        $location_for_ics = '';
+        if ( ! empty( $location_name ) && ! empty( $full_address ) ) {
+            $location_for_ics = $location_name . ' - ' . $full_address;
+        } elseif ( ! empty( $location_name ) ) {
+            $location_for_ics = $location_name;
+        } elseif ( ! empty( $full_address ) ) {
+            $location_for_ics = $full_address;
+        }
+        $location = $format_for_ics($location_for_ics);
+
+        $summary = $format_for_ics($post->post_title);
+
+        echo "BEGIN:VEVENT\r\n";
+        echo "UID:" . $uid . "\r\n";
+        echo "SEQUENCE:" . $sequence . "\r\n";
+        echo "DTSTAMP:" . $dtstamp . "\r\n";
+        echo "DTSTART" . $dtstart . "\r\n";
+        echo "DTEND" . $dtend . "\r\n";
+        echo $fold_line("SUMMARY:" . $summary) . "\r\n";
+        if (!empty($description)) {
+            echo $fold_line("DESCRIPTION:" . $description) . "\r\n";
+        }
+        if (!empty($location)) {
+            echo $fold_line("LOCATION:" . $location) . "\r\n";
+        }
+        echo "URL:" . get_permalink($post_id) . "\r\n";
+        echo "END:VEVENT\r\n";
+    }
+
+    echo "END:VCALENDAR\r\n";
+    exit;
+}

@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.3.10 - 2025-11-14
+### Ajout
+- **Flux iCalendar (.ics) :** Mise en place de flux iCalendar pour les événements de l'Agenda.
+  - **Flux Public :** Un flux global est disponible à l'URL `/feed/agenda/public` pour tous les événements publics.
+  - **Flux Privé :** Un flux global est disponible à l'URL `/feed/agenda/prive` pour tous les événements privés (accessible aux utilisateurs connectés avec les droits).
+  - **Flux Personnalisés par Catégorie :** Une nouvelle interface dans `Agenda > Flux iCalendar` permet de créer des flux personnalisés. Chaque flux peut inclure des événements publics d'une ou plusieurs catégories sélectionnées.
+  - **Gestion des Flux :** L'interface de gestion liste les flux personnalisés créés par l'utilisateur ainsi que les deux flux globaux (public et privé) qui ne sont ni modifiables ni supprimables.
+  - **Conformité aux Standards :** Les flux respectent les bonnes pratiques des RFC 5545 et 7986, incluant des identifiants uniques et stables (UID), le suivi des modifications (SEQUENCE), et la gestion du fuseau horaire (Europe/Paris).
+  - **Mise à jour suggérée :** Les flux suggèrent un intervalle de rafraîchissement d'un jour aux clients de calendrier.
+
 ## 3.3.9 - 2025-11-13
 ### Ajout
 - **Champ "Nom de naissance" :** Ajout d'un champ "Nom de naissance" obligatoire pour les adhérents et les pré-inscriptions.
