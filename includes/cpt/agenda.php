@@ -227,25 +227,6 @@ function dame_display_event_details( $content ) {
             }
         }
 
-        // Participants.
-        $participants = get_post_meta( $post_id, '_dame_event_participants', true );
-        if ( ! empty( $participants ) && is_array( $participants ) ) {
-            $participant_names = array();
-            foreach ( $participants as $participant_id ) {
-                $participant_title = get_the_title( $participant_id );
-                if ( $participant_title ) {
-                    $participant_names[] = esc_html( $participant_title );
-                }
-            }
-
-            if ( ! empty( $participant_names ) ) {
-                $details_html .= '<div class="dame-event-detail-item dame-event-participants">';
-                $details_html .= '<h4>' . __( 'Participants', 'dame' ) . '</h4>';
-                $details_html .= '<ul><li>' . implode( '</li><li>', $participant_names ) . '</li></ul>';
-                $details_html .= '</div>';
-            }
-        }
-
         $details_html .= '</div>';
 
         // Prepend the details to the original content.
