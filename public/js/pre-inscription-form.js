@@ -276,6 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Fields to clear for the new adhesion
                 document.getElementById('dame_first_name').value = '';
                 document.getElementById('dame_last_name').value = '';
+                document.getElementById('dame_birth_name').value = '';
                 document.getElementById('dame_birth_date').value = '';
                 document.getElementById('dame_birth_city').value = '';
 
@@ -317,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function copyAdherentData(repId) {
     // Adherent fields
-    const lastNameInput = document.getElementById('dame_last_name');
+    const birthNameInput = document.getElementById('dame_birth_name');
     const emailInput = document.getElementById('dame_email');
     const phoneInput = document.getElementById('dame_phone_number');
     const address1Input = document.getElementById('dame_address_1');
@@ -334,10 +335,10 @@ function copyAdherentData(repId) {
     const repPostalCodeInput = document.getElementById('dame_legal_rep_' + repId + '_postal_code');
     const repCityInput = document.getElementById('dame_legal_rep_' + repId + '_city');
 
-    if (lastNameInput && emailInput && phoneInput && address1Input && postalCodeInput && cityInput &&
+    if (birthNameInput && emailInput && phoneInput && address1Input && postalCodeInput && cityInput &&
         repLastNameInput && repEmailInput && repPhoneInput && repAddress1Input && repPostalCodeInput && repCityInput) {
 
-        repLastNameInput.value = lastNameInput.value;
+        repLastNameInput.value = birthNameInput.value;
         repEmailInput.value = emailInput.value;
         repPhoneInput.value = phoneInput.value;
         repAddress1Input.value = address1Input.value;

@@ -117,11 +117,12 @@ function dame_render_view_adherent_page() {
                             <table class="form-table">
                                 <?php
                                 $fields = [
-                                    'Prénom' => '_dame_first_name', 'Nom' => '_dame_last_name', 'Date de naissance' => '_dame_birth_date',
-                                    'Lieu de naissance' => '_dame_birth_city', 'Sexe' => '_dame_sexe', 'Profession' => '_dame_profession',
-                                    'Email' => '_dame_email', 'Numéro de téléphone' => '_dame_phone_number', 'Adresse' => '_dame_address_1',
-                                    'Complément' => '_dame_address_2', 'Code Postal' => '_dame_postal_code', 'Ville' => '_dame_city',
-                                    'Pays' => '_dame_country', 'Département' => '_dame_department', 'Région' => '_dame_region',
+                                    'Nom de naissance' => '_dame_birth_name', 'Nom d\'usage' => '_dame_last_name', 'Prénom' => '_dame_first_name',
+                                    'Sexe' => '_dame_sexe', 'Date de naissance' => '_dame_birth_date', 'Lieu de naissance' => '_dame_birth_city',
+                                    'Numéro de téléphone' => '_dame_phone_number', 'Email' => '_dame_email', 'Profession' => '_dame_profession',
+                                    'Adresse' => '_dame_address_1', 'Complément' => '_dame_address_2',
+                                    'Code Postal' => '_dame_postal_code', 'Ville' => '_dame_city', 'Pays' => '_dame_country',
+                                    'Département' => '_dame_department', 'Région' => '_dame_region',
                                 ];
                                 foreach ( $fields as $label => $key ) {
                                     dame_render_view_field( $label, get_post_meta( $post_id, $key, true ) );
@@ -150,11 +151,12 @@ function dame_render_view_adherent_page() {
                             <table class="form-table">
                                 <?php
                                 $rep1_fields = [
-                                    'Prénom' => '_dame_legal_rep_1_first_name', 'Nom' => '_dame_legal_rep_1_last_name',
-                                    'Profession' => '_dame_legal_rep_1_profession', 'Email' => '_dame_legal_rep_1_email',
-                                    'Téléphone' => '_dame_legal_rep_1_phone', 'Adresse' => '_dame_legal_rep_1_address_1',
-                                    'Complément' => '_dame_legal_rep_1_address_2', 'Code Postal' => '_dame_legal_rep_1_postal_code',
-                                    'Ville' => '_dame_legal_rep_1_city',
+                                    'Nom de naissance' => '_dame_legal_rep_1_last_name', 'Prénom' => '_dame_legal_rep_1_first_name',
+                                    'Date de naissance' => '_dame_legal_rep_1_date_naissance', 'Lieu de naissance' => '_dame_legal_rep_1_commune_naissance',
+                                    'Contrôle d\'honorabilité' => '_dame_legal_rep_1_honorabilite', 'Numéro de téléphone' => '_dame_legal_rep_1_phone',
+                                    'Email' => '_dame_legal_rep_1_email', 'Profession' => '_dame_legal_rep_1_profession',
+                                    'Adresse' => '_dame_legal_rep_1_address_1', 'Complément' => '_dame_legal_rep_1_address_2',
+                                    'Code Postal' => '_dame_legal_rep_1_postal_code', 'Ville' => '_dame_legal_rep_1_city',
                                 ];
                                 foreach ( $rep1_fields as $label => $key ) {
                                     dame_render_view_field( $label, get_post_meta( $post_id, $key, true ) );
@@ -166,11 +168,12 @@ function dame_render_view_adherent_page() {
                             <table class="form-table">
                                 <?php
                                 $rep2_fields = [
-                                    'Prénom' => '_dame_legal_rep_2_first_name', 'Nom' => '_dame_legal_rep_2_last_name',
-                                    'Profession' => '_dame_legal_rep_2_profession', 'Email' => '_dame_legal_rep_2_email',
-                                    'Téléphone' => '_dame_legal_rep_2_phone', 'Adresse' => '_dame_legal_rep_2_address_1',
-                                    'Complément' => '_dame_legal_rep_2_address_2', 'Code Postal' => '_dame_legal_rep_2_postal_code',
-                                    'Ville' => '_dame_legal_rep_2_city',
+                                    'Nom de naissance' => '_dame_legal_rep_2_last_name', 'Prénom' => '_dame_legal_rep_2_first_name',
+                                    'Date de naissance' => '_dame_legal_rep_2_date_naissance', 'Lieu de naissance' => '_dame_legal_rep_2_commune_naissance',
+                                    'Contrôle d\'honorabilité' => '_dame_legal_rep_2_honorabilite', 'Numéro de téléphone' => '_dame_legal_rep_2_phone',
+                                    'Email' => '_dame_legal_rep_2_email', 'Profession' => '_dame_legal_rep_2_profession',
+                                    'Adresse' => '_dame_legal_rep_2_address_1', 'Complément' => '_dame_legal_rep_2_address_2',
+                                    'Code Postal' => '_dame_legal_rep_2_postal_code', 'Ville' => '_dame_legal_rep_2_city',
                                 ];
                                 foreach ( $rep2_fields as $label => $key ) {
                                     dame_render_view_field( $label, get_post_meta( $post_id, $key, true ) );

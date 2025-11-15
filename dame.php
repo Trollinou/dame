@@ -111,6 +111,10 @@ function dame_perform_upgrade( $old_version, $new_version ) {
         dame_v3_3_0_migrate_to_group_taxonomy();
     }
 
+    if ( version_compare( $old_version, '3.3.9', '<' ) ) {
+        dame_v3_3_9_migrate_birth_name();
+    }
+
     // Update the version in the database to the new version.
     update_option( 'dame_plugin_version', $new_version );
 }
@@ -189,6 +193,36 @@ function dame_v3_3_0_migrate_to_group_taxonomy() {
 
                     // Delete the old meta field.
                     delete_post_meta( $adherent_id, $meta_key );
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Migrates the last name to the new birth name field for version 3.3.9.
+ */
+function dame_v3_3_9_migrate_birth_name() {
+    $post_types_to_migrate = array( 'adherent', 'dame_pre_inscription' );
+
+    foreach ( $post_types_to_migrate as $post_type ) {
+        $query = new WP_Query(
+            array(
+                'post_type'      => $post_type,
+                'posts_per_page' => -1,
+                'post_status'    => 'any',
+                'fields'         => 'ids',
+            )
+        );
+
+        if ( $query->have_posts() ) {
+            foreach ( $query->posts as $post_id ) {
+                $birth_name = get_post_meta( $post_id, '_dame_birth_name', true );
+                if ( empty( $birth_name ) ) {
+                    $last_name = get_post_meta( $post_id, '_dame_last_name', true );
+                    if ( ! empty( $last_name ) ) {
+                        update_post_meta( $post_id, '_dame_birth_name', $last_name );
+                    }
                 }
             }
         }

@@ -238,17 +238,19 @@ function dame_render_adherent_details_metabox( $post ) {
 	};
 
 	// Retrieve values using the helper function
-	$first_name = $get_value( 'dame_first_name' );
+	$birth_name = $get_value( 'dame_birth_name' );
 	$last_name = $get_value( 'dame_last_name' );
-	$birth_date = $get_value( 'dame_birth_date' );
+	$first_name = $get_value( 'dame_first_name' );
 	$sexe = $get_value( 'dame_sexe', 'Non précisé' );
 	if ( ! $sexe ) {
 		$sexe = 'Non précisé';
 	}
-	$license_number = $get_value( 'dame_license_number' );
+	$birth_date = $get_value( 'dame_birth_date' );
+	$birth_city = $get_value( 'dame_birth_city' );
 	$phone = $get_value( 'dame_phone_number' );
 	$email = $get_value( 'dame_email' );
 	$email_refuses_comms = $get_value( 'dame_email_refuses_comms' );
+	$profession = $get_value( 'dame_profession' );
 	$address_1 = $get_value( 'dame_address_1' );
 	$address_2 = $get_value( 'dame_address_2' );
 	$postal_code = $get_value( 'dame_postal_code' );
@@ -256,17 +258,27 @@ function dame_render_adherent_details_metabox( $post ) {
 	$country = $get_value( 'dame_country' );
 	$region = $get_value( 'dame_region' );
 	$department = $get_value( 'dame_department' );
-	$birth_city = $get_value( 'dame_birth_city' );
-	$profession = $get_value( 'dame_profession' );
 	?>
 	<table class="form-table">
+		<tr>
+			<th><label for="dame_birth_name"><?php _e( 'Nom de naissance', 'dame' ); ?> <span class="description">(obligatoire)</span></label></th>
+			<td><input type="text" id="dame_birth_name" name="dame_birth_name" value="<?php echo esc_attr( $birth_name ); ?>" class="regular-text" required="required" /></td>
+		</tr>
+		<tr>
+			<th><label for="dame_last_name"><?php _e( 'Nom d\'usage', 'dame' ); ?></label></th>
+			<td><input type="text" id="dame_last_name" name="dame_last_name" value="<?php echo esc_attr( $last_name ); ?>" class="regular-text" /></td>
+		</tr>
 		<tr>
 			<th><label for="dame_first_name"><?php _e( 'Prénom', 'dame' ); ?> <span class="description">(obligatoire)</span></label></th>
 			<td><input type="text" id="dame_first_name" name="dame_first_name" value="<?php echo esc_attr( $first_name ); ?>" class="regular-text" required="required" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_last_name"><?php _e( 'Nom', 'dame' ); ?> <span class="description">(obligatoire)</span></label></th>
-			<td><input type="text" id="dame_last_name" name="dame_last_name" value="<?php echo esc_attr( $last_name ); ?>" class="regular-text" required="required" /></td>
+			<th><?php _e( 'Sexe', 'dame' ); ?> <span class="description">(obligatoire)</span></th>
+			<td>
+				<label style="margin-right: 15px;"><input type="radio" name="dame_sexe" value="Masculin" <?php checked( $sexe, 'Masculin' ); ?> required="required"/> <?php _e( 'Masculin', 'dame' ); ?></label>
+				<label style="margin-right: 15px;"><input type="radio" name="dame_sexe" value="Féminin" <?php checked( $sexe, 'Féminin' ); ?> /> <?php _e( 'Féminin', 'dame' ); ?></label>
+				<label><input type="radio" name="dame_sexe" value="Non précisé" <?php checked( $sexe, 'Non précisé' ); ?> /> <?php _e( 'Non précisé', 'dame' ); ?></label>
+			</td>
 		</tr>
 		<tr>
 			<th><label for="dame_birth_date"><?php _e( 'Date de naissance', 'dame' ); ?> <span class="description">(obligatoire)</span></label></th>
@@ -276,21 +288,13 @@ function dame_render_adherent_details_metabox( $post ) {
 			<th><label for="dame_birth_city"><?php _e( 'Lieu de naissance', 'dame' ); ?></label></th>
 			<td>
 				<div class="dame-autocomplete-wrapper">
-					<input type="text" id="dame_birth_city" name="dame_birth_city" value="<?php echo esc_attr( $birth_city ); ?>" placeholder="<?php _e( 'Commune de naissance (Code)', 'dame' ); ?>" class="regular-text" />
+					<input type="text" id="dame_birth_city" name="dame_birth_city" value="<?php echo esc_attr( $birth_city ); ?>" placeholder="<?php _e( 'Lieu de naissance (Code)', 'dame' ); ?>" class="regular-text" />
 				</div>
 			</td>
 		</tr>
 		<tr>
-			<th><?php _e( 'Sexe', 'dame' ); ?></th>
-			<td>
-				<label style="margin-right: 15px;"><input type="radio" name="dame_sexe" value="Masculin" <?php checked( $sexe, 'Masculin' ); ?> /> <?php _e( 'Masculin', 'dame' ); ?></label>
-				<label style="margin-right: 15px;"><input type="radio" name="dame_sexe" value="Féminin" <?php checked( $sexe, 'Féminin' ); ?> /> <?php _e( 'Féminin', 'dame' ); ?></label>
-				<label><input type="radio" name="dame_sexe" value="Non précisé" <?php checked( $sexe, 'Non précisé' ); ?> /> <?php _e( 'Non précisé', 'dame' ); ?></label>
-			</td>
-		</tr>
-		<tr>
-			<th><label for="dame_profession"><?php _e( 'Profession', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_profession" name="dame_profession" value="<?php echo esc_attr( $profession ); ?>" class="regular-text" /></td>
+			<th><label for="dame_phone_number"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label></th>
+			<td><input type="tel" id="dame_phone_number" name="dame_phone_number" value="<?php echo esc_attr( $phone ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
 			<th><label for="dame_email"><?php _e( 'Email', 'dame' ); ?></label></th>
@@ -303,8 +307,8 @@ function dame_render_adherent_details_metabox( $post ) {
 			</td>
 		</tr>
 		<tr>
-			<th><label for="dame_phone_number"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label></th>
-			<td><input type="tel" id="dame_phone_number" name="dame_phone_number" value="<?php echo esc_attr( $phone ); ?>" class="regular-text" /></td>
+			<th><label for="dame_profession"><?php _e( 'Profession', 'dame' ); ?></label></th>
+			<td><input type="text" id="dame_profession" name="dame_profession" value="<?php echo esc_attr( $profession ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
 			<th><label for="dame_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
@@ -422,16 +426,24 @@ function dame_render_legal_rep_metabox( $post ) {
 	<h4><?php _e( 'Représentant Légal 1', 'dame' ); ?></h4>
 	<table class="form-table">
 		<tr>
+			<th><label for="dame_legal_rep_1_last_name"><?php _e( 'Nom de naissance', 'dame' ); ?></label></th>
+			<td><input type="text" id="dame_legal_rep_1_last_name" name="dame_legal_rep_1_last_name" value="<?php echo esc_attr( $rep1_last_name ); ?>" class="regular-text" /></td>
+		</tr>
+		<tr>
 			<th><label for="dame_legal_rep_1_first_name"><?php _e( 'Prénom', 'dame' ); ?></label></th>
 			<td><input type="text" id="dame_legal_rep_1_first_name" name="dame_legal_rep_1_first_name" value="<?php echo esc_attr( $rep1_first_name ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_1_last_name"><?php _e( 'Nom', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_legal_rep_1_last_name" name="dame_legal_rep_1_last_name" value="<?php echo esc_attr( $rep1_last_name ); ?>" class="regular-text" /></td>
+			<th><label for="dame_legal_rep_1_date_naissance"><?php _e( 'Date de naissance', 'dame' ); ?></label></th>
+			<td><input type="date" id="dame_legal_rep_1_date_naissance" name="dame_legal_rep_1_date_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_1_date_naissance', true ) ); ?>" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_1_profession"><?php _e( 'Profession', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_legal_rep_1_profession" name="dame_legal_rep_1_profession" value="<?php echo esc_attr( $rep1_profession ); ?>" class="regular-text" /></td>
+			<th><label for="dame_legal_rep_1_commune_naissance"><?php _e( 'Lieu de naissance', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-autocomplete-wrapper">
+					<input type="text" id="dame_legal_rep_1_commune_naissance" name="dame_legal_rep_1_commune_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_1_commune_naissance', true ) ); ?>" class="regular-text" />
+				</div>
+			</td>
 		</tr>
 		<tr>
 			<th><label for="dame_legal_rep_1_honorabilite"><?php _e( 'Contrôle d\'honorabilité', 'dame' ); ?></label></th>
@@ -448,16 +460,8 @@ function dame_render_legal_rep_metabox( $post ) {
 			</td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_1_date_naissance"><?php _e( 'Date de naissance', 'dame' ); ?></label></th>
-			<td><input type="date" id="dame_legal_rep_1_date_naissance" name="dame_legal_rep_1_date_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_1_date_naissance', true ) ); ?>" /></td>
-		</tr>
-		<tr>
-			<th><label for="dame_legal_rep_1_commune_naissance"><?php _e( 'Commune de naissance', 'dame' ); ?></label></th>
-			<td>
-				<div class="dame-autocomplete-wrapper">
-					<input type="text" id="dame_legal_rep_1_commune_naissance" name="dame_legal_rep_1_commune_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_1_commune_naissance', true ) ); ?>" class="regular-text" />
-				</div>
-			</td>
+			<th><label for="dame_legal_rep_1_phone"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label></th>
+			<td><input type="tel" id="dame_legal_rep_1_phone" name="dame_legal_rep_1_phone" value="<?php echo esc_attr( $rep1_phone ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
 			<th><label for="dame_legal_rep_1_email"><?php _e( 'Email', 'dame' ); ?></label></th>
@@ -470,8 +474,8 @@ function dame_render_legal_rep_metabox( $post ) {
 			</td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_1_phone"><?php _e( 'Téléphone', 'dame' ); ?></label></th>
-			<td><input type="tel" id="dame_legal_rep_1_phone" name="dame_legal_rep_1_phone" value="<?php echo esc_attr( $rep1_phone ); ?>" class="regular-text" /></td>
+			<th><label for="dame_legal_rep_1_profession"><?php _e( 'Profession', 'dame' ); ?></label></th>
+			<td><input type="text" id="dame_legal_rep_1_profession" name="dame_legal_rep_1_profession" value="<?php echo esc_attr( $rep1_profession ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
 			<th><label for="dame_legal_rep_1_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
@@ -501,16 +505,24 @@ function dame_render_legal_rep_metabox( $post ) {
 	<h4><?php _e( 'Représentant Légal 2', 'dame' ); ?></h4>
 	<table class="form-table">
 		<tr>
+			<th><label for="dame_legal_rep_2_last_name"><?php _e( 'Nom de naissance', 'dame' ); ?></label></th>
+			<td><input type="text" id="dame_legal_rep_2_last_name" name="dame_legal_rep_2_last_name" value="<?php echo esc_attr( $rep2_last_name ); ?>" class="regular-text" /></td>
+		</tr>
+		<tr>
 			<th><label for="dame_legal_rep_2_first_name"><?php _e( 'Prénom', 'dame' ); ?></label></th>
 			<td><input type="text" id="dame_legal_rep_2_first_name" name="dame_legal_rep_2_first_name" value="<?php echo esc_attr( $rep2_first_name ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_2_last_name"><?php _e( 'Nom', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_legal_rep_2_last_name" name="dame_legal_rep_2_last_name" value="<?php echo esc_attr( $rep2_last_name ); ?>" class="regular-text" /></td>
+			<th><label for="dame_legal_rep_2_date_naissance"><?php _e( 'Date de naissance', 'dame' ); ?></label></th>
+			<td><input type="date" id="dame_legal_rep_2_date_naissance" name="dame_legal_rep_2_date_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_2_date_naissance', true ) ); ?>" /></td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_2_profession"><?php _e( 'Profession', 'dame' ); ?></label></th>
-			<td><input type="text" id="dame_legal_rep_2_profession" name="dame_legal_rep_2_profession" value="<?php echo esc_attr( $rep2_profession ); ?>" class="regular-text" /></td>
+			<th><label for="dame_legal_rep_2_commune_naissance"><?php _e( 'Lieu de naissance', 'dame' ); ?></label></th>
+			<td>
+				<div class="dame-autocomplete-wrapper">
+					<input type="text" id="dame_legal_rep_2_commune_naissance" name="dame_legal_rep_2_commune_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_2_commune_naissance', true ) ); ?>" class="regular-text" />
+				</div>
+			</td>
 		</tr>
 		<tr>
 			<th><label for="dame_legal_rep_2_honorabilite"><?php _e( 'Contrôle d\'honorabilité', 'dame' ); ?></label></th>
@@ -527,16 +539,8 @@ function dame_render_legal_rep_metabox( $post ) {
 			</td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_2_date_naissance"><?php _e( 'Date de naissance', 'dame' ); ?></label></th>
-			<td><input type="date" id="dame_legal_rep_2_date_naissance" name="dame_legal_rep_2_date_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_2_date_naissance', true ) ); ?>" /></td>
-		</tr>
-		<tr>
-			<th><label for="dame_legal_rep_2_commune_naissance"><?php _e( 'Commune de naissance', 'dame' ); ?></label></th>
-			<td>
-				<div class="dame-autocomplete-wrapper">
-					<input type="text" id="dame_legal_rep_2_commune_naissance" name="dame_legal_rep_2_commune_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_2_commune_naissance', true ) ); ?>" class="regular-text" />
-				</div>
-			</td>
+			<th><label for="dame_legal_rep_2_phone"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label></th>
+			<td><input type="tel" id="dame_legal_rep_2_phone" name="dame_legal_rep_2_phone" value="<?php echo esc_attr( $rep2_phone ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
 			<th><label for="dame_legal_rep_2_email"><?php _e( 'Email', 'dame' ); ?></label></th>
@@ -549,8 +553,8 @@ function dame_render_legal_rep_metabox( $post ) {
 			</td>
 		</tr>
 		<tr>
-			<th><label for="dame_legal_rep_2_phone"><?php _e( 'Téléphone', 'dame' ); ?></label></th>
-			<td><input type="tel" id="dame_legal_rep_2_phone" name="dame_legal_rep_2_phone" value="<?php echo esc_attr( $rep2_phone ); ?>" class="regular-text" /></td>
+			<th><label for="dame_legal_rep_2_profession"><?php _e( 'Profession', 'dame' ); ?></label></th>
+			<td><input type="text" id="dame_legal_rep_2_profession" name="dame_legal_rep_2_profession" value="<?php echo esc_attr( $rep2_profession ); ?>" class="regular-text" /></td>
 		</tr>
 		<tr>
 			<th><label for="dame_legal_rep_2_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
@@ -846,8 +850,12 @@ function dame_save_adherent_meta( $post_id ) {
 	if ( empty( $_POST['dame_first_name'] ) ) {
 		$errors[] = __( 'Le prénom est obligatoire.', 'dame' );
 	}
+	if ( empty( $_POST['dame_birth_name'] ) ) {
+		$errors[] = __( 'Le nom de naissance est obligatoire.', 'dame' );
+	}
+	// Si le nom d'usage est vide, on y copie le nom de naissance.
 	if ( empty( $_POST['dame_last_name'] ) ) {
-		$errors[] = __( 'Le nom est obligatoire.', 'dame' );
+		$_POST['dame_last_name'] = $_POST['dame_birth_name'];
 	}
 	if ( empty( $_POST['dame_birth_date'] ) ) {
 		$errors[] = __( 'La date de naissance est obligatoire.', 'dame' );
@@ -925,7 +933,7 @@ function dame_save_adherent_meta( $post_id ) {
 	}
 
 	$fields = [
-		'dame_first_name' => 'sanitize_text_field', 'dame_last_name' => 'sanitize_text_field',
+		'dame_first_name' => 'sanitize_text_field', 'dame_last_name' => 'sanitize_text_field', 'dame_birth_name' => 'sanitize_text_field',
 		'dame_birth_date' => 'sanitize_text_field', 'dame_license_number' => 'sanitize_text_field',
 		'dame_birth_city' => 'sanitize_text_field',
 		'dame_email' => 'sanitize_email', 'dame_address_1' => 'sanitize_text_field',
@@ -971,7 +979,7 @@ function dame_save_adherent_meta( $post_id ) {
 			if ( 'dame_first_name' === $field_name || 'dame_legal_rep_1_first_name' === $field_name || 'dame_legal_rep_2_first_name' === $field_name ) {
 				$value = dame_format_firstname( $value );
 			}
-			if ( 'dame_last_name' === $field_name || 'dame_legal_rep_1_last_name' === $field_name || 'dame_legal_rep_2_last_name' === $field_name ) {
+			if ( 'dame_last_name' === $field_name || 'dame_legal_rep_1_last_name' === $field_name || 'dame_legal_rep_2_last_name' === $field_name || 'dame_birth_name' === $field_name ) {
 				$value = dame_format_lastname( $value );
 			}
 
