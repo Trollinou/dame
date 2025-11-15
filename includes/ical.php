@@ -41,8 +41,8 @@ add_action( 'save_post_agenda', 'dame_update_ical_meta' );
  * Initializes the iCalendar feeds.
  */
 function dame_init_ical_feeds() {
-    add_feed( 'agenda', 'dame_handle_ical_feed_request' );
-    add_rewrite_rule( '^feed/agenda/([^/]+)\.ics$', 'index.php?feed=agenda&dame_feed_slug=$matches[1]', 'top' );
+    add_feed( 'dame-agenda-ical', 'dame_handle_ical_feed_request' );
+    add_rewrite_rule( '^feed/agenda/([^/]+)\.ics$', 'index.php?feed=dame-agenda-ical&dame_feed_slug=$matches[1]', 'top' );
 }
 add_action( 'init', 'dame_init_ical_feeds' );
 
