@@ -215,7 +215,31 @@ function dame_generate_ical_feed( $event_posts, $feed_details ) {
         }
 
         $description = $format_for_ics( strip_tags( get_post_meta( $post_id, '_dame_agenda_description', true ) ) );
-        $location = $format_for_ics(get_post_meta($post_id, '_dame_location_name', true));
+
+        // Build full location string
+        $location_name = get_post_meta( $post_id, '_dame_location_name', true );
+        $address_1     = get_post_meta( $post_id, '_dame_address_1', true );
+        $address_2     = get_post_meta( $post_id, '_dame_address_2', true );
+        $postal_code   = get_post_meta( $post_id, '_dame_postal_code', true );
+        $city          = get_post_meta( $post_id, '_dame_city', true );
+
+        $full_address = '';
+        if ( ! empty( $address_1 ) ) { $full_address .= $address_1 . ', '; }
+        if ( ! empty( $address_2 ) ) { $full_address .= $address_2 . ', '; }
+        if ( ! empty( $postal_code ) ) { $full_address .= $postal_code . ' '; }
+        if ( ! empty( $city ) ) { $full_address .= $city; }
+        $full_address = trim( $full_address, ', ' );
+
+        $location_for_ics = '';
+        if ( ! empty( $location_name ) && ! empty( $full_address ) ) {
+            $location_for_ics = $location_name . ' - ' . $full_address;
+        } elseif ( ! empty( $location_name ) ) {
+            $location_for_ics = $location_name;
+        } elseif ( ! empty( $full_address ) ) {
+            $location_for_ics = $full_address;
+        }
+        $location = $format_for_ics($location_for_ics);
+
         $summary = $format_for_ics($post->post_title);
 
         echo "BEGIN:VEVENT\r\n";
