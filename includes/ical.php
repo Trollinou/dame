@@ -171,8 +171,19 @@ function dame_generate_ical_feed( $event_posts, $feed_details ) {
     foreach ( $event_posts as $post ) {
         $post_id = $post->ID;
 
+        // Ensure UID and Sequence exist, creating them on-the-fly if necessary.
         $uid = get_post_meta( $post_id, '_dame_ical_uid', true );
+        if ( empty( $uid ) ) {
+            $uid = wp_generate_uuid4() . '@' . parse_url( home_url(), PHP_URL_HOST );
+            update_post_meta( $post_id, '_dame_ical_uid', $uid );
+        }
+
         $sequence = (int) get_post_meta( $post_id, '_dame_ical_sequence', true );
+        if ( $sequence === 0 ) {
+            $sequence = 1;
+            update_post_meta( $post_id, '_dame_ical_sequence', $sequence );
+        }
+
         $dtstamp = gmdate('Ymd\THis\Z', strtotime($post->post_modified_gmt));
 
         $start_date_str = get_post_meta( $post_id, '_dame_start_date', true );
