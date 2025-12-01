@@ -1,5 +1,22 @@
 # Changelog
 
+## 3.4.0 - 2025-12-01
+### Ajout
+- **File d'attente pour l'envoi d'emails :** Le système d'envoi de messages a été entièrement revu pour utiliser une file d'attente en arrière-plan (via WP-Cron).
+- **Suivi des ouvertures d'emails :** Un pixel de suivi est désormais injecté dans chaque email envoyé, permettant de mesurer l'engagement.
+- **Statistiques d'ouverture :** Une nouvelle colonne "Ouverts / Total" a été ajoutée à la liste des messages. Elle affiche le statut de l'envoi en temps réel ("Programmé", "En cours") ainsi que le nombre d'ouvertures uniques une fois l'envoi terminé.
+- **Base de données :** Création d'une nouvelle table `wp_dame_message_opens` pour stocker les données d'ouverture de manière anonymisée (hash de l'email). La création est maintenant gérée de manière fiable à l'activation du plugin.
+
+### Amélioration
+- **Fiabilité des envois :** Les emails sont envoyés par lots de 30 par minute, ce qui évite les timeouts du serveur et respecte les limites des hébergeurs.
+- **Interface utilisateur :** La page "Envoyer un message" empêche désormais de renvoyer une campagne déjà envoyée ou programmée, évitant ainsi les envois accidentels.
+- **Qualité du code :** Le code JavaScript de la page d'envoi a été déplacé dans un fichier externe et est chargé via les bonnes pratiques de WordPress.
+
+### Correction
+- **Envoi de test :** La fonction "Envoyer un test" n'inclut plus le pixel de suivi et reste un envoi direct et instantané.
+- **Validation du pixel :** Correction d'un bug dans l'endpoint de l'API REST qui empêchait la validation correcte du hash de l'email, bloquant ainsi le comptage des ouvertures.
+- **Numéro de version :** Le numéro de version dans l'en-tête du plugin a été synchronisé avec la constante de version.
+
 ## 3.3.10 - 2025-11-14
 ### Ajout
 - **Flux iCalendar (.ics) :** Mise en place de flux iCalendar pour les événements de l'Agenda.
