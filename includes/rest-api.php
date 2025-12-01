@@ -43,8 +43,8 @@ function dame_handle_tracking_pixel( $request ) {
     $message_id = absint( $message_id );
     $email_hash = sanitize_text_field( $email_hash );
 
-    // Basic validation.
-    if ( empty( $message_id ) || empty( $email_hash ) || ! ctype_alnum( $email_hash ) || strlen( $email_hash ) !== 32 ) {
+    // Basic validation for MD5 hash.
+    if ( empty( $message_id ) || ! preg_match( '/^[a-f0-9]{32}$/', $email_hash ) ) {
         // Invalid data, return a 400 Bad Request response, but still as a GIF.
         dame_send_pixel_response( 400 );
     }
