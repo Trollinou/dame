@@ -24,6 +24,7 @@ function dame_add_message_columns( $columns ) {
             $new_columns['sent_date'] = __( 'Date d\'envoi', 'dame' );
             $new_columns['sending_author'] = __( 'Auteur de l\'envoi', 'dame' );
             $new_columns['recipients'] = __( 'Destinataires', 'dame' );
+            $new_columns['open_rate'] = __( 'Ouverts / Total', 'dame' );
         }
     }
     return $new_columns;
@@ -54,6 +55,38 @@ function dame_render_message_columns( $column, $post_id ) {
                 echo esc_html( $author ? $author->display_name : __( 'Utilisateur inconnu', 'dame' ) );
             } else {
                 echo '—';
+            }
+            break;
+
+        case 'open_rate':
+            global $wpdb;
+            $status = get_post_meta( $post_id, '_dame_message_status', true );
+            $total_recipients = get_post_meta( $post_id, '_dame_total_recipients', true );
+
+            if ( empty( $status ) ) {
+                echo 'N/A';
+                break;
+            }
+
+            if ( 'sending' === $status || 'scheduled' === $status ) {
+                $processed = (int) get_post_meta( $post_id, '_dame_scheduled_batches_processed', true );
+                $total     = (int) get_post_meta( $post_id, '_dame_scheduled_batches_total', true );
+                if ( $total > 0 ) {
+                    /* translators: %1$d: processed batches, %2$d: total batches */
+                    echo esc_html( sprintf( __( 'En cours (%1$d/%2$d)', 'dame' ), $processed, $total ) );
+                } else {
+                    echo esc_html__( 'Programmé', 'dame' );
+                }
+            } elseif ( 'sent' === $status ) {
+                $table_name = $wpdb->prefix . 'dame_message_opens';
+                // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+                $opened_count = $wpdb->get_var(
+                    $wpdb->prepare(
+                        "SELECT COUNT(id) FROM {$table_name} WHERE message_id = %d",
+                        $post_id
+                    )
+                );
+                echo esc_html( $opened_count ) . ' / ' . esc_html( $total_recipients );
             }
             break;
 

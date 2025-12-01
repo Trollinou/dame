@@ -37,6 +37,15 @@ function dame_handle_send_email() {
         return;
     }
 
+    // Check if the message is already sent or scheduled.
+    $message_status = get_post_meta( $message_id, '_dame_message_status', true );
+    if ( in_array( $message_status, array( 'scheduled', 'sending', 'sent' ), true ) ) {
+        add_action( 'admin_notices', function() {
+            echo '<div class="error"><p>' . esc_html__( "Ce message a déjà été envoyé ou est en cours d'envoi.", 'dame' ) . '</p></div>';
+        });
+        return;
+    }
+
     $adherent_ids = array();
 
     if ( 'group' === $selection_method ) {
@@ -136,51 +145,16 @@ function dame_handle_send_email() {
         return;
     }
 
-    $article = get_post( $message_id );
-    $subject = $article->post_title;
-    $content = apply_filters( 'the_content', $article->post_content );
-    $message = '<div style="margin: 1cm;">' . $content . '</div>';
+    $total_recipients = count( $recipient_emails );
 
-    $options = get_option( 'dame_options' );
-    $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : '';
-
-    if ( empty( $sender_email ) ) {
-        $admins = get_users( array( 'role' => 'administrator', 'number' => 1, 'orderby' => 'ID' ) );
-        if ( ! empty( $admins ) ) {
-            $sender_email = $admins[0]->user_email;
-        } else {
-            $sender_email = get_option( 'admin_email' ); // Fallback to site admin email if no admin user found
-        }
-    }
-
-    $headers = array(
-        'Content-Type: text/html; charset=UTF-8',
-        'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>',
-    );
-
-    // Restore robust BCC implementation
-    global $dame_bcc_emails;
-
-    $batch_size = isset( $options['smtp_batch_size'] ) ? absint( $options['smtp_batch_size'] ) : 20;
-
-    if ( $batch_size > 0 ) {
-        $email_chunks = array_chunk( $recipient_emails, $batch_size );
-    } else {
-        $email_chunks = array( $recipient_emails );
-    }
-
-    foreach ( $email_chunks as $chunk ) {
-        $dame_bcc_emails = $chunk;
-        wp_mail( $sender_email, $subject, $message, $headers );
-        // It's good practice to clean up the global after each mail call.
-        $dame_bcc_emails = null;
-    }
-
-    // Record the sent date and author
+    // Store recipient and scheduling information
+    update_post_meta( $message_id, '_dame_total_recipients', $total_recipients );
+    update_post_meta( $message_id, '_dame_message_status', 'scheduled' );
+    update_post_meta( $message_id, '_dame_scheduled_batches_processed', 0 );
     update_post_meta( $message_id, '_dame_sent_date', current_time( 'mysql' ) );
     update_post_meta( $message_id, '_dame_sending_author', get_current_user_id() );
 
-    // Store the recipient criteria
+    // Store the recipient criteria for historical purposes
     update_post_meta( $message_id, '_dame_recipient_method', $selection_method );
     if ( 'group' === $selection_method ) {
         update_post_meta( $message_id, '_dame_recipient_seasons', $seasons );
@@ -191,11 +165,31 @@ function dame_handle_send_email() {
         update_post_meta( $message_id, '_dame_manual_recipients', $adherent_ids );
     }
 
-    add_action( 'admin_notices', function() use ( $recipient_emails ) {
-        $count = count( $recipient_emails );
+    // Schedule the email batches
+    $batches     = array_chunk( $recipient_emails, 30 );
+    $batch_count = count( $batches );
+    update_post_meta( $message_id, '_dame_scheduled_batches_total', $batch_count );
+
+    foreach ( $batches as $i => $batch ) {
+        wp_schedule_single_event(
+            time() + ( $i * 60 ),
+            'dame_cron_send_batch',
+            array(
+                'message_id'  => $message_id,
+                'emails'      => $batch,
+                'retry_count' => 0,
+            )
+        );
+    }
+
+    // Success notice
+    add_action( 'admin_notices', function() use ( $total_recipients, $batch_count ) {
+        $duration = $batch_count > 1 ? $batch_count - 1 : 0;
+        /* translators: %1$d: number of recipients, %2$d: estimated duration in minutes */
         $message = sprintf(
-            esc_html( _n( "Email envoyé avec succès à %d destinataire.", "Email envoyé avec succès à %d destinataires.", $count, 'dame' ) ),
-            $count
+            esc_html__( "Envoi de %1\$d emails programmé en arrière-plan. Durée estimée : %2\$d minutes.", 'dame' ),
+            $total_recipients,
+            $duration
         );
         echo '<div class="updated"><p>' . $message . '</p></div>';
     });
@@ -303,7 +297,8 @@ function dame_render_mailing_page() {
                             if ( ! empty( $messages ) ) {
                                 echo '<select id="dame_message_to_send" name="dame_message_to_send" style="width: 100%; max-width: 400px;">';
                                 foreach ( $messages as $p ) {
-                                    echo '<option value="' . esc_attr( $p->ID ) . '">' . esc_html( $p->post_title ) . '</option>';
+                                    $status = get_post_meta( $p->ID, '_dame_message_status', true );
+                                    echo '<option value="' . esc_attr( $p->ID ) . '" data-status="' . esc_attr( $status ) . '">' . esc_html( $p->post_title ) . '</option>';
                                 }
                                 echo '</select>';
                             } else {
@@ -455,27 +450,5 @@ function dame_render_mailing_page() {
             <?php submit_button( __( "Envoyer l'email", 'dame' ) ); ?>
         </form>
     </div>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const methodRadios = document.querySelectorAll('input[name="dame_selection_method"]');
-        const groupFilters = document.querySelector('.dame-group-filters');
-        const manualFilters = document.querySelector('.dame-manual-filters');
-
-        function toggleMethod() {
-            if (document.querySelector('input[name="dame_selection_method"]:checked').value === 'group') {
-                groupFilters.style.display = 'table-row';
-                manualFilters.style.display = 'none';
-            } else {
-                groupFilters.style.display = 'none';
-                manualFilters.style.display = 'table-row';
-            }
-        }
-
-        methodRadios.forEach(radio => radio.addEventListener('change', toggleMethod));
-
-        // Initial state
-        toggleMethod();
-    });
-    </script>
     <?php
 }

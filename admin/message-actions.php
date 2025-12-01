@@ -104,6 +104,13 @@ function dame_send_test_message_action() {
     // Prepare and send the email.
     $subject = '[TEST] ' . $post->post_title;
     $content = apply_filters( 'the_content', $post->post_content );
+
+    // Add tracking pixel
+    $email_hash   = md5( strtolower( trim( $user->user_email ) ) );
+    $tracking_url = site_url( "/wp-json/dame/v1/track?mid={$post_id}&h={$email_hash}" );
+    $pixel_img    = '<img src="' . esc_url( $tracking_url ) . '" alt="" width="1" height="1" style="display:none; border:0;" />';
+    $content      = $content . $pixel_img;
+
     $message = '<div style="margin: 1cm;">' . $content . '</div>';
 
     $options = get_option( 'dame_options' );

@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '3.3.10b' );
+define( 'DAME_VERSION', '3.4.0' );
 define( 'DAME_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -113,6 +113,10 @@ function dame_perform_upgrade( $old_version, $new_version ) {
 
     if ( version_compare( $old_version, '3.3.9', '<' ) ) {
         dame_v3_3_9_migrate_birth_name();
+    }
+
+    if ( version_compare( $old_version, '3.4.0', '<' ) ) {
+        dame_v3_4_0_create_message_opens_table();
     }
 
     // Update the version in the database to the new version.
@@ -229,6 +233,28 @@ function dame_v3_3_9_migrate_birth_name() {
     }
 }
 
+/**
+ * Creates the dame_message_opens table for version 3.4.0.
+ */
+function dame_v3_4_0_create_message_opens_table() {
+    global $wpdb;
+    $table_name      = $wpdb->prefix . 'dame_message_opens';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        message_id bigint(20) NOT NULL,
+        email_hash varchar(32) NOT NULL,
+        opened_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        user_ip varchar(45) NOT NULL,
+        PRIMARY KEY  (id),
+        INDEX message_email_idx (message_id, email_hash)
+    ) $charset_collate;";
+
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    dbDelta( $sql );
+}
+
 
 // Include plugin files
 require_once plugin_dir_path( __FILE__ ) . 'includes/roles.php';
@@ -244,6 +270,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/ics-generator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/ical.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/pdf-generator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/toolbar.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/rest-api.php';
 
 if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/menu.php';
