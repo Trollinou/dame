@@ -37,97 +37,43 @@ function dame_handle_send_email() {
         return;
     }
 
-    $adherent_ids = array();
+    // Check if the message is already sent or scheduled.
+    $message_status = get_post_meta( $message_id, '_dame_message_status', true );
+    if ( in_array( $message_status, array( 'scheduled', 'sending', 'sent' ), true ) ) {
+        add_action( 'admin_notices', function() {
+            echo '<div class="error"><p>' . esc_html__( "Ce message a déjà été envoyé ou est en cours d'envoi.", 'dame' ) . '</p></div>';
+        });
+        return;
+    }
 
+    // First, save the recipient criteria so the reusable function can read it.
+    update_post_meta( $message_id, '_dame_recipient_method', $selection_method );
     if ( 'group' === $selection_method ) {
         $saisonnier_groups = isset( $_POST['dame_recipient_groups_saisonnier'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_groups_saisonnier'] ) : array();
-        $permanent_groups = isset( $_POST['dame_recipient_groups_permanent'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_groups_permanent'] ) : array();
-        $seasons = isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_seasons'] ) : array();
+        $permanent_groups  = isset( $_POST['dame_recipient_groups_permanent'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_groups_permanent'] ) : array();
+        $seasons           = isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_seasons'] ) : array();
 
-        $saisonnier_adherent_ids = array();
-        $permanent_adherent_ids = array();
-
-        // Query for ("Genre" AND "Saison d'adhesion" AND "Saisonnier")
-        if ( ! empty( $seasons ) ) {
-            $saisonnier_query_args = array(
-                'post_type'      => 'adherent',
-                'posts_per_page' => -1,
-                'fields'         => 'ids',
-                'tax_query'      => array(
-                    'relation' => 'AND',
-                    array(
-                        'taxonomy' => 'dame_saison_adhesion',
-                        'field'    => 'term_id',
-                        'terms'    => $seasons,
-                    ),
-                ),
-                'meta_query'     => array(),
-            );
-
-            if ( ! empty( $saisonnier_groups ) ) {
-                $saisonnier_query_args['tax_query'][] = array(
-                    'taxonomy' => 'dame_group',
-                    'field'    => 'term_id',
-                    'terms'    => $saisonnier_groups,
-                );
-            }
-
-            if ( 'all' !== $recipient_gender ) {
-                $saisonnier_query_args['meta_query'][] = array(
-                    'key'   => '_dame_sexe',
-                    'value' => $recipient_gender,
-                );
-            }
-            $saisonnier_adherent_ids = get_posts( $saisonnier_query_args );
-        }
-
-        // Query for "Permanent"
-        if ( ! empty( $permanent_groups ) ) {
-            $permanent_query_args = array(
-                'post_type'      => 'adherent',
-                'posts_per_page' => -1,
-                'fields'         => 'ids',
-                'tax_query'      => array(
-                    array(
-                        'taxonomy' => 'dame_group',
-                        'field'    => 'term_id',
-                        'terms'    => $permanent_groups,
-                    ),
-                ),
-            );
-            $permanent_adherent_ids = get_posts( $permanent_query_args );
-        }
-
-        $adherent_ids = array_unique( array_merge( $saisonnier_adherent_ids, $permanent_adherent_ids ) );
-
+        update_post_meta( $message_id, '_dame_recipient_seasons', $seasons );
+        update_post_meta( $message_id, '_dame_recipient_groups_saisonnier', $saisonnier_groups );
+        update_post_meta( $message_id, '_dame_recipient_groups_permanent', $permanent_groups );
+        update_post_meta( $message_id, '_dame_recipient_gender', $recipient_gender );
     } elseif ( 'manual' === $selection_method ) {
-        $adherent_ids = isset( $_POST['dame_manual_recipients'] ) ? (array) array_map( 'absint', $_POST['dame_manual_recipients'] ) : array();
+        $adherent_ids = isset( $_POST['dame_manual_recipients'] ) ? array_map( 'absint', (array) $_POST['dame_manual_recipients'] ) : array();
+        update_post_meta( $message_id, '_dame_manual_recipients', $adherent_ids );
     }
 
-    if ( empty( $adherent_ids ) ) {
+    // Now, use the reusable function to get the recipient list.
+    $recipients = dame_get_message_recipients( $message_id );
+
+    if ( empty( $recipients ) ) {
         add_action( 'admin_notices', function() {
-            echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner des destinataires.", 'dame' ) . '</p></div>';
+            echo '<div class="notice notice-warning"><p>' . esc_html__( "Aucun destinataire valide (email) n'a été trouvé pour les critères sélectionnés.", 'dame' ) . '</p></div>';
         });
+        // Clean up the meta to allow a new attempt
+        delete_post_meta( $message_id, '_dame_recipient_method' );
         return;
     }
-
-    $all_adherent_ids = array_unique( $adherent_ids );
-
-    if ( empty( $all_adherent_ids ) ) {
-        add_action( 'admin_notices', function() {
-            echo '<div class="notice notice-warning"><p>' . esc_html__( "Aucun adhérent ne correspond aux critères sélectionnés.", 'dame' ) . '</p></div>';
-        });
-        return;
-    }
-
-    $recipient_emails = array();
-    foreach ( $all_adherent_ids as $adherent_id ) {
-        $emails = dame_get_emails_for_adherent( $adherent_id );
-        $recipient_emails = array_merge( $recipient_emails, $emails );
-    }
-
-    $recipient_emails = array_unique( $recipient_emails );
-    $recipient_emails = array_filter( $recipient_emails, 'is_email' );
+    $recipient_emails = array_keys( $recipients );
 
     if ( empty( $recipient_emails ) ) {
         add_action( 'admin_notices', function() {
@@ -136,66 +82,58 @@ function dame_handle_send_email() {
         return;
     }
 
-    $article = get_post( $message_id );
-    $subject = $article->post_title;
-    $content = apply_filters( 'the_content', $article->post_content );
-    $message = '<div style="margin: 1cm;">' . $content . '</div>';
+    $total_recipients = count( $recipient_emails );
 
-    $options = get_option( 'dame_options' );
-    $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : '';
-
-    if ( empty( $sender_email ) ) {
-        $admins = get_users( array( 'role' => 'administrator', 'number' => 1, 'orderby' => 'ID' ) );
-        if ( ! empty( $admins ) ) {
-            $sender_email = $admins[0]->user_email;
-        } else {
-            $sender_email = get_option( 'admin_email' ); // Fallback to site admin email if no admin user found
-        }
-    }
-
-    $headers = array(
-        'Content-Type: text/html; charset=UTF-8',
-        'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>',
-    );
-
-    // Restore robust BCC implementation
-    global $dame_bcc_emails;
-
-    $batch_size = isset( $options['smtp_batch_size'] ) ? absint( $options['smtp_batch_size'] ) : 20;
-
-    if ( $batch_size > 0 ) {
-        $email_chunks = array_chunk( $recipient_emails, $batch_size );
-    } else {
-        $email_chunks = array( $recipient_emails );
-    }
-
-    foreach ( $email_chunks as $chunk ) {
-        $dame_bcc_emails = $chunk;
-        wp_mail( $sender_email, $subject, $message, $headers );
-        // It's good practice to clean up the global after each mail call.
-        $dame_bcc_emails = null;
-    }
-
-    // Record the sent date and author
+    // Store recipient and scheduling information
+    update_post_meta( $message_id, '_dame_total_recipients', $total_recipients );
+    update_post_meta( $message_id, '_dame_message_status', 'scheduled' );
+    update_post_meta( $message_id, '_dame_scheduled_batches_processed', 0 );
     update_post_meta( $message_id, '_dame_sent_date', current_time( 'mysql' ) );
     update_post_meta( $message_id, '_dame_sending_author', get_current_user_id() );
 
-    // Store the recipient criteria
-    update_post_meta( $message_id, '_dame_recipient_method', $selection_method );
-    if ( 'group' === $selection_method ) {
-        update_post_meta( $message_id, '_dame_recipient_seasons', $seasons );
-        update_post_meta( $message_id, '_dame_recipient_groups_saisonnier', $saisonnier_groups );
-        update_post_meta( $message_id, '_dame_recipient_groups_permanent', $permanent_groups );
-        update_post_meta( $message_id, '_dame_recipient_gender', $recipient_gender );
-    } elseif ( 'manual' === $selection_method ) {
-        update_post_meta( $message_id, '_dame_manual_recipients', $adherent_ids );
+    // Schedule the email batches
+    $batches     = array_chunk( $recipient_emails, 30 );
+    $batch_count = count( $batches );
+    update_post_meta( $message_id, '_dame_scheduled_batches_total', $batch_count );
+
+    foreach ( $batches as $i => $batch ) {
+        wp_schedule_single_event(
+            time() + ( $i * 60 ),
+            'dame_cron_send_batch',
+            array(
+                'message_id'  => $message_id,
+                'emails'      => $batch,
+                'retry_count' => 0,
+            )
+        );
     }
 
-    add_action( 'admin_notices', function() use ( $recipient_emails ) {
-        $count = count( $recipient_emails );
+    // Send a non-tracked archive copy to the sender.
+    $options      = get_option( 'dame_options' );
+    $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+    if ( ! empty( $sender_email ) ) {
+        $message_post = get_post( $message_id );
+        if ( $message_post ) {
+            $subject = $message_post->post_title;
+            $content = apply_filters( 'the_content', $message_post->post_content );
+            // Simple wrapper, as the tracking pixel is not injected here.
+            $body    = '<div style="margin: 1cm;">' . $content . '</div>';
+            $headers = array(
+                'Content-Type: text/html; charset=UTF-8',
+                'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>',
+            );
+            wp_mail( $sender_email, $subject, $body, $headers );
+        }
+    }
+
+    // Success notice
+    add_action( 'admin_notices', function() use ( $total_recipients, $batch_count ) {
+        $duration = $batch_count > 1 ? $batch_count - 1 : 0;
+        /* translators: %1$d: number of recipients, %2$d: estimated duration in minutes */
         $message = sprintf(
-            esc_html( _n( "Email envoyé avec succès à %d destinataire.", "Email envoyé avec succès à %d destinataires.", $count, 'dame' ) ),
-            $count
+            esc_html__( "Envoi de %1\$d emails programmé en arrière-plan. Durée estimée : %2\$d minutes.", 'dame' ),
+            $total_recipients,
+            $duration
         );
         echo '<div class="updated"><p>' . $message . '</p></div>';
     });
@@ -247,39 +185,6 @@ add_action( 'phpmailer_init', 'dame_add_bcc_to_mailer' );
 
 
 /**
- * Get the relevant email addresses for a given adherent.
- *
- * @param int $adherent_id The ID of the adherent post.
- * @return array An array of email addresses.
- */
-function dame_get_emails_for_adherent( $adherent_id ) {
-    $emails = array();
-
-    // Get the adherent's own email
-    $member_email = get_post_meta( $adherent_id, '_dame_email', true );
-    $member_refuses_comms = get_post_meta( $adherent_id, '_dame_email_refuses_comms', true );
-    if ( ! empty( $member_email ) && is_email( $member_email ) && '1' !== $member_refuses_comms ) {
-        $emails[] = $member_email;
-    }
-
-    // Get legal representative 1's email
-    $rep1_email = get_post_meta( $adherent_id, '_dame_legal_rep_1_email', true );
-    $rep1_refuses_comms = get_post_meta( $adherent_id, '_dame_legal_rep_1_email_refuses_comms', true );
-    if ( ! empty( $rep1_email ) && is_email( $rep1_email ) && '1' !== $rep1_refuses_comms ) {
-        $emails[] = $rep1_email;
-    }
-
-    // Get legal representative 2's email
-    $rep2_email = get_post_meta( $adherent_id, '_dame_legal_rep_2_email', true );
-    $rep2_refuses_comms = get_post_meta( $adherent_id, '_dame_legal_rep_2_email_refuses_comms', true );
-    if ( ! empty( $rep2_email ) && is_email( $rep2_email ) && '1' !== $rep2_refuses_comms ) {
-        $emails[] = $rep2_email;
-    }
-
-    return $emails;
-}
-
-/**
  * Renders the mailing page.
  */
 function dame_render_mailing_page() {
@@ -303,7 +208,8 @@ function dame_render_mailing_page() {
                             if ( ! empty( $messages ) ) {
                                 echo '<select id="dame_message_to_send" name="dame_message_to_send" style="width: 100%; max-width: 400px;">';
                                 foreach ( $messages as $p ) {
-                                    echo '<option value="' . esc_attr( $p->ID ) . '">' . esc_html( $p->post_title ) . '</option>';
+                                    $status = get_post_meta( $p->ID, '_dame_message_status', true );
+                                    echo '<option value="' . esc_attr( $p->ID ) . '" data-status="' . esc_attr( $status ) . '">' . esc_html( $p->post_title ) . '</option>';
                                 }
                                 echo '</select>';
                             } else {
@@ -455,27 +361,5 @@ function dame_render_mailing_page() {
             <?php submit_button( __( "Envoyer l'email", 'dame' ) ); ?>
         </form>
     </div>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const methodRadios = document.querySelectorAll('input[name="dame_selection_method"]');
-        const groupFilters = document.querySelector('.dame-group-filters');
-        const manualFilters = document.querySelector('.dame-manual-filters');
-
-        function toggleMethod() {
-            if (document.querySelector('input[name="dame_selection_method"]:checked').value === 'group') {
-                groupFilters.style.display = 'table-row';
-                manualFilters.style.display = 'none';
-            } else {
-                groupFilters.style.display = 'none';
-                manualFilters.style.display = 'table-row';
-            }
-        }
-
-        methodRadios.forEach(radio => radio.addEventListener('change', toggleMethod));
-
-        // Initial state
-        toggleMethod();
-    });
-    </script>
     <?php
 }

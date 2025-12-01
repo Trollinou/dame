@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 3.3.10
+**Version:** 3.4.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -39,9 +39,11 @@ Ce plugin a été développé en suivant les meilleures pratiques de WordPress e
 ### Messagerie
 
 *   **Gestion des Messages :** Un nouveau type de contenu "Message" permet de créer et de gérer des communications pour les membres. Ces messages sont rédigés avec l'éditeur de blocs de WordPress (Gutenberg) et ne sont pas publics sur le site.
+*   **Envoi en Arrière-Plan :** Les envois d'emails sont gérés par une file d'attente qui s'exécute en arrière-plan. Les messages sont envoyés par lots de 30 par minute pour garantir la fiabilité et respecter les limites des hébergeurs, même pour des listes de diffusion importantes.
 *   **Envoi Ciblé :** Une page "Envoyer un message" permet de sélectionner un message et de l'envoyer à des destinataires filtrés. La logique de filtrage avancée permet de combiner les critères : `("Genre" ET "Saison d'adhésion" ET "Groupe Saisonnier") OU "Groupe Permanent"`.
+*   **Suivi des Ouvertures :** Le système intègre un suivi des ouvertures d'emails. Une nouvelle colonne "Ouverts / Total" dans la liste des messages affiche le statut de l'envoi en temps réel ("Programmé", "Envoi en cours") et, une fois l'envoi terminé, le nombre d'emails uniques qui ont été ouverts.
 *   **Actions Rapides :** Depuis la liste des messages, il est possible de dupliquer un message pour le réutiliser, de s'envoyer un email de test pour vérifier le rendu, ou de copier un message en tant qu'article (brouillon).
-*   **Suivi des Envois :** La liste des messages affiche la date du dernier envoi, l'auteur de l'envoi, et les destinataires (critères de filtre ou liste manuelle) pour un suivi clair des communications.
+*   **Historique des Envois :** La liste des messages affiche la date du dernier envoi, l'auteur de l'envoi, et les destinataires (critères de filtre ou liste manuelle) pour un suivi clair des communications.
 
 ### Gestion des Adhésions par Saison
 

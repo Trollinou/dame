@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier Administratif des Membres Échiquéens
  * Plugin URI:
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           3.3.10b
+ * Version:           3.4.0
  * Requires at least: 6.8
  * Requires PHP:      8.2
  * Author:            Etienne Gagnon
@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'DAME_VERSION', '3.3.10b' );
+define( 'DAME_VERSION', '3.4.0' );
 define( 'DAME_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 /**
@@ -113,6 +113,10 @@ function dame_perform_upgrade( $old_version, $new_version ) {
 
     if ( version_compare( $old_version, '3.3.9', '<' ) ) {
         dame_v3_3_9_migrate_birth_name();
+    }
+
+    if ( version_compare( $old_version, '3.4.0', '<' ) ) {
+        dame_v3_4_0_create_message_opens_table();
     }
 
     // Update the version in the database to the new version.
@@ -229,6 +233,28 @@ function dame_v3_3_9_migrate_birth_name() {
     }
 }
 
+/**
+ * Creates the dame_message_opens table for version 3.4.0.
+ */
+function dame_v3_4_0_create_message_opens_table() {
+    global $wpdb;
+    $table_name      = $wpdb->prefix . 'dame_message_opens';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        message_id bigint(20) NOT NULL,
+        email_hash varchar(32) NOT NULL,
+        opened_at datetime NOT NULL,
+        user_ip varchar(45) NOT NULL,
+        PRIMARY KEY  (id),
+        INDEX message_email_idx (message_id, email_hash)
+    ) $charset_collate;";
+
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    dbDelta( $sql );
+}
+
 
 // Include plugin files
 require_once plugin_dir_path( __FILE__ ) . 'includes/roles.php';
@@ -244,6 +270,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/ics-generator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/ical.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/pdf-generator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/toolbar.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/rest-api.php';
 
 if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/menu.php';
@@ -259,6 +286,7 @@ if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/view-adherent-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda-page.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/report-message-opens.php';
 }
 
 
@@ -270,18 +298,38 @@ function dame_load_textdomain() {
 }
 add_action( 'plugins_loaded', 'dame_load_textdomain' );
 
+/**
+ * Main activation hook for the plugin.
+ *
+ * This function is called when the plugin is activated. It sets up custom roles,
+ * schedules cron events, and ensures the database is up to date.
+ */
+function dame_plugin_activation() {
+    // Set up custom roles.
+    dame_add_custom_roles();
+
+    // Schedule cron events.
+    dame_schedule_backup_event();
+    dame_schedule_birthday_event();
+
+    // Ensure database tables are created.
+    dame_v3_4_0_create_message_opens_table();
+}
+register_activation_hook( __FILE__, 'dame_plugin_activation' );
+
+/**
+ * Main deactivation hook for the plugin.
+ */
+function dame_plugin_deactivation() {
+    dame_remove_custom_roles();
+    dame_unschedule_backup_event();
+    dame_unschedule_birthday_event();
+}
+register_deactivation_hook( __FILE__, 'dame_plugin_deactivation' );
+
+
 // Register hooks
-register_activation_hook( __FILE__, 'dame_add_custom_roles' );
-register_deactivation_hook( __FILE__, 'dame_remove_custom_roles' );
-
-// Cron job for daily backups
-register_activation_hook( __FILE__, 'dame_schedule_backup_event' );
-register_deactivation_hook( __FILE__, 'dame_unschedule_backup_event' );
 add_action( 'dame_daily_backup_event', 'dame_do_scheduled_backup' );
-
-// Cron job for birthday emails
-register_activation_hook( __FILE__, 'dame_schedule_birthday_event' );
-register_deactivation_hook( __FILE__, 'dame_unschedule_birthday_event' );
 add_action( 'dame_birthday_email_event', 'dame_send_birthday_emails' );
 
 add_action( 'update_option_dame_options', 'dame_handle_schedule_update', 10, 2 );

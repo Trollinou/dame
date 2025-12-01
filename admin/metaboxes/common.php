@@ -95,6 +95,13 @@ function dame_enqueue_admin_scripts( $hook ) {
 				'generic_error'     => __( "Une erreur est survenue lors de la récupération des articles.", 'dame' ),
 			)
 		);
+		wp_enqueue_script(
+			'dame-mailing-js',
+			plugin_dir_url( __FILE__ ) . '../js/mailing.js',
+			array(),
+			DAME_VERSION,
+			true
+		);
 	} elseif ( 'settings_page_dame-settings' === $hook ) {
 		wp_enqueue_script(
 			'dame-autocomplete-js',
