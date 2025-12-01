@@ -297,18 +297,38 @@ function dame_load_textdomain() {
 }
 add_action( 'plugins_loaded', 'dame_load_textdomain' );
 
+/**
+ * Main activation hook for the plugin.
+ *
+ * This function is called when the plugin is activated. It sets up custom roles,
+ * schedules cron events, and ensures the database is up to date.
+ */
+function dame_plugin_activation() {
+    // Set up custom roles.
+    dame_add_custom_roles();
+
+    // Schedule cron events.
+    dame_schedule_backup_event();
+    dame_schedule_birthday_event();
+
+    // Ensure database tables are created.
+    dame_v3_4_0_create_message_opens_table();
+}
+register_activation_hook( __FILE__, 'dame_plugin_activation' );
+
+/**
+ * Main deactivation hook for the plugin.
+ */
+function dame_plugin_deactivation() {
+    dame_remove_custom_roles();
+    dame_unschedule_backup_event();
+    dame_unschedule_birthday_event();
+}
+register_deactivation_hook( __FILE__, 'dame_plugin_deactivation' );
+
+
 // Register hooks
-register_activation_hook( __FILE__, 'dame_add_custom_roles' );
-register_deactivation_hook( __FILE__, 'dame_remove_custom_roles' );
-
-// Cron job for daily backups
-register_activation_hook( __FILE__, 'dame_schedule_backup_event' );
-register_deactivation_hook( __FILE__, 'dame_unschedule_backup_event' );
 add_action( 'dame_daily_backup_event', 'dame_do_scheduled_backup' );
-
-// Cron job for birthday emails
-register_activation_hook( __FILE__, 'dame_schedule_birthday_event' );
-register_deactivation_hook( __FILE__, 'dame_unschedule_birthday_event' );
 add_action( 'dame_birthday_email_event', 'dame_send_birthday_emails' );
 
 add_action( 'update_option_dame_options', 'dame_handle_schedule_update', 10, 2 );
