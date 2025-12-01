@@ -245,7 +245,7 @@ function dame_v3_4_0_create_message_opens_table() {
         id bigint(20) NOT NULL AUTO_INCREMENT,
         message_id bigint(20) NOT NULL,
         email_hash varchar(32) NOT NULL,
-        opened_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        opened_at datetime NOT NULL,
         user_ip varchar(45) NOT NULL,
         PRIMARY KEY  (id),
         INDEX message_email_idx (message_id, email_hash)

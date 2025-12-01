@@ -108,6 +108,24 @@ function dame_handle_send_email() {
         );
     }
 
+    // Send a non-tracked archive copy to the sender.
+    $options      = get_option( 'dame_options' );
+    $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+    if ( ! empty( $sender_email ) ) {
+        $message_post = get_post( $message_id );
+        if ( $message_post ) {
+            $subject = $message_post->post_title;
+            $content = apply_filters( 'the_content', $message_post->post_content );
+            // Simple wrapper, as the tracking pixel is not injected here.
+            $body    = '<div style="margin: 1cm;">' . $content . '</div>';
+            $headers = array(
+                'Content-Type: text/html; charset=UTF-8',
+                'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>',
+            );
+            wp_mail( $sender_email, $subject, $body, $headers );
+        }
+    }
+
     // Success notice
     add_action( 'admin_notices', function() use ( $total_recipients, $batch_count ) {
         $duration = $batch_count > 1 ? $batch_count - 1 : 0;

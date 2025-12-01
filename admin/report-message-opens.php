@@ -39,6 +39,14 @@ function dame_render_message_opens_report_page() {
 
 	$message_title = get_the_title( $message_id );
 	$recipients    = dame_get_message_recipients( $message_id );
+
+	// Exclude sender's email from the report as it's for archival purposes.
+	$options      = get_option( 'dame_options' );
+	$sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+	if ( ! empty( $sender_email ) && isset( $recipients[ $sender_email ] ) ) {
+		unset( $recipients[ $sender_email ] );
+	}
+
 	$total_sent    = count( $recipients );
 
 	$table_name = $wpdb->prefix . 'dame_message_opens';
@@ -54,6 +62,8 @@ function dame_render_message_opens_report_page() {
 	?>
 	<div class="wrap">
 		<h1><?php echo sprintf( esc_html__( 'Rapport d\'ouverture pour : %s', 'dame' ), esc_html( $message_title ) ); ?></h1>
+
+		<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=dame_message' ) ); ?>" class="page-title-action" style="margin-left: 0; margin-top: 10px; margin-bottom: 10px;"><?php esc_html_e( '← Retour à la liste des messages', 'dame' ); ?></a>
 
 		<p>
 			<?php

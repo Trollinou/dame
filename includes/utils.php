@@ -413,14 +413,5 @@ function dame_get_message_recipients( $message_id ) {
 		}
 	}
 
-	// Add sender's email to the recipient list for archive purposes.
-	$options      = get_option( 'dame_options' );
-	$sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
-	if ( ! empty( $sender_email ) && ! array_key_exists( $sender_email, $recipients ) ) {
-		$sender_user = get_user_by( 'email', $sender_email );
-		$sender_name = $sender_user ? $sender_user->display_name : __( 'Service Technique', 'dame' );
-		$recipients[ $sender_email ] = $sender_name;
-	}
-
 	return $recipients;
 }
