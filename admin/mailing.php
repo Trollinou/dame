@@ -135,6 +135,13 @@ function dame_handle_send_email() {
         $recipient_emails = array_merge( $recipient_emails, $emails );
     }
 
+    // Add sender's email to the recipient list for archive purposes.
+    $options      = get_option( 'dame_options' );
+    $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+    if ( ! empty( $sender_email ) ) {
+        $recipient_emails[] = $sender_email;
+    }
+
     $recipient_emails = array_unique( $recipient_emails );
     $recipient_emails = array_filter( $recipient_emails, 'is_email' );
 
