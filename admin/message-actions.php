@@ -165,6 +165,13 @@ function dame_add_message_row_actions( $actions, $post ) {
         $duplicate_as_post_nonce = wp_create_nonce( 'dame_duplicate_as_post_' . $post->ID );
         $duplicate_as_post_url = admin_url( 'admin.php?action=dame_duplicate_as_post&post=' . $post->ID . '&_wpnonce=' . $duplicate_as_post_nonce );
         $actions['duplicate_as_post'] = '<a href="' . esc_url( $duplicate_as_post_url ) . '" aria-label="' . esc_attr__( 'Duplicate this message as a new post', 'dame' ) . '">' . __( 'Copier en tant qu\'article', 'dame' ) . '</a>';
+
+        // View Report link.
+        $status = get_post_meta( $post->ID, '_dame_message_status', true );
+        if ( 'sent' === $status ) {
+            $report_url = admin_url( 'admin.php?page=dame-message-opens-report&message_id=' . $post->ID );
+            $actions['view_report'] = '<a href="' . esc_url( $report_url ) . '" aria-label="' . esc_attr__( 'View the open report for this message', 'dame' ) . '">' . __( 'Voir le rapport', 'dame' ) . '</a>';
+        }
     }
     return $actions;
 }

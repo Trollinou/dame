@@ -86,7 +86,9 @@ function dame_render_message_columns( $column, $post_id ) {
                         $post_id
                     )
                 );
-                echo esc_html( $opened_count ) . ' / ' . esc_html( $total_recipients );
+
+                $report_url = admin_url( 'admin.php?page=dame-message-opens-report&message_id=' . $post_id );
+                echo '<a href="' . esc_url( $report_url ) . '">' . esc_html( $opened_count ) . ' / ' . esc_html( $total_recipients ) . '</a>';
             }
             break;
 

@@ -297,3 +297,130 @@ function dame_get_birth_date_range_for_category( $category_key ) {
         'end'   => $end_date->format( 'Y-m-d' ),
     );
 }
+
+/**
+ * Retrieves the list of recipients for a given message.
+ *
+ * This function rebuilds the recipient list based on the criteria saved in the message's post meta.
+ * It returns a deduplicated list of emails, prioritizing the names of legal representatives over adherents
+ * if an email is associated with both.
+ *
+ * @param int $message_id The ID of the message post.
+ * @return array An associative array where keys are email addresses and values are recipient names.
+ */
+function dame_get_message_recipients( $message_id ) {
+	$message_id = absint( $message_id );
+	if ( ! $message_id || 'dame_message' !== get_post_type( $message_id ) ) {
+		return array();
+	}
+
+	$selection_method = get_post_meta( $message_id, '_dame_recipient_method', true );
+	$adherent_ids     = array();
+
+	if ( 'group' === $selection_method ) {
+		$seasons           = get_post_meta( $message_id, '_dame_recipient_seasons', true );
+		$saisonnier_groups = get_post_meta( $message_id, '_dame_recipient_groups_saisonnier', true );
+		$permanent_groups  = get_post_meta( $message_id, '_dame_recipient_groups_permanent', true );
+		$recipient_gender  = get_post_meta( $message_id, '_dame_recipient_gender', true );
+
+		$saisonnier_adherent_ids = array();
+		$permanent_adherent_ids  = array();
+
+		if ( ! empty( $seasons ) ) {
+			$saisonnier_query_args = array(
+				'post_type'      => 'adherent',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'tax_query'      => array(
+					'relation' => 'AND',
+					array(
+						'taxonomy' => 'dame_saison_adhesion',
+						'field'    => 'term_id',
+						'terms'    => $seasons,
+					),
+				),
+				'meta_query'     => array(),
+			);
+
+			if ( ! empty( $saisonnier_groups ) ) {
+				$saisonnier_query_args['tax_query'][] = array(
+					'taxonomy' => 'dame_group',
+					'field'    => 'term_id',
+					'terms'    => $saisonnier_groups,
+				);
+			}
+
+			if ( ! empty( $recipient_gender ) && 'all' !== $recipient_gender ) {
+				$saisonnier_query_args['meta_query'][] = array(
+					'key'   => '_dame_sexe',
+					'value' => $recipient_gender,
+				);
+			}
+			$saisonnier_adherent_ids = get_posts( $saisonnier_query_args );
+		}
+
+		if ( ! empty( $permanent_groups ) ) {
+			$permanent_query_args = array(
+				'post_type'      => 'adherent',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'tax_query'      => array(
+					array(
+						'taxonomy' => 'dame_group',
+						'field'    => 'term_id',
+						'terms'    => $permanent_groups,
+					),
+				),
+			);
+			$permanent_adherent_ids = get_posts( $permanent_query_args );
+		}
+
+		$adherent_ids = array_unique( array_merge( $saisonnier_adherent_ids, $permanent_adherent_ids ) );
+
+	} elseif ( 'manual' === $selection_method ) {
+		$adherent_ids = get_post_meta( $message_id, '_dame_manual_recipients', true );
+		$adherent_ids = is_array( $adherent_ids ) ? $adherent_ids : array();
+	}
+
+	$recipients = array();
+	if ( ! empty( $adherent_ids ) ) {
+		foreach ( $adherent_ids as $adherent_id ) {
+			$adherent_id = absint( $adherent_id );
+
+			// Prioritize legal representatives' emails and names
+			for ( $i = 1; $i <= 2; $i++ ) {
+				$rep_email         = get_post_meta( $adherent_id, "_dame_legal_rep_{$i}_email", true );
+				$rep_refuses_comms = get_post_meta( $adherent_id, "_dame_legal_rep_{$i}_email_refuses_comms", true );
+
+				if ( ! empty( $rep_email ) && is_email( $rep_email ) && '1' !== $rep_refuses_comms ) {
+					if ( ! array_key_exists( $rep_email, $recipients ) ) {
+						$rep_first_name = get_post_meta( $adherent_id, "_dame_legal_rep_{$i}_first_name", true );
+						$rep_last_name  = get_post_meta( $adherent_id, "_dame_legal_rep_{$i}_last_name", true );
+						$recipients[ $rep_email ] = trim( dame_format_firstname( $rep_first_name ) . ' ' . dame_format_lastname( $rep_last_name ) );
+					}
+				}
+			}
+
+			// Add adherent's email if not already present
+			$member_email         = get_post_meta( $adherent_id, '_dame_email', true );
+			$member_refuses_comms = get_post_meta( $adherent_id, '_dame_email_refuses_comms', true );
+
+			if ( ! empty( $member_email ) && is_email( $member_email ) && '1' !== $member_refuses_comms ) {
+				if ( ! array_key_exists( $member_email, $recipients ) ) {
+					$recipients[ $member_email ] = get_the_title( $adherent_id );
+				}
+			}
+		}
+	}
+
+	// Add sender's email to the recipient list for archive purposes.
+	$options      = get_option( 'dame_options' );
+	$sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+	if ( ! empty( $sender_email ) && ! array_key_exists( $sender_email, $recipients ) ) {
+		$sender_user = get_user_by( 'email', $sender_email );
+		$sender_name = $sender_user ? $sender_user->display_name : __( 'Service Technique', 'dame' );
+		$recipients[ $sender_email ] = $sender_name;
+	}
+
+	return $recipients;
+}

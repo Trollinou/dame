@@ -286,6 +286,7 @@ if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/view-adherent-page.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda.php';
     require_once plugin_dir_path( __FILE__ ) . 'admin/backup-restore-agenda-page.php';
+    require_once plugin_dir_path( __FILE__ ) . 'admin/report-message-opens.php';
 }
 
 

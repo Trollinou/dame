@@ -46,104 +46,34 @@ function dame_handle_send_email() {
         return;
     }
 
-    $adherent_ids = array();
-
+    // First, save the recipient criteria so the reusable function can read it.
+    update_post_meta( $message_id, '_dame_recipient_method', $selection_method );
     if ( 'group' === $selection_method ) {
         $saisonnier_groups = isset( $_POST['dame_recipient_groups_saisonnier'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_groups_saisonnier'] ) : array();
-        $permanent_groups = isset( $_POST['dame_recipient_groups_permanent'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_groups_permanent'] ) : array();
-        $seasons = isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_seasons'] ) : array();
+        $permanent_groups  = isset( $_POST['dame_recipient_groups_permanent'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_groups_permanent'] ) : array();
+        $seasons           = isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', (array) $_POST['dame_recipient_seasons'] ) : array();
 
-        $saisonnier_adherent_ids = array();
-        $permanent_adherent_ids = array();
-
-        // Query for ("Genre" AND "Saison d'adhesion" AND "Saisonnier")
-        if ( ! empty( $seasons ) ) {
-            $saisonnier_query_args = array(
-                'post_type'      => 'adherent',
-                'posts_per_page' => -1,
-                'fields'         => 'ids',
-                'tax_query'      => array(
-                    'relation' => 'AND',
-                    array(
-                        'taxonomy' => 'dame_saison_adhesion',
-                        'field'    => 'term_id',
-                        'terms'    => $seasons,
-                    ),
-                ),
-                'meta_query'     => array(),
-            );
-
-            if ( ! empty( $saisonnier_groups ) ) {
-                $saisonnier_query_args['tax_query'][] = array(
-                    'taxonomy' => 'dame_group',
-                    'field'    => 'term_id',
-                    'terms'    => $saisonnier_groups,
-                );
-            }
-
-            if ( 'all' !== $recipient_gender ) {
-                $saisonnier_query_args['meta_query'][] = array(
-                    'key'   => '_dame_sexe',
-                    'value' => $recipient_gender,
-                );
-            }
-            $saisonnier_adherent_ids = get_posts( $saisonnier_query_args );
-        }
-
-        // Query for "Permanent"
-        if ( ! empty( $permanent_groups ) ) {
-            $permanent_query_args = array(
-                'post_type'      => 'adherent',
-                'posts_per_page' => -1,
-                'fields'         => 'ids',
-                'tax_query'      => array(
-                    array(
-                        'taxonomy' => 'dame_group',
-                        'field'    => 'term_id',
-                        'terms'    => $permanent_groups,
-                    ),
-                ),
-            );
-            $permanent_adherent_ids = get_posts( $permanent_query_args );
-        }
-
-        $adherent_ids = array_unique( array_merge( $saisonnier_adherent_ids, $permanent_adherent_ids ) );
-
+        update_post_meta( $message_id, '_dame_recipient_seasons', $seasons );
+        update_post_meta( $message_id, '_dame_recipient_groups_saisonnier', $saisonnier_groups );
+        update_post_meta( $message_id, '_dame_recipient_groups_permanent', $permanent_groups );
+        update_post_meta( $message_id, '_dame_recipient_gender', $recipient_gender );
     } elseif ( 'manual' === $selection_method ) {
-        $adherent_ids = isset( $_POST['dame_manual_recipients'] ) ? (array) array_map( 'absint', $_POST['dame_manual_recipients'] ) : array();
+        $adherent_ids = isset( $_POST['dame_manual_recipients'] ) ? array_map( 'absint', (array) $_POST['dame_manual_recipients'] ) : array();
+        update_post_meta( $message_id, '_dame_manual_recipients', $adherent_ids );
     }
 
-    if ( empty( $adherent_ids ) ) {
+    // Now, use the reusable function to get the recipient list.
+    $recipients = dame_get_message_recipients( $message_id );
+
+    if ( empty( $recipients ) ) {
         add_action( 'admin_notices', function() {
-            echo '<div class="error"><p>' . esc_html__( "Veuillez sélectionner des destinataires.", 'dame' ) . '</p></div>';
+            echo '<div class="notice notice-warning"><p>' . esc_html__( "Aucun destinataire valide (email) n'a été trouvé pour les critères sélectionnés.", 'dame' ) . '</p></div>';
         });
+        // Clean up the meta to allow a new attempt
+        delete_post_meta( $message_id, '_dame_recipient_method' );
         return;
     }
-
-    $all_adherent_ids = array_unique( $adherent_ids );
-
-    if ( empty( $all_adherent_ids ) ) {
-        add_action( 'admin_notices', function() {
-            echo '<div class="notice notice-warning"><p>' . esc_html__( "Aucun adhérent ne correspond aux critères sélectionnés.", 'dame' ) . '</p></div>';
-        });
-        return;
-    }
-
-    $recipient_emails = array();
-    foreach ( $all_adherent_ids as $adherent_id ) {
-        $emails = dame_get_emails_for_adherent( $adherent_id );
-        $recipient_emails = array_merge( $recipient_emails, $emails );
-    }
-
-    // Add sender's email to the recipient list for archive purposes.
-    $options      = get_option( 'dame_options' );
-    $sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
-    if ( ! empty( $sender_email ) ) {
-        $recipient_emails[] = $sender_email;
-    }
-
-    $recipient_emails = array_unique( $recipient_emails );
-    $recipient_emails = array_filter( $recipient_emails, 'is_email' );
+    $recipient_emails = array_keys( $recipients );
 
     if ( empty( $recipient_emails ) ) {
         add_action( 'admin_notices', function() {
@@ -160,17 +90,6 @@ function dame_handle_send_email() {
     update_post_meta( $message_id, '_dame_scheduled_batches_processed', 0 );
     update_post_meta( $message_id, '_dame_sent_date', current_time( 'mysql' ) );
     update_post_meta( $message_id, '_dame_sending_author', get_current_user_id() );
-
-    // Store the recipient criteria for historical purposes
-    update_post_meta( $message_id, '_dame_recipient_method', $selection_method );
-    if ( 'group' === $selection_method ) {
-        update_post_meta( $message_id, '_dame_recipient_seasons', $seasons );
-        update_post_meta( $message_id, '_dame_recipient_groups_saisonnier', $saisonnier_groups );
-        update_post_meta( $message_id, '_dame_recipient_groups_permanent', $permanent_groups );
-        update_post_meta( $message_id, '_dame_recipient_gender', $recipient_gender );
-    } elseif ( 'manual' === $selection_method ) {
-        update_post_meta( $message_id, '_dame_manual_recipients', $adherent_ids );
-    }
 
     // Schedule the email batches
     $batches     = array_chunk( $recipient_emails, 30 );
@@ -246,39 +165,6 @@ function dame_add_bcc_to_mailer( $phpmailer ) {
 }
 add_action( 'phpmailer_init', 'dame_add_bcc_to_mailer' );
 
-
-/**
- * Get the relevant email addresses for a given adherent.
- *
- * @param int $adherent_id The ID of the adherent post.
- * @return array An array of email addresses.
- */
-function dame_get_emails_for_adherent( $adherent_id ) {
-    $emails = array();
-
-    // Get the adherent's own email
-    $member_email = get_post_meta( $adherent_id, '_dame_email', true );
-    $member_refuses_comms = get_post_meta( $adherent_id, '_dame_email_refuses_comms', true );
-    if ( ! empty( $member_email ) && is_email( $member_email ) && '1' !== $member_refuses_comms ) {
-        $emails[] = $member_email;
-    }
-
-    // Get legal representative 1's email
-    $rep1_email = get_post_meta( $adherent_id, '_dame_legal_rep_1_email', true );
-    $rep1_refuses_comms = get_post_meta( $adherent_id, '_dame_legal_rep_1_email_refuses_comms', true );
-    if ( ! empty( $rep1_email ) && is_email( $rep1_email ) && '1' !== $rep1_refuses_comms ) {
-        $emails[] = $rep1_email;
-    }
-
-    // Get legal representative 2's email
-    $rep2_email = get_post_meta( $adherent_id, '_dame_legal_rep_2_email', true );
-    $rep2_refuses_comms = get_post_meta( $adherent_id, '_dame_legal_rep_2_email_refuses_comms', true );
-    if ( ! empty( $rep2_email ) && is_email( $rep2_email ) && '1' !== $rep2_refuses_comms ) {
-        $emails[] = $rep2_email;
-    }
-
-    return $emails;
-}
 
 /**
  * Renders the mailing page.
