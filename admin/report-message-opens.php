@@ -15,7 +15,7 @@ if ( ! defined( 'WPINC' ) ) {
  */
 function dame_register_message_opens_report_page() {
 	add_submenu_page(
-		null, // No parent menu.
+		'dame-hidden', // Hidden parent.
 		__( 'Rapport d\'ouverture', 'dame' ),
 		__( 'Rapport d\'ouverture', 'dame' ),
 		'publish_dame_messages',
