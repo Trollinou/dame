@@ -142,49 +142,6 @@ add_action( 'admin_init', 'dame_handle_send_email' );
 
 
 /**
- * Adds Bcc recipients to the PHPMailer object.
- *
- * This function is hooked into `phpmailer_init` and uses a global variable
- * to get the list of recipients from the `dame_handle_send_email` function.
- *
- * @param PHPMailer $phpmailer The PHPMailer object.
- */
-function dame_add_bcc_to_mailer( $phpmailer ) {
-    $options = get_option( 'dame_options' );
-
-    // Configure SMTP if settings are provided.
-    if ( ! empty( $options['smtp_host'] ) && ! empty( $options['smtp_username'] ) && ! empty( $options['smtp_password'] ) ) {
-        $phpmailer->isSMTP();
-        $phpmailer->Host       = $options['smtp_host'];
-        $phpmailer->SMTPAuth   = true;
-        $phpmailer->Port       = isset( $options['smtp_port'] ) ? (int) $options['smtp_port'] : 465;
-        $phpmailer->Username   = $options['smtp_username'];
-        $phpmailer->Password   = $options['smtp_password'];
-
-        if ( isset( $options['smtp_encryption'] ) && 'none' !== $options['smtp_encryption'] ) {
-            $phpmailer->SMTPSecure = $options['smtp_encryption'];
-        }
-    }
-
-    global $dame_bcc_emails;
-
-    if ( ! empty( $dame_bcc_emails ) && is_array( $dame_bcc_emails ) ) {
-        foreach ( $dame_bcc_emails as $email ) {
-            try {
-                // Add each email as a Bcc recipient.
-                $phpmailer->addBCC( $email );
-            } catch ( Exception $e ) {
-                // Silently continue if an email is invalid.
-                continue;
-            }
-        }
-        // The main function will clean up the global.
-    }
-}
-add_action( 'phpmailer_init', 'dame_add_bcc_to_mailer' );
-
-
-/**
  * Renders the mailing page.
  */
 function dame_render_mailing_page() {

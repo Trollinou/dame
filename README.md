@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 3.4.0
+**Version:** 3.4.1
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -118,3 +118,14 @@ Vous pouvez configurer l'heure de la sauvegarde journalière dans la section "Pa
 ## Dépendances
 
 Pour la fonctionnalité LMS, ce plugin nécessite le plugin **ROI**.
+
+## Changelog
+
+### 3.4.1 (2025-12-02)
+*   **Correction :** Correction d'un bug critique qui empêchait l'envoi des emails programmés (via WP-Cron). Les paramètres SMTP n'étaient pas chargés dans le contexte d'une tâche Cron, ce qui bloquait l'envoi. La configuration SMTP est désormais chargée globalement pour garantir que tous les emails sont correctement expédiés.
+
+### 3.4.0 (2025-12-01)
+*   **Fonctionnalité :** Le système d'envoi de messages a été entièrement revu pour utiliser une file d'attente en arrière-plan (via WP-Cron).
+*   **Fonctionnalité :** Ajout d'un système de suivi des ouvertures d'emails avec statistiques et page de rapport détaillée.
+*   **Amélioration :** Fiabilité des envois accrue grâce à l'envoi par lots.
+*   **Correction :** Plusieurs corrections de bugs liés au nouveau système de messagerie.
