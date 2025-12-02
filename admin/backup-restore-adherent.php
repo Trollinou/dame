@@ -417,6 +417,49 @@ function dame_get_adherent_export_data() {
         }
     }
 
+    // 5. Import messages and create an ID map
+    $message_id_map = array();
+    if ( ! empty( $import_data['messages'] ) && is_array( $import_data['messages'] ) ) {
+        foreach ( $import_data['messages'] as $message_data ) {
+            $post_data = array(
+                'post_title'   => sanitize_text_field( $message_data['post_title'] ),
+                'post_content' => wp_kses_post( $message_data['post_content'] ),
+                'post_type'    => 'dame_message',
+                'post_status'  => sanitize_key( $message_data['post_status'] ),
+            );
+            $new_post_id = wp_insert_post( $post_data );
+
+            if ( $new_post_id && ! is_wp_error( $new_post_id ) ) {
+                $message_id_map[ $message_data['old_id'] ] = $new_post_id;
+                if ( ! empty( $message_data['meta_data'] ) ) {
+                    foreach ( $message_data['meta_data'] as $key => $value ) {
+                        update_post_meta( $new_post_id, $key, $value );
+                    }
+                }
+            }
+        }
+    }
+
+    // 6. Import message opens, using the ID map
+    if ( ! empty( $import_data['message_opens'] ) && is_array( $import_data['message_opens'] ) ) {
+        foreach ( $import_data['message_opens'] as $open_data ) {
+            $old_message_id = $open_data['message_id'];
+            if ( isset( $message_id_map[ $old_message_id ] ) ) {
+                $new_message_id = $message_id_map[ $old_message_id ];
+                $wpdb->insert(
+                    $table_name,
+                    array(
+                        'message_id' => $new_message_id,
+                        'email_hash' => sanitize_text_field( $open_data['email_hash'] ),
+                        'opened_at'  => sanitize_text_field( $open_data['opened_at'] ),
+                        'user_ip'    => sanitize_text_field( $open_data['user_ip'] ),
+                    ),
+                    array( '%d', '%s', '%s', '%s' )
+                );
+            }
+        }
+    }
+
     // 2. Export the options
     $current_season_tag_id = get_option( 'dame_current_season_tag_id' );
     if ( $current_season_tag_id ) {
@@ -715,49 +758,6 @@ function dame_handle_import_action() {
                         update_post_meta( $post_id, $key, $value );
                     }
                 }
-            }
-        }
-    }
-
-    // 5. Import messages and create an ID map
-    $message_id_map = array();
-    if ( ! empty( $import_data['messages'] ) && is_array( $import_data['messages'] ) ) {
-        foreach ( $import_data['messages'] as $message_data ) {
-            $post_data = array(
-                'post_title'   => sanitize_text_field( $message_data['post_title'] ),
-                'post_content' => wp_kses_post( $message_data['post_content'] ),
-                'post_type'    => 'dame_message',
-                'post_status'  => sanitize_key( $message_data['post_status'] ),
-            );
-            $new_post_id = wp_insert_post( $post_data );
-
-            if ( $new_post_id && ! is_wp_error( $new_post_id ) ) {
-                $message_id_map[ $message_data['old_id'] ] = $new_post_id;
-                if ( ! empty( $message_data['meta_data'] ) ) {
-                    foreach ( $message_data['meta_data'] as $key => $value ) {
-                        update_post_meta( $new_post_id, $key, $value );
-                    }
-                }
-            }
-        }
-    }
-
-    // 6. Import message opens, using the ID map
-    if ( ! empty( $import_data['message_opens'] ) && is_array( $import_data['message_opens'] ) ) {
-        foreach ( $import_data['message_opens'] as $open_data ) {
-            $old_message_id = $open_data['message_id'];
-            if ( isset( $message_id_map[ $old_message_id ] ) ) {
-                $new_message_id = $message_id_map[ $old_message_id ];
-                $wpdb->insert(
-                    $table_name,
-                    array(
-                        'message_id' => $new_message_id,
-                        'email_hash' => sanitize_text_field( $open_data['email_hash'] ),
-                        'opened_at'  => sanitize_text_field( $open_data['opened_at'] ),
-                        'user_ip'    => sanitize_text_field( $open_data['user_ip'] ),
-                    ),
-                    array( '%d', '%s', '%s', '%s' )
-                );
             }
         }
     }
