@@ -72,3 +72,29 @@ function dame_register_message_cpt() {
     register_post_type( 'dame_message', $args );
 }
 add_action( 'init', 'dame_register_message_cpt', 0 );
+
+/**
+ * Handles the cleanup of message open tracking data when a message is deleted.
+ *
+ * This function is hooked into `before_delete_post` and will trigger just before
+ * a post is permanently deleted from the database.
+ *
+ * @param int $post_id The ID of the post being deleted.
+ */
+function dame_cleanup_message_open_data( $post_id ) {
+    // Check if the post being deleted is a 'dame_message'.
+    if ( 'dame_message' !== get_post_type( $post_id ) ) {
+        return;
+    }
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'dame_message_opens';
+
+    // Delete all tracking entries associated with this message ID.
+    $wpdb->delete(
+        $table_name,
+        array( 'message_id' => $post_id ),
+        array( '%d' )
+    );
+}
+add_action( 'before_delete_post', 'dame_cleanup_message_open_data' );
