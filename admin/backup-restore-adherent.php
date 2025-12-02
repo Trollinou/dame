@@ -390,7 +390,7 @@ function dame_get_adherent_export_data() {
         'version'          => DAME_VERSION,
         'adherents'        => array(),
         'pre_inscriptions' => array(),
-        'messages'         => array(),
+		'messages'         => array(),
         'message_opens'    => array(),
         'taxonomy_terms'   => array(),
         'options'          => array(),
@@ -493,7 +493,7 @@ function dame_get_adherent_export_data() {
         wp_reset_postdata();
     }
 
-    // 5. Export messages
+	// 5. Export messages
     $messages_query = new WP_Query(
         array(
             'post_type'      => 'dame_message',
@@ -613,7 +613,7 @@ function dame_handle_import_action() {
     foreach ( $existing_posts as $post_id_to_delete ) {
         wp_delete_post( $post_id_to_delete, true ); // true to bypass trash
     }
-    // 2. Clear message opens table
+	// 2. Clear message opens table
     global $wpdb;
     $table_name = $wpdb->prefix . 'dame_message_opens';
     $wpdb->query( "TRUNCATE TABLE {$table_name}" );
@@ -719,7 +719,7 @@ function dame_handle_import_action() {
         }
     }
 
-    // 5. Import messages and create an ID map
+	// 5. Import messages and create an ID map
     $message_id_map = array();
     if ( ! empty( $import_data['messages'] ) && is_array( $import_data['messages'] ) ) {
         foreach ( $import_data['messages'] as $message_data ) {
@@ -761,7 +761,7 @@ function dame_handle_import_action() {
             }
         }
     }
-	
+
     // --- Run migrations on imported data ---
     // This ensures that old backups are brought up to date with the current data structure.
     $imported_version = isset( $import_data['version'] ) ? $import_data['version'] : '2.2.0'; // Default to 2.2.0 for backups made before this feature.
