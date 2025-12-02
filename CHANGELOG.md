@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.4.1 - 2025-12-02
+### Correction
+- **Fiabilité des envois d'emails :** Correction d'un bug critique qui empêchait l'envoi des emails programmés (via WP-Cron). Les paramètres SMTP n'étaient pas chargés dans le contexte d'une tâche Cron, ce qui bloquait l'envoi. La configuration SMTP est désormais chargée globalement pour garantir que tous les emails, qu'ils soient envoyés depuis l'administration ou en arrière-plan, sont correctement expédiés.
+
 ## 3.4.0 - 2025-12-01
 ### Ajout
 - **File d'attente pour l'envoi d'emails :** Le système d'envoi de messages a été entièrement revu pour utiliser une file d'attente en arrière-plan (via WP-Cron).
