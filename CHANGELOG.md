@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.4.2 - 2025-12-02
+### Correction
+- **Fiabilité de la Sauvegarde/Restauration :** Correction d'un bug critique majeur dans la logique d'importation. Le système gère désormais correctement les relations entre les données (adhérents, messages, saisons, groupes) en utilisant des tables de correspondance d'IDs, assurant une restauration complète et fiable.
+- **Rétrocompatibilité :** La fonction de restauration est maintenant compatible avec les anciennes versions des fichiers de sauvegarde.
+- **Nettoyage des données :** Les statistiques d'ouverture d'un message sont maintenant correctement supprimées de la base de données lorsque le message parent est effacé.
+- **Dépréciation PHP :** Correction d'une erreur de dépréciation PHP 8+ causée par la création de pages d'administration cachées.
+
 ## 3.4.1 - 2025-12-02
 ### Correction
 - **Fiabilité des envois d'emails :** Correction d'un bug critique qui empêchait l'envoi des emails programmés (via WP-Cron). Les paramètres SMTP n'étaient pas chargés dans le contexte d'une tâche Cron, ce qui bloquait l'envoi. La configuration SMTP est désormais chargée globalement pour garantir que tous les emails, qu'ils soient envoyés depuis l'administration ou en arrière-plan, sont correctement expédiés.
