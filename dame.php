@@ -271,6 +271,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/ical.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/pdf-generator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/toolbar.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/rest-api.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/mailer.php';
 
 if ( is_admin() ) {
     require_once plugin_dir_path( __FILE__ ) . 'admin/menu.php';
