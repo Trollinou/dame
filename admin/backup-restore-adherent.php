@@ -644,6 +644,7 @@ function dame_handle_import_action() {
         foreach ( $import_data['taxonomy_terms'] as $taxonomy => $terms ) {
             if ( ! empty( $terms ) && is_array( $terms ) ) {
                 foreach ( $terms as $term_data ) {
+					$old_id = isset($term_data['old_id']) ? $term_data['old_id'] : $term_data['slug']; // Fallback for old backups
                     $result = wp_insert_term(
                         $term_data['name'],
                         $taxonomy,
@@ -653,7 +654,7 @@ function dame_handle_import_action() {
                         )
                     );
                     if ( ! is_wp_error( $result ) ) {
-                        $term_id_map[ $term_data['old_id'] ] = $result['term_id'];
+                        $term_id_map[ $old_id ] = $result['term_id'];
                     }
                 }
             }
@@ -672,7 +673,9 @@ function dame_handle_import_action() {
             $new_post_id   = wp_insert_post( $post_data );
 
             if ( $new_post_id && ! is_wp_error( $new_post_id ) ) {
-                $adherent_id_map[ $member_data['old_id'] ] = $new_post_id;
+                if(isset($member_data['old_id'])) {
+					$adherent_id_map[ $member_data['old_id'] ] = $new_post_id;
+				}
                 // Restore meta data
                 if ( ! empty( $member_data['meta_data'] ) ) {
                     foreach ( $member_data['meta_data'] as $key => $value ) {
@@ -709,7 +712,9 @@ function dame_handle_import_action() {
             $new_post_id   = wp_insert_post( $post_data );
 
             if ( $new_post_id && ! is_wp_error( $new_post_id ) ) {
-                $pre_inscription_id_map[ $pre_inscription_data['old_id'] ] = $new_post_id;
+                if(isset($pre_inscription_data['old_id'])) {
+					$pre_inscription_id_map[ $pre_inscription_data['old_id'] ] = $new_post_id;
+				}
                 if ( ! empty( $pre_inscription_data['meta_data'] ) ) {
                     foreach ( $pre_inscription_data['meta_data'] as $key => $value ) {
                         update_post_meta( $new_post_id, $key, $value );
