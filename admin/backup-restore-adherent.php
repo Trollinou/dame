@@ -409,6 +409,7 @@ function dame_get_adherent_export_data() {
             $export_data['taxonomy_terms'][ $taxonomy ] = array();
             foreach ( $terms as $term ) {
                 $export_data['taxonomy_terms'][ $taxonomy ][] = array(
+					'old_id'      => $term->term_id,
                     'name'        => $term->name,
                     'slug'        => $term->slug,
                     'description' => $term->description,
@@ -440,6 +441,7 @@ function dame_get_adherent_export_data() {
             $adherents_query->the_post();
             $post_id     = get_the_ID();
             $member_data = array(
+				'old_id'     => $post_id,
                 'post_title' => get_the_title(),
                 'meta_data'  => array(),
                 'taxonomies' => array(),
@@ -478,6 +480,7 @@ function dame_get_adherent_export_data() {
             $pre_inscriptions_query->the_post();
             $post_id     = get_the_ID();
             $pre_inscription_data = array(
+				'old_id'     => $post_id,
                 'post_title' => get_the_title(),
                 'meta_data'  => array(),
             );
@@ -507,7 +510,7 @@ function dame_get_adherent_export_data() {
             $messages_query->the_post();
             $post_id     = get_the_ID();
             $message_data = array(
-                'old_id'       => $post_id, // Store old ID for re-mapping stats
+                'old_id'       => $post_id,
                 'post_title'   => get_the_title(),
                 'post_content' => get_the_content(),
                 'post_status'  => get_post_status(),
@@ -599,6 +602,12 @@ function dame_handle_import_action() {
         return;
     }
 
+    // --- ID Mapping Tables ---
+    $term_id_map = array();
+    $adherent_id_map = array();
+    $pre_inscription_id_map = array();
+    $message_id_map = array();
+
     // --- Clear existing data ---
     // 1. Delete adherents, pre-inscriptions, and messages
     $post_types_to_delete = array( 'adherent', 'dame_pre_inscription', 'dame_message' );
@@ -630,22 +639,12 @@ function dame_handle_import_action() {
     }
 
     // --- Import new data ---
-    // 1. Import taxonomy terms
+    // 1. Import taxonomy terms and build map
     if ( ! empty( $import_data['taxonomy_terms'] ) && is_array( $import_data['taxonomy_terms'] ) ) {
-        // Backward compatibility check for old backup format (pre-3.3.0)
-        if ( isset( $import_data['taxonomy_terms'][0] ) ) {
-            // This is the old format where terms were in a simple array.
-            // Assume they all belong to 'dame_saison_adhesion'.
-            $old_terms = $import_data['taxonomy_terms'];
-            $import_data['taxonomy_terms'] = array(
-                'dame_saison_adhesion' => $old_terms,
-            );
-        }
-
         foreach ( $import_data['taxonomy_terms'] as $taxonomy => $terms ) {
             if ( ! empty( $terms ) && is_array( $terms ) ) {
                 foreach ( $terms as $term_data ) {
-                    wp_insert_term(
+                    $result = wp_insert_term(
                         $term_data['name'],
                         $taxonomy,
                         array(
@@ -653,12 +652,15 @@ function dame_handle_import_action() {
                             'description' => $term_data['description'],
                         )
                     );
+                    if ( ! is_wp_error( $result ) ) {
+                        $term_id_map[ $term_data['old_id'] ] = $result['term_id'];
+                    }
                 }
             }
         }
     }
 
-    // 2. Import adherents and their relationships
+    // 2. Import adherents and build map
     $imported_count = 0;
     if ( ! empty( $import_data['adherents'] ) ) {
         foreach ( $import_data['adherents'] as $member_data ) {
@@ -667,24 +669,21 @@ function dame_handle_import_action() {
                 'post_type'   => 'adherent',
                 'post_status' => 'publish',
             );
-            $post_id   = wp_insert_post( $post_data );
+            $new_post_id   = wp_insert_post( $post_data );
 
-            if ( $post_id ) {
+            if ( $new_post_id && ! is_wp_error( $new_post_id ) ) {
+                $adherent_id_map[ $member_data['old_id'] ] = $new_post_id;
                 // Restore meta data
                 if ( ! empty( $member_data['meta_data'] ) ) {
                     foreach ( $member_data['meta_data'] as $key => $value ) {
-                        update_post_meta( $post_id, $key, $value );
+                        update_post_meta( $new_post_id, $key, $value );
                     }
                 }
-                // Restore taxonomy terms
+                // Restore taxonomy terms by slug (safer)
                 if ( ! empty( $member_data['taxonomies'] ) && is_array( $member_data['taxonomies'] ) ) {
-                    // New format (v3.3.0+)
                     foreach ( $member_data['taxonomies'] as $taxonomy => $term_slugs ) {
-                        wp_set_object_terms( $post_id, $term_slugs, $taxonomy );
+                        wp_set_object_terms( $new_post_id, $term_slugs, $taxonomy );
                     }
-                } elseif ( ! empty( $member_data['saisons'] ) ) {
-                    // Backward compatibility for old backup format (pre-3.3.0)
-                    wp_set_object_terms( $post_id, $member_data['saisons'], 'dame_saison_adhesion' );
                 }
                 $imported_count++;
             }
@@ -699,7 +698,7 @@ function dame_handle_import_action() {
         }
     }
 
-    // 4. Import pre-inscriptions
+    // 4. Import pre-inscriptions and build map
     if ( ! empty( $import_data['pre_inscriptions'] ) ) {
         foreach ( $import_data['pre_inscriptions'] as $pre_inscription_data ) {
             $post_data = array(
@@ -707,20 +706,20 @@ function dame_handle_import_action() {
                 'post_type'   => 'dame_pre_inscription',
                 'post_status' => 'pending', // Pre-inscriptions are always pending
             );
-            $post_id   = wp_insert_post( $post_data );
+            $new_post_id   = wp_insert_post( $post_data );
 
-            if ( $post_id && ! is_wp_error( $post_id ) ) {
+            if ( $new_post_id && ! is_wp_error( $new_post_id ) ) {
+                $pre_inscription_id_map[ $pre_inscription_data['old_id'] ] = $new_post_id;
                 if ( ! empty( $pre_inscription_data['meta_data'] ) ) {
                     foreach ( $pre_inscription_data['meta_data'] as $key => $value ) {
-                        update_post_meta( $post_id, $key, $value );
+                        update_post_meta( $new_post_id, $key, $value );
                     }
                 }
             }
         }
     }
 
-    // 5. Import messages and create an ID map
-    $message_id_map = array();
+    // 5. Import messages, remap recipient IDs, and build message ID map
     if ( ! empty( $import_data['messages'] ) && is_array( $import_data['messages'] ) ) {
         foreach ( $import_data['messages'] as $message_data ) {
             $post_data = array(
@@ -735,14 +734,33 @@ function dame_handle_import_action() {
                 $message_id_map[ $message_data['old_id'] ] = $new_post_id;
                 if ( ! empty( $message_data['meta_data'] ) ) {
                     foreach ( $message_data['meta_data'] as $key => $value ) {
-                        update_post_meta( $new_post_id, $key, $value );
+                        $remapped_value = $value;
+                        // Remap manual recipient IDs
+                        if ( '_dame_manual_recipients' === $key && is_array( $value ) ) {
+                            $remapped_value = array();
+                            foreach ( $value as $old_adherent_id ) {
+                                if ( isset( $adherent_id_map[ $old_adherent_id ] ) ) {
+                                    $remapped_value[] = $adherent_id_map[ $old_adherent_id ];
+                                }
+                            }
+                        }
+                        // Remap term IDs (seasons, groups)
+                        if ( in_array( $key, array( '_dame_recipient_seasons', '_dame_recipient_groups_saisonnier', '_dame_recipient_groups_permanent' ) ) && is_array( $value ) ) {
+                             $remapped_value = array();
+                            foreach ( $value as $old_term_id ) {
+                                if ( isset( $term_id_map[ $old_term_id ] ) ) {
+                                    $remapped_value[] = $term_id_map[ $old_term_id ];
+                                }
+                            }
+                        }
+                        update_post_meta( $new_post_id, $key, $remapped_value );
                     }
                 }
             }
         }
     }
 
-    // 6. Import message opens, using the ID map
+    // 6. Import message opens, using the new message ID map
     if ( ! empty( $import_data['message_opens'] ) && is_array( $import_data['message_opens'] ) ) {
         foreach ( $import_data['message_opens'] as $open_data ) {
             $old_message_id = $open_data['message_id'];
@@ -770,7 +788,6 @@ function dame_handle_import_action() {
     }
 
     $message = sprintf(
-        /* translators: %d: number of members imported */
         _n(
             '%d adhérent a été importé avec succès.',
             '%d adhérents ont été importés avec succès.',
@@ -785,9 +802,6 @@ add_action( 'admin_init', 'dame_handle_import_action' );
 
 /**
  * Adds an admin notice to be displayed on the next page load.
- *
- * @param string $message The message to display.
- * @param string $type    The type of notice ('success', 'error', 'warning', 'info'). Defaults to 'success'.
  */
 function dame_add_admin_notice( $message, $type = 'success' ) {
     set_transient( 'dame_import_export_notice', array( 'message' => $message, 'type' => $type ), 30 );
