@@ -415,3 +415,39 @@ function dame_get_message_recipients( $message_id ) {
 
 	return $recipients;
 }
+
+/**
+ * Retrieves all valid email addresses associated with a given adherent.
+ *
+ * This function gathers the adherent's own email and the emails of their legal representatives.
+ * It filters out any email addresses where the owner has refused communications.
+ *
+ * @param int $adherent_id The ID of the adherent post.
+ * @return array A simple array of unique email addresses.
+ */
+function dame_get_emails_for_adherent( $adherent_id ) {
+	$adherent_id = absint( $adherent_id );
+	if ( ! $adherent_id ) {
+		return array();
+	}
+
+	$emails = array();
+
+	// Add adherent's email.
+	$member_email         = get_post_meta( $adherent_id, '_dame_email', true );
+	$member_refuses_comms = get_post_meta( $adherent_id, '_dame_email_refuses_comms', true );
+	if ( ! empty( $member_email ) && is_email( $member_email ) && '1' !== $member_refuses_comms ) {
+		$emails[] = $member_email;
+	}
+
+	// Add legal representatives' emails.
+	for ( $i = 1; $i <= 2; $i++ ) {
+		$rep_email         = get_post_meta( $adherent_id, "_dame_legal_rep_{$i}_email", true );
+		$rep_refuses_comms = get_post_meta( $adherent_id, "_dame_legal_rep_{$i}_email_refuses_comms", true );
+		if ( ! empty( $rep_email ) && is_email( $rep_email ) && '1' !== $rep_refuses_comms ) {
+			$emails[] = $rep_email;
+		}
+	}
+
+	return array_unique( $emails );
+}

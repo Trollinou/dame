@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.4.3 - 2025-12-05
+### Correction
+- **Tâche Cron des Anniversaires :** Correction d'un bug critique qui empêchait l'envoi des emails d'anniversaire. La tâche échouait à cause d'une erreur fatale (appel à une fonction qui n'existait plus) et d'un manque de configuration SMTP dans le contexte du cron. La fonction a été restaurée et la configuration SMTP est maintenant correctement chargée, assurant la fiabilité des envois.
+
 ## 3.4.2 - 2025-12-02
 ### Correction
 - **Fiabilité de la Sauvegarde/Restauration :** Correction d'un bug critique majeur dans la logique d'importation. Le système gère désormais correctement les relations entre les données (adhérents, messages, saisons, groupes) en utilisant des tables de correspondance d'IDs, assurant une restauration complète et fiable.
