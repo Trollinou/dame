@@ -15,7 +15,7 @@ if ( ! defined( 'WPINC' ) ) {
  *
  * This function is hooked into `phpmailer_init` and applies to all emails sent via wp_mail.
  *
- * @param PHPMailer $phpmailer The PHPMailer object.
+ * @param \PHPMailer\PHPMailer\PHPMailer $phpmailer The PHPMailer object.
  */
 function dame_configure_smtp( $phpmailer ) {
 	$options = get_option( 'dame_options' );

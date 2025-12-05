@@ -134,8 +134,9 @@ function dame_get_adherent_age_category( $birth_date_str, $gender = 'Masculin' )
         return __( 'Date de naissance manquante', 'dame' );
     }
 
-    $birth_date = new DateTime( $birth_date_str );
-    if ( ! $birth_date ) {
+    try {
+        $birth_date = new DateTime( $birth_date_str );
+    } catch ( Exception $e ) {
         return __( 'Date de naissance invalide', 'dame' );
     }
 

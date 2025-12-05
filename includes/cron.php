@@ -173,12 +173,12 @@ function dame_send_birthday_emails() {
 
         $content = str_replace( '[NOM]', strtoupper( $nom ), $original_content );
         $content = str_replace( '[PRENOM]', ucwords( strtolower( $prenom ) ), $content );
-        $content = str_replace( '[AGE]', $age, $content );
+        $content = str_replace( '[AGE]', (string) $age, $content );
         $message = '<div style="margin: 1cm;">' . $content . '</div>';
 
         $subject = str_replace( '[NOM]', strtoupper( $nom ), $original_subject );
         $subject = str_replace( '[PRENOM]', ucwords( strtolower( $prenom ) ), $subject );
-        $subject = str_replace( '[AGE]', $age, $subject );
+        $subject = str_replace( '[AGE]', (string) $age, $subject );
 
         // The function is now in utils.php and will be loaded with the plugin.
         $recipient_emails = dame_get_emails_for_adherent( $adherent_id );
@@ -401,11 +401,7 @@ function dame_cron_send_batch_callback( $message_id, $emails, $retry_count ) {
         wp_schedule_single_event(
             time() + 60, // Retry in 1 minute.
             'dame_cron_send_batch',
-            array(
-                'message_id'  => $message_id,
-                'emails'      => $failed_emails,
-                'retry_count' => $retry_count + 1,
-            )
+            array( $message_id, $failed_emails, $retry_count + 1 )
         );
     }
 

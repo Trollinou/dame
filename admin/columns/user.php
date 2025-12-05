@@ -35,9 +35,9 @@ function dame_render_user_lesson_completion_column( $value, $column_name, $user_
     if ( 'dame_completed_lessons' === $column_name && ( current_user_can( 'entraineur' ) || current_user_can( 'administrator' ) ) ) {
         $completed_lessons = get_user_meta( $user_id, 'dame_completed_lessons', true );
         if ( is_array( $completed_lessons ) ) {
-            return count( $completed_lessons );
+            return (string) count( $completed_lessons );
         }
-        return 0;
+        return '0';
     }
     return $value;
 }

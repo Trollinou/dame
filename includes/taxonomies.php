@@ -20,8 +20,8 @@ function dame_register_membership_season_taxonomy() {
         'search_items'               => __( 'Rechercher les saisons', 'dame' ),
         'popular_items'              => __( 'Saisons populaires', 'dame' ),
         'all_items'                  => __( 'Toutes les saisons', 'dame' ),
-        'parent_item'                => null,
-        'parent_item_colon'          => null,
+        'parent_item'                => '',
+        'parent_item_colon'          => '',
         'edit_item'                  => __( 'Modifier la saison', 'dame' ),
         'update_item'                => __( 'Mettre à jour la saison', 'dame' ),
         'add_new_item'               => __( 'Ajouter une nouvelle saison', 'dame' ),
@@ -87,7 +87,7 @@ add_action( 'init', 'dame_register_group_taxonomy', 0 );
 /**
  * Add a "Type" field to the "Add New Group" form.
  */
-function dame_group_add_form_fields() {
+function dame_group_add_form_fields( $unused_one = null, $unused_two = null ) {
     ?>
     <div class="form-field">
         <label for="term_meta[group_type]"><?php _e( 'Type de groupe', 'dame' ); ?></label>
@@ -104,7 +104,7 @@ add_action( 'dame_group_add_form_fields', 'dame_group_add_form_fields', 10, 2 );
 /**
  * Add a "Type" field to the "Edit Group" form.
  */
-function dame_group_edit_form_fields( $term ) {
+function dame_group_edit_form_fields( $term, $unused = null ) {
     $group_type = get_term_meta( $term->term_id, '_dame_group_type', true );
     if ( empty( $group_type ) ) {
         $group_type = 'saisonnier'; // Default value
@@ -127,7 +127,7 @@ add_action( 'dame_group_edit_form_fields', 'dame_group_edit_form_fields', 10, 2 
 /**
  * Save the "Type" field for the Group taxonomy.
  */
-function dame_save_group_type( $term_id ) {
+function dame_save_group_type( $term_id, $unused = null ) {
     if ( isset( $_POST['term_meta']['group_type'] ) ) {
         $group_type = sanitize_key( $_POST['term_meta']['group_type'] );
         update_term_meta( $term_id, '_dame_group_type', $group_type );
@@ -213,7 +213,7 @@ add_action( 'admin_enqueue_scripts', 'dame_enqueue_color_picker' );
 /**
  * Add color picker to the "Add New Category" form for agenda categories.
  */
-function dame_agenda_category_add_form_fields() {
+function dame_agenda_category_add_form_fields( $unused_one = null, $unused_two = null ) {
     ?>
     <div class="form-field">
         <label for="term_meta[color]"><?php _e( 'Couleur de la catégorie', 'dame' ); ?></label>
@@ -227,7 +227,7 @@ add_action( 'dame_agenda_category_add_form_fields', 'dame_agenda_category_add_fo
 /**
  * Add color picker to the "Edit Category" form for agenda categories.
  */
-function dame_agenda_category_edit_form_fields( $term ) {
+function dame_agenda_category_edit_form_fields( $term, $unused = null ) {
     $term_id = $term->term_id;
     $term_meta = get_option( "taxonomy_$term_id" );
     $color = isset( $term_meta['color'] ) ? $term_meta['color'] : '';
@@ -246,7 +246,7 @@ add_action( 'dame_agenda_category_edit_form_fields', 'dame_agenda_category_edit_
 /**
  * Save custom taxonomy meta fields.
  */
-function dame_save_agenda_category_color( $term_id ) {
+function dame_save_agenda_category_color( $term_id, $unused = null ) {
     if ( isset( $_POST['term_meta'] ) ) {
         $term_meta = get_option( "taxonomy_$term_id" );
         if ( ! is_array( $term_meta ) ) {

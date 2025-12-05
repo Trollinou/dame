@@ -1,0 +1,16 @@
+parameters:
+    level: 5
+    paths:
+        - .
+    excludePaths:
+        - vendor
+        - includes/lib
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+    scanFiles:
+        - includes/wordpress-stubs.php
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        - '#PHPDoc tag @var for variable \$pdf contains unknown class setasign\\Fpdi\\Fpdi.#'
+        - '#Instantiated class setasign\\Fpdi\\Fpdi not found.#'
+        - '#Call to method .* on an unknown class setasign\\Fpdi\\Fpdi.#'

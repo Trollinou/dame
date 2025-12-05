@@ -151,8 +151,15 @@ add_action( 'admin_post_dame_delete_sondage_response', 'dame_handle_delete_sonda
  * @return string
  */
 function dame_sondage_admin_notices( $messages ) {
+    global $post;
     if ( isset( $_GET['message'] ) && '101' === $_GET['message'] ) {
-        $messages['post'][101] = __( 'Réponse supprimée.', 'dame' );
+        if (!is_array($messages)) {
+            $messages = array();
+        }
+        if (!isset($messages['sondage']) || !is_array($messages['sondage'])) {
+            $messages['sondage'] = array();
+        }
+        $messages['sondage'][101] = __( 'Réponse supprimée.', 'dame' );
     }
     return $messages;
 }

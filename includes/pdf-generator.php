@@ -60,6 +60,7 @@ function dame_generate_health_form_handler() {
 	$city_for_pdf               = mb_convert_encoding( $city, 'ISO-8859-1', 'UTF-8' );
 
 	// 6. Generate PDF
+	/** @var \setasign\Fpdi\Fpdi $pdf */
 	$pdf = new Fpdi();
 	$pdf->AddPage();
 
@@ -180,6 +181,7 @@ function dame_generate_parental_auth_handler() {
 	}
 
 	// 5. Generate PDF
+	/** @var \setasign\Fpdi\Fpdi $pdf */
 	$pdf = new Fpdi();
 	$pdf->AddPage();
 	$pdf->SetAutoPageBreak( true, 0 );

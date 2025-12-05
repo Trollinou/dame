@@ -338,9 +338,9 @@ function dame_get_agenda_events() {
 
     // Remove the filters immediately after the query to avoid affecting other queries on the site.
     if ( ! empty( $search_term ) ) {
-        remove_filter( 'posts_join', 'dame_agenda_search_join', 10, 2 );
-        remove_filter( 'posts_where', 'dame_agenda_search_where', 10, 2 );
-        remove_filter( 'posts_distinct', 'dame_agenda_search_distinct', 10, 2 );
+        remove_filter( 'posts_join', 'dame_agenda_search_join', 10 );
+        remove_filter( 'posts_where', 'dame_agenda_search_where', 10 );
+        remove_filter( 'posts_distinct', 'dame_agenda_search_distinct', 10 );
     }
     $events = array();
 

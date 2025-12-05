@@ -98,7 +98,7 @@ function dame_render_options_page() {
  * The sections and fields are now registered in their respective tab files.
  */
 function dame_register_main_setting() {
-    register_setting( 'dame_options_group', 'dame_options', 'dame_options_sanitize' );
+    register_setting( 'dame_options_group', 'dame_options', array( 'sanitize_callback' => 'dame_options_sanitize' ) );
 }
 add_action( 'admin_init', 'dame_register_main_setting' );
 

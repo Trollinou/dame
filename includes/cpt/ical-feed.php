@@ -41,7 +41,6 @@ function dame_register_ical_feed_cpt() {
         'capability_type'    => 'post',
         'has_archive'        => false,
         'hierarchical'       => false,
-        'menu_position'      => null,
         'supports'           => array( 'title' ),
     );
 

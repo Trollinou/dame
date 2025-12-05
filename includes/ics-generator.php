@@ -87,7 +87,7 @@ function dame_generate_ics_content( $post_id ) {
         $dtend = ":" . gmdate('Ymd\THis\Z', $end_datetime->getTimestamp());
     }
 
-    $uid = md5( $post_id ) . '@' . parse_url( home_url(), PHP_URL_HOST );
+    $uid = md5( (string) $post_id ) . '@' . parse_url( home_url(), PHP_URL_HOST );
     $created_date = gmdate( 'Ymd\THis\Z', strtotime( $post->post_date_gmt ) );
     $last_modified = gmdate( 'Ymd\THis\Z', strtotime( $post->post_modified_gmt ) );
     $event_url = get_permalink( $post_id );

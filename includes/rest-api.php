@@ -70,7 +70,7 @@ function dame_handle_tracking_pixel( $request ) {
             array(
                 'message_id' => $message_id,
                 'email_hash' => $email_hash,
-                'opened_at'  => current_time( 'mysql', 1 ),
+                'opened_at'  => current_time( 'mysql', true ),
                 'user_ip'    => $user_ip,
             ),
             array(

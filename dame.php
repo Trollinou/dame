@@ -66,8 +66,12 @@ function dame_perform_upgrade( $old_version, $new_version ) {
         // Store the ID of the current season tag as the active one.
         if ( ! is_wp_error( $current_season_term ) ) {
             update_option( 'dame_current_season_tag_id', $current_season_term['term_id'] );
-        } elseif ( isset( $current_season_term->error_data['term_exists'] ) ) {
-            update_option( 'dame_current_season_tag_id', $current_season_term->error_data['term_exists'] );
+        } else {
+            /** @var array{term_exists: int} $error_data */
+            $error_data = $current_season_term->get_error_data('term_exists');
+            if (isset($error_data['term_exists'])) {
+                update_option('dame_current_season_tag_id', $error_data['term_exists']);
+            }
         }
 
         // Get all adherents to migrate them.
@@ -81,8 +85,8 @@ function dame_perform_upgrade( $old_version, $new_version ) {
         );
 
         if ( $adherents_query->have_posts() ) {
-            $anterior_term_id = ! is_wp_error( $anterior_season_term ) ? $anterior_season_term['term_id'] : $anterior_season_term->get_error_data( 'term_exists' );
-            $current_term_id  = ! is_wp_error( $current_season_term ) ? $current_season_term['term_id'] : $current_season_term->get_error_data( 'term_exists' );
+            $anterior_term_id = ! is_wp_error( $anterior_season_term ) ? $anterior_season_term['term_id'] : ($anterior_season_term->get_error_data('term_exists')['term_exists'] ?? null);
+            $current_term_id = !is_wp_error($current_season_term) ? $current_season_term['term_id'] : ($current_season_term->get_error_data('term_exists')['term_exists'] ?? null);
 
             foreach ( $adherents_query->posts as $adherent_id ) {
                 $status = get_post_meta( $adherent_id, '_dame_membership_status', true );

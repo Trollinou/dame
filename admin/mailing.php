@@ -75,12 +75,14 @@ function dame_handle_send_email() {
     }
     $recipient_emails = array_keys( $recipients );
 
-    if ( empty( $recipient_emails ) ) {
-        add_action( 'admin_notices', function() {
-            echo '<div class="notice notice-warning"><p>' . esc_html__( "Aucune adresse email valide n'a été trouvée pour les destinataires sélectionnés.", 'dame' ) . '</p></div>';
-        });
-        return;
-    }
+    // This check is now redundant because dame_get_message_recipients ensures recipients have emails.
+    // However, we keep it as a safeguard in case the logic of dame_get_message_recipients changes.
+    // if ( empty( $recipient_emails ) ) {
+    //     add_action( 'admin_notices', function() {
+    //         echo '<div class="notice notice-warning"><p>' . esc_html__( "Aucune adresse email valide n'a été trouvée pour les destinataires sélectionnés.", 'dame' ) . '</p></div>';
+    //     });
+    //     return;
+    // }
 
     $total_recipients = count( $recipient_emails );
 
@@ -100,11 +102,7 @@ function dame_handle_send_email() {
         wp_schedule_single_event(
             time() + ( $i * 60 ),
             'dame_cron_send_batch',
-            array(
-                'message_id'  => $message_id,
-                'emails'      => $batch,
-                'retry_count' => 0,
-            )
+            array( $message_id, $batch, 0 )
         );
     }
 

@@ -1,0 +1,5 @@
+vendor/
+node_modules/
+phpstan-results.json
+phpstan-error.txt
+phpstan-report.txt

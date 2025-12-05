@@ -152,7 +152,7 @@ function dame_render_group_checklist_metabox( $post ) {
 					$post->ID,
 					array(
 						'taxonomy'      => $taxonomy,
-						'popular_cats'  => false,
+						'popular_cats'  => array(),
 						'checked_ontop' => false, // Keep alphabetical order.
 					)
 				);
