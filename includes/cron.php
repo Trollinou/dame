@@ -70,6 +70,9 @@ function dame_generate_agenda_backup_file() {
  * Sends birthday emails to members.
  */
 function dame_send_birthday_emails() {
+    // Ensure the SMTP configuration is loaded for this cron job.
+    add_action( 'phpmailer_init', 'dame_configure_smtp' );
+
     $options = get_option( 'dame_options' );
     $enabled = isset( $options['birthday_emails_enabled'] ) ? $options['birthday_emails_enabled'] : 0;
     $article_slug = isset( $options['birthday_article_slug'] ) ? $options['birthday_article_slug'] : '';
@@ -177,9 +180,7 @@ function dame_send_birthday_emails() {
         $subject = str_replace( '[PRENOM]', ucwords( strtolower( $prenom ) ), $subject );
         $subject = str_replace( '[AGE]', $age, $subject );
 
-        if ( ! function_exists( 'dame_get_emails_for_adherent' ) ) {
-            require_once DAME_PLUGIN_DIR . 'admin/mailing.php';
-        }
+        // The function is now in utils.php and will be loaded with the plugin.
         $recipient_emails = dame_get_emails_for_adherent( $adherent_id );
 
         if ( ! empty( $recipient_emails ) ) {
