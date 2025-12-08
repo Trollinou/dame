@@ -8,7 +8,7 @@ L'agent principal doit agir comme **expert en développement de plugins WordPres
 
 - architecture modulaire du code ;
 - conventions de nommage et prefixage pour éviter les collisions ;
-- respect des APIs WordPress (Settings API, WP\_Query, REST API, Options API, Transients, Filesystem, WP-Cron, Roles & Capabilities, etc.) ;
+- respect des APIs WordPress (Settings API, WP_Query, REST API, Options API, Transients, Filesystem, WP-Cron, Roles & Capabilities, etc.) ;
 - internationalisation complète de toutes les chaînes de caractères ;
 - sécurité renforcée : utilisation systématique de nonces, échappement, validation/sanitation, vérification des capacités utilisateur ;
 - documentation et commentaires clairs ;
@@ -30,7 +30,10 @@ L'agent principal doit agir comme **expert en développement de plugins WordPres
 3. **Vérificateur de sécurité** — analyser les extraits fournis et proposer corrections (nonces, vérifications de capacité, échappements, sanitization).
 4. **Auditeur de compatibilité** — suggérer des adaptations pour supporter les versions WordPress récentes et tests unitaires / d'intégration.
 5. **Rédacteur de documentation** — produire README, CHANGELOG, documentation des hooks et des endpoints REST, et aider à la génération des fichiers de traduction (.pot, .po, .mo).
-6. **Relecteur de code** — effectuer des revues de code orientées bonnes pratiques WP et accessibilité.
+6. **Contrôleur Qualité (QA)** — Ne jamais livrer de code sans validation préalable.
+    - **PHP** : Validation systématique via **PHPStan** (Level 6) avec l'extension `szepeviktor/phpstan-wordpress`.
+    - **JS** : Validation systématique via **ESLint** (Norme ES2021).
+    - Tout code fourni doit être, par défaut, exempt d'erreurs détectables par ces outils.
 7. **Guide de publication** — checklist pour déploiement, packaging, versioning sémantique et soumission au dépôt privé ou au répertoire WordPress.
 
 ---
@@ -51,45 +54,64 @@ L'agent doit répondre en **ton formel et professionnel** (conforme à votre pr�
 ### Arborescence recommandée
 
 ```
+
 wp-content/plugins/dame/
-├─ assets/
+├─ assets/              \# Fichiers statiques compilés (CSS/JS minifiés)
 │  ├─ css/
 │  ├─ js/
 │  └─ img/
-├─ includes/
-│  ├─ Core/
+├─ includes/            \# Logique PHP (Namespaced DAME\...)
+│  ├─ Core/             \# Chargement, I18n, Activator, Deactivator
 │  │  ├─ Plugin.php
 │  │  ├─ Activator.php
 │  │  └─ Deactivator.php
-│  ├─ Admin/
-│  ├─ Public/
-│  ├─ REST/
-│  └─ Utils/
-├─ languages/
-├─ templates/
-├─ vendor/
-├─ tests/
+│  ├─ Admin/            \# Logique Back-office (Hooks, Menus, Settings)
+│  ├─ Public/           \# Logique Front-end (Shortcodes, Scripts)
+│  ├─ REST/             \# Endpoints API REST
+│  ├─ Utils/            \# Helpers statiques, Validateurs
+│  └─ lib/              \# Librairies tierces (FPDF, FPDI) incluses manuellement
+├─ languages/           \# Fichiers de traduction (.pot, .po, .mo)
+├─ templates/           \# Vues HTML (surchargeables par le thème)
+├─ vendor/              \# (DEV LOCAL UNIQUEMENT) Outils qualité (PHPStan)
+├─ node_modules/        \# (DEV LOCAL UNIQUEMENT) Dépendances JS
+├─ tests/               \# Tests unitaires et d'intégration
+├─ composer.json        \# Dépendances PHP (Dev)
+├─ package.json         \# Dépendances JS et scripts de build
+├─ phpstan.neon         \# Config PHPStan
+├─ .eslintrc.json       \# Config ESLint
 ├─ README.md
 ├─ CHANGELOG.md
-└─ dame.php
+├─ uninstall.php        \# Nettoyage lors de la suppression définitive
+└─ dame.php             \# Point d'entrée principal (avec Autoloader natif)
+
 ```
 
 ---
 
 ## Bonnes pratiques de codage
 
-### PHP
+### PHP & Gestion des Dépendances
 
-- Respecter les standards PSR-12 autant que possible ; utiliser types et retours typés lorsque possible (PHP 7.4+ / 8.x selon cible).
-- Prefixer les fonctions globales : `dame_get_member()`.
-- Classes dans des namespaces et autoload via Composer (si utilisé) ou autoloader propre.
-- Documenter chaque classe/méthode avec PHPDoc.
+- **Standards** : Respecter PSR-12 pour le code propriétaire du plugin.
+- **Autoloading (Code DAME)** :
+    - Ne **JAMAIS** utiliser l'autoloader Composer en production (`require 'vendor/autoload.php'`).
+    - Utiliser un **autoloader natif (SPL)** dans `dame.php` pour charger les classes du namespace `DAME\` situées dans `includes/`.
+- **Librairies Tierces (FPDF, FPDI, etc.)** :
+    - Les librairies externes doivent être déposées dans `includes/lib/`.
+    - Elles ne doivent **pas** être installées via `composer require` (sauf en dev pour l'analyse, si nécessaire).
+    - Elles doivent être chargées via `require_once` explicites (exemple : `require_once plugin_dir_path( __FILE__ ) . 'includes/lib/fpdf.php';`).
+- **Typage** : Utiliser le typage strict (`declare(strict_types=1);`) et les retours typés là où c'est possible, sauf conflit avec les anciennes librairies (comme FPDF).
 
-### JavaScript
+### JavaScript (ES2021)
 
-- Utiliser le build modern (ESLint, Babel si nécessaire, webpack ou WP Scripts `@wordpress/scripts`).
-- Encapsuler le code JS dans des modules et éviter de polluer l'espace global.
-- Localiser les chaînes côté JS via `wp.i18n.__()` lors de l'enregistrement du script (wp\_localize\_script si nécessaire pour données dynamiques).
+- **Norme** : Utiliser strictement la syntaxe **ES2021**.
+- **Fonctionnalités attendues** :
+    - Utilisation préférentielle de `const` et `let` (pas de `var`).
+    - Arrow functions pour les callbacks.
+    - Optional Chaining (`obj?.prop`) et Nullish Coalescing (`val ?? default`).
+    - Async / Await pour les appels asynchrones (fetch, API REST).
+- **Structure** : Encapsuler le code dans des modules ES ou des IIFE pour éviter de polluer le scope global `window`.
+- **Internationalisation** : Utiliser `wp.i18n.__()` pour toutes les chaînes visibles.
 
 ### CSS
 
@@ -102,13 +124,15 @@ wp-content/plugins/dame/
 - Charger le textdomain `dame` dans l'initialisation du plugin : `load_plugin_textdomain( 'dame', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );`.
 - Toutes les chaînes PHP doivent utiliser `__()`, `_e()`, `esc_html__()`, `esc_attr__()` etc. Exemple :
 
-```php
+```
+
 // Exemple conforme
 _e( "Appliquer les modifications", 'dame' );
+
 ```
 
 - Les chaînes côté JS doivent utiliser `wp.i18n` et être exportées via `wp_set_script_translations()` ou `wp_localize_script()` suivant le cas.
-- Fournir un fichier `.pot` à jour et documenter la procédure pour générer `.po`/.mo\`.
+- Fournir un fichier `.pot` à jour et documenter la procédure pour générer `.po`/`.mo`.
 
 ---
 
@@ -116,11 +140,13 @@ _e( "Appliquer les modifications", 'dame' );
 
 - **Nonces** : utiliser des nonces pour toutes les actions sensibles (AJAX, forms, REST endpoints). Exemple d'usage :
 
-```php
+```
+
 // Vérification côté serveur
-if ( ! isset( $_POST['dame_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['dame_nonce'] ), 'dame_action' ) ) {
-    wp_die( -1 );
+if ( ! isset( \$_POST['dame_nonce'] ) || ! wp_verify_nonce( wp_unslash( \$_POST['dame_nonce'] ), 'dame_action' ) ) {
+wp_die( -1 );
 }
+
 ```
 
 - **Capabilities** : vérifier les capacités avant toute modification (`current_user_can( 'manage_options' )` ou une capability spécifique `dame_manage_members`).
@@ -133,7 +159,7 @@ if ( ! isset( $_POST['dame_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['d
 
 ## Hooks et API WordPress
 
-- Favoriser les API natives : Settings API, REST API, WP\_List\_Table (ou alternatives), Metadata API, Shortcode API, Widgets API.
+- Favoriser les API natives : Settings API, REST API, WP_List_Table (ou alternatives), Metadata API, Shortcode API, Widgets API.
 - Déclarer des hooks publics (actions et filtres) documentés, par ex. `do_action( 'dame_after_member_save', $member_id );`.
 - Prévoir des filtres pour personnaliser les comportements : `apply_filters( 'dame_member_meta', $meta );`.
 
@@ -156,9 +182,84 @@ if ( ! isset( $_POST['dame_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['d
 
 ---
 
-## Tests & CI
+## Qualité, Tests & Outillage
 
-- Écrire des tests unitaires PHP (WP\_UnitTestCase) et tests JS (Jest) pour la logique importante.
+### Standards de Validation
+L'agent doit s'assurer que le projet respecte les critères suivants avant toute validation finale :
+- **PHPStan** : Niveau d'analyse **Level 6** minimum.
+- **Extensions requises** : `szepeviktor/phpstan-wordpress`.
+- **JS / ESLint** : Validation stricte **ES2021**.
+- **Exclusions obligatoires** : Les dossiers `node_modules`, `vendor`, `build`, et `includes/lib` doivent être ignorés par les linters.
+
+### Installation de l'environnement
+Si l'environnement d'exécution n'est pas configuré, l'agent est autorisé à installer les dépendances systèmes et Composer via la procédure suivante :
+
+1. **Installation des paquets système et Composer** :
+```
+
+sudo apt-get update && sudo apt-get install -y php php-curl php-xml unzip && curl -sS https://getcomposer.org/installer | php && sudo mv composer.phar /usr/local/bin/composer
+
+```
+2. **Installation des dépendances projet** (une fois Composer installé) :
+```
+
+composer install && npm install
+
+```
+
+### Fichiers de Configuration Requis
+L'agent doit s'assurer de la présence des fichiers de configuration suivants à la racine du plugin. S'ils sont absents, il doit les créer :
+
+**`phpstan.neon`**
+```
+
+includes:
+- vendor/szepeviktor/phpstan-wordpress/extension.neon
+parameters:
+level: 6
+paths:
+- .
+excludePaths:
+- node_modules/
+- vendor/
+- build/
+- includes/lib/
+
+```
+
+**`.eslintrc.json`** (ou format équivalent)
+```
+
+{
+"env": {
+"browser": true,
+"es2021": true,
+"wordpress": true
+},
+"parserOptions": {
+"ecmaVersion": 2021,
+"sourceType": "module"
+},
+"extends": [
+"eslint:recommended",
+"plugin:@wordpress/recommended"
+],
+"ignorePatterns": [
+"node_modules/",
+"vendor/",
+"build/",
+"includes/lib/"
+]
+}
+
+```
+
+### Automatisation et Scripts
+- **Dépendances de dev** : L'agent doit vérifier que `szepeviktor/phpstan-wordpress` est présent dans les `require-dev` du `composer.json`. Si non, il doit proposer la commande : `composer require --dev szepeviktor/phpstan-wordpress phpstan/phpstan`.
+- **Scripts de commodité** : L'agent doit configurer des scripts dans `composer.json` pour simplifier l'exécution (ex: `"phpstan": "vendor/bin/phpstan analyse"`).
+
+### Tests & CI
+- Écrire des tests unitaires PHP (WP_UnitTestCase) et tests JS (Jest) pour la logique importante.
 - Mettre en place GitHub Actions / GitLab CI pour linting, tests et build.
 
 ---
@@ -173,7 +274,8 @@ if ( ! isset( $_POST['dame_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['d
 
 ## Checklist de publication
 
--
+- Vérifier que `vendor/` n'est pas inclus dans l'archive finale.
+- Vérifier que `includes/lib/` contient bien les dépendances tierces (FPDF, etc.).
 
 ---
 
@@ -201,5 +303,4 @@ if ( ! isset( $_POST['dame_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['d
 
 ---
 
-*Document version : 1.0 — Généré pour le plugin DAME.*
-
+*Document version : 1.3 — Mis à jour avec directives JavaScript ES2021.*
