@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 3.4.2
+**Version:** 3.4.4
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -120,6 +120,12 @@ Vous pouvez configurer l'heure de la sauvegarde journalière dans la section "Pa
 Pour la fonctionnalité LMS, ce plugin nécessite le plugin **ROI**.
 
 ## Changelog
+
+### 3.4.4 (2025-12-06)
+*   **Amélioration :** **Internationalisation :** Remplacement de toutes les fonctions de conversion de casse (`strtoupper`, `strtolower`, `ucwords`) par leurs équivalents multi-octets (`mb_strtoupper`, etc.). Cela garantit que les caractères accentués français sont correctement gérés dans toute l'application (noms, prénoms, etc.), notamment lors de la génération de PDF et des exports.
+
+### 3.4.3 (2025-12-05)
+*   **Correction :** **Tâche Cron des Anniversaires :** Correction d'un bug critique qui empêchait l'envoi des emails d'anniversaire. La tâche échouait à cause d'une erreur fatale (appel à une fonction qui n'existait plus) et d'un manque de configuration SMTP dans le contexte du cron. La fonction a été restaurée et la configuration SMTP est maintenant correctement chargée, assurant la fiabilité des envois.
 
 ### 3.4.2 (2025-12-02)
 *   **Correction :** Correction d'un bug critique majeur dans la logique de sauvegarde/restauration qui empêchait la restauration correcte des listes de destinataires des messages. Le système gère désormais parfaitement les relations entre toutes les données.
