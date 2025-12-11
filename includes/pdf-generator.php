@@ -52,7 +52,7 @@ function dame_generate_health_form_handler() {
 	$age        = $today->diff( $birth_date )->y;
 
 	// 5. Prepare data for PDF
-	$full_name_adherent_for_pdf = strtoupper( $last_name ) . ' ' . $first_name;
+	$full_name_adherent_for_pdf = mb_strtoupper( $last_name, 'UTF-8' ) . ' ' . $first_name;
 	$current_date       = date( 'd/m/Y' );
 
 	// Handle UTF-8 to Windows-1252 conversion for FPDF standard fonts
@@ -94,7 +94,7 @@ function dame_generate_health_form_handler() {
 			wp_die( __( "Données du représentant légal manquantes pour un adhérent mineur.", 'dame' ), 400 );
 		}
 
-		$full_name_rep1_for_pdf = strtoupper( $legal_rep_1_last_name ) . ' ' . $legal_rep_1_first_name;
+		$full_name_rep1_for_pdf = mb_strtoupper( $legal_rep_1_last_name, 'UTF-8' ) . ' ' . $legal_rep_1_first_name;
 		$full_name_rep1_for_pdf = mb_convert_encoding( $full_name_rep1_for_pdf, 'ISO-8859-1', 'UTF-8' );
 		$legal_rep_1_city_for_pdf = mb_convert_encoding( $legal_rep_1_city, 'ISO-8859-1', 'UTF-8' );
 
@@ -170,13 +170,13 @@ function dame_generate_parental_auth_handler() {
 	}
 
 	// 4. Prepare data for PDF
-	$adherent_full_name            = mb_convert_encoding( strtoupper( $last_name ) . ' ' . $first_name, 'ISO-8859-1', 'UTF-8' );
+	$adherent_full_name            = mb_convert_encoding( mb_strtoupper( $last_name, 'UTF-8' ) . ' ' . $first_name, 'ISO-8859-1', 'UTF-8' );
 	$adherent_birth_date_formatted = mb_convert_encoding( date( 'd/m/Y', strtotime( $birth_date_str ) ), 'ISO-8859-1', 'UTF-8' );
 	$adherent_city                 = mb_convert_encoding( $city, 'ISO-8859-1', 'UTF-8' );
 	$current_date                  = date( 'd/m/Y' );
 	$rl1_full_name                 = '';
 	if ( ! empty( $rl1_first_name ) && ! empty( $rl1_last_name ) ) {
-		$rl1_full_name = mb_convert_encoding( strtoupper( $rl1_last_name ) . ' ' . $rl1_first_name, 'ISO-8859-1', 'UTF-8' );
+		$rl1_full_name = mb_convert_encoding( mb_strtoupper( $rl1_last_name, 'UTF-8' ) . ' ' . $rl1_first_name, 'ISO-8859-1', 'UTF-8' );
 	}
 
 	// 5. Generate PDF
@@ -216,7 +216,7 @@ function dame_generate_parental_auth_handler() {
 	// --- Legal Rep 1 Data ---
 	if ( ! empty( $rl1_last_name ) ) {
 		$pdf->SetXY( 25, 248 );
-		$pdf->Write( 0, mb_convert_encoding( strtoupper( $rl1_last_name ), 'ISO-8859-1', 'UTF-8' ) );
+		$pdf->Write( 0, mb_convert_encoding( mb_strtoupper( $rl1_last_name, 'UTF-8' ), 'ISO-8859-1', 'UTF-8' ) );
 	}
 	if ( ! empty( $rl1_first_name ) ) {
 		$pdf->SetXY( 30, 255 );
@@ -238,7 +238,7 @@ function dame_generate_parental_auth_handler() {
 	// --- Legal Rep 2 Data ---
 	if ( ! empty( $rl2_last_name ) ) {
 		$pdf->SetXY( 125, 248 );
-		$pdf->Write( 0, mb_convert_encoding( strtoupper( $rl2_last_name ), 'ISO-8859-1', 'UTF-8' ) );
+		$pdf->Write( 0, mb_convert_encoding( mb_strtoupper( $rl2_last_name, 'UTF-8' ), 'ISO-8859-1', 'UTF-8' ) );
 	}
 	if ( ! empty( $rl2_first_name ) ) {
 		$pdf->SetXY( 130, 255 );

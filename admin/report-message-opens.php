@@ -96,7 +96,7 @@ function dame_render_message_opens_report_page() {
 					);
 
 					foreach ( $recipients as $email => $name ) {
-						$email_hash = md5( strtolower( trim( $email ) ) );
+						$email_hash = md5( mb_strtolower( trim( $email ), 'UTF-8' ) );
 						$opened     = isset( $open_data[ $email_hash ] );
 						?>
 						<tr>

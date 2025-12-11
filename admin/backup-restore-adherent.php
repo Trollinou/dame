@@ -260,7 +260,7 @@ function dame_handle_csv_import_action() {
 		}
 
 		$post_data = array(
-			'post_title'  => strtoupper( $last_name ) . ' ' . $first_name,
+			'post_title'  => mb_strtoupper( $last_name, 'UTF-8' ) . ' ' . $first_name,
 			'post_type'   => 'adherent',
 			'post_status' => 'publish',
 		);
@@ -285,7 +285,7 @@ function dame_handle_csv_import_action() {
 
 				if ( '_dame_membership_status' === $meta_key ) {
 					$status_key = 'N'; // Default to 'Non Adhérent'
-					$normalized_value = strtoupper( trim( $value ) );
+					$normalized_value = mb_strtoupper( trim( $value ), 'UTF-8' );
 
 					// Handle cases like "Actif (A)" by extracting the key
 					if ( preg_match( '/\(([A-Z])\)/', $normalized_value, $matches ) ) {
@@ -330,7 +330,7 @@ function dame_handle_csv_import_action() {
 					'_dame_is_elu_local',
 				];
 				if ( in_array( $meta_key, $boolean_fields ) ) {
-					$value = ( strtoupper( trim( $value ) ) === 'O' ) ? 1 : 0;
+					$value = ( mb_strtoupper( trim( $value ), 'UTF-8' ) === 'O' ) ? 1 : 0;
 				}
 
 				update_post_meta( $post_id, $meta_key, sanitize_text_field( $value ) );

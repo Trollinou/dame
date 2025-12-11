@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.4.4 - 2025-12-06
+### Amélioration
+- **Internationalisation :** Remplacement de toutes les fonctions de conversion de casse (`strtoupper`, `strtolower`, `ucwords`) par leurs équivalents multi-octets (`mb_strtoupper`, etc.). Cela garantit que les caractères accentués français sont correctement gérés dans toute l'application (noms, prénoms, etc.), notamment lors de la génération de PDF et des exports.
+
 ## 3.4.3 - 2025-12-05
 ### Correction
 - **Tâche Cron des Anniversaires :** Correction d'un bug critique qui empêchait l'envoi des emails d'anniversaire. La tâche échouait à cause d'une erreur fatale (appel à une fonction qui n'existait plus) et d'un manque de configuration SMTP dans le contexte du cron. La fonction a été restaurée et la configuration SMTP est maintenant correctement chargée, assurant la fiabilité des envois.
