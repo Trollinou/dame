@@ -479,9 +479,9 @@ function dame_liste_agenda_shortcode( $atts ) {
             <div class="dame-liste-agenda-item">
                 <div class="dame-liste-agenda-date-icon">
                     <div class="date-circle" <?php echo $date_circle_style; ?>>
-                        <span class="day-of-week"><?php echo esc_html( strtoupper( $day_of_week ) ); ?></span>
+                        <span class="day-of-week"><?php echo esc_html( mb_strtoupper( $day_of_week, 'UTF-8' ) ); ?></span>
                         <span class="day-number"><?php echo esc_html( $day_number ); ?></span>
-                        <span class="month-abbr"><?php echo esc_html( strtoupper( $month_abbr ) ); ?></span>
+                        <span class="month-abbr"><?php echo esc_html( mb_strtoupper( $month_abbr, 'UTF-8' ) ); ?></span>
                     </div>
                 </div>
                 <div class="dame-liste-agenda-details">

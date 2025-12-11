@@ -171,13 +171,13 @@ function dame_send_birthday_emails() {
             continue; // Invalid date format
         }
 
-        $content = str_replace( '[NOM]', strtoupper( $nom ), $original_content );
-        $content = str_replace( '[PRENOM]', ucwords( strtolower( $prenom ) ), $content );
+        $content = str_replace( '[NOM]', mb_strtoupper( $nom, 'UTF-8' ), $original_content );
+        $content = str_replace( '[PRENOM]', mb_convert_case( $prenom, MB_CASE_TITLE, 'UTF-8' ), $content );
         $content = str_replace( '[AGE]', $age, $content );
         $message = '<div style="margin: 1cm;">' . $content . '</div>';
 
-        $subject = str_replace( '[NOM]', strtoupper( $nom ), $original_subject );
-        $subject = str_replace( '[PRENOM]', ucwords( strtolower( $prenom ) ), $subject );
+        $subject = str_replace( '[NOM]', mb_strtoupper( $nom, 'UTF-8' ), $original_subject );
+        $subject = str_replace( '[PRENOM]', mb_convert_case( $prenom, MB_CASE_TITLE, 'UTF-8' ), $subject );
         $subject = str_replace( '[AGE]', $age, $subject );
 
         // The function is now in utils.php and will be loaded with the plugin.
@@ -191,7 +191,7 @@ function dame_send_birthday_emails() {
             foreach ( $recipient_emails as $email ) {
                 wp_mail( $email, $subject, $message, $headers );
             }
-            $sent_to[] = "<li>" . esc_html( ucwords( strtolower( $prenom ) ) . ' ' . strtoupper( $nom ) ) . " (" . $age . " ans)</li>";
+            $sent_to[] = "<li>" . esc_html( mb_convert_case( $prenom, MB_CASE_TITLE, 'UTF-8' ) . ' ' . mb_strtoupper( $nom, 'UTF-8' ) ) . " (" . $age . " ans)</li>";
         }
     }
     wp_reset_postdata();
@@ -384,7 +384,7 @@ function dame_cron_send_batch_callback( $message_id, $emails, $retry_count ) {
     $failed_emails = array();
 
     foreach ( $emails as $email ) {
-        $email_hash   = md5( strtolower( trim( $email ) ) );
+        $email_hash   = md5( mb_strtolower( trim( $email ), 'UTF-8' ) );
         $tracking_url = site_url( "/wp-json/dame/v1/track?mid={$message_id}&h={$email_hash}" );
         $pixel_img    = '<img src="' . esc_url( $tracking_url ) . '" alt="" width="1" height="1" style="display:none; border:0;" />';
 

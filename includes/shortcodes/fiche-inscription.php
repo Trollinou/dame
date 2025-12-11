@@ -333,7 +333,7 @@ function dame_handle_pre_inscription_submission() {
 	}
 
 	// 4. Create Pre-inscription Post
-	$post_title = strtoupper( $sanitized_data['dame_last_name'] ) . ' ' . $sanitized_data['dame_first_name'];
+	$post_title = mb_strtoupper( $sanitized_data['dame_last_name'], 'UTF-8' ) . ' ' . $sanitized_data['dame_first_name'];
 	$post_data = array(
 		'post_title'  => $post_title,
 		'post_type'   => 'dame_pre_inscription',
@@ -376,7 +376,7 @@ function dame_handle_pre_inscription_submission() {
 	foreach ( $sanitized_data as $key => $value ) {
 		if ( ! empty( $value ) ) {
 			$label = str_replace( array( 'dame_', '_' ), array( '', ' ' ), $key );
-			$label = ucwords( $label );
+			$label = mb_convert_case( $label, MB_CASE_TITLE, 'UTF-8' );
 			$body .= "- " . $label . ": " . $value . "\n";
 		}
 	}
@@ -397,7 +397,7 @@ function dame_handle_pre_inscription_submission() {
 		),
 		'health_questionnaire' => $sanitized_data['dame_health_questionnaire'], // 'oui' or 'non' for the JS logic
 		'post_id'            => $post_id,
-		'full_name'          => strtoupper( $sanitized_data['dame_last_name'] ) . ' ' . $sanitized_data['dame_first_name'],
+		'full_name'          => mb_strtoupper( $sanitized_data['dame_last_name'], 'UTF-8' ) . ' ' . $sanitized_data['dame_first_name'],
 		'nonce'              => wp_create_nonce( 'dame_generate_health_form_' . $post_id ),
 		'is_minor'           => $is_minor,
 		'payment_url'        => $payment_url,
