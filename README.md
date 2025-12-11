@@ -118,24 +118,3 @@ Vous pouvez configurer l'heure de la sauvegarde journalière dans la section "Pa
 ## Dépendances
 
 Pour la fonctionnalité LMS, ce plugin nécessite le plugin **ROI**.
-
-## Changelog
-
-### 3.4.4 (2025-12-06)
-*   **Amélioration :** **Internationalisation :** Remplacement de toutes les fonctions de conversion de casse (`strtoupper`, `strtolower`, `ucwords`) par leurs équivalents multi-octets (`mb_strtoupper`, etc.). Cela garantit que les caractères accentués français sont correctement gérés dans toute l'application (noms, prénoms, etc.), notamment lors de la génération de PDF et des exports.
-
-### 3.4.3 (2025-12-05)
-*   **Correction :** **Tâche Cron des Anniversaires :** Correction d'un bug critique qui empêchait l'envoi des emails d'anniversaire. La tâche échouait à cause d'une erreur fatale (appel à une fonction qui n'existait plus) et d'un manque de configuration SMTP dans le contexte du cron. La fonction a été restaurée et la configuration SMTP est maintenant correctement chargée, assurant la fiabilité des envois.
-
-### 3.4.2 (2025-12-02)
-*   **Correction :** Correction d'un bug critique majeur dans la logique de sauvegarde/restauration qui empêchait la restauration correcte des listes de destinataires des messages. Le système gère désormais parfaitement les relations entre toutes les données.
-*   **Correction :** Correction d'une erreur de dépréciation avec PHP 8+.
-
-### 3.4.1 (2025-12-02)
-*   **Correction :** Correction d'un bug critique qui empêchait l'envoi des emails programmés (via WP-Cron). Les paramètres SMTP n'étaient pas chargés dans le contexte d'une tâche Cron, ce qui bloquait l'envoi. La configuration SMTP est désormais chargée globalement pour garantir que tous les emails sont correctement expédiés.
-
-### 3.4.0 (2025-12-01)
-*   **Fonctionnalité :** Le système d'envoi de messages a été entièrement revu pour utiliser une file d'attente en arrière-plan (via WP-Cron).
-*   **Fonctionnalité :** Ajout d'un système de suivi des ouvertures d'emails avec statistiques et page de rapport détaillée.
-*   **Amélioration :** Fiabilité des envois accrue grâce à l'envoi par lots.
-*   **Correction :** Plusieurs corrections de bugs liés au nouveau système de messagerie.
