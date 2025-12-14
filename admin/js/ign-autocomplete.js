@@ -21,14 +21,21 @@ document.addEventListener('DOMContentLoaded', function () {
             wrapper.appendChild(resultsContainer);
 
             let debounceTimer;
+            let highlightedIndex = -1;
 
-            addressInput.addEventListener('keyup', function () {
+            addressInput.addEventListener('keyup', function (e) {
+                // Ignore navigation keys
+                if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)) {
+                    return;
+                }
+
                 clearTimeout(debounceTimer);
                 const query = this.value;
 
                 if (query.length < 5) {
                     resultsContainer.innerHTML = '';
                     resultsContainer.style.display = 'none';
+                    highlightedIndex = -1;
                     return;
                 }
 
@@ -37,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         .then(response => response.json())
                         .then(data => {
                             resultsContainer.innerHTML = '';
+                            highlightedIndex = -1;
                             if (data.results && data.results.length > 0) {
                                 resultsContainer.style.display = 'block';
                                 const results = data.results;
@@ -58,45 +66,88 @@ document.addEventListener('DOMContentLoaded', function () {
                 }, 250);
             });
 
-            resultsContainer.addEventListener('click', function(e) {
-                if (e.target.classList.contains('dame-suggestion-item')) {
-                    const featureProperties = JSON.parse(e.target.dataset.feature);
+            addressInput.addEventListener('keydown', function (e) {
+                const suggestions = resultsContainer.querySelectorAll('.dame-suggestion-item');
+                if (suggestions.length === 0) return;
 
-                    let streetAddress = featureProperties.fulltext.split(',')[0];
-                    addressInput.value = streetAddress.trim();
-
-                    if (postalCodeInput) {
-                        postalCodeInput.value = featureProperties.zipcode;
-                        postalCodeInput.dispatchEvent(new Event('keyup'));
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    highlightedIndex++;
+                    if (highlightedIndex >= suggestions.length) {
+                        highlightedIndex = 0;
                     }
-                    if (cityInput) {
-                        cityInput.value = featureProperties.city;
+                    updateHighlight(suggestions, highlightedIndex);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    highlightedIndex--;
+                    if (highlightedIndex < 0) {
+                        highlightedIndex = suggestions.length - 1;
                     }
-                    if (latitudeInput && featureProperties.y) {
-                        latitudeInput.value = featureProperties.y;
+                    updateHighlight(suggestions, highlightedIndex);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (highlightedIndex > -1) {
+                        suggestions[highlightedIndex].click();
                     }
-                    if (longitudeInput && featureProperties.x) {
-                        longitudeInput.value = featureProperties.x;
-                    }
-
-                    if (distanceInput && travelTimeInput && latitudeInput.value && longitudeInput.value) {
-                        calculateRoute(latitudeInput.value, longitudeInput.value, distanceInput, travelTimeInput);
-                    }
-
-
-                    // If the global pre-fill function exists (on the public form), call it.
-                    if (typeof prefillRep1 === 'function') {
-                        prefillRep1();
-                    }
-
-                    resultsContainer.innerHTML = '';
+                } else if (e.key === 'Escape') {
                     resultsContainer.style.display = 'none';
+                    highlightedIndex = -1;
                 }
             });
 
-            document.addEventListener('click', function(e) {
+            function updateHighlight(suggestions, index) {
+                suggestions.forEach((suggestion, i) => {
+                    if (i === index) {
+                        suggestion.classList.add('highlighted');
+                    } else {
+                        suggestion.classList.remove('highlighted');
+                    }
+                });
+            }
+
+            function selectSuggestion(suggestion) {
+                const featureProperties = JSON.parse(suggestion.dataset.feature);
+                let streetAddress = featureProperties.fulltext.split(',')[0];
+                addressInput.value = streetAddress.trim();
+
+                if (postalCodeInput) {
+                    postalCodeInput.value = featureProperties.zipcode;
+                    postalCodeInput.dispatchEvent(new Event('keyup'));
+                }
+                if (cityInput) {
+                    cityInput.value = featureProperties.city;
+                }
+                if (latitudeInput && featureProperties.y) {
+                    latitudeInput.value = featureProperties.y;
+                }
+                if (longitudeInput && featureProperties.x) {
+                    longitudeInput.value = featureProperties.x;
+                }
+
+                if (distanceInput && travelTimeInput && latitudeInput.value && longitudeInput.value) {
+                    calculateRoute(latitudeInput.value, longitudeInput.value, distanceInput, travelTimeInput);
+                }
+
+                // If the global pre-fill function exists (on the public form), call it.
+                if (typeof prefillRep1 === 'function') {
+                    prefillRep1();
+                }
+
+                resultsContainer.innerHTML = '';
+                resultsContainer.style.display = 'none';
+                highlightedIndex = -1;
+            }
+
+            resultsContainer.addEventListener('click', function (e) {
+                if (e.target.classList.contains('dame-suggestion-item')) {
+                    selectSuggestion(e.target);
+                }
+            });
+
+            document.addEventListener('click', function (e) {
                 if (e.target !== addressInput) {
                     resultsContainer.style.display = 'none';
+                    highlightedIndex = -1;
                 }
             });
         }

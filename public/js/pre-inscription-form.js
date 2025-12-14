@@ -111,11 +111,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Add live formatting for name fields
     const firstNameInput = document.getElementById('dame_first_name');
+    const birthNameInput = document.getElementById('dame_birth_name');
     const rep2FirstNameInput = document.getElementById('dame_legal_rep_2_first_name');
     const rep2LastNameInput = document.getElementById('dame_legal_rep_2_last_name');
 
     if (firstNameInput) {
         firstNameInput.addEventListener('input', formatFirstNameInput);
+    }
+    if (birthNameInput) {
+        birthNameInput.addEventListener('input', formatLastNameInput);
     }
     if (lastNameInput) {
         lastNameInput.addEventListener('input', formatLastNameInput);
@@ -136,10 +140,25 @@ document.addEventListener('DOMContentLoaded', function () {
     // Handle Form Submission
     const form = document.getElementById('dame-pre-inscription-form');
     const messagesDiv = document.getElementById('dame-form-messages');
+    const consentCheckbox = document.getElementById('dame_consent_checkbox');
+    const submitButton = document.getElementById('dame_submit_button');
+
+    if (consentCheckbox && submitButton) {
+        consentCheckbox.addEventListener('change', function() {
+            submitButton.disabled = !this.checked;
+        });
+    }
 
     if (form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+
+            if (consentCheckbox && !consentCheckbox.checked) {
+                messagesDiv.innerHTML = "Vous devez accepter le règlement intérieur pour continuer.";
+                messagesDiv.style.display = 'block';
+                messagesDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
 
             messagesDiv.style.display = 'none';
             messagesDiv.innerHTML = '';

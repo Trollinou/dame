@@ -45,7 +45,8 @@
     cursor: pointer;
     font-weight: normal;
 }
-.dame-suggestion-item:hover {
+.dame-suggestion-item:hover,
+.dame-suggestion-item.highlighted {
     background-color: #f1f1f1;
 }
 
