@@ -452,10 +452,7 @@ function dame_process_pre_inscription_actions( $post_id ) {
 			if ( 'dame_first_name' === $key || 'dame_legal_rep_1_first_name' === $key || 'dame_legal_rep_2_first_name' === $key ) {
 				$value = dame_format_firstname( $value );
 			}
-			if ( 'dame_last_name' === $key || 'dame_legal_rep_1_last_name' === $key || 'dame_legal_rep_2_last_name' === $key ) {
-				$value = dame_format_lastname( $value );
-			}
-			if ( 'dame_birth_name' === $key ) {
+			if ( 'dame_last_name' === $key || 'dame_legal_rep_1_last_name' === $key || 'dame_legal_rep_2_last_name' === $key || 'dame_birth_name' === $key ) {
 				$value = dame_format_lastname( $value );
 			}
 			update_post_meta( $post_id, '_' . $key, $value );

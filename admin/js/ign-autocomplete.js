@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
             let highlightedIndex = -1;
 
             addressInput.addEventListener('keyup', function (e) {
-                // Ignore navigation keys
                 if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)) {
                     return;
                 }
@@ -86,8 +85,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateHighlight(suggestions, highlightedIndex);
                 } else if (e.key === 'Enter') {
                     e.preventDefault();
-                    if (highlightedIndex > -1) {
-                        suggestions[highlightedIndex].click();
+                    if (highlightedIndex > -1 && suggestions[highlightedIndex]) {
+                        selectSuggestion(suggestions[highlightedIndex]);
                     }
                 } else if (e.key === 'Escape') {
                     resultsContainer.style.display = 'none';
@@ -145,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             document.addEventListener('click', function (e) {
-                if (e.target !== addressInput) {
+                if (!wrapper.contains(e.target)) {
                     resultsContainer.style.display = 'none';
                     highlightedIndex = -1;
                 }

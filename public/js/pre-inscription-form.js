@@ -139,26 +139,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Handle Form Submission
     const form = document.getElementById('dame-pre-inscription-form');
-    const messagesDiv = document.getElementById('dame-form-messages');
-    const consentCheckbox = document.getElementById('dame_consent_checkbox');
-    const submitButton = document.getElementById('dame_submit_button');
 
-    if (consentCheckbox && submitButton) {
+    // Handle consent checkbox
+    const consentCheckbox = document.getElementById('dame_consent_checkbox');
+    const submitButtonInForm = form ? form.querySelector('button[type="submit"]') : null;
+
+    if (consentCheckbox && submitButtonInForm) {
         consentCheckbox.addEventListener('change', function() {
-            submitButton.disabled = !this.checked;
+            submitButtonInForm.disabled = !this.checked;
         });
     }
+    const messagesDiv = document.getElementById('dame-form-messages');
 
     if (form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-
-            if (consentCheckbox && !consentCheckbox.checked) {
-                messagesDiv.innerHTML = "Vous devez accepter le règlement intérieur pour continuer.";
-                messagesDiv.style.display = 'block';
-                messagesDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                return;
-            }
 
             messagesDiv.style.display = 'none';
             messagesDiv.innerHTML = '';

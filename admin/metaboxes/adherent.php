@@ -979,10 +979,7 @@ function dame_save_adherent_meta( $post_id ) {
 			if ( 'dame_first_name' === $field_name || 'dame_legal_rep_1_first_name' === $field_name || 'dame_legal_rep_2_first_name' === $field_name ) {
 				$value = dame_format_firstname( $value );
 			}
-			if ( 'dame_last_name' === $field_name || 'dame_legal_rep_1_last_name' === $field_name || 'dame_legal_rep_2_last_name' === $field_name ) {
-				$value = dame_format_lastname( $value );
-			}
-			if ( 'dame_birth_name' === $field_name ) {
+			if ( 'dame_last_name' === $field_name || 'dame_legal_rep_1_last_name' === $field_name || 'dame_legal_rep_2_last_name' === $field_name || 'dame_birth_name' === $field_name ) {
 				$value = dame_format_lastname( $value );
 			}
 
