@@ -10,6 +10,7 @@ namespace DAME\Core;
 use DAME\CPT\Adherent;
 use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
 use DAME\Admin\Assets;
+use DAME\Admin\Settings\Main as SettingsMain;
 
 /**
  * The core plugin class.
@@ -67,6 +68,10 @@ class Plugin {
 			// Initialize Admin Assets
 			$admin_assets = new Assets();
 			$admin_assets->init();
+
+			// Initialize Settings
+			$settings = new SettingsMain();
+			$settings->init();
 		}
 	}
 }
