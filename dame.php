@@ -23,6 +23,7 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'DAME_VERSION', '3.4.5' );
 define( 'DAME_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DAME_URL', plugin_dir_url( __FILE__ ) );
+define( 'DAME_PLUGIN_DIR', DAME_PATH );
 
 // Require Autoloader.
 require_once DAME_PATH . 'includes/Core/Autoloader.php';

@@ -7,6 +7,9 @@
 
 namespace DAME\Core;
 
+use DAME\CPT\Adherent;
+use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
+
 /**
  * The core plugin class.
  */
@@ -43,9 +46,20 @@ class Plugin {
 	 * Starts the plugin execution.
 	 */
 	public function run() {
-		// TODO: Load Admin modules.
-		// TODO: Load Public modules.
-		// TODO: Load CPTs.
-		// TODO: Load Services.
+		// Load legacy helpers (temporary dependency).
+		if ( defined( 'DAME_PATH' ) ) {
+			require_once DAME_PATH . 'includes/data-lists.php';
+			require_once DAME_PATH . 'includes/utils.php';
+		}
+
+		// Initialize CPTs.
+		$adherent_cpt = new Adherent();
+		$adherent_cpt->init();
+
+		// Initialize Metaboxes.
+		if ( is_admin() ) {
+			$adherent_metaboxes = new AdherentMetaboxManager();
+			$adherent_metaboxes->init();
+		}
 	}
 }
