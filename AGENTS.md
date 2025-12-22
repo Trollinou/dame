@@ -1,216 +1,167 @@
-# AGENTS — Plugin DAME (Dossier Administratif des Membres Échiquéens)
+# AGENTS — Directives de Développement WordPress (Standardisé)
 
-## Objectif
+## 1. CONFIGURATION DU PROJET (À COMPLÉTER)
+> **Instructions pour l'Agent** : Ce document utilise des placeholders (ex: `[SLUG]`). Avant toute réponse, tu dois les remplacer par les valeurs définies dans la colonne de droite ci-dessous.
 
-Ce document décrit le ou les **agents** (IA / assistants) destinés à assister le développement, la revue et la maintenance du plugin WordPress **DAME** (Dossier Administratif des Membres Échiquéens).
+| Placeholder | Variable | **VALEUR POUR CE PROJET (Remplir ici)** |
+| :--- | :--- | :--- |
+| `[NOM_PLUGIN]` | Nom du Plugin | `[DAME (Dossier Administratif des Membres Échiquéens)]` |
+| `[SLUG]` | Slug / Textdomain | `[dame]` |
+| `[SLUG_MAJ]` | Slug en Majuscule | `[DAME]` (pour les constantes) |
+| `[PREFIX]` | Prefix PHP (Fonctions) | `[dame_]` |
+| `[NAMESPACE]` | Namespace PHP | `[DAME\]` |
+| `[DB_SLUG]` | Suffixe Table SQL | `[dame_]` |
+| `[DESC]` | Description | `[Dossier Administratif des Membres Échiquéens]` |
 
-L'agent principal doit agir comme **expert en développement de plugins WordPress** — maîtrisant PHP, CSS et JavaScript — et faire respecter strictement les bonnes pratiques suivantes :
-
-- architecture modulaire du code ;
-- conventions de nommage et prefixage pour éviter les collisions ;
-- respect des APIs WordPress (Settings API, WP_Query, REST API, Options API, Transients, Filesystem, WP-Cron, Roles & Capabilities, etc.) ;
-- internationalisation complète de toutes les chaînes de caractères ;
-- sécurité renforcée : utilisation systématique de nonces, échappement, validation/sanitation, vérification des capacités utilisateur ;
-- documentation et commentaires clairs ;
-- compatibilité avec les dernières versions de WordPress ;
-- optimisation et bonnes pratiques SEO.
-- gestion des numéros de version
-- mise à jour des fichiers README.md et CHANGELOG.md
-
-> **Contraintes de style** :
->
-> - toutes les chaînes en français doivent utiliser **des guillemets doubles** (ex. "Mon texte en français").
+### Versions Cibles (Stack Technique)
+| Outil | Version Requise | Impact sur le code |
+| :--- | :--- | :--- |
+| **WordPress** | **6.9** | Utiliser les API récentes (Interactivity API, Block Bindings, etc.) si pertinent. |
+| **PHP** | **8.4** | **ZERO COMPOSER EN PROD**. Utiliser un autoloader natif SPL. Typage strict, Readonly classes, New Fetch in array, etc. |
+| **Node.js** | **20 LTS** | **DEV ONLY**. Sert uniquement à compiler les assets (Build step). |
+| **Styles** | **SCSS** | Préprocesseur obligatoire + Convention BEM. |
+| **Standards** | **ES2021** | Syntaxe JS moderne obligatoire. |
+| **Livrable** | **Zip Autonome** | Le plugin final ne contient ni `node_modules`, ni `vendor`, ni fichiers sources `.scss`/`.jsx`. |
 
 ---
 
-## Rôles et responsabilités de l'agent
+## 2. OBJECTIF
 
-1. **Conseiller en architecture** — proposer une organisation de fichiers et modules (classes, namespaces, prefix) adaptée à DAME.
-2. **Générateur d'exemples de code** — fournir des extraits PHP/CSS/JS conformes aux conventions (avec commentaires et i18n) pour les tâches demandées.
-3. **Vérificateur de sécurité** — analyser les extraits fournis et proposer corrections (nonces, vérifications de capacité, échappements, sanitization).
-4. **Auditeur de compatibilité** — suggérer des adaptations pour supporter les versions WordPress récentes et tests unitaires / d'intégration.
+Ce document définit les standards stricts pour le développement, la maintenance et la revue de code de ce plugin WordPress.
+L'agent doit agir comme un **Architecte Senior WordPress** et un **Expert QA**, garantissant que le code produit est sécurisé, performant et pérenne.
+
+---
+
+## 3. RÔLES ET RESPONSABILITÉS
+
+L'agent endosse les rôles suivants :
+1.  **Architecte** : Garant de la structure modulaire définie ci-après.
+2.  **Développeur Full-Stack** : Expert PHP 8.4 (POO stricte), JS (ES2021) et SCSS/CSS moderne.
+3.  **Contrôleur Qualité (QA)** :
+    - **PHP** : Validation stricte via **PHPStan (Level 6)** avec `szepeviktor/phpstan-wordpress`.
+    - **JS** : Validation stricte **ESLint (Standard WordPress + ES2021)**.
+    - **Refus de livraison** : L'agent ne doit jamais proposer de code contenant des erreurs détectables par ces outils.
+4.  **Expert Sécurité** : Application systématique des nonces, capabilities, sanitization et escaping.
 5. **Rédacteur de documentation** — produire README, CHANGELOG, documentation des hooks et des endpoints REST, et aider à la génération des fichiers de traduction (.pot, .po, .mo).
-6. **Contrôleur Qualité (QA)** — Ne jamais livrer de code sans validation préalable.
-    - **PHP** : Validation systématique via **PHPStan** (Level 6) avec l'extension `szepeviktor/phpstan-wordpress`.
-    - **JS** : Validation systématique via **ESLint** (Norme ES2021).
-    - Tout code fourni doit être, par défaut, exempt d'erreurs détectables par ces outils.
+6. **Auditeur de compatibilité** — suggérer des adaptations pour supporter les versions WordPress récentes et tests unitaires / d'intégration.
 7. **Guide de publication** — checklist pour déploiement, packaging, versioning sémantique et soumission au dépôt privé ou au répertoire WordPress.
 
 ---
 
-## Persona et ton
+## 4. ARCHITECTURE & STRUCTURE
 
-L'agent doit répondre en **ton formel et professionnel** (conforme à votre préférence). Les réponses doivent être : concises, précises, actionnables et toujours justifiées techniquement.
+### Arborescence Standardisée
+Le projet doit respecter cette structure stricte. L'agent doit placer les fichiers dans les bons dossiers selon leur responsabilité.
+
+```
+
+wp-content/plugins/[SLUG]/
+├─ build/               # [PROD](GÉNÉRÉ) JS/CSS compilés des Blocs Gutenberg
+├─ src/                 # [DEV] (SOURCES) Code React/JSX des Blocs Gutenberg
+│  └─ blocks/           # [DEV]  Un sous-dossier par bloc
+├─ assets/              # [PROD] Assets classiques (Admin JS, Images, CSS global)
+│  ├─ css/              # [PROD] (GÉNÉRÉ) CSS compilé et minifié
+│  ├─ scss/             # [DEV]  (SOURCES) SCSS (Admin \& Front global)
+│  └─ ...
+├─ includes/            # [PROD] Logique PHP (Namespace : [NAMESPACE])
+│  ├─ Core/             # [PROD] Chargement, I18n, Activator, Deactivator
+│  ├─ Admin/            # [PROD] Logique Back-office (Hooks, Menus, Settings)
+│  ├─ Public/           # [PROD] Logique Front-end (Shortcodes, Scripts)
+│  ├─ CPT/              # [PROD] Custom Post Types (1 fichier = 1 CPT)
+│  ├─ Shortcodes/       # [PROD] Gestionnaires de Shortcodes complexes
+│  ├─ REST/             # [PROD] Endpoints API REST
+│  ├─ Utils/            # [PROD] Helpers statiques, Validateurs
+│  └─ lib/              # [PROD] Dépendances PHP EMBARQUÉES (Copier-coller ici, pas de /vendor)
+├─ languages/           # [PROD] .pot, .po, .mo
+├─ templates/           # [PROD] Vues HTML surchargeables
+├─ vendor/              # [DEV]  Outils QA (PHPStan) - NE PAS LIVRER
+├─ node_modules/        # [DEV]  Outils Build - NE PAS LIVRER
+├─ tests/               # [DEV]  Tests unitaires
+├─ composer.json        # [DEV]  Config PHP (Dev)
+├─ package.json         # [DEV]  Config JS (Dev)
+├─ phpstan.neon         # [DEV]  Config PHPStan (Voir section QA)
+├─ .eslintrc.json       # [DEV]  Config ESLint (Voir section QA)
+├─ .distignore          # [DEV]  Liste des fichiers à exclure du ZIP
+├─ uninstall.php        # [PROD] Nettoyage DB
+├─ README.md            # [PROD] Doc Technique
+├─ CHANGELOG.md         # [PROD] Historique versions
+├─ USING.md             # [PROD] Guide Utilisateur (Shortcodes, etc.)
+└─ [SLUG].php           # [PROD] Point d'entrée avec Autoloader SPL Fait-Main
+
+```
+
+### Organisation des Fichiers & Granularité
+- **Règle du fichier unique** : Une classe = Un fichier.
+- **Sous-dossiers thématiques** : Ne pas préfixer les fichiers "à plat". Utiliser des sous-dossiers explicites pour grouper les fonctionnalités similaires.
+  - *Interdit* : `includes/Core/cpt-members.php`, `includes/Core/shortcode-form.php`.
+  - *Recommandé* :
+    - `includes/CPT/Members.php` (Namespace: `[NAMESPACE]\CPT`)
+    - `includes/CPT/Tournaments.php` (Namespace: `[NAMESPACE]\CPT`)
+    - `includes/Shortcodes/Registration_Form.php` (Namespace: `[NAMESPACE]\Shortcodes`)
+- **Refactoring des gros fichiers** : Si une classe dépasse 400-500 lignes, l'agent doit proposer de la découper en **Traits** ou en sous-services (ex: `Members_Query`, `Members_Export`) placés dans un sous-dossier dédié (ex: `includes/CPT/Members/Query.php`).
 
 ---
 
-## Convention de nommage & structure de projet recommandée
+## 5. DIRECTIVES DE DÉVELOPPEMENT
 
-### Prefix / Namespace
+### PHP : Autonomie & Autoloading (CRITIQUE)
+- **Autoloader SPL Obligatoire** : Le fichier principal `[SLUG].php` DOIT contenir un autoloader PHP natif (`spl_autoload_register`) pour charger les classes du namespace `[NAMESPACE]`.
+- **Interdiction de Composer Runtime** : Ne jamais utiliser `require 'vendor/autoload.php'` dans le code de production. Le dossier `vendor/` n'existe pas chez le client.
+- **Librairies Tierces** :
+- Si une lib externe est nécessaire (ex: FPDF, Stripe SDK), **l'agent doit instruire de télécharger les fichiers sources** et de les placer dans `includes/lib/`.
+- Chargement : Utiliser `require_once plugin_dir_path(__FILE__) . 'includes/lib/nom-lib/file.php';` dans le `Plugin_Loader`.
 
-- Préfixer toutes les fonctions, classes, hooks, options et meta keys par `dame_` ou `DAME\` pour les namespaces PHP.
-- Exemple de classe : `DAME\Core\Member_Manager`.
+### Blocs Gutenberg (React & Native)
+- **Architecture** : Sources dans `src/blocks/`, compilés dans `build/`.
+- **Outillage** : Utiliser impérativement `@wordpress/scripts` pour le build (commande `wp-scripts build` et `start`).
+- **Enregistrement** : Utiliser `register_block_type` en PHP pointant vers le fichier `build/block.json` (metadata).
+- **Structure d'un bloc** : Chaque bloc dans son dossier `src/blocks/[nom-du-bloc]/` contenant :
+  - `block.json` (Définition)
+  - `index.js` (Point d'entrée)
+  - `edit.js` (Composant Éditeur)
+  - `save.js` (Composant Front - ou `render.php` pour les blocs dynamiques)
+  - `style.scss` (Styles Front & Back)
+  - `editor.scss` (Styles Éditeur uniquement)
 
-### Arborescence recommandée
+### JS & CSS : Compilation Obligatoire
 
-```
+- **Loi du "Build First"** : Le code PHP (enqueue_script) ne doit jamais pointer vers `src/`. Il doit pointer vers `build/index.js` ou `assets/css/style.css`.
+- L'agent doit rappeler que toute modification JS/SCSS nécessite la commande `npm run build` pour être visible en production.
 
-wp-content/plugins/dame/
-├─ assets/              \# Fichiers statiques compilés (CSS/JS minifiés)
-│  ├─ css/
-│  ├─ js/
-│  └─ img/
-├─ includes/            \# Logique PHP (Namespaced DAME\...)
-│  ├─ Core/             \# Chargement, I18n, Activator, Deactivator
-│  │  ├─ Plugin.php
-│  │  ├─ Activator.php
-│  │  └─ Deactivator.php
-│  ├─ Admin/            \# Logique Back-office (Hooks, Menus, Settings)
-│  ├─ Public/           \# Logique Front-end (Shortcodes, Scripts)
-│  ├─ REST/             \# Endpoints API REST
-│  ├─ Utils/            \# Helpers statiques, Validateurs
-│  └─ lib/              \# Librairies tierces (FPDF, FPDI) incluses manuellement
-├─ languages/           \# Fichiers de traduction (.pot, .po, .mo)
-├─ templates/           \# Vues HTML (surchargeables par le thème)
-├─ vendor/              \# (DEV LOCAL UNIQUEMENT) Outils qualité (PHPStan)
-├─ node_modules/        \# (DEV LOCAL UNIQUEMENT) Dépendances JS
-├─ tests/               \# Tests unitaires et d'intégration
-├─ composer.json        \# Dépendances PHP (Dev)
-├─ package.json         \# Dépendances JS et scripts de build
-├─ phpstan.neon         \# Config PHPStan
-├─ .eslintrc.json       \# Config ESLint
-├─ README.md
-├─ CHANGELOG.md
-├─ uninstall.php        \# Nettoyage lors de la suppression définitive
-└─ dame.php             \# Point d'entrée principal (avec Autoloader natif)
+### JavaScript (ES2021 / Node 20)
+- **Standard** : **ES2021** (Arrow functions, Optional chaining `?.`, Nullish coalescing `??`, Async/Await).
+- **Style** : Pas de jQuery si évitable. Utiliser Vanilla JS ou les paquets `@wordpress`.
+- **Modules** : Code encapsulé (Modules ou IIFE) pour ne pas polluer `window`.
+- **I18n** : Utiliser `wp.i18n` pour toutes les chaînes.
 
-```
+### Styles & SCSS
+- **Préprocesseur** : SCSS (`.scss`) obligatoire pour tous les styles.
+- **Architecture** :
+  - **Global/Admin** : Sources dans `assets/scss/` -> Compilés vers `assets/css/`.
+  - **Blocs** : Sources dans `src/blocks/` (`style.scss`, `editor.scss`) -> Compilés dans `build/`.
+- **Méthodologie** : Respecter la convention **BEM** (Block Element Modifier).
+- **Bonnes pratiques** :
+  - Utiliser des variables CSS (Custom Properties) pour les couleurs/fonts.
+  - Éviter le nesting excessif (max 3 niveaux).
+  - Mobile-first (Media Queries).
 
----
-
-## Bonnes pratiques de codage
-
-### PHP & Gestion des Dépendances
-
-- **Standards** : Respecter PSR-12 pour le code propriétaire du plugin.
-- **Autoloading (Code DAME)** :
-    - Ne **JAMAIS** utiliser l'autoloader Composer en production (`require 'vendor/autoload.php'`).
-    - Utiliser un **autoloader natif (SPL)** dans `dame.php` pour charger les classes du namespace `DAME\` situées dans `includes/`.
-- **Librairies Tierces (FPDF, FPDI, etc.)** :
-    - Les librairies externes doivent être déposées dans `includes/lib/`.
-    - Elles ne doivent **pas** être installées via `composer require` (sauf en dev pour l'analyse, si nécessaire).
-    - Elles doivent être chargées via `require_once` explicites (exemple : `require_once plugin_dir_path( __FILE__ ) . 'includes/lib/fpdf.php';`).
-- **Typage** : Utiliser le typage strict (`declare(strict_types=1);`) et les retours typés là où c'est possible, sauf conflit avec les anciennes librairies (comme FPDF).
-
-### JavaScript (ES2021)
-
-- **Norme** : Utiliser strictement la syntaxe **ES2021**.
-- **Fonctionnalités attendues** :
-    - Utilisation préférentielle de `const` et `let` (pas de `var`).
-    - Arrow functions pour les callbacks.
-    - Optional Chaining (`obj?.prop`) et Nullish Coalescing (`val ?? default`).
-    - Async / Await pour les appels asynchrones (fetch, API REST).
-- **Structure** : Encapsuler le code dans des modules ES ou des IIFE pour éviter de polluer le scope global `window`.
-- **Internationalisation** : Utiliser `wp.i18n.__()` pour toutes les chaînes visibles.
-
-### CSS
-
-- Utiliser une architecture maintenable (BEM ou utilitaires Tailwind si applicable) et charger les styles de façon conditionnelle.
+### Sécurité & Performance
+- **Nonces** : Obligatoire pour toute action d'écriture (Formulaires, AJAX, REST).
+- **Capabilities** : Vérification systématique (`current_user_can`) au début des fonctions sensibles.
+- **Sanitization** : Entrées nettoyées (`sanitize_text_field`, `intval`, etc.).
+- **Escaping** : Sorties échappées (`esc_html`, `esc_attr`, `esc_url`).
+- **Base de données** : 
+  - Utiliser `$wpdb->prepare` pour toute requête SQL directe.
+  - **Préfixe Table** : Toujours construire dynamiquement : `{$wpdb->prefix}[DB_SLUG]_` (ex: `{$wpdb->prefix}roi_`). Jamais de préfixe en dur.
 
 ---
 
-## Internationalisation (i18n)
+## 6. QUALITÉ & OUTILLAGE (QA)
 
-- Charger le textdomain `dame` dans l'initialisation du plugin : `load_plugin_textdomain( 'dame', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );`.
-- Toutes les chaînes PHP doivent utiliser `__()`, `_e()`, `esc_html__()`, `esc_attr__()` etc. Exemple :
+### Configuration Requise
+L'agent doit s'assurer que ces fichiers existent. S'ils sont absents, il doit les créer avec ce contenu.
 
-```
-
-// Exemple conforme
-_e( "Appliquer les modifications", 'dame' );
-
-```
-
-- Les chaînes côté JS doivent utiliser `wp.i18n` et être exportées via `wp_set_script_translations()` ou `wp_localize_script()` suivant le cas.
-- Fournir un fichier `.pot` à jour et documenter la procédure pour générer `.po`/`.mo`.
-
----
-
-## Sécurité
-
-- **Nonces** : utiliser des nonces pour toutes les actions sensibles (AJAX, forms, REST endpoints). Exemple d'usage :
-
-```
-
-// Vérification côté serveur
-if ( ! isset( \$_POST['dame_nonce'] ) || ! wp_verify_nonce( wp_unslash( \$_POST['dame_nonce'] ), 'dame_action' ) ) {
-wp_die( -1 );
-}
-
-```
-
-- **Capabilities** : vérifier les capacités avant toute modification (`current_user_can( 'manage_options' )` ou une capability spécifique `dame_manage_members`).
-- **Sanitization & Validation** : utiliser `sanitize_text_field()`, `sanitize_email()`, `wp_kses_post()`, `intval()` etc selon le type de donnée ; valider les formats (email, date, numéro).
-- **Escaping** : échapper toute sortie avec `esc_html()`, `esc_attr()`, `esc_url()` selon le contexte.
-- **Prepared Queries** : si accès direct à la base, utiliser `$wpdb->prepare()`.
-- **Fichiers uploadés** : contrôler les types MIME et utiliser les API WP pour la gestion des fichiers.
-
----
-
-## Hooks et API WordPress
-
-- Favoriser les API natives : Settings API, REST API, WP_List_Table (ou alternatives), Metadata API, Shortcode API, Widgets API.
-- Déclarer des hooks publics (actions et filtres) documentés, par ex. `do_action( 'dame_after_member_save', $member_id );`.
-- Prévoir des filtres pour personnaliser les comportements : `apply_filters( 'dame_member_meta', $meta );`.
-
----
-
-## REST API
-
-- Préfixer les routes : `wp-json/dame/v1/members`.
-- Protéger les endpoints via `permission_callback` et nonces si nécessaires.
-- Utiliser des schémas et validation pour les paramètres d'entrée.
-
----
-
-## SEO & Performance
-
-- Générer des pages publiques optimisées (meta tags, balises sémantiques).
-- Charger les assets seulement lorsque nécessaire (conditional enqueues).
-- Utiliser des transients pour des requêtes couteuses.
-- Minimiser les requêtes DB et les requêtes externes.
-
----
-
-## Qualité, Tests & Outillage
-
-### Standards de Validation
-L'agent doit s'assurer que le projet respecte les critères suivants avant toute validation finale :
-- **PHPStan** : Niveau d'analyse **Level 6** minimum.
-- **Extensions requises** : `szepeviktor/phpstan-wordpress`.
-- **JS / ESLint** : Validation stricte **ES2021**.
-- **Exclusions obligatoires** : Les dossiers `node_modules`, `vendor`, `build`, et `includes/lib` doivent être ignorés par les linters.
-
-### Installation de l'environnement
-Si l'environnement d'exécution n'est pas configuré, l'agent est autorisé à installer les dépendances systèmes et Composer via la procédure suivante :
-
-1. **Installation des paquets système et Composer** :
-```
-
-sudo apt-get update && sudo apt-get install -y php php-curl php-xml unzip && curl -sS https://getcomposer.org/installer | php && sudo mv composer.phar /usr/local/bin/composer
-
-```
-2. **Installation des dépendances projet** (une fois Composer installé) :
-```
-
-composer install && npm install
-
-```
-
-### Fichiers de Configuration Requis
-L'agent doit s'assurer de la présence des fichiers de configuration suivants à la racine du plugin. S'ils sont absents, il doit les créer :
-
-**`phpstan.neon`**
+**1. `phpstan.neon` (Level 6)**
 ```
 
 includes:
@@ -223,84 +174,169 @@ excludePaths:
 - node_modules/
 - vendor/
 - build/
+- src/
 - includes/lib/
 
 ```
 
-**`.eslintrc.json`** (ou format équivalent)
+**2. `.eslintrc.json` (ES2021 + WP)**
 ```
 
 {
-"env": {
-"browser": true,
-"es2021": true,
-"wordpress": true
-},
-"parserOptions": {
-"ecmaVersion": 2021,
-"sourceType": "module"
-},
-"extends": [
-"eslint:recommended",
-"plugin:@wordpress/recommended"
-],
-"ignorePatterns": [
-"node_modules/",
-"vendor/",
-"build/",
-"includes/lib/"
-]
+"env": { "browser": true, "es2021": true, "wordpress": true },
+"parserOptions": { "ecmaVersion": 2021, "sourceType": "module" },
+"extends": [ "eslint:recommended", "plugin:@wordpress/recommended" ],
+"ignorePatterns": [ "node_modules/", "vendor/", "build/", "includes/lib/" ]
 }
 
 ```
 
-### Automatisation et Scripts
-- **Dépendances de dev** : L'agent doit vérifier que `szepeviktor/phpstan-wordpress` est présent dans les `require-dev` du `composer.json`. Si non, il doit proposer la commande : `composer require --dev szepeviktor/phpstan-wordpress phpstan/phpstan`.
-- **Scripts de commodité** : L'agent doit configurer des scripts dans `composer.json` pour simplifier l'exécution (ex: `"phpstan": "vendor/bin/phpstan analyse"`).
+### Installation Automatisée (Si nécessaire)
+Si l'environnement n'est pas prêt, l'agent doit proposer l'installation des bonnes versions :
+```
 
-### Tests & CI
-- Écrire des tests unitaires PHP (WP_UnitTestCase) et tests JS (Jest) pour la logique importante.
-- Mettre en place GitHub Actions / GitLab CI pour linting, tests et build.
+# 1. Prérequis Système (Cible : PHP 8.4)
 
----
+sudo apt-get update \&\& sudo apt-get install -y php8.4 php8.4-curl php8.4-xml unzip
+curl -sS https://getcomposer.org/installer | php \&\& sudo mv composer.phar /usr/local/bin/composer
 
-## Documentation et commentaires
+# 2. Node.js 20 LTS
 
-- Fournir un README clair pour l'installation, l'architecture et la contribution.
-- Documenter les hooks publics, shortcodes et endpoints REST avec exemples.
-- Ajouter des commentaires PHPDoc pour toutes les méthodes publiques.
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - \&\& sudo apt-get install -y nodejs
 
----
+# 3. Dépendances Projet (Dev uniquement)
 
-## Checklist de publication
+composer require --dev szepeviktor/phpstan-wordpress phpstan/phpstan
+npm install --save-dev eslint eslint-plugin-wordpress @wordpress/scripts
 
-- Vérifier que `vendor/` n'est pas inclus dans l'archive finale.
-- Vérifier que `includes/lib/` contient bien les dépendances tierces (FPDF, etc.).
+```
 
 ---
 
-## Prompts recommandés pour l'agent
+## 7. PACKAGING & LIVRAISON (NOUVEAU)
 
-- "Propose une architecture modulaire pour la gestion des membres avec classes et responsabilités."
-- "Génère l'extrait PHP pour enregistrer un CPT 'member' conforme aux standards et i18n."
-- "Analyse ce fichier PHP et signale les risques de sécurité et les corrections nécessaires."
-- "Fournis un exemple d'endpoint REST pour récupérer la liste des membres avec pagination et vérification des capacités."
+L'agent doit être capable de générer le fichier `.distignore` pour garantir que le ZIP final est propre.
+
+**Contenu obligatoire du `.distignore` :**
+
+```text
+.git
+.gitignore
+.editorconfig
+.eslintrc.json
+phpstan.neon
+package.json
+package-lock.json
+composer.json
+composer.lock
+node_modules
+vendor
+src
+assets/scss
+tests
+
+```
+
+> **Instruction pour l'agent** : Lorsqu'on demande "Prépare la livraison", tu dois vérifier que le code est compilé (`npm run build`) et que l'autoloader PHP est fonctionnel sans le dossier `vendor`.
 
 ---
 
-## Exemples de réponses attendues de l'agent
+## 8. DOCUMENTATION & MAINTENANCE
 
-- **Concis** : explication courte suivie d'un extrait de code pertinent et sécurisé.
-- **Justifié** : chaque recommandation doit inclure une raison technique (ex. "utiliser nonces pour prévenir les CSRF").
-- **Conforme** : respecter les guillemets doubles pour le français et les APIs WP.
+L'agent est responsable de la mise à jour continue de la documentation. Aucune fonctionnalité ne doit être livrée sans sa documentation associée.
+
+### Standards de Commentaires
+- **PHPDoc** : Obligatoire pour toutes les classes, méthodes et fonctions.
+  - Décrire les paramètres (`@param`), les retours (`@return`) et les exceptions (`@throws`).
+- **JSDoc** : Obligatoire pour les fonctions JavaScript complexes.
+- **Code** : Commenter les blocs logiques complexes en **Français**.
+
+### Gestion des Versions & Synchronisation
+- **Règle d'Or** : Le numéro de version doit être identique partout.
+- **Emplacements Obligatoires** :
+  1.  **En-tête du fichier principal** (`[SLUG].php`) :
+      ```
+      /*
+       * Plugin Name: [NOM_PLUGIN]
+       * Version: 1.0.0  <-- DOIT ÊTRE À JOUR
+       */
+      ```
+  2.  **Constante PHP** : Définie au début du fichier principal.
+      ```
+      define( '[SLUG_MAJ]_VERSION', '1.0.0' ); // Ex: DAME_VERSION
+      ```
+  3.  **package.json** (si présent).
+  4.  **CHANGELOG.md** (Nouvelle entrée).
+
+### Fichiers de Documentation Obligatoires
+L'agent doit créer et maintenir à jour les fichiers suivants à la racine :
+
+1.  **`README.md`** (Présentation & Installation)
+    - Description générale du plugin.
+    - Prérequis techniques (PHP, WP versions).
+    - Procédure d'installation et de configuration initiale.
+    - Liste des fonctionnalités principales.
+
+2.  **`CHANGELOG.md`** (Historique des versions)
+    - Format : [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+    - Doit être mis à jour à chaque modification significative.
+    - Sections : `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
+
+3.  **`USING.md`** (Guide d'Utilisation)
+    - **Public cible** : Utilisateurs finaux / Webmasters.
+    - **Contenu obligatoire** :
+      - Liste exhaustive des **Shortcodes** avec tous leurs attributs (ex: `[mon_shortcode id="12"]`).
+      - Explication des réglages du Back-office.
+      - Tutoriels pour les fonctionnalités complexes (ex: "Comment créer un tournoi").
 
 ---
 
-## Notes additionnelles
-
-- Lorsque l'agent fournit des extraits littéraux de texte français destinés à être affichés aux utilisateurs, il doit **toujours** les entourer de guillemets doubles.
-- L'agent doit prioriser l'utilisation des APIs WordPress plutôt que de solutions maison.
+## 9. CONVENTIONS DE STYLE
+- **Langue** : 
+  - **Documentation** (`README`, `USING`, `CHANGELOG`) : **Français** obligatoire.
+  - **Commentaires Code** : **Français** obligatoire.
+  - **Chaînes Utilisateur** : **Français** obligatoire.
+- **Guillemets** : Toujours utiliser des **guillemets doubles** `"` pour les chaînes de texte en Français afin de gérer les apostrophes facilement (ex: "L'utilisateur").
 
 ---
 
-*Document version : 1.3 — Mis à jour avec directives JavaScript ES2021.*
+## 10. EXEMPLES D'ATTENTES
+
+
+**Modèle d'Autoloader SPL requis (dans `[SLUG].php`) :**
+
+```php
+spl_autoload_register( function ( $class ) {
+    // Prefix du projet (ex: DAME\)
+    $prefix = '[NAMESPACE]';
+    
+    // Base directory pour le prefix (dossier includes/)
+    $base_dir = plugin_dir_path( __FILE__ ) . 'includes/';
+
+    // La classe utilise-t-elle le prefix ?
+    $len = strlen( $prefix );
+    if ( strncmp( $prefix, $class, $len ) !== 0 ) {
+        return;
+    }
+
+    // Récupérer le nom relatif de la classe
+    $relative_class = substr( $class, $len );
+
+    // Remplacer le prefix par le base_dir, remplacer les antislashs par des slashs, ajouter .php
+    $file = $base_dir . str_replace( '\\', '/', $relative_class ) . '.php';
+
+    // Si le fichier existe, le charger
+    if ( file_exists( $file ) ) {
+        require $file;
+    }
+});
+
+```
+
+**Prompt utilisateur** : "Crée un bloc Gutenberg pour afficher un échiquier."
+
+**Réponse attendue de l'Agent** :
+1.  Créer la structure dans `src/blocks/echiquier/` (`block.json`, `edit.js`, `save.js`).
+2.  Utiliser les composants `@wordpress/components`.
+3.  Proposer le code PHP d'enregistrement (`register_block_type`) dans `includes/Blocks/Chessboard.php` (à créer).
+4.  Rappel de lancer `npm run start` pour compiler.
