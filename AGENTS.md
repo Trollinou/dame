@@ -66,9 +66,9 @@ wp-content/plugins/[SLUG]/
 ├─ includes/            # [PROD] Logique PHP (Namespace: [NAMESPACE])
 │  ├─ Core/             # Chargement, I18n, Plugin_Loader
 │  ├─ Admin/            # Logique Back-office
-│  │  ├─ Settings/      # (Voir règle de découpage)
-│  │  │  ├─ Main.php    # Contrôleur principal
-│  │  │  └─ Tabs/       # Un fichier par onglet
+│  │  └─ Settings/      # (Voir règle de découpage)
+│  │     ├─ Main.php    # Contrôleur principal
+│  │     └─ Tabs/       # Un fichier par onglet
 │  ├─ CPT/              # Définitions des Custom Post Types
 │  ├─ Metaboxes/        # Gestion des champs (Un dossier par entité complexe)
 │  ├─ Shortcodes/       # Gestionnaires de Shortcodes
