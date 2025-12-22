@@ -63,15 +63,29 @@ wp-content/plugins/[SLUG]/
 │  ├─ css/              # [PROD] (GÉNÉRÉ) CSS compilé et minifié
 │  ├─ scss/             # [DEV]  (SOURCES) SCSS (Admin \& Front global)
 │  └─ ...
-├─ includes/            # [PROD] Logique PHP (Namespace : [NAMESPACE])
-│  ├─ Core/             # [PROD] Chargement, I18n, Activator, Deactivator
-│  ├─ Admin/            # [PROD] Logique Back-office (Hooks, Menus, Settings)
-│  ├─ Public/           # [PROD] Logique Front-end (Shortcodes, Scripts)
-│  ├─ CPT/              # [PROD] Custom Post Types (1 fichier = 1 CPT)
-│  ├─ Shortcodes/       # [PROD] Gestionnaires de Shortcodes complexes
-│  ├─ REST/             # [PROD] Endpoints API REST
-│  ├─ Utils/            # [PROD] Helpers statiques, Validateurs
-│  └─ lib/              # [PROD] Dépendances PHP EMBARQUÉES (Copier-coller ici, pas de /vendor)
+├─ includes/            # [PROD] Logique PHP (Namespace: [NAMESPACE])
+│  ├─ Core/             # Chargement, I18n, Plugin_Loader
+│  ├─ Admin/            # Logique Back-office
+│  │  ├─ Settings/      # (Voir règle de découpage)
+│  │  │  ├─ Main.php    # Contrôleur principal
+│  │  │  └─ Tabs/       # Un fichier par onglet
+│  ├─ CPT/              # Définitions des Custom Post Types
+│  ├─ Metaboxes/        # Gestion des champs (Un dossier par entité complexe)
+│  ├─ Shortcodes/       # Gestionnaires de Shortcodes
+│  │  ├─ Form.php       # Shortcode simple
+│  │  └─ Tournament/    # Shortcode complexe (ex: Affichage grille tournoi)
+│  │     ├─ Render.php  # Logique d'affichage
+│  │     └─ Query.php   # Logique de récupération de données
+│  ├─ Services/         # Logique métier pure (Business Logic)
+│  │  ├─ PDF/           # Service de génération PDF
+│  │  │  ├─ Generator.php
+│  │  │  └─ Templates/  # Classes de template PDF
+│  │  └─ Elo/           # Calculs de points Elo
+│  │     ├─ Calculator.php
+│  │     └─ Rules.php
+│  ├─ API/              # Endpoints REST ou Intégrations externes
+│  ├─ lib/              # Dépendances externes sans Composer
+│  └─ Utils/            # Helpers statiques
 ├─ languages/           # [PROD] .pot, .po, .mo
 ├─ templates/           # [PROD] Vues HTML surchargeables
 ├─ vendor/              # [DEV]  Outils QA (PHPStan) - NE PAS LIVRER
@@ -110,6 +124,31 @@ wp-content/plugins/[SLUG]/
 - **Librairies Tierces** :
 - Si une lib externe est nécessaire (ex: FPDF, Stripe SDK), **l'agent doit instruire de télécharger les fichiers sources** et de les placer dans `includes/lib/`.
 - Chargement : Utiliser `require_once plugin_dir_path(__FILE__) . 'includes/lib/nom-lib/file.php';` dans le `Plugin_Loader`.
+
+### Architecture Modulaire & Granularité (LOI UNIVERSELLE)
+
+Cette règle s'applique à **tous** les composants du plugin (CPT, Settings, Shortcodes, Services, API, etc.).
+
+**1. Le Principe de "Complexité = Sous-Dossier"**
+Dès qu'une fonctionnalité nécessite plus d'une classe ou dépasse ~300 lignes, elle ne doit plus être un fichier unique à la racine de son dossier parent.
+
+* **Interdit** : Avoir 15 fichiers préfixés dans un même dossier (ex: `Services/ExportCSV.php`, `Services/ExportPDF.php`, `Services/ExportXLS.php`).
+* **Obligatoire** : Créer un dossier thématique (ex: `Services/Export/`) contenant des classes focalisées (`Manager.php`, `Formats/CSV.php`, `Formats/PDF.php`).
+
+**2. Nomenclature et Namespaces**
+
+* **Pas de Préfixes de Fichiers** : Le contexte est donné par le dossier.
+* *Mauvais* : `includes/Shortcodes/class-tournament-list.php`
+* *Bon* : `includes/Shortcodes/Tournament/List_View.php` (Namespace: `[NAMESPACE]\Shortcodes\Tournament`)
+
+* **Single Responsibility** : Une classe ne fait qu'une chose.
+* *Exemple* : Un Shortcode complexe sépare la récupération des données (`Query.php`) de son affichage HTML (`Render.php`).
+
+**3. Pattern "Manager & Components"**
+Pour les fonctionnalités à multiples facettes (ex: une page d'options à onglets, un exportateur multi-formats, une intégration API), utiliser ce pattern :
+
+* **Manager (ou Main)** : Le point d'entrée. Il initialise, charge les composants et orchestre.
+* **Components** : Les classes "ouvrières" situées dans des sous-dossiers, appelées par le Manager.
 
 ### Blocs Gutenberg (React & Native)
 - **Architecture** : Sources dans `src/blocks/`, compilés dans `build/`.
@@ -332,6 +371,185 @@ spl_autoload_register( function ( $class ) {
 });
 
 ```
+
+**Exemple : Structure d'une Metabox découpaée**
+
+*Fichier : `includes/Metaboxes/Member/Identity.php*`
+
+```php
+namespace DAME\Metaboxes\Member;
+
+// Pas de dépendance complexe, usage natif WP
+class Identity {
+    
+    public function init() {
+        add_action( 'add_meta_boxes', [ $this, 'add_box' ] );
+        add_action( 'save_post', [ $this, 'save_box' ] );
+    }
+
+    public function add_box() {
+        add_meta_box(
+            'dame_member_identity',
+            __( 'Identité', 'dame' ),
+            [ $this, 'render' ],
+            'dame_member', // Slug du CPT
+            'normal',
+            'high'
+        );
+    }
+
+    public function render( $post ) {
+        // Logique d'affichage HTML uniquement pour cette partie
+        $value = get_post_meta( $post->ID, '_dame_identity_name', true );
+        wp_nonce_field( 'dame_save_identity', 'dame_identity_nonce' );
+        ?>
+        <label>Nom : <input type="text" name="dame_name" value="<?php echo esc_attr($value); ?>"></label>
+        <?php
+    }
+
+    public function save_box( $post_id ) {
+        // Logique de sauvegarde isolée
+        if ( ! isset( $_POST['dame_identity_nonce'] ) || ! wp_verify_nonce( $_POST['dame_identity_nonce'], 'dame_save_identity' ) ) {
+            return;
+        }
+        if ( isset( $_POST['dame_name'] ) ) {
+            update_post_meta( $post_id, '_dame_identity_name', sanitize_text_field( $_POST['dame_name'] ) );
+        }
+    }
+}
+
+```
+
+
+**Exemple : Gestionnaire d'onglets léger**
+
+*Fichier : `includes/Admin/Settings/Main_Page.php*`
+
+```php
+namespace DAME\Admin\Settings;
+
+use DAME\Admin\Settings\Tabs\General;
+use DAME\Admin\Settings\Tabs\Emails;
+
+class Main_Page {
+    
+    private $tabs = [];
+
+    public function __construct() {
+        // Chargement manuel des onglets (Pattern simple sans injection de dépendance lourde)
+        $this->tabs['general'] = new General();
+        $this->tabs['emails']  = new Emails();
+    }
+
+    public function init() {
+        add_action( 'admin_menu', [ $this, 'add_menu' ] );
+        add_action( 'admin_init', [ $this, 'register_all_settings' ] );
+    }
+
+    public function register_all_settings() {
+        foreach ( $this->tabs as $tab ) {
+            if ( method_exists( $tab, 'register' ) ) {
+                $tab->register();
+            }
+        }
+    }
+
+    public function add_menu() {
+        add_options_page( 'DAME Settings', 'DAME', 'manage_options', 'dame-settings', [ $this, 'render_page' ] );
+    }
+
+    public function render_page() {
+        $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'general';
+        ?>
+        <div class="wrap">
+            <h1>Réglages DAME</h1>
+            <nav class="nav-tab-wrapper">
+                <a href="?page=dame-settings&tab=general" class="nav-tab <?php echo $current_tab === 'general' ? 'nav-tab-active' : ''; ?>">Général</a>
+                <a href="?page=dame-settings&tab=emails" class="nav-tab <?php echo $current_tab === 'emails' ? 'nav-tab-active' : ''; ?>">Emails</a>
+            </nav>
+            <div class="tab-content">
+                <?php 
+                if ( isset( $this->tabs[ $current_tab ] ) ) {
+                    $this->tabs[ $current_tab ]->render();
+                }
+                ?>
+            </div>
+        </div>
+        <?php
+    }
+}
+
+```
+
+*Fichier : `includes/Admin/Settings/Tabs/General.php*`
+
+```php
+namespace DAME\Admin\Settings\Tabs;
+
+class General {
+    public function register() {
+        register_setting( 'dame_general_group', 'dame_option_name' );
+        // Add sections & fields...
+    }
+
+    public function render() {
+        ?>
+        <form method="post" action="options.php">
+            <?php 
+            settings_fields( 'dame_general_group' );
+            do_settings_sections( 'dame_general_group' );
+            submit_button();
+            ?>
+        </form>
+        <?php
+    }
+}
+
+```
+
+
+**Exemple : Application de la modularité à un Service (ex: Export)**
+
+**Demande** : "Crée un système pour exporter les membres en CSV et PDF."
+
+**Mauvaise structure (Refusée)** :
+`includes/Services/ExportMembers.php` (Grosse classe de 800 lignes gérant SQL, formatage CSV et librairie PDF).
+
+**Bonne structure (Validée)** :
+
+1. **Dossier** : `includes/Services/Export/`
+2. **Fichier** : `Manager.php` (Reçoit la requête, vérifie les droits, instancie le bon formateur).
+3. **Dossier** : `includes/Services/Export/Formats/`
+* `Interface_Format.php` (Contrat : méthode `generate()`).
+* `CSV.php` (Implémentation CSV).
+* `PDF.php` (Implémentation PDF, utilisant la lib `includes/lib/fpdf`).
+
+
+
+**Code du Manager (`includes/Services/Export/Manager.php`)** :
+
+```php
+namespace DAME\Services\Export;
+
+use DAME\Services\Export\Formats\CSV;
+use DAME\Services\Export\Formats\PDF;
+
+class Manager {
+    public function export( string $format, array $data ) {
+        $exporter = match( $format ) {
+            'csv' => new CSV(),
+            'pdf' => new PDF(),
+            default => null,
+        };
+        
+        if ( $exporter ) {
+            return $exporter->generate( $data );
+        }
+    }
+}
+
+```
+
 
 **Prompt utilisateur** : "Crée un bloc Gutenberg pour afficher un échiquier."
 
