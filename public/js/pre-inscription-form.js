@@ -111,11 +111,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Add live formatting for name fields
     const firstNameInput = document.getElementById('dame_first_name');
+    const birthNameInput = document.getElementById('dame_birth_name');
     const rep2FirstNameInput = document.getElementById('dame_legal_rep_2_first_name');
     const rep2LastNameInput = document.getElementById('dame_legal_rep_2_last_name');
 
     if (firstNameInput) {
         firstNameInput.addEventListener('input', formatFirstNameInput);
+    }
+    if (birthNameInput) {
+        birthNameInput.addEventListener('input', formatLastNameInput);
     }
     if (lastNameInput) {
         lastNameInput.addEventListener('input', formatLastNameInput);
@@ -135,6 +139,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Handle Form Submission
     const form = document.getElementById('dame-pre-inscription-form');
+
+    // Handle consent checkbox
+    const consentCheckbox = document.getElementById('dame_consent_checkbox');
+    const submitButtonInForm = form ? form.querySelector('button[type="submit"]') : null;
+
+    if (consentCheckbox && submitButtonInForm) {
+        consentCheckbox.addEventListener('change', function() {
+            submitButtonInForm.disabled = !this.checked;
+        });
+    }
     const messagesDiv = document.getElementById('dame-form-messages');
 
     if (form) {

@@ -19,13 +19,19 @@ document.addEventListener('DOMContentLoaded', function () {
         wrapper.appendChild(resultsContainer);
 
         let debounceTimer;
+        let highlightedIndex = -1;
 
-        cityInput.addEventListener('keyup', function () {
+        cityInput.addEventListener('keyup', function (e) {
+            if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)) {
+                return;
+            }
+
             clearTimeout(debounceTimer);
             const query = this.value;
 
             if (query.length < 3) {
                 resultsContainer.style.display = 'none';
+                highlightedIndex = -1;
                 return;
             }
 
@@ -34,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     .then(response => response.json())
                     .then(data => {
                         resultsContainer.innerHTML = '';
+                        highlightedIndex = -1;
                         if (data && data.length > 0) {
                             resultsContainer.style.display = 'block';
                             data.slice(0, 10).forEach(commune => {
@@ -57,17 +64,62 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 250);
         });
 
+        cityInput.addEventListener('keydown', function (e) {
+            const suggestions = resultsContainer.querySelectorAll('.dame-suggestion-item');
+            if (suggestions.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                highlightedIndex++;
+                if (highlightedIndex >= suggestions.length) {
+                    highlightedIndex = 0;
+                }
+                updateHighlight(suggestions, highlightedIndex);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                highlightedIndex--;
+                if (highlightedIndex < 0) {
+                    highlightedIndex = suggestions.length - 1;
+                }
+                updateHighlight(suggestions, highlightedIndex);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                    if (highlightedIndex > -1 && suggestions[highlightedIndex]) {
+                        selectSuggestion(suggestions[highlightedIndex]);
+                }
+            } else if (e.key === 'Escape') {
+                resultsContainer.style.display = 'none';
+                highlightedIndex = -1;
+            }
+        });
+
+        function updateHighlight(suggestions, index) {
+            suggestions.forEach((suggestion, i) => {
+                if (i === index) {
+                    suggestion.classList.add('highlighted');
+                } else {
+                    suggestion.classList.remove('highlighted');
+                }
+            });
+        }
+
+        function selectSuggestion(suggestion) {
+            cityInput.value = suggestion.dataset.value;
+            resultsContainer.innerHTML = '';
+            resultsContainer.style.display = 'none';
+            highlightedIndex = -1;
+        }
+
         resultsContainer.addEventListener('click', function (e) {
             if (e.target.classList.contains('dame-suggestion-item')) {
-                cityInput.value = e.target.dataset.value;
-                resultsContainer.innerHTML = '';
-                resultsContainer.style.display = 'none';
+                selectSuggestion(e.target);
             }
         });
 
         document.addEventListener('click', function (e) {
             if (!wrapper.contains(e.target)) {
                 resultsContainer.style.display = 'none';
+                highlightedIndex = -1;
             }
         });
     }

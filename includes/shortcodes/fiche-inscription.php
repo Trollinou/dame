@@ -129,9 +129,9 @@ function dame_fiche_inscription_shortcode( $atts ) {
 					</h4>
 					<p><label for="dame_legal_rep_1_last_name"><?php _e( 'Nom de naissance', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><input type="text" id="dame_legal_rep_1_last_name" name="dame_legal_rep_1_last_name"></p>
 					<p><label for="dame_legal_rep_1_first_name"><?php _e( 'Prénom', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><input type="text" id="dame_legal_rep_1_first_name" name="dame_legal_rep_1_first_name"></p>
+					<p><em><?php _e( 'Dans le cadre de notre politique de prévention des violences sexistes et sexuelles, nous demandons aux parents susceptibles d’accompagner des mineurs de se soumettre à un contrôle d’honorabilité. À cette fin, nous vous remercions de bien vouloir renseigner les deux champs ci-dessous si vous êtes concerné.', 'dame' ); ?></em></p>
 					<p><label for="dame_legal_rep_1_date_naissance"><?php _e( 'Date de naissance', 'dame' ); ?></label><input type="date" id="dame_legal_rep_1_date_naissance" name="dame_legal_rep_1_date_naissance"></p>
 					<p><label for="dame_legal_rep_1_commune_naissance"><?php _e( 'Lieu de naissance', 'dame' ); ?></label><div class="dame-autocomplete-wrapper"><input type="text" id="dame_legal_rep_1_commune_naissance" name="dame_legal_rep_1_commune_naissance"></div></p>
-					<p><em><?php _e( 'Dans le cadre de notre politique de prévention des violences sexistes et sexuelles, nous demandons aux parents susceptibles d’accompagner des mineurs de se soumettre à un contrôle d’honorabilité. À cette fin, nous vous remercions de bien vouloir renseigner les deux champs ci-dessous si vous êtes concerné.', 'dame' ); ?></em></p>
 					<p><label for="dame_legal_rep_1_phone"><?php _e( 'Numéro de téléphone', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><input type="tel" id="dame_legal_rep_1_phone" name="dame_legal_rep_1_phone"></p>
 					<p><label for="dame_legal_rep_1_email"><?php _e( 'Email', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><input type="email" id="dame_legal_rep_1_email" name="dame_legal_rep_1_email"></p>
 					<p><label for="dame_legal_rep_1_profession"><?php _e( 'Profession', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_profession" name="dame_legal_rep_1_profession"></p>
@@ -145,9 +145,9 @@ function dame_fiche_inscription_shortcode( $atts ) {
 					</h4>
 					<p><label for="dame_legal_rep_2_last_name"><?php _e( 'Nom de naissance', 'dame' ); ?></label><input type="text" id="dame_legal_rep_2_last_name" name="dame_legal_rep_2_last_name"></p>
 					<p><label for="dame_legal_rep_2_first_name"><?php _e( 'Prénom', 'dame' ); ?></label><input type="text" id="dame_legal_rep_2_first_name" name="dame_legal_rep_2_first_name"></p>
+					<p><em><?php _e( 'Dans le cadre de notre politique de prévention des violences sexistes et sexuelles, nous demandons aux parents susceptibles d’accompagner des mineurs de se soumettre à un contrôle d’honorabilité. À cette fin, nous vous remercions de bien vouloir renseigner les deux champs ci-dessous si vous êtes concerné.', 'dame' ); ?></em></p>
 					<p><label for="dame_legal_rep_2_date_naissance"><?php _e( 'Date de naissance', 'dame' ); ?></label><input type="date" id="dame_legal_rep_2_date_naissance" name="dame_legal_rep_2_date_naissance"></p>
 					<p><label for="dame_legal_rep_2_commune_naissance"><?php _e( 'Lieu de naissance', 'dame' ); ?></label><div class="dame-autocomplete-wrapper"><input type="text" id="dame_legal_rep_2_commune_naissance" name="dame_legal_rep_2_commune_naissance"></div></p>
-					<p><em><?php _e( 'Dans le cadre de notre politique de prévention des violences sexistes et sexuelles, nous demandons aux parents susceptibles d’accompagner des mineurs de se soumettre à un contrôle d’honorabilité. À cette fin, nous vous remercions de bien vouloir renseigner les deux champs ci-dessous si vous êtes concerné.', 'dame' ); ?></em></p>
 					<p><label for="dame_legal_rep_2_phone"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label><input type="tel" id="dame_legal_rep_2_phone" name="dame_legal_rep_2_phone"></p>
 					<p><label for="dame_legal_rep_2_email"><?php _e( 'Email', 'dame' ); ?></label><input type="email" id="dame_legal_rep_2_email" name="dame_legal_rep_2_email"></p>
 					<p><label for="dame_legal_rep_2_profession"><?php _e( 'Profession', 'dame' ); ?></label><input type="text" id="dame_legal_rep_2_profession" name="dame_legal_rep_2_profession"></p>
@@ -170,11 +170,14 @@ function dame_fiche_inscription_shortcode( $atts ) {
 			</p>
 
 			<p>
-				<em><?php _e( "En validant ma préinscription, je reconnais avoir pris connaissance du règlement intérieur de l’Association Échiquier Lédonien et m’engage à le respecter..", 'dame' ); ?></em>
+				<label for="dame_consent_checkbox">
+					<input type="checkbox" id="dame_consent_checkbox" name="dame_consent_checkbox" required>
+					<?php _e( "En cochant cette case, je reconnais avoir pris connaissance du règlement intérieur de l’Association Échiquier Lédonien et m’engage à le respecter.", 'dame' ); ?>
+				</label>
 			</p>
 
 			<p>
-				<button type="submit"><?php _e( 'Valider ma préinscription', 'dame' ); ?></button>
+				<button type="submit" id="dame_submit_button" disabled><?php _e( 'Valider ma préinscription', 'dame' ); ?></button>
 			</p>
 
 		</form>
@@ -211,6 +214,7 @@ function dame_handle_pre_inscription_submission() {
 		'dame_address_1'            => __( "L'adresse est obligatoire.", 'dame' ),
 		'dame_city'                 => __( "La ville est obligatoire.", 'dame' ),
 		'dame_health_questionnaire' => __( "La réponse au questionnaire de santé est obligatoire.", 'dame' ),
+		'dame_consent_checkbox'     => __( "Vous devez accepter le règlement intérieur.", 'dame' ),
 	);
 
 	foreach ( $required_fields as $field_key => $error_message ) {
