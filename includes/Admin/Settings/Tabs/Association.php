@@ -75,17 +75,27 @@ class Association {
 		$readonly = '';
 		$class = 'regular-text';
 		$extra_attr = '';
+		$data_group = 'data-group="settings"';
 
 		if ( 'assoc_address_1' === $key ) {
 			$wrapper_start = '<div class="dame-autocomplete-wrapper" style="position: relative;">';
 			$wrapper_end = '</div>';
 			$extra_attr = 'autocomplete="off"';
-		} elseif ( 'assoc_latitude' === $key || 'assoc_longitude' === $key ) {
+			$class .= ' dame-js-address';
+		} elseif ( 'assoc_postal_code' === $key ) {
+			$class .= ' dame-js-zip';
+		} elseif ( 'assoc_city' === $key ) {
+			$class .= ' dame-js-city';
+		} elseif ( 'assoc_latitude' === $key ) {
 			$readonly = 'readonly="readonly"';
+			$class .= ' dame-js-lat';
+		} elseif ( 'assoc_longitude' === $key ) {
+			$readonly = 'readonly="readonly"';
+			$class .= ' dame-js-long';
 		}
 
 		echo $wrapper_start; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo '<input type="text" id="dame_' . esc_attr( $key ) . '" name="dame_options[' . esc_attr( $key ) . ']" value="' . esc_attr( $value ) . '" class="' . esc_attr( $class ) . '" ' . $readonly . ' ' . $extra_attr . ' />'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo '<input type="text" id="dame_' . esc_attr( $key ) . '" name="dame_options[' . esc_attr( $key ) . ']" value="' . esc_attr( $value ) . '" class="' . esc_attr( $class ) . '" ' . $readonly . ' ' . $extra_attr . ' ' . $data_group . ' />'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo $wrapper_end; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 

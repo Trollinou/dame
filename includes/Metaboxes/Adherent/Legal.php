@@ -84,7 +84,7 @@ class Legal {
 				<th><label for="dame_legal_rep_1_commune_naissance"><?php _e( 'Lieu de naissance', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-autocomplete-wrapper">
-						<input type="text" id="dame_legal_rep_1_commune_naissance" name="dame_legal_rep_1_commune_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_1_commune_naissance', true ) ); ?>" class="regular-text" />
+						<input type="text" id="dame_legal_rep_1_commune_naissance" name="dame_legal_rep_1_commune_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_1_commune_naissance', true ) ); ?>" class="regular-text dame-js-birth-city" />
 					</div>
 				</td>
 			</tr>
@@ -124,7 +124,7 @@ class Legal {
 				<th><label for="dame_legal_rep_1_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-autocomplete-wrapper">
-						<input type="text" id="dame_legal_rep_1_address_1" name="dame_legal_rep_1_address_1" value="<?php echo esc_attr( $rep1_address_1 ); ?>" class="regular-text" autocomplete="off" />
+						<input type="text" id="dame_legal_rep_1_address_1" name="dame_legal_rep_1_address_1" value="<?php echo esc_attr( $rep1_address_1 ); ?>" class="regular-text dame-js-address" data-group="rep1" autocomplete="off" />
 					</div>
 				</td>
 			</tr>
@@ -136,8 +136,8 @@ class Legal {
 				<th><label for="dame_legal_rep_1_postal_code"><?php _e( 'Code Postal / Ville', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-inline-fields">
-						<input type="text" id="dame_legal_rep_1_postal_code" name="dame_legal_rep_1_postal_code" value="<?php echo esc_attr( $rep1_postal_code ); ?>" class="postal-code" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
-						<input type="text" id="dame_legal_rep_1_city" name="dame_legal_rep_1_city" value="<?php echo esc_attr( $rep1_city ); ?>" class="city" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
+						<input type="text" id="dame_legal_rep_1_postal_code" name="dame_legal_rep_1_postal_code" value="<?php echo esc_attr( $rep1_postal_code ); ?>" class="postal-code dame-js-zip" data-group="rep1" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
+						<input type="text" id="dame_legal_rep_1_city" name="dame_legal_rep_1_city" value="<?php echo esc_attr( $rep1_city ); ?>" class="city dame-js-city" data-group="rep1" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
 					</div>
 				</td>
 			</tr>
@@ -163,7 +163,7 @@ class Legal {
 				<th><label for="dame_legal_rep_2_commune_naissance"><?php _e( 'Lieu de naissance', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-autocomplete-wrapper">
-						<input type="text" id="dame_legal_rep_2_commune_naissance" name="dame_legal_rep_2_commune_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_2_commune_naissance', true ) ); ?>" class="regular-text" />
+						<input type="text" id="dame_legal_rep_2_commune_naissance" name="dame_legal_rep_2_commune_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_2_commune_naissance', true ) ); ?>" class="regular-text dame-js-birth-city" />
 					</div>
 				</td>
 			</tr>
@@ -203,7 +203,7 @@ class Legal {
 				<th><label for="dame_legal_rep_2_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-autocomplete-wrapper">
-						<input type="text" id="dame_legal_rep_2_address_1" name="dame_legal_rep_2_address_1" value="<?php echo esc_attr( $rep2_address_1 ); ?>" class="regular-text" autocomplete="off" />
+						<input type="text" id="dame_legal_rep_2_address_1" name="dame_legal_rep_2_address_1" value="<?php echo esc_attr( $rep2_address_1 ); ?>" class="regular-text dame-js-address" data-group="rep2" autocomplete="off" />
 					</div>
 				</td>
 			</tr>
@@ -215,8 +215,8 @@ class Legal {
 				<th><label for="dame_legal_rep_2_postal_code"><?php _e( 'Code Postal / Ville', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-inline-fields">
-						<input type="text" id="dame_legal_rep_2_postal_code" name="dame_legal_rep_2_postal_code" value="<?php echo esc_attr( $rep2_postal_code ); ?>" class="postal-code" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
-						<input type="text" id="dame_legal_rep_2_city" name="dame_legal_rep_2_city" value="<?php echo esc_attr( $rep2_city ); ?>" class="city" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
+						<input type="text" id="dame_legal_rep_2_postal_code" name="dame_legal_rep_2_postal_code" value="<?php echo esc_attr( $rep2_postal_code ); ?>" class="postal-code dame-js-zip" data-group="rep2" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
+						<input type="text" id="dame_legal_rep_2_city" name="dame_legal_rep_2_city" value="<?php echo esc_attr( $rep2_city ); ?>" class="city dame-js-city" data-group="rep2" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
 					</div>
 				</td>
 			</tr>
