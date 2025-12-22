@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.4.5 - 2025-12-07
+### Amélioration
+- **Formulaires :** Sur le formulaire de pré-inscription, le bouton de soumission est maintenant désactivé tant que la case de consentement au règlement intérieur n'est pas cochée.
+- **Formulaires :** Le champ "Nom de naissance" est maintenant automatiquement mis en majuscules lors de la saisie, de la même manière que le "Nom d'usage".
+- **Accessibilité :** Les listes de suggestions pour l'autocomplétion des adresses et des lieux de naissance sont désormais navigables au clavier (flèches haut/bas, Entrée pour sélectionner, Echap pour fermer).
+
+### Correction
+- **Formulaires :** Le texte d'information sur la politique de prévention est maintenant correctement positionné au-dessus de la date de naissance pour les représentants légaux sur le formulaire de pré-inscription.
+
 ## 3.4.4 - 2025-12-06
 ### Amélioration
 - **Internationalisation :** Remplacement de toutes les fonctions de conversion de casse (`strtoupper`, `strtolower`, `ucwords`) par leurs équivalents multi-octets (`mb_strtoupper`, etc.). Cela garantit que les caractères accentués français sont correctement gérés dans toute l'application (noms, prénoms, etc.), notamment lors de la génération de PDF et des exports.
