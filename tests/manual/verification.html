@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test JS Adherent</title>
+    <link rel="stylesheet" href="../../assets/css/admin-adherent.css">
+</head>
+<body>
+    <h1>Simulation Admin Adhérent</h1>
+
+    <input type="hidden" id="dame_latitude" name="dame_latitude" value="" />
+    <input type="hidden" id="dame_longitude" name="dame_longitude" value="" />
+    <input type="hidden" id="dame_distance" name="dame_distance" value="" />
+    <input type="hidden" id="dame_travel_time" name="dame_travel_time" value="" />
+
+    <form>
+        <p>
+            <label for="dame_birth_name">Nom de naissance</label>
+            <input type="text" id="dame_birth_name" name="dame_birth_name" value="" />
+        </p>
+        <p>
+            <label for="dame_last_name">Nom d'usage</label>
+            <input type="text" id="dame_last_name" name="dame_last_name" value="" />
+        </p>
+
+        <p>
+            <label for="dame_address_1">Adresse</label>
+            <div class="dame-autocomplete-wrapper">
+                <input type="text" id="dame_address_1" name="dame_address_1" value="" />
+            </div>
+        </p>
+        <p>
+            <label for="dame_postal_code">Code Postal</label>
+            <input type="text" id="dame_postal_code" name="dame_postal_code" value="" />
+        </p>
+        <p>
+            <label for="dame_city">Ville</label>
+            <input type="text" id="dame_city" name="dame_city" value="" />
+        </p>
+
+        <p>
+            <label for="dame_birth_city">Lieu de naissance (Code)</label>
+            <div class="dame-autocomplete-wrapper">
+                <input type="text" id="dame_birth_city" name="dame_birth_city" value="" />
+            </div>
+        </p>
+    </form>
+
+    <script>
+        var dame_admin_data = {
+            assoc_latitude: '48.8566',
+            assoc_longitude: '2.3522'
+        };
+    </script>
+    <script src="../../assets/js/admin-adherent.js"></script>
+</body>
+</html>

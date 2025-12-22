@@ -1,0 +1,27 @@
+.dame-autocomplete-wrapper {
+    position: relative;
+}
+
+.dame-address-suggestions {
+    border: 1px solid #ccc;
+    background: #fff;
+    max-height: 200px;
+    overflow-y: auto;
+    position: absolute;
+    width: 100%;
+    z-index: 9999;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.dame-suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #3c434a;
+}
+
+.dame-suggestion-item:hover,
+.dame-suggestion-item.highlighted {
+    background-color: #f0f0f1;
+    color: #2271b1;
+}

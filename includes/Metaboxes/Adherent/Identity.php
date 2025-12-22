@@ -68,7 +68,17 @@ class Identity {
 		$country = $get_value( 'dame_country' );
 		$region = $get_value( 'dame_region' );
 		$department = $get_value( 'dame_department' );
+
+		$latitude = $get_value( 'dame_latitude' );
+		$longitude = $get_value( 'dame_longitude' );
+		$distance = $get_value( 'dame_distance' );
+		$travel_time = $get_value( 'dame_travel_time' );
 		?>
+		<input type="hidden" id="dame_latitude" name="dame_latitude" value="<?php echo esc_attr( $latitude ); ?>" />
+		<input type="hidden" id="dame_longitude" name="dame_longitude" value="<?php echo esc_attr( $longitude ); ?>" />
+		<input type="hidden" id="dame_distance" name="dame_distance" value="<?php echo esc_attr( $distance ); ?>" />
+		<input type="hidden" id="dame_travel_time" name="dame_travel_time" value="<?php echo esc_attr( $travel_time ); ?>" />
+
 		<table class="form-table">
 			<tr>
 				<th><label for="dame_birth_name"><?php _e( 'Nom de naissance', 'dame' ); ?> <span class="description">(obligatoire)</span></label></th>
@@ -278,6 +288,8 @@ class Identity {
 			'dame_profession' => 'sanitize_text_field',
 			'dame_country' => 'sanitize_text_field', 'dame_region' => 'sanitize_text_field', 'dame_department' => 'sanitize_text_field',
 			'dame_email_refuses_comms' => 'absint',
+			'dame_latitude' => 'sanitize_text_field', 'dame_longitude' => 'sanitize_text_field',
+			'dame_distance' => 'sanitize_text_field', 'dame_travel_time' => 'sanitize_text_field',
 		];
 
 		foreach ( $fields as $field_name => $sanitize_callback ) {

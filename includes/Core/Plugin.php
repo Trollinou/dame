@@ -9,6 +9,7 @@ namespace DAME\Core;
 
 use DAME\CPT\Adherent;
 use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
+use DAME\Admin\Assets;
 
 /**
  * The core plugin class.
@@ -62,6 +63,10 @@ class Plugin {
 		if ( is_admin() ) {
 			$adherent_metaboxes = new AdherentMetaboxManager();
 			$adherent_metaboxes->init();
+
+			// Initialize Admin Assets
+			$admin_assets = new Assets();
+			$admin_assets->init();
 		}
 	}
 }
