@@ -155,7 +155,7 @@ class Identity {
 				<th><label for="dame_country"><?php _e( 'Pays', 'dame' ); ?></label></th>
 				<td>
 					<select id="dame_country" name="dame_country">
-						<?php foreach ( dame_get_country_list() as $code => $name ) : ?>
+						<?php foreach ( \DAME\Services\Data_Provider::get_countries() as $code => $name ) : ?>
 							<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $country, $code ); ?>><?php echo esc_html( $name ); ?></option>
 						<?php endforeach; ?>
 					</select>
@@ -165,7 +165,7 @@ class Identity {
 				<th><label for="dame_department"><?php _e( 'Département', 'dame' ); ?></label></th>
 				<td>
 					<select id="dame_department" name="dame_department">
-						<?php foreach ( dame_get_department_list() as $code => $name ) : ?>
+						<?php foreach ( \DAME\Services\Data_Provider::get_departments() as $code => $name ) : ?>
 							<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $department, $code ); ?>><?php echo esc_html( $name ); ?></option>
 						<?php endforeach; ?>
 					</select>
@@ -175,7 +175,7 @@ class Identity {
 				<th><label for="dame_region"><?php _e( 'Région', 'dame' ); ?></label></th>
 				<td>
 					<select id="dame_region" name="dame_region">
-						<?php foreach ( dame_get_region_list() as $code => $name ) : ?>
+						<?php foreach ( \DAME\Services\Data_Provider::get_regions() as $code => $name ) : ?>
 							<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $region, $code ); ?>><?php echo esc_html( $name ); ?></option>
 						<?php endforeach; ?>
 					</select>

@@ -45,12 +45,34 @@
                 <input type="text" id="dame_birth_city" name="dame_birth_city" value="" />
             </div>
         </p>
+
+        <p>
+            <label for="dame_department">Département</label>
+            <select id="dame_department" name="dame_department">
+                <option value="">Sélectionner</option>
+                <option value="75">75 - Paris</option>
+                <option value="69">69 - Rhône</option>
+            </select>
+        </p>
+        <p>
+            <label for="dame_region">Région</label>
+            <select id="dame_region" name="dame_region">
+                <option value="">Sélectionner</option>
+                <option value="IDF">Île-de-France</option>
+                <option value="ARA">Auvergne-Rhône-Alpes</option>
+            </select>
+        </p>
+
     </form>
 
     <script>
         var dame_admin_data = {
             assoc_latitude: '48.8566',
-            assoc_longitude: '2.3522'
+            assoc_longitude: '2.3522',
+            dept_region_map: {
+                '75': 'IDF',
+                '69': 'ARA'
+            }
         };
     </script>
     <script src="../../assets/js/admin-adherent.js"></script>

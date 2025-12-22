@@ -340,6 +340,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const option = departmentSelect.options[i];
                     if (option.value === departmentCode) {
                         departmentSelect.value = departmentCode;
+                        departmentSelect.dispatchEvent(new Event('change'));
                         break;
                     }
                 }
@@ -355,6 +356,19 @@ document.addEventListener('DOMContentLoaded', function () {
         birthNameInput.addEventListener('blur', function() {
             if (this.value && !lastNameInput.value) {
                 lastNameInput.value = this.value;
+            }
+        });
+    }
+
+    // 6. Department -> Region Link (Using Localized Data)
+    const regionSelect = document.getElementById('dame_region');
+    if (departmentSelect && regionSelect && dame_admin_data && dame_admin_data.dept_region_map) {
+        departmentSelect.addEventListener('change', function() {
+            const selectedDept = this.value;
+            const regionCode = dame_admin_data.dept_region_map[selectedDept];
+
+            if (regionCode) {
+                regionSelect.value = regionCode;
             }
         });
     }

@@ -6,6 +6,7 @@
  */
 
 namespace DAME\Admin;
+use DAME\Services\Data_Provider;
 
 /**
  * Class Assets
@@ -59,6 +60,7 @@ class Assets {
 			[
 				'assoc_latitude'  => $assoc_latitude,
 				'assoc_longitude' => $assoc_longitude,
+				'dept_region_map' => Data_Provider::get_department_region_mapping(),
 			]
 		);
 	}
