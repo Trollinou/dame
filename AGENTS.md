@@ -341,8 +341,7 @@ L'agent doit créer et maintenir à jour les fichiers suivants à la racine :
 
 ## 10. EXEMPLES D'ATTENTES
 
-
-**Modèle d'Autoloader SPL requis (dans `[SLUG].php`) :**
+### Modèle d'Autoloader SPL requis (dans `[SLUG].php`) :
 
 ```php
 spl_autoload_register( function ( $class ) {
@@ -372,7 +371,7 @@ spl_autoload_register( function ( $class ) {
 
 ```
 
-**Exemple : Structure d'une Metabox découpaée**
+### Exemple : Structure d'une Metabox découpaée
 
 *Fichier : `includes/Metaboxes/Member/Identity.php*`
 
@@ -420,8 +419,7 @@ class Identity {
 
 ```
 
-
-**Exemple : Gestionnaire d'onglets léger**
+### Exemple : Gestionnaire d'onglets léger
 
 *Fichier : `includes/Admin/Settings/Main_Page.php*`
 
@@ -507,8 +505,7 @@ class General {
 
 ```
 
-
-**Exemple : Application de la modularité à un Service (ex: Export)**
+### Exemple : Application de la modularité à un Service (ex: Export)
 
 **Demande** : "Crée un système pour exporter les membres en CSV et PDF."
 
@@ -551,7 +548,7 @@ class Manager {
 ```
 
 
-**Prompt utilisateur** : "Crée un bloc Gutenberg pour afficher un échiquier."
+### Exemple : Prompt utilisateur** : "Crée un bloc Gutenberg pour afficher un échiquier."
 
 **Réponse attendue de l'Agent** :
 1.  Créer la structure dans `src/blocks/echiquier/` (`block.json`, `edit.js`, `save.js`).
