@@ -9,6 +9,11 @@ namespace DAME\Metaboxes\Adherent;
 
 use DAME\Metaboxes\Adherent\Identity;
 use DAME\Metaboxes\Adherent\Legal;
+use DAME\Metaboxes\Adherent\School;
+use DAME\Metaboxes\Adherent\Diverse;
+use DAME\Metaboxes\Adherent\Classification;
+use DAME\Metaboxes\Adherent\Groups;
+use DAME\Metaboxes\Adherent\Actions;
 
 /**
  * Class Manager
@@ -30,8 +35,23 @@ class Manager {
 		$identity = new Identity();
 		$identity->register();
 
+		$school = new School();
+		$school->register();
+
 		$legal = new Legal();
 		$legal->register();
+
+		$diverse = new Diverse();
+		$diverse->register();
+
+		$classification = new Classification();
+		$classification->register();
+
+		$groups = new Groups();
+		$groups->register();
+
+		$actions = new Actions();
+		$actions->register();
 	}
 
 	/**
@@ -58,7 +78,22 @@ class Manager {
 		$identity = new Identity();
 		$identity->save( $post_id );
 
+		$school = new School();
+		$school->save( $post_id );
+
 		$legal = new Legal();
 		$legal->save( $post_id );
+
+		$diverse = new Diverse();
+		$diverse->save( $post_id );
+
+		$classification = new Classification();
+		$classification->save( $post_id );
+
+		$groups = new Groups();
+		$groups->save( $post_id );
+
+		$actions = new Actions();
+		$actions->save( $post_id );
 	}
 }

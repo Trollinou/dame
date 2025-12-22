@@ -50,6 +50,8 @@ class Plugin {
 		if ( defined( 'DAME_PATH' ) ) {
 			require_once DAME_PATH . 'includes/data-lists.php';
 			require_once DAME_PATH . 'includes/utils.php';
+			require_once DAME_PATH . 'includes/taxonomies.php';
+			require_once DAME_PATH . 'includes/assets.php';
 		}
 
 		// Initialize CPTs.
