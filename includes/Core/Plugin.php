@@ -8,7 +8,10 @@
 namespace DAME\Core;
 
 use DAME\CPT\Adherent;
+use DAME\CPT\PreInscription;
+use DAME\Core\Roles;
 use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
+use DAME\Services\PDF_Generator;
 use DAME\Admin\Assets;
 use DAME\Admin\Settings\Main as SettingsMain;
 use DAME\Admin\Columns\Adherent as AdherentColumns;
@@ -59,9 +62,20 @@ class Plugin {
 			require_once DAME_PATH . 'includes/assets.php';
 		}
 
+		// Initialize Roles.
+		$roles = new Roles();
+		$roles->init();
+
 		// Initialize CPTs.
 		$adherent_cpt = new Adherent();
 		$adherent_cpt->init();
+
+		$pre_inscription_cpt = new PreInscription();
+		$pre_inscription_cpt->init();
+
+		// Initialize Services.
+		$pdf_generator = new PDF_Generator();
+		$pdf_generator->init();
 
 		// Initialize Metaboxes.
 		if ( is_admin() ) {

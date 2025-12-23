@@ -171,4 +171,25 @@ class Data_Provider {
 			'certificate'  => __( 'Certificat médical', 'dame' ),
 		);
 	}
+
+	/**
+	 * Returns a list of clothing sizes.
+	 *
+	 * @return array
+	 */
+	public static function get_clothing_sizes() {
+		return array(
+			'Non renseigné',
+			'8/10',
+			'10/12',
+			'12/14',
+			'XS',
+			'S',
+			'M',
+			'L',
+			'XL',
+			'XXL',
+			'XXXL',
+		);
+	}
 }
