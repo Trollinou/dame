@@ -12,6 +12,8 @@ use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
 use DAME\Admin\Assets;
 use DAME\Admin\Settings\Main as SettingsMain;
 use DAME\Admin\Columns\Adherent as AdherentColumns;
+use DAME\Taxonomies\Season;
+use DAME\Taxonomies\Group;
 
 /**
  * The core plugin class.
@@ -77,6 +79,13 @@ class Plugin {
 			// Initialize Adherent Columns (Migrated)
 			$adherent_columns = new AdherentColumns();
 			$adherent_columns->init();
+
+			// Initialize Taxonomies
+			$season_taxonomy = new Season();
+			$season_taxonomy->init();
+
+			$group_taxonomy = new Group();
+			$group_taxonomy->init();
 		}
 	}
 }
