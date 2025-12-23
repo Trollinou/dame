@@ -32,6 +32,9 @@ class Classification {
 	 * @param \WP_Post $post The post object.
 	 */
 	public function render( $post ) {
+		// Add nonce field for security
+		wp_nonce_field( 'dame_save_adherent_meta', 'dame_metabox_nonce' );
+
 		$transient_data = get_transient( 'dame_post_data_' . $post->ID );
 		$get_value = function( $field_name ) use ( $post, $transient_data ) {
 			return isset( $transient_data[ $field_name ] )
@@ -68,10 +71,12 @@ class Classification {
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
 
 		// --- Add a simple control to set Active/Inactive status ---
+		// Determine if the adherent has the current season term
+		$is_active = ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post->ID ) );
+
 		echo '<p>';
 		echo '<label for="dame_membership_status_control"><strong>' . esc_html__( 'Adhésion pour la saison actuelle', 'dame' ) . '</strong></label>';
 		echo '<select id="dame_membership_status_control" name="dame_membership_status_control" style="width:100%;">';
-		$is_active = ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post->ID ) );
 		echo '<option value="active" ' . selected( $is_active, true, false ) . '>' . esc_html__( 'Actif', 'dame' ) . '</option>';
 		echo '<option value="inactive" ' . selected( $is_active, false, false ) . '>' . esc_html__( 'Non adhérent', 'dame' ) . '</option>';
 		echo '</select>';
@@ -159,47 +164,32 @@ class Classification {
 			return;
 		}
 
-		// Validation
+		$errors = [];
 		if ( empty( $_POST['dame_license_type'] ) ) {
-			// Logic handled by Identity for error transient?
-			// We should probably check here too.
-			// The single save function pattern is hard to split for shared errors.
-			// But Identity already sets transient if license type is missing?
-			// No, Identity checks 'dame_license_type' in POST but it is rendered by Classification!
-			// This means Identity validates fields that belong to Classification.
-			// This is a cross-dependency.
-			// My `Identity::save` code:
-			// `if ( empty( $_POST['dame_license_type'] ) ) { $errors[] = ... }`?
-			// Let's check `Identity.php` I wrote.
-			// It DID NOT include 'dame_license_type' in `save` validation. I removed it because I saw it was here.
-			// So I must validate it here.
-			$errors = [];
-			if ( empty( $_POST['dame_license_type'] ) ) {
-				$errors[] = __( 'Le type de licence est obligatoire.', 'dame' );
-			}
-			if ( ! empty( $_POST['dame_license_number'] ) && ! preg_match( '/^[A-Z][0-9]{5}$/', $_POST['dame_license_number'] ) ) {
-				$errors[] = __( 'Le format du numéro de licence est invalide. Il doit être une lettre majuscule suivie de 5 chiffres (ex: A12345).', 'dame' );
-			}
+			$errors[] = __( 'Le type de licence est obligatoire.', 'dame' );
+		}
+		if ( ! empty( $_POST['dame_license_number'] ) && ! preg_match( '/^[A-Z][0-9]{5}$/', $_POST['dame_license_number'] ) ) {
+			$errors[] = __( 'Le format du numéro de licence est invalide. Il doit être une lettre majuscule suivie de 5 chiffres (ex: A12345).', 'dame' );
+		}
 
-			if ( ! empty( $errors ) ) {
-				$existing_error = get_transient( 'dame_error_message' );
-				if ( $existing_error ) {
-					$errors_str = $existing_error . '<br>' . implode( '<br>', $errors );
-				} else {
-					$errors_str = implode( '<br>', $errors );
-				}
-				set_transient( 'dame_error_message', $errors_str, 10 );
-
-				// We also need to save transient data for THESE fields to prevent data loss.
-				$post_data_to_save = get_transient( 'dame_post_data_' . $post_id ) ?: [];
-				foreach ( $_POST as $key => $value ) {
-					if ( strpos( $key, 'dame_' ) === 0 ) {
-						$post_data_to_save[ $key ] = wp_unslash( $value );
-					}
-				}
-				set_transient( 'dame_post_data_' . $post_id, $post_data_to_save, 60 );
-				return;
+		if ( ! empty( $errors ) ) {
+			$existing_error = get_transient( 'dame_error_message' );
+			if ( $existing_error ) {
+				$errors_str = $existing_error . '<br>' . implode( '<br>', $errors );
+			} else {
+				$errors_str = implode( '<br>', $errors );
 			}
+			set_transient( 'dame_error_message', $errors_str, 10 );
+
+			// Save posted data to transient to repopulate form
+			$post_data_to_save = get_transient( 'dame_post_data_' . $post_id ) ?: [];
+			foreach ( $_POST as $key => $value ) {
+				if ( strpos( $key, 'dame_' ) === 0 ) {
+					$post_data_to_save[ $key ] = wp_unslash( $value );
+				}
+			}
+			set_transient( 'dame_post_data_' . $post_id, $post_data_to_save, 60 );
+			return;
 		}
 
 		// Save Meta
@@ -230,13 +220,17 @@ class Classification {
 
 		// Handle Membership Status (Taxonomy)
 		if ( isset( $_POST['dame_membership_status_control'] ) ) {
-			$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-			if ( $current_season_tag_id ) {
-				$status_action = sanitize_key( $_POST['dame_membership_status_control'] );
-				if ( 'active' === $status_action ) {
-					wp_add_object_terms( $post_id, (int) $current_season_tag_id, 'dame_saison_adhesion' );
-				} elseif ( 'inactive' === $status_action ) {
-					wp_remove_object_terms( $post_id, (int) $current_season_tag_id, 'dame_saison_adhesion' );
+			$current_season_id = get_option( 'dame_current_season_tag_id' );
+			if ( $current_season_id ) {
+				$status_value = sanitize_key( $_POST['dame_membership_status_control'] );
+
+				if ( 'active' === $status_value ) {
+					// Only add if not already present
+					if ( ! has_term( (int) $current_season_id, 'dame_saison_adhesion', $post_id ) ) {
+						wp_set_object_terms( $post_id, [ (int) $current_season_id ], 'dame_saison_adhesion', true );
+					}
+				} elseif ( 'inactive' === $status_value ) {
+					wp_remove_object_terms( $post_id, (int) $current_season_id, 'dame_saison_adhesion' );
 				}
 			}
 		}

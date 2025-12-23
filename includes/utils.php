@@ -140,8 +140,8 @@ function dame_get_adherent_age_category( $birth_date_str, $gender = 'Masculin' )
     }
 
     // Get the current season tag ID from options.
-    $current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-    if ( ! $current_season_tag_id ) {
+    $current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
+    if ( ! $current_season_tag_id || 0 === $current_season_tag_id ) {
         return __( 'Saison non définie', 'dame' );
     }
 
@@ -243,8 +243,8 @@ function dame_get_all_age_categories() {
  */
 function dame_get_birth_date_range_for_category( $category_key ) {
     // Get the current season tag ID from options.
-    $current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-    if ( ! $current_season_tag_id ) {
+    $current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
+    if ( ! $current_season_tag_id || 0 === $current_season_tag_id ) {
         return null;
     }
 

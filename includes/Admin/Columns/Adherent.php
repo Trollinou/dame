@@ -7,6 +7,7 @@
 
 namespace DAME\Admin\Columns;
 
+use DAME\Services\Data_Provider;
 use DateTime;
 use WP_Query;
 use WP_Post;
@@ -20,13 +21,18 @@ class Adherent {
 	 * Initialize the columns logic.
 	 */
 	public function init() {
-		add_filter( 'manage_edit-dame_adherent_columns', [ $this, 'set_columns' ] );
-		add_action( 'manage_dame_adherent_posts_custom_column', [ $this, 'render_columns' ], 10, 2 );
-		add_filter( 'manage_edit-dame_adherent_sortable_columns', [ $this, 'set_sortable_columns' ] );
+		// Columns
+		add_filter( 'manage_adherent_posts_columns', [ $this, 'set_columns' ] );
+		add_action( 'manage_adherent_posts_custom_column', [ $this, 'render_columns' ], 10, 2 );
+		add_filter( 'manage_edit-adherent_sortable_columns', [ $this, 'set_sortable_columns' ] );
+
+		// Query & Filters
 		add_action( 'pre_get_posts', [ $this, 'sort_columns' ] );
 		add_action( 'load-edit.php', [ $this, 'remove_date_filter' ] );
 		add_action( 'restrict_manage_posts', [ $this, 'add_filters' ] );
 		add_action( 'pre_get_posts', [ $this, 'filter_query' ] );
+
+		// Search & Actions
 		add_filter( 'posts_search', [ $this, 'extend_search' ], 10, 2 );
 		add_filter( 'post_row_actions', [ $this, 'add_row_actions' ], 10, 2 );
 	}
@@ -45,6 +51,8 @@ class Adherent {
 			'dame_license_number'    => __( 'Licence', 'dame' ),
 			'dame_phone'             => __( 'Téléphone', 'dame' ),
 			'dame_email'             => __( 'Email', 'dame' ),
+			'dame_department'        => __( 'Département', 'dame' ),
+			'dame_region'            => __( 'Région', 'dame' ),
 			'dame_membership_status' => __( 'Statut Adhésion', 'dame' ),
 			'dame_saisons'           => __( 'Saisons d\'adhésion', 'dame' ),
 			'dame_classification'    => __( 'Classification', 'dame' ),
@@ -64,8 +72,6 @@ class Adherent {
 				$birth_date_str = get_post_meta( $post_id, '_dame_birth_date', true );
 				$gender         = get_post_meta( $post_id, '_dame_sexe', true );
 
-				// Using legacy helper function for now as it contains complex business logic
-				// TODO: Migrate dame_get_adherent_age_category to a Service
 				$category = function_exists( 'dame_get_adherent_age_category' )
 					? dame_get_adherent_age_category( $birth_date_str, $gender )
 					: 'N/A';
@@ -75,10 +81,12 @@ class Adherent {
 					if ( $birth_date_obj ) {
 						$formatted_birth_date = $birth_date_obj->format( 'd/m/Y' );
 						echo '<span title="' . esc_attr( $formatted_birth_date ) . '">' . esc_html( $category ) . '</span>';
-						break;
+					} else {
+						echo esc_html( $category );
 					}
+				} else {
+					echo esc_html( $category );
 				}
-				echo esc_html( $category );
 				break;
 
 			case 'dame_license_number':
@@ -96,6 +104,18 @@ class Adherent {
 				echo esc_html( $phone );
 				break;
 
+			case 'dame_department':
+				$dept_code   = get_post_meta( $post_id, '_dame_department', true );
+				$departments = Data_Provider::get_departments();
+				echo esc_html( $departments[ $dept_code ] ?? $dept_code );
+				break;
+
+			case 'dame_region':
+				$region_code = get_post_meta( $post_id, '_dame_region', true );
+				$regions     = Data_Provider::get_regions();
+				echo esc_html( $regions[ $region_code ] ?? $region_code );
+				break;
+
 			case 'dame_classification':
 				$groups = get_the_terms( $post_id, 'dame_group' );
 				if ( ! empty( $groups ) && ! is_wp_error( $groups ) ) {
@@ -107,8 +127,8 @@ class Adherent {
 				break;
 
 			case 'dame_membership_status':
-				$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-				if ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post_id ) ) {
+				$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
+				if ( $current_season_tag_id && has_term( $current_season_tag_id, 'dame_saison_adhesion', $post_id ) ) {
 					echo '<span style="color: green; font-weight: bold;">' . esc_html__( 'Actif', 'dame' ) . '</span>';
 				} else {
 					echo esc_html__( 'Non adhérent', 'dame' );
@@ -139,7 +159,7 @@ class Adherent {
 	 */
 	public function set_sortable_columns( $columns ) {
 		$columns['dame_license_number'] = 'dame_license_number';
-		$columns['dame_age_category']   = 'dame_birth_date'; // Sort by birth date for age
+		$columns['dame_age_category']   = 'dame_birth_date'; // Sort by birth date
 		return $columns;
 	}
 
@@ -149,7 +169,7 @@ class Adherent {
 	 * @param WP_Query $query The query object.
 	 */
 	public function sort_columns( $query ) {
-		if ( ! is_admin() || ! $query->is_main_query() || 'dame_adherent' !== $query->get( 'post_type' ) ) {
+		if ( ! is_admin() || ! $query->is_main_query() || 'adherent' !== $query->get( 'post_type' ) ) {
 			return;
 		}
 
@@ -169,7 +189,8 @@ class Adherent {
 	 */
 	public function remove_date_filter() {
 		$screen = get_current_screen();
-		if ( $screen && 'edit-dame_adherent' === $screen->id ) {
+		// Correct screen ID for 'adherent' CPT is 'edit-adherent'
+		if ( $screen && 'edit-adherent' === $screen->id ) {
 			add_filter( 'months_dropdown_results', '__return_empty_array' );
 		}
 	}
@@ -180,7 +201,8 @@ class Adherent {
 	public function add_filters() {
 		global $typenow;
 
-		if ( 'dame_adherent' === $typenow ) {
+		// Correct CPT slug
+		if ( 'adherent' === $typenow ) {
 			// Group filter
 			$group_terms = get_terms(
 				array(
@@ -234,7 +256,6 @@ class Adherent {
 			}
 
 			// Age Category filter
-			// Using legacy helper
 			$age_categories = function_exists( 'dame_get_all_age_categories' ) ? dame_get_all_age_categories() : [];
 			if ( ! empty( $age_categories ) ) {
 				$current_age_category = $_GET['dame_age_category_filter'] ?? '';
@@ -259,7 +280,8 @@ class Adherent {
 		global $pagenow;
 		$post_type = $_GET['post_type'] ?? '';
 
-		if ( is_admin() && 'edit.php' === $pagenow && 'dame_adherent' === $post_type && $query->is_main_query() ) {
+		// Correct CPT slug
+		if ( is_admin() && 'edit.php' === $pagenow && 'adherent' === $post_type && $query->is_main_query() ) {
 			$meta_query = $query->get( 'meta_query' ) ?: array();
 			$tax_query  = $query->get( 'tax_query' ) ?: array();
 
@@ -314,7 +336,6 @@ class Adherent {
 			if ( isset( $_GET['dame_age_category_filter'] ) && ! empty( $_GET['dame_age_category_filter'] ) ) {
 				$age_category_filter = sanitize_key( $_GET['dame_age_category_filter'] );
 
-				// Using legacy helper
 				$date_range = function_exists( 'dame_get_birth_date_range_for_category' )
 					? dame_get_birth_date_range_for_category( $age_category_filter )
 					: null;
@@ -362,7 +383,8 @@ class Adherent {
 	public function extend_search( $search, $query ) {
 		global $wpdb;
 
-		if ( $query->is_search() && $query->get( 'post_type' ) === 'dame_adherent' ) {
+		// Correct CPT slug
+		if ( $query->is_search() && $query->get( 'post_type' ) === 'adherent' ) {
 			$search_term = $query->get( 's' );
 			if ( ! empty( $search_term ) ) {
 				$search_term_like = '%' . $wpdb->esc_like( $search_term ) . '%';
@@ -390,7 +412,8 @@ class Adherent {
 	 * @return array The modified row actions.
 	 */
 	public function add_row_actions( $actions, $post ) {
-		if ( 'dame_adherent' === $post->post_type ) {
+		// Correct CPT slug
+		if ( 'adherent' === $post->post_type ) {
 			// CPT is not public, so the default 'View' link is not needed/broken.
 			unset( $actions['view'] );
 

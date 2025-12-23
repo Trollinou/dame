@@ -26,7 +26,12 @@ class Saisons {
 	 */
 	public function register() {
 		// Registers actions/hooks logic
-		add_action( 'admin_init', [ $this, 'handle_actions' ] );
+		// If called during admin_init (via Main::register_settings), execute directly.
+		if ( doing_action( 'admin_init' ) ) {
+			$this->handle_actions();
+		} else {
+			add_action( 'admin_init', [ $this, 'handle_actions' ] );
+		}
 	}
 
 	/**
