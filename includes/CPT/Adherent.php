@@ -74,6 +74,6 @@ class Adherent {
 			'show_in_rest'          => true,
 		);
 
-		register_post_type( 'adherent', $args );
+		register_post_type( 'dame_adherent', $args );
 	}
 }

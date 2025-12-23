@@ -11,6 +11,7 @@ use DAME\CPT\Adherent;
 use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
 use DAME\Admin\Assets;
 use DAME\Admin\Settings\Main as SettingsMain;
+use DAME\Admin\Columns\Adherent as AdherentColumns;
 
 /**
  * The core plugin class.
@@ -72,6 +73,10 @@ class Plugin {
 			// Initialize Settings
 			$settings = new SettingsMain();
 			$settings->init();
+
+			// Initialize Adherent Columns
+			$adherent_columns = new AdherentColumns();
+			$adherent_columns->init();
 		}
 	}
 }
