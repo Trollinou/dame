@@ -82,7 +82,7 @@ class Information {
 			</p>
 			<p>
 				<label for="dame_birth_city"><strong><?php _e( 'Ville de naissance :', 'dame' ); ?></strong></label><br>
-				<input type="text" name="dame_birth_city" id="dame_birth_city" value="<?php echo esc_attr( $get_val( '_dame_birth_city' ) ); ?>" class="regular-text">
+				<input type="text" name="dame_birth_city" id="dame_birth_city" value="<?php echo esc_attr( $get_val( '_dame_birth_city' ) ); ?>" class="regular-text dame-js-birth-city">
 			</p>
 		</div>
 
@@ -100,16 +100,16 @@ class Information {
 			</p>
 			<p>
 				<label for="dame_address_1"><strong><?php _e( 'Adresse :', 'dame' ); ?></strong></label><br>
-				<input type="text" name="dame_address_1" id="dame_address_1" value="<?php echo esc_attr( $get_val( '_dame_address_1' ) ); ?>" class="large-text"><br>
+				<input type="text" name="dame_address_1" id="dame_address_1" value="<?php echo esc_attr( $get_val( '_dame_address_1' ) ); ?>" class="large-text dame-js-address"><br>
 				<input type="text" name="dame_address_2" id="dame_address_2" value="<?php echo esc_attr( $get_val( '_dame_address_2' ) ); ?>" class="large-text" placeholder="<?php _e( 'Complément', 'dame' ); ?>">
 			</p>
 			<p>
 				<label for="dame_postal_code"><strong><?php _e( 'Code Postal :', 'dame' ); ?></strong></label><br>
-				<input type="text" name="dame_postal_code" id="dame_postal_code" value="<?php echo esc_attr( $get_val( '_dame_postal_code' ) ); ?>">
+				<input type="text" name="dame_postal_code" id="dame_postal_code" value="<?php echo esc_attr( $get_val( '_dame_postal_code' ) ); ?>" class="dame-js-zip">
 			</p>
 			<p>
 				<label for="dame_city"><strong><?php _e( 'Ville :', 'dame' ); ?></strong></label><br>
-				<input type="text" name="dame_city" id="dame_city" value="<?php echo esc_attr( $get_val( '_dame_city' ) ); ?>" class="regular-text">
+				<input type="text" name="dame_city" id="dame_city" value="<?php echo esc_attr( $get_val( '_dame_city' ) ); ?>" class="regular-text dame-js-city">
 			</p>
 			<p>
 				<label for="dame_profession"><strong><?php _e( 'Profession :', 'dame' ); ?></strong></label><br>

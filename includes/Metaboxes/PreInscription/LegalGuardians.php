@@ -64,7 +64,7 @@ class LegalGuardians {
 				</p>
 				<p>
 					<label><strong><?php _e( 'Ville de naissance :', 'dame' ); ?></strong></label><br>
-					<input type="text" name="dame_legal_rep_<?php echo $i; ?>_commune_naissance" value="<?php echo esc_attr( $get_val( "_dame_legal_rep_{$i}_commune_naissance" ) ); ?>" class="regular-text">
+					<input type="text" name="dame_legal_rep_<?php echo $i; ?>_commune_naissance" value="<?php echo esc_attr( $get_val( "_dame_legal_rep_{$i}_commune_naissance" ) ); ?>" class="regular-text dame-js-birth-city">
 				</p>
 				<p>
 					<label><strong><?php _e( 'Téléphone :', 'dame' ); ?></strong></label><br>
@@ -80,16 +80,16 @@ class LegalGuardians {
 				</p>
 				<p>
 					<label><strong><?php _e( 'Adresse :', 'dame' ); ?></strong></label><br>
-					<input type="text" name="dame_legal_rep_<?php echo $i; ?>_address_1" value="<?php echo esc_attr( $get_val( "_dame_legal_rep_{$i}_address_1" ) ); ?>" class="large-text"><br>
+					<input type="text" name="dame_legal_rep_<?php echo $i; ?>_address_1" value="<?php echo esc_attr( $get_val( "_dame_legal_rep_{$i}_address_1" ) ); ?>" class="large-text dame-js-address"><br>
 					<input type="text" name="dame_legal_rep_<?php echo $i; ?>_address_2" value="<?php echo esc_attr( $get_val( "_dame_legal_rep_{$i}_address_2" ) ); ?>" class="large-text" placeholder="<?php _e( 'Complément', 'dame' ); ?>">
 				</p>
 				<p>
 					<label><strong><?php _e( 'Code Postal :', 'dame' ); ?></strong></label><br>
-					<input type="text" name="dame_legal_rep_<?php echo $i; ?>_postal_code" value="<?php echo esc_attr( $get_val( "_dame_legal_rep_{$i}_postal_code" ) ); ?>">
+					<input type="text" name="dame_legal_rep_<?php echo $i; ?>_postal_code" value="<?php echo esc_attr( $get_val( "_dame_legal_rep_{$i}_postal_code" ) ); ?>" class="dame-js-zip">
 				</p>
 				<p>
 					<label><strong><?php _e( 'Ville :', 'dame' ); ?></strong></label><br>
-					<input type="text" name="dame_legal_rep_<?php echo $i; ?>_city" value="<?php echo esc_attr( $get_val( "_dame_legal_rep_{$i}_city" ) ); ?>" class="regular-text">
+					<input type="text" name="dame_legal_rep_<?php echo $i; ?>_city" value="<?php echo esc_attr( $get_val( "_dame_legal_rep_{$i}_city" ) ); ?>" class="regular-text dame-js-city">
 				</p>
 			</div>
 			<?php if ( $i === 1 ) echo '<hr>'; ?>

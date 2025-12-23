@@ -1,0 +1,9 @@
+.dame-reconciliation-table { width: 100%; border-collapse: collapse; }
+.dame-reconciliation-table th, .dame-reconciliation-table td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+.dame-reconciliation-table tr.dame-highlight-diff {
+    background-color: #fffbe5 !important;
+    border-left: 4px solid #ffc107;
+}
+.dame-actions-wrapper .button-large { width: 100%; margin-bottom: 10px; text-align: center; }
+.dame-delete-button { color: #a00; border-color: #a00; }
+.dame-delete-button:hover { background: #dc3232; color: #fff; border-color: #dc3232; }
