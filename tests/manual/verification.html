@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test JS Adherent (Common + Specific)</title>
+    <link rel="stylesheet" href="../../assets/css/admin-adherent.css">
+</head>
+<body>
+    <h1>Simulation Admin Adhérent</h1>
+
+    <input type="hidden" id="dame_latitude" name="dame_latitude" value="" class="dame-js-lat" data-group="adherent" />
+    <input type="hidden" id="dame_longitude" name="dame_longitude" value="" class="dame-js-long" data-group="adherent" />
+    <input type="hidden" id="dame_distance" name="dame_distance" value="" class="dame-js-dist" data-group="adherent" />
+    <input type="hidden" id="dame_travel_time" name="dame_travel_time" value="" class="dame-js-time" data-group="adherent" />
+
+    <form>
+        <p>
+            <label for="dame_birth_name">Nom de naissance</label>
+            <input type="text" id="dame_birth_name" name="dame_birth_name" value="" />
+        </p>
+        <p>
+            <label for="dame_last_name">Nom d'usage</label>
+            <input type="text" id="dame_last_name" name="dame_last_name" value="" />
+        </p>
+
+        <p>
+            <label for="dame_address_1">Adresse</label>
+            <div class="dame-autocomplete-wrapper">
+                <input type="text" id="dame_address_1" name="dame_address_1" value="" class="dame-js-address" data-group="adherent" />
+            </div>
+        </p>
+        <p>
+            <label for="dame_postal_code">Code Postal</label>
+            <input type="text" id="dame_postal_code" name="dame_postal_code" value="" class="dame-js-zip" data-group="adherent" />
+        </p>
+        <p>
+            <label for="dame_city">Ville</label>
+            <input type="text" id="dame_city" name="dame_city" value="" class="dame-js-city" data-group="adherent" />
+        </p>
+
+        <p>
+            <label for="dame_birth_city">Lieu de naissance (Code)</label>
+            <div class="dame-autocomplete-wrapper">
+                <input type="text" id="dame_birth_city" name="dame_birth_city" value="" class="dame-js-birth-city" />
+            </div>
+        </p>
+
+        <p>
+            <label for="dame_department">Département</label>
+            <select id="dame_department" name="dame_department" class="dame-js-dept" data-group="adherent">
+                <option value="">Sélectionner</option>
+                <option value="75">75 - Paris</option>
+                <option value="69">69 - Rhône</option>
+            </select>
+        </p>
+        <p>
+            <label for="dame_region">Région</label>
+            <select id="dame_region" name="dame_region" class="dame-js-region" data-group="adherent">
+                <option value="">Sélectionner</option>
+                <option value="IDF">Île-de-France</option>
+                <option value="ARA">Auvergne-Rhône-Alpes</option>
+            </select>
+        </p>
+
+    </form>
+
+    <script>
+        var dame_admin_data = {
+            assoc_latitude: '48.8566',
+            assoc_longitude: '2.3522',
+            dept_region_map: {
+                '75': 'IDF',
+                '69': 'ARA'
+            }
+        };
+    </script>
+    <script src="../../assets/js/admin-common.js"></script>
+    <script src="../../assets/js/admin-adherent.js"></script>
+</body>
+</html>

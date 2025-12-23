@@ -68,7 +68,17 @@ class Identity {
 		$country = $get_value( 'dame_country' );
 		$region = $get_value( 'dame_region' );
 		$department = $get_value( 'dame_department' );
+
+		$latitude = $get_value( 'dame_latitude' );
+		$longitude = $get_value( 'dame_longitude' );
+		$distance = $get_value( 'dame_distance' );
+		$travel_time = $get_value( 'dame_travel_time' );
 		?>
+		<input type="hidden" id="dame_latitude" name="dame_latitude" value="<?php echo esc_attr( $latitude ); ?>" class="dame-js-lat" data-group="adherent" />
+		<input type="hidden" id="dame_longitude" name="dame_longitude" value="<?php echo esc_attr( $longitude ); ?>" class="dame-js-long" data-group="adherent" />
+		<input type="hidden" id="dame_distance" name="dame_distance" value="<?php echo esc_attr( $distance ); ?>" class="dame-js-dist" data-group="adherent" />
+		<input type="hidden" id="dame_travel_time" name="dame_travel_time" value="<?php echo esc_attr( $travel_time ); ?>" class="dame-js-time" data-group="adherent" />
+
 		<table class="form-table">
 			<tr>
 				<th><label for="dame_birth_name"><?php _e( 'Nom de naissance', 'dame' ); ?> <span class="description">(obligatoire)</span></label></th>
@@ -98,7 +108,7 @@ class Identity {
 				<th><label for="dame_birth_city"><?php _e( 'Lieu de naissance', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-autocomplete-wrapper">
-						<input type="text" id="dame_birth_city" name="dame_birth_city" value="<?php echo esc_attr( $birth_city ); ?>" placeholder="<?php _e( 'Lieu de naissance (Code)', 'dame' ); ?>" class="regular-text" />
+						<input type="text" id="dame_birth_city" name="dame_birth_city" value="<?php echo esc_attr( $birth_city ); ?>" placeholder="<?php _e( 'Lieu de naissance (Code)', 'dame' ); ?>" class="regular-text dame-js-birth-city" />
 					</div>
 				</td>
 			</tr>
@@ -124,7 +134,7 @@ class Identity {
 				<th><label for="dame_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-autocomplete-wrapper" style="position: relative;">
-						<input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text" autocomplete="off" />
+						<input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text dame-js-address" data-group="adherent" autocomplete="off" />
 					</div>
 				</td>
 			</tr>
@@ -136,8 +146,8 @@ class Identity {
 				<th><label for="dame_postal_code"><?php _e( 'Code Postal / Ville', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-inline-fields">
-						<input type="text" id="dame_postal_code" name="dame_postal_code" value="<?php echo esc_attr( $postal_code ); ?>" class="postal-code" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
-						<input type="text" id="dame_city" name="dame_city" value="<?php echo esc_attr( $city ); ?>" class="city" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
+						<input type="text" id="dame_postal_code" name="dame_postal_code" value="<?php echo esc_attr( $postal_code ); ?>" class="postal-code dame-js-zip" data-group="adherent" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
+						<input type="text" id="dame_city" name="dame_city" value="<?php echo esc_attr( $city ); ?>" class="city dame-js-city" data-group="adherent" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
 					</div>
 				</td>
 			</tr>
@@ -145,7 +155,7 @@ class Identity {
 				<th><label for="dame_country"><?php _e( 'Pays', 'dame' ); ?></label></th>
 				<td>
 					<select id="dame_country" name="dame_country">
-						<?php foreach ( dame_get_country_list() as $code => $name ) : ?>
+						<?php foreach ( \DAME\Services\Data_Provider::get_countries() as $code => $name ) : ?>
 							<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $country, $code ); ?>><?php echo esc_html( $name ); ?></option>
 						<?php endforeach; ?>
 					</select>
@@ -154,8 +164,8 @@ class Identity {
 			<tr>
 				<th><label for="dame_department"><?php _e( 'Département', 'dame' ); ?></label></th>
 				<td>
-					<select id="dame_department" name="dame_department">
-						<?php foreach ( dame_get_department_list() as $code => $name ) : ?>
+					<select id="dame_department" name="dame_department" class="dame-js-dept" data-group="adherent">
+						<?php foreach ( \DAME\Services\Data_Provider::get_departments() as $code => $name ) : ?>
 							<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $department, $code ); ?>><?php echo esc_html( $name ); ?></option>
 						<?php endforeach; ?>
 					</select>
@@ -164,8 +174,8 @@ class Identity {
 			<tr>
 				<th><label for="dame_region"><?php _e( 'Région', 'dame' ); ?></label></th>
 				<td>
-					<select id="dame_region" name="dame_region">
-						<?php foreach ( dame_get_region_list() as $code => $name ) : ?>
+					<select id="dame_region" name="dame_region" class="dame-js-region" data-group="adherent">
+						<?php foreach ( \DAME\Services\Data_Provider::get_regions() as $code => $name ) : ?>
 							<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $region, $code ); ?>><?php echo esc_html( $name ); ?></option>
 						<?php endforeach; ?>
 					</select>
@@ -278,6 +288,8 @@ class Identity {
 			'dame_profession' => 'sanitize_text_field',
 			'dame_country' => 'sanitize_text_field', 'dame_region' => 'sanitize_text_field', 'dame_department' => 'sanitize_text_field',
 			'dame_email_refuses_comms' => 'absint',
+			'dame_latitude' => 'sanitize_text_field', 'dame_longitude' => 'sanitize_text_field',
+			'dame_distance' => 'sanitize_text_field', 'dame_travel_time' => 'sanitize_text_field',
 		];
 
 		foreach ( $fields as $field_name => $sanitize_callback ) {

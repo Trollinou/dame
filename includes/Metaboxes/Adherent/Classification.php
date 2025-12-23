@@ -89,7 +89,7 @@ class Classification {
 			<label for="dame_health_document"><strong><?php _e( 'Document de santé', 'dame' ); ?></strong></label>
 			<select id="dame_health_document" name="dame_health_document" style="width:100%;">
 				<?php
-				$health_doc_options = function_exists( 'dame_get_health_document_options' ) ? dame_get_health_document_options() : [];
+				$health_doc_options = \DAME\Services\Data_Provider::get_health_document_options();
 				$health_document = get_post_meta( $post->ID, '_dame_health_document', true );
 				foreach ( $health_doc_options as $value => $label ) :
 					?>
