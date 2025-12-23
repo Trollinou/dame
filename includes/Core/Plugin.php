@@ -11,6 +11,8 @@ use DAME\CPT\Adherent;
 use DAME\CPT\PreInscription;
 use DAME\Core\Roles;
 use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
+use DAME\Metaboxes\PreInscription\Information as PreInscriptionInformation;
+use DAME\Metaboxes\PreInscription\LegalGuardians as PreInscriptionLegalGuardians;
 use DAME\Services\PDF_Generator;
 use DAME\Shortcodes\RegistrationForm;
 use DAME\Admin\Assets;
@@ -105,6 +107,13 @@ class Plugin {
 
 			$group_taxonomy = new Group();
 			$group_taxonomy->init();
+
+			// Initialize PreInscription Metaboxes
+			$pre_inscription_info = new PreInscriptionInformation();
+			$pre_inscription_info->init();
+
+			$pre_inscription_legal = new PreInscriptionLegalGuardians();
+			$pre_inscription_legal->init();
 		}
 	}
 }
