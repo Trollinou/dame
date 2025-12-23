@@ -74,7 +74,7 @@ class Plugin {
 			$settings = new SettingsMain();
 			$settings->init();
 
-			// Initialize Adherent Columns
+			// Initialize Adherent Columns (Migrated)
 			$adherent_columns = new AdherentColumns();
 			$adherent_columns->init();
 		}
