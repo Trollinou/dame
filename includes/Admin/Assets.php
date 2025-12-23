@@ -33,7 +33,7 @@ class Assets {
 		}
 
 		// Check if we are on the Adherent CPT or Settings Page
-		$is_adherent_cpt = 'dame_adherent' === $screen->post_type;
+		$is_adherent_cpt = 'adherent' === $screen->post_type;
 		$is_settings_page = 'settings_page_dame-settings' === $screen->id || 'toplevel_page_dame-settings' === $screen->id;
 
 		if ( ! $is_adherent_cpt && ! $is_settings_page ) {
