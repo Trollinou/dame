@@ -45,23 +45,23 @@ class Main {
 	 * Initialize the settings page.
 	 */
 	public function init() {
-		// Register tabs immediately to ensure hooks (e.g. admin_init for saving) are registered early enough.
-		foreach ( $this->tabs as $tab ) {
-			if ( method_exists( $tab, 'register' ) ) {
-				$tab->register();
-			}
-		}
-
 		add_action( 'admin_menu', [ $this, 'add_menu' ] );
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 	}
 
 	/**
-	 * Register the main settings group.
+	 * Register settings for all tabs.
 	 */
 	public function register_settings() {
 		// Register the main option group once.
 		register_setting( 'dame_options_group', 'dame_options', [ $this, 'sanitize_options' ] );
+
+		// Let each tab register its sections and fields.
+		foreach ( $this->tabs as $tab ) {
+			if ( method_exists( $tab, 'register' ) ) {
+				$tab->register();
+			}
+		}
 	}
 
 	/**
