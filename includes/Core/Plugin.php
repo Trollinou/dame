@@ -86,6 +86,10 @@ class Plugin {
 
 			$group_taxonomy = new Group();
 			$group_taxonomy->init();
+
+			add_action( 'admin_notices', function() {
+				echo '<div class="notice">DEBUG SAISON ID: ' . get_option( 'dame_current_season_tag_id' ) . '</div>';
+			} );
 		}
 	}
 }

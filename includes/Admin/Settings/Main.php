@@ -28,9 +28,9 @@ class Main {
 	private $tabs = [];
 
 	/**
-	 * Initialize the settings page.
+	 * Constructor.
 	 */
-	public function init() {
+	public function __construct() {
 		// Instantiate Tabs
 		$this->tabs['association']    = new Association();
 		$this->tabs['saisons']        = new Saisons();
@@ -39,7 +39,12 @@ class Main {
 		$this->tabs['sauvegarde']     = new Sauvegarde();
 		$this->tabs['emails']         = new Emails();
 		$this->tabs['desinstallation'] = new Desinstallation();
+	}
 
+	/**
+	 * Initialize the settings page.
+	 */
+	public function init() {
 		add_action( 'admin_menu', [ $this, 'add_menu' ] );
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 	}

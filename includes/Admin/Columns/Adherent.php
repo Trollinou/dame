@@ -127,8 +127,8 @@ class Adherent {
 				break;
 
 			case 'dame_membership_status':
-				$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-				if ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post_id ) ) {
+				$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
+				if ( $current_season_tag_id && has_term( $current_season_tag_id, 'dame_saison_adhesion', $post_id ) ) {
 					echo '<span style="color: green; font-weight: bold;">' . esc_html__( 'Actif', 'dame' ) . '</span>';
 				} else {
 					echo esc_html__( 'Non adhérent', 'dame' );
