@@ -32,6 +32,9 @@ class Classification {
 	 * @param \WP_Post $post The post object.
 	 */
 	public function render( $post ) {
+		// Add nonce field for security
+		wp_nonce_field( 'dame_save_adherent_meta', 'dame_metabox_nonce' );
+
 		$transient_data = get_transient( 'dame_post_data_' . $post->ID );
 		$get_value = function( $field_name ) use ( $post, $transient_data ) {
 			return isset( $transient_data[ $field_name ] )
