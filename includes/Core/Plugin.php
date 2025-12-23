@@ -55,7 +55,7 @@ class Plugin {
 		if ( defined( 'DAME_PATH' ) ) {
 			require_once DAME_PATH . 'includes/data-lists.php';
 			require_once DAME_PATH . 'includes/utils.php';
-			require_once DAME_PATH . 'includes/taxonomies.php';
+			// require_once DAME_PATH . 'includes/taxonomies.php';
 			require_once DAME_PATH . 'includes/assets.php';
 		}
 
@@ -86,10 +86,6 @@ class Plugin {
 
 			$group_taxonomy = new Group();
 			$group_taxonomy->init();
-
-			add_action( 'admin_notices', function() {
-				echo '<div class="notice">DEBUG SAISON ID: ' . get_option( 'dame_current_season_tag_id' ) . '</div>';
-			} );
 		}
 	}
 }
