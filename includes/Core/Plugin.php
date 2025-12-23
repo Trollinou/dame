@@ -12,6 +12,7 @@ use DAME\CPT\PreInscription;
 use DAME\Core\Roles;
 use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
 use DAME\Services\PDF_Generator;
+use DAME\Shortcodes\RegistrationForm;
 use DAME\Admin\Assets;
 use DAME\Admin\Settings\Main as SettingsMain;
 use DAME\Admin\Columns\Adherent as AdherentColumns;
@@ -76,6 +77,10 @@ class Plugin {
 		// Initialize Services.
 		$pdf_generator = new PDF_Generator();
 		$pdf_generator->init();
+
+		// Initialize Shortcodes.
+		$registration_form = new RegistrationForm();
+		$registration_form->init();
 
 		// Initialize Metaboxes.
 		if ( is_admin() ) {

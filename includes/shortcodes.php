@@ -12,7 +12,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // Include the new modular files.
-require_once __DIR__ . '/shortcodes/fiche-inscription.php';
-require_once __DIR__ . '/shortcodes/contact.php';
-require_once __DIR__ . '/shortcodes/agenda.php';
-require_once __DIR__ . '/shortcodes/sondage.php';
+require_once __DIR__ . '/Shortcodes/fiche-inscription.php';
+require_once __DIR__ . '/Shortcodes/contact.php';
+require_once __DIR__ . '/Shortcodes/agenda.php';
+require_once __DIR__ . '/Shortcodes/sondage.php';
