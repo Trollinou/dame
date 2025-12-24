@@ -144,10 +144,18 @@ class Details {
 						$classes .= ' dame-js-city';
 					}
 
+					// Determine data-group
+					$data_group = 'adherent';
+					if ( strpos( $key, 'legal_rep_1' ) !== false ) {
+						$data_group = 'rep1';
+					} elseif ( strpos( $key, 'legal_rep_2' ) !== false ) {
+						$data_group = 'rep2';
+					}
+
 					if ( $is_autocomplete ) {
 						echo '<div class="dame-autocomplete-wrapper">';
 					}
-					echo '<input type="' . esc_attr( $type ) . '" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" value="' . esc_attr( $value ) . '" class="' . esc_attr( $classes ) . '" />';
+					echo '<input type="' . esc_attr( $type ) . '" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" value="' . esc_attr( $value ) . '" class="' . esc_attr( $classes ) . '" data-group="' . esc_attr( $data_group ) . '" />';
 					if ( $is_autocomplete ) {
 						echo '</div>';
 					}
