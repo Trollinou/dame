@@ -138,7 +138,6 @@ class Details {
 						$classes .= ' dame-js-birth-city';
 					} elseif ( strpos( $key, 'address_1' ) !== false ) {
 						$classes .= ' dame-js-address';
-						$classes = str_replace( 'regular-text', 'large-text', $classes ); // Address should be large
 					} elseif ( strpos( $key, 'postal_code' ) !== false ) {
 						$classes .= ' dame-js-zip';
 					} elseif ( strpos( $key, 'city' ) !== false ) {
