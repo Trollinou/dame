@@ -20,7 +20,7 @@ class Adherent_Matcher {
 	 * @param int $pre_inscription_id The pre-inscription post ID.
 	 * @return int The matched adherent ID, or 0 if no match found.
 	 */
-	public static function find_existing_match( $pre_inscription_id ) {
+	public static function find_match( $pre_inscription_id ) {
 		$first_name = get_post_meta( $pre_inscription_id, '_dame_first_name', true );
 		$last_name  = get_post_meta( $pre_inscription_id, '_dame_last_name', true );
 		$birth_name = get_post_meta( $pre_inscription_id, '_dame_birth_name', true );

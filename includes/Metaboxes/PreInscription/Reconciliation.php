@@ -27,7 +27,7 @@ class Reconciliation {
 	 * Add the meta box.
 	 */
 	public function add_box() {
-		$matched_id = Adherent_Matcher::find_existing_match( get_the_ID() );
+		$matched_id = Adherent_Matcher::find_match( get_the_ID() );
 		if ( $matched_id ) {
 			add_meta_box(
 				'dame_pre_inscription_reconciliation',

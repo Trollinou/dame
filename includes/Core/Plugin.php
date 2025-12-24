@@ -12,8 +12,7 @@ use DAME\CPT\PreInscription;
 use DAME\Core\Roles;
 use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
 use DAME\Metaboxes\PreInscription\Actions as PreInscriptionActions;
-use DAME\Metaboxes\PreInscription\Information as PreInscriptionInformation;
-use DAME\Metaboxes\PreInscription\LegalGuardians as PreInscriptionLegalGuardians;
+use DAME\Metaboxes\PreInscription\Details as PreInscriptionDetails;
 use DAME\Metaboxes\PreInscription\Reconciliation as PreInscriptionReconciliation;
 use DAME\Services\PDF_Generator;
 use DAME\Shortcodes\RegistrationForm;
@@ -111,11 +110,8 @@ class Plugin {
 			$group_taxonomy->init();
 
 			// Initialize PreInscription Metaboxes
-			$pre_inscription_info = new PreInscriptionInformation();
-			$pre_inscription_info->init();
-
-			$pre_inscription_legal = new PreInscriptionLegalGuardians();
-			$pre_inscription_legal->init();
+			$pre_inscription_details = new PreInscriptionDetails();
+			$pre_inscription_details->init();
 
 			$pre_inscription_reconciliation = new PreInscriptionReconciliation();
 			$pre_inscription_reconciliation->init();

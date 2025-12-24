@@ -26,7 +26,7 @@ class Actions {
 	 * Add the meta box.
 	 */
 	public function add_box() {
-		$matched_id = Adherent_Matcher::find_existing_match( get_the_ID() );
+		$matched_id = Adherent_Matcher::find_match( get_the_ID() );
 		add_meta_box(
 			'dame_pre_inscription_actions',
 			__( 'Actions de Validation', 'dame' ),
@@ -87,7 +87,7 @@ class Actions {
 	 * @param int $post_id Post ID.
 	 */
 	public function save( $post_id ) {
-		// Note: Field saving is handled by Information and LegalGuardians classes (priority 10).
+		// Note: Field saving is handled by Details class (priority 10).
 		// This runs at priority 20 to handle actions AFTER fields are saved.
 
 		if ( ! isset( $_POST['dame_pre_inscription_action_nonce'] ) || ! wp_verify_nonce( $_POST['dame_pre_inscription_action_nonce'], 'dame_pre_inscription_process_action' ) ) {
@@ -114,7 +114,7 @@ class Actions {
 
 				case 'validate_new':
 				case 'validate_update':
-					// Data is already saved by other classes, so we can read it fresh from the DB.
+					// Data is already saved by Details class, so we can read it fresh from the DB.
 					$pre_inscription_meta = get_post_meta( $post_id );
 					$adherent_meta        = array();
 					foreach ( $pre_inscription_meta as $key => $value ) {
