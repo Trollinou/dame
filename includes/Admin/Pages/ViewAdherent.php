@@ -24,15 +24,13 @@ class ViewAdherent {
 	 */
 	public function register() {
 		add_submenu_page(
-			'dame', // Attach to the main DAME menu slug.
+			null, // Hidden page
 			__( 'Consulter la fiche Adhérent', 'dame' ),
 			__( 'Consulter Adhérent', 'dame' ),
-			'edit_posts', // Capability for contributors and up.
+			'read_private_pages', // Capability
 			'dame-view-adherent',
 			[ $this, 'render' ]
 		);
-		// Hide the submenu page immediately.
-		remove_submenu_page( 'dame', 'dame-view-adherent' );
 	}
 
 	/**
@@ -40,7 +38,7 @@ class ViewAdherent {
 	 */
 	public function render() {
 		// Check permissions
-		if ( ! current_user_can( 'edit_posts' ) ) {
+		if ( ! current_user_can( 'read_private_pages' ) ) {
 			wp_die( esc_html__( 'Vous n\'avez pas la permission de voir cette page.', 'dame' ) );
 		}
 
