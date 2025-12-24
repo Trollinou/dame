@@ -24,13 +24,22 @@ class ViewAdherent {
 	 */
 	public function register() {
 		add_submenu_page(
-			null, // Hidden page
+			'dame', // Parent slug
 			__( 'Consulter la fiche Adhérent', 'dame' ),
 			__( 'Consulter Adhérent', 'dame' ),
 			'read_private_pages', // Capability
 			'dame-view-adherent',
 			[ $this, 'render' ]
 		);
+
+		add_action( 'admin_head', [ $this, 'hide_menu_link' ] );
+	}
+
+	/**
+	 * Hides the menu link via CSS.
+	 */
+	public function hide_menu_link() {
+		echo '<style>a[href="admin.php?page=dame-view-adherent"] { display: none !important; }</style>';
 	}
 
 	/**
