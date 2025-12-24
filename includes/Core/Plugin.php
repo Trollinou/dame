@@ -8,8 +8,16 @@
 namespace DAME\Core;
 
 use DAME\CPT\Adherent;
+use DAME\CPT\PreInscription;
+use DAME\Core\Roles;
 use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
+use DAME\Metaboxes\PreInscription\Actions as PreInscriptionActions;
+use DAME\Metaboxes\PreInscription\Details as PreInscriptionDetails;
+use DAME\Metaboxes\PreInscription\Reconciliation as PreInscriptionReconciliation;
+use DAME\Services\PDF_Generator;
+use DAME\Shortcodes\RegistrationForm;
 use DAME\Admin\Assets;
+use DAME\Admin\Pages\ViewAdherent;
 use DAME\Admin\Settings\Main as SettingsMain;
 use DAME\Admin\Columns\Adherent as AdherentColumns;
 use DAME\Taxonomies\Season;
@@ -59,9 +67,24 @@ class Plugin {
 			require_once DAME_PATH . 'includes/assets.php';
 		}
 
+		// Initialize Roles.
+		$roles = new Roles();
+		$roles->init();
+
 		// Initialize CPTs.
 		$adherent_cpt = new Adherent();
 		$adherent_cpt->init();
+
+		$pre_inscription_cpt = new PreInscription();
+		$pre_inscription_cpt->init();
+
+		// Initialize Services.
+		$pdf_generator = new PDF_Generator();
+		$pdf_generator->init();
+
+		// Initialize Shortcodes.
+		$registration_form = new RegistrationForm();
+		$registration_form->init();
 
 		// Initialize Metaboxes.
 		if ( is_admin() ) {
@@ -71,6 +94,10 @@ class Plugin {
 			// Initialize Admin Assets
 			$admin_assets = new Assets();
 			$admin_assets->init();
+
+			// Initialize Pages
+			$view_adherent_page = new ViewAdherent();
+			$view_adherent_page->init();
 
 			// Initialize Settings
 			$settings = new SettingsMain();
@@ -86,6 +113,16 @@ class Plugin {
 
 			$group_taxonomy = new Group();
 			$group_taxonomy->init();
+
+			// Initialize PreInscription Metaboxes
+			$pre_inscription_details = new PreInscriptionDetails();
+			$pre_inscription_details->init();
+
+			$pre_inscription_reconciliation = new PreInscriptionReconciliation();
+			$pre_inscription_reconciliation->init();
+
+			$pre_inscription_actions = new PreInscriptionActions();
+			$pre_inscription_actions->init();
 		}
 	}
 }

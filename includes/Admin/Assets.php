@@ -32,11 +32,12 @@ class Assets {
 			return;
 		}
 
-		// Check if we are on the Adherent CPT or Settings Page
-		$is_adherent_cpt = 'adherent' === $screen->post_type;
-		$is_settings_page = 'settings_page_dame-settings' === $screen->id || 'toplevel_page_dame-settings' === $screen->id;
+		// Check if we are on the Adherent CPT, Pre-inscription CPT or Settings Page
+		$is_adherent_cpt        = 'adherent' === $screen->post_type;
+		$is_pre_inscription_cpt = 'dame_pre_inscription' === $screen->post_type;
+		$is_settings_page       = 'settings_page_dame-settings' === $screen->id || 'toplevel_page_dame-settings' === $screen->id;
 
-		if ( ! $is_adherent_cpt && ! $is_settings_page ) {
+		if ( ! $is_adherent_cpt && ! $is_settings_page && ! $is_pre_inscription_cpt ) {
 			return;
 		}
 
@@ -86,6 +87,15 @@ class Assets {
 				[ 'dame-admin-common' ], // Depends on common
 				DAME_VERSION,
 				true
+			);
+		}
+
+		if ( $is_pre_inscription_cpt ) {
+			wp_enqueue_style(
+				'dame-admin-dame-css',
+				DAME_URL . 'assets/css/admin-dame.css',
+				[],
+				DAME_VERSION
 			);
 		}
 	}
