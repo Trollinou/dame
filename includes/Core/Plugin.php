@@ -17,6 +17,7 @@ use DAME\Metaboxes\PreInscription\Reconciliation as PreInscriptionReconciliation
 use DAME\Services\PDF_Generator;
 use DAME\Shortcodes\RegistrationForm;
 use DAME\Admin\Assets;
+use DAME\Admin\Pages\ViewAdherent;
 use DAME\Admin\Settings\Main as SettingsMain;
 use DAME\Admin\Columns\Adherent as AdherentColumns;
 use DAME\Taxonomies\Season;
@@ -93,6 +94,10 @@ class Plugin {
 			// Initialize Admin Assets
 			$admin_assets = new Assets();
 			$admin_assets->init();
+
+			// Initialize Pages
+			$view_adherent_page = new ViewAdherent();
+			$view_adherent_page->init();
 
 			// Initialize Settings
 			$settings = new SettingsMain();
