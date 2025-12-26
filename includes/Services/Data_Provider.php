@@ -192,4 +192,39 @@ class Data_Provider {
 			'XXXL',
 		);
 	}
+
+	/**
+	 * Retrieves all valid email addresses for a given adherent.
+	 *
+	 * This includes the adherent's own email (if communication is accepted)
+	 * and the emails of legal representatives.
+	 *
+	 * @param int $adherent_id The ID of the adherent post.
+	 * @return array List of unique email addresses.
+	 */
+	public static function get_emails_for_adherent( $adherent_id ) {
+		$emails = array();
+
+		// Adherent's own email.
+		$adherent_email = get_post_meta( $adherent_id, '_dame_email', true );
+		$accepts_comms  = get_post_meta( $adherent_id, '_dame_accept_communication', true );
+
+		if ( ! empty( $adherent_email ) && is_email( $adherent_email ) && '1' === $accepts_comms ) {
+			$emails[] = $adherent_email;
+		}
+
+		// Legal Representative 1.
+		$rep1_email = get_post_meta( $adherent_id, '_dame_legal_rep_1_email', true );
+		if ( ! empty( $rep1_email ) && is_email( $rep1_email ) ) {
+			$emails[] = $rep1_email;
+		}
+
+		// Legal Representative 2.
+		$rep2_email = get_post_meta( $adherent_id, '_dame_legal_rep_2_email', true );
+		if ( ! empty( $rep2_email ) && is_email( $rep2_email ) ) {
+			$emails[] = $rep2_email;
+		}
+
+		return array_unique( $emails );
+	}
 }
