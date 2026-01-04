@@ -92,10 +92,10 @@ class Mailing {
 			}
 		}
 
-		// Get draft messages.
+		// Get published messages.
 		$messages = get_posts( array(
 			'post_type'      => 'dame_message',
-			'post_status'    => 'any',
+			'post_status'    => 'publish',
 			'posts_per_page' => -1,
 		) );
 
@@ -408,6 +408,8 @@ class Mailing {
 			update_post_meta( $message_id, '_dame_recipient_groups_saisonnier', $meta_groups_saisonnier );
 			update_post_meta( $message_id, '_dame_recipient_groups_permanent', $meta_groups_permanent );
 			update_post_meta( $message_id, '_dame_recipient_gender', $meta_gender );
+		} elseif ( 'manual' === $method ) {
+			update_post_meta( $message_id, '_dame_manual_recipients', $adherent_ids );
 		}
 
 		// Schedule batches (20 per minute to match legacy request of 3s * 20 = 60s).

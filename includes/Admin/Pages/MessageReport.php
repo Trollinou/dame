@@ -76,7 +76,7 @@ class MessageReport {
 			}
 		}
 
-		$recipients = dame_get_message_recipients( $message_id );
+		$recipients = $this->get_formatted_recipients( $message_id );
 		$message = get_post( $message_id );
 		?>
 		<div class="wrap">
@@ -140,89 +140,127 @@ class MessageReport {
 	}
 
 	/**
-	 * Find the name associated with an email hash.
+	 * Retrieves the list of recipients with strictly formatted names and sorted.
 	 *
-	 * @param string $hash The email hash.
-	 * @return string The formatted name or 'Inconnu'.
+	 * @param int $message_id The message ID.
+	 * @return array Sorted array of recipients [email => formatted_name].
 	 */
-	private function get_name_by_hash( $hash ) {
-		// We need to find an adherent or legal rep with this email hash.
-		// Since we only have the hash, and we can't reverse MD5, we technically can't search directly
-		// unless we hash all emails in DB or if we stored the email in the opens table (we didn't).
-		// Wait, the prompt said "Pour chaque email, cherche l'adhérent correspondant."
-		// But the table only has `email_hash`.
-		// However, `get_name_by_email( $email )` implies we have the email.
-		// Reviewing `Tracker.php`: it stores `email_hash` only.
-		// So we CANNOT know the email from the hash.
-		// UNLESS we brute force match against all adherents?
-		// "Cherche un post adherent qui a cet email dans _dame_email..." implies we search by EMAIL.
-		// But we don't have the email in the Report view, only the hash.
-		// Did I miss something?
-		// Ah, the tracker stores what the pixel request sends.
-		// The pixel request `Tracker::handle_tracking_pixel` receives `h` (hash) and `mid`.
-		// It does NOT receive the email.
-		// So the database `wp_dame_message_opens` ONLY has the hash.
-
-		// If the user wants to see names, we have to find which adherent has that hash.
-		// Since we can't decrypt MD5, we must compute MD5 of all adherent emails and compare.
-		// That is expensive.
-		// BUT, `_dame_email` is meta. We can't do SQL `MD5(meta_value) = hash` efficiently?
-		// Actually, standard SQL `MD5()` might work if the DB supports it.
-		// `SELECT post_id FROM postmeta WHERE MD5(LOWER(TRIM(meta_value))) = 'hash'`.
-		// That is feasible for a few thousand members.
-
-		// Let's implement that.
-
-		global $wpdb;
-
-		// We need to check 3 keys: _dame_email, _dame_legal_rep_1_email, _dame_legal_rep_2_email.
-		// We want the Post Title (Adherent Name).
-		// We prioritize Adherent's own email.
-
-		// 1. Check Adherent Email
-		$sql = $wpdb->prepare(
-			"SELECT post_id FROM $wpdb->postmeta
-			WHERE meta_key = '_dame_email'
-			AND MD5(LOWER(TRIM(meta_value))) = %s
-			LIMIT 1",
-			$hash
-		);
-		$adherent_id = $wpdb->get_var( $sql );
-
-		if ( $adherent_id ) {
-			return get_the_title( $adherent_id );
+	private function get_formatted_recipients( $message_id ) {
+		$message_id = absint( $message_id );
+		if ( ! $message_id ) {
+			return array();
 		}
 
-		// 2. Check Rep 1
-		$sql = $wpdb->prepare(
-			"SELECT post_id FROM $wpdb->postmeta
-			WHERE meta_key = '_dame_legal_rep_1_email'
-			AND MD5(LOWER(TRIM(meta_value))) = %s
-			LIMIT 1",
-			$hash
-		);
-		$adherent_id = $wpdb->get_var( $sql );
+		$selection_method = get_post_meta( $message_id, '_dame_recipient_method', true );
+		$adherent_ids     = array();
 
-		if ( $adherent_id ) {
-			$title = get_the_title( $adherent_id );
-			return $title . ' (Resp. 1)';
+		if ( 'group' === $selection_method ) {
+			$seasons           = get_post_meta( $message_id, '_dame_recipient_seasons', true );
+			$saisonnier_groups = get_post_meta( $message_id, '_dame_recipient_groups_saisonnier', true );
+			$permanent_groups  = get_post_meta( $message_id, '_dame_recipient_groups_permanent', true );
+			$recipient_gender  = get_post_meta( $message_id, '_dame_recipient_gender', true );
+
+			$saisonnier_adherent_ids = array();
+			$permanent_adherent_ids  = array();
+
+			// Logic matched from Mailing::process_mailing and utils.php
+
+			// If Seasons is selected, query using OR relation logic for groups if present.
+			// Re-building the complex query:
+			$query_args = array(
+				'post_type'      => 'adherent',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'tax_query'      => array(
+					'relation' => 'OR',
+				),
+			);
+
+			if ( ! empty( $seasons ) ) {
+				$query_args['tax_query'][] = array(
+					'taxonomy' => 'dame_saison_adhesion',
+					'field'    => 'term_id',
+					'terms'    => $seasons,
+					'operator' => 'IN',
+				);
+			}
+
+			$all_groups = array_merge(
+				is_array( $saisonnier_groups ) ? $saisonnier_groups : [],
+				is_array( $permanent_groups ) ? $permanent_groups : []
+			);
+
+			if ( ! empty( $all_groups ) ) {
+				$query_args['tax_query'][] = array(
+					'taxonomy' => 'dame_group',
+					'field'    => 'term_id',
+					'terms'    => $all_groups,
+					'operator' => 'IN',
+				);
+			}
+
+			if ( ! empty( $recipient_gender ) && 'all' !== $recipient_gender ) {
+				$query_args['meta_query'] = array(
+					array(
+						'key'   => '_dame_sexe',
+						'value' => $recipient_gender,
+					),
+				);
+			}
+
+			// Only run query if we have criteria
+			if ( ! empty( $seasons ) || ! empty( $all_groups ) ) {
+				$adherent_ids = get_posts( $query_args );
+			}
+
+		} elseif ( 'manual' === $selection_method ) {
+			$ids = get_post_meta( $message_id, '_dame_manual_recipients', true );
+			$adherent_ids = ! empty( $ids ) && is_array( $ids ) ? $ids : array();
 		}
 
-		// 3. Check Rep 2
-		$sql = $wpdb->prepare(
-			"SELECT post_id FROM $wpdb->postmeta
-			WHERE meta_key = '_dame_legal_rep_2_email'
-			AND MD5(LOWER(TRIM(meta_value))) = %s
-			LIMIT 1",
-			$hash
-		);
-		$adherent_id = $wpdb->get_var( $sql );
+		$recipients = array();
+		if ( ! empty( $adherent_ids ) ) {
+			foreach ( $adherent_ids as $adherent_id ) {
+				$adherent_id = absint( $adherent_id );
 
-		if ( $adherent_id ) {
-			$title = get_the_title( $adherent_id );
-			return $title . ' (Resp. 2)';
+				// Helper to format name: NOM (Upper) First (Title)
+				$format_name = function( $last, $first ) {
+					return mb_strtoupper( $last, 'UTF-8' ) . ' ' . mb_convert_case( $first, MB_CASE_TITLE, 'UTF-8' );
+				};
+
+				// Legal Reps
+				for ( $i = 1; $i <= 2; $i++ ) {
+					$rep_email         = get_post_meta( $adherent_id, "_dame_legal_rep_{$i}_email", true );
+					$rep_refuses_comms = get_post_meta( $adherent_id, "_dame_legal_rep_{$i}_email_refuses_comms", true );
+
+					if ( ! empty( $rep_email ) && is_email( $rep_email ) && '1' !== $rep_refuses_comms ) {
+						if ( ! array_key_exists( $rep_email, $recipients ) ) {
+							$first = get_post_meta( $adherent_id, "_dame_legal_rep_{$i}_first_name", true );
+							$last  = get_post_meta( $adherent_id, "_dame_legal_rep_{$i}_last_name", true );
+							$recipients[ $rep_email ] = $format_name( $last, $first );
+						}
+					}
+				}
+
+				// Adherent
+				$member_email         = get_post_meta( $adherent_id, '_dame_email', true );
+				$member_refuses_comms = get_post_meta( $adherent_id, '_dame_email_refuses_comms', true );
+
+				if ( ! empty( $member_email ) && is_email( $member_email ) && '1' !== $member_refuses_comms ) {
+					if ( ! array_key_exists( $member_email, $recipients ) ) {
+						$first = get_post_meta( $adherent_id, '_dame_first_name', true );
+						$last  = get_post_meta( $adherent_id, '_dame_last_name', true );
+						$recipients[ $member_email ] = $format_name( $last, $first );
+					}
+				}
+			}
 		}
 
-		return __( 'Inconnu', 'dame' );
+		// Sort by Name (Value) Alphabetically
+		uasort( $recipients, function( $a, $b ) {
+			return strcasecmp( $a, $b );
+		} );
+
+		return $recipients;
 	}
 }
