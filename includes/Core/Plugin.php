@@ -16,6 +16,7 @@ use DAME\Services\Mailer;
 use DAME\Services\BatchSender;
 use DAME\Admin\Pages\Mailing;
 use DAME\Admin\Pages\MessageReport;
+use DAME\Admin\Pages\UserAssignment;
 use DAME\Admin\Columns\Message as MessageColumns;
 use DAME\Admin\Actions\Message as MessageActions;
 use DAME\Metaboxes\Message\TestSend;
@@ -161,6 +162,10 @@ class Plugin {
 
 			$message_test_send = new TestSend();
 			$message_test_send->init();
+
+			// Initialize User Assignment Page
+			$user_assignment = new UserAssignment();
+			$user_assignment->init();
 		}
 	}
 }
