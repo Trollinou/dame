@@ -69,6 +69,8 @@ class Mailing {
 		$seasons = get_terms( array(
 			'taxonomy'   => 'dame_saison_adhesion',
 			'hide_empty' => false,
+			'orderby'    => 'name',
+			'order'      => 'DESC',
 		) );
 
 		// Get all groups and separate them by type (Saisonnier / Permanent).
@@ -121,9 +123,18 @@ class Mailing {
 							<select name="dame_message_to_send" id="dame_message_to_send" required>
 								<option value=""><?php esc_html_e( 'Sélectionner un message...', 'dame' ); ?></option>
 								<?php foreach ( $messages as $message ) : ?>
-									<option value="<?php echo esc_attr( $message->ID ); ?>"><?php echo esc_html( $message->post_title ); ?> (<?php echo esc_html( get_post_status( $message->ID ) ); ?>)</option>
+									<?php
+									$status = get_post_meta( $message->ID, '_dame_message_status', true );
+									// Fallback if meta status is empty but WP post status is publish? No, assume meta is source of truth for mailing.
+									// Actually, WP status 'draft' vs 'publish' is not sending status.
+									// Let's use meta status.
+									?>
+									<option value="<?php echo esc_attr( $message->ID ); ?>" data-status="<?php echo esc_attr( $status ); ?>"><?php echo esc_html( $message->post_title ); ?> (<?php echo esc_html( $status ? $status : get_post_status( $message->ID ) ); ?>)</option>
 								<?php endforeach; ?>
 							</select>
+							<div id="dame_message_warning" style="color: #d63638; display: none; margin-top: 5px;">
+								<?php esc_html_e( 'Ce message a déjà été envoyé. Veuillez le dupliquer pour faire un nouvel envoi.', 'dame' ); ?>
+							</div>
 						</td>
 					</tr>
 
@@ -252,6 +263,34 @@ class Mailing {
 					radio.addEventListener('change', toggleSections);
 				}
 				toggleSections();
+
+				// Message status check
+				const messageSelect = document.getElementById('dame_message_to_send');
+				const submitButton = document.getElementById('submit');
+				const warningDiv = document.getElementById('dame_message_warning');
+
+				function checkMessageStatus() {
+					if (!messageSelect.value) {
+						submitButton.disabled = false;
+						warningDiv.style.display = 'none';
+						return;
+					}
+					const selectedOption = messageSelect.options[messageSelect.selectedIndex];
+					const status = selectedOption.getAttribute('data-status');
+
+					if (status === 'sent' || status === 'sending') {
+						submitButton.disabled = true;
+						warningDiv.style.display = 'block';
+					} else {
+						submitButton.disabled = false;
+						warningDiv.style.display = 'none';
+					}
+				}
+
+				if (messageSelect) {
+					messageSelect.addEventListener('change', checkMessageStatus);
+					checkMessageStatus(); // Check on load
+				}
 			});
 		</script>
 		<?php
@@ -371,8 +410,8 @@ class Mailing {
 			update_post_meta( $message_id, '_dame_recipient_gender', $meta_gender );
 		}
 
-		// Schedule batches (20 per minute).
-		$chunks = array_chunk( $recipient_emails, 20 );
+		// Schedule batches (15 per minute).
+		$chunks = array_chunk( $recipient_emails, 15 );
 		$total_batches = count( $chunks );
 
 		update_post_meta( $message_id, '_dame_scheduled_batches_total', $total_batches );

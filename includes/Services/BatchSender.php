@@ -62,6 +62,7 @@ class BatchSender {
 			if ( ! $sent ) {
 				$failed_emails[] = $email;
 			}
+			sleep( 3 ); // Sleep 3 seconds to smooth server load.
 		}
 
 		// Handle failures with a retry mechanism.
