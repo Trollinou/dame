@@ -207,21 +207,25 @@ class Data_Provider {
 
 		// Adherent's own email.
 		$adherent_email = get_post_meta( $adherent_id, '_dame_email', true );
-		$accepts_comms  = get_post_meta( $adherent_id, '_dame_accept_communication', true );
+		// Note: The logic is inverted compared to previous version. '1' means refusal.
+		// So we accept communication if NOT refused (empty or '0').
+		$refuses_comms  = get_post_meta( $adherent_id, '_dame_email_refuses_comms', true );
 
-		if ( ! empty( $adherent_email ) && is_email( $adherent_email ) && '1' === $accepts_comms ) {
+		if ( ! empty( $adherent_email ) && is_email( $adherent_email ) && '1' !== $refuses_comms ) {
 			$emails[] = $adherent_email;
 		}
 
 		// Legal Representative 1.
 		$rep1_email = get_post_meta( $adherent_id, '_dame_legal_rep_1_email', true );
-		if ( ! empty( $rep1_email ) && is_email( $rep1_email ) ) {
+		$rep1_refuses = get_post_meta( $adherent_id, '_dame_legal_rep_1_email_refuses_comms', true );
+		if ( ! empty( $rep1_email ) && is_email( $rep1_email ) && '1' !== $rep1_refuses ) {
 			$emails[] = $rep1_email;
 		}
 
 		// Legal Representative 2.
 		$rep2_email = get_post_meta( $adherent_id, '_dame_legal_rep_2_email', true );
-		if ( ! empty( $rep2_email ) && is_email( $rep2_email ) ) {
+		$rep2_refuses = get_post_meta( $adherent_id, '_dame_legal_rep_2_email_refuses_comms', true );
+		if ( ! empty( $rep2_email ) && is_email( $rep2_email ) && '1' !== $rep2_refuses ) {
 			$emails[] = $rep2_email;
 		}
 

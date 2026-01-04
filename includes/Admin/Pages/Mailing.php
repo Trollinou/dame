@@ -72,22 +72,21 @@ class Mailing {
 		) );
 
 		// Get all groups and separate them by type (Saisonnier / Permanent).
-		$all_groups   = get_terms( array(
+		$all_groups = get_terms( array(
 			'taxonomy'   => 'dame_group',
 			'hide_empty' => false,
 		) );
-		$saisonniers  = array();
-		$permanents   = array();
-		$other_groups = array();
+
+		$saisonniers = array();
+		$permanents  = array();
 
 		foreach ( $all_groups as $group ) {
 			$type = get_term_meta( $group->term_id, '_dame_group_type', true );
-			if ( 'saisonnier' === $type ) {
-				$saisonniers[] = $group;
-			} elseif ( 'permanent' === $type ) {
+			if ( 'permanent' === $type ) {
 				$permanents[] = $group;
 			} else {
-				$other_groups[] = $group;
+				// Default or explicitly saisonnier.
+				$saisonniers[] = $group;
 			}
 		}
 
@@ -98,7 +97,7 @@ class Mailing {
 			'posts_per_page' => -1,
 		) );
 
-		// Get all adherents for manual selection (could be heavy, but requested).
+		// Get all published adherents for manual selection.
 		$adherents = get_posts( array(
 			'post_type'      => 'adherent',
 			'posts_per_page' => -1,
@@ -106,7 +105,6 @@ class Mailing {
 			'orderby'        => 'title',
 			'order'          => 'ASC',
 		) );
-
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Envoyer un message', 'dame' ); ?></h1>
@@ -118,9 +116,9 @@ class Mailing {
 				<table class="form-table">
 					<!-- Message Selection -->
 					<tr>
-						<th scope="row"><label for="dame_message_id"><?php esc_html_e( 'Message à envoyer', 'dame' ); ?></label></th>
+						<th scope="row"><label for="dame_message_to_send"><?php esc_html_e( 'Message à envoyer', 'dame' ); ?></label></th>
 						<td>
-							<select name="dame_message_id" id="dame_message_id" required>
+							<select name="dame_message_to_send" id="dame_message_to_send" required>
 								<option value=""><?php esc_html_e( 'Sélectionner un message...', 'dame' ); ?></option>
 								<?php foreach ( $messages as $message ) : ?>
 									<option value="<?php echo esc_attr( $message->ID ); ?>"><?php echo esc_html( $message->post_title ); ?> (<?php echo esc_html( get_post_status( $message->ID ) ); ?>)</option>
@@ -134,8 +132,8 @@ class Mailing {
 						<th scope="row"><?php esc_html_e( 'Méthode de sélection', 'dame' ); ?></th>
 						<td>
 							<fieldset id="dame_selection_method">
-								<label><input type="radio" name="dame_recipient_method" value="group" checked> <?php esc_html_e( 'Par critères (Groupes, Saisons)', 'dame' ); ?></label><br>
-								<label><input type="radio" name="dame_recipient_method" value="manual"> <?php esc_html_e( 'Sélection manuelle', 'dame' ); ?></label>
+								<label><input type="radio" name="dame_selection_method" value="group" checked> <?php esc_html_e( 'Par critères (Groupes, Saisons)', 'dame' ); ?></label><br>
+								<label><input type="radio" name="dame_selection_method" value="manual"> <?php esc_html_e( 'Sélection manuelle', 'dame' ); ?></label>
 							</fieldset>
 						</td>
 					</tr>
@@ -143,72 +141,54 @@ class Mailing {
 
 				<!-- Group Filters Container -->
 				<div class="dame-group-filters">
-					<h3><?php esc_html_e( 'Critères de sélection', 'dame' ); ?></h3>
+					<h3><?php esc_html_e( 'Filtres de destinataires', 'dame' ); ?></h3>
 					<table class="form-table">
-						<!-- Seasons -->
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Saisons', 'dame' ); ?></th>
-							<td>
-								<fieldset>
-									<?php foreach ( $seasons as $season ) : ?>
-										<label>
-											<input type="checkbox" name="dame_season_filters[]" value="<?php echo esc_attr( $season->term_id ); ?>">
-											<?php echo esc_html( $season->name ); ?>
-										</label><br>
-									<?php endforeach; ?>
-								</fieldset>
-								<p class="description"><?php esc_html_e( 'Cochez au moins une saison.', 'dame' ); ?></p>
-							</td>
-						</tr>
-
-						<!-- Groups -->
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Groupes', 'dame' ); ?></th>
-							<td>
-								<fieldset>
-									<?php if ( ! empty( $permanents ) ) : ?>
-										<strong style="display:block; margin-top:5px;"><?php esc_html_e( 'Groupes Permanents', 'dame' ); ?></strong>
-										<?php foreach ( $permanents as $group ) : ?>
-											<label>
-												<input type="checkbox" name="dame_group_filters[]" value="<?php echo esc_attr( $group->term_id ); ?>">
-												<?php echo esc_html( $group->name ); ?>
-											</label><br>
-										<?php endforeach; ?>
-									<?php endif; ?>
-
-									<?php if ( ! empty( $saisonniers ) ) : ?>
-										<strong style="display:block; margin-top:10px;"><?php esc_html_e( 'Groupes Saisonniers', 'dame' ); ?></strong>
-										<?php foreach ( $saisonniers as $group ) : ?>
-											<label>
-												<input type="checkbox" name="dame_group_filters[]" value="<?php echo esc_attr( $group->term_id ); ?>">
-												<?php echo esc_html( $group->name ); ?>
-											</label><br>
-										<?php endforeach; ?>
-									<?php endif; ?>
-
-									<?php if ( ! empty( $other_groups ) ) : ?>
-										<strong style="display:block; margin-top:10px;"><?php esc_html_e( 'Autres', 'dame' ); ?></strong>
-										<?php foreach ( $other_groups as $group ) : ?>
-											<label>
-												<input type="checkbox" name="dame_group_filters[]" value="<?php echo esc_attr( $group->term_id ); ?>">
-												<?php echo esc_html( $group->name ); ?>
-											</label><br>
-										<?php endforeach; ?>
-									<?php endif; ?>
-								</fieldset>
-								<p class="description"><?php esc_html_e( 'Laissez vide pour sélectionner tous les groupes.', 'dame' ); ?></p>
-							</td>
-						</tr>
-
 						<!-- Gender -->
 						<tr>
-							<th scope="row"><?php esc_html_e( 'Genre', 'dame' ); ?></th>
+							<th scope="row"><label for="dame_recipient_gender"><?php esc_html_e( 'Genre', 'dame' ); ?></label></th>
 							<td>
-								<fieldset>
-									<label><input type="radio" name="dame_recipient_gender" value="all" checked> <?php esc_html_e( 'Tous', 'dame' ); ?></label><br>
-									<label><input type="radio" name="dame_recipient_gender" value="M"> <?php esc_html_e( 'Masculin', 'dame' ); ?></label><br>
-									<label><input type="radio" name="dame_recipient_gender" value="F"> <?php esc_html_e( 'Féminin', 'dame' ); ?></label>
-								</fieldset>
+								<select name="dame_recipient_gender" id="dame_recipient_gender">
+									<option value="all"><?php esc_html_e( 'Tous', 'dame' ); ?></option>
+									<option value="Masculin"><?php esc_html_e( 'Masculin', 'dame' ); ?></option>
+									<option value="Féminin"><?php esc_html_e( 'Féminin', 'dame' ); ?></option>
+								</select>
+							</td>
+						</tr>
+
+						<!-- Seasons -->
+						<tr>
+							<th scope="row"><label for="dame_recipient_seasons"><?php esc_html_e( 'Saisons', 'dame' ); ?></label></th>
+							<td>
+								<select name="dame_recipient_seasons[]" id="dame_recipient_seasons" multiple style="height: 150px; width: 300px;">
+									<?php foreach ( $seasons as $season ) : ?>
+										<option value="<?php echo esc_attr( $season->term_id ); ?>"><?php echo esc_html( $season->name ); ?></option>
+									<?php endforeach; ?>
+								</select>
+								<p class="description"><?php esc_html_e( 'Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs.', 'dame' ); ?></p>
+							</td>
+						</tr>
+
+						<!-- Seasonal Groups -->
+						<tr>
+							<th scope="row"><label for="dame_recipient_groups_saisonnier"><?php esc_html_e( 'Groupes Saisonniers', 'dame' ); ?></label></th>
+							<td>
+								<select name="dame_recipient_groups_saisonnier[]" id="dame_recipient_groups_saisonnier" multiple style="height: 150px; width: 300px;">
+									<?php foreach ( $saisonniers as $group ) : ?>
+										<option value="<?php echo esc_attr( $group->term_id ); ?>"><?php echo esc_html( $group->name ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</td>
+						</tr>
+
+						<!-- Permanent Groups -->
+						<tr>
+							<th scope="row"><label for="dame_recipient_groups_permanent"><?php esc_html_e( 'Groupes Permanents', 'dame' ); ?></label></th>
+							<td>
+								<select name="dame_recipient_groups_permanent[]" id="dame_recipient_groups_permanent" multiple style="height: 150px; width: 300px;">
+									<?php foreach ( $permanents as $group ) : ?>
+										<option value="<?php echo esc_attr( $group->term_id ); ?>"><?php echo esc_html( $group->name ); ?></option>
+									<?php endforeach; ?>
+								</select>
 							</td>
 						</tr>
 					</table>
@@ -221,12 +201,12 @@ class Mailing {
 						<tr>
 							<th scope="row"><label for="dame_manual_recipients"><?php esc_html_e( 'Adhérents', 'dame' ); ?></label></th>
 							<td>
-								<select name="dame_manual_recipients[]" id="dame_manual_recipients" multiple style="height: 300px; width: 100%;">
+								<select name="dame_manual_recipients[]" id="dame_manual_recipients" multiple style="width: 100%; max-width: 400px; height: 250px;">
 									<?php foreach ( $adherents as $adherent ) : ?>
 										<?php
-										$lastname = get_post_meta( $adherent->ID, '_dame_last_name', true );
+										$lastname  = get_post_meta( $adherent->ID, '_dame_last_name', true );
 										$firstname = get_post_meta( $adherent->ID, '_dame_first_name', true );
-										$name = mb_strtoupper( $lastname ) . ' ' . $firstname;
+										$name      = mb_strtoupper( $lastname ) . ' ' . $firstname;
 										if ( empty( trim( $name ) ) ) {
 											$name = $adherent->post_title;
 										}
@@ -243,6 +223,37 @@ class Mailing {
 				<?php submit_button( __( 'Envoyer le message', 'dame' ) ); ?>
 			</form>
 		</div>
+		<script>
+			// Simple inline script to handle toggle if JS file is not yet loaded/created.
+			// Replicating basic logic of mailing.js if not present or cached.
+			document.addEventListener('DOMContentLoaded', function() {
+				const radios = document.getElementsByName('dame_selection_method');
+				const filtersDiv = document.querySelector('.dame-group-filters');
+				const manualDiv = document.querySelector('.dame-manual-filters');
+
+				function toggleSections() {
+					let method = 'group';
+					for (const radio of radios) {
+						if (radio.checked) {
+							method = radio.value;
+							break;
+						}
+					}
+					if (method === 'group') {
+						if (filtersDiv) filtersDiv.style.display = 'block';
+						if (manualDiv) manualDiv.style.display = 'none';
+					} else {
+						if (filtersDiv) filtersDiv.style.display = 'none';
+						if (manualDiv) manualDiv.style.display = 'block';
+					}
+				}
+
+				for (const radio of radios) {
+					radio.addEventListener('change', toggleSections);
+				}
+				toggleSections();
+			});
+		</script>
 		<?php
 	}
 
@@ -258,14 +269,19 @@ class Mailing {
 			wp_die( __( 'Permission refusée.', 'dame' ) );
 		}
 
-		$message_id = isset( $_POST['dame_message_id'] ) ? absint( $_POST['dame_message_id'] ) : 0;
+		$message_id = isset( $_POST['dame_message_to_send'] ) ? absint( $_POST['dame_message_to_send'] ) : 0;
 		if ( ! $message_id ) {
 			wp_die( __( 'Message invalide.', 'dame' ) );
 		}
 
-		$method = isset( $_POST['dame_recipient_method'] ) ? sanitize_key( $_POST['dame_recipient_method'] ) : 'group';
-		$recipient_emails = array();
+		$method = isset( $_POST['dame_selection_method'] ) ? sanitize_key( $_POST['dame_selection_method'] ) : 'group';
 		$adherent_ids = array();
+
+		// For meta storage
+		$meta_seasons = array();
+		$meta_groups_saisonnier = array();
+		$meta_groups_permanent = array();
+		$meta_gender = 'all';
 
 		if ( 'manual' === $method ) {
 			if ( ! empty( $_POST['dame_manual_recipients'] ) && is_array( $_POST['dame_manual_recipients'] ) ) {
@@ -273,12 +289,18 @@ class Mailing {
 			}
 		} else {
 			// Group method.
-			$seasons = isset( $_POST['dame_season_filters'] ) ? array_map( 'absint', $_POST['dame_season_filters'] ) : array();
-			$groups  = isset( $_POST['dame_group_filters'] ) ? array_map( 'absint', $_POST['dame_group_filters'] ) : array();
-			$gender  = isset( $_POST['dame_recipient_gender'] ) ? sanitize_text_field( $_POST['dame_recipient_gender'] ) : 'all';
+			$seasons = isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', $_POST['dame_recipient_seasons'] ) : array();
+			$groups_saisonnier = isset( $_POST['dame_recipient_groups_saisonnier'] ) ? array_map( 'absint', $_POST['dame_recipient_groups_saisonnier'] ) : array();
+			$groups_permanent = isset( $_POST['dame_recipient_groups_permanent'] ) ? array_map( 'absint', $_POST['dame_recipient_groups_permanent'] ) : array();
+			$gender = isset( $_POST['dame_recipient_gender'] ) ? sanitize_text_field( $_POST['dame_recipient_gender'] ) : 'all';
 
-			if ( empty( $seasons ) ) {
-				wp_die( __( 'Veuillez sélectionner au moins une saison.', 'dame' ) );
+			$meta_seasons = $seasons;
+			$meta_groups_saisonnier = $groups_saisonnier;
+			$meta_groups_permanent = $groups_permanent;
+			$meta_gender = $gender;
+
+			if ( empty( $seasons ) && empty( $groups_saisonnier ) && empty( $groups_permanent ) ) {
+				wp_die( __( 'Veuillez sélectionner au moins un critère (Saison ou Groupe).', 'dame' ) );
 			}
 
 			// Build Query.
@@ -287,31 +309,36 @@ class Mailing {
 				'posts_per_page' => -1,
 				'fields'         => 'ids',
 				'tax_query'      => array(
-					'relation' => 'AND',
-					array(
-						'taxonomy' => 'dame_saison_adhesion',
-						'field'    => 'term_id',
-						'terms'    => $seasons,
-						'operator' => 'IN',
-					),
+					'relation' => 'OR',
 				),
 			);
 
-			// Add Groups filter if selected.
-			if ( ! empty( $groups ) ) {
+			// Clause 1: Seasons
+			if ( ! empty( $seasons ) ) {
 				$args['tax_query'][] = array(
-					'taxonomy' => 'dame_group',
+					'taxonomy' => 'dame_saison_adhesion',
 					'field'    => 'term_id',
-					'terms'    => $groups,
+					'terms'    => $seasons,
 					'operator' => 'IN',
 				);
 			}
 
-			// Add Gender filter if not 'all'.
+			// Clause 2: Groups (Merge both types)
+			$all_groups = array_merge( $groups_saisonnier, $groups_permanent );
+			if ( ! empty( $all_groups ) ) {
+				$args['tax_query'][] = array(
+					'taxonomy' => 'dame_group',
+					'field'    => 'term_id',
+					'terms'    => $all_groups,
+					'operator' => 'IN',
+				);
+			}
+
+			// Meta Query for Gender (Intersection)
 			if ( 'all' !== $gender ) {
 				$args['meta_query'] = array(
 					array(
-						'key'   => '_dame_gender',
+						'key'   => '_dame_sexe',
 						'value' => $gender,
 					),
 				);
@@ -320,7 +347,7 @@ class Mailing {
 			$adherent_ids = get_posts( $args );
 		}
 
-		// Retrieve emails for each adherent.
+		$recipient_emails = array();
 		foreach ( $adherent_ids as $adherent_id ) {
 			$emails = Data_Provider::get_emails_for_adherent( $adherent_id );
 			$recipient_emails = array_merge( $recipient_emails, $emails );
@@ -338,9 +365,10 @@ class Mailing {
 		update_post_meta( $message_id, '_dame_recipient_method', $method );
 
 		if ( 'group' === $method ) {
-			if ( isset( $seasons ) ) update_post_meta( $message_id, '_dame_target_seasons', $seasons ); // Note: plural 'seasons' now
-			if ( isset( $groups ) ) update_post_meta( $message_id, '_dame_target_groups', $groups );
-			if ( isset( $gender ) ) update_post_meta( $message_id, '_dame_target_gender', $gender );
+			update_post_meta( $message_id, '_dame_recipient_seasons', $meta_seasons );
+			update_post_meta( $message_id, '_dame_recipient_groups_saisonnier', $meta_groups_saisonnier );
+			update_post_meta( $message_id, '_dame_recipient_groups_permanent', $meta_groups_permanent );
+			update_post_meta( $message_id, '_dame_recipient_gender', $meta_gender );
 		}
 
 		// Schedule batches (20 per minute).
