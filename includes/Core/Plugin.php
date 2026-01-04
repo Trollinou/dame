@@ -8,8 +8,17 @@
 namespace DAME\Core;
 
 use DAME\CPT\Adherent;
+use DAME\CPT\Message;
 use DAME\CPT\PreInscription;
 use DAME\Core\Roles;
+use DAME\API\Tracker;
+use DAME\Services\Mailer;
+use DAME\Services\BatchSender;
+use DAME\Admin\Pages\Mailing;
+use DAME\Admin\Pages\MessageReport;
+use DAME\Admin\Columns\Message as MessageColumns;
+use DAME\Admin\Actions\Message as MessageActions;
+use DAME\Metaboxes\Message\TestSend;
 use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
 use DAME\Metaboxes\PreInscription\Actions as PreInscriptionActions;
 use DAME\Metaboxes\PreInscription\Details as PreInscriptionDetails;
@@ -78,7 +87,20 @@ class Plugin {
 		$pre_inscription_cpt = new PreInscription();
 		$pre_inscription_cpt->init();
 
+		$message_cpt = new Message();
+		$message_cpt->init();
+
+		// Initialize API.
+		$tracker = new Tracker();
+		$tracker->init();
+
 		// Initialize Services.
+		$mailer = new Mailer();
+		$mailer->init();
+
+		$batch_sender = new BatchSender();
+		$batch_sender->init();
+
 		$pdf_generator = new PDF_Generator();
 		$pdf_generator->init();
 
@@ -123,6 +145,22 @@ class Plugin {
 
 			$pre_inscription_actions = new PreInscriptionActions();
 			$pre_inscription_actions->init();
+
+			// Initialize Message Pages & Actions
+			$mailing_page = new Mailing();
+			$mailing_page->init();
+
+			$message_report = new MessageReport();
+			$message_report->init();
+
+			$message_columns = new MessageColumns();
+			$message_columns->init();
+
+			$message_actions = new MessageActions();
+			$message_actions->init();
+
+			$message_test_send = new TestSend();
+			$message_test_send->init();
 		}
 	}
 }
