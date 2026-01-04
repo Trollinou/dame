@@ -10,6 +10,8 @@ namespace DAME\Core;
 use DAME\CPT\Adherent;
 use DAME\CPT\Message;
 use DAME\CPT\PreInscription;
+use DAME\CPT\Agenda;
+use DAME\CPT\ICalFeed;
 use DAME\Core\Roles;
 use DAME\API\Tracker;
 use DAME\Services\Mailer;
@@ -24,14 +26,19 @@ use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
 use DAME\Metaboxes\PreInscription\Actions as PreInscriptionActions;
 use DAME\Metaboxes\PreInscription\Details as PreInscriptionDetails;
 use DAME\Metaboxes\PreInscription\Reconciliation as PreInscriptionReconciliation;
+use DAME\Metaboxes\Agenda\Manager as AgendaMetaboxManager;
+use DAME\Metaboxes\ICalFeed\Settings as ICalFeedSettings;
 use DAME\Services\PDF_Generator;
 use DAME\Shortcodes\RegistrationForm;
 use DAME\Admin\Assets;
 use DAME\Admin\Pages\ViewAdherent;
 use DAME\Admin\Settings\Main as SettingsMain;
 use DAME\Admin\Columns\Adherent as AdherentColumns;
+use DAME\Admin\ListTables\Agenda as AgendaListTable;
+use DAME\Admin\Actions\Agenda as AgendaActions;
 use DAME\Taxonomies\Season;
 use DAME\Taxonomies\Group;
+use DAME\Taxonomies\AgendaCategory;
 
 /**
  * The core plugin class.
@@ -91,6 +98,12 @@ class Plugin {
 		$message_cpt = new Message();
 		$message_cpt->init();
 
+		$agenda_cpt = new Agenda();
+		$agenda_cpt->init();
+
+		$ical_feed_cpt = new ICalFeed();
+		$ical_feed_cpt->init();
+
 		// Initialize API.
 		$tracker = new Tracker();
 		$tracker->init();
@@ -137,6 +150,9 @@ class Plugin {
 			$group_taxonomy = new Group();
 			$group_taxonomy->init();
 
+			$agenda_category_taxonomy = new AgendaCategory();
+			$agenda_category_taxonomy->init();
+
 			// Initialize PreInscription Metaboxes
 			$pre_inscription_details = new PreInscriptionDetails();
 			$pre_inscription_details->init();
@@ -162,6 +178,19 @@ class Plugin {
 
 			$message_test_send = new TestSend();
 			$message_test_send->init();
+
+			// Initialize Agenda Metaboxes, Lists and Actions
+			$agenda_metaboxes = new AgendaMetaboxManager();
+			$agenda_metaboxes->init();
+
+			$ical_feed_settings = new ICalFeedSettings();
+			$ical_feed_settings->init();
+
+			$agenda_list_table = new AgendaListTable();
+			$agenda_list_table->init();
+
+			$agenda_actions = new AgendaActions();
+			$agenda_actions->init();
 
 			// Initialize User Assignment Page
 			$user_assignment = new UserAssignment();
