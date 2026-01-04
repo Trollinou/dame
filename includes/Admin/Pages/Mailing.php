@@ -50,7 +50,7 @@ class Mailing {
 
 		wp_enqueue_script(
 			'dame-mailing-js',
-			DAME_URL . 'admin/js/mailing.js', // Assuming this file exists or will be created.
+			DAME_URL . 'admin/js/mailing.js', // Assuming this file exists.
 			array( 'jquery' ),
 			DAME_VERSION,
 			true
@@ -71,17 +71,40 @@ class Mailing {
 			'hide_empty' => false,
 		) );
 
-		// Get all groups.
-		$groups = get_terms( array(
+		// Get all groups and separate them by type (Saisonnier / Permanent).
+		$all_groups   = get_terms( array(
 			'taxonomy'   => 'dame_group',
 			'hide_empty' => false,
 		) );
+		$saisonniers  = array();
+		$permanents   = array();
+		$other_groups = array();
+
+		foreach ( $all_groups as $group ) {
+			$type = get_term_meta( $group->term_id, '_dame_group_type', true );
+			if ( 'saisonnier' === $type ) {
+				$saisonniers[] = $group;
+			} elseif ( 'permanent' === $type ) {
+				$permanents[] = $group;
+			} else {
+				$other_groups[] = $group;
+			}
+		}
 
 		// Get draft messages.
 		$messages = get_posts( array(
 			'post_type'      => 'dame_message',
-			'post_status'    => 'any', // Allow selecting any message, though drafts are typical.
+			'post_status'    => 'any',
 			'posts_per_page' => -1,
+		) );
+
+		// Get all adherents for manual selection (could be heavy, but requested).
+		$adherents = get_posts( array(
+			'post_type'      => 'adherent',
+			'posts_per_page' => -1,
+			'post_status'    => 'publish',
+			'orderby'        => 'title',
+			'order'          => 'ASC',
 		) );
 
 		?>
@@ -103,78 +126,115 @@ class Mailing {
 									<option value="<?php echo esc_attr( $message->ID ); ?>"><?php echo esc_html( $message->post_title ); ?> (<?php echo esc_html( get_post_status( $message->ID ) ); ?>)</option>
 								<?php endforeach; ?>
 							</select>
-							<p class="description"><?php esc_html_e( 'Seuls les messages enregistrés apparaissent ici.', 'dame' ); ?></p>
 						</td>
 					</tr>
 
-					<!-- Season Selection -->
+					<!-- Method Selection -->
 					<tr>
-						<th scope="row"><label for="dame_season"><?php esc_html_e( 'Saison', 'dame' ); ?></label></th>
+						<th scope="row"><?php esc_html_e( 'Méthode de sélection', 'dame' ); ?></th>
 						<td>
-							<select name="dame_season" id="dame_season" required>
-								<option value=""><?php esc_html_e( 'Choisir une saison...', 'dame' ); ?></option>
-								<?php foreach ( $seasons as $season ) : ?>
-									<option value="<?php echo esc_attr( $season->term_id ); ?>"><?php echo esc_html( $season->name ); ?></option>
-								<?php endforeach; ?>
-							</select>
-						</td>
-					</tr>
-
-					<!-- Recipient Method -->
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Destinataires', 'dame' ); ?></th>
-						<td>
-							<fieldset>
-								<label><input type="radio" name="dame_recipient_method" value="filters" checked> <?php esc_html_e( 'Utiliser des filtres (Groupes, Catégories...)', 'dame' ); ?></label><br>
-								<label><input type="radio" name="dame_recipient_method" value="manual"> <?php esc_html_e( 'Sélection manuelle (Emails spécifiques)', 'dame' ); ?></label>
+							<fieldset id="dame_selection_method">
+								<label><input type="radio" name="dame_recipient_method" value="group" checked> <?php esc_html_e( 'Par critères (Groupes, Saisons)', 'dame' ); ?></label><br>
+								<label><input type="radio" name="dame_recipient_method" value="manual"> <?php esc_html_e( 'Sélection manuelle', 'dame' ); ?></label>
 							</fieldset>
 						</td>
 					</tr>
 				</table>
 
-				<!-- Filters Section -->
-				<div id="dame_method_filters" class="dame-mailing-section">
-					<h3><?php esc_html_e( 'Filtres de destinataires', 'dame' ); ?></h3>
+				<!-- Group Filters Container -->
+				<div class="dame-group-filters">
+					<h3><?php esc_html_e( 'Critères de sélection', 'dame' ); ?></h3>
 					<table class="form-table">
+						<!-- Seasons -->
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Saisons', 'dame' ); ?></th>
+							<td>
+								<fieldset>
+									<?php foreach ( $seasons as $season ) : ?>
+										<label>
+											<input type="checkbox" name="dame_season_filters[]" value="<?php echo esc_attr( $season->term_id ); ?>">
+											<?php echo esc_html( $season->name ); ?>
+										</label><br>
+									<?php endforeach; ?>
+								</fieldset>
+								<p class="description"><?php esc_html_e( 'Cochez au moins une saison.', 'dame' ); ?></p>
+							</td>
+						</tr>
+
 						<!-- Groups -->
 						<tr>
 							<th scope="row"><?php esc_html_e( 'Groupes', 'dame' ); ?></th>
 							<td>
-								<?php if ( ! empty( $groups ) ) : ?>
-									<fieldset>
-										<?php foreach ( $groups as $group ) : ?>
+								<fieldset>
+									<?php if ( ! empty( $permanents ) ) : ?>
+										<strong style="display:block; margin-top:5px;"><?php esc_html_e( 'Groupes Permanents', 'dame' ); ?></strong>
+										<?php foreach ( $permanents as $group ) : ?>
 											<label>
-												<input type="checkbox" name="dame_groups[]" value="<?php echo esc_attr( $group->term_id ); ?>">
+												<input type="checkbox" name="dame_group_filters[]" value="<?php echo esc_attr( $group->term_id ); ?>">
 												<?php echo esc_html( $group->name ); ?>
 											</label><br>
 										<?php endforeach; ?>
-									</fieldset>
-								<?php else : ?>
-									<p><?php esc_html_e( 'Aucun groupe trouvé.', 'dame' ); ?></p>
-								<?php endif; ?>
+									<?php endif; ?>
+
+									<?php if ( ! empty( $saisonniers ) ) : ?>
+										<strong style="display:block; margin-top:10px;"><?php esc_html_e( 'Groupes Saisonniers', 'dame' ); ?></strong>
+										<?php foreach ( $saisonniers as $group ) : ?>
+											<label>
+												<input type="checkbox" name="dame_group_filters[]" value="<?php echo esc_attr( $group->term_id ); ?>">
+												<?php echo esc_html( $group->name ); ?>
+											</label><br>
+										<?php endforeach; ?>
+									<?php endif; ?>
+
+									<?php if ( ! empty( $other_groups ) ) : ?>
+										<strong style="display:block; margin-top:10px;"><?php esc_html_e( 'Autres', 'dame' ); ?></strong>
+										<?php foreach ( $other_groups as $group ) : ?>
+											<label>
+												<input type="checkbox" name="dame_group_filters[]" value="<?php echo esc_attr( $group->term_id ); ?>">
+												<?php echo esc_html( $group->name ); ?>
+											</label><br>
+										<?php endforeach; ?>
+									<?php endif; ?>
+								</fieldset>
+								<p class="description"><?php esc_html_e( 'Laissez vide pour sélectionner tous les groupes.', 'dame' ); ?></p>
 							</td>
 						</tr>
 
-						<!-- Agenda Categories (optional filter) -->
+						<!-- Gender -->
 						<tr>
-							<th scope="row"><?php esc_html_e( 'Catégories (Agenda)', 'dame' ); ?></th>
+							<th scope="row"><?php esc_html_e( 'Genre', 'dame' ); ?></th>
 							<td>
-								<div class="dame-scrollable-checklist" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
-									<?php $this->render_category_checklist(); ?>
-								</div>
+								<fieldset>
+									<label><input type="radio" name="dame_recipient_gender" value="all" checked> <?php esc_html_e( 'Tous', 'dame' ); ?></label><br>
+									<label><input type="radio" name="dame_recipient_gender" value="M"> <?php esc_html_e( 'Masculin', 'dame' ); ?></label><br>
+									<label><input type="radio" name="dame_recipient_gender" value="F"> <?php esc_html_e( 'Féminin', 'dame' ); ?></label>
+								</fieldset>
 							</td>
 						</tr>
 					</table>
 				</div>
 
-				<!-- Manual Section -->
-				<div id="dame_method_manual" class="dame-mailing-section" style="display:none;">
-					<h3><?php esc_html_e( 'Saisie manuelle', 'dame' ); ?></h3>
+				<!-- Manual Filters Container -->
+				<div class="dame-manual-filters" style="display:none;">
+					<h3><?php esc_html_e( 'Sélection manuelle des adhérents', 'dame' ); ?></h3>
 					<table class="form-table">
 						<tr>
-							<th scope="row"><label for="dame_manual_emails"><?php esc_html_e( 'Emails (un par ligne)', 'dame' ); ?></label></th>
+							<th scope="row"><label for="dame_manual_recipients"><?php esc_html_e( 'Adhérents', 'dame' ); ?></label></th>
 							<td>
-								<textarea name="dame_manual_emails" id="dame_manual_emails" rows="10" cols="50" class="large-text code"></textarea>
+								<select name="dame_manual_recipients[]" id="dame_manual_recipients" multiple style="height: 300px; width: 100%;">
+									<?php foreach ( $adherents as $adherent ) : ?>
+										<?php
+										$lastname = get_post_meta( $adherent->ID, '_dame_last_name', true );
+										$firstname = get_post_meta( $adherent->ID, '_dame_first_name', true );
+										$name = mb_strtoupper( $lastname ) . ' ' . $firstname;
+										if ( empty( trim( $name ) ) ) {
+											$name = $adherent->post_title;
+										}
+										?>
+										<option value="<?php echo esc_attr( $adherent->ID ); ?>"><?php echo esc_html( $name ); ?></option>
+									<?php endforeach; ?>
+								</select>
+								<p class="description"><?php esc_html_e( 'Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs adhérents.', 'dame' ); ?></p>
 							</td>
 						</tr>
 					</table>
@@ -183,63 +243,7 @@ class Mailing {
 				<?php submit_button( __( 'Envoyer le message', 'dame' ) ); ?>
 			</form>
 		</div>
-		<script>
-			// Simple inline script to handle toggle if JS file is not yet loaded/created.
-			document.addEventListener('DOMContentLoaded', function() {
-				const radios = document.getElementsByName('dame_recipient_method');
-				const filtersDiv = document.getElementById('dame_method_filters');
-				const manualDiv = document.getElementById('dame_method_manual');
-
-				function toggleSections() {
-					let method = 'filters';
-					for (const radio of radios) {
-						if (radio.checked) {
-							method = radio.value;
-							break;
-						}
-					}
-					if (method === 'filters') {
-						filtersDiv.style.display = 'block';
-						manualDiv.style.display = 'none';
-					} else {
-						filtersDiv.style.display = 'none';
-						manualDiv.style.display = 'block';
-					}
-				}
-
-				for (const radio of radios) {
-					radio.addEventListener('change', toggleSections);
-				}
-				toggleSections();
-			});
-		</script>
 		<?php
-	}
-
-	/**
-	 * Renders category checklist recursively.
-	 *
-	 * @param int $parent_id Parent term ID.
-	 */
-	private function render_category_checklist( $parent_id = 0 ) {
-		$terms = get_terms( array(
-			'taxonomy'   => 'dame_agenda_category',
-			'parent'     => $parent_id,
-			'hide_empty' => false,
-		) );
-
-		if ( empty( $terms ) ) {
-			return;
-		}
-
-		echo '<ul style="margin-top: 5px; margin-bottom: 5px;">';
-		foreach ( $terms as $term ) {
-			echo '<li>';
-			echo '<label><input type="checkbox" name="dame_categories[]" value="' . esc_attr( $term->term_id ) . '"> ' . esc_html( $term->name ) . '</label>';
-			$this->render_category_checklist( $term->term_id );
-			echo '</li>';
-		}
-		echo '</ul>';
 	}
 
 	/**
@@ -259,30 +263,25 @@ class Mailing {
 			wp_die( __( 'Message invalide.', 'dame' ) );
 		}
 
-		$season_id = isset( $_POST['dame_season'] ) ? absint( $_POST['dame_season'] ) : 0;
-		$method    = isset( $_POST['dame_recipient_method'] ) ? sanitize_key( $_POST['dame_recipient_method'] ) : 'filters';
-
+		$method = isset( $_POST['dame_recipient_method'] ) ? sanitize_key( $_POST['dame_recipient_method'] ) : 'group';
 		$recipient_emails = array();
+		$adherent_ids = array();
 
 		if ( 'manual' === $method ) {
-			$raw_emails = isset( $_POST['dame_manual_emails'] ) ? sanitize_textarea_field( $_POST['dame_manual_emails'] ) : '';
-			$lines      = explode( "\n", $raw_emails );
-			foreach ( $lines as $line ) {
-				$email = sanitize_email( trim( $line ) );
-				if ( is_email( $email ) ) {
-					$recipient_emails[] = $email;
-				}
+			if ( ! empty( $_POST['dame_manual_recipients'] ) && is_array( $_POST['dame_manual_recipients'] ) ) {
+				$adherent_ids = array_map( 'absint', $_POST['dame_manual_recipients'] );
 			}
 		} else {
-			// Filter logic.
-			if ( ! $season_id ) {
-				wp_die( __( 'Veuillez sélectionner une saison.', 'dame' ) );
+			// Group method.
+			$seasons = isset( $_POST['dame_season_filters'] ) ? array_map( 'absint', $_POST['dame_season_filters'] ) : array();
+			$groups  = isset( $_POST['dame_group_filters'] ) ? array_map( 'absint', $_POST['dame_group_filters'] ) : array();
+			$gender  = isset( $_POST['dame_recipient_gender'] ) ? sanitize_text_field( $_POST['dame_recipient_gender'] ) : 'all';
+
+			if ( empty( $seasons ) ) {
+				wp_die( __( 'Veuillez sélectionner au moins une saison.', 'dame' ) );
 			}
 
-			$groups     = isset( $_POST['dame_groups'] ) ? array_map( 'absint', $_POST['dame_groups'] ) : array();
-			$categories = isset( $_POST['dame_categories'] ) ? array_map( 'absint', $_POST['dame_categories'] ) : array();
-
-			// Build query for adherents.
+			// Build Query.
 			$args = array(
 				'post_type'      => 'adherent',
 				'posts_per_page' => -1,
@@ -292,32 +291,39 @@ class Mailing {
 					array(
 						'taxonomy' => 'dame_saison_adhesion',
 						'field'    => 'term_id',
-						'terms'    => $season_id,
+						'terms'    => $seasons,
+						'operator' => 'IN',
 					),
 				),
 			);
 
+			// Add Groups filter if selected.
 			if ( ! empty( $groups ) ) {
 				$args['tax_query'][] = array(
 					'taxonomy' => 'dame_group',
 					'field'    => 'term_id',
 					'terms'    => $groups,
+					'operator' => 'IN',
 				);
 			}
 
-			// Note: Categories usually apply to events (agenda), but legacy might link them to adherents or users want to filter adherents interested in categories.
-			// However, adherence usually doesn't have 'dame_agenda_category'.
-			// Assuming standard adherence filtering for now. If categories are needed, they might be custom fields or another taxonomy.
-			// Given instructions: "Helper `render_category_checklist` pour les catégories (récursif)."
-			// If these are agenda categories, they might not apply to adherents directly unless there's a relation.
-			// I will keep the logic simple: fetch adherents matching Season + Groups.
+			// Add Gender filter if not 'all'.
+			if ( 'all' !== $gender ) {
+				$args['meta_query'] = array(
+					array(
+						'key'   => '_dame_gender',
+						'value' => $gender,
+					),
+				);
+			}
 
 			$adherent_ids = get_posts( $args );
+		}
 
-			foreach ( $adherent_ids as $adherent_id ) {
-				$emails = Data_Provider::get_emails_for_adherent( $adherent_id );
-				$recipient_emails = array_merge( $recipient_emails, $emails );
-			}
+		// Retrieve emails for each adherent.
+		foreach ( $adherent_ids as $adherent_id ) {
+			$emails = Data_Provider::get_emails_for_adherent( $adherent_id );
+			$recipient_emails = array_merge( $recipient_emails, $emails );
 		}
 
 		$recipient_emails = array_unique( $recipient_emails );
@@ -330,24 +336,19 @@ class Mailing {
 		update_post_meta( $message_id, '_dame_message_status', 'scheduled' );
 		update_post_meta( $message_id, '_dame_message_recipients_count', count( $recipient_emails ) );
 		update_post_meta( $message_id, '_dame_recipient_method', $method );
-		if ( 'filters' === $method ) {
-			update_post_meta( $message_id, '_dame_target_season', $season_id );
-			if ( ! empty( $groups ) ) update_post_meta( $message_id, '_dame_target_groups', $groups );
+
+		if ( 'group' === $method ) {
+			if ( isset( $seasons ) ) update_post_meta( $message_id, '_dame_target_seasons', $seasons ); // Note: plural 'seasons' now
+			if ( isset( $groups ) ) update_post_meta( $message_id, '_dame_target_groups', $groups );
+			if ( isset( $gender ) ) update_post_meta( $message_id, '_dame_target_gender', $gender );
 		}
 
-		// Schedule batches.
-		// Split emails into chunks (e.g., 20 per minute is the limit, so chunks of 20).
+		// Schedule batches (20 per minute).
 		$chunks = array_chunk( $recipient_emails, 20 );
 		$total_batches = count( $chunks );
 
 		update_post_meta( $message_id, '_dame_scheduled_batches_total', $total_batches );
 		update_post_meta( $message_id, '_dame_scheduled_batches_processed', 0 );
-
-		// Schedule first batch immediately (or very soon).
-		// We schedule subsequent batches by spacing them out to respect rate limits if we were doing single events per batch,
-		// BUT the BatchSender instruction said "Le fichier legacy semble utiliser `wp_schedule_single_event` pour relancer un lot en cas d'échec."
-		// AND "Rate Limit : L'envoi ne doit jamais dépasser 20 emails/minute (via Cron)."
-		// So we should schedule distinct events for each chunk, spaced by 1 minute.
 
 		$delay = 0;
 		foreach ( $chunks as $chunk_emails ) {
