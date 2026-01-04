@@ -327,6 +327,7 @@ function dame_get_message_recipients( $message_id ) {
 		$permanent_adherent_ids  = array();
 
 		if ( ! empty( $seasons ) ) {
+			// Saisonnier Query: Intersect Seasons with Saisonnier Groups.
 			$saisonnier_query_args = array(
 				'post_type'      => 'adherent',
 				'posts_per_page' => -1,
@@ -342,44 +343,123 @@ function dame_get_message_recipients( $message_id ) {
 				'meta_query'     => array(),
 			);
 
-			if ( ! empty( $saisonnier_groups ) ) {
-				$saisonnier_query_args['tax_query'][] = array(
-					'taxonomy' => 'dame_group',
-					'field'    => 'term_id',
-					'terms'    => $saisonnier_groups,
-				);
-			}
+			// Add seasonal group filter if present.
+			// Legacy logic: If groups are selected, we intersect with season.
+			// But the new prompt logic for "process_mailing" said:
+			// "Tax Query (UNION): Clause 1 (if Seasons) OR Clause 2 (if Groups)".
+			// This utility must match the sending logic to be accurate.
+			// The previous step implemented "process_mailing" with UNION (OR).
+			// So this helper MUST also use UNION (OR).
+			// The current code here (in memory/legacy file?) uses specific logic.
+			// I need to update this function to match the NEW logic requested in "process_mailing".
 
-			if ( ! empty( $recipient_gender ) && 'all' !== $recipient_gender ) {
-				$saisonnier_query_args['meta_query'][] = array(
-					'key'   => '_dame_sexe',
-					'value' => $recipient_gender,
-				);
-			}
-			$saisonnier_adherent_ids = get_posts( $saisonnier_query_args );
-		}
+			// Let's rewrite the query logic here to match `Mailing::process_mailing`.
 
-		if ( ! empty( $permanent_groups ) ) {
-			$permanent_query_args = array(
+			$query_args = array(
 				'post_type'      => 'adherent',
 				'posts_per_page' => -1,
 				'fields'         => 'ids',
 				'tax_query'      => array(
-					array(
-						'taxonomy' => 'dame_group',
-						'field'    => 'term_id',
-						'terms'    => $permanent_groups,
-					),
+					'relation' => 'OR',
 				),
 			);
-			$permanent_adherent_ids = get_posts( $permanent_query_args );
+
+			// Clause 1: Seasons
+			if ( ! empty( $seasons ) ) {
+				$query_args['tax_query'][] = array(
+					'taxonomy' => 'dame_saison_adhesion',
+					'field'    => 'term_id',
+					'terms'    => $seasons,
+					'operator' => 'IN',
+				);
+			}
+
+			// Clause 2: Groups (Merge both types)
+			$all_groups = array_merge(
+				is_array($saisonnier_groups) ? $saisonnier_groups : [],
+				is_array($permanent_groups) ? $permanent_groups : []
+			);
+
+			if ( ! empty( $all_groups ) ) {
+				$query_args['tax_query'][] = array(
+					'taxonomy' => 'dame_group',
+					'field'    => 'term_id',
+					'terms'    => $all_groups,
+					'operator' => 'IN',
+				);
+			}
+
+			// Meta Query for Gender (Intersection)
+			if ( ! empty( $recipient_gender ) && 'all' !== $recipient_gender ) {
+				$query_args['meta_query'][] = array(
+					'key'   => '_dame_sexe',
+					'value' => $recipient_gender,
+				);
+			}
+
+			$adherent_ids = get_posts( $query_args );
+		} elseif ( ! empty( $permanent_groups ) ) {
+             // Fallback if only groups selected without seasons?
+             // The loop above handles it via OR relation if season is empty.
+             // But wait, the loop above initializes `tax_query` with `OR`.
+             // If season is empty, it adds only Group clause. That works.
+             // If both empty? `process_mailing` dies. Here we return empty.
+
+             // BUT, `process_mailing` requires at least one criteria.
+             // Re-implementing strictly:
+             $all_groups = array_merge(
+				is_array($saisonnier_groups) ? $saisonnier_groups : [],
+				is_array($permanent_groups) ? $permanent_groups : []
+			);
+
+             if ( empty( $seasons ) && empty( $all_groups ) ) {
+                 return array();
+             }
+
+             $query_args = array(
+				'post_type'      => 'adherent',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'tax_query'      => array(
+					'relation' => 'OR',
+				),
+			);
+
+			if ( ! empty( $seasons ) ) {
+				$query_args['tax_query'][] = array(
+					'taxonomy' => 'dame_saison_adhesion',
+					'field'    => 'term_id',
+					'terms'    => $seasons,
+					'operator' => 'IN',
+				);
+			}
+
+			if ( ! empty( $all_groups ) ) {
+				$query_args['tax_query'][] = array(
+					'taxonomy' => 'dame_group',
+					'field'    => 'term_id',
+					'terms'    => $all_groups,
+					'operator' => 'IN',
+				);
+			}
+
+			if ( ! empty( $recipient_gender ) && 'all' !== $recipient_gender ) {
+				$query_args['meta_query'][] = array(
+					'key'   => '_dame_sexe',
+					'value' => $recipient_gender,
+				);
+			}
+
+			$adherent_ids = get_posts( $query_args );
 		}
 
-		$adherent_ids = array_unique( array_merge( $saisonnier_adherent_ids, $permanent_adherent_ids ) );
-
 	} elseif ( 'manual' === $selection_method ) {
-		$adherent_ids = get_post_meta( $message_id, '_dame_manual_recipients', true );
-		$adherent_ids = is_array( $adherent_ids ) ? $adherent_ids : array();
+		// Fix: The meta key might be singular or array.
+		// Legacy probably saved it as `_dame_manual_recipients` (array via add_post_meta? or serialized).
+		// `update_post_meta` with array value serializes it.
+		// `get_post_meta(..., true)` returns the array.
+		$ids = get_post_meta( $message_id, '_dame_manual_recipients', true );
+		$adherent_ids = ! empty( $ids ) && is_array( $ids ) ? $ids : array();
 	}
 
 	$recipients = array();

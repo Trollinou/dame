@@ -62,8 +62,21 @@ class MessageReport {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'dame_message_opens';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$opens = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE message_id = %d ORDER BY opened_at DESC", $message_id ) );
+		$opens = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE message_id = %d", $message_id ) );
 
+		// Index opens by hash for faster lookup
+		$opens_by_hash = array();
+		foreach ( $opens as $open ) {
+			// Store earliest open if multiple? Or list of opens?
+			// The request says "Nom | Email | Date d'ouverture (ou Non lu)".
+			// So we prioritize the first open or just 'Yes'.
+			// Let's store the object.
+			if ( ! isset( $opens_by_hash[ $open->email_hash ] ) ) {
+				$opens_by_hash[ $open->email_hash ] = $open;
+			}
+		}
+
+		$recipients = dame_get_message_recipients( $message_id );
 		$message = get_post( $message_id );
 		?>
 		<div class="wrap">
@@ -72,8 +85,8 @@ class MessageReport {
 			<div class="card">
 				<h2><?php esc_html_e( 'Statistiques', 'dame' ); ?></h2>
 				<?php
-				$total_sent = (int) get_post_meta( $message_id, '_dame_message_recipients_count', true );
-				$unique_opens = count( array_unique( array_column( $opens, 'email_hash' ) ) );
+				$total_sent = count( $recipients );
+				$unique_opens = count( $opens_by_hash );
 				$rate = $total_sent > 0 ? round( ( $unique_opens / $total_sent ) * 100, 2 ) : 0;
 				?>
 				<p>
@@ -88,25 +101,36 @@ class MessageReport {
 			<table class="widefat fixed striped">
 				<thead>
 					<tr>
-						<th><?php esc_html_e( 'Date d\'ouverture', 'dame' ); ?></th>
-						<th><?php esc_html_e( 'IP (Anonymisée)', 'dame' ); ?></th>
-						<th><?php esc_html_e( 'Hash Email', 'dame' ); ?></th>
-						<th><?php esc_html_e( 'Adhérent / Responsable', 'dame' ); ?></th>
+						<th><?php esc_html_e( 'Nom (Adhérent / Responsable)', 'dame' ); ?></th>
+						<th><?php esc_html_e( 'Email', 'dame' ); ?></th>
+						<th><?php esc_html_e( 'Statut', 'dame' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
-					<?php if ( ! empty( $opens ) ) : ?>
-						<?php foreach ( $opens as $open ) : ?>
+					<?php if ( ! empty( $recipients ) ) : ?>
+						<?php foreach ( $recipients as $email => $name ) : ?>
+							<?php
+							$hash = md5( mb_strtolower( trim( $email ), 'UTF-8' ) );
+							$is_opened = isset( $opens_by_hash[ $hash ] );
+							$open_data = $is_opened ? $opens_by_hash[ $hash ] : null;
+							?>
 							<tr>
-								<td><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $open->opened_at ) ) ); ?></td>
-								<td><?php echo esc_html( $open->user_ip ); ?></td>
-								<td><?php echo esc_html( $open->email_hash ); ?></td>
-								<td><?php echo esc_html( $this->get_name_by_hash( $open->email_hash ) ); ?></td>
+								<td><?php echo esc_html( $name ); ?></td>
+								<td><?php echo esc_html( $email ); ?></td>
+								<td>
+									<?php if ( $is_opened ) : ?>
+										<span style="color: green; font-weight: bold;">
+											<?php printf( esc_html__( 'Ouvert le %s', 'dame' ), date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $open_data->opened_at ) ) ); ?>
+										</span>
+									<?php else : ?>
+										<span style="color: #888;"><?php esc_html_e( 'Non lu', 'dame' ); ?></span>
+									<?php endif; ?>
+								</td>
 							</tr>
 						<?php endforeach; ?>
 					<?php else : ?>
 						<tr>
-							<td colspan="3"><?php esc_html_e( 'Aucune ouverture enregistrée pour le moment.', 'dame' ); ?></td>
+							<td colspan="3"><?php esc_html_e( 'Aucun destinataire trouvé ou liste non disponible pour ce message.', 'dame' ); ?></td>
 						</tr>
 					<?php endif; ?>
 				</tbody>

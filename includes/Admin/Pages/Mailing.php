@@ -410,8 +410,8 @@ class Mailing {
 			update_post_meta( $message_id, '_dame_recipient_gender', $meta_gender );
 		}
 
-		// Schedule batches (15 per minute).
-		$chunks = array_chunk( $recipient_emails, 15 );
+		// Schedule batches (20 per minute to match legacy request of 3s * 20 = 60s).
+		$chunks = array_chunk( $recipient_emails, 20 );
 		$total_batches = count( $chunks );
 
 		update_post_meta( $message_id, '_dame_scheduled_batches_total', $total_batches );
