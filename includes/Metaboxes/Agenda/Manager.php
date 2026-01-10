@@ -8,6 +8,7 @@
 namespace DAME\Metaboxes\Agenda;
 
 use WP_Post;
+use DAME\Services\Data_Provider;
 
 /**
  * Class Manager
@@ -41,8 +42,47 @@ class Manager {
 		}
 
 		// Enqueue the common admin script which handles address autocomplete and geolocation.
-		// The script is registered in includes/Admin/Assets.php with handle 'dame-admin-common'.
+		// We explicitly register and localize it here to ensure it's available for the Agenda CPT
+		// with the necessary data (latitude/longitude options), as Assets.php might not cover this CPT.
+
+		// Define the URL to the assets directory relative to the plugin root.
+		// Since we are in includes/Metaboxes/Agenda/Manager.php, dirname(__DIR__, 3) gets us to the plugin root.
+		$plugin_url = plugin_dir_url( dirname( __DIR__, 3 ) . '/index.php' );
+
+		// Register if not already registered (though wp_register_script handles duplicate calls gracefully).
+		wp_register_script(
+			'dame-admin-common',
+			$plugin_url . 'assets/js/admin-common.js',
+			array(), // Dependencies if any
+			DAME_VERSION,
+			true
+		);
+
+		// Localize script with necessary data for distance calculation.
+		$options = get_option( 'dame_options', [] );
+		$assoc_latitude  = isset( $options['assoc_latitude'] ) ? $options['assoc_latitude'] : '';
+		$assoc_longitude = isset( $options['assoc_longitude'] ) ? $options['assoc_longitude'] : '';
+
+		wp_localize_script(
+			'dame-admin-common',
+			'dame_admin_data',
+			[
+				'assoc_latitude'  => $assoc_latitude,
+				'assoc_longitude' => $assoc_longitude,
+				// Include dept map if needed by other parts of the script, though lat/long is critical here.
+				'dept_region_map' => Data_Provider::get_department_region_mapping(),
+			]
+		);
+
 		wp_enqueue_script( 'dame-admin-common' );
+
+		// Enqueue CSS for autocomplete styles if needed (using existing file as common CSS).
+		wp_enqueue_style(
+			'dame-admin-common-css',
+			$plugin_url . 'assets/css/admin-adherent.css',
+			[],
+			DAME_VERSION
+		);
 	}
 
 	/**
