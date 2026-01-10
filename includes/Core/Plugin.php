@@ -29,6 +29,7 @@ use DAME\Metaboxes\PreInscription\Reconciliation as PreInscriptionReconciliation
 use DAME\Metaboxes\Agenda\Manager as AgendaMetaboxManager;
 use DAME\Metaboxes\ICalFeed\Settings as ICalFeedSettings;
 use DAME\Services\PDF_Generator;
+use DAME\Services\ICalFeed as ICalFeedService;
 use DAME\Shortcodes\RegistrationForm;
 use DAME\Admin\Assets;
 use DAME\Admin\Pages\ViewAdherent;
@@ -117,6 +118,9 @@ class Plugin {
 
 		$pdf_generator = new PDF_Generator();
 		$pdf_generator->init();
+
+		$ical_feed_service = new ICalFeedService();
+		$ical_feed_service->init();
 
 		// Initialize Shortcodes.
 		$registration_form = new RegistrationForm();
