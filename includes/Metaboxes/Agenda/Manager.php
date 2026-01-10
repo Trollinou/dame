@@ -346,6 +346,30 @@ class Manager {
 			}
 			toggleTimeFields(); // Initial check
 			$('#dame_all_day').on('change', toggleTimeFields);
+
+			// UX: Copy start date to end date on blur if end date is empty
+			$('#dame_start_date').on('blur change', function() {
+				var startDate = $(this).val();
+				var endDate = $('#dame_end_date').val();
+				if(startDate && !endDate) {
+					$('#dame_end_date').val(startDate);
+				}
+			});
+
+			// UX: Validate Category Selection on submit
+			$('#post').on('submit', function(e) {
+				// Only if we are on the agenda edit screen
+				if( $('#dame_agenda_categorychecklist').length > 0 ) {
+					if( $('#dame_agenda_categorychecklist input:checked').length === 0 ) {
+						alert("<?php echo esc_js( __( 'Veuillez sélectionner au moins une catégorie.', 'dame' ) ); ?>");
+						e.preventDefault();
+						// Remove spinner/disabled state to allow retry
+						$('#publish').removeClass('disabled');
+						$('.spinner').removeClass('is-active');
+						return false;
+					}
+				}
+			});
 		});
 		</script>
 		<style>
@@ -457,14 +481,27 @@ class Manager {
 
 		// --- Validation ---
 		$errors = [];
+
+		// Check for at least one category checked.
+		// tax_input for hierarchical taxonomies is an array of term IDs.
+		// If empty, or all values are 0/empty, we have an error.
+		$has_category = false;
+		if ( isset( $_POST['tax_input']['dame_agenda_category'] ) && is_array( $_POST['tax_input']['dame_agenda_category'] ) ) {
+			$cats = array_filter( $_POST['tax_input']['dame_agenda_category'] );
+			if ( ! empty( $cats ) ) {
+				$has_category = true;
+			}
+		}
+
+		if ( ! $has_category ) {
+			$errors[] = __( 'La catégorie est obligatoire.', 'dame' );
+		}
+
 		if ( empty( $_POST['dame_start_date'] ) ) {
 			$errors[] = __( 'La date de début est obligatoire.', 'dame' );
 		}
 		if ( empty( $_POST['dame_end_date'] ) ) {
 			$errors[] = __( 'La date de fin est obligatoire.', 'dame' );
-		}
-		if ( empty( $_POST['tax_input']['dame_agenda_category'] ) || ( is_array( $_POST['tax_input']['dame_agenda_category'] ) && count( array_filter( $_POST['tax_input']['dame_agenda_category'] ) ) === 0 ) ) {
-			$errors[] = __( 'La catégorie est obligatoire.', 'dame' );
 		}
 
 		if ( ! empty( $errors ) ) {
