@@ -11,16 +11,38 @@ use WP_Post;
 
 /**
  * Class Manager
- * Manages metaboxes for the Agenda CPT.
+ * Manages metaboxes for the Agenda CPT, including critical script enqueues for geolocation.
  */
 class Manager {
 
 	/**
-	 * Initialize the metaboxes.
+	 * Initialize the metaboxes and scripts.
 	 */
 	public function init() {
 		add_action( 'add_meta_boxes', [ $this, 'register_meta_boxes' ] );
 		add_action( 'save_post_dame_agenda', [ $this, 'save' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+	}
+
+	/**
+	 * Enqueue necessary scripts for autocomplete and geolocation.
+	 *
+	 * @param string $hook The current admin page hook.
+	 */
+	public function enqueue_scripts( $hook ) {
+		global $post_type;
+
+		if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
+			return;
+		}
+
+		if ( 'dame_agenda' !== $post_type ) {
+			return;
+		}
+
+		// Enqueue the common admin script which handles address autocomplete and geolocation.
+		// The script is registered in includes/Admin/Assets.php with handle 'dame-admin-common'.
+		wp_enqueue_script( 'dame-admin-common' );
 	}
 
 	/**
@@ -236,7 +258,7 @@ class Manager {
 				<th><label for="dame_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-autocomplete-wrapper" style="position: relative;">
-						<input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text" autocomplete="off" />
+						<input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text dame-js-address" data-group="event_location" autocomplete="off" />
 					</div>
 				</td>
 			</tr>
@@ -248,8 +270,8 @@ class Manager {
 				<th><label for="dame_postal_code"><?php _e( 'Code Postal / Ville', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-inline-fields">
-						<input type="text" id="dame_postal_code" name="dame_postal_code" value="<?php echo esc_attr( $postal_code ); ?>" class="postal-code" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
-						<input type="text" id="dame_city" name="dame_city" value="<?php echo esc_attr( $city ); ?>" class="city" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
+						<input type="text" id="dame_postal_code" name="dame_postal_code" value="<?php echo esc_attr( $postal_code ); ?>" class="postal-code dame-js-zip" data-group="event_location" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
+						<input type="text" id="dame_city" name="dame_city" value="<?php echo esc_attr( $city ); ?>" class="city dame-js-city" data-group="event_location" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
 					</div>
 				</td>
 			</tr>
@@ -257,8 +279,8 @@ class Manager {
 				<th><label for="dame_latitude"><?php _e( 'Latitude / Longitude', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-inline-fields">
-						<input type="text" id="dame_latitude" name="dame_latitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_latitude', true ) ); ?>" readonly="readonly" placeholder="<?php _e( 'Latitude', 'dame' ); ?>" />
-						<input type="text" id="dame_longitude" name="dame_longitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_longitude', true ) ); ?>" readonly="readonly" placeholder="<?php _e( 'Longitude', 'dame' ); ?>" />
+						<input type="text" id="dame_latitude" name="dame_latitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_latitude', true ) ); ?>" readonly="readonly" class="dame-js-lat" data-group="event_location" placeholder="<?php _e( 'Latitude', 'dame' ); ?>" />
+						<input type="text" id="dame_longitude" name="dame_longitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_longitude', true ) ); ?>" readonly="readonly" class="dame-js-long" data-group="event_location" placeholder="<?php _e( 'Longitude', 'dame' ); ?>" />
 					</div>
 				</td>
 			</tr>
@@ -266,8 +288,8 @@ class Manager {
 				<th><label for="dame_distance"><?php _e( 'Distance / Temps de trajet', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-inline-fields">
-						<input type="text" id="dame_distance" name="dame_distance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_distance', true ) ); ?>" readonly="readonly" placeholder="<?php _e( 'Distance (km)', 'dame' ); ?>" />
-						<input type="text" id="dame_travel_time" name="dame_travel_time" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_travel_time', true ) ); ?>" readonly="readonly" placeholder="<?php _e( 'Temps de trajet', 'dame' ); ?>" />
+						<input type="text" id="dame_distance" name="dame_distance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_distance', true ) ); ?>" readonly="readonly" class="dame-js-dist" data-group="event_location" placeholder="<?php _e( 'Distance (km)', 'dame' ); ?>" />
+						<input type="text" id="dame_travel_time" name="dame_travel_time" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_travel_time', true ) ); ?>" readonly="readonly" class="dame-js-time" data-group="event_location" placeholder="<?php _e( 'Temps de trajet', 'dame' ); ?>" />
 						<button type="button" id="dame_calculate_route_button" class="button"><?php _e( 'Calculer', 'dame' ); ?></button>
 					</div>
 				</td>
