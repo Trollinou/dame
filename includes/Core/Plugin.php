@@ -28,9 +28,11 @@ use DAME\Metaboxes\PreInscription\Details as PreInscriptionDetails;
 use DAME\Metaboxes\PreInscription\Reconciliation as PreInscriptionReconciliation;
 use DAME\Metaboxes\Agenda\Manager as AgendaMetaboxManager;
 use DAME\Metaboxes\ICalFeed\Settings as ICalFeedSettings;
+use DAME\Metaboxes\ICalFeed\Info as ICalFeedInfo;
 use DAME\Services\PDF_Generator;
 use DAME\Services\ICalFeed as ICalFeedService;
 use DAME\Shortcodes\RegistrationForm;
+use DAME\Shortcodes\Agenda as AgendaShortcode;
 use DAME\Admin\Assets;
 use DAME\Admin\Pages\ViewAdherent;
 use DAME\Admin\Settings\Main as SettingsMain;
@@ -126,6 +128,9 @@ class Plugin {
 		$registration_form = new RegistrationForm();
 		$registration_form->init();
 
+		$agenda_shortcode = new AgendaShortcode();
+		$agenda_shortcode->init();
+
 		// Initialize Metaboxes.
 		if ( is_admin() ) {
 			$adherent_metaboxes = new AdherentMetaboxManager();
@@ -189,6 +194,9 @@ class Plugin {
 
 			$ical_feed_settings = new ICalFeedSettings();
 			$ical_feed_settings->init();
+
+			$ical_feed_info = new ICalFeedInfo();
+			$ical_feed_info->init();
 
 			$agenda_list_table = new AgendaListTable();
 			$agenda_list_table->init();
