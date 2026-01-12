@@ -23,7 +23,10 @@ class ICalFeed {
 	public function init() {
 		add_action( 'init', [ $this, 'register_feed' ] );
 		add_filter( 'query_vars', [ $this, 'add_query_vars' ] );
+		add_action( 'do_feed_dame-agenda-ical', [ $this, 'handle_feed_request' ] );
 		add_action( 'save_post_dame_agenda', [ $this, 'update_event_meta' ] );
+		add_action( 'template_redirect', [ $this, 'handle_single_event_download' ] );
+		add_action( 'views_edit-dame_ical_feed', [ $this, 'display_global_feeds_notice' ] );
 	}
 
 	/**
@@ -131,14 +134,79 @@ class ICalFeed {
 	}
 
 	/**
+	 * Handles single event download.
+	 */
+	public function handle_single_event_download() {
+		if ( isset( $_GET['dame_ics_download'] ) && '1' === $_GET['dame_ics_download'] && isset( $_GET['event_id'] ) ) {
+			$post_id = intval( $_GET['event_id'] );
+			$post    = get_post( $post_id );
+
+			if ( $post && 'dame_agenda' === $post->post_type ) {
+				// Check visibility permissions if the post is private.
+				if ( 'private' === $post->post_status && ! is_user_logged_in() ) {
+					wp_die( esc_html__( 'Vous n\'avez pas la permission de télécharger cet événement.', 'dame' ) );
+				}
+
+				$details = array(
+					'name' => $post->post_title,
+					'url'  => get_permalink( $post ),
+				);
+
+				$this->generate_ics( array( $post ), $details, true );
+				exit;
+			}
+		}
+	}
+
+	/**
+	 * Displays the global feeds notice on the iCal feed list table.
+	 */
+	public function display_global_feeds_notice() {
+		$default_feeds = array(
+			array(
+				'title'       => __( 'Flux public global', 'dame' ),
+				'url'         => home_url( '/feed/agenda/public.ics' ),
+				'description' => __( 'Contient tous les événements publics.', 'dame' ),
+			),
+			array(
+				'title'       => __( 'Flux privé global', 'dame' ),
+				'url'         => home_url( '/feed/agenda/prive.ics' ),
+				'description' => __( 'Contient tous les événements privés.', 'dame' ),
+			),
+		);
+
+		echo '<div class="notice notice-info inline" style="margin: 1em 0;">';
+		echo '<h3>' . esc_html__( 'Flux par défaut', 'dame' ) . '</h3>';
+		echo '<p>' . esc_html__( 'Les flux suivants sont toujours disponibles et ne peuvent pas être modifiés ou supprimés.', 'dame' ) . '</p>';
+		echo '<table class="wp-list-table widefat fixed striped" style="margin-bottom: 1em;">';
+		echo '<thead><tr><th style="width: 25%;">' . esc_html__( 'Nom du flux', 'dame' ) . '</th><th>' . esc_html__( 'URL d\'abonnement', 'dame' ) . '</th><th>' . esc_html__( 'Description', 'dame' ) . '</th></tr></thead>';
+		echo '<tbody>';
+		foreach ( $default_feeds as $feed ) {
+			echo '<tr>';
+			echo '<td><strong>' . esc_html( $feed['title'] ) . '</strong></td>';
+			echo '<td><input type="text" value="' . esc_attr( $feed['url'] ) . '" readonly onfocus="this.select();" style="width: 100%;"></td>';
+			echo '<td>' . esc_html( $feed['description'] ) . '</td>';
+			echo '</tr>';
+		}
+		echo '</tbody>';
+		echo '</table>';
+		echo '</div>';
+	}
+
+	/**
 	 * Generates the ICS content.
 	 *
-	 * @param array $event_posts Array of event posts.
-	 * @param array $feed_details Feed metadata.
+	 * @param array $event_posts    Array of event posts.
+	 * @param array $feed_details   Feed metadata.
+	 * @param bool  $force_download Whether to force download as attachment.
 	 */
-	private function generate_ics( $event_posts, $feed_details ) {
+	private function generate_ics( $event_posts, $feed_details, $force_download = false ) {
 		header( 'Content-Type: text/calendar; charset=utf-8' );
-		header( 'Content-Disposition: inline; filename="' . sanitize_title( $feed_details['name'] ) . '.ics"' );
+		if ( $force_download ) {
+			header( 'Content-Disposition: attachment; filename="' . sanitize_title( $feed_details['name'] ) . '.ics"' );
+		} else {
+			header( 'Content-Disposition: inline; filename="' . sanitize_title( $feed_details['name'] ) . '.ics"' );
+		}
 
 		echo "BEGIN:VCALENDAR\r\n";
 		echo "VERSION:2.0\r\n";
@@ -173,14 +241,14 @@ class ICalFeed {
 			$end_time       = get_post_meta( $post_id, '_dame_end_time', true );
 			$all_day        = get_post_meta( $post_id, '_dame_all_day', true );
 
-			// Skip events with no start date
+			// Skip events with no start date.
 			if ( empty( $start_date_str ) ) {
 				continue;
 			}
 
 			if ( $all_day ) {
 				$start_date_obj = new DateTime( $start_date_str );
-				// If end date is missing for all day event, assume same day
+				// If end date is missing for all day event, assume same day.
 				$end_date_obj = ! empty( $end_date_str ) ? new DateTime( $end_date_str ) : new DateTime( $start_date_str );
 				// For all-day events, DTEND is exclusive, so we add one day.
 				$end_date_obj->modify( '+1 day' );
@@ -190,7 +258,7 @@ class ICalFeed {
 				// For timed events, we convert the site's local time to UTC (Zulu time).
 				$timezone_string = get_option( 'timezone_string' );
 				if ( empty( $timezone_string ) ) {
-					$timezone_string = 'Europe/Paris'; // Fallback
+					$timezone_string = 'Europe/Paris'; // Fallback.
 				}
 				$timezone = new DateTimeZone( $timezone_string );
 
@@ -204,7 +272,7 @@ class ICalFeed {
 					$dtstart = ':' . gmdate( 'Ymd\THis\Z', $start_datetime->getTimestamp() );
 					$dtend   = ':' . gmdate( 'Ymd\THis\Z', $end_datetime->getTimestamp() );
 				} catch ( \Exception $e ) {
-					continue; // Skip invalid dates
+					continue; // Skip invalid dates.
 				}
 			}
 
