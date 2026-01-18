@@ -149,6 +149,19 @@ class Agenda {
 			</div>
 			<div id="dame-event-tooltip" class="dame-tooltip" style="display: none;"></div>
 		</div>
+		<script>
+		// Inline script to handle checkbox hierarchy behavior
+		jQuery(document).ready(function($) {
+			$('.dame-agenda-cat-filter').on('change', function() {
+				var isChecked = $(this).prop('checked');
+				// Check/uncheck all children inputs
+				$(this).closest('li').find('ul input.dame-agenda-cat-filter').prop('checked', isChecked);
+
+				// Trigger reload of events (assuming main script listens to change on these inputs)
+				// The main script should bind to '.dame-agenda-cat-filter' change event.
+			});
+		});
+		</script>
 		<?php
 		return ob_get_clean();
 	}
@@ -271,17 +284,17 @@ class Agenda {
 
 		if ( ! empty( $search_term ) ) {
 			$args['dame_search'] = $search_term;
-			add_filter( 'posts_join', [ $this, 'search_join' ], 10, 2 );
-			add_filter( 'posts_where', [ $this, 'search_where' ], 10, 2 );
-			add_filter( 'posts_distinct', [ $this, 'search_distinct' ], 10, 2 );
+			add_filter( 'posts_join', [ $this, 'filter_search_join' ], 10, 2 );
+			add_filter( 'posts_where', [ $this, 'filter_search_where' ], 10, 2 );
+			add_filter( 'posts_distinct', [ $this, 'filter_search_distinct' ], 10, 2 );
 		}
 
 		$query = new WP_Query( $args );
 
 		if ( ! empty( $search_term ) ) {
-			remove_filter( 'posts_join', [ $this, 'search_join' ], 10, 2 );
-			remove_filter( 'posts_where', [ $this, 'search_where' ], 10, 2 );
-			remove_filter( 'posts_distinct', [ $this, 'search_distinct' ], 10, 2 );
+			remove_filter( 'posts_join', [ $this, 'filter_search_join' ], 10, 2 );
+			remove_filter( 'posts_where', [ $this, 'filter_search_where' ], 10, 2 );
+			remove_filter( 'posts_distinct', [ $this, 'filter_search_distinct' ], 10, 2 );
 		}
 
 		$events = array();
@@ -315,17 +328,22 @@ class Agenda {
 					'category'    => ! empty( $term ) ? $term[0]->name : '',
 				);
 
-				// For multi-day events or single-day public/private distinction.
-				if ( $start_date !== $end_date ) {
-					// Assuming utility function exists or we define logic here.
-					// For simplicity in this migration, we'll skip the complex contrast calculation
-					// unless we migrate utils too. Let's assume black text for now or basic contrast.
-					// $event_data['text_color'] = ...
-				} else {
-					if ( 'private' !== $status ) {
-						// Basic lightening logic could go here if utility function is available.
+				$bg_color = $color;
+				// If single-day public event, lighten the background color.
+				if ( $start_date === $end_date && 'private' !== $status ) {
+					// Use utility function if available, otherwise fallback.
+					if ( function_exists( 'dame_lighten_color' ) ) {
+						$bg_color = dame_lighten_color( $color, 0.75 );
 					}
 				}
+				$event_data['background_color'] = $bg_color;
+
+				// Determine text color based on background.
+				$text_color = '#000000'; // Default black.
+				if ( function_exists( 'dame_get_text_color_based_on_bg' ) ) {
+					$text_color = dame_get_text_color_based_on_bg( $bg_color );
+				}
+				$event_data['text_color'] = $text_color;
 
 				$events[] = $event_data;
 			}
@@ -342,7 +360,7 @@ class Agenda {
 	 * @param WP_Query $query Query object.
 	 * @return string Modified join.
 	 */
-	public function search_join( $join, $query ) {
+	public function filter_search_join( $join, $query ) {
 		global $wpdb;
 		if ( ! empty( $query->get( 'dame_search' ) ) ) {
 			$join .= $wpdb->prepare(
@@ -363,7 +381,7 @@ class Agenda {
 	 * @param WP_Query $query Query object.
 	 * @return string Modified where.
 	 */
-	public function search_where( $where, $query ) {
+	public function filter_search_where( $where, $query ) {
 		global $wpdb;
 		$search_term = $query->get( 'dame_search' );
 		if ( ! empty( $search_term ) ) {
@@ -390,7 +408,7 @@ class Agenda {
 	 * @param WP_Query $query Query object.
 	 * @return string Modified distinct.
 	 */
-	public function search_distinct( $distinct, $query ) {
+	public function filter_search_distinct( $distinct, $query ) {
 		if ( ! empty( $query->get( 'dame_search' ) ) ) {
 			return 'DISTINCT';
 		}
