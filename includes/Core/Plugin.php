@@ -131,7 +131,17 @@ class Plugin {
 		$agenda_shortcode = new AgendaShortcode();
 		$agenda_shortcode->init();
 
-		// Initialize Metaboxes.
+		// Initialize Taxonomies (MUST BE GLOBAL, NOT INSIDE is_admin)
+		$season_taxonomy = new Season();
+		$season_taxonomy->init();
+
+		$group_taxonomy = new Group();
+		$group_taxonomy->init();
+
+		$agenda_category_taxonomy = new AgendaCategory();
+		$agenda_category_taxonomy->init();
+
+		// Initialize Metaboxes & Admin-only logic.
 		if ( is_admin() ) {
 			$adherent_metaboxes = new AdherentMetaboxManager();
 			$adherent_metaboxes->init();
@@ -151,16 +161,6 @@ class Plugin {
 			// Initialize Adherent Columns (Migrated)
 			$adherent_columns = new AdherentColumns();
 			$adherent_columns->init();
-
-			// Initialize Taxonomies
-			$season_taxonomy = new Season();
-			$season_taxonomy->init();
-
-			$group_taxonomy = new Group();
-			$group_taxonomy->init();
-
-			$agenda_category_taxonomy = new AgendaCategory();
-			$agenda_category_taxonomy->init();
 
 			// Initialize PreInscription Metaboxes
 			$pre_inscription_details = new PreInscriptionDetails();
