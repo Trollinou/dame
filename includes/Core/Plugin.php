@@ -31,6 +31,8 @@ use DAME\Metaboxes\ICalFeed\Settings as ICalFeedSettings;
 use DAME\Metaboxes\ICalFeed\Info as ICalFeedInfo;
 use DAME\Services\PDF_Generator;
 use DAME\Services\ICalFeed as ICalFeedService;
+use DAME\Services\Backup;
+use DAME\Services\Birthday;
 use DAME\Shortcodes\RegistrationForm;
 use DAME\Shortcodes\Agenda as AgendaShortcode;
 use DAME\Admin\Assets;
@@ -123,6 +125,15 @@ class Plugin {
 
 		$ical_feed_service = new ICalFeedService();
 		$ical_feed_service->init();
+
+		$backup_service = new Backup();
+		$backup_service->init();
+
+		$birthday_service = new Birthday();
+		// (Pas de init pour Birthday, il est appelé par le Cron)
+
+		$cron_manager = new Cron();
+		$cron_manager->init();
 
 		// Initialize Shortcodes.
 		$registration_form = new RegistrationForm();
