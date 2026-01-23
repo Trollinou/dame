@@ -86,11 +86,11 @@ class Plugin {
 	 */
 	public function run() {
 		// Load legacy helpers (temporary dependency).
-		if ( defined( 'DAME_PATH' ) ) {
-			// require_once DAME_PATH . 'includes/data-lists.php';
-			require_once DAME_PATH . 'includes/utils.php';
-			// require_once DAME_PATH . 'includes/taxonomies.php';
-			require_once DAME_PATH . 'includes/assets.php';
+		if ( defined( 'DAME_PLUGIN_DIR' ) ) {
+			// require_once DAME_PLUGIN_DIR . 'includes/data-lists.php';
+			require_once DAME_PLUGIN_DIR . 'includes/utils.php';
+			// require_once DAME_PLUGIN_DIR . 'includes/taxonomies.php';
+			require_once DAME_PLUGIN_DIR . 'includes/assets.php';
 		}
 
 		// Initialize Roles.
