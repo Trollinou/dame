@@ -12,6 +12,7 @@ use DAME\CPT\Message;
 use DAME\CPT\PreInscription;
 use DAME\CPT\Agenda;
 use DAME\CPT\ICalFeed;
+use DAME\CPT\Sondage;
 use DAME\Core\Roles;
 use DAME\API\Tracker;
 use DAME\Services\Mailer;
@@ -29,15 +30,20 @@ use DAME\Metaboxes\PreInscription\Reconciliation as PreInscriptionReconciliation
 use DAME\Metaboxes\Agenda\Manager as AgendaMetaboxManager;
 use DAME\Metaboxes\ICalFeed\Settings as ICalFeedSettings;
 use DAME\Metaboxes\ICalFeed\Info as ICalFeedInfo;
+use DAME\Metaboxes\Sondage\Manager as SondageMetaboxManager;
 use DAME\Services\PDF_Generator;
 use DAME\Services\ICalFeed as ICalFeedService;
+use DAME\Services\Backup;
+use DAME\Services\Birthday;
 use DAME\Shortcodes\RegistrationForm;
 use DAME\Shortcodes\Agenda as AgendaShortcode;
+use DAME\Shortcodes\Sondage as SondageShortcode;
 use DAME\Admin\Assets;
 use DAME\Admin\Pages\ViewAdherent;
 use DAME\Admin\Settings\Main as SettingsMain;
 use DAME\Admin\Columns\Adherent as AdherentColumns;
 use DAME\Admin\ListTables\Agenda as AgendaListTable;
+use DAME\Admin\ListTables\Sondage as SondageListTable;
 use DAME\Admin\Actions\Agenda as AgendaActions;
 use DAME\Taxonomies\Season;
 use DAME\Taxonomies\Group;
@@ -80,11 +86,11 @@ class Plugin {
 	 */
 	public function run() {
 		// Load legacy helpers (temporary dependency).
-		if ( defined( 'DAME_PATH' ) ) {
-			require_once DAME_PATH . 'includes/data-lists.php';
-			require_once DAME_PATH . 'includes/utils.php';
-			// require_once DAME_PATH . 'includes/taxonomies.php';
-			require_once DAME_PATH . 'includes/assets.php';
+		if ( defined( 'DAME_PLUGIN_DIR' ) ) {
+			// require_once DAME_PLUGIN_DIR . 'includes/data-lists.php';
+			require_once DAME_PLUGIN_DIR . 'includes/utils.php';
+			// require_once DAME_PLUGIN_DIR . 'includes/taxonomies.php';
+			require_once DAME_PLUGIN_DIR . 'includes/assets.php';
 		}
 
 		// Initialize Roles.
@@ -107,6 +113,9 @@ class Plugin {
 		$ical_feed_cpt = new ICalFeed();
 		$ical_feed_cpt->init();
 
+		$sondage_cpt = new Sondage();
+		$sondage_cpt->init();
+
 		// Initialize API.
 		$tracker = new Tracker();
 		$tracker->init();
@@ -124,12 +133,24 @@ class Plugin {
 		$ical_feed_service = new ICalFeedService();
 		$ical_feed_service->init();
 
+		$backup_service = new Backup();
+		$backup_service->init();
+
+		$birthday_service = new Birthday();
+		// (Pas de init pour Birthday, il est appelé par le Cron)
+
+		$cron_manager = new Cron();
+		$cron_manager->init();
+
 		// Initialize Shortcodes.
 		$registration_form = new RegistrationForm();
 		$registration_form->init();
 
 		$agenda_shortcode = new AgendaShortcode();
 		$agenda_shortcode->init();
+
+		$sondage_shortcode = new SondageShortcode();
+		$sondage_shortcode->init();
 
 		// Initialize Taxonomies (MUST BE GLOBAL, NOT INSIDE is_admin)
 		$season_taxonomy = new Season();
@@ -198,8 +219,14 @@ class Plugin {
 			$ical_feed_info = new ICalFeedInfo();
 			$ical_feed_info->init();
 
+			$sondage_metaboxes = new SondageMetaboxManager();
+			$sondage_metaboxes->init();
+
 			$agenda_list_table = new AgendaListTable();
 			$agenda_list_table->init();
+
+			$sondage_list_table = new SondageListTable();
+			$sondage_list_table->init();
 
 			$agenda_actions = new AgendaActions();
 			$agenda_actions->init();

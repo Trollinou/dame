@@ -1,39 +1,51 @@
 <?php
 /**
  * Plugin Name:       DAME - Dossier Administratif des Membres Échiquéens
- * Plugin URI:
+ * Plugin URI:        https://github.com/trollinou/dame
  * Description:       Gère une base de données d'adhérents pour un club.
  * Version:           3.4.5
- * Requires at least: 6.8
- * Requires PHP:      8.2
+ * Requires at least: 6.0
+ * Requires PHP:      8.0
  * Author:            Etienne Gagnon
- * Author URI:
- * License:           GPL v2 or later
- * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       dame
- * Domain Path:       /languages
  */
 
-// If this file is called directly, abort.
-if ( ! defined( 'WPINC' ) ) {
-	die;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-// Define Constants.
-define( 'DAME_VERSION', '3.4.5' );
-define( 'DAME_PATH', plugin_dir_path( __FILE__ ) );
-define( 'DAME_URL', plugin_dir_url( __FILE__ ) );
-define( 'DAME_PLUGIN_DIR', DAME_PATH );
+// 1. Définition des Constantes (CRITIQUE pour le fonctionnement)
+if ( ! defined( 'DAME_VERSION' ) ) {
+	define( 'DAME_VERSION', '3.4.5' );
+}
 
-// Require Autoloader.
-require_once DAME_PATH . 'includes/Core/Autoloader.php';
+if ( ! defined( 'DAME_PLUGIN_DIR' ) ) {
+	define( 'DAME_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+}
 
-// Register Autoloader.
+if ( ! defined( 'DAME_PLUGIN_URL' ) ) {
+	define( 'DAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+}
+
+// 2. Autoloader
+require_once DAME_PLUGIN_DIR . 'includes/Core/Autoloader.php';
 DAME\Core\Autoloader::register();
 
-// Initialize the Plugin.
-function dame_init_plugin() {
-	$plugin = DAME\Core\Plugin::get_instance();
-	$plugin->run();
+// 3. Initialisation du Plugin
+if ( class_exists( 'DAME\Core\Plugin' ) ) {
+	$dame = DAME\Core\Plugin::get_instance();
+	$dame->run();
 }
-add_action( 'plugins_loaded', 'dame_init_plugin' );
+
+/**
+ * Fonction d'activation (pour les règles de réécriture)
+ */
+function dame_activate_plugin() {
+    // Déclenche l'écriture des règles iCal / Sondage
+    if ( class_exists( 'DAME\Services\ICalFeed' ) ) {
+        $ical = new DAME\Services\ICalFeed();
+        $ical->register_feed();
+    }
+    flush_rewrite_rules();
+}
+register_activation_hook( __FILE__, 'dame_activate_plugin' );
