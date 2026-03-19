@@ -50,9 +50,9 @@ class Mailing {
 
 		wp_enqueue_script(
 			'dame-mailing-js',
-			DAME_URL . 'admin/js/mailing.js', // Assuming this file exists.
+			\DAME_PLUGIN_URL . 'admin/js/mailing.js', // Assuming this file exists.
 			array( 'jquery' ),
-			DAME_VERSION,
+			\DAME_VERSION,
 			true
 		);
 	}
