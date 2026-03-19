@@ -1,26 +1,29 @@
 <?php
+/**
+ * Custom Post Type: Sondage
+ *
+ * @package DAME
+ */
 
 namespace DAME\CPT;
 
 /**
  * Class Sondage
- * Registers the 'dame_sondage' Post Type and its associated 'dame_sondage_reponse'.
  */
 class Sondage {
 
 	/**
-	 * Initialize the CPTs.
+	 * Initialize the CPT hooks.
 	 */
 	public function init() {
-		add_action( 'init', [ $this, 'register_cpt' ] );
-		add_action( 'init', [ $this, 'register_response_cpt' ] );
+		add_action( 'init', [ $this, 'register' ] );
 	}
 
 	/**
-	 * Register the main Sondage CPT.
+	 * Register the custom post types.
 	 */
-	public function register_cpt() {
-		$labels = [
+	public function register() {
+		$sondage_labels = [
 			'name'               => _x( 'Sondages', 'post type general name', 'dame' ),
 			'singular_name'      => _x( 'Sondage', 'post type singular name', 'dame' ),
 			'menu_name'          => _x( 'Sondages', 'admin menu', 'dame' ),
@@ -37,8 +40,8 @@ class Sondage {
 			'not_found_in_trash' => __( 'Aucun sondage trouvé dans la corbeille.', 'dame' ),
 		];
 
-		$args = [
-			'labels'             => $labels,
+		$sondage_args = [
+			'labels'             => $sondage_labels,
 			'public'             => false,
 			'publicly_queryable' => false,
 			'show_ui'            => true,
@@ -53,20 +56,15 @@ class Sondage {
 			'supports'           => [ 'title', 'editor' ],
 		];
 
-		register_post_type( 'dame_sondage', $args );
-	}
+		register_post_type( 'sondage', $sondage_args );
 
-	/**
-	 * Register the Sondage Response CPT.
-	 */
-	public function register_response_cpt() {
-		$labels = [
+		$reponse_labels = [
 			'name'          => _x( 'Réponses aux sondages', 'post type general name', 'dame' ),
 			'singular_name' => _x( 'Réponse de sondage', 'post type singular name', 'dame' ),
 		];
 
-		$args = [
-			'labels'              => $labels,
+		$reponse_args = [
+			'labels'              => $reponse_labels,
 			'public'              => false,
 			'publicly_queryable'  => false,
 			'show_ui'             => false,
@@ -81,6 +79,6 @@ class Sondage {
 			'show_in_admin_bar'   => false,
 		];
 
-		register_post_type( 'dame_sondage_reponse', $args );
+		register_post_type( 'sondage_reponse', $reponse_args );
 	}
 }
