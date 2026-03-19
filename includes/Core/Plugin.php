@@ -38,6 +38,7 @@ use DAME\Services\Birthday;
 use DAME\Shortcodes\RegistrationForm;
 use DAME\Shortcodes\Agenda as AgendaShortcode;
 use DAME\Shortcodes\Sondage as SondageShortcode;
+use DAME\Shortcodes\Contact as ContactShortcode;
 use DAME\Admin\Assets;
 use DAME\Admin\Pages\ViewAdherent;
 use DAME\Admin\Settings\Main as SettingsMain;
@@ -151,6 +152,9 @@ class Plugin {
 
 		$sondage_shortcode = new SondageShortcode();
 		$sondage_shortcode->init();
+
+		$contact_shortcode = new ContactShortcode();
+		$contact_shortcode->init();
 
 		// Initialize Taxonomies (MUST BE GLOBAL, NOT INSIDE is_admin)
 		$season_taxonomy = new Season();

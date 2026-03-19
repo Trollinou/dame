@@ -1,55 +1,67 @@
-(function($) {
-    'use strict';
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('dame-contact-form');
+    const feedback = document.getElementById('dame-contact-feedback');
 
-    $(document).ready(function() {
-        $('#dame-contact-form').on('submit', function(e) {
+    if (form) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            var form = $(this);
-            var messageContainer = $('#dame-contact-form-messages');
-            var submitButton = form.find('button[type="submit"]');
-
-            // Clear previous messages
-            messageContainer.text('').removeClass('success error');
-
-            // Client-side validation
-            var name = $('#dame_contact_name').val();
-            var email = $('#dame_contact_email').val();
-            var subject = $('#dame_contact_subject').val();
-            var message = $('#dame_contact_message').val();
-
-            if (!name || !email || !subject || !message) {
-                messageContainer.text('Veuillez remplir tous les champs obligatoires.').css('color', 'red');
+            // Validation HTML5 basique
+            if (!form.checkValidity()) {
+                form.reportValidity();
                 return;
             }
 
-            // Disable button
-            submitButton.prop('disabled', true);
-            messageContainer.text('Envoi en cours...').css('color', 'inherit');
+            // Récupération des données du formulaire (incluant le champ caché 'action')
+            const formData = new FormData(form);
 
-            var formData = form.serialize();
+            // Sécurité : si le JS n'avait pas le champ action, on le force au cas où
+            if (!formData.has('action')) {
+                formData.append('action', 'dame_submit_contact_form');
+            }
 
-            $.ajax({
-                type: 'POST',
-                url: dame_contact_ajax.ajax_url,
-                data: formData + '&action=dame_contact_submit',
-                success: function(response) {
-                    if (response.success) {
-                        messageContainer.text(response.data.message).css('color', 'green');
-                        form.trigger('reset'); // Clear form fields
-                    } else {
-                        messageContainer.text(response.data.message).css('color', 'red');
-                    }
-                },
-                error: function() {
-                    messageContainer.text('Une erreur est survenue. Veuillez réessayer.').css('color', 'red');
-                },
-                complete: function() {
-                    // Re-enable button
-                    submitButton.prop('disabled', false);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = 'Envoi en cours...';
+            }
+
+            // Requête AJAX
+            fetch(dame_contact_ajax.ajax_url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur réseau (' + response.status + ')');
+                }
+                return response.json();
+            })
+            .then(data => {
+                feedback.style.display = 'block';
+                if (data.success) {
+                    // Les données viennent de data.data['message'] car data.data est l'objet passé à wp_send_json_success()
+                    let message = data.data.message ? data.data.message : data.data;
+                    feedback.innerHTML = '<div class="notice notice-success" style="color: green; padding: 10px; border: 1px solid green; margin-top: 15px;">' + message + '</div>';
+                    form.reset();
+                } else {
+                    let message = data.data.message ? data.data.message : data.data;
+                    feedback.innerHTML = '<div class="notice notice-error" style="color: red; padding: 10px; border: 1px solid red; margin-top: 15px;">' + message + '</div>';
+                }
+            })
+            .catch(error => {
+                feedback.style.display = 'block';
+                feedback.innerHTML = '<div class="notice notice-error" style="color: red; padding: 10px; border: 1px solid red; margin-top: 15px;">Erreur de connexion au serveur. Veuillez réessayer.</div>';
+                console.error('Erreur AJAX Contact:', error);
+            })
+            .finally(() => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
                 }
             });
         });
-    });
-
-})(jQuery);
+    }
+});
