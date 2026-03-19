@@ -408,22 +408,12 @@ function dame_get_adherent_export_data() {
         if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
             $export_data['taxonomy_terms'][ $taxonomy ] = array();
             foreach ( $terms as $term ) {
-                $term_data = array(
-                    'old_id'      => $term->term_id,
+                $export_data['taxonomy_terms'][ $taxonomy ][] = array(
+					'old_id'      => $term->term_id,
                     'name'        => $term->name,
                     'slug'        => $term->slug,
                     'description' => $term->description,
                 );
-
-                // NOUVEAU : On récupère le type de groupe pour l'exporter
-                if ( $taxonomy === 'dame_group' ) {
-                    $group_type = get_term_meta( $term->term_id, '_dame_group_type', true );
-                    if ( ! empty( $group_type ) ) {
-                        $term_data['meta_data'] = array( '_dame_group_type' => $group_type );
-                    }
-                }
-
-                $export_data['taxonomy_terms'][ $taxonomy ][] = $term_data;
             }
         }
     }

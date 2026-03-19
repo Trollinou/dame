@@ -51,10 +51,13 @@ class Message {
 			case 'sent_date':
 				$status = get_post_meta( $post_id, '_dame_message_status', true );
 				if ( 'sent' === $status || 'sending' === $status || 'scheduled' === $status ) {
-					// We could store the actual sent date, but for now modified date or cron schedule time is a proxy.
-					// Or just show status if not fully sent.
 					if ( 'sent' === $status ) {
-						echo esc_html( get_the_modified_date( 'd/m/Y H:i', $post_id ) );
+						$old_sent_date = get_post_meta( $post_id, '_dame_sent_date', true );
+						if ( ! empty( $old_sent_date ) ) {
+							echo esc_html( get_date_from_gmt( date( 'Y-m-d H:i:s', $old_sent_date ), 'd/m/Y H:i' ) );
+						} else {
+							echo esc_html( get_the_modified_date( 'd/m/Y H:i', $post_id ) );
+						}
 					} else {
 						echo esc_html( ucfirst( $status ) );
 					}
@@ -64,21 +67,23 @@ class Message {
 				break;
 
 			case 'sending_author':
-				$author_id = get_post_field( 'post_author', $post_id );
-				$user      = get_userdata( $author_id );
+				$author_id = get_post_meta( $post_id, '_dame_sending_author', true );
+				if ( empty( $author_id ) ) {
+					$author_id = get_post_field( 'post_author', $post_id );
+				}
+				$user = get_userdata( $author_id );
 				echo $user ? esc_html( $user->display_name ) : '—';
 				break;
 
 			case 'recipients':
-				$count = (int) get_post_meta( $post_id, '_dame_message_recipients_count', true );
+				$count = get_post_meta( $post_id, '_dame_message_recipients_count', true );
+				if ( '' === $count ) {
+					$count = get_post_meta( $post_id, '_dame_total_recipients', true );
+				}
+				$count = (int) $count;
+
 				if ( $count > 0 ) {
 					echo esc_html( $count );
-					// In a real scenario, we might list names in a tooltip, but retrieving names for 100+ people is heavy here.
-					// Instructions say: "Tooltip avec les noms si > 15".
-					// This implies we should fetch them? Or maybe just "if count is small"?
-					// The instruction is "Tooltip avec les noms si > 15" -> likely means "Show names in tooltip, truncate if > 15" OR "Only show if < 15"?
-					// Actually "Tooltip avec les noms si > 15" is ambiguous. It likely means "Show recipients count. Add tooltip with names. If > 15, maybe truncate?".
-					// Let's assume a simple tooltip.
 				} else {
 					echo '0';
 				}
@@ -89,7 +94,12 @@ class Message {
 				$table_name = $wpdb->prefix . 'dame_message_opens';
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 				$opens = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT email_hash) FROM $table_name WHERE message_id = %d", $post_id ) );
-				$total = (int) get_post_meta( $post_id, '_dame_message_recipients_count', true );
+
+				$total = get_post_meta( $post_id, '_dame_message_recipients_count', true );
+				if ( '' === $total ) {
+					$total = get_post_meta( $post_id, '_dame_total_recipients', true );
+				}
+				$total = (int) $total;
 
 				if ( $total > 0 ) {
 					$percentage = round( ( $opens / $total ) * 100 );
