@@ -234,6 +234,13 @@ class Plugin {
 			// Initialize User Assignment Page
 			$user_assignment = new UserAssignment();
 			$user_assignment->init();
+
+			// Initialisation des pages de sauvegardes manuelles
+			$backup_adherent_page = new \DAME\Admin\Pages\BackupAdherent();
+			$backup_adherent_page->init();
+
+			$backup_agenda_page = new \DAME\Admin\Pages\BackupAgenda();
+			$backup_agenda_page->init();
 		}
 	}
 }
