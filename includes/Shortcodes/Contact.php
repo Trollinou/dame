@@ -48,6 +48,9 @@ class Contact {
 
 				<?php wp_nonce_field( 'dame_contact_nonce', 'dame_contact_nonce_field' ); ?>
 
+				<!-- Action -->
+				<input type="hidden" name="action" value="dame_submit_contact_form">
+
 				<!-- Honeypot -->
 				<div style="display:none;">
 					<label for="dame_contact_hp"><?php _e( "Laissez ce champ vide", "dame" ); ?></label>
@@ -76,8 +79,9 @@ class Contact {
 
 				<p>
 					<button type="submit"><?php _e( "Envoyer", "dame" ); ?></button>
-					<span id="dame-contact-form-messages" style="margin-left: 10px;"></span>
 				</p>
+
+				<div id="dame-contact-feedback" style="display:none;"></div>
 
 			</form>
 		</div>
