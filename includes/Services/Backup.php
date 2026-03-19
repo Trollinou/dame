@@ -554,7 +554,24 @@ class Backup {
 			$terms = get_terms( [ 'taxonomy' => $tax, 'hide_empty' => false ] );
 			if ( ! is_wp_error( $terms ) ) {
 				foreach ( $terms as $term ) {
-					$data['taxonomy_terms'][ $tax ][] = [ 'old_id' => $term->term_id, 'name' => $term->name, 'slug' => $term->slug, 'description' => $term->description ];
+					$term_data = [ 'old_id' => $term->term_id, 'name' => $term->name, 'slug' => $term->slug, 'description' => $term->description ];
+
+					// Export term meta, specifically for groups
+					$term_meta = get_term_meta( $term->term_id );
+					if ( ! empty( $term_meta ) ) {
+						$term_data['meta_data'] = [];
+						foreach ( $term_meta as $k => $v ) {
+							$term_data['meta_data'][ $k ] = maybe_unserialize( $v[0] );
+						}
+					} else if ( $tax === 'dame_group' ) {
+						// Fallback if not using term_meta directly in legacy, but a custom option taxonomy_termId
+						$group_type = get_term_meta( $term->term_id, '_dame_group_type', true );
+						if ( ! empty( $group_type ) ) {
+							$term_data['meta_data'] = [ '_dame_group_type' => $group_type ];
+						}
+					}
+
+					$data['taxonomy_terms'][ $tax ][] = $term_data;
 				}
 			}
 		}
@@ -573,8 +590,42 @@ class Backup {
 			$data['adherents'][] = [ 'old_id' => $post->ID, 'post_title' => $post->post_title, 'meta_data' => $meta, 'taxonomies' => $taxs ];
 		}
 
-		// Pre-inscriptions & Messages (Same logic...)
-		// ... (Omitted for brevity, assume legacy logic is applied here)
+		// Options
+		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
+		if ( $current_season_tag_id ) {
+			$term = get_term( $current_season_tag_id );
+			if ( $term && ! is_wp_error( $term ) ) {
+				$data['options']['dame_current_season_tag_slug'] = $term->slug;
+			}
+		}
+
+		// Pre-inscriptions
+		$query = new WP_Query( [ 'post_type' => 'dame_pre_inscription', 'posts_per_page' => -1, 'post_status' => 'any' ] );
+		foreach ( $query->posts as $post ) {
+			$meta = [];
+			foreach ( get_post_meta( $post->ID ) as $k => $v ) {
+				if ( strpos( $k, '_dame_' ) === 0 ) $meta[ $k ] = maybe_unserialize( $v[0] );
+			}
+			$data['pre_inscriptions'][] = [ 'old_id' => $post->ID, 'post_title' => $post->post_title, 'meta_data' => $meta ];
+		}
+
+		// Messages
+		$query = new WP_Query( [ 'post_type' => 'dame_message', 'posts_per_page' => -1, 'post_status' => 'any' ] );
+		foreach ( $query->posts as $post ) {
+			$meta = [];
+			foreach ( get_post_meta( $post->ID ) as $k => $v ) {
+				if ( strpos( $k, '_dame_' ) === 0 ) $meta[ $k ] = maybe_unserialize( $v[0] );
+			}
+			$data['messages'][] = [ 'old_id' => $post->ID, 'post_title' => $post->post_title, 'post_content' => $post->post_content, 'post_status' => $post->post_status, 'meta_data' => $meta ];
+		}
+
+		// Message opens
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'dame_message_opens';
+		$open_stats_data = $wpdb->get_results( "SELECT message_id, email_hash, opened_at, user_ip FROM {$table_name}", ARRAY_A );
+		if ( is_array( $open_stats_data ) ) {
+			$data['message_opens'] = $open_stats_data;
+		}
 
 		return $data;
 	}
@@ -616,7 +667,17 @@ class Backup {
 		foreach ( $data['taxonomy_terms'] ?? [] as $tax => $terms ) {
 			foreach ( $terms as $t ) {
 				$new = wp_insert_term( $t['name'], $tax, [ 'slug' => $t['slug'], 'description' => $t['description'] ] );
-				if ( ! is_wp_error( $new ) ) $map_terms[ $t['old_id'] ?? $t['slug'] ] = $new['term_id'];
+				if ( ! is_wp_error( $new ) ) {
+					$new_term_id = $new['term_id'];
+					$map_terms[ $t['old_id'] ?? $t['slug'] ] = $new_term_id;
+
+					// Import term metadata, restoring Group types
+					if ( ! empty( $t['meta_data'] ) ) {
+						foreach ( $t['meta_data'] as $k => $v ) {
+							update_term_meta( $new_term_id, $k, $v );
+						}
+					}
+				}
 			}
 		}
 
@@ -630,10 +691,62 @@ class Backup {
 			}
 		}
 
-		// Pre-Inscriptions, Messages, Opens... (Similar logic with remapping)
-		// ...
+		// Options
+		if ( ! empty( $data['options']['dame_current_season_tag_slug'] ) ) {
+			$term = get_term_by( 'slug', $data['options']['dame_current_season_tag_slug'], 'dame_saison_adhesion' );
+			if ( $term && ! is_wp_error( $term ) ) {
+				update_option( 'dame_current_season_tag_id', $term->term_id );
+			}
+		}
 
-		// TODO: Restore upgrade logic if needed: dame_perform_upgrade(...)
+		// Pre-inscriptions
+		foreach ( $data['pre_inscriptions'] ?? [] as $pi ) {
+			$pid = wp_insert_post( [ 'post_title' => $pi['post_title'], 'post_type' => 'dame_pre_inscription', 'post_status' => 'pending' ] );
+			if ( $pid ) {
+				foreach ( $pi['meta_data'] as $k => $v ) update_post_meta( $pid, $k, $v );
+			}
+		}
+
+		// Messages
+		foreach ( $data['messages'] ?? [] as $m ) {
+			// Sanitize input to match original code
+			$post_title = sanitize_text_field( $m['post_title'] );
+			$post_content = wp_kses_post( $m['post_content'] );
+			$post_status = sanitize_key( $m['post_status'] );
+
+			$pid = wp_insert_post( [ 'post_title' => $post_title, 'post_content' => $post_content, 'post_type' => 'dame_message', 'post_status' => $post_status ] );
+			if ( $pid ) {
+				$map_messages[ $m['old_id'] ] = $pid;
+				foreach ( $m['meta_data'] as $k => $v ) {
+					$remapped_value = $v;
+					if ( '_dame_manual_recipients' === $k && is_array( $v ) ) {
+						$remapped_value = [];
+						foreach ( $v as $old_id ) if ( isset( $map_adherents[ $old_id ] ) ) $remapped_value[] = $map_adherents[ $old_id ];
+					}
+					if ( in_array( $k, [ '_dame_recipient_seasons', '_dame_recipient_groups_saisonnier', '_dame_recipient_groups_permanent' ] ) && is_array( $v ) ) {
+						$remapped_value = [];
+						foreach ( $v as $old_id ) if ( isset( $map_terms[ $old_id ] ) ) $remapped_value[] = $map_terms[ $old_id ];
+					}
+					update_post_meta( $pid, $k, $remapped_value );
+				}
+			}
+		}
+
+		// Message opens
+		foreach ( $data['message_opens'] ?? [] as $mo ) {
+			if ( isset( $map_messages[ $mo['message_id'] ] ) ) {
+				$wpdb->insert(
+					"{$wpdb->prefix}dame_message_opens",
+					[ 'message_id' => $map_messages[ $mo['message_id'] ], 'email_hash' => $mo['email_hash'], 'opened_at' => $mo['opened_at'], 'user_ip' => $mo['user_ip'] ],
+					[ '%d', '%s', '%s', '%s' ]
+				);
+			}
+		}
+
+		$imported_version = $data['version'] ?? '2.2.0';
+		if ( function_exists( 'dame_perform_upgrade' ) ) {
+			dame_perform_upgrade( $imported_version, DAME_VERSION );
+		}
 
 		$this->add_admin_notice( "Import terminé avec succès." );
 	}
