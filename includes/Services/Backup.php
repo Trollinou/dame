@@ -17,6 +17,27 @@ class Backup {
 	public function init() {
 		// Handle manual export/import actions (triggered via admin POST).
 		add_action( 'admin_init', [ $this, 'handle_manual_actions' ] );
+		add_action( 'admin_notices', [ $this, 'display_import_export_notices' ] );
+	}
+
+	/**
+	 * Adds an admin notice to be displayed on the next page load.
+	 */
+	private function add_admin_notice( $message, $type = 'success' ) {
+		set_transient( 'dame_import_export_notice', array( 'message' => $message, 'type' => $type ), 30 );
+	}
+
+	/**
+	 * Displays the admin notice if one is set.
+	 */
+	public function display_import_export_notices() {
+		if ( get_transient( 'dame_import_export_notice' ) ) {
+			$notice = get_transient( 'dame_import_export_notice' );
+			$message = $notice['message'];
+			$type = $notice['type'];
+			echo '<div class="notice notice-' . esc_attr( $type ) . ' is-dismissible"><p>' . wp_kses_post( $message ) . '</p></div>';
+			delete_transient( 'dame_import_export_notice' );
+		}
 	}
 
 	/**
@@ -203,7 +224,7 @@ class Backup {
 
 	private function import_csv_adherents() {
 		if ( ! isset( $_FILES['dame_import_csv_file'] ) || $_FILES['dame_import_csv_file']['error'] !== UPLOAD_ERR_OK ) {
-			dame_add_admin_notice( __( 'Erreur lors du téléversement du fichier.', 'dame' ), 'error' );
+			$this->add_admin_notice( __( 'Erreur lors du téléversement du fichier.', 'dame' ), 'error' );
 			return;
 		}
 
@@ -211,7 +232,7 @@ class Backup {
 		$mime_type = mime_content_type( $file['tmp_name'] );
 
 		if ( 'text/plain' !== $mime_type && 'text/csv' !== $mime_type ) {
-			dame_add_admin_notice( __( 'Le fichier téléversé n\'est pas un fichier CSV valide.', 'dame' ), 'error' );
+			$this->add_admin_notice( __( 'Le fichier téléversé n\'est pas un fichier CSV valide.', 'dame' ), 'error' );
 			return;
 		}
 
@@ -220,14 +241,14 @@ class Backup {
 
 		$handle = fopen( $file['tmp_name'], 'r' );
 		if ( false === $handle ) {
-			dame_add_admin_notice( __( 'Impossible d\'ouvrir le fichier téléversé.', 'dame' ), 'error' );
+			$this->add_admin_notice( __( 'Impossible d\'ouvrir le fichier téléversé.', 'dame' ), 'error' );
 			return;
 		}
 
 		// Read header row and map columns
 		$header = fgetcsv( $handle, 0, ';' );
 		if ( false === $header ) {
-			dame_add_admin_notice( __( 'Impossible de lire l\'en-tête du fichier CSV.', 'dame' ), 'error' );
+			$this->add_admin_notice( __( 'Impossible de lire l\'en-tête du fichier CSV.', 'dame' ), 'error' );
 			fclose( $handle );
 			return;
 		}
@@ -515,7 +536,7 @@ class Backup {
 			),
 			$imported_count
 		);
-		dame_add_admin_notice( $message );
+		$this->add_admin_notice( $message );
 	}
 
 	/* -------------------------------------------------------------------------
@@ -614,7 +635,7 @@ class Backup {
 
 		// TODO: Restore upgrade logic if needed: dame_perform_upgrade(...)
 
-		dame_add_admin_notice( "Import terminé avec succès." );
+		$this->add_admin_notice( "Import terminé avec succès." );
 	}
 
 	/* -------------------------------------------------------------------------
@@ -678,7 +699,7 @@ class Backup {
 				if ( ! empty( $e['categories'] ) ) wp_set_object_terms( $pid, $e['categories'], 'dame_agenda_category' );
 			}
 		}
-		dame_add_admin_notice( "Agenda restauré avec succès." );
+		$this->add_admin_notice( "Agenda restauré avec succès." );
 	}
 
 	/* -------------------------------------------------------------------------
