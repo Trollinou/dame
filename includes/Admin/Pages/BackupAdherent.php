@@ -77,7 +77,7 @@ class BackupAdherent {
 					const importForm = document.getElementById('dame-import-form');
 					if (importForm) {
 						importForm.addEventListener('submit', function(e) {
-							if (!confirm("<?php echo esc_js( __( 'Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Toutes les données d\\'adhérents existantes seront supprimées et remplacées. Cette action est irréversible.', 'dame' ) ); ?>")) {
+							if (!confirm("<?php echo esc_js( __( "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Toutes les données d'adhérents existantes seront supprimées et remplacées. Cette action est irréversible.", 'dame' ) ); ?>")) {
 								e.preventDefault();
 							}
 						});
@@ -85,7 +85,7 @@ class BackupAdherent {
 					const importCsvForm = document.getElementById('dame-import-csv-form');
 					if (importCsvForm) {
 						importCsvForm.addEventListener('submit', function(e) {
-							if (!confirm("<?php echo esc_js( __( 'Êtes-vous sûr de vouloir importer ce fichier CSV ?', 'dame' ) ); ?>")) {
+							if (!confirm("<?php echo esc_js( __( "Êtes-vous sûr de vouloir importer ce fichier CSV ?", 'dame' ) ); ?>")) {
 								e.preventDefault();
 							}
 						});

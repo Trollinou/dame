@@ -53,7 +53,7 @@ class BackupAgenda {
 					const restoreForm = document.getElementById('dame-agenda-restore-form');
 					if (restoreForm) {
 						restoreForm.addEventListener('submit', function(e) {
-							if (!confirm("<?php echo esc_js( __( 'Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Tous les événements et catégories existants seront supprimés et remplacés. Cette action est irréversible.', 'dame' ) ); ?>")) {
+							if (!confirm("<?php echo esc_js( __( "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Tous les événements et catégories existants seront supprimés et remplacés. Cette action est irréversible.", 'dame' ) ); ?>")) {
 								e.preventDefault();
 							}
 						});
