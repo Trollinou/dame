@@ -46,18 +46,18 @@ class Assets {
 		// Register Common JS
 		wp_register_script(
 			'dame-admin-common',
-			DAME_URL . 'assets/js/admin-common.js',
+			\DAME_PLUGIN_URL . 'assets/js/admin-common.js',
 			[],
-			DAME_VERSION,
+			\DAME_VERSION,
 			true
 		);
 
 		// Enqueue Common CSS (Autocomplete styles)
 		wp_enqueue_style(
 			'dame-admin-common-css',
-			DAME_URL . 'assets/css/admin-adherent.css', // Using existing file as common CSS
+			\DAME_PLUGIN_URL . 'assets/css/admin-adherent.css', // Using existing file as common CSS
 			[],
-			DAME_VERSION
+			\DAME_VERSION
 		);
 
 		// Localize Common Data
@@ -83,9 +83,9 @@ class Assets {
 		if ( $is_adherent_cpt ) {
 			wp_enqueue_script(
 				'dame-admin-adherent',
-				DAME_URL . 'assets/js/admin-adherent.js',
+				\DAME_PLUGIN_URL . 'assets/js/admin-adherent.js',
 				[ 'dame-admin-common' ], // Depends on common
-				DAME_VERSION,
+				\DAME_VERSION,
 				true
 			);
 		}
@@ -93,9 +93,9 @@ class Assets {
 		if ( $is_pre_inscription_cpt ) {
 			wp_enqueue_style(
 				'dame-admin-dame-css',
-				DAME_URL . 'assets/css/admin-dame.css',
+				\DAME_PLUGIN_URL . 'assets/css/admin-dame.css',
 				[],
-				DAME_VERSION
+				\DAME_VERSION
 			);
 		}
 	}
