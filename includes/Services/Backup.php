@@ -717,17 +717,19 @@ class Backup {
 			$pid = wp_insert_post( [ 'post_title' => $post_title, 'post_content' => $post_content, 'post_type' => 'dame_message', 'post_status' => $post_status ] );
 			if ( $pid ) {
 				$map_messages[ $m['old_id'] ] = $pid;
-				foreach ( $m['meta_data'] as $k => $v ) {
-					$remapped_value = $v;
-					if ( '_dame_manual_recipients' === $k && is_array( $v ) ) {
-						$remapped_value = [];
-						foreach ( $v as $old_id ) if ( isset( $map_adherents[ $old_id ] ) ) $remapped_value[] = $map_adherents[ $old_id ];
+				if ( isset( $m['meta_data'] ) && is_array( $m['meta_data'] ) ) {
+					foreach ( $m['meta_data'] as $k => $v ) {
+						$remapped_value = $v;
+						if ( '_dame_manual_recipients' === $k && is_array( $v ) ) {
+							$remapped_value = [];
+							foreach ( $v as $old_id ) if ( isset( $map_adherents[ $old_id ] ) ) $remapped_value[] = $map_adherents[ $old_id ];
+						}
+						if ( in_array( $k, [ '_dame_recipient_seasons', '_dame_recipient_groups_saisonnier', '_dame_recipient_groups_permanent' ] ) && is_array( $v ) ) {
+							$remapped_value = [];
+							foreach ( $v as $old_id ) if ( isset( $map_terms[ $old_id ] ) ) $remapped_value[] = $map_terms[ $old_id ];
+						}
+						update_post_meta( $pid, $k, $remapped_value );
 					}
-					if ( in_array( $k, [ '_dame_recipient_seasons', '_dame_recipient_groups_saisonnier', '_dame_recipient_groups_permanent' ] ) && is_array( $v ) ) {
-						$remapped_value = [];
-						foreach ( $v as $old_id ) if ( isset( $map_terms[ $old_id ] ) ) $remapped_value[] = $map_terms[ $old_id ];
-					}
-					update_post_meta( $pid, $k, $remapped_value );
 				}
 			}
 		}
