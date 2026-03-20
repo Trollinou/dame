@@ -33,7 +33,7 @@ class Contact {
 	 */
 	public function render( $atts ) {
 		// Enqueue the script using the global constant
-		wp_enqueue_script( 'dame-contact-form', \DAME_PLUGIN_URL . 'assets/js/contact-form.js', [ 'jquery' ], \DAME_VERSION, true );
+		wp_enqueue_script( 'dame-contact-form', \DAME_PLUGIN_URL . 'assets/js/public-contact-form.js', [ 'jquery' ], \DAME_VERSION, true );
 
 		// Localize the script with required data
 		wp_localize_script( 'dame-contact-form', 'dame_contact_ajax', [

@@ -70,10 +70,10 @@ class AgendaCategory {
 		// Ensure we are on the correct taxonomy page
 		if ( isset( $_GET['taxonomy'] ) && 'dame_agenda_category' === $_GET['taxonomy'] ) {
 			wp_enqueue_style( 'wp-color-picker' );
-			// Note: Assuming 'assets/js/main.js' or similar exists for the JS logic of initialization.
-			// The legacy code used `plugin_dir_url( __FILE__ ) . '../assets/js/main.js'`, which resolved to `dame/assets/js/main.js`.
+			// Note: Assuming 'assets/js/admin-main.js' or similar exists for the JS logic of initialization.
+			// The legacy code used `plugin_dir_url( __FILE__ ) . '../assets/js/admin-main.js'`, which resolved to `dame/assets/js/admin-main.js`.
 			// Since this file is in `includes/Taxonomies/`, `dirname(__DIR__, 2)` points to root.
-			wp_enqueue_script( 'dame-color-picker-js', \DAME_PLUGIN_URL . 'assets/js/main.js', array( 'wp-color-picker' ), false, true );
+			wp_enqueue_script( 'dame-color-picker-js', \DAME_PLUGIN_URL . 'assets/js/admin-main.js', array( 'wp-color-picker' ), false, true );
 		}
 	}
 

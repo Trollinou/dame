@@ -38,8 +38,8 @@ class Agenda {
 		// Since this class is in includes/Shortcodes, dirname(__DIR__, 2) gets to root.
 		$plugin_url = plugin_dir_url( dirname( __DIR__, 2 ) . '/index.php' );
 
-		wp_enqueue_style( 'dame-agenda-style', \DAME_PLUGIN_URL . 'assets/css/agenda.css', array(), \DAME_VERSION );
-		wp_enqueue_script( 'dame-agenda-script', \DAME_PLUGIN_URL . 'assets/js/agenda.js', array( 'jquery' ), \DAME_VERSION, true );
+		wp_enqueue_style( 'dame-agenda-style', \DAME_PLUGIN_URL . 'assets/css/public-agenda.css', array(), \DAME_VERSION );
+		wp_enqueue_script( 'dame-agenda-script', \DAME_PLUGIN_URL . 'assets/js/public-agenda.js', array( 'jquery' ), \DAME_VERSION, true );
 
 		// Get WordPress's start_of_week option.
 		$start_of_week = intval( get_option( 'start_of_week', 1 ) ); // Default to Monday.
@@ -417,7 +417,7 @@ class Agenda {
 	 */
 	public function render_list( $atts ) {
 		$plugin_url = plugin_dir_url( dirname( __DIR__, 2 ) . '/index.php' );
-		wp_enqueue_style( 'dame-agenda-style', \DAME_PLUGIN_URL . 'assets/css/agenda.css', array(), \DAME_VERSION );
+		wp_enqueue_style( 'dame-agenda-style', \DAME_PLUGIN_URL . 'assets/css/public-agenda.css', array(), \DAME_VERSION );
 
 		$atts = shortcode_atts(
 			array(

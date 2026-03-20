@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     // We call the autocomplete initializers here, as this script is loaded
-    // after dame-geo-autocomplete.js, ensuring the function is available.
+    // after dame-public-geo-autocomplete.js, ensuring the function is available.
     if (typeof initBirthCityAutocomplete === 'function') {
         initBirthCityAutocomplete('dame_birth_city');
         initBirthCityAutocomplete('dame_legal_rep_1_commune_naissance');

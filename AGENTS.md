@@ -62,12 +62,13 @@ L'agent endosse les rôles suivants :
 * Le répertoire `public/` est **obsolète et interdit**.
 
 ### Convention de Nommage des Fichiers Statiques (Assets)
-* **Lisibilité (Noms de fichiers)** : Les fichiers dans `assets/css/` et `assets/js/` doivent adopter le format `{contexte}-{composant}.{ext}`. Le préfixe du plugin ne doit PAS être inclus dans le nom du fichier physique.
+* **Lisibilité (Noms de fichiers physiques)** : Les fichiers dans `assets/css/` et `assets/js/` doivent adopter le format `{contexte}-{composant}.{ext}`. Le préfixe du plugin ne doit PAS être inclus dans le nom du fichier.
   * **Les 3 contextes stricts :**
-    * `admin-` : Fichiers chargés UNIQUEMENT dans le back-office (`admin_enqueue_scripts`).
-    * `public-` : Fichiers chargés UNIQUEMENT sur le front-end (`wp_enqueue_scripts`).
+    * `admin-` : Fichiers chargés UNIQUEMENT dans le back-office.
+    * `public-` : Fichiers chargés UNIQUEMENT sur le front-end.
     * `shared-` : Fichiers chargés DANS LES DEUX (ex: librairies globales).
-* **Sécurité WordPress (Handles)** : Lors de l'enregistrement dans PHP (`wp_enqueue_script` / `wp_enqueue_style`), le **handle (1er paramètre)** DOIT OBLIGATOIREMENT être préfixé par le **slug du plugin** (ex: `{slug_plugin}-public-agenda`) pour éviter les conflits avec le noyau WordPress.
+* **Sécurité WordPress (Handles)** : Lors de l'enregistrement OU de la mise en file d'attente dans PHP, le **handle (1er paramètre)** DOIT OBLIGATOIREMENT être préfixé par le **slug du plugin** (ex: `{slug_plugin}-public-agenda`) pour éviter les conflits avec le noyau WordPress ou d'autres extensions.
+  * *Fonctions concernées* : `wp_register_script`, `wp_register_style`, `wp_enqueue_script`, `wp_enqueue_style`.
 
 ### Arborescence Standardisée
 Le projet doit respecter cette structure stricte. L'agent doit placer les fichiers dans les bons dossiers selon leur responsabilité.
