@@ -272,7 +272,6 @@ class Identity {
 						'post_name'  => sanitize_title( $new_title ),
 					)
 				);
-			}
 		}
 
 		// Save Fields
@@ -307,5 +306,6 @@ class Identity {
 					update_post_meta( $post_id, '_' . $field_name, 0 );
 				}
 			}
+		}
 	}
 }
