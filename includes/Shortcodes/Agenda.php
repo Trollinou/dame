@@ -331,18 +331,12 @@ class Agenda {
 				$bg_color = $color;
 				// If single-day public event, lighten the background color.
 				if ( $start_date === $end_date && 'private' !== $status ) {
-					// Use utility function if available, otherwise fallback.
-					if ( function_exists( 'dame_lighten_color' ) ) {
-						$bg_color = dame_lighten_color( $color, 0.75 );
-					}
+					$bg_color = \DAME\Core\Utils::lighten_color( $color, 0.75 );
 				}
 				$event_data['background_color'] = $bg_color;
 
 				// Determine text color based on background.
-				$text_color = '#000000'; // Default black.
-				if ( function_exists( 'dame_get_text_color_based_on_bg' ) ) {
-					$text_color = dame_get_text_color_based_on_bg( $bg_color );
-				}
+				$text_color = \DAME\Core\Utils::get_text_color_based_on_bg( $bg_color );
 				$event_data['text_color'] = $text_color;
 
 				$events[] = $event_data;

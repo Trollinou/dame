@@ -309,25 +309,25 @@ class RegistrationForm {
 
 		// Format names after sanitization.
 		if ( ! empty( $sanitized_data['dame_first_name'] ) ) {
-			$sanitized_data['dame_first_name'] = dame_format_firstname( $sanitized_data['dame_first_name'] );
+			$sanitized_data['dame_first_name'] = \DAME\Core\Utils::format_firstname( $sanitized_data['dame_first_name'] );
 		}
 		if ( ! empty( $sanitized_data['dame_last_name'] ) ) {
-			$sanitized_data['dame_last_name'] = dame_format_lastname( $sanitized_data['dame_last_name'] );
+			$sanitized_data['dame_last_name'] = \DAME\Core\Utils::format_lastname( $sanitized_data['dame_last_name'] );
 		}
 		if ( ! empty( $sanitized_data['dame_birth_name'] ) ) {
-			$sanitized_data['dame_birth_name'] = dame_format_lastname( $sanitized_data['dame_birth_name'] );
+			$sanitized_data['dame_birth_name'] = \DAME\Core\Utils::format_lastname( $sanitized_data['dame_birth_name'] );
 		}
 		if ( ! empty( $sanitized_data['dame_legal_rep_1_first_name'] ) ) {
-			$sanitized_data['dame_legal_rep_1_first_name'] = dame_format_firstname( $sanitized_data['dame_legal_rep_1_first_name'] );
+			$sanitized_data['dame_legal_rep_1_first_name'] = \DAME\Core\Utils::format_firstname( $sanitized_data['dame_legal_rep_1_first_name'] );
 		}
 		if ( ! empty( $sanitized_data['dame_legal_rep_1_last_name'] ) ) {
-			$sanitized_data['dame_legal_rep_1_last_name'] = dame_format_lastname( $sanitized_data['dame_legal_rep_1_last_name'] );
+			$sanitized_data['dame_legal_rep_1_last_name'] = \DAME\Core\Utils::format_lastname( $sanitized_data['dame_legal_rep_1_last_name'] );
 		}
 		if ( ! empty( $sanitized_data['dame_legal_rep_2_first_name'] ) ) {
-			$sanitized_data['dame_legal_rep_2_first_name'] = dame_format_firstname( $sanitized_data['dame_legal_rep_2_first_name'] );
+			$sanitized_data['dame_legal_rep_2_first_name'] = \DAME\Core\Utils::format_firstname( $sanitized_data['dame_legal_rep_2_first_name'] );
 		}
 		if ( ! empty( $sanitized_data['dame_legal_rep_2_last_name'] ) ) {
-			$sanitized_data['dame_legal_rep_2_last_name'] = dame_format_lastname( $sanitized_data['dame_legal_rep_2_last_name'] );
+			$sanitized_data['dame_legal_rep_2_last_name'] = \DAME\Core\Utils::format_lastname( $sanitized_data['dame_legal_rep_2_last_name'] );
 		}
 
 		// Determine if member is a minor and clean up data accordingly.

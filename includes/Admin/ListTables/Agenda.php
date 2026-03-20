@@ -99,10 +99,7 @@ class Agenda {
 						$term_meta = get_option( "taxonomy_{$category->term_id}" );
 						$color     = isset( $term_meta['color'] ) && ! empty( $term_meta['color'] ) ? $term_meta['color'] : '#e0e0e0';
 
-						// Helper to calculate contrast color if needed, or default to black/white.
-						// Assuming `dame_get_contrast_color` is available in global scope (from utils.php), or we implement it here.
-						// For now, let's assume utils.php is loaded.
-						$text_color = function_exists( 'dame_get_contrast_color' ) ? dame_get_contrast_color( $color ) : '#000000';
+						$text_color = \DAME\Core\Utils::get_contrast_color( $color );
 
 						$category_links[] = sprintf(
 							'<span style="display: inline-block; background-color: %s; color: %s; padding: 2px 8px; margin: 2px; border-radius: 4px; font-size: 0.9em;">%s</span>',

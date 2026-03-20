@@ -87,14 +87,6 @@ class Plugin {
 	 * Starts the plugin execution.
 	 */
 	public function run() {
-		// Load legacy helpers (temporary dependency).
-		if ( defined( 'DAME_PLUGIN_DIR' ) ) {
-			// require_once DAME_PLUGIN_DIR . 'includes/data-lists.php';
-			require_once DAME_PLUGIN_DIR . 'includes/utils.php';
-			// require_once DAME_PLUGIN_DIR . 'includes/taxonomies.php';
-			require_once DAME_PLUGIN_DIR . 'includes/assets.php';
-		}
-
 		// Initialize Roles.
 		$roles = new Roles();
 		$roles->init();
@@ -170,6 +162,10 @@ class Plugin {
 		// Initialisation de la Toolbar
 		$toolbar = new Toolbar();
 		$toolbar->init();
+
+		// Initialize Frontend Assets.
+		$frontend_assets = new \DAME\Frontend\Assets();
+		$frontend_assets->init();
 
 		// Initialize Metaboxes & Admin-only logic.
 		if ( is_admin() ) {

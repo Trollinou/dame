@@ -63,7 +63,7 @@ function dame_handle_send_email() {
     }
 
     // Now, use the reusable function to get the recipient list.
-    $recipients = dame_get_message_recipients( $message_id );
+    $recipients = \DAME\Core\Utils::get_message_recipients( $message_id );
 
     if ( empty( $recipients ) ) {
         add_action( 'admin_notices', function() {

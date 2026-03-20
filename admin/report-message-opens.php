@@ -38,7 +38,7 @@ function dame_render_message_opens_report_page() {
 	}
 
 	$message_title = get_the_title( $message_id );
-	$recipients    = dame_get_message_recipients( $message_id );
+	$recipients    = \DAME\Core\Utils::get_message_recipients( $message_id );
 
 	// Exclude sender's email from the report as it's for archival purposes.
 	$options      = get_option( 'dame_options' );
