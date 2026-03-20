@@ -26,7 +26,7 @@ class Assets {
 		// Enqueue the public-facing stylesheet.
 		wp_enqueue_style(
 			'dame-public-styles',
-			\DAME_PLUGIN_URL . 'public/css/dame-public-styles.css',
+			\DAME_PLUGIN_URL . 'assets/css/dame-public-styles.css',
 			array(),
 			\DAME_VERSION
 		);
@@ -35,7 +35,7 @@ class Assets {
 		if ( is_singular( 'dame_agenda' ) ) {
 			wp_enqueue_script(
 				'dame-single-event-script',
-				\DAME_PLUGIN_URL . 'public/js/single-event.js',
+				\DAME_PLUGIN_URL . 'assets/js/single-event.js',
 				array( 'jquery' ),
 				\DAME_VERSION,
 				true

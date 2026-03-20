@@ -50,6 +50,11 @@ L'agent endosse les rôles suivants :
 
 ## 4. ARCHITECTURE & STRUCTURE
 
+### Architecture des Ressources Statiques (Assets)
+* **Règle Unique** : TOUS les fichiers statiques (CSS, Javascript, PDF, images, polices) DOIVENT être placés dans le répertoire central `assets/` (ex: `assets/css/`, `assets/js/`, `assets/pdf/`).
+* Le répertoire `public/` est **obsolète et interdit**.
+* Pour distinguer les scripts de l'administration des scripts publics, utilisez une convention de nommage claire sur les fichiers (ex: `admin-adherent.js` vs `contact-form.js`).
+
 ### Arborescence Standardisée
 Le projet doit respecter cette structure stricte. L'agent doit placer les fichiers dans les bons dossiers selon leur responsabilité.
 

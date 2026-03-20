@@ -65,7 +65,7 @@ function dame_generate_health_form_handler() {
 
 	try {
 		// Set the template file
-		$template_path = plugin_dir_path( __DIR__ ) . 'public/pdf/ffe_attestation_sante.pdf';
+		$template_path = plugin_dir_path( __DIR__ ) . 'assets/pdf/ffe_attestation_sante.pdf';
 		$pdf->setSourceFile( $template_path );
 		$tplId = $pdf->importPage(1);
 		$pdf->useTemplate( $tplId, 0, 0, 210, 297 );
@@ -185,7 +185,7 @@ function dame_generate_parental_auth_handler() {
 	$pdf->SetAutoPageBreak( true, 0 );
 
 	try {
-		$template_path = plugin_dir_path( __DIR__ ) . 'public/pdf/el_autorisation_parentale.pdf';
+		$template_path = plugin_dir_path( __DIR__ ) . 'assets/pdf/el_autorisation_parentale.pdf';
 		$pdf->setSourceFile( $template_path );
 		$tplId = $pdf->importPage( 1 );
 		$pdf->useTemplate( $tplId, 0, 0, 210, 297 );

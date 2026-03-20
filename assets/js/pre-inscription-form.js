@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const healthQuestionnaireLinkContainer = document.getElementById('health-questionnaire-link-container');
     const healthQuestionnaireLink = document.getElementById('health-questionnaire-link');
     // We assume the plugin is in wp-content/plugins/dame. This is the most common setup.
-    const pdfBaseUrl = '/wp-content/plugins/dame/public/pdf/';
+    const pdfBaseUrl = '/wp-content/plugins/dame/assets/pdf/';
     const mineurPDF = pdfBaseUrl + 'questionnaire_sante_mineur.pdf';
     const majeurPDF = pdfBaseUrl + 'questionnaire_sante_majeur.pdf';
 
