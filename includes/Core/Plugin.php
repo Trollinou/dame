@@ -49,6 +49,7 @@ use DAME\Admin\Actions\Agenda as AgendaActions;
 use DAME\Taxonomies\Season;
 use DAME\Taxonomies\Group;
 use DAME\Taxonomies\AgendaCategory;
+use DAME\Admin\Toolbar;
 
 /**
  * The core plugin class.
@@ -165,6 +166,10 @@ class Plugin {
 
 		$agenda_category_taxonomy = new AgendaCategory();
 		$agenda_category_taxonomy->init();
+
+		// Initialisation de la Toolbar
+		$toolbar = new Toolbar();
+		$toolbar->init();
 
 		// Initialize Metaboxes & Admin-only logic.
 		if ( is_admin() ) {
