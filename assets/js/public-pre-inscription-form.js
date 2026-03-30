@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     // We call the autocomplete initializers here, as this script is loaded
-    // after dame-geo-autocomplete.js, ensuring the function is available.
+    // after dame-public-geo-autocomplete.js, ensuring the function is available.
     if (typeof initBirthCityAutocomplete === 'function') {
         initBirthCityAutocomplete('dame_birth_city');
         initBirthCityAutocomplete('dame_legal_rep_1_commune_naissance');
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const healthQuestionnaireLinkContainer = document.getElementById('health-questionnaire-link-container');
     const healthQuestionnaireLink = document.getElementById('health-questionnaire-link');
     // We assume the plugin is in wp-content/plugins/dame. This is the most common setup.
-    const pdfBaseUrl = '/wp-content/plugins/dame/public/pdf/';
+    const pdfBaseUrl = '/wp-content/plugins/dame/assets/pdf/';
     const mineurPDF = pdfBaseUrl + 'questionnaire_sante_mineur.pdf';
     const majeurPDF = pdfBaseUrl + 'questionnaire_sante_majeur.pdf';
 

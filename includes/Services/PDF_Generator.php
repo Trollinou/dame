@@ -90,7 +90,7 @@ class PDF_Generator {
 
 		try {
 			// Set the template file
-			$template_path = dirname( __DIR__, 2 ) . '/public/pdf/ffe_attestation_sante.pdf';
+			$template_path = dirname( __DIR__, 2 ) . '/assets/pdf/ffe_attestation_sante.pdf';
 			$pdf->setSourceFile( $template_path );
 			$tplId = $pdf->importPage( 1 );
 			$pdf->useTemplate( $tplId, 0, 0, 210, 297 );
@@ -208,7 +208,7 @@ class PDF_Generator {
 		$pdf->SetAutoPageBreak( true, 0 );
 
 		try {
-			$template_path = dirname( __DIR__, 2 ) . '/public/pdf/el_autorisation_parentale.pdf';
+			$template_path = dirname( __DIR__, 2 ) . '/assets/pdf/el_autorisation_parentale.pdf';
 			$pdf->setSourceFile( $template_path );
 			$tplId = $pdf->importPage( 1 );
 			$pdf->useTemplate( $tplId, 0, 0, 210, 297 );

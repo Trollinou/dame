@@ -196,7 +196,7 @@ class Details {
 		$last_name  = isset( $_POST['dame_last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_last_name'] ) ) : '';
 
 		if ( $first_name && $last_name ) {
-			$new_title = dame_format_lastname( $last_name ) . ' ' . dame_format_firstname( $first_name );
+			$new_title = \DAME\Core\Utils::format_lastname( $last_name ) . ' ' . \DAME\Core\Utils::format_firstname( $first_name );
 			if ( get_the_title( $post_id ) !== $new_title ) {
 				wp_update_post(
 					array(
@@ -226,10 +226,10 @@ class Details {
 
 				// Format names
 				if ( 'dame_first_name' === $key || 'dame_legal_rep_1_first_name' === $key || 'dame_legal_rep_2_first_name' === $key ) {
-					$value = dame_format_firstname( $value );
+					$value = \DAME\Core\Utils::format_firstname( $value );
 				}
 				if ( 'dame_last_name' === $key || 'dame_legal_rep_1_last_name' === $key || 'dame_legal_rep_2_last_name' === $key || 'dame_birth_name' === $key ) {
-					$value = dame_format_lastname( $value );
+					$value = \DAME\Core\Utils::format_lastname( $value );
 				}
 				update_post_meta( $post_id, '_' . $key, $value );
 			}

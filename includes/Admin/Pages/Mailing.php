@@ -50,7 +50,7 @@ class Mailing {
 
 		wp_enqueue_script(
 			'dame-mailing-js',
-			\DAME_PLUGIN_URL . 'admin/js/mailing.js', // Assuming this file exists.
+			\DAME_PLUGIN_URL . 'assets/js/admin-mailing.js', // Assuming this file exists.
 			array( 'jquery' ),
 			\DAME_VERSION,
 			true
@@ -236,7 +236,7 @@ class Mailing {
 		</div>
 		<script>
 			// Simple inline script to handle toggle if JS file is not yet loaded/created.
-			// Replicating basic logic of mailing.js if not present or cached.
+			// Replicating basic logic of admin-mailing.js if not present or cached.
 			document.addEventListener('DOMContentLoaded', function() {
 				const radios = document.getElementsByName('dame_selection_method');
 				const filtersDiv = document.querySelector('.dame-group-filters');

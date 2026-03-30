@@ -244,13 +244,11 @@ class Identity {
 		$first_name = sanitize_text_field( wp_unslash( $_POST['dame_first_name'] ) );
 		$last_name  = sanitize_text_field( wp_unslash( $_POST['dame_last_name'] ) );
 
-		// Using helper functions from legacy utils.php
-		if ( function_exists( 'dame_format_lastname' ) && function_exists( 'dame_format_firstname' ) ) {
-			$new_title  = dame_format_lastname( $last_name ) . ' ' . dame_format_firstname( $first_name );
+		$new_title  = \DAME\Core\Utils::format_lastname( $last_name ) . ' ' . \DAME\Core\Utils::format_firstname( $first_name );
 
-			if ( get_the_title( $post_id ) !== $new_title ) {
-				// Prevent infinite loop
-				remove_action( 'save_post', [ new \DAME\Metaboxes\Adherent\Manager(), 'save_post' ] ); // Attempt to unhook? Hard with object instance.
+		if ( get_the_title( $post_id ) !== $new_title ) {
+			// Prevent infinite loop
+			remove_action( 'save_post', [ new \DAME\Metaboxes\Adherent\Manager(), 'save_post' ] ); // Attempt to unhook? Hard with object instance.
 				// Actually, remove_action needs the exact same callback.
 				// Since we use [ $this, 'save_post' ] in Manager, and Manager is instantiated new each time? No.
 				// In Plugin.php I will instantiate Manager once.
@@ -274,7 +272,6 @@ class Identity {
 						'post_name'  => sanitize_title( $new_title ),
 					)
 				);
-			}
 		}
 
 		// Save Fields
@@ -296,11 +293,11 @@ class Identity {
 			if ( isset( $_POST[ $field_name ] ) ) {
 				$value = call_user_func( $sanitize_callback, wp_unslash( $_POST[ $field_name ] ) );
 
-				if ( function_exists( 'dame_format_firstname' ) && 'dame_first_name' === $field_name ) {
-					$value = dame_format_firstname( $value );
+				if ( 'dame_first_name' === $field_name ) {
+					$value = \DAME\Core\Utils::format_firstname( $value );
 				}
-				if ( function_exists( 'dame_format_lastname' ) && ( 'dame_last_name' === $field_name || 'dame_birth_name' === $field_name ) ) {
-					$value = dame_format_lastname( $value );
+				if ( 'dame_last_name' === $field_name || 'dame_birth_name' === $field_name ) {
+					$value = \DAME\Core\Utils::format_lastname( $value );
 				}
 
 				update_post_meta( $post_id, '_' . $field_name, $value );

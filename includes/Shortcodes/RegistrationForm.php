@@ -32,11 +32,11 @@ class RegistrationForm {
 	 */
 	public function render( $atts ) {
 		// Enqueue scripts and styles for the form
-		wp_enqueue_style( 'dame-public-styles', plugin_dir_url( __FILE__ ) . '../../public/css/dame-public-styles.css', array(), DAME_VERSION );
+		wp_enqueue_style( 'dame-public-styles', \DAME_PLUGIN_URL . 'assets/css/public-dame-styles.css', array(), \DAME_VERSION );
 
-		wp_enqueue_script( 'dame-geo-autocomplete', plugin_dir_url( __FILE__ ) . '../../admin/js/geo-autocomplete.js', array(), DAME_VERSION, true );
-		wp_enqueue_script( 'dame-ign-autocomplete', plugin_dir_url( __FILE__ ) . '../../admin/js/ign-autocomplete.js', array(), DAME_VERSION, true );
-		wp_enqueue_script( 'dame-pre-inscription', plugin_dir_url( __FILE__ ) . '../../public/js/pre-inscription-form.js', array( 'dame-geo-autocomplete', 'dame-ign-autocomplete' ), DAME_VERSION, true );
+		wp_enqueue_script( 'dame-geo-autocomplete', \DAME_PLUGIN_URL . 'assets/js/public-geo-autocomplete.js', array(), \DAME_VERSION, true );
+		wp_enqueue_script( 'dame-ign-autocomplete', \DAME_PLUGIN_URL . 'assets/js/public-ign-autocomplete.js', array(), \DAME_VERSION, true );
+		wp_enqueue_script( 'dame-pre-inscription', \DAME_PLUGIN_URL . 'assets/js/public-pre-inscription-form.js', array( 'dame-geo-autocomplete', 'dame-ign-autocomplete' ), \DAME_VERSION, true );
 
 		wp_localize_script(
 			'dame-pre-inscription',
@@ -309,25 +309,25 @@ class RegistrationForm {
 
 		// Format names after sanitization.
 		if ( ! empty( $sanitized_data['dame_first_name'] ) ) {
-			$sanitized_data['dame_first_name'] = dame_format_firstname( $sanitized_data['dame_first_name'] );
+			$sanitized_data['dame_first_name'] = \DAME\Core\Utils::format_firstname( $sanitized_data['dame_first_name'] );
 		}
 		if ( ! empty( $sanitized_data['dame_last_name'] ) ) {
-			$sanitized_data['dame_last_name'] = dame_format_lastname( $sanitized_data['dame_last_name'] );
+			$sanitized_data['dame_last_name'] = \DAME\Core\Utils::format_lastname( $sanitized_data['dame_last_name'] );
 		}
 		if ( ! empty( $sanitized_data['dame_birth_name'] ) ) {
-			$sanitized_data['dame_birth_name'] = dame_format_lastname( $sanitized_data['dame_birth_name'] );
+			$sanitized_data['dame_birth_name'] = \DAME\Core\Utils::format_lastname( $sanitized_data['dame_birth_name'] );
 		}
 		if ( ! empty( $sanitized_data['dame_legal_rep_1_first_name'] ) ) {
-			$sanitized_data['dame_legal_rep_1_first_name'] = dame_format_firstname( $sanitized_data['dame_legal_rep_1_first_name'] );
+			$sanitized_data['dame_legal_rep_1_first_name'] = \DAME\Core\Utils::format_firstname( $sanitized_data['dame_legal_rep_1_first_name'] );
 		}
 		if ( ! empty( $sanitized_data['dame_legal_rep_1_last_name'] ) ) {
-			$sanitized_data['dame_legal_rep_1_last_name'] = dame_format_lastname( $sanitized_data['dame_legal_rep_1_last_name'] );
+			$sanitized_data['dame_legal_rep_1_last_name'] = \DAME\Core\Utils::format_lastname( $sanitized_data['dame_legal_rep_1_last_name'] );
 		}
 		if ( ! empty( $sanitized_data['dame_legal_rep_2_first_name'] ) ) {
-			$sanitized_data['dame_legal_rep_2_first_name'] = dame_format_firstname( $sanitized_data['dame_legal_rep_2_first_name'] );
+			$sanitized_data['dame_legal_rep_2_first_name'] = \DAME\Core\Utils::format_firstname( $sanitized_data['dame_legal_rep_2_first_name'] );
 		}
 		if ( ! empty( $sanitized_data['dame_legal_rep_2_last_name'] ) ) {
-			$sanitized_data['dame_legal_rep_2_last_name'] = dame_format_lastname( $sanitized_data['dame_legal_rep_2_last_name'] );
+			$sanitized_data['dame_legal_rep_2_last_name'] = \DAME\Core\Utils::format_lastname( $sanitized_data['dame_legal_rep_2_last_name'] );
 		}
 
 		// Determine if member is a minor and clean up data accordingly.

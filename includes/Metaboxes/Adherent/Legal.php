@@ -287,11 +287,11 @@ class Legal {
 			if ( isset( $_POST[ $field_name ] ) ) {
 				$value = call_user_func( $sanitize_callback, wp_unslash( $_POST[ $field_name ] ) );
 
-				if ( function_exists( 'dame_format_firstname' ) && ( 'dame_legal_rep_1_first_name' === $field_name || 'dame_legal_rep_2_first_name' === $field_name ) ) {
-					$value = dame_format_firstname( $value );
+				if ( 'dame_legal_rep_1_first_name' === $field_name || 'dame_legal_rep_2_first_name' === $field_name ) {
+					$value = \DAME\Core\Utils::format_firstname( $value );
 				}
-				if ( function_exists( 'dame_format_lastname' ) && ( 'dame_legal_rep_1_last_name' === $field_name || 'dame_legal_rep_2_last_name' === $field_name ) ) {
-					$value = dame_format_lastname( $value );
+				if ( 'dame_legal_rep_1_last_name' === $field_name || 'dame_legal_rep_2_last_name' === $field_name ) {
+					$value = \DAME\Core\Utils::format_lastname( $value );
 				}
 
 				update_post_meta( $post_id, '_' . $field_name, $value );

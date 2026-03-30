@@ -72,9 +72,7 @@ class Adherent {
 				$birth_date_str = get_post_meta( $post_id, '_dame_birth_date', true );
 				$gender         = get_post_meta( $post_id, '_dame_sexe', true );
 
-				$category = function_exists( 'dame_get_adherent_age_category' )
-					? dame_get_adherent_age_category( $birth_date_str, $gender )
-					: 'N/A';
+				$category = \DAME\Core\Utils::get_adherent_age_category( $birth_date_str, $gender );
 
 				if ( $birth_date_str ) {
 					$birth_date_obj = DateTime::createFromFormat( 'Y-m-d', $birth_date_str );
@@ -256,7 +254,7 @@ class Adherent {
 			}
 
 			// Age Category filter
-			$age_categories = function_exists( 'dame_get_all_age_categories' ) ? dame_get_all_age_categories() : [];
+			$age_categories = \DAME\Core\Utils::get_all_age_categories();
 			if ( ! empty( $age_categories ) ) {
 				$current_age_category = $_GET['dame_age_category_filter'] ?? '';
 				?>
@@ -336,9 +334,7 @@ class Adherent {
 			if ( isset( $_GET['dame_age_category_filter'] ) && ! empty( $_GET['dame_age_category_filter'] ) ) {
 				$age_category_filter = sanitize_key( $_GET['dame_age_category_filter'] );
 
-				$date_range = function_exists( 'dame_get_birth_date_range_for_category' )
-					? dame_get_birth_date_range_for_category( $age_category_filter )
-					: null;
+				$date_range = \DAME\Core\Utils::get_birth_date_range_for_category( $age_category_filter );
 
 				if ( $date_range ) {
 					$meta_query[] = array(

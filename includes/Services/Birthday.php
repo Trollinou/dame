@@ -60,7 +60,7 @@ class Birthday {
 			$subject = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]' ], [ mb_strtoupper( $nom ), mb_convert_case( $prenom, MB_CASE_TITLE ), $age ], $article->post_title );
 			$content = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]' ], [ mb_strtoupper( $nom ), mb_convert_case( $prenom, MB_CASE_TITLE ), $age ], apply_filters( 'the_content', $article->post_content ) );
 
-			$emails = dame_get_emails_for_adherent( $pid );
+			$emails = \DAME\Core\Utils::get_emails_for_adherent( $pid );
 			if ( $emails ) {
 				foreach ( $emails as $email ) wp_mail( $email, $subject, $content, $headers );
 				$sent_list[] = "$prenom $nom ($age ans)";
