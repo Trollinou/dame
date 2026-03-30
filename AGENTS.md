@@ -213,6 +213,13 @@ Pour les fonctionnalités à multiples facettes (ex: une page d'options à ongle
   - Utiliser `$wpdb->prepare` pour toute requête SQL directe.
   - **Préfixe Table** : Toujours construire dynamiquement : `{$wpdb->prefix}[DB_SLUG]_` (ex: `{$wpdb->prefix}roi_`). Jamais de préfixe en dur.
 
+### Formulaires & Mapping des Meta-données
+- **Front-end (HTML)** : Les attributs `name` des champs de formulaire (`<input>`, `<select>`) ne doivent **jamais** commencer par un underscore `_` (ex: `name="ceb_eleve_nom"`) pour des raisons de propreté HTML.
+- **Back-end (PHP)** : Lors de la sauvegarde en base de données, l'agent doit **obligatoirement** re-mapper ces champs avec un underscore initial pour respecter la convention des "Post Meta cachées" de WordPress (ex: `update_post_meta($id, '_ceb_eleve_nom', $valeur)`).
+
+### Gestion du `wp_editor()` dans les Shortcodes
+- Si un `wp_editor()` est utilisé à l'intérieur d'un shortcode (qui doit `return` du HTML et non faire un `echo`), l'agent doit **obligatoirement** encapsuler l'appel à la fonction dans un Output Buffer (`ob_start()` et `ob_get_clean()`) pour éviter que l'éditeur ne s'affiche tout en haut de la page.
+
 ---
 
 ## 6. QUALITÉ & OUTILLAGE (QA)
@@ -220,40 +227,46 @@ Pour les fonctionnalités à multiples facettes (ex: une page d'options à ongle
 ### Configuration Requise
 L'agent doit s'assurer que ces fichiers existent. S'ils sont absents, il doit les créer avec ce contenu.
 
-**1. `phpstan.neon` (Level 6)**
-```
+**1. `phpstan.neon` (Level 6) — VERROUILLÉ**
+> **ATTENTION AGENT :** Ce fichier est strictement verrouillé. Il est interdit d'y ajouter des clés expérimentales (comme `analyseAndScan`) ou d'en modifier la structure.
 
+```neon
 includes:
-- vendor/szepeviktor/phpstan-wordpress/extension.neon
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
 parameters:
-level: 6
-paths:
-- .
-excludePaths:
-- node_modules/
-- vendor/
-- build/
-- src/
-- includes/lib/
-
+    level: 6
+    treatPhpDocTypesAsCertain: false
+    bootstrapFiles:
+        - candidature-echecs-briand.php
+    paths:
+        - .
+    excludePaths:
+        - node_modules/
+        - vendor/
+        - build/
+        - src/
+        - includes/lib/
 ```
 
 **2. `.eslintrc.json` (ES2021 + WP)**
-```
-
+```json
 {
-"env": { "browser": true, "es2021": true, "wordpress": true },
-"parserOptions": { "ecmaVersion": 2021, "sourceType": "module" },
-"extends": [ "eslint:recommended", "plugin:@wordpress/recommended" ],
-"ignorePatterns": [ "node_modules/", "vendor/", "build/", "includes/lib/" ]
+  "env": { "browser": true, "es2021": true },
+  "globals": {
+    "wp": "readonly"
+  },
+  "parserOptions": { "ecmaVersion": 2021, "sourceType": "module" },
+  "extends": [ "eslint:recommended", "plugin:@wordpress/recommended" ],
+  "ignorePatterns": [ "node_modules/", "vendor/", "build/", "includes/lib/" ]
 }
-
 ```
 
 ### Installation Automatisée (Si nécessaire)
 Si l'environnement n'est pas prêt, l'agent doit proposer l'installation des bonnes versions :
-```
 
+> **RÈGLE D'EXÉCUTION (POUR L'AGENT) :** Il ne suffit pas de créer les fichiers `composer.json` et `package.json`. L'agent DOIT explicitement ouvrir son propre terminal et exécuter les commandes ci-dessous pour générer les dossiers `vendor/` et `build/`.
+
+```bash
 # 1. Prérequis Système (Cible : PHP 8.4)
 
 sudo apt-get update \&\& sudo apt-get install -y php8.4 php8.4-curl php8.4-xml unzip
