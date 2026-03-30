@@ -84,7 +84,7 @@ class Backup {
 	 * ------------------------------------------------------------------------- */
 
 	private function export_csv_adherents() {
-		$filename = 'dame-export-adherents-' . date( 'Y-m-d' ) . '.csv';
+		$filename = 'dame-export-adherents-' . wp_date( 'Y-m-d' ) . '.csv';
 
 		ob_clean();
 		header( 'Content-Type: text/csv; charset=utf-8' );
@@ -151,7 +151,7 @@ class Backup {
 
 				// Format dates.
 				$birth_date             = get_post_meta( $post_id, '_dame_birth_date', true );
-				$formatted_birth_date   = $birth_date ? date( 'd/m/Y', strtotime( $birth_date ) ) : '';
+				$formatted_birth_date   = $birth_date ? wp_date( 'd/m/Y', strtotime( $birth_date ), new \DateTimeZone('UTC') ) : '';
 
 				// Format booleans.
 				$is_ecole_echecs    = get_post_meta( $post_id, '_dame_is_junior', true ) ? 'O' : 'N';
@@ -633,7 +633,7 @@ class Backup {
 	private function export_json_adherents() {
 		$data = $this->generate_adherent_export_data();
 		$gz = gzcompress( json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
-		$filename = 'dame-adherents-backup-' . date( 'Y-m-d' ) . '.json.gz';
+		$filename = 'dame-adherents-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
 		ob_clean();
 		header( 'Content-Type: application/octet-stream' );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
@@ -682,13 +682,24 @@ class Backup {
 		}
 
 		// Adherents
+		$meta_insert_values = [];
+		$meta_insert_placeholders = [];
 		foreach ( $data['adherents'] ?? [] as $a ) {
 			$pid = wp_insert_post( [ 'post_title' => $a['post_title'], 'post_type' => 'adherent', 'post_status' => 'publish' ] );
 			if ( $pid ) {
 				$map_adherents[ $a['old_id'] ] = $pid;
-				foreach ( $a['meta_data'] as $k => $v ) update_post_meta( $pid, $k, $v );
+				foreach ( $a['meta_data'] as $k => $v ) {
+					$meta_insert_values[] = $pid;
+					$meta_insert_values[] = $k;
+					$meta_insert_values[] = maybe_serialize( $v );
+					$meta_insert_placeholders[] = '(%d, %s, %s)';
+				}
 				foreach ( $a['taxonomies'] as $tax => $slugs ) wp_set_object_terms( $pid, $slugs, $tax );
 			}
+		}
+		if ( ! empty( $meta_insert_placeholders ) ) {
+			$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
+			$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
 		}
 
 		// Options
@@ -700,14 +711,27 @@ class Backup {
 		}
 
 		// Pre-inscriptions
+		$pi_meta_insert_values = [];
+		$pi_meta_insert_placeholders = [];
 		foreach ( $data['pre_inscriptions'] ?? [] as $pi ) {
 			$pid = wp_insert_post( [ 'post_title' => $pi['post_title'], 'post_type' => 'dame_pre_inscription', 'post_status' => 'pending' ] );
 			if ( $pid ) {
-				foreach ( $pi['meta_data'] as $k => $v ) update_post_meta( $pid, $k, $v );
+				foreach ( $pi['meta_data'] as $k => $v ) {
+					$pi_meta_insert_values[] = $pid;
+					$pi_meta_insert_values[] = $k;
+					$pi_meta_insert_values[] = maybe_serialize( $v );
+					$pi_meta_insert_placeholders[] = '(%d, %s, %s)';
+				}
 			}
+		}
+		if ( ! empty( $pi_meta_insert_placeholders ) ) {
+			$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $pi_meta_insert_placeholders );
+			$wpdb->query( $wpdb->prepare( $query, $pi_meta_insert_values ) );
 		}
 
 		// Messages
+		$msg_meta_insert_values = [];
+		$msg_meta_insert_placeholders = [];
 		foreach ( $data['messages'] ?? [] as $m ) {
 			// Sanitize input to match original code
 			$post_title = sanitize_text_field( $m['post_title'] );
@@ -728,10 +752,17 @@ class Backup {
 							$remapped_value = [];
 							foreach ( $v as $old_id ) if ( isset( $map_terms[ $old_id ] ) ) $remapped_value[] = $map_terms[ $old_id ];
 						}
-						update_post_meta( $pid, $k, $remapped_value );
+						$msg_meta_insert_values[] = $pid;
+						$msg_meta_insert_values[] = $k;
+						$msg_meta_insert_values[] = maybe_serialize( $remapped_value );
+						$msg_meta_insert_placeholders[] = '(%d, %s, %s)';
 					}
 				}
 			}
+		}
+		if ( ! empty( $msg_meta_insert_placeholders ) ) {
+			$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $msg_meta_insert_placeholders );
+			$wpdb->query( $wpdb->prepare( $query, $msg_meta_insert_values ) );
 		}
 
 		// Message opens
@@ -781,7 +812,7 @@ class Backup {
 	private function export_json_agenda() {
 		$data = $this->generate_agenda_export_data();
 		$gz = gzcompress( json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
-		$filename = 'dame-agenda-backup-' . date( 'Y-m-d' ) . '.json.gz';
+		$filename = 'dame-agenda-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
 		ob_clean();
 		header( 'Content-Type: application/octet-stream' );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
@@ -807,12 +838,23 @@ class Backup {
 			$new = wp_insert_term( $t['name'], 'dame_agenda_category', [ 'slug' => $t['slug'], 'description' => $t['description'] ] );
 			if ( ! is_wp_error( $new ) && ! empty( $t['color'] ) ) update_option( "taxonomy_" . $new['term_id'], [ 'color' => $t['color'] ] );
 		}
+		$agenda_meta_insert_values = [];
+		$agenda_meta_insert_placeholders = [];
 		foreach ( $data['events'] ?? [] as $e ) {
 			$pid = wp_insert_post( [ 'post_title' => $e['post_title'], 'post_content' => $e['post_content'], 'post_type' => 'dame_agenda', 'post_status' => 'publish' ] );
 			if ( $pid ) {
-				foreach ( $e['meta_data'] as $k => $v ) update_post_meta( $pid, $k, $v );
+				foreach ( $e['meta_data'] as $k => $v ) {
+					$agenda_meta_insert_values[] = $pid;
+					$agenda_meta_insert_values[] = $k;
+					$agenda_meta_insert_values[] = maybe_serialize( $v );
+					$agenda_meta_insert_placeholders[] = '(%d, %s, %s)';
+				}
 				if ( ! empty( $e['categories'] ) ) wp_set_object_terms( $pid, $e['categories'], 'dame_agenda_category' );
 			}
+		}
+		if ( ! empty( $agenda_meta_insert_placeholders ) ) {
+			$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $agenda_meta_insert_placeholders );
+			$wpdb->query( $wpdb->prepare( $query, $agenda_meta_insert_values ) );
 		}
 		$this->add_admin_notice( "Agenda restauré avec succès." );
 	}
@@ -828,11 +870,11 @@ class Backup {
 
 		// Generate files
 		$data_adherent = $this->generate_adherent_export_data();
-		$file_adherent = trailingslashit( $backup_dir ) . 'dame-adherents-backup-' . date( 'Y-m-d' ) . '.json.gz';
+		$file_adherent = trailingslashit( $backup_dir ) . 'dame-adherents-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
 		file_put_contents( $file_adherent, gzcompress( json_encode( $data_adherent ) ) );
 
 		$data_agenda = $this->generate_agenda_export_data();
-		$file_agenda = trailingslashit( $backup_dir ) . 'dame-agenda-backup-' . date( 'Y-m-d' ) . '.json.gz';
+		$file_agenda = trailingslashit( $backup_dir ) . 'dame-agenda-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
 		file_put_contents( $file_agenda, gzcompress( json_encode( $data_agenda ) ) );
 
 		// Send Email

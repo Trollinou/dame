@@ -53,7 +53,7 @@ function dame_generate_health_form_handler() {
 
 	// 5. Prepare data for PDF
 	$full_name_adherent_for_pdf = mb_strtoupper( $last_name, 'UTF-8' ) . ' ' . $first_name;
-	$current_date       = date( 'd/m/Y' );
+	$current_date       = wp_date( 'd/m/Y' );
 
 	// Handle UTF-8 to Windows-1252 conversion for FPDF standard fonts
 	$full_name_adherent_for_pdf = mb_convert_encoding( $full_name_adherent_for_pdf, 'ISO-8859-1', 'UTF-8' );
@@ -171,9 +171,9 @@ function dame_generate_parental_auth_handler() {
 
 	// 4. Prepare data for PDF
 	$adherent_full_name            = mb_convert_encoding( mb_strtoupper( $last_name, 'UTF-8' ) . ' ' . $first_name, 'ISO-8859-1', 'UTF-8' );
-	$adherent_birth_date_formatted = mb_convert_encoding( date( 'd/m/Y', strtotime( $birth_date_str ) ), 'ISO-8859-1', 'UTF-8' );
+	$adherent_birth_date_formatted = mb_convert_encoding( wp_date( 'd/m/Y', strtotime( $birth_date_str ), new \DateTimeZone('UTC') ), 'ISO-8859-1', 'UTF-8' );
 	$adherent_city                 = mb_convert_encoding( $city, 'ISO-8859-1', 'UTF-8' );
-	$current_date                  = date( 'd/m/Y' );
+	$current_date                  = wp_date( 'd/m/Y' );
 	$rl1_full_name                 = '';
 	if ( ! empty( $rl1_first_name ) && ! empty( $rl1_last_name ) ) {
 		$rl1_full_name = mb_convert_encoding( mb_strtoupper( $rl1_last_name, 'UTF-8' ) . ' ' . $rl1_first_name, 'ISO-8859-1', 'UTF-8' );
@@ -228,7 +228,7 @@ function dame_generate_parental_auth_handler() {
 	}
 	if ( ! empty( $rl1_birth_date ) ) {
 		$pdf->SetXY( 54, 270 );
-		$pdf->Write( 0, mb_convert_encoding( date( 'd/m/Y', strtotime( $rl1_birth_date ) ), 'ISO-8859-1', 'UTF-8' ) );
+		$pdf->Write( 0, mb_convert_encoding( wp_date( 'd/m/Y', strtotime( $rl1_birth_date ), new \DateTimeZone('UTC') ), 'ISO-8859-1', 'UTF-8' ) );
 	}
 	if ( ! empty( $rl1_profession ) ) {
 		$pdf->SetXY( 35, 279 );
@@ -250,7 +250,7 @@ function dame_generate_parental_auth_handler() {
 	}
 	if ( ! empty( $rl2_birth_date ) ) {
 		$pdf->SetXY( 154, 270 );
-		$pdf->Write( 0, mb_convert_encoding( date( 'd/m/Y', strtotime( $rl2_birth_date ) ), 'ISO-8859-1', 'UTF-8' ) );
+		$pdf->Write( 0, mb_convert_encoding( wp_date( 'd/m/Y', strtotime( $rl2_birth_date ), new \DateTimeZone('UTC') ), 'ISO-8859-1', 'UTF-8' ) );
 	}
 	if ( ! empty( $rl2_profession ) ) {
 		$pdf->SetXY( 135, 279 );

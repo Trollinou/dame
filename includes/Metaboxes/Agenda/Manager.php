@@ -183,24 +183,6 @@ class Manager {
 			)
 		);
 		?>
-		<script>
-		jQuery(document).ready(function($) {
-			function toggleCompetitionLevel() {
-				var competitionType = $('input[name="dame_competition_type"]:checked').val();
-				if (competitionType === 'non') {
-					$('#dame_competition_level_wrapper').hide();
-				} else {
-					$('#dame_competition_level_wrapper').show();
-				}
-			}
-			// Run on page load
-			toggleCompetitionLevel();
-			// Run on change
-			$('input[name="dame_competition_type"]').on('change', function() {
-				toggleCompetitionLevel();
-			});
-		});
-		</script>
 		<?php
 	}
 
@@ -210,6 +192,10 @@ class Manager {
 	 * @param WP_Post $post The post object.
 	 */
 	public function render_details( $post ) {
+		wp_enqueue_script( 'dame-admin-agenda-manager', \DAME_PLUGIN_URL . 'assets/js/admin-agenda-manager.js', array( 'jquery' ), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-agenda-manager', 'dame_agenda_manager_data', array(
+			'alert_category' => __( 'Veuillez sélectionner au moins une catégorie.', 'dame' )
+		) );
 		wp_nonce_field( 'dame_save_agenda_meta', 'dame_agenda_metabox_nonce' );
 
 		// Check for transient data in case of a validation error on save.
@@ -335,43 +321,6 @@ class Manager {
 				</td>
 			</tr>
 		</table>
-		<script>
-		jQuery(document).ready(function($) {
-			function toggleTimeFields() {
-				if ($('#dame_all_day').is(':checked')) {
-					$('.dame-time-fields').hide();
-				} else {
-					$('.dame-time-fields').show();
-				}
-			}
-			toggleTimeFields(); // Initial check
-			$('#dame_all_day').on('change', toggleTimeFields);
-
-			// UX: Copy start date to end date on blur if end date is empty
-			$('#dame_start_date').on('blur change', function() {
-				var startDate = $(this).val();
-				var endDate = $('#dame_end_date').val();
-				if(startDate && !endDate) {
-					$('#dame_end_date').val(startDate);
-				}
-			});
-
-			// UX: Validate Category Selection on submit
-			$('#post').on('submit', function(e) {
-				// Only if we are on the agenda edit screen
-				if( $('#dame_agenda_categorychecklist').length > 0 ) {
-					if( $('#dame_agenda_categorychecklist input:checked').length === 0 ) {
-						alert("<?php echo esc_js( __( 'Veuillez sélectionner au moins une catégorie.', 'dame' ) ); ?>");
-						e.preventDefault();
-						// Remove spinner/disabled state to allow retry
-						$('#publish').removeClass('disabled');
-						$('.spinner').removeClass('is-active');
-						return false;
-					}
-				}
-			});
-		});
-		</script>
 		<style>
 			.dame-time-fields.hidden { display: none; }
 		</style>
@@ -449,16 +398,6 @@ class Manager {
 			</ul>
 		</div>
 		<p class="description"><?php esc_html_e( 'Seuls les adhérents avec une adhésion active pour la saison en cours sont listés.', 'dame' ); ?></p>
-		<script>
-		jQuery(document).ready(function($) {
-			$('#dame_participant_filter').on('keyup', function() {
-				var value = $(this).val().toLowerCase();
-				$('#dame_participants_list li').filter(function() {
-					$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-				});
-			});
-		});
-		</script>
 		<?php
 	}
 

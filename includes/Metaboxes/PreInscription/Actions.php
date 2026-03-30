@@ -45,6 +45,10 @@ class Actions {
 	 * @param array    $metabox The metabox arguments.
 	 */
 	public function render( $post, $metabox ) {
+		wp_enqueue_script( 'dame-admin-pre-inscription-actions', \DAME_PLUGIN_URL . 'assets/js/admin-pre-inscription-actions.js', array(), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-pre-inscription-actions', 'dame_pre_inscription_actions_data', array(
+			'confirm_delete' => __( 'Êtes-vous sûr de vouloir supprimer définitivement cette préinscription ? Cette action est irréversible.', 'dame' )
+		) );
 		$matched_id = $metabox['args']['matched_id'];
 		wp_nonce_field( 'dame_pre_inscription_process_action', 'dame_pre_inscription_action_nonce' );
 		?>
@@ -66,18 +70,6 @@ class Actions {
 				<button type="submit" name="dame_pre_inscription_action" value="delete" class="button button-secondary button-large dame-delete-button" formnovalidate><?php _e( "Supprimer la Préinscription", 'dame' ); ?></button>
 			</p>
 		</div>
-		<script>
-			document.addEventListener('DOMContentLoaded', function() {
-				const deleteButton = document.querySelector('.dame-delete-button');
-				if (deleteButton) {
-					deleteButton.addEventListener('click', function(e) {
-						if (!confirm("<?php echo esc_js( __( 'Êtes-vous sûr de vouloir supprimer définitivement cette préinscription ? Cette action est irréversible.', 'dame' ) ); ?>")) {
-							e.preventDefault();
-						}
-					});
-				}
-			});
-		</script>
 		<?php
 	}
 
@@ -157,8 +149,30 @@ class Actions {
 									'post_title' => $post_title,
 								)
 							);
+
+							global $wpdb;
+							$meta_insert_values = [];
+							$meta_insert_placeholders = [];
+
 							foreach ( $adherent_meta as $key => $value ) {
-								update_post_meta( $adherent_id, $key, $value );
+								// We check if meta already exists to avoid duplicated meta entries,
+								// or we can use update_post_meta for updates.
+								// However, for strict bulk update we need ON DUPLICATE KEY UPDATE,
+								// but WP postmeta doesn't have a unique constraint on (post_id, meta_key).
+								// For safety on existing post update, we should stick to update_post_meta
+								// OR delete existing and bulk insert.
+								// Given the performance concern, let's delete existing first, then bulk insert.
+								$wpdb->delete($wpdb->postmeta, ['post_id' => $adherent_id, 'meta_key' => $key]);
+
+								$meta_insert_values[] = $adherent_id;
+								$meta_insert_values[] = $key;
+								$meta_insert_values[] = maybe_serialize( $value );
+								$meta_insert_placeholders[] = '(%d, %s, %s)';
+							}
+
+							if ( ! empty( $meta_insert_placeholders ) ) {
+								$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
+								$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
 							}
 							$redirect_message = 1; // Post updated.
 						}

@@ -19,6 +19,11 @@ class BackupAdherent {
 	}
 
 	public function render() {
+		wp_enqueue_script( 'dame-admin-backup-adherent', \DAME_PLUGIN_URL . 'assets/js/admin-backup-adherent.js', array(), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-backup-adherent', 'dame_backup_adherent_data', array(
+			'confirm_restore' => __( "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Toutes les données d'adhérents existantes seront supprimées et remplacées. Cette action est irréversible.", 'dame' ),
+			'confirm_import_csv' => __( "Êtes-vous sûr de vouloir importer ce fichier CSV ?", 'dame' )
+		) );
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
@@ -72,26 +77,6 @@ class BackupAdherent {
 				</div>
 			</div>
 
-			<script>
-				document.addEventListener('DOMContentLoaded', function() {
-					const importForm = document.getElementById('dame-import-form');
-					if (importForm) {
-						importForm.addEventListener('submit', function(e) {
-							if (!confirm("<?php echo esc_js( __( "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Toutes les données d'adhérents existantes seront supprimées et remplacées. Cette action est irréversible.", 'dame' ) ); ?>")) {
-								e.preventDefault();
-							}
-						});
-					}
-					const importCsvForm = document.getElementById('dame-import-csv-form');
-					if (importCsvForm) {
-						importCsvForm.addEventListener('submit', function(e) {
-							if (!confirm("<?php echo esc_js( __( "Êtes-vous sûr de vouloir importer ce fichier CSV ?", 'dame' ) ); ?>")) {
-								e.preventDefault();
-							}
-						});
-					}
-				});
-			</script>
 		</div>
 		<?php
 	}

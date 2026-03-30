@@ -1,68 +1,55 @@
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Radio button logic for selection method
-    const methodRadios = document.querySelectorAll('input[name="dame_selection_method"]');
-    const groupFilters = document.querySelector('.dame-group-filters');
-    const manualFilters = document.querySelector('.dame-manual-filters');
+	const radios = document.getElementsByName('dame_selection_method');
+	const filtersDiv = document.querySelector('.dame-group-filters');
+	const manualDiv = document.querySelector('.dame-manual-filters');
 
-    function toggleMethod() {
-        if (document.querySelector('input[name="dame_selection_method"]:checked').value === 'group') {
-            groupFilters.style.display = 'table-row';
-            manualFilters.style.display = 'none';
-        } else {
-            groupFilters.style.display = 'none';
-            manualFilters.style.display = 'table-row';
-        }
-    }
-    methodRadios.forEach(radio => radio.addEventListener('change', toggleMethod));
-    toggleMethod(); // Initial state
+	function toggleSections() {
+		let method = 'group';
+		for (const radio of radios) {
+			if (radio.checked) {
+				method = radio.value;
+				break;
+			}
+		}
+		if (method === 'group') {
+			if (filtersDiv) filtersDiv.style.display = 'block';
+			if (manualDiv) manualDiv.style.display = 'none';
+		} else {
+			if (filtersDiv) filtersDiv.style.display = 'none';
+			if (manualDiv) manualDiv.style.display = 'block';
+		}
+	}
 
-    // Logic to disable submit button based on message status
-    const messageSelect = document.getElementById('dame_message_to_send');
-    const submitButton = document.querySelector('input[type="submit"]');
-    let statusNotice = document.getElementById('dame-status-notice');
+	for (const radio of radios) {
+		radio.addEventListener('change', toggleSections);
+	}
+	toggleSections();
 
-    // Create the notice element if it doesn't exist
-    if ( ! statusNotice ) {
-        statusNotice = document.createElement('span');
-        statusNotice.id = 'dame-status-notice';
-        statusNotice.style.marginLeft = '10px';
-        statusNotice.style.color = '#d63638';
-        submitButton.parentNode.insertBefore(statusNotice, submitButton.nextSibling);
-    }
+	// Message status check
+	const messageSelect = document.getElementById('dame_message_to_send');
+	const submitButton = document.getElementById('submit');
+	const warningDiv = document.getElementById('dame_message_warning');
 
+	function checkMessageStatus() {
+		if (!messageSelect.value) {
+			submitButton.disabled = false;
+			warningDiv.style.display = 'none';
+			return;
+		}
+		const selectedOption = messageSelect.options[messageSelect.selectedIndex];
+		const status = selectedOption.getAttribute('data-status');
 
-    function checkMessageStatus() {
-        if ( ! messageSelect.options.length ) {
-            submitButton.disabled = true;
-            return;
-        }
+		if (status === 'sent' || status === 'sending') {
+			submitButton.disabled = true;
+			warningDiv.style.display = 'block';
+		} else {
+			submitButton.disabled = false;
+			warningDiv.style.display = 'none';
+		}
+	}
 
-        const selectedOption = messageSelect.options[messageSelect.selectedIndex];
-        const status = selectedOption.getAttribute('data-status');
-        const statuses = ['scheduled', 'sending', 'sent'];
-
-        if (statuses.includes(status)) {
-            submitButton.disabled = true;
-            let statusText;
-            switch (status) {
-                case 'scheduled':
-                    statusText = "Programmé";
-                    break;
-                case 'sending':
-                    statusText = "Envoi en cours...";
-                    break;
-                case 'sent':
-                    statusText = "Déjà envoyé";
-                    break;
-            }
-            statusNotice.textContent = '(' + statusText + ')';
-        } else {
-            submitButton.disabled = false;
-            statusNotice.textContent = '';
-        }
-    }
-
-    messageSelect.addEventListener('change', checkMessageStatus);
-    checkMessageStatus(); // Initial check
+	if (messageSelect) {
+		messageSelect.addEventListener('change', checkMessageStatus);
+		checkMessageStatus(); // Check on load
+	}
 });

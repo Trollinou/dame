@@ -363,13 +363,20 @@ class RegistrationForm {
 			wp_send_json_error( array( 'message' => __( "Erreur lors de la création de la fiche de préinscription.", 'dame' ) . ' ' . $post_id->get_error_message() ) );
 		}
 
-		// 5. Save Meta Data
+		// 5. Save Meta Data (Bulk Insert for N+1 optimization)
+		global $wpdb;
+		$meta_insert_values = [];
+		$meta_insert_placeholders = [];
+
 		foreach ( $sanitized_data as $key => $value ) {
 			// Skip direct save of health_questionnaire, it will be mapped and saved below.
 			if ( 'dame_health_questionnaire' === $key ) {
 				continue;
 			}
-			update_post_meta( $post_id, '_' . $key, $value );
+			$meta_insert_values[] = $post_id;
+			$meta_insert_values[] = '_' . $key;
+			$meta_insert_values[] = maybe_serialize( $value );
+			$meta_insert_placeholders[] = '(%d, %s, %s)';
 		}
 
 		// Map and save the health document status
@@ -381,7 +388,16 @@ class RegistrationForm {
 				$health_document_status = 'attestation';
 			}
 		}
-		update_post_meta( $post_id, '_dame_health_document', $health_document_status );
+
+		$meta_insert_values[] = $post_id;
+		$meta_insert_values[] = '_dame_health_document';
+		$meta_insert_values[] = $health_document_status;
+		$meta_insert_placeholders[] = '(%d, %s, %s)';
+
+		if ( ! empty( $meta_insert_placeholders ) ) {
+			$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
+			$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
+		}
 
 
 		// 6. Send Email Notification

@@ -184,10 +184,10 @@ class Agenda {
 		$min_date = $wpdb->get_var( $wpdb->prepare( "SELECT MIN(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = %s", '_dame_start_date' ) );
 		$max_date = $wpdb->get_var( $wpdb->prepare( "SELECT MAX(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = %s", '_dame_start_date' ) );
 
-		$default_start_month = $min_date ? date( 'm', strtotime( $min_date ) ) : date( 'm' );
-		$default_start_year  = $min_date ? date( 'Y', strtotime( $min_date ) ) : date( 'Y' );
-		$default_end_month   = $max_date ? date( 'm', strtotime( $max_date ) ) : date( 'm' );
-		$default_end_year    = $max_date ? date( 'Y', strtotime( $max_date ) ) : date( 'Y' );
+		$default_start_month = $min_date ? wp_date( 'm', strtotime( $min_date ) ) : wp_date( 'm' );
+		$default_start_year  = $min_date ? wp_date( 'Y', strtotime( $min_date ) ) : wp_date( 'Y' );
+		$default_end_month   = $max_date ? wp_date( 'm', strtotime( $max_date ) ) : wp_date( 'm' );
+		$default_end_year    = $max_date ? wp_date( 'Y', strtotime( $max_date ) ) : wp_date( 'Y' );
 
 		// Get user's saved preference for start date
 		$user_id = get_current_user_id();
@@ -299,8 +299,8 @@ class Agenda {
 				return; // Or swap them, for now just ignore invalid range
 			}
 
-			$first_day = date( 'Y-m-d', strtotime( $start_date_str ) );
-			$last_day  = date( 'Y-m-t', strtotime( $end_date_str ) );
+			$first_day = wp_date( 'Y-m-d', strtotime( $start_date_str ) );
+			$last_day  = wp_date( 'Y-m-t', strtotime( $end_date_str ) );
 
 			$meta_query = $query->get( 'meta_query' ) ?: array();
 			if ( empty( $meta_query ) ) {

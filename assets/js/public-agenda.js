@@ -429,3 +429,14 @@ jQuery(document).ready(function($) {
     // Initial Load
     handleHistoryChange();
 });
+
+jQuery(document).ready(function($) {
+	$('.dame-agenda-cat-filter').on('change', function() {
+		var isChecked = $(this).prop('checked');
+		// Check/uncheck all children inputs
+		$(this).closest('li').find('ul input.dame-agenda-cat-filter').prop('checked', isChecked);
+
+		// Trigger reload of events (assuming main script listens to change on these inputs)
+		// The main script should bind to '.dame-agenda-cat-filter' change event.
+	});
+});

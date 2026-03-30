@@ -149,19 +149,6 @@ class Agenda {
 			</div>
 			<div id="dame-event-tooltip" class="dame-tooltip" style="display: none;"></div>
 		</div>
-		<script>
-		// Inline script to handle checkbox hierarchy behavior
-		jQuery(document).ready(function($) {
-			$('.dame-agenda-cat-filter').on('change', function() {
-				var isChecked = $(this).prop('checked');
-				// Check/uncheck all children inputs
-				$(this).closest('li').find('ul input.dame-agenda-cat-filter').prop('checked', isChecked);
-
-				// Trigger reload of events (assuming main script listens to change on these inputs)
-				// The main script should bind to '.dame-agenda-cat-filter' change event.
-			});
-		});
-		</script>
 		<?php
 		return ob_get_clean();
 	}
@@ -428,7 +415,7 @@ class Agenda {
 		);
 
 		$nombre = intval( $atts['nombre'] );
-		$today  = date( 'Y-m-d' );
+		$today  = wp_date( 'Y-m-d' );
 
 		$post_status   = array( 'publish' );
 		$allowed_roles = array( 'staff', 'administrator', 'editor', 'entraineur' );

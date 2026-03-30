@@ -47,6 +47,10 @@ class Actions {
 	 * @param \WP_Post $post The post object.
 	 */
 	public function render( $post ) {
+		wp_enqueue_script( 'dame-admin-adherent-actions', \DAME_PLUGIN_URL . 'assets/js/admin-adherent-actions.js', array(), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-adherent-actions', 'dame_adherent_actions_data', array(
+			'confirm_revert' => __( 'Êtes-vous sûr de vouloir annuler cette adhésion et renvoyer cette personne en pré-inscription ? Cette action est irréversible.', 'dame' )
+		) );
 		// Get the current season tag ID from options.
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
 		if ( ! $current_season_tag_id ) {
@@ -73,19 +77,6 @@ class Actions {
 			<button type="submit" name="dame_revert_to_pre_inscription" value="revert" class="button button-secondary">
 				<?php esc_html_e( "Annuler et renvoyer en pré-inscription", 'dame' ); ?>
 			</button>
-			<script>
-				// Add a confirmation dialog to prevent accidental clicks.
-				document.addEventListener('DOMContentLoaded', function() {
-					const revertButton = document.querySelector('button[name="dame_revert_to_pre_inscription"]');
-					if (revertButton) {
-						revertButton.addEventListener('click', function(e) {
-							if (!confirm("<?php echo esc_js( __( 'Êtes-vous sûr de vouloir annuler cette adhésion et renvoyer cette personne en pré-inscription ? Cette action est irréversible.', 'dame' ) ); ?>")) {
-								e.preventDefault();
-							}
-						});
-					}
-				});
-			</script>
 			<?php
 		} else {
 			echo '<p>' . esc_html__( "Cette action n'est disponible que pour les adhérents qui ont uniquement l'adhésion de la saison en cours.", 'dame' ) . '</p>';
