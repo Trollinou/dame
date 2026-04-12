@@ -19,6 +19,10 @@ class BackupAgenda {
 	}
 
 	public function render() {
+		wp_enqueue_script( 'dame-admin-backup-agenda', \DAME_PLUGIN_URL . 'assets/js/admin-backup-agenda.js', array(), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-backup-agenda', 'dame_backup_agenda_data', array(
+			'confirm_restore' => __( "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Tous les événements et catégories existants seront supprimés et remplacés. Cette action est irréversible.", 'dame' )
+		) );
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
@@ -48,18 +52,6 @@ class BackupAgenda {
 				</div>
 			</div>
 
-			<script>
-				document.addEventListener('DOMContentLoaded', function() {
-					const restoreForm = document.getElementById('dame-agenda-restore-form');
-					if (restoreForm) {
-						restoreForm.addEventListener('submit', function(e) {
-							if (!confirm("<?php echo esc_js( __( "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Tous les événements et catégories existants seront supprimés et remplacés. Cette action est irréversible.", 'dame' ) ); ?>")) {
-								e.preventDefault();
-							}
-						});
-					}
-				});
-			</script>
 		</div>
 		<?php
 	}

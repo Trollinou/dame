@@ -52,7 +52,7 @@ class School {
 				<td>
 					<select id="dame_school_academy" name="dame_school_academy">
 						<?php
-						$academies = function_exists( 'dame_get_academy_list' ) ? dame_get_academy_list() : [];
+						$academies = \DAME\Services\Data_Provider::get_academies();
 						foreach ( $academies as $code => $name ) : ?>
 							<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $school_academy, $code ); ?>><?php echo esc_html( $name ); ?></option>
 						<?php endforeach; ?>

@@ -24,7 +24,7 @@ class Birthday {
 		$season_ids = [ $season_id ];
 
 		// If Sept, add previous season
-		if ( (int) date( 'n' ) === 9 ) {
+		if ( (int) wp_date( 'n' ) === 9 ) {
 			$term = get_term( $season_id );
 			if ( $term && preg_match( '/(\d{4})\/(\d{4})/', $term->name, $matches ) ) {
 				$prev_name = sprintf( 'Saison %d/%d', $matches[1] - 1, $matches[1] );
@@ -36,7 +36,7 @@ class Birthday {
 		// Query Adherents
 		$query = new WP_Query( [
 			'post_type' => 'adherent', 'posts_per_page' => -1,
-			'meta_query' => [ [ 'key' => '_dame_birth_date', 'value' => '-' . date( 'm-d' ) . '$', 'compare' => 'REGEXP' ] ],
+			'meta_query' => [ [ 'key' => '_dame_birth_date', 'value' => '-' . wp_date( 'm-d' ) . '$', 'compare' => 'REGEXP' ] ],
 			'tax_query' => [ [ 'taxonomy' => 'dame_saison_adhesion', 'field' => 'term_id', 'terms' => $season_ids, 'operator' => 'IN' ] ]
 		] );
 

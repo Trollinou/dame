@@ -42,6 +42,13 @@ class TestSend {
 	 * @param \WP_Post $post The post object.
 	 */
 	public function render( $post ) {
+		wp_enqueue_script( 'dame-admin-test-send', \DAME_PLUGIN_URL . 'assets/js/admin-test-send.js', array( 'jquery' ), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-test-send', 'dame_test_send_data', array(
+			'post_id' => $post->ID,
+			'nonce' => wp_create_nonce( 'dame_test_send_' . $post->ID ),
+			'alert_empty' => __( 'Veuillez saisir un email.', 'dame' ),
+			'admin_url' => admin_url( 'admin-post.php' )
+		) );
 		$current_user_email = wp_get_current_user()->user_email;
 		?>
 		<p class="description">
@@ -64,56 +71,6 @@ class TestSend {
 		<span id="dame_test_spinner" class="spinner"></span>
 		<div id="dame_test_result" style="margin-top:10px;"></div>
 
-		<script>
-		jQuery(document).ready(function($) {
-			$('#dame_send_test_btn').on('click', function() {
-				var email = $('#dame_test_email').val();
-				var post_id = <?php echo $post->ID; ?>;
-				var nonce = '<?php echo wp_create_nonce( 'dame_test_send_' . $post->ID ); ?>';
-
-				if (!email) {
-					alert('<?php echo esc_js( __( 'Veuillez saisir un email.', 'dame' ) ); ?>');
-					return;
-				}
-
-				// The form content (Title/Editor) might be unsaved.
-				// Ideally we should autosave first, or grab current values from DOM.
-				// For now, let's assume we test the SAVED version, or user should save first.
-				// Grabbing DOM values for TinyMCE is complex. Let's send the Post ID and rely on saved content for simplicity unless requested otherwise.
-
-				$('#dame_test_spinner').addClass('is-active');
-				$('#dame_test_result').html('');
-
-				// Using a specialized admin-post action via AJAX just to reuse the PHP handler logic easily?
-				// Actually, admin-post is for full page reloads usually. wp_ajax is for AJAX.
-				// The plan said "Hook POST : admin_post_dame_process_mailing" for the main mailing page.
-				// For this Test Send, let's just make a hidden form targetting a hidden iframe? No, that's old school.
-				// I'll stick to a simple form submission to admin-post.php if I can't do AJAX easily.
-				// BUT I can't nest forms.
-				// So I will implement a JS function that creates a form on the fly and submits it?
-				// OR just use wp_ajax.
-
-				// Wait, the prompt implies "admin_post" handles actions.
-				// But "Metabox de Test" usually implies staying on the page.
-				// Let's implement an AJAX handler in the class but hook it to wp_ajax_... as well?
-				// The prompt instructions for "Action Duplication" mentions "admin_action_...".
-				// The prompt for "Page d'Envoi" mentions "admin_post_...".
-				// For "Metabox de Test", it just says "Source: message-actions.php".
-
-				// I'll implement a simple form POST to admin-post.php via a dynamically created form,
-				// then redirect back to edit post. This is the most robust "no-js-framework" way.
-
-				var form = $('<form action="<?php echo admin_url( 'admin-post.php' ); ?>" method="post">' +
-					'<input type="hidden" name="action" value="dame_send_test_email">' +
-					'<input type="hidden" name="post_ID" value="' + post_id + '">' +
-					'<input type="hidden" name="test_email" value="' + email + '">' +
-					'<input type="hidden" name="_wpnonce" value="' + nonce + '">' +
-					'</form>');
-				$('body').append(form);
-				form.submit();
-			});
-		});
-		</script>
 		<?php
 	}
 

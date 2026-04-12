@@ -55,7 +55,7 @@ class Message {
 						$old_sent_date = get_post_meta( $post_id, '_dame_sent_date', true );
 						if ( ! empty( $old_sent_date ) ) {
 							if ( is_numeric( $old_sent_date ) ) {
-								echo esc_html( get_date_from_gmt( date( 'Y-m-d H:i:s', (int) $old_sent_date ), 'd/m/Y H:i' ) );
+								echo esc_html( get_date_from_gmt( gmdate( 'Y-m-d H:i:s', (int) $old_sent_date ), 'd/m/Y H:i' ) );
 							} else {
 								echo esc_html( get_date_from_gmt( $old_sent_date, 'd/m/Y H:i' ) );
 							}

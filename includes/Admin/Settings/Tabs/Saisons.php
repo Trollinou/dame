@@ -38,6 +38,10 @@ class Saisons {
 	 * Render the tab content.
 	 */
 	public function render() {
+		wp_enqueue_script( 'dame-admin-settings-saisons', \DAME_PLUGIN_URL . 'assets/js/admin-settings-saisons.js', array(), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-settings-saisons', 'dame_saisons_data', array(
+			'confirm_reset' => __( "Êtes-vous sûr de vouloir initialiser la nouvelle saison ? Cela créera un nouveau tag et le définira comme saison active.", 'dame' )
+		) );
 		// Custom UI for Seasons
 		$this->render_ui();
 	}
@@ -74,8 +78,8 @@ class Saisons {
 			}
 		}
 
-		$current_month     = (int) date( 'n' );
-		$current_year      = (int) date( 'Y' );
+		$current_month     = (int) wp_date( 'n' );
+		$current_year      = (int) wp_date( 'Y' );
 		$season_start_year = ( $current_month >= 9 ) ? $current_year + 1 : $current_year;
 		$season_end_year   = $season_start_year + 1;
 
@@ -190,20 +194,6 @@ class Saisons {
 				</form>
 			</div>
 		</div>
-		<script>
-			document.addEventListener('DOMContentLoaded', function() {
-				const resetButton = document.getElementById('dame_annual_reset');
-				if (resetButton) {
-					resetButton.addEventListener('click', function(e) {
-						if (!confirm("<?php echo esc_js( __( 'Êtes-vous sûr de vouloir initialiser la nouvelle saison ? Cela créera un nouveau tag et le définira comme saison active.', 'dame' ) ); ?>")) {
-							e.preventDefault();
-						} else {
-							setTimeout(function() { resetButton.disabled = true; }, 0);
-						}
-					});
-				}
-			});
-		</script>
 		<?php
 	}
 }

@@ -72,11 +72,15 @@ class Agenda {
 			wp_die( $new_post_id->get_error_message() );
 		}
 
-		// Duplicate post meta.
+		// Duplicate post meta (Bulk Insert for N+1 optimization).
 		$all_meta = get_post_meta( $post_id );
 		$keys_to_skip = array( '_dame_start_date', '_dame_end_date' );
 
 		if ( ! empty( $all_meta ) ) {
+			global $wpdb;
+			$meta_insert_values = [];
+			$meta_insert_placeholders = [];
+
 			foreach ( $all_meta as $meta_key => $meta_values ) {
 				// Skip protected meta, but allow our own '_dame_' meta.
 				if ( is_protected_meta( $meta_key ) && strpos( $meta_key, '_dame_' ) !== 0 ) {
@@ -88,8 +92,18 @@ class Agenda {
 				}
 
 				foreach ( $meta_values as $meta_value ) {
-					add_post_meta( $new_post_id, $meta_key, $meta_value );
+					// get_post_meta returns an array of string values (even for serialized arrays).
+					// To correctly bulk insert, we insert them exactly as they are without re-serializing.
+					$meta_insert_values[] = $new_post_id;
+					$meta_insert_values[] = $meta_key;
+					$meta_insert_values[] = maybe_unserialize($meta_value) !== $meta_value ? $meta_value : maybe_serialize($meta_value);
+					$meta_insert_placeholders[] = '(%d, %s, %s)';
 				}
+			}
+
+			if ( ! empty( $meta_insert_placeholders ) ) {
+				$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
+				$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
 			}
 		}
 
