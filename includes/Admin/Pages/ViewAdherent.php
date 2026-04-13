@@ -24,7 +24,7 @@ class ViewAdherent {
 	 */
 	public function register() {
 		add_submenu_page(
-			'dame', // Parent slug
+			'dame-admin', // Parent slug
 			__( 'Consulter la fiche Adhérent', 'dame' ),
 			__( 'Consulter Adhérent', 'dame' ),
 			'read_private_pages', // Capability

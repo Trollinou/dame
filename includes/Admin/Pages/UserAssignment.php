@@ -20,7 +20,7 @@ class UserAssignment {
 	 * Register the page and its hooks.
 	 */
 	public function init() {
-		add_action( 'admin_menu', array( $this, 'register_menu' ) );
+
 		add_action( 'admin_post_dame_assign_user', array( $this, 'handle_assignment' ) );
 		add_action( 'admin_notices', array( $this, 'display_notices' ) );
 	}

@@ -169,6 +169,8 @@ class Plugin {
 
 		// Initialize Metaboxes & Admin-only logic.
 		if ( is_admin() ) {
+			$admin_menu = new \DAME\Admin\Menu();
+			$admin_menu->init();
 			$adherent_metaboxes = new AdherentMetaboxManager();
 			$adherent_metaboxes->init();
 
@@ -241,11 +243,7 @@ class Plugin {
 			$user_assignment->init();
 
 			// Initialisation des pages de sauvegardes manuelles
-			$backup_adherent_page = new \DAME\Admin\Pages\BackupAdherent();
-			$backup_adherent_page->init();
 
-			$backup_agenda_page = new \DAME\Admin\Pages\BackupAgenda();
-			$backup_agenda_page->init();
 		}
 	}
 }

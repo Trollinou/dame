@@ -46,7 +46,7 @@ class ICalFeed {
 			'public'             => false,
 			'publicly_queryable' => false,
 			'show_ui'            => true,
-			'show_in_menu'       => 'edit.php?post_type=dame_agenda',
+			'show_in_menu'       => 'dame-admin',
 			'query_var'          => false,
 			'rewrite'            => false,
 			'capability_type'    => 'post',

@@ -49,6 +49,7 @@ class AgendaCategory {
 			'hierarchical'      => true,
 			'labels'            => $labels,
 			'show_ui'           => true,
+			'show_in_menu'      => true,
 			'show_admin_column' => true,
 			'query_var'         => true,
 			'rewrite'           => array( 'slug' => 'agenda-category' ),

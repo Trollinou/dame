@@ -45,7 +45,7 @@ class Main {
 	 * Initialize the settings page.
 	 */
 	public function init() {
-		add_action( 'admin_menu', [ $this, 'add_menu' ] );
+
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 	}
 

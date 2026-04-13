@@ -61,7 +61,7 @@ class Adherent {
 			'hierarchical'          => false,
 			'public'                => false,
 			'show_ui'               => true,
-			'show_in_menu'          => true,
+			'show_in_menu'          => 'dame-admin',
 			'menu_position'         => 20,
 			'menu_icon'             => 'dashicons-groups',
 			'show_in_admin_bar'     => true,

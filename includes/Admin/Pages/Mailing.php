@@ -29,7 +29,7 @@ class Mailing {
 	 */
 	public function register_menu_page() {
 		add_submenu_page(
-			'edit.php?post_type=adherent',
+			'dame-admin',
 			__( 'Envoyer un message', 'dame' ),
 			__( 'Envoyer un message', 'dame' ),
 			'edit_dame_messages',
@@ -377,7 +377,7 @@ class Mailing {
 				'success' => 1,
 				'count'   => count( $recipient_emails ),
 			),
-			admin_url( 'edit.php?post_type=adherent' )
+			admin_url( 'dame-admin' )
 		);
 
 		wp_redirect( $redirect_url );
