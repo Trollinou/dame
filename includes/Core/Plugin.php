@@ -18,8 +18,6 @@ use DAME\API\Tracker;
 use DAME\Services\Mailer;
 use DAME\Services\BatchSender;
 use DAME\Admin\Pages\Mailing;
-use DAME\Admin\Pages\MessageReport;
-use DAME\Admin\Pages\UserAssignment;
 use DAME\Admin\Columns\Message as MessageColumns;
 use DAME\Admin\Actions\Message as MessageActions;
 use DAME\Metaboxes\Message\TestSend;
@@ -204,8 +202,6 @@ class Plugin {
 			$mailing_page = new Mailing();
 			$mailing_page->init();
 
-			$message_report = new MessageReport();
-			$message_report->init();
 
 			$message_columns = new MessageColumns();
 			$message_columns->init();
@@ -238,9 +234,6 @@ class Plugin {
 			$agenda_actions = new AgendaActions();
 			$agenda_actions->init();
 
-			// Initialize User Assignment Page
-			$user_assignment = new UserAssignment();
-			$user_assignment->init();
 
 			// Initialisation des pages de sauvegardes manuelles
 

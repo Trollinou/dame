@@ -7,7 +7,7 @@
 
 namespace DAME\Admin;
 
-use DAME\Admin\Pages\UserAssignment;
+use DAME\Admin\Pages\Mailing;
 use DAME\Admin\Pages\Backups;
 use DAME\Admin\Settings\Main as SettingsMain;
 
@@ -15,8 +15,7 @@ class Menu {
 
 	public function init() {
 		add_action( 'admin_menu', [ $this, 'add_menus' ], 10 );
-		add_filter( 'custom_menu_order', '__return_true' );
-		add_filter( 'menu_order', [ $this, 'reorder_menus' ] );
+		add_action( 'admin_menu', [ $this, 'reorder_dame_submenu' ], 999 );
 	}
 
 	public function add_menus() {
@@ -31,46 +30,17 @@ class Menu {
 			30
 		);
 
-		// Note : Les sous-menus des CPT (Adhérents, Agenda, Sondages) et Taxonomies
-		// s'ajouteront automatiquement ici grâce au 'show_in_menu' défini dans leurs classes.
-
-		// 2. Sous-menu : Assignation des comptes
+		// Envoyer un message (Mailing)
 		add_submenu_page(
 			'dame-admin',
-			__( "Assignation des comptes", "dame" ),
-			__( "Assigner les comptes", "dame" ),
-			'manage_options',
-			'dame-assignation',
-			[ new UserAssignment(), 'render' ]
-		);
-
-		// 3. Sous-menu : Flux d'agenda (ICS)
-		// Le CPT Flux iCalendar s'ajoute automatiquement sous Agenda si 'show_in_menu' = 'edit.php?post_type=dame_agenda'.
-		// Mais les instructions demandent explicitement ce sous-menu ici (près de l'Agenda).
-		// Puisque WordPress trie les sous-menus ajoutés via add_submenu_page à la fin (ou selon l'ordre d'appel),
-		// ce menu sera dans le bloc DAME.
-		// En fait, l'instruction demandait de modifier les CPT. Nous allons utiliser la vue liste du CPT.
-		add_submenu_page(
-			'dame-admin',
-			__( "Flux d'agenda (ICS)", "dame" ),
-			__( "Flux d'agenda", "dame" ),
-			'manage_options',
-			'edit.php?post_type=dame_ical_feed',
-			'__return_false'
-		);
-
-		// 4. Sous-menu : Messages (Extraction)
-		// We add the Message list as a sub-menu.
-		add_submenu_page(
-			'dame-admin',
-			__( "Historique des Messages", "dame" ),
-			__( "Messages", "dame" ),
+			__( "Envoyer un message", "dame" ),
+			__( "Envoyer un message", "dame" ),
 			'edit_dame_messages',
-			'edit.php?post_type=dame_message',
-			'__return_false'
+			'dame-mailing',
+			[ new Mailing(), 'render' ]
 		);
 
-		// 5. Sous-menu : Sauvegardes
+		// Sauvegardes
 		add_submenu_page(
 			'dame-admin',
 			__( "Sauvegardes et Import", "dame" ),
@@ -80,7 +50,7 @@ class Menu {
 			[ new Backups(), 'render' ]
 		);
 
-		// 6. Sous-menu : Réglages
+		// Réglages
 		add_submenu_page(
 			'dame-admin',
 			__( "Réglages DAME", "dame" ),
@@ -91,47 +61,56 @@ class Menu {
 		);
 	}
 
-	public function reorder_menus( $menu_order ) {
+	public function reorder_dame_submenu() {
 		global $submenu;
 
-		if ( isset( $submenu['dame-admin'] ) ) {
-			$dame_submenu = $submenu['dame-admin'];
-
-			// Define desired order of slugs
-			$desired_order = [
-				'dame-admin', // Dashboard
-				'edit.php?post_type=adherent',
-				'dame-assignation',
-				'edit.php?post_type=dame_agenda',
-				'edit.php?post_type=dame_ical_feed',
-				'edit.php?post_type=sondage',
-				'edit.php?post_type=dame_message',
-				'dame-backups',
-				'dame-settings',
-			];
-
-			$reordered = [];
-
-			// Extract known items in desired order
-			foreach ( $desired_order as $slug ) {
-				foreach ( $dame_submenu as $key => $item ) {
-					if ( $item[2] === $slug ) {
-						$reordered[] = $item;
-						unset( $dame_submenu[$key] );
-					}
-				}
-			}
-
-			// Append any remaining items
-			foreach ( $dame_submenu as $item ) {
-				$reordered[] = $item;
-			}
-
-			// Assign back
-			$submenu['dame-admin'] = $reordered;
+		if ( ! isset( $submenu['dame-admin'] ) ) {
+			return;
 		}
 
-		return $menu_order;
+		$dame_submenu = $submenu['dame-admin'];
+		$reordered = [];
+
+		// Define the strict exact order of URLs and their expected correct names
+		$desired_order = [
+			'dame-admin' => __( "DAME", "dame" ),
+			'edit.php?post_type=adherent' => __( "Tous les adhérents", "dame" ),
+			'edit.php?post_type=dame_pre_inscription' => __( "Toutes les préinscriptions", "dame" ),
+			'edit-tags.php?taxonomy=dame_saison_adhesion&amp;post_type=adherent' => __( "Saisons d'adhésion", "dame" ),
+			'edit-tags.php?taxonomy=dame_group&amp;post_type=adherent' => __( "Groupes d'adhérents", "dame" ),
+			'edit.php?post_type=dame_message' => __( "Tous les messages", "dame" ),
+			'dame-mailing' => __( "Envoyer un message", "dame" ),
+			'edit.php?post_type=dame_agenda' => __( "Tous les évènements", "dame" ),
+			'edit-tags.php?taxonomy=dame_agenda_category&amp;post_type=dame_agenda' => __( "Catégories d'évènements", "dame" ),
+			'edit.php?post_type=dame_ical_feed' => __( "Flux d'agenda", "dame" ),
+			'edit.php?post_type=sondage' => __( "Tous les sondages", "dame" ),
+			'dame-backups' => __( "Sauvegardes", "dame" ),
+			'dame-settings' => __( "Réglages", "dame" ),
+		];
+
+		// We will extract known items, rename them as specified, and push them to $reordered
+		foreach ( $desired_order as $url => $new_title ) {
+			foreach ( $dame_submenu as $key => $item ) {
+				// WP sometimes adds &amp; instead of & in URLs in the menu array, or vice versa.
+				$item_url = str_replace( '&', '&amp;', $item[2] );
+				$target_url = str_replace( '&', '&amp;', $url );
+
+				if ( $item_url === $target_url || $item[2] === $url ) {
+					// Rename the menu item
+					$item[0] = $new_title;
+					$reordered[] = $item;
+					unset( $dame_submenu[$key] );
+					break; // Found it, move to next desired item
+				}
+			}
+		}
+
+		// Append any remaining items that weren't in our strict list to the end
+		foreach ( $dame_submenu as $item ) {
+			$reordered[] = $item;
+		}
+
+		$submenu['dame-admin'] = $reordered;
 	}
 
 	public function render_dashboard() {
