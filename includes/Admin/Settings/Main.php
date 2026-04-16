@@ -8,6 +8,7 @@
 namespace DAME\Admin\Settings;
 
 use DAME\Admin\Settings\Tabs\Association;
+use DAME\Admin\Settings\Tabs\Assignation;
 use DAME\Admin\Settings\Tabs\Saisons;
 use DAME\Admin\Settings\Tabs\Anniversaires;
 use DAME\Admin\Settings\Tabs\Paiements;
@@ -33,6 +34,7 @@ class Main {
 	public function __construct() {
 		// Instantiate Tabs
 		$this->tabs['association']    = new Association();
+		$this->tabs['assignation']    = new Assignation();
 		$this->tabs['saisons']        = new Saisons();
 		$this->tabs['anniversaires']  = new Anniversaires();
 		$this->tabs['paiements']      = new Paiements();
@@ -45,7 +47,7 @@ class Main {
 	 * Initialize the settings page.
 	 */
 	public function init() {
-		add_action( 'admin_menu', [ $this, 'add_menu' ] );
+
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 	}
 
@@ -94,22 +96,25 @@ class Main {
 				<?php endforeach; ?>
 			</h2>
 
-			<form action="options.php" method="post">
-				<?php
-				settings_fields( 'dame_options_group' );
+			<?php
+			$custom_form_tabs = [ 'saisons', 'assignation' ];
+			if ( ! in_array( $active_tab, $custom_form_tabs, true ) ) : ?>
+				<form action="options.php" method="post">
+					<?php settings_fields( 'dame_options_group' ); ?>
+			<?php endif; ?>
 
-				echo '<input type="hidden" name="dame_active_tab" value="' . esc_attr( $active_tab ) . '" />';
+			<input type="hidden" name="dame_active_tab" value="<?php echo esc_attr( $active_tab ); ?>" />
 
-				if ( isset( $this->tabs[ $active_tab ] ) ) {
-					$this->tabs[ $active_tab ]->render();
-				}
+			<?php
+			if ( isset( $this->tabs[ $active_tab ] ) ) {
+				$this->tabs[ $active_tab ]->render();
+			}
+			?>
 
-				// Saisons tab handles its own forms/actions
-				if ( 'saisons' !== $active_tab ) {
-					submit_button( __( 'Enregistrer les modifications', 'dame' ) );
-				}
-				?>
-			</form>
+			<?php if ( ! in_array( $active_tab, $custom_form_tabs, true ) ) : ?>
+					<?php submit_button( __( 'Enregistrer les modifications', 'dame' ) ); ?>
+				</form>
+			<?php endif; ?>
 		</div>
 		<?php
 	}

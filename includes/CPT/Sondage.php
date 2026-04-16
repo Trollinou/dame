@@ -45,7 +45,7 @@ class Sondage {
 			'public'             => false,
 			'publicly_queryable' => false,
 			'show_ui'            => true,
-			'show_in_menu'       => true,
+			'show_in_menu'       => 'dame-admin',
 			'query_var'          => true,
 			'rewrite'            => [ 'slug' => 'sondage' ],
 			'capability_type'    => 'post',

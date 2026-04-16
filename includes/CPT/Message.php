@@ -58,7 +58,7 @@ class Message {
 			'hierarchical'        => false,
 			'public'              => false,
 			'show_ui'             => true,
-			'show_in_menu'        => 'edit.php?post_type=adherent',
+			'show_in_menu'        => 'dame-admin',
 			'menu_icon'           => 'dashicons-email-alt',
 			'show_in_admin_bar'   => false,
 			'show_in_nav_menus'   => false,

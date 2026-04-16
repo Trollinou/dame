@@ -19,24 +19,11 @@ class Mailing {
 	 * Initialize the page.
 	 */
 	public function init() {
-		add_action( 'admin_menu', [ $this, 'register_menu_page' ] );
+
 		add_action( 'admin_post_dame_process_mailing', [ $this, 'process_mailing' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 	}
 
-	/**
-	 * Register the submenu page.
-	 */
-	public function register_menu_page() {
-		add_submenu_page(
-			'edit.php?post_type=adherent',
-			__( 'Envoyer un message', 'dame' ),
-			__( 'Envoyer un message', 'dame' ),
-			'edit_dame_messages',
-			'dame-mailing',
-			[ $this, 'render' ]
-		);
-	}
 
 	/**
 	 * Enqueue scripts.
@@ -377,7 +364,7 @@ class Mailing {
 				'success' => 1,
 				'count'   => count( $recipient_emails ),
 			),
-			admin_url( 'edit.php?post_type=adherent' )
+			admin_url( 'admin.php' )
 		);
 
 		wp_redirect( $redirect_url );

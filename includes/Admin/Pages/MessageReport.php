@@ -16,33 +16,21 @@ class MessageReport {
 	 * Initialize the page.
 	 */
 	public function init() {
-		add_action( 'admin_menu', [ $this, 'register_page' ] );
+
 		add_action( 'admin_head', [ $this, 'hide_menu_link' ] );
 	}
 
-	/**
-	 * Register the submenu page.
-	 */
-	public function register_page() {
-		add_submenu_page(
-			'dame', // Parent slug (or 'edit.php?post_type=adherent' or null/options.php if hidden)
-			// Instructions say: "add_submenu_page( 'dame', ... )". "dame" usually refers to the main menu slug if it exists.
-			// If 'dame' main menu doesn't exist, this might fail.
-			// However, usually 'dame' is the slug for settings or main plugin page.
-			// Let's assume 'dame' works as per instruction.
-			__( 'Rapport de message', 'dame' ),
-			__( 'Rapport de message', 'dame' ),
-			'edit_dame_messages',
-			'dame-message-report',
-			[ $this, 'render' ]
-		);
-	}
 
 	/**
 	 * Hide the menu link via CSS.
 	 */
 	public function hide_menu_link() {
-		echo '<style>a[href="admin.php?page=dame-message-report"] { display: none; }</style>';
+		echo '<style>
+			a[href="admin.php?page=dame-message-report"],
+			li:has(> a[href="admin.php?page=dame-message-report"]) {
+				display: none !important;
+			}
+		</style>';
 	}
 
 	/**
