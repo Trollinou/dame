@@ -139,7 +139,186 @@ class Menu {
 	}
 
 	public function render_dashboard() {
-		echo '<div class="wrap"><h1>' . esc_html__( "Tableau de Bord DAME", "dame" ) . '</h1><p>' . esc_html__( "Bienvenue dans l'espace de gestion de votre club.", "dame" ) . '</p></div>';
+		// 1. Saison en cours
+		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
+		$season_term           = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
+		$season_name           = ( $season_term && ! is_wp_error( $season_term ) ) ? $season_term->name : __( 'Non définie', 'dame' );
+
+		// 2. Comptage Adhérents (Saison en cours)
+		$adherents_args = [
+			'post_type'      => 'adherent',
+			'posts_per_page' => -1,
+			'post_status'    => 'publish',
+			'fields'         => 'ids',
+		];
+		if ( $current_season_tag_id ) {
+			$adherents_args['tax_query'] = [
+				[
+					'taxonomy' => 'dame_saison_adhesion',
+					'field'    => 'term_id',
+					'terms'    => $current_season_tag_id,
+				],
+			];
+		}
+		$adherent_ids    = get_posts( $adherents_args );
+		$total_adherents = count( $adherent_ids );
+
+		$licence_counts = [
+			'A'      => 0,
+			'B'      => 0,
+			'Autres' => 0,
+		];
+		if ( $total_adherents > 0 ) {
+			foreach ( $adherent_ids as $id ) {
+				$licence_type = get_post_meta( $id, '_dame_license_type', true );
+				if ( strpos( $licence_type, 'Licence A' ) !== false || $licence_type === 'A' ) {
+					$licence_counts['A']++;
+				} elseif ( strpos( $licence_type, 'Licence B' ) !== false || $licence_type === 'B' ) {
+					$licence_counts['B']++;
+				} else {
+					$licence_counts['Autres']++;
+				}
+			}
+		}
+
+		// 3. Derniers Adhérents
+		$latest_adherents = get_posts( [
+			'post_type'      => 'adherent',
+			'posts_per_page' => 3,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'post_status'    => 'publish',
+		] );
+
+		// 4. Préinscriptions en attente
+		// Note : wp_count_posts returns object with properties as statuses. 'draft' or 'pending' might be used for new ones.
+		// As per standard WP, 'draft' or a custom status like 'pending' is used. Let's get total minus publish, or just count 'draft'.
+		// Often forms save as draft or pending. We will check post_status = 'pending' or 'draft'.
+		$pre_inscriptions_query = new \WP_Query( [
+			'post_type'      => 'dame_pre_inscription',
+			'post_status'    => [ 'pending', 'draft' ],
+			'posts_per_page' => 1, // We only need the count
+		] );
+		$pending_preinscriptions = $pre_inscriptions_query->found_posts;
+
+		// 5. Prochains événements Agenda
+		$today = current_time( 'Y-m-d' );
+		$upcoming_events = get_posts( [
+			'post_type'      => 'dame_agenda',
+			'posts_per_page' => 5,
+			'meta_key'       => '_dame_start_date',
+			'orderby'        => 'meta_value',
+			'order'          => 'ASC',
+			'meta_query'     => [
+				[
+					'key'     => '_dame_start_date',
+					'value'   => $today,
+					'compare' => '>=',
+					'type'    => 'DATE',
+				],
+			],
+			'post_status'    => 'publish',
+		] );
+
+		// Render HTML
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Tableau de Bord DAME', 'dame' ); ?></h1>
+			<p><?php esc_html_e( 'Bienvenue dans l\'espace de gestion de votre club.', 'dame' ); ?></p>
+
+			<div class="welcome-panel" style="padding: 20px;">
+				<h2><?php esc_html_e( 'Vue d\'ensemble - Saison active :', 'dame' ); ?> <strong><?php echo esc_html( $season_name ); ?></strong></h2>
+				<div style="display: flex; gap: 20px; margin-top: 20px;">
+					<div style="flex: 1; background: #fff; padding: 15px; border: 1px solid #ccd0d4; border-left: 4px solid #2271b1; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+						<h3 style="margin-top: 0;"><?php esc_html_e( 'Total Adhérents', 'dame' ); ?></h3>
+						<p style="font-size: 24px; font-weight: bold; margin: 0;"><?php echo intval( $total_adherents ); ?></p>
+						<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=adherent' ) ); ?>"><?php esc_html_e( 'Voir tout', 'dame' ); ?></a>
+					</div>
+					<div style="flex: 1; background: #fff; padding: 15px; border: 1px solid #ccd0d4; border-left: 4px solid #d63638; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+						<h3 style="margin-top: 0;"><?php esc_html_e( 'Préinscriptions en attente', 'dame' ); ?></h3>
+						<p style="font-size: 24px; font-weight: bold; margin: 0;"><?php echo intval( $pending_preinscriptions ); ?></p>
+						<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=dame_pre_inscription' ) ); ?>"><?php esc_html_e( 'Voir tout', 'dame' ); ?></a>
+					</div>
+				</div>
+			</div>
+
+			<div id="dashboard-widgets-wrap">
+				<div id="dashboard-widgets" class="metabox-holder">
+
+					<!-- Colonne Gauche -->
+					<div class="postbox-container" style="width: 49%; float: left; margin-right: 2%;">
+
+						<!-- Répartition des licences -->
+						<div class="postbox">
+							<h2 class="hndle"><span><?php esc_html_e( 'Répartition des licences', 'dame' ); ?></span></h2>
+							<div class="inside">
+								<ul>
+									<li><strong><?php esc_html_e( 'Licence A :', 'dame' ); ?></strong> <?php echo intval( $licence_counts['A'] ); ?></li>
+									<li><strong><?php esc_html_e( 'Licence B :', 'dame' ); ?></strong> <?php echo intval( $licence_counts['B'] ); ?></li>
+									<li><strong><?php esc_html_e( 'Autres / Non précisé :', 'dame' ); ?></strong> <?php echo intval( $licence_counts['Autres'] ); ?></li>
+								</ul>
+							</div>
+						</div>
+
+						<!-- Derniers Adhérents -->
+						<div class="postbox">
+							<h2 class="hndle"><span><?php esc_html_e( '3 derniers adhérents enregistrés', 'dame' ); ?></span></h2>
+							<div class="inside">
+								<?php if ( empty( $latest_adherents ) ) : ?>
+									<p><?php esc_html_e( 'Aucun adhérent trouvé.', 'dame' ); ?></p>
+								<?php else : ?>
+									<ul>
+										<?php foreach ( $latest_adherents as $adherent ) : ?>
+											<li>
+												<a href="<?php echo esc_url( get_edit_post_link( $adherent->ID ) ); ?>">
+													<?php echo esc_html( get_the_title( $adherent->ID ) ); ?>
+												</a>
+												- <span style="color: #666; font-size: 0.9em;"><?php echo esc_html( get_the_date( '', $adherent->ID ) ); ?></span>
+											</li>
+										<?php endforeach; ?>
+									</ul>
+								<?php endif; ?>
+								<p><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=adherent' ) ); ?>"><?php esc_html_e( 'Voir tous les adhérents', 'dame' ); ?></a></p>
+							</div>
+						</div>
+
+					</div>
+
+					<!-- Colonne Droite -->
+					<div class="postbox-container" style="width: 49%; float: left;">
+
+						<!-- Prochains événements -->
+						<div class="postbox">
+							<h2 class="hndle"><span><?php esc_html_e( '5 prochains événements (Agenda)', 'dame' ); ?></span></h2>
+							<div class="inside">
+								<?php if ( empty( $upcoming_events ) ) : ?>
+									<p><?php esc_html_e( 'Aucun événement à venir.', 'dame' ); ?></p>
+								<?php else : ?>
+									<ul>
+										<?php foreach ( $upcoming_events as $event ) :
+											$start_date = get_post_meta( $event->ID, '_dame_start_date', true );
+											$formatted_date = wp_date( get_option( 'date_format' ), strtotime( $start_date ) );
+										?>
+											<li>
+												<strong><?php echo esc_html( $formatted_date ); ?></strong> :
+												<a href="<?php echo esc_url( get_edit_post_link( $event->ID ) ); ?>">
+													<?php echo esc_html( get_the_title( $event->ID ) ); ?>
+												</a>
+											</li>
+										<?php endforeach; ?>
+									</ul>
+								<?php endif; ?>
+								<p><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=dame_agenda' ) ); ?>"><?php esc_html_e( 'Voir tout l\'agenda', 'dame' ); ?></a></p>
+							</div>
+						</div>
+
+					</div>
+
+					<div class="clear"></div>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 
 	/**
