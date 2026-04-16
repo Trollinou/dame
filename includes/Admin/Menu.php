@@ -65,7 +65,7 @@ class Menu {
 
 		// Page cachée : Rapport détaillé d'un message
 		add_submenu_page(
-			null, // <-- null empêche l'affichage dans la sidebar
+			'dame-hidden', // <-- Remplace null pour compatibilité PHP 8.1
 			__( "Rapport du message", "dame" ),
 			__( "Rapport", "dame" ),
 			'edit_dame_messages',
