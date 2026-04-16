@@ -65,7 +65,7 @@ class Menu {
 
 		// Page cachée : Rapport détaillé d'un message
 		add_submenu_page(
-			'dame-hidden', // <-- Remplace null pour compatibilité PHP 8.1
+			'dame-admin', // <-- Changement ici
 			__( "Rapport du message", "dame" ),
 			__( "Rapport", "dame" ),
 			'edit_dame_messages',
@@ -128,6 +128,10 @@ class Menu {
 		}
 
 		foreach ( $dame_submenu as $item ) {
+			// Exclusion de la page rapport pour la cacher visuellement
+			if ( 'dame-message-report' === $item[2] ) {
+				continue;
+			}
 			if ( ! isset( $item[3] ) ) {
 				$item[3] = $item[0];
 			}

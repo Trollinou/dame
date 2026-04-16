@@ -81,13 +81,6 @@ class Assignation {
 		<h2><?php esc_html_e( "Assignation des comptes WordPress", "dame" ); ?></h2>
 		<p><?php esc_html_e( "Cette page vous permet d'assigner rapidement un compte WordPress et un rôle à un adhérent.", "dame" ); ?></p>
 
-		<!-- Important: on ferme le form global de settings s'il est déjà ouvert, ou on évite de l'englober. -->
-		<!-- Dans Main.php, un form est ouvert pour l'onglet entier.
-		     Cependant l'instruction demande: "Si l'onglet Assignation gère ses propres formulaires POST, modifie la condition du bouton de soumission"
-		     On va donc utiliser le formulaire externe action="options.php" mais ce n'est pas le bon pour notre admin-post.
-		     On va le fermer et en rouvrir un, puis rouvrir un dummy. Ou utiliser le form action. -->
-		</form> <!-- Close global options.php form -->
-
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<input type="hidden" name="action" value="dame_assign_user">
 			<?php wp_nonce_field( 'dame_user_assignment_action', 'dame_user_assignment_nonce' ); ?>
@@ -146,9 +139,6 @@ class Assignation {
 				</tbody>
 			</table>
 		</form>
-
-		<!-- Dummy form to prevent breaking HTML in Main.php -->
-		<form style="display:none;">
 		<?php
 	}
 
