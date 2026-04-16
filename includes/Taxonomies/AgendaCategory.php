@@ -74,7 +74,7 @@ class AgendaCategory {
 			// Note: Assuming 'assets/js/admin-main.js' or similar exists for the JS logic of initialization.
 			// The legacy code used `plugin_dir_url( __FILE__ ) . '../assets/js/admin-main.js'`, which resolved to `dame/assets/js/admin-main.js`.
 			// Since this file is in `includes/Taxonomies/`, `dirname(__DIR__, 2)` points to root.
-			wp_enqueue_script( 'dame-color-picker-js', \DAME_PLUGIN_URL . 'assets/js/admin-main.js', array( 'wp-color-picker' ), false, true );
+			wp_enqueue_script( 'dame-admin-main', \DAME_PLUGIN_URL . 'assets/js/admin-main.js', array( 'wp-color-picker' ), false, true );
 		}
 	}
 

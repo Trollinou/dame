@@ -20,6 +20,37 @@ class TestSend {
 	public function init() {
 		add_action( 'add_meta_boxes', [ $this, 'add_metabox' ] );
 		add_action( 'admin_post_dame_send_test_email', [ $this, 'handle_test_send' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+	}
+
+	/**
+	 * Enqueue scripts for the metabox.
+	 *
+	 * @param string $hook The current admin page hook.
+	 */
+	public function enqueue_scripts( $hook ) {
+		$screen = get_current_screen();
+
+		if ( ! $screen || 'dame_message' !== $screen->post_type ) {
+			return;
+		}
+
+		if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
+			return;
+		}
+
+		global $post;
+		if ( ! $post ) {
+			return;
+		}
+
+		wp_enqueue_script( 'dame-admin-test-send', \DAME_PLUGIN_URL . 'assets/js/admin-test-send.js', array( 'jquery' ), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-test-send', 'dame_test_send_data', array(
+			'post_id' => $post->ID,
+			'nonce' => wp_create_nonce( 'dame_test_send_' . $post->ID ),
+			'alert_empty' => __( 'Veuillez saisir un email.', 'dame' ),
+			'admin_url' => admin_url( 'admin-post.php' )
+		) );
 	}
 
 	/**
@@ -42,13 +73,6 @@ class TestSend {
 	 * @param \WP_Post $post The post object.
 	 */
 	public function render( $post ) {
-		wp_enqueue_script( 'dame-admin-test-send', \DAME_PLUGIN_URL . 'assets/js/admin-test-send.js', array( 'jquery' ), \DAME_VERSION, true );
-		wp_localize_script( 'dame-admin-test-send', 'dame_test_send_data', array(
-			'post_id' => $post->ID,
-			'nonce' => wp_create_nonce( 'dame_test_send_' . $post->ID ),
-			'alert_empty' => __( 'Veuillez saisir un email.', 'dame' ),
-			'admin_url' => admin_url( 'admin-post.php' )
-		) );
 		$current_user_email = wp_get_current_user()->user_email;
 		?>
 		<p class="description">

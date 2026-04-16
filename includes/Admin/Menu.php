@@ -20,6 +20,8 @@ class Menu {
 		add_filter( 'parent_file', [ $this, 'highlight_parent_menu' ] );
 		add_filter( 'submenu_file', [ $this, 'highlight_submenu' ] );
 		(new MessageReport())->init();
+		(new Backups())->init();
+		(new Mailing())->init();
 	}
 
 	public function add_menus() {
@@ -226,8 +228,8 @@ class Menu {
 			<h1><?php esc_html_e( 'Tableau de Bord DAME', 'dame' ); ?></h1>
 			<p><?php esc_html_e( 'Bienvenue dans l\'espace de gestion de votre club.', 'dame' ); ?></p>
 
-			<div class="welcome-panel" style="padding: 20px;">
-				<h2><?php esc_html_e( 'Vue d\'ensemble - Saison active :', 'dame' ); ?> <strong><?php echo esc_html( $season_name ); ?></strong></h2>
+			<div class="postbox" style="padding: 20px; margin-bottom: 20px;">
+				<h2 style="margin-top: 0;"><?php esc_html_e( 'Vue d\'ensemble - Saison active :', 'dame' ); ?> <strong><?php echo esc_html( $season_name ); ?></strong></h2>
 				<div style="display: flex; gap: 20px; margin-top: 20px;">
 					<div style="flex: 1; background: #fff; padding: 15px; border: 1px solid #ccd0d4; border-left: 4px solid #2271b1; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
 						<h3 style="margin-top: 0;"><?php esc_html_e( 'Total Adhérents', 'dame' ); ?></h3>

@@ -25,6 +25,8 @@ class Anniversaires {
 	 * Register settings.
 	 */
 	public function register() {
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+
 		add_settings_section(
 			'dame_birthday_section',
 			__( "Configuration des emails d'anniversaire", 'dame' ),
@@ -47,6 +49,19 @@ class Anniversaires {
 			'dame_birthday_section_group',
 			'dame_birthday_section'
 		);
+	}
+
+	/**
+	 * Enqueue scripts.
+	 *
+	 * @param string $hook The current admin page hook.
+	 */
+	public function enqueue_scripts( $hook ) {
+		if ( strpos( $hook, 'dame-settings' ) === false || ( isset( $_GET['tab'] ) && $_GET['tab'] !== 'anniversaires' ) ) {
+			return;
+		}
+
+		wp_enqueue_script( 'dame-admin-anniversaires', \DAME_PLUGIN_URL . 'assets/js/admin-anniversaires.js', array( 'jquery' ), \DAME_VERSION, true );
 	}
 
 	/**

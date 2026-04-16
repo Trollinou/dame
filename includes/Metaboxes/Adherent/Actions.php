@@ -26,6 +26,29 @@ class Actions {
 		);
 
 		add_filter( 'postbox_classes_adherent_dame_special_actions_metabox', [ $this, 'close_metabox_by_default' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+	}
+
+	/**
+	 * Enqueue scripts for the metabox.
+	 *
+	 * @param string $hook The current admin page hook.
+	 */
+	public function enqueue_scripts( $hook ) {
+		$screen = get_current_screen();
+
+		if ( ! $screen || 'adherent' !== $screen->post_type ) {
+			return;
+		}
+
+		if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
+			return;
+		}
+
+		wp_enqueue_script( 'dame-admin-adherent-actions', \DAME_PLUGIN_URL . 'assets/js/admin-adherent-actions.js', array(), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-adherent-actions', 'dame_adherent_actions_data', array(
+			'confirm_revert' => __( 'Êtes-vous sûr de vouloir annuler cette adhésion et renvoyer cette personne en pré-inscription ? Cette action est irréversible.', 'dame' )
+		) );
 	}
 
 	/**
@@ -47,10 +70,6 @@ class Actions {
 	 * @param \WP_Post $post The post object.
 	 */
 	public function render( $post ) {
-		wp_enqueue_script( 'dame-admin-adherent-actions', \DAME_PLUGIN_URL . 'assets/js/admin-adherent-actions.js', array(), \DAME_VERSION, true );
-		wp_localize_script( 'dame-admin-adherent-actions', 'dame_adherent_actions_data', array(
-			'confirm_revert' => __( 'Êtes-vous sûr de vouloir annuler cette adhésion et renvoyer cette personne en pré-inscription ? Cette action est irréversible.', 'dame' )
-		) );
 		// Get the current season tag ID from options.
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
 		if ( ! $current_season_tag_id ) {

@@ -2,16 +2,36 @@
 namespace DAME\Admin\Pages;
 
 class Backups {
-	public function render() {
-		wp_enqueue_script( 'dame-admin-backup-adherent', \DAME_PLUGIN_URL . 'assets/js/admin-backup-adherent.js', array(), \DAME_VERSION, true );
-		wp_localize_script( 'dame-admin-backup-adherent', 'dame_backup_adherent_data', array(
+
+	/**
+	 * Initialize the class.
+	 */
+	public function init() {
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+	}
+
+	/**
+	 * Enqueue scripts.
+	 *
+	 * @param string $hook The current admin page hook.
+	 */
+	public function enqueue_scripts( $hook ) {
+		if ( strpos( $hook, 'dame-backups' ) === false ) {
+			return;
+		}
+
+		wp_enqueue_script( 'dame-admin-backups-adherent', \DAME_PLUGIN_URL . 'assets/js/admin-backups-adherent.js', array(), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-backups-adherent', 'dame_backup_adherent_data', array(
 			'confirm_restore' => __( "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Toutes les données d'adhérents existantes seront supprimées et remplacées. Cette action est irréversible.", "dame" ),
 			'confirm_import_csv' => __( "Êtes-vous sûr de vouloir importer ce fichier CSV ?", "dame" )
 		) );
-		wp_enqueue_script( 'dame-admin-backup-agenda', \DAME_PLUGIN_URL . 'assets/js/admin-backup-agenda.js', array(), \DAME_VERSION, true );
-		wp_localize_script( 'dame-admin-backup-agenda', 'dame_backup_agenda_data', array(
+		wp_enqueue_script( 'dame-admin-backups-agenda', \DAME_PLUGIN_URL . 'assets/js/admin-backups-agenda.js', array(), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-backups-agenda', 'dame_backup_agenda_data', array(
 			'confirm_restore' => __( "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Tous les événements et catégories existants seront supprimés et remplacés. Cette action est irréversible.", "dame" )
 		) );
+	}
+
+	public function render() {
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( "Sauvegardes et Import", "dame" ); ?></h1>

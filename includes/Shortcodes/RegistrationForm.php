@@ -32,14 +32,14 @@ class RegistrationForm {
 	 */
 	public function render( $atts ) {
 		// Enqueue scripts and styles for the form
-		wp_enqueue_style( 'dame-public-styles', \DAME_PLUGIN_URL . 'assets/css/public-dame-styles.css', array(), \DAME_VERSION );
+		wp_enqueue_style( 'dame-public-styles', \DAME_PLUGIN_URL . 'assets/css/public-styles.css', array(), \DAME_VERSION );
 
-		wp_enqueue_script( 'dame-geo-autocomplete', \DAME_PLUGIN_URL . 'assets/js/public-geo-autocomplete.js', array(), \DAME_VERSION, true );
-		wp_enqueue_script( 'dame-ign-autocomplete', \DAME_PLUGIN_URL . 'assets/js/public-ign-autocomplete.js', array(), \DAME_VERSION, true );
-		wp_enqueue_script( 'dame-pre-inscription', \DAME_PLUGIN_URL . 'assets/js/public-pre-inscription-form.js', array( 'dame-geo-autocomplete', 'dame-ign-autocomplete' ), \DAME_VERSION, true );
+		wp_enqueue_script( 'dame-public-geo-autocomplete', \DAME_PLUGIN_URL . 'assets/js/public-geo-autocomplete.js', array(), \DAME_VERSION, true );
+		wp_enqueue_script( 'dame-public-ign-autocomplete', \DAME_PLUGIN_URL . 'assets/js/public-ign-autocomplete.js', array(), \DAME_VERSION, true );
+		wp_enqueue_script( 'dame-public-pre-inscription', \DAME_PLUGIN_URL . 'assets/js/public-pre-inscription-form.js', array( 'dame-public-geo-autocomplete', 'dame-public-ign-autocomplete' ), \DAME_VERSION, true );
 
 		wp_localize_script(
-			'dame-pre-inscription',
+			'dame-public-pre-inscription',
 			'dame_pre_inscription_ajax',
 			array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),

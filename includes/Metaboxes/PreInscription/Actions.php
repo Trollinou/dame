@@ -20,6 +20,29 @@ class Actions {
 	public function init() {
 		add_action( 'add_meta_boxes', [ $this, 'add_box' ] );
 		add_action( 'save_post', [ $this, 'save' ], 20 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+	}
+
+	/**
+	 * Enqueue scripts for the metabox.
+	 *
+	 * @param string $hook The current admin page hook.
+	 */
+	public function enqueue_scripts( $hook ) {
+		$screen = get_current_screen();
+
+		if ( ! $screen || 'dame_pre_inscription' !== $screen->post_type ) {
+			return;
+		}
+
+		if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
+			return;
+		}
+
+		wp_enqueue_script( 'dame-admin-pre-inscription-actions', \DAME_PLUGIN_URL . 'assets/js/admin-pre-inscription-actions.js', array(), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-pre-inscription-actions', 'dame_pre_inscription_actions_data', array(
+			'confirm_delete' => __( 'Êtes-vous sûr de vouloir supprimer définitivement cette préinscription ? Cette action est irréversible.', 'dame' )
+		) );
 	}
 
 	/**
@@ -45,10 +68,6 @@ class Actions {
 	 * @param array    $metabox The metabox arguments.
 	 */
 	public function render( $post, $metabox ) {
-		wp_enqueue_script( 'dame-admin-pre-inscription-actions', \DAME_PLUGIN_URL . 'assets/js/admin-pre-inscription-actions.js', array(), \DAME_VERSION, true );
-		wp_localize_script( 'dame-admin-pre-inscription-actions', 'dame_pre_inscription_actions_data', array(
-			'confirm_delete' => __( 'Êtes-vous sûr de vouloir supprimer définitivement cette préinscription ? Cette action est irréversible.', 'dame' )
-		) );
 		$matched_id = $metabox['args']['matched_id'];
 		wp_nonce_field( 'dame_pre_inscription_process_action', 'dame_pre_inscription_action_nonce' );
 		?>

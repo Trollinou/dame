@@ -188,7 +188,7 @@ class Adherent {
 	public function remove_date_filter() {
 		$screen = get_current_screen();
 		// Correct screen ID for 'adherent' CPT is 'edit-adherent'
-		if ( $screen && 'edit-adherent' === $screen->id ) {
+		if ( $screen && strpos( $screen->id, 'edit-adherent' ) !== false ) {
 			add_filter( 'months_dropdown_results', '__return_empty_array' );
 		}
 	}

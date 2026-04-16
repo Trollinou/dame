@@ -26,7 +26,7 @@ class Assets {
 		// Enqueue the public-facing stylesheet.
 		wp_enqueue_style(
 			'dame-public-styles',
-			\DAME_PLUGIN_URL . 'assets/css/public-dame-styles.css',
+			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
 			array(),
 			\DAME_VERSION
 		);
@@ -34,7 +34,7 @@ class Assets {
 		// Enqueue the single event script on single event pages for the GPS button functionality.
 		if ( is_singular( 'dame_agenda' ) ) {
 			wp_enqueue_script(
-				'dame-single-event-script',
+				'dame-public-single-event',
 				\DAME_PLUGIN_URL . 'assets/js/public-single-event.js',
 				array( 'jquery' ),
 				\DAME_VERSION,

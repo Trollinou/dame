@@ -33,18 +33,18 @@ class Contact {
 	 */
 	public function render( $atts ) {
 		// Enqueue the script using the global constant
-		wp_enqueue_script( 'dame-contact-form', \DAME_PLUGIN_URL . 'assets/js/public-contact-form.js', [ 'jquery' ], \DAME_VERSION, true );
+		wp_enqueue_script( 'dame-public-contact-form', \DAME_PLUGIN_URL . 'assets/js/public-contact-form.js', [ 'jquery' ], \DAME_VERSION, true );
 
 		// Localize the script with required data
-		wp_localize_script( 'dame-contact-form', 'dame_contact_ajax', [
+		wp_localize_script( 'dame-public-contact-form', 'dame_contact_ajax', [
 			'ajax_url' => admin_url( 'admin-ajax.php' ),
 			'nonce'    => wp_create_nonce( 'dame_contact_nonce' ),
 		] );
 
 		ob_start();
 		?>
-		<div id="dame-contact-form-wrapper">
-			<form id="dame-contact-form" class="dame-form" novalidate>
+		<div id="dame-public-contact-form-wrapper">
+			<form id="dame-public-contact-form" class="dame-form" novalidate>
 
 				<?php wp_nonce_field( 'dame_contact_nonce', 'dame_contact_nonce_field' ); ?>
 

@@ -20,6 +20,26 @@ class Manager {
 		add_action( 'save_post_sondage', [ $this, 'save' ] );
 		add_action( 'admin_post_dame_delete_sondage_response', [ $this, 'delete_response' ] );
 		add_filter( 'post_updated_messages', [ $this, 'admin_notices' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+	}
+
+	/**
+	 * Enqueue scripts for the sondage admin.
+	 *
+	 * @param string $hook The current admin page hook.
+	 */
+	public function enqueue_scripts( $hook ) {
+		$screen = get_current_screen();
+
+		if ( ! $screen || 'sondage' !== $screen->post_type ) {
+			return;
+		}
+
+		if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
+			return;
+		}
+
+		wp_enqueue_script( 'dame-admin-sondage', \DAME_PLUGIN_URL . 'assets/js/admin-sondage.js', array( 'jquery' ), \DAME_VERSION, true );
 	}
 
 	/**
@@ -131,7 +151,6 @@ class Manager {
 	 * @param \WP_Post $post The post object.
 	 */
 	public function render_results( $post ) {
-		wp_enqueue_script( 'dame-admin-sondage-manager', \DAME_PLUGIN_URL . 'assets/js/admin-sondage-manager.js', array( 'jquery' ), \DAME_VERSION, true );
 		$sondage_data = get_post_meta( $post->ID, '_dame_sondage_data', true );
 		if ( empty( $sondage_data ) ) {
 			echo '<p>' . __( 'Le sondage n\'a pas encore été configuré.', 'dame' ) . '</p>';

@@ -25,6 +25,8 @@ class Saisons {
 	 * Register settings.
 	 */
 	public function register() {
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+
 		// Registers actions/hooks logic
 		// If called during admin_init (via Main::register_settings), execute directly.
 		if ( doing_action( 'admin_init' ) ) {
@@ -35,13 +37,25 @@ class Saisons {
 	}
 
 	/**
+	 * Enqueue scripts.
+	 *
+	 * @param string $hook The current admin page hook.
+	 */
+	public function enqueue_scripts( $hook ) {
+		if ( strpos( $hook, 'dame-settings' ) === false || ( isset( $_GET['tab'] ) && $_GET['tab'] !== 'saisons' ) ) {
+			return;
+		}
+
+		wp_enqueue_script( 'dame-admin-saisons', \DAME_PLUGIN_URL . 'assets/js/admin-saisons.js', array(), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-saisons', 'dame_saisons_data', array(
+			'confirm_reset' => __( "Êtes-vous sûr de vouloir initialiser la nouvelle saison ? Cela créera un nouveau tag et le définira comme saison active.", 'dame' )
+		) );
+	}
+
+	/**
 	 * Render the tab content.
 	 */
 	public function render() {
-		wp_enqueue_script( 'dame-admin-settings-saisons', \DAME_PLUGIN_URL . 'assets/js/admin-settings-saisons.js', array(), \DAME_VERSION, true );
-		wp_localize_script( 'dame-admin-settings-saisons', 'dame_saisons_data', array(
-			'confirm_reset' => __( "Êtes-vous sûr de vouloir initialiser la nouvelle saison ? Cela créera un nouveau tag et le définira comme saison active.", 'dame' )
-		) );
 		// Custom UI for Seasons
 		$this->render_ui();
 	}

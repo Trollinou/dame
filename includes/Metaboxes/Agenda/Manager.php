@@ -31,13 +31,13 @@ class Manager {
 	 * @param string $hook The current admin page hook.
 	 */
 	public function enqueue_scripts( $hook ) {
-		global $post_type;
+		$screen = get_current_screen();
 
-		if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
+		if ( ! $screen || 'dame_agenda' !== $screen->post_type ) {
 			return;
 		}
 
-		if ( 'dame_agenda' !== $post_type ) {
+		if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
 			return;
 		}
 
@@ -54,7 +54,7 @@ class Manager {
 			'dame-admin-common',
 			$plugin_url . 'assets/js/admin-common.js',
 			array(), // Dependencies if any
-			DAME_VERSION,
+			\DAME_VERSION,
 			true
 		);
 
@@ -79,10 +79,16 @@ class Manager {
 		// Enqueue CSS for autocomplete styles if needed (using existing file as common CSS).
 		wp_enqueue_style(
 			'dame-admin-common-css',
-			$plugin_url . 'assets/css/admin-adherent.css',
+			$plugin_url . 'assets/css/admin-common.css',
 			[],
-			DAME_VERSION
+			\DAME_VERSION
 		);
+
+		// Specific Agenda Manager Script
+		wp_enqueue_script( 'dame-admin-agenda-manager', \DAME_PLUGIN_URL . 'assets/js/admin-agenda-manager.js', array( 'jquery' ), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-agenda-manager', 'dame_agenda_manager_data', array(
+			'alert_category' => __( 'Veuillez sélectionner au moins une catégorie.', 'dame' )
+		) );
 	}
 
 	/**
@@ -192,10 +198,6 @@ class Manager {
 	 * @param WP_Post $post The post object.
 	 */
 	public function render_details( $post ) {
-		wp_enqueue_script( 'dame-admin-agenda-manager', \DAME_PLUGIN_URL . 'assets/js/admin-agenda-manager.js', array( 'jquery' ), \DAME_VERSION, true );
-		wp_localize_script( 'dame-admin-agenda-manager', 'dame_agenda_manager_data', array(
-			'alert_category' => __( 'Veuillez sélectionner au moins une catégorie.', 'dame' )
-		) );
 		wp_nonce_field( 'dame_save_agenda_meta', 'dame_agenda_metabox_nonce' );
 
 		// Check for transient data in case of a validation error on save.

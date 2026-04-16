@@ -31,12 +31,12 @@ class Mailing {
 	 * @param string $hook The current admin page hook.
 	 */
 	public function enqueue_scripts( $hook ) {
-		if ( 'adherent_page_dame-mailing' !== $hook ) {
+		if ( strpos( $hook, 'dame-mailing' ) === false ) {
 			return;
 		}
 
 		wp_enqueue_script(
-			'dame-mailing-js',
+			'dame-admin-mailing',
 			\DAME_PLUGIN_URL . 'assets/js/admin-mailing.js', // Assuming this file exists.
 			array( 'jquery' ),
 			\DAME_VERSION,
