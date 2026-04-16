@@ -8,6 +8,7 @@
 namespace DAME\Admin\Settings;
 
 use DAME\Admin\Settings\Tabs\Association;
+use DAME\Admin\Settings\Tabs\Assignation;
 use DAME\Admin\Settings\Tabs\Saisons;
 use DAME\Admin\Settings\Tabs\Anniversaires;
 use DAME\Admin\Settings\Tabs\Paiements;
@@ -33,6 +34,7 @@ class Main {
 	public function __construct() {
 		// Instantiate Tabs
 		$this->tabs['association']    = new Association();
+		$this->tabs['assignation']    = new Assignation();
 		$this->tabs['saisons']        = new Saisons();
 		$this->tabs['anniversaires']  = new Anniversaires();
 		$this->tabs['paiements']      = new Paiements();
@@ -105,7 +107,7 @@ class Main {
 				}
 
 				// Saisons tab handles its own forms/actions
-				if ( 'saisons' !== $active_tab ) {
+				if ( ! in_array( $active_tab, [ 'saisons', 'assignation' ], true ) ) {
 					submit_button( __( 'Enregistrer les modifications', 'dame' ) );
 				}
 				?>
