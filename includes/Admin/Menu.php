@@ -10,6 +10,7 @@ namespace DAME\Admin;
 use DAME\Admin\Pages\Mailing;
 use DAME\Admin\Pages\Backups;
 use DAME\Admin\Settings\Main as SettingsMain;
+use DAME\Admin\Pages\MessageReport;
 
 class Menu {
 
@@ -60,6 +61,16 @@ class Menu {
 			'manage_options',
 			'dame-settings',
 			[ new SettingsMain(), 'render_page' ]
+		);
+
+		// Page cachée : Rapport détaillé d'un message
+		add_submenu_page(
+			null, // <-- null empêche l'affichage dans la sidebar
+			__( "Rapport du message", "dame" ),
+			__( "Rapport", "dame" ),
+			'edit_dame_messages',
+			'dame-message-report',
+			[ new MessageReport(), 'render' ]
 		);
 	}
 
