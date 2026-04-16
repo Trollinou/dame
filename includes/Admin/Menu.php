@@ -16,6 +16,8 @@ class Menu {
 	public function init() {
 		add_action( 'admin_menu', [ $this, 'add_menus' ], 10 );
 		add_action( 'admin_menu', [ $this, 'reorder_dame_submenu' ], 999 );
+		add_filter( 'parent_file', [ $this, 'highlight_parent_menu' ] );
+		add_filter( 'submenu_file', [ $this, 'highlight_submenu' ] );
 	}
 
 	public function add_menus() {
@@ -126,5 +128,40 @@ class Menu {
 
 	public function render_dashboard() {
 		echo '<div class="wrap"><h1>' . esc_html__( "Tableau de Bord DAME", "dame" ) . '</h1><p>' . esc_html__( "Bienvenue dans l'espace de gestion de votre club.", "dame" ) . '</p></div>';
+	}
+
+	/**
+	 * Force le menu parent "DAME" à rester ouvert pour les taxonomies.
+	 */
+	public function highlight_parent_menu( $parent_file ) {
+		global $current_screen;
+		$dame_taxonomies = [ 'dame_saison_adhesion', 'dame_group', 'dame_agenda_category' ];
+
+		if ( isset( $current_screen->taxonomy ) && in_array( $current_screen->taxonomy, $dame_taxonomies ) ) {
+			return 'dame-admin';
+		}
+
+		return $parent_file;
+	}
+
+	/**
+	 * Force la mise en surbrillance (gras) du bon sous-menu.
+	 */
+	public function highlight_submenu( $submenu_file ) {
+		global $current_screen;
+
+		if ( isset( $current_screen->taxonomy ) ) {
+			if ( $current_screen->taxonomy === 'dame_saison_adhesion' ) {
+				return 'edit-tags.php?taxonomy=dame_saison_adhesion&post_type=adherent';
+			}
+			if ( $current_screen->taxonomy === 'dame_group' ) {
+				return 'edit-tags.php?taxonomy=dame_group&post_type=adherent';
+			}
+			if ( $current_screen->taxonomy === 'dame_agenda_category' ) {
+				return 'edit-tags.php?taxonomy=dame_agenda_category&post_type=dame_agenda';
+			}
+		}
+
+		return $submenu_file;
 	}
 }
