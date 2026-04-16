@@ -19,6 +19,7 @@ class Menu {
 		add_action( 'admin_menu', [ $this, 'reorder_dame_submenu' ], 999 );
 		add_filter( 'parent_file', [ $this, 'highlight_parent_menu' ] );
 		add_filter( 'submenu_file', [ $this, 'highlight_submenu' ] );
+		(new MessageReport())->init();
 	}
 
 	public function add_menus() {
@@ -128,10 +129,6 @@ class Menu {
 		}
 
 		foreach ( $dame_submenu as $item ) {
-			// Exclusion de la page rapport pour la cacher visuellement
-			if ( 'dame-message-report' === $item[2] ) {
-				continue;
-			}
 			if ( ! isset( $item[3] ) ) {
 				$item[3] = $item[0];
 			}

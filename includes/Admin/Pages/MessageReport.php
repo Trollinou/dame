@@ -25,7 +25,12 @@ class MessageReport {
 	 * Hide the menu link via CSS.
 	 */
 	public function hide_menu_link() {
-		echo '<style>a[href="admin.php?page=dame-message-report"] { display: none; }</style>';
+		echo '<style>
+			a[href="admin.php?page=dame-message-report"],
+			li:has(> a[href="admin.php?page=dame-message-report"]) {
+				display: none !important;
+			}
+		</style>';
 	}
 
 	/**
