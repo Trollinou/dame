@@ -7,6 +7,7 @@
 
 namespace DAME\Services;
 
+use DateTime;
 use DAME\API\Tracker;
 
 /**
@@ -53,12 +54,79 @@ class BatchSender {
 		$failed_emails = array();
 
 		foreach ( $emails as $email ) {
+			$personalized_subject = $subject;
+			$personalized_content = $content;
+
+			global $wpdb;
+			$results = $wpdb->get_results( $wpdb->prepare( "
+				SELECT post_id, meta_key
+				FROM {$wpdb->postmeta}
+				WHERE meta_key IN ('_dame_email', '_dame_legal_rep_1_email', '_dame_legal_rep_2_email')
+				AND meta_value = %s
+			", $email ) );
+
+			if ( ! empty( $results ) ) {
+				$target_post_id = 0;
+				$target_type    = '';
+
+				// Règle de priorité : on cherche d'abord l'adhérent
+				foreach ( $results as $row ) {
+					if ( '_dame_email' === $row->meta_key ) {
+						$target_post_id = $row->post_id;
+						$target_type    = 'adherent';
+						break; // Priorité absolue trouvée
+					}
+					if ( '_dame_legal_rep_1_email' === $row->meta_key ) {
+						$target_post_id = $row->post_id;
+						$target_type    = 'rep1';
+					} elseif ( '_dame_legal_rep_2_email' === $row->meta_key && empty( $target_type ) ) {
+						$target_post_id = $row->post_id;
+						$target_type    = 'rep2';
+					}
+				}
+
+				$nom    = '';
+				$prenom = '';
+				$birth  = '';
+
+				if ( 'adherent' === $target_type ) {
+					$nom    = get_post_meta( $target_post_id, '_dame_last_name', true );
+					$prenom = get_post_meta( $target_post_id, '_dame_first_name', true );
+					$birth  = get_post_meta( $target_post_id, '_dame_birth_date', true );
+				} elseif ( 'rep1' === $target_type ) {
+					$nom    = get_post_meta( $target_post_id, '_dame_legal_rep_1_last_name', true );
+					$prenom = get_post_meta( $target_post_id, '_dame_legal_rep_1_first_name', true );
+				} elseif ( 'rep2' === $target_type ) {
+					$nom    = get_post_meta( $target_post_id, '_dame_legal_rep_2_last_name', true );
+					$prenom = get_post_meta( $target_post_id, '_dame_legal_rep_2_first_name', true );
+				}
+
+				$age = '';
+				if ( ! empty( $birth ) ) {
+					try {
+						$age = ( new DateTime( $birth ) )->diff( new DateTime() )->y;
+					} catch ( \Exception $e ) {
+						$age = '';
+					}
+				}
+
+				$search  = [ '[NOM]', '[PRENOM]', '[AGE]' ];
+				$replace = [
+					mb_strtoupper( $nom, 'UTF-8' ),
+					mb_convert_case( $prenom, MB_CASE_TITLE, 'UTF-8' ),
+					$age
+				];
+
+				$personalized_subject = str_replace( $search, $replace, $subject );
+				$personalized_content = str_replace( $search, $replace, $content );
+			}
+
+			// Pixel et envoi
 			$tracking_url = Tracker::get_pixel_url( $message_id, $email );
 			$pixel_img    = '<img src="' . esc_url( $tracking_url ) . '" alt="" width="1" height="1" style="display:none; border:0;" />';
+			$message_body = '<div style="margin: 1cm;">' . $personalized_content . $pixel_img . '</div>';
 
-			$message_body = '<div style="margin: 1cm;">' . $content . $pixel_img . '</div>';
-
-			$sent = wp_mail( $email, $subject, $message_body, $headers );
+			$sent = wp_mail( $email, $personalized_subject, $message_body, $headers );
 			if ( ! $sent ) {
 				$failed_emails[] = $email;
 			}
