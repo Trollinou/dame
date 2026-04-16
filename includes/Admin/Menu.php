@@ -74,7 +74,7 @@ class Menu {
 		);
 	}
 
-	public function reorder_dame_submenu() {
+		public function reorder_dame_submenu() {
 		global $submenu;
 
 		if ( ! isset( $submenu['dame-admin'] ) ) {
@@ -84,7 +84,6 @@ class Menu {
 		$dame_submenu = $submenu['dame-admin'];
 		$reordered = [];
 
-		// Define the strict exact order of URLs and their expected correct names
 		$desired_order = [
 			'dame-admin' => __( "DAME", "dame" ),
 			'edit.php?post_type=adherent' => __( "Tous les adhérents", "dame" ),
@@ -101,36 +100,37 @@ class Menu {
 			'dame-settings' => __( "Réglages", "dame" ),
 		];
 
-		// We will extract known items, rename them as specified, and push them to $reordered
 		foreach ( $desired_order as $url => $new_title ) {
 			$found = false;
 			foreach ( $dame_submenu as $key => $item ) {
-				// WP sometimes adds &amp; instead of & in URLs in the menu array, or vice versa.
 				$item_url = str_replace( '&', '&amp;', $item[2] );
 				$target_url = str_replace( '&', '&amp;', $url );
 
 				if ( $item_url === $target_url || $item[2] === $url ) {
-					// Rename the menu item
 					$item[0] = $new_title;
+					// SÉCURITÉ PHP 8.1 : S'assurer que l'index 3 (Page Title) existe
+					if ( ! isset( $item[3] ) ) {
+						$item[3] = $new_title;
+					}
 					$reordered[] = $item;
 					unset( $dame_submenu[$key] );
 					$found = true;
-					break; // Found it, move to next desired item
+					break;
 				}
 			}
 
-			// INJECTION FORCÉE : Si WordPress n'a pas inclus cet élément (ex: taxonomies), on le crée de force.
 			if ( ! $found ) {
-				// Définir la capacité requise ('manage_categories' pour les taxonomies, 'manage_options' par défaut)
 				$cap = ( strpos( $url, 'edit-tags.php' ) !== false ) ? 'manage_categories' : 'manage_options';
-				// On s'assure d'utiliser l'URL propre (sans &amp;) pour que le lien HTML fonctionne correctement
 				$clean_url = str_replace( '&amp;', '&', $url );
-				$reordered[] = [ $new_title, $cap, $clean_url ];
+				// SÉCURITÉ PHP 8.1 : Ajout du 4ème paramètre (Index 3)
+				$reordered[] = [ $new_title, $cap, $clean_url, $new_title ];
 			}
 		}
 
-		// Append any remaining items that weren't in our strict list to the end
 		foreach ( $dame_submenu as $item ) {
+			if ( ! isset( $item[3] ) ) {
+				$item[3] = $item[0];
+			}
 			$reordered[] = $item;
 		}
 
@@ -142,13 +142,19 @@ class Menu {
 	}
 
 	/**
-	 * Force le menu parent "DAME" à rester ouvert pour les taxonomies.
+	 * Force le menu parent "DAME" à rester ouvert.
 	 */
 	public function highlight_parent_menu( $parent_file ) {
 		global $current_screen;
 		$dame_taxonomies = [ 'dame_saison_adhesion', 'dame_group', 'dame_agenda_category' ];
 
+		// Pour les taxonomies
 		if ( isset( $current_screen->taxonomy ) && in_array( $current_screen->taxonomy, $dame_taxonomies ) ) {
+			return 'dame-admin';
+		}
+
+		// Pour la page cachée du rapport de message
+		if ( isset( $_GET['page'] ) && $_GET['page'] === 'dame-message-report' ) {
 			return 'dame-admin';
 		}
 
@@ -161,6 +167,7 @@ class Menu {
 	public function highlight_submenu( $submenu_file ) {
 		global $current_screen;
 
+		// Pour les taxonomies
 		if ( isset( $current_screen->taxonomy ) ) {
 			if ( $current_screen->taxonomy === 'dame_saison_adhesion' ) {
 				return 'edit-tags.php?taxonomy=dame_saison_adhesion&post_type=adherent';
@@ -171,6 +178,11 @@ class Menu {
 			if ( $current_screen->taxonomy === 'dame_agenda_category' ) {
 				return 'edit-tags.php?taxonomy=dame_agenda_category&post_type=dame_agenda';
 			}
+		}
+
+		// Pour la page cachée du rapport de message (met en surbrillance "Tous les messages")
+		if ( isset( $_GET['page'] ) && $_GET['page'] === 'dame-message-report' ) {
+			return 'edit.php?post_type=dame_message';
 		}
 
 		return $submenu_file;
