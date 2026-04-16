@@ -77,7 +77,7 @@ class Menu {
 			'edit.php?post_type=adherent' => __( "Tous les adhérents", "dame" ),
 			'edit.php?post_type=dame_pre_inscription' => __( "Toutes les préinscriptions", "dame" ),
 			'edit-tags.php?taxonomy=dame_saison_adhesion&amp;post_type=adherent' => __( "Saisons d'adhésion", "dame" ),
-			'edit-tags.php?taxonomy=dame_group&amp;post_type=adherent' => __( "Groupes d'adhérents", "dame" ),
+			'edit-tags.php?taxonomy=dame_group&amp;post_type=adherent' => __( "Groupes", "dame" ),
 			'edit.php?post_type=dame_message' => __( "Tous les messages", "dame" ),
 			'dame-mailing' => __( "Envoyer un message", "dame" ),
 			'edit.php?post_type=dame_agenda' => __( "Tous les évènements", "dame" ),
@@ -90,6 +90,7 @@ class Menu {
 
 		// We will extract known items, rename them as specified, and push them to $reordered
 		foreach ( $desired_order as $url => $new_title ) {
+			$found = false;
 			foreach ( $dame_submenu as $key => $item ) {
 				// WP sometimes adds &amp; instead of & in URLs in the menu array, or vice versa.
 				$item_url = str_replace( '&', '&amp;', $item[2] );
@@ -100,8 +101,18 @@ class Menu {
 					$item[0] = $new_title;
 					$reordered[] = $item;
 					unset( $dame_submenu[$key] );
+					$found = true;
 					break; // Found it, move to next desired item
 				}
+			}
+
+			// INJECTION FORCÉE : Si WordPress n'a pas inclus cet élément (ex: taxonomies), on le crée de force.
+			if ( ! $found ) {
+				// Définir la capacité requise ('manage_categories' pour les taxonomies, 'manage_options' par défaut)
+				$cap = ( strpos( $url, 'edit-tags.php' ) !== false ) ? 'manage_categories' : 'manage_options';
+				// On s'assure d'utiliser l'URL propre (sans &amp;) pour que le lien HTML fonctionne correctement
+				$clean_url = str_replace( '&amp;', '&', $url );
+				$reordered[] = [ $new_title, $cap, $clean_url ];
 			}
 		}
 
