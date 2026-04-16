@@ -86,7 +86,7 @@ class Menu {
 		$reordered = [];
 
 		$desired_order = [
-			'dame-admin' => __( "DAME", "dame" ),
+			'dame-admin' => __( "Tableau de bord", "dame" ),
 			'edit.php?post_type=adherent' => __( "Tous les adhérents", "dame" ),
 			'edit.php?post_type=dame_pre_inscription' => __( "Toutes les préinscriptions", "dame" ),
 			'edit-tags.php?taxonomy=dame_saison_adhesion&amp;post_type=adherent' => __( "Saisons d'adhésion", "dame" ),
