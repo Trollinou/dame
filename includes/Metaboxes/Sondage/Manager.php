@@ -21,6 +21,7 @@ class Manager {
 		add_action( 'admin_post_dame_delete_sondage_response', [ $this, 'delete_response' ] );
 		add_filter( 'post_updated_messages', [ $this, 'admin_notices' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'edit_form_before_permalink', [ $this, 'display_shortcode_helper' ] );
 	}
 
 	/**
@@ -62,6 +63,26 @@ class Manager {
 			'normal',
 			'high'
 		);
+	}
+
+	/**
+	 * Display a shortcode helper before the permalink.
+	 *
+	 * @param \WP_Post $post The post object.
+	 */
+	public function display_shortcode_helper( $post ) {
+		if ( 'sondage' !== $post->post_type ) {
+			return;
+		}
+		?>
+		<div class="dame-shortcode-helper-inline" style="margin: 10px 0 5px 0; font-size: 13px;">
+			<span class="dashicons dashicons-shortcode" style="font-size: 18px; vertical-align: middle;"></span>
+			<strong><?php _e( 'Shortcode :', 'dame' ); ?></strong>
+			<code style="user-select: all; cursor: pointer; background: #fff; border: 1px solid #ccd0d4; padding: 3px 8px;" title="<?php esc_attr_e( 'Cliquer pour sélectionner', 'dame' ); ?>">
+				[dame_sondage slug="<?php echo esc_attr( $post->post_name ?: 'votre-slug' ); ?>"]
+			</code>
+		</div>
+		<?php
 	}
 
 	/**
