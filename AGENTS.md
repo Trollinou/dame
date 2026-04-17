@@ -50,6 +50,26 @@ L'agent endosse les rôles suivants :
 
 ## 4. ARCHITECTURE & STRUCTURE
 
+### Conventions de Nommage des Répertoires (Casse)
+* **Dossiers Structurels (Minuscules)** : Les dossiers à la racine du plugin ou contenant des ressources statiques doivent TOUJOURS être en minuscules.
+  * *Exemples* : `assets/`, `includes/`, `languages/`, `assets/css/`.
+* **Dossiers de Classes PSR-4 (PascalCase)** : TOUS les dossiers situés à l'intérieur de `includes/` qui représentent un espace de nom (Namespace) doivent utiliser le **PascalCase** (Première lettre en majuscule), correspondant EXACTEMENT au nom du namespace.
+  * *Exemples* : `includes/Admin/`, `includes/Core/`, `includes/CPT/`, `includes/Metaboxes/Sondage/`.
+  * *Interdiction* : Ne jamais créer de dossier PHP en minuscules dans `includes/` (ex: `includes/cpt/` est interdit, utiliser `includes/CPT/`).
+
+### Architecture des Ressources Statiques (Assets)
+* **Règle Unique** : TOUS les fichiers statiques (CSS, Javascript, PDF, images, polices) DOIVENT être placés dans le répertoire central `assets/` (ex: `assets/css/`, `assets/js/`, `assets/pdf/`).
+* Le répertoire `public/` est **obsolète et interdit**.
+
+### Convention de Nommage des Fichiers Statiques (Assets)
+* **Lisibilité (Noms de fichiers physiques)** : Les fichiers dans `assets/css/` et `assets/js/` doivent adopter le format `{contexte}-{composant}.{ext}`. Le préfixe du plugin ne doit PAS être inclus dans le nom du fichier.
+  * **Les 3 contextes stricts :**
+    * `admin-` : Fichiers chargés UNIQUEMENT dans le back-office.
+    * `public-` : Fichiers chargés UNIQUEMENT sur le front-end.
+    * `shared-` : Fichiers chargés DANS LES DEUX (ex: librairies globales).
+* **Sécurité WordPress (Handles)** : Lors de l'enregistrement OU de la mise en file d'attente dans PHP, le **handle (1er paramètre)** DOIT OBLIGATOIREMENT être préfixé par le **slug du plugin** (ex: `{slug_plugin}-public-agenda`) pour éviter les conflits avec le noyau WordPress ou d'autres extensions.
+  * *Fonctions concernées* : `wp_register_script`, `wp_register_style`, `wp_enqueue_script`, `wp_enqueue_style`.
+
 ### Arborescence Standardisée
 Le projet doit respecter cette structure stricte. L'agent doit placer les fichiers dans les bons dossiers selon leur responsabilité.
 
@@ -217,6 +237,13 @@ Pour les fonctionnalités à multiples facettes (ex: une page d'options à ongle
   - Utiliser `$wpdb->prepare` pour toute requête SQL directe.
   - **Préfixe Table** : Toujours construire dynamiquement : `{$wpdb->prefix}[DB_SLUG]_` (ex: `{$wpdb->prefix}roi_`). Jamais de préfixe en dur.
 
+### Formulaires & Mapping des Meta-données
+- **Front-end (HTML)** : Les attributs `name` des champs de formulaire (`<input>`, `<select>`) ne doivent **jamais** commencer par un underscore `_` (ex: `name="ceb_eleve_nom"`) pour des raisons de propreté HTML.
+- **Back-end (PHP)** : Lors de la sauvegarde en base de données, l'agent doit **obligatoirement** re-mapper ces champs avec un underscore initial pour respecter la convention des "Post Meta cachées" de WordPress (ex: `update_post_meta($id, '_ceb_eleve_nom', $valeur)`).
+
+### Gestion du `wp_editor()` dans les Shortcodes
+- Si un `wp_editor()` est utilisé à l'intérieur d'un shortcode (qui doit `return` du HTML et non faire un `echo`), l'agent doit **obligatoirement** encapsuler l'appel à la fonction dans un Output Buffer (`ob_start()` et `ob_get_clean()`) pour éviter que l'éditeur ne s'affiche tout en haut de la page.
+
 ---
 
 ## 6. QUALITÉ & OUTILLAGE (QA)
@@ -224,38 +251,42 @@ Pour les fonctionnalités à multiples facettes (ex: une page d'options à ongle
 ### Configuration Requise
 L'agent doit s'assurer que ces fichiers existent. S'ils sont absents, il doit les créer avec ce contenu.
 
-**1. `phpstan.neon` (Level 6)**
-```yaml
+**1. `phpstan.neon` (Level 6) — VERROUILLÉ**
+> **ATTENTION AGENT :** Ce fichier est strictement verrouillé. Il est interdit d'y ajouter des clés expérimentales (comme `analyseAndScan`) ou d'en modifier la structure.
+
+```neon
 includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon
 parameters:
     level: 6
+    treatPhpDocTypesAsCertain: false
+    bootstrapFiles:
+        - dame.php
     paths:
-        - .
+        - dame.php
+        - includes/
     excludePaths:
-        - node_modules/
-        - vendor/
-        - build/
-        - src/
         - includes/lib/
-
 ```
 
 **2. `.eslintrc.json` (ES2021 + WP)**
-
 ```json
 {
-    "env": { "browser": true, "es2021": true, "wordpress": true },
-    "parserOptions": { "ecmaVersion": 2021, "sourceType": "module" },
-    "extends": [ "eslint:recommended", "plugin:@wordpress/recommended" ],
-    "ignorePatterns": [ "node_modules/", "vendor/", "build/", "includes/lib/" ]
+  "env": { "browser": true, "es2021": true },
+  "globals": {
+    "wp": "readonly"
+  },
+  "parserOptions": { "ecmaVersion": 2021, "sourceType": "module" },
+  "extends": [ "eslint:recommended", "plugin:@wordpress/recommended" ],
+  "ignorePatterns": [ "node_modules/", "vendor/", "build/", "includes/lib/" ]
 }
-
 ```
 
 ### Installation Automatisée (Si nécessaire)
 
 Si l'environnement n'est pas prêt, l'agent doit proposer l'installation des bonnes versions :
+
+> **RÈGLE D'EXÉCUTION (POUR L'AGENT) :** Il ne suffit pas de créer les fichiers `composer.json` et `package.json`. L'agent DOIT explicitement ouvrir son propre terminal et exécuter les commandes ci-dessous pour générer les dossiers `vendor/` et `build/`.
 
 ```bash
 # 1. Prérequis Système (Cible : PHP 8.4)

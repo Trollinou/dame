@@ -1,5 +1,18 @@
 {
-  "dependencies": {
+  "name": "dame",
+  "version": "1.0.0",
+  "description": "Dossier Administratif des Membres Échiquéens",
+  "scripts": {
+    "build:css": "sass assets/scss/:assets/css/ --style=compressed --no-source-map",
+    "build": "npm run build:css",
+    "lint:js": "wp-scripts lint-js",
+    "watch": "sass --watch assets/scss/:assets/css/"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^27.9.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-wordpress": "^0.1.0",
+    "sass": "^1.98.0",
     "@playwright/test": "^1.57.0"
   }
 }
