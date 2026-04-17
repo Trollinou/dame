@@ -16,8 +16,8 @@
 ### Versions Cibles (Stack Technique)
 | Outil | Version Requise | Impact sur le code |
 | :--- | :--- | :--- |
-| **WordPress** | **6.9** | Utiliser les API récentes (Interactivity API, Block Bindings, etc.) si pertinent. |
-| **PHP** | **8.4** | **ZERO COMPOSER EN PROD**. Utiliser un autoloader natif SPL. Typage strict, Readonly classes, New Fetch in array, etc. |
+| **WordPress** | **6.9.1** | Utiliser les API récentes (**Interactivity API**, Block Bindings) plutôt que jQuery. Transients API pour le cache. |
+| **PHP** | **8.4** | **ZERO COMPOSER EN PROD**. **STRICT_TYPES=1 OBLIGATOIRE**. Utiliser un autoloader natif SPL. Typage strict, Enums, Readonly classes, Constructor Promotion, New Fetch in array, etc. |
 | **Node.js** | **20 LTS** | **DEV ONLY**. Sert uniquement à compiler les assets (Build step). |
 | **Styles** | **SCSS** | Préprocesseur obligatoire + Convention BEM. |
 | **Standards** | **ES2021** | Syntaxe JS moderne obligatoire. |
@@ -41,7 +41,7 @@ L'agent endosse les rôles suivants :
     - **PHP** : Validation stricte via **PHPStan (Level 6)** avec `szepeviktor/phpstan-wordpress`.
     - **JS** : Validation stricte **ESLint (Standard WordPress + ES2021)**.
     - **Refus de livraison** : L'agent ne doit jamais proposer de code contenant des erreurs détectables par ces outils.
-4.  **Expert Sécurité** : Application systématique des nonces, capabilities, sanitization et escaping.
+4. **Expert Sécurité** : Application systématique des nonces, capabilities, sanitization et escaping.
 5. **Rédacteur de documentation** — produire README, CHANGELOG, documentation des hooks et des endpoints REST, et aider à la génération des fichiers de traduction (.pot, .po, .mo).
 6. **Auditeur de compatibilité** — suggérer des adaptations pour supporter les versions WordPress récentes et tests unitaires / d'intégration.
 7. **Guide de publication** — checklist pour déploiement, packaging, versioning sémantique et soumission au dépôt privé ou au répertoire WordPress.
@@ -90,7 +90,10 @@ wp-content/plugins/[SLUG]/
 │  │     ├─ Main.php    # Contrôleur principal
 │  │     └─ Tabs/       # Un fichier par onglet
 │  ├─ CPT/              # Définitions des Custom Post Types
+│  ├─ DTO/              # Data Transfer Objects (Readonly classes)
+│  ├─ Enums/            # Énumérations typées (Status, Types, etc.)
 │  ├─ Metaboxes/        # Gestion des champs (Un dossier par entité complexe)
+│  ├─ Repositories/     # Abstraction SQL ($wpdb wrapper) pour le Legacy
 │  ├─ Shortcodes/       # Gestionnaires de Shortcodes
 │  │  ├─ Form.php       # Shortcode simple
 │  │  └─ Tournament/    # Shortcode complexe (ex: Affichage grille tournoi)
@@ -141,9 +144,29 @@ wp-content/plugins/[SLUG]/
 ### PHP : Autonomie & Autoloading (CRITIQUE)
 - **Autoloader SPL Obligatoire** : Le fichier principal `[SLUG].php` DOIT contenir un autoloader PHP natif (`spl_autoload_register`) pour charger les classes du namespace `[NAMESPACE]`.
 - **Interdiction de Composer Runtime** : Ne jamais utiliser `require 'vendor/autoload.php'` dans le code de production. Le dossier `vendor/` n'existe pas chez le client.
+- **Typage Strict** : Tous les nouveaux fichiers ou fichiers refactorisés DOIVENT commencer par `declare(strict_types=1);`.
+- **Constructor Property Promotion** : Obligatoire pour simplifier les classes.
+- **Enums** : Utiliser des `Enum` typés (Backed Enums) pour remplacer les constantes globales ou les tableaux de configuration statiques.
+- **Readonly Classes** : Utiliser `readonly class` pour les DTOs (Data Transfer Objects) et objets de valeur.
 - **Librairies Tierces** :
-- Si une lib externe est nécessaire (ex: FPDF, Stripe SDK), **l'agent doit instruire de télécharger les fichiers sources** et de les placer dans `includes/lib/`.
-- Chargement : Utiliser `require_once plugin_dir_path(__FILE__) . 'includes/lib/nom-lib/file.php';` dans le `Plugin_Loader`.
+  - Si une lib externe est nécessaire (ex: FPDF, Stripe SDK), **l'agent doit instruire de télécharger les fichiers sources** et de les placer dans `includes/lib/`.
+  - Chargement : Utiliser `require_once plugin_dir_path(__FILE__) . 'includes/lib/nom-lib/file.php';` dans le `Plugin_Loader`.
+
+### Stratégie de Refactoring (Legacy vers Modern)
+
+Le code legacy existant fonctionne. L'objectif est de le moderniser **sans régression** ni conflits de fichiers.
+
+1. **Isolation (Façade Pattern)** : Ne pas modifier le cœur d'une vieille fonction spaghetti si ce n'est pas nécessaire. Créer un Wrapper/Service moderne autour.
+2. **Typage Progressif** : Sur le code existant, ajouter les types de retour (`: void`, `: array`) et de paramètres avant de toucher à la logique.
+3. **Extraction SQL** : Identifier les requêtes `$wpdb` directes dans le legacy et les déplacer dans des classes `Repositories/` (ex: `Member_Repository.php`).
+4. **Suppression des Globales** : Remplacer les `global $var` par des injections de dépendances ou des Singletons modernes.
+5. **Data Transfer Objects (DTO)** : Remplacer les tableaux associatifs fourre-tout (`$member['name']`) par des objets typés (`Member_DTO`).
+6. **Gestion Critique de la Casse (Case Sensitivity)** :
+    * **Le Danger** : Windows est insensible à la casse (il ne distingue pas `file.php` de `File.php`), alors que Linux (Production) et macOS le sont. Cela crée un risque majeur de "Class not found" lors du déploiement.
+    * **La Règle** : Si tu renommes un fichier pour respecter la convention PascalCase (ex: `adherent.php` -> `Adherent.php`) :
+        * Tu DOIS vérifier l'existence de l'ancienne version en minuscule.
+        * Tu DOIS utiliser `git mv -f old.php New.php` si le projet est versionné.
+        * Sinon, tu DOIS supprimer (`delete`) explicitement l'ancien fichier avant de créer le nouveau. Ne jamais compter sur l'écrasement (overwrite).
 
 ### Architecture Modulaire & Granularité (LOI UNIVERSELLE)
 
@@ -158,11 +181,11 @@ Dès qu'une fonctionnalité nécessite plus d'une classe ou dépasse ~300 lignes
 **2. Nomenclature et Namespaces**
 
 * **Pas de Préfixes de Fichiers** : Le contexte est donné par le dossier.
-* *Mauvais* : `includes/Shortcodes/class-tournament-list.php`
-* *Bon* : `includes/Shortcodes/Tournament/List_View.php` (Namespace: `[NAMESPACE]\Shortcodes\Tournament`)
+  * *Mauvais* : `includes/Shortcodes/class-tournament-list.php`
+  * *Bon* : `includes/Shortcodes/Tournament/List_View.php` (Namespace: `[NAMESPACE]\Shortcodes\Tournament`)
 
 * **Single Responsibility** : Une classe ne fait qu'une chose.
-* *Exemple* : Un Shortcode complexe sépare la récupération des données (`Query.php`) de son affichage HTML (`Render.php`).
+  * *Exemple* : Un Shortcode complexe sépare la récupération des données (`Query.php`) de son affichage HTML (`Render.php`).
 
 **3. Pattern "Manager & Components"**
 Pour les fonctionnalités à multiples facettes (ex: une page d'options à onglets, un exportateur multi-formats, une intégration API), utiliser ce pattern :
@@ -205,10 +228,11 @@ Pour les fonctionnalités à multiples facettes (ex: une page d'options à ongle
   - Mobile-first (Media Queries).
 
 ### Sécurité & Performance
-- **Nonces** : Obligatoire pour toute action d'écriture (Formulaires, AJAX, REST).
+- **Nonces & Caps** : Obligatoire pour toute action d'écriture (Formulaires, AJAX, REST).
 - **Capabilities** : Vérification systématique (`current_user_can`) au début des fonctions sensibles.
 - **Sanitization** : Entrées nettoyées (`sanitize_text_field`, `intval`, etc.).
 - **Escaping** : Sorties échappées (`esc_html`, `esc_attr`, `esc_url`).
+- **Caching (Transients)** : Utiliser `set_transient()` / `get_transient()` pour les opérations lourdes (calculs complexes, appels API).
 - **Base de données** : 
   - Utiliser `$wpdb->prepare` pour toute requête SQL directe.
   - **Préfixe Table** : Toujours construire dynamiquement : `{$wpdb->prefix}[DB_SLUG]_` (ex: `{$wpdb->prefix}roi_`). Jamais de préfixe en dur.
@@ -237,14 +261,11 @@ parameters:
     level: 6
     treatPhpDocTypesAsCertain: false
     bootstrapFiles:
-        - candidature-echecs-briand.php
+        - dame.php
     paths:
-        - .
+        - dame.php
+        - includes/
     excludePaths:
-        - node_modules/
-        - vendor/
-        - build/
-        - src/
         - includes/lib/
 ```
 
@@ -262,22 +283,20 @@ parameters:
 ```
 
 ### Installation Automatisée (Si nécessaire)
+
 Si l'environnement n'est pas prêt, l'agent doit proposer l'installation des bonnes versions :
 
 > **RÈGLE D'EXÉCUTION (POUR L'AGENT) :** Il ne suffit pas de créer les fichiers `composer.json` et `package.json`. L'agent DOIT explicitement ouvrir son propre terminal et exécuter les commandes ci-dessous pour générer les dossiers `vendor/` et `build/`.
 
 ```bash
 # 1. Prérequis Système (Cible : PHP 8.4)
-
-sudo apt-get update \&\& sudo apt-get install -y php8.4 php8.4-curl php8.4-xml unzip
-curl -sS https://getcomposer.org/installer | php \&\& sudo mv composer.phar /usr/local/bin/composer
+sudo apt-get update && sudo apt-get install -y php8.4 php8.4-curl php8.4-xml unzip
+curl -sS [https://getcomposer.org/installer](https://getcomposer.org/installer) | php && sudo mv composer.phar /usr/local/bin/composer
 
 # 2. Node.js 20 LTS
-
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - \&\& sudo apt-get install -y nodejs
+curl -fsSL [https://deb.nodesource.com/setup_20.x](https://deb.nodesource.com/setup_20.x) | sudo -E bash - && sudo apt-get install -y nodejs
 
 # 3. Dépendances Projet (Dev uniquement)
-
 composer require --dev szepeviktor/phpstan-wordpress phpstan/phpstan
 npm install --save-dev eslint eslint-plugin-wordpress @wordpress/scripts
 
@@ -285,7 +304,7 @@ npm install --save-dev eslint eslint-plugin-wordpress @wordpress/scripts
 
 ---
 
-## 7. PACKAGING & LIVRAISON (NOUVEAU)
+## 7. PACKAGING & LIVRAISON
 
 L'agent doit être capable de générer le fichier `.distignore` pour garantir que le ZIP final est propre.
 
@@ -318,57 +337,79 @@ tests
 L'agent est responsable de la mise à jour continue de la documentation. Aucune fonctionnalité ne doit être livrée sans sa documentation associée.
 
 ### Standards de Commentaires
-- **PHPDoc** : Obligatoire pour toutes les classes, méthodes et fonctions.
-  - Décrire les paramètres (`@param`), les retours (`@return`) et les exceptions (`@throws`).
-- **JSDoc** : Obligatoire pour les fonctions JavaScript complexes.
-- **Code** : Commenter les blocs logiques complexes en **Français**.
+
+* **PHPDoc** : Obligatoire pour toutes les classes, méthodes et fonctions.
+* Décrire les paramètres (`@param`), les retours (`@return`) et les exceptions (`@throws`).
+
+
+* **JSDoc** : Obligatoire pour les fonctions JavaScript complexes.
+* **Code** : Commenter les blocs logiques complexes en **Français**.
 
 ### Gestion des Versions & Synchronisation
-- **Règle d'Or** : Le numéro de version doit être identique partout.
-- **Emplacements Obligatoires** :
-  1.  **En-tête du fichier principal** (`[SLUG].php`) :
-      ```
-      /*
-       * Plugin Name: [NOM_PLUGIN]
-       * Version: 1.0.0  <-- DOIT ÊTRE À JOUR
-       */
-      ```
-  2.  **Constante PHP** : Définie au début du fichier principal.
-      ```
-      define( '[SLUG_MAJ]_VERSION', '1.0.0' ); // Ex: DAME_VERSION
-      ```
-  3.  **package.json** (si présent).
-  4.  **CHANGELOG.md** (Nouvelle entrée).
+
+* **Règle d'Or** : Le numéro de version doit être identique partout.
+* **Emplacements Obligatoires** :
+1. **En-tête du fichier principal** (`[SLUG].php`) :
+```php
+/*
+ * Plugin Name: [NOM_PLUGIN]
+ * Version: 1.0.0  <-- DOIT ÊTRE À JOUR
+ */
+
+```
+
+
+2. **Constante PHP** : Définie au début du fichier principal.
+```php
+define( '[SLUG_MAJ]_VERSION', '1.0.0' ); // Ex: DAME_VERSION
+
+```
+
+
+3. **package.json** (si présent).
+4. **CHANGELOG.md** (Nouvelle entrée).
+
+
 
 ### Fichiers de Documentation Obligatoires
+
 L'agent doit créer et maintenir à jour les fichiers suivants à la racine :
 
-1.  **`README.md`** (Présentation & Installation)
-    - Description générale du plugin.
-    - Prérequis techniques (PHP, WP versions).
-    - Procédure d'installation et de configuration initiale.
-    - Liste des fonctionnalités principales.
+1. **`README.md`** (Présentation & Installation)
+* Description générale du plugin.
+* Prérequis techniques (PHP, WP versions).
+* Procédure d'installation et de configuration initiale.
+* Liste des fonctionnalités principales.
 
-2.  **`CHANGELOG.md`** (Historique des versions)
-    - Format : [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-    - Doit être mis à jour à chaque modification significative.
-    - Sections : `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
 
-3.  **`USING.md`** (Guide d'Utilisation)
-    - **Public cible** : Utilisateurs finaux / Webmasters.
-    - **Contenu obligatoire** :
-      - Liste exhaustive des **Shortcodes** avec tous leurs attributs (ex: `[mon_shortcode id="12"]`).
-      - Explication des réglages du Back-office.
-      - Tutoriels pour les fonctionnalités complexes (ex: "Comment créer un tournoi").
+2. **`CHANGELOG.md`** (Historique des versions)
+* Format : [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+* Doit être mis à jour à chaque modification significative.
+* Sections : `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
+
+
+3. **`USING.md`** (Guide d'Utilisation)
+* **Public cible** : Utilisateurs finaux / Webmasters.
+* **Contenu obligatoire** :
+* Liste exhaustive des **Shortcodes** avec tous leurs attributs (ex: `[mon_shortcode id="12"]`).
+* Explication des réglages du Back-office.
+* Tutoriels pour les fonctionnalités complexes (ex: "Comment créer un tournoi").
+
+
+
+
 
 ---
 
 ## 9. CONVENTIONS DE STYLE
-- **Langue** : 
-  - **Documentation** (`README`, `USING`, `CHANGELOG`) : **Français** obligatoire.
-  - **Commentaires Code** : **Français** obligatoire.
-  - **Chaînes Utilisateur** : **Français** obligatoire.
-- **Guillemets** : Toujours utiliser des **guillemets doubles** `"` pour les chaînes de texte en Français afin de gérer les apostrophes facilement (ex: "L'utilisateur").
+
+* **Langue** :
+* **Documentation** (`README`, `USING`, `CHANGELOG`) : **Français** obligatoire.
+* **Commentaires Code** : **Français** obligatoire.
+* **Chaînes Utilisateur** : **Français** obligatoire.
+
+
+* **Guillemets** : Toujours utiliser des **guillemets doubles** `"` pour les chaînes de texte en Français afin de gérer les apostrophes facilement (ex: "L'utilisateur").
 
 ---
 
@@ -404,43 +445,106 @@ spl_autoload_register( function ( $class ) {
 
 ```
 
-### Exemple : Structure d'une Metabox découpaée
+### Exemple : DTO (Data Transfer Object) Moderne (PHP 8.4)
+
+*Fichier : `includes/DTO/Member_Profile.php*`
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace DAME\DTO;
+
+use DAME\Enums\Member_Status;
+
+readonly class Member_Profile {
+    // Constructor Property Promotion
+    public function __construct(
+        public int $id,
+        public string $first_name,
+        public string $last_name,
+        public ?string $email = null,
+        public Member_Status $status = Member_Status::ACTIVE,
+    ) {}
+
+    public static function from_db_row(object $row): self {
+        return new self(
+            id: (int) $row->ID,
+            first_name: $row->first_name,
+            last_name: $row->last_name,
+            email: $row->email ?: null,
+            status: Member_Status::tryFrom($row->status) ?? Member_Status::ACTIVE
+        );
+    }
+}
+
+```
+
+### Exemple : Enum Typé (PHP 8.4)
+
+*Fichier : `includes/Enums/Member_Status.php*`
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace DAME\Enums;
+
+enum Member_Status: string {
+    case ACTIVE = 'active';
+    case PENDING = 'pending';
+    case ARCHIVED = 'archived';
+
+    public function label(): string {
+        return match($this) {
+            self::ACTIVE => 'Actif',
+            self::PENDING => 'En attente',
+            self::ARCHIVED => 'Archivé',
+        };
+    }
+}
+
+```
+
+### Exemple : Metabox Moderne (PHP 8.4 + Typage)
 
 *Fichier : `includes/Metaboxes/Member/Identity.php*`
 
 ```php
+<?php
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\Member;
 
-// Pas de dépendance complexe, usage natif WP
+use WP_Post;
+
 class Identity {
     
-    public function init() {
+    public function init(): void {
         add_action( 'add_meta_boxes', [ $this, 'add_box' ] );
         add_action( 'save_post', [ $this, 'save_box' ] );
     }
 
-    public function add_box() {
+    public function add_box(): void {
         add_meta_box(
             'dame_member_identity',
             __( 'Identité', 'dame' ),
             [ $this, 'render' ],
-            'dame_member', // Slug du CPT
+            'dame_member',
             'normal',
             'high'
         );
     }
 
-    public function render( $post ) {
-        // Logique d'affichage HTML uniquement pour cette partie
+    public function render( WP_Post $post ): void {
         $value = get_post_meta( $post->ID, '_dame_identity_name', true );
         wp_nonce_field( 'dame_save_identity', 'dame_identity_nonce' );
         ?>
-        <label>Nom : <input type="text" name="dame_name" value="<?php echo esc_attr($value); ?>"></label>
+        <label>Nom : <input type="text" name="dame_name" value="<?php echo esc_attr( (string) $value ); ?>"></label>
         <?php
     }
 
-    public function save_box( $post_id ) {
-        // Logique de sauvegarde isolée
+    public function save_box( int $post_id ): void {
         if ( ! isset( $_POST['dame_identity_nonce'] ) || ! wp_verify_nonce( $_POST['dame_identity_nonce'], 'dame_save_identity' ) ) {
             return;
         }
@@ -452,32 +556,38 @@ class Identity {
 
 ```
 
-### Exemple : Gestionnaire d'onglets léger
+### Exemple : Gestionnaire d'onglets (Optimisé PHP 8.4)
 
 *Fichier : `includes/Admin/Settings/Main_Page.php*`
 
 ```php
+<?php
+declare(strict_types=1);
+
 namespace DAME\Admin\Settings;
 
 use DAME\Admin\Settings\Tabs\General;
 use DAME\Admin\Settings\Tabs\Emails;
 
-class Main_Page {
+final class Main_Page {
     
-    private $tabs = [];
+    /** @var array<string, object> */
+    private array $tabs;
 
     public function __construct() {
-        // Chargement manuel des onglets (Pattern simple sans injection de dépendance lourde)
-        $this->tabs['general'] = new General();
-        $this->tabs['emails']  = new Emails();
+        // Initialisation directe
+        $this->tabs = [
+            'general' => new General(),
+            'emails'  => new Emails(),
+        ];
     }
 
-    public function init() {
+    public function init(): void {
         add_action( 'admin_menu', [ $this, 'add_menu' ] );
         add_action( 'admin_init', [ $this, 'register_all_settings' ] );
     }
 
-    public function register_all_settings() {
+    public function register_all_settings(): void {
         foreach ( $this->tabs as $tab ) {
             if ( method_exists( $tab, 'register' ) ) {
                 $tab->register();
@@ -485,11 +595,17 @@ class Main_Page {
         }
     }
 
-    public function add_menu() {
-        add_options_page( 'DAME Settings', 'DAME', 'manage_options', 'dame-settings', [ $this, 'render_page' ] );
+    public function add_menu(): void {
+        add_options_page( 
+            'DAME Settings', 
+            'DAME', 
+            'manage_options', 
+            'dame-settings', 
+            [ $this, 'render_page' ] 
+        );
     }
 
-    public function render_page() {
+    public function render_page(): void {
         $current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'general';
         ?>
         <div class="wrap">
@@ -501,6 +617,7 @@ class Main_Page {
             <div class="tab-content">
                 <?php 
                 if ( isset( $this->tabs[ $current_tab ] ) ) {
+                    // On suppose que la méthode render existe sur les objets tabs
                     $this->tabs[ $current_tab ]->render();
                 }
                 ?>
@@ -515,15 +632,18 @@ class Main_Page {
 *Fichier : `includes/Admin/Settings/Tabs/General.php*`
 
 ```php
+<?php
+declare(strict_types=1);
+
 namespace DAME\Admin\Settings\Tabs;
 
 class General {
-    public function register() {
+    public function register(): void {
         register_setting( 'dame_general_group', 'dame_option_name' );
         // Add sections & fields...
     }
 
-    public function render() {
+    public function render(): void {
         ?>
         <form method="post" action="options.php">
             <?php 
@@ -550,22 +670,29 @@ class General {
 1. **Dossier** : `includes/Services/Export/`
 2. **Fichier** : `Manager.php` (Reçoit la requête, vérifie les droits, instancie le bon formateur).
 3. **Dossier** : `includes/Services/Export/Formats/`
+
 * `Interface_Format.php` (Contrat : méthode `generate()`).
 * `CSV.php` (Implémentation CSV).
 * `PDF.php` (Implémentation PDF, utilisant la lib `includes/lib/fpdf`).
 
-
-
 **Code du Manager (`includes/Services/Export/Manager.php`)** :
 
 ```php
+<?php
+declare(strict_types=1);
+
 namespace DAME\Services\Export;
 
 use DAME\Services\Export\Formats\CSV;
 use DAME\Services\Export\Formats\PDF;
 
 class Manager {
-    public function export( string $format, array $data ) {
+    /**
+     * @param string $format Format d'export (csv, pdf)
+     * @param array<mixed> $data Données à exporter
+     * @return mixed Le résultat de l'export (fichier, string ou void)
+     */
+    public function export( string $format, array $data ): mixed {
         $exporter = match( $format ) {
             'csv' => new CSV(),
             'pdf' => new PDF(),
@@ -575,16 +702,20 @@ class Manager {
         if ( $exporter ) {
             return $exporter->generate( $data );
         }
+
+        return null;
     }
 }
 
 ```
 
-
-### Exemple : Prompt utilisateur** : "Crée un bloc Gutenberg pour afficher un échiquier."
+### Exemple : Prompt utilisateur : "Crée un bloc Gutenberg pour afficher un échiquier."
 
 **Réponse attendue de l'Agent** :
-1.  Créer la structure dans `src/blocks/echiquier/` (`block.json`, `edit.js`, `save.js`).
-2.  Utiliser les composants `@wordpress/components`.
-3.  Proposer le code PHP d'enregistrement (`register_block_type`) dans `includes/Blocks/Chessboard.php` (à créer).
-4.  Rappel de lancer `npm run start` pour compiler.
+
+1. Créer la structure dans `src/blocks/echiquier/` (`block.json`, `edit.js`, `save.js`).
+2. Utiliser les composants `@wordpress/components`.
+3. Proposer le code PHP d'enregistrement (`register_block_type`) dans `includes/Blocks/Chessboard.php` (à créer).
+4. Rappel de lancer `npm run start` pour compiler.
+
+```
