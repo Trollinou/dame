@@ -27,9 +27,23 @@ if ( ! defined( 'DAME_PLUGIN_URL' ) ) {
 	define( 'DAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
-// 2. Autoloader
-require_once DAME_PLUGIN_DIR . 'includes/Core/Autoloader.php';
-DAME\Core\Autoloader::register();
+// 2. Autoloader SPL (Conforme AGENTS.md)
+spl_autoload_register( function ( $class ) {
+	$prefix = 'DAME\\';
+	$base_dir = plugin_dir_path( __FILE__ ) . 'includes/';
+
+	$len = strlen( $prefix );
+	if ( strncmp( $prefix, $class, $len ) !== 0 ) {
+		return;
+	}
+
+	$relative_class = substr( $class, $len );
+	$file = $base_dir . str_replace( '\\', '/', $relative_class ) . '.php';
+
+	if ( file_exists( $file ) ) {
+		require $file;
+	}
+} );
 
 // 3. Initialisation du Plugin
 if ( class_exists( 'DAME\Core\Plugin' ) ) {
