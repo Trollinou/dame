@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.0 - 2026-04-17
+### Majeur
+- **Réécriture complète :** Migration de l'ensemble de la base de code vers une architecture moderne en Programmation Orientée Objet (POO).
+- **Standards de développement :** Adoption de SCSS pour la gestion des styles et ES2021 pour le JavaScript moderne.
+- **Architecture :** Meilleure séparation des responsabilités (Core, Admin, CPT, Services, Metaboxes).
+- **Performance :** Optimisation du chargement des ressources et amélioration de la structure des données.
+
 ## 3.4.5 - 2025-12-07
 ### Amélioration
 - **Formulaires :** Sur le formulaire de pré-inscription, le bouton de soumission est maintenant désactivé tant que la case de consentement au règlement intérieur n'est pas cochée.

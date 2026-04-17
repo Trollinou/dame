@@ -353,7 +353,7 @@ L'agent est responsable de la mise à jour continue de la documentation. Aucune 
 ```php
 /*
  * Plugin Name: [NOM_PLUGIN]
- * Version: 1.0.0  <-- DOIT ÊTRE À JOUR
+ * Version: 4.0.0  <-- DOIT ÊTRE À JOUR
  */
 
 ```
