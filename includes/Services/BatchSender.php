@@ -126,7 +126,14 @@ class BatchSender {
 			$pixel_img    = '<img src="' . esc_url( $tracking_url ) . '" alt="" width="1" height="1" style="display:none; border:0;" />';
 			$message_body = '<div style="margin: 1cm;">' . $personalized_content . $pixel_img . '</div>';
 
-			$sent = wp_mail( $email, $personalized_subject, $message_body, $headers );
+			// Gestion de la pièce jointe
+			$attachments = array();
+			$attachment_path = get_post_meta( $message_id, '_dame_message_attachment', true );
+			if ( ! empty( $attachment_path ) && file_exists( $attachment_path ) ) {
+				$attachments[] = $attachment_path;
+			}
+
+			$sent = wp_mail( $email, $personalized_subject, $message_body, $headers, $attachments );
 			if ( ! $sent ) {
 				$failed_emails[] = $email;
 			}
