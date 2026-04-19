@@ -4,10 +4,11 @@ parameters:
     level: 6
     phpVersion: 80400 # Force l'analyse pour PHP 8.4
     treatPhpDocTypesAsCertain: false
-    bootstrapFiles:
-        - dame.php
     paths:
         - dame.php
         - includes/
     excludePaths:
         - includes/lib/
+    scanFiles:
+        # Si vous avez besoin de fichiers spécifiques sans les exécuter
+        - dame.php
