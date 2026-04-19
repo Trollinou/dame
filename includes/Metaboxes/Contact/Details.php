@@ -48,9 +48,9 @@ class Details {
 	public function render( WP_Post $post ): void {
 		wp_nonce_field( 'dame_save_contact_meta', 'dame_contact_meta_nonce' );
 
-		$first_name   = get_post_meta( $post->ID, '_dame_contact_first_name', true );
-		$last_name    = get_post_meta( $post->ID, '_dame_contact_last_name', true );
 		$organization = get_post_meta( $post->ID, '_dame_contact_organization', true );
+		$last_name    = get_post_meta( $post->ID, '_dame_contact_last_name', true );
+		$first_name   = get_post_meta( $post->ID, '_dame_contact_first_name', true );
 		$role         = get_post_meta( $post->ID, '_dame_contact_role', true );
 		$email        = get_post_meta( $post->ID, '_dame_contact_email', true );
 		$phone        = get_post_meta( $post->ID, '_dame_contact_phone', true );
@@ -67,9 +67,9 @@ class Details {
 		?>
 		<table class="form-table">
 			<tr>
-				<th><label for="dame_contact_first_name"><?php esc_html_e( 'Prénom', 'dame' ); ?></label></th>
+				<th><label for="dame_contact_organization"><?php esc_html_e( 'Organisation', 'dame' ); ?></label></th>
 				<td>
-					<input type="text" name="_dame_contact_first_name" id="dame_contact_first_name" value="<?php echo esc_attr( $first_name ); ?>" class="regular-text" />
+					<input type="text" name="_dame_contact_organization" id="dame_contact_organization" value="<?php echo esc_attr( $organization ); ?>" class="regular-text" />
 				</td>
 			</tr>
 			<tr>
@@ -79,9 +79,9 @@ class Details {
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_contact_organization"><?php esc_html_e( 'Organisation', 'dame' ); ?></label></th>
+				<th><label for="dame_contact_first_name"><?php esc_html_e( 'Prénom', 'dame' ); ?></label></th>
 				<td>
-					<input type="text" name="_dame_contact_organization" id="dame_contact_organization" value="<?php echo esc_attr( $organization ); ?>" class="regular-text" />
+					<input type="text" name="_dame_contact_first_name" id="dame_contact_first_name" value="<?php echo esc_attr( $first_name ); ?>" class="regular-text" />
 				</td>
 			</tr>
 			<tr>
