@@ -20,7 +20,7 @@ class Mailing {
 	/**
 	 * Initialize the page.
 	 */
-	public function init() {
+	public function init(): void {
 
 		add_action( 'admin_post_dame_process_mailing', [ $this, 'process_mailing' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -32,7 +32,7 @@ class Mailing {
 	 *
 	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_scripts( $hook ) {
+	public function enqueue_scripts( $hook ): void {
 		if ( strpos( $hook, 'dame-mailing' ) === false ) {
 			return;
 		}
@@ -68,7 +68,7 @@ class Mailing {
 	/**
 	 * Rendu de la page de Mailing avec interface à deux colonnes et filtres de recherche.
 	 */
-	public function render() {
+	public function render(): void {
 		if ( ! current_user_can( 'edit_dame_messages' ) ) {
 			return;
 		}

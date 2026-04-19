@@ -18,7 +18,7 @@ class Agenda {
 	/**
 	 * Initialize the list table customizations.
 	 */
-	public function init() {
+	public function init(): void {
 		add_filter( 'manage_edit-dame_agenda_columns', [ $this, 'set_columns' ] );
 		add_action( 'manage_dame_agenda_posts_custom_column', [ $this, 'render_columns' ], 10, 2 );
 		add_filter( 'manage_edit-dame_agenda_sortable_columns', [ $this, 'set_sortable_columns' ] );
@@ -30,8 +30,8 @@ class Agenda {
 	/**
 	 * Sets the custom columns for the Agenda CPT.
 	 *
-	 * @param array $columns The existing columns.
-	 * @return array The modified columns.
+	 * @param array<string, mixed> $columns The existing columns.
+	 * @return array<string, mixed> The modified columns.
 	 */
 	public function set_columns( $columns ) {
 		$new_columns = array(
@@ -52,7 +52,7 @@ class Agenda {
 	 * @param string $column The name of the column to render.
 	 * @param int    $post_id The ID of the post.
 	 */
-	public function render_columns( $column, $post_id ) {
+	public function render_columns( $column, $post_id ): void {
 		switch ( $column ) {
 			case 'dame_start_date':
 				$start_date = get_post_meta( $post_id, '_dame_start_date', true );
@@ -129,8 +129,8 @@ class Agenda {
 	/**
 	 * Makes the custom date columns sortable for the Agenda CPT.
 	 *
-	 * @param array $columns The existing sortable columns.
-	 * @return array The modified sortable columns.
+	 * @param array<string, mixed> $columns The existing sortable columns.
+	 * @return array<string, mixed> The modified sortable columns.
 	 */
 	public function set_sortable_columns( $columns ) {
 		$columns['dame_start_date'] = '_dame_start_date';
@@ -141,7 +141,7 @@ class Agenda {
 	/**
 	 * Adds custom filters to the Agenda CPT admin list for category and date range.
 	 */
-	public function add_filters() {
+	public function add_filters(): void {
 		global $typenow, $wp_locale;
 
 		if ( 'dame_agenda' !== $typenow ) {
@@ -322,9 +322,9 @@ class Agenda {
 	/**
 	 * Suppresses the default months dropdown for the Agenda CPT.
 	 *
-	 * @param array  $months    The default months list.
+	 * @param array<string, mixed> $months    The default months list.
 	 * @param string $post_type The current post type.
-	 * @return array The modified months list (empty for our CPT).
+	 * @return array<string, mixed> The modified months list (empty for our CPT).
 	 */
 	public function suppress_months_dropdown( $months, $post_type ) {
 		if ( 'dame_agenda' === $post_type ) {

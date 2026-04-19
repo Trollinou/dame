@@ -15,7 +15,7 @@ class Message {
 	/**
 	 * Initialize columns.
 	 */
-	public function init() {
+	public function init(): void {
 		add_filter( 'manage_dame_message_posts_columns', [ $this, 'manage_columns' ] );
 		add_action( 'manage_dame_message_posts_custom_column', [ $this, 'render_columns' ], 10, 2 );
 	}
@@ -23,8 +23,8 @@ class Message {
 	/**
 	 * Manage columns.
 	 *
-	 * @param array $columns Existing columns.
-	 * @return array Modified columns.
+	 * @param array<string, mixed> $columns Existing columns.
+	 * @return array<string, mixed> Modified columns.
 	 */
 	public function manage_columns( $columns ) {
 		$new_columns = array();
@@ -46,7 +46,7 @@ class Message {
 	 * @param string $column  Column name.
 	 * @param int    $post_id Post ID.
 	 */
-	public function render_columns( $column, $post_id ) {
+	public function render_columns( $column, $post_id ): void {
 		switch ( $column ) {
 			case 'sent_date':
 				$status = get_post_meta( $post_id, '_dame_message_status', true );

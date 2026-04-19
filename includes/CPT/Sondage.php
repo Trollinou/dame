@@ -15,14 +15,14 @@ class Sondage {
 	/**
 	 * Initialize the CPT hooks.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'init', [ $this, 'register' ] );
 	}
 
 	/**
 	 * Register the custom post types.
 	 */
-	public function register() {
+	public function register(): void {
 		$sondage_labels = [
 			'name'               => _x( 'Sondages', 'post type general name', 'dame' ),
 			'singular_name'      => _x( 'Sondage', 'post type singular name', 'dame' ),

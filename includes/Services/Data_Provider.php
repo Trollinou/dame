@@ -15,9 +15,9 @@ class Data_Provider {
 	/**
 	 * Returns a list of countries.
 	 *
-	 * @return array
+	 * @return array<string, string>
 	 */
-	public static function get_countries() {
+	public static function get_countries(): array {
 		return array(
 			'FR' => 'France',
 			'BE' => 'Belgique',
@@ -35,9 +35,9 @@ class Data_Provider {
 	/**
 	 * Returns a list of French regions.
 	 *
-	 * @return array
+	 * @return array<string, string>
 	 */
-	public static function get_regions() {
+	public static function get_regions(): array {
 		return array(
 			'NA'   => 'N/A',
 			'ARA'  => 'Auvergne-Rhône-Alpes',
@@ -59,9 +59,9 @@ class Data_Provider {
 	/**
 	 * Returns a list of French departments.
 	 *
-	 * @return array
+	 * @return array<string, string>
 	 */
-	public static function get_departments() {
+	public static function get_departments(): array {
 		return array(
 			'NA' => 'N/A',
 			'01' => '01 - Ain', '02' => '02 - Aisne', '03' => '03 - Allier', '04' => '04 - Alpes-de-Haute-Provence',
@@ -97,9 +97,9 @@ class Data_Provider {
 	/**
 	 * Returns a mapping of French departments to their regions.
 	 *
-	 * @return array
+	 * @return array<int|string, string>
 	 */
-	public static function get_department_region_mapping() {
+	public static function get_department_region_mapping(): array {
 		return array(
 			'01' => 'ARA', '03' => 'ARA', '07' => 'ARA', '15' => 'ARA', '26' => 'ARA', '38' => 'ARA', '42' => 'ARA', '43' => 'ARA', '63' => 'ARA', '69' => 'ARA', '73' => 'ARA', '74' => 'ARA',
 			'21' => 'BFC', '25' => 'BFC', '39' => 'BFC', '58' => 'BFC', '70' => 'BFC', '71' => 'BFC', '89' => 'BFC', '90' => 'BFC',
@@ -122,7 +122,7 @@ class Data_Provider {
 	 * Returns the list of department codes for a given region.
 	 *
 	 * @param string $region_code The region code.
-	 * @return array List of department codes.
+	 * @return array<int, string> List of department codes.
 	 */
 	public static function get_departments_by_region( string $region_code ): array {
 		$mapping = self::get_department_region_mapping();
@@ -132,9 +132,9 @@ class Data_Provider {
 	/**
 	 * Returns a list of French school academies.
 	 *
-	 * @return array
+	 * @return array<string, string>
 	 */
-	public static function get_academies() {
+	public static function get_academies(): array {
 		return array(
 			'NA' => 'N/A',
 			'aix-marseille' => 'Aix-Marseille',
@@ -173,9 +173,9 @@ class Data_Provider {
 	/**
 	 * Returns the options for the health document status.
 	 *
-	 * @return array
+	 * @return array<string, string>
 	 */
-	public static function get_health_document_options() {
+	public static function get_health_document_options(): array {
 		return array(
 			'none'         => __( 'Non renseigné', 'dame' ),
 			'attestation'  => __( 'Attestation signée', 'dame' ),
@@ -186,9 +186,9 @@ class Data_Provider {
 	/**
 	 * Returns a list of clothing sizes.
 	 *
-	 * @return array
+	 * @return array<int, string>
 	 */
-	public static function get_clothing_sizes() {
+	public static function get_clothing_sizes(): array {
 		return array(
 			'Non renseigné',
 			'8/10',
@@ -211,9 +211,9 @@ class Data_Provider {
 	 * and the emails of legal representatives.
 	 *
 	 * @param int $adherent_id The ID of the adherent post.
-	 * @return array List of unique email addresses.
+	 * @return array<int, string> List of unique email addresses.
 	 */
-	public static function get_emails_for_adherent( $adherent_id ) {
+	public static function get_emails_for_adherent( $adherent_id ): array {
 		$emails = array();
 
 		// Adherent's own email.

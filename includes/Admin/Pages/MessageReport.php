@@ -15,7 +15,7 @@ class MessageReport {
 	/**
 	 * Initialize the page.
 	 */
-	public function init() {
+	public function init(): void {
 
 		add_action( 'admin_head', [ $this, 'hide_menu_link' ] );
 	}
@@ -36,7 +36,7 @@ class MessageReport {
 	/**
 	 * Render the report page.
 	 */
-	public function render() {
+	public function render(): void {
 		if ( ! current_user_can( 'edit_dame_messages' ) ) {
 			return;
 		}
@@ -134,7 +134,7 @@ class MessageReport {
 	 * that have received this specific message.
 	 *
 	 * @param int $message_id The message ID.
-	 * @return array Sorted array of recipients [email => formatted_name].
+	 * @return array<string, mixed> Sorted array of recipients [email => formatted_name].
 	 */
 	private function get_formatted_recipients( $message_id ) {
 		$message_id = absint( $message_id );

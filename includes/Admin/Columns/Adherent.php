@@ -20,7 +20,7 @@ class Adherent {
 	/**
 	 * Initialize the columns logic.
 	 */
-	public function init() {
+	public function init(): void {
 		// Columns
 		add_filter( 'manage_adherent_posts_columns', [ $this, 'set_columns' ] );
 		add_action( 'manage_adherent_posts_custom_column', [ $this, 'render_columns' ], 10, 2 );
@@ -40,8 +40,8 @@ class Adherent {
 	/**
 	 * Sets the custom columns for the Adherent CPT.
 	 *
-	 * @param array $columns The existing columns.
-	 * @return array The modified columns.
+	 * @param array<string, mixed> $columns The existing columns.
+	 * @return array<string, mixed> The modified columns.
 	 */
 	public function set_columns( $columns ) {
 		$new_columns = array(
@@ -66,7 +66,7 @@ class Adherent {
 	 * @param string $column The name of the column to render.
 	 * @param int    $post_id The ID of the post.
 	 */
-	public function render_columns( $column, $post_id ) {
+	public function render_columns( $column, $post_id ): void {
 		switch ( $column ) {
 			case 'dame_age_category':
 				$birth_date_str = get_post_meta( $post_id, '_dame_birth_date', true );
@@ -152,8 +152,8 @@ class Adherent {
 	/**
 	 * Sets sortable columns.
 	 *
-	 * @param array $columns Existing sortable columns.
-	 * @return array Modified sortable columns.
+	 * @param array<string, mixed> $columns Existing sortable columns.
+	 * @return array<string, mixed> Modified sortable columns.
 	 */
 	public function set_sortable_columns( $columns ) {
 		$columns['dame_license_number'] = 'dame_license_number';
@@ -185,7 +185,7 @@ class Adherent {
 	/**
 	 * Removes the date filter from the Adherent CPT admin list.
 	 */
-	public function remove_date_filter() {
+	public function remove_date_filter(): void {
 		$screen = get_current_screen();
 		// Correct screen ID for 'adherent' CPT is 'edit-adherent'
 		if ( $screen && strpos( $screen->id, 'edit-adherent' ) !== false ) {
@@ -196,7 +196,7 @@ class Adherent {
 	/**
 	 * Adds custom filters to the Adherent CPT admin list.
 	 */
-	public function add_filters() {
+	public function add_filters(): void {
 		global $typenow;
 
 		// Correct CPT slug
@@ -403,11 +403,11 @@ class Adherent {
 	/**
 	 * Adds a 'Consulter' action link to the adherent list table.
 	 *
-	 * @param array   $actions The existing row actions.
+	 * @param array<string, mixed> $actions The existing row actions.
 	 * @param WP_Post $post    The post object.
-	 * @return array The modified row actions.
+	 * @return array<string, mixed> The modified row actions.
 	 */
-	public function add_row_actions( $actions, $post ) {
+	public function add_row_actions( $actions, $post ): void {
 		// Correct CPT slug
 		if ( 'adherent' === $post->post_type ) {
 			// CPT is not public, so the default 'View' link is not needed/broken.

@@ -20,7 +20,7 @@ class Toolbar {
 	/**
 	 * Initializes the toolbar hooks.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'admin_bar_menu', [ $this, 'add_nodes' ], 999 );
 		add_action( 'admin_action_dame_manual_backup', [ $this, 'handle_manual_backup' ] );
 		add_action( 'admin_notices', [ $this, 'show_backup_notice' ] );
@@ -31,7 +31,7 @@ class Toolbar {
 	 *
 	 * @param \WP_Admin_Bar $wp_admin_bar The WP_Admin_Bar instance.
 	 */
-	public function add_nodes( $wp_admin_bar ) {
+	public function add_nodes( $wp_admin_bar ): void {
 		// Add the main DAME menu item.
 		$wp_admin_bar->add_node(
 			[
@@ -77,7 +77,7 @@ class Toolbar {
 	/**
 	 * Handles the manual backup trigger from the admin bar.
 	 */
-	public function handle_manual_backup() {
+	public function handle_manual_backup(): void {
 		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'dame_manual_backup_nonce' ) ) {
 			wp_die( __( "Invalid nonce.", "dame" ) );
 		}

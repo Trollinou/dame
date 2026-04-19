@@ -18,7 +18,7 @@ class Agenda {
 	/**
 	 * Initialize the CPT.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'init', [ $this, 'register' ], 0 );
 		add_filter( 'the_content', [ $this, 'display_event_details' ] );
 	}
@@ -26,7 +26,7 @@ class Agenda {
 	/**
 	 * Register the Agenda CPT.
 	 */
-	public function register() {
+	public function register(): void {
 		$labels = array(
 			'name'                  => _x( 'Agenda', 'Post Type General Name', 'dame' ),
 			'singular_name'         => _x( 'Événement', 'Post Type Singular Name', 'dame' ),
@@ -87,7 +87,7 @@ class Agenda {
 	 * @param string $content The post content.
 	 * @return string The modified post content with event details.
 	 */
-	public function display_event_details( $content ) {
+	public function display_event_details( $content ): void {
 		// Check if we are on a single 'dame_agenda' post page.
 		if ( is_singular( 'dame_agenda' ) && in_the_loop() && is_main_query() ) {
 			$post_id = get_the_ID();

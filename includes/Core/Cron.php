@@ -7,7 +7,7 @@ use DAME\Services\Birthday;
 use DateTime;
 
 class Cron {
-	public function init() {
+	public function init(): void {
 		add_action( 'dame_daily_backup_event', function() { ( new Backup() )->run_scheduled_backup(); } );
 		add_action( 'dame_birthday_email_event', function() { ( new Birthday() )->send_wishes(); } );
 		add_action( 'admin_init', [ $this, 'schedule_events' ] );

@@ -19,7 +19,7 @@ class PDF_Generator {
 	/**
 	 * Initialize the service.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'wp_ajax_dame_generate_health_form', [ $this, 'generate_health_form' ] );
 		add_action( 'wp_ajax_nopriv_dame_generate_health_form', [ $this, 'generate_health_form' ] );
 
@@ -30,7 +30,7 @@ class PDF_Generator {
 	/**
 	 * Load PDF libraries.
 	 */
-	private function load_libraries() {
+	private function load_libraries(): void {
 		if ( ! class_exists( 'FPDF' ) ) {
 			require_once dirname( __DIR__, 2 ) . '/includes/lib/fpdf/fpdf.php';
 		}
@@ -42,7 +42,7 @@ class PDF_Generator {
 	/**
 	 * Generate Health Form PDF.
 	 */
-	public function generate_health_form() {
+	public function generate_health_form(): void {
 		$this->load_libraries();
 
 		// 1. Security check

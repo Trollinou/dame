@@ -9,6 +9,11 @@ parameters:
         - includes/
     excludePaths:
         - includes/lib/
+    scanDirectories:
+        - includes/lib/fpdi/src/
+    bootstrapFiles:
+        - tests/phpstan/bootstrap.php
+        - includes/lib/fpdf/fpdf.php
+        - includes/lib/fpdi/src/autoload.php
     scanFiles:
-        # Si vous avez besoin de fichiers spécifiques sans les exécuter
         - dame.php

@@ -15,7 +15,7 @@ class Manager {
 	/**
 	 * Initialize the metabox hooks.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'add_meta_boxes', [ $this, 'add_meta_boxes' ] );
 		add_action( 'save_post_sondage', [ $this, 'save' ] );
 		add_action( 'admin_post_dame_delete_sondage_response', [ $this, 'delete_response' ] );
@@ -29,7 +29,7 @@ class Manager {
 	 *
 	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_scripts( $hook ) {
+	public function enqueue_scripts( $hook ): void {
 		$screen = get_current_screen();
 
 		if ( ! $screen || 'sondage' !== $screen->post_type ) {
@@ -46,7 +46,7 @@ class Manager {
 	/**
 	 * Add meta boxes for sondage configuration.
 	 */
-	public function add_meta_boxes() {
+	public function add_meta_boxes(): void {
 		add_meta_box(
 			'dame_sondage_config',
 			__( 'Configuration du sondage', 'dame' ),
@@ -70,7 +70,7 @@ class Manager {
 	 *
 	 * @param \WP_Post $post The post object.
 	 */
-	public function display_shortcode_helper( $post ) {
+	public function display_shortcode_helper( $post ): void {
 		if ( 'sondage' !== $post->post_type ) {
 			return;
 		}
@@ -90,7 +90,7 @@ class Manager {
 	 *
 	 * @param \WP_Post $post The post object.
 	 */
-	public function render_config( $post ) {
+	public function render_config( $post ): void {
 		wp_nonce_field( 'dame_save_sondage_metabox_data', 'dame_sondage_metabox_nonce' );
 
 		$sondage_data = get_post_meta( $post->ID, '_dame_sondage_data', true );
@@ -171,7 +171,7 @@ class Manager {
 	 *
 	 * @param \WP_Post $post The post object.
 	 */
-	public function render_results( $post ) {
+	public function render_results( $post ): void {
 		$sondage_data = get_post_meta( $post->ID, '_dame_sondage_data', true );
 		if ( empty( $sondage_data ) ) {
 			echo '<p>' . __( 'Le sondage n\'a pas encore été configuré.', 'dame' ) . '</p>';
@@ -323,7 +323,7 @@ class Manager {
 	 *
 	 * @param int $post_id The ID of the post being saved.
 	 */
-	public function save( $post_id ) {
+	public function save( $post_id ): void {
 		// Check if the sondage is locked
 		$responses_exist = (bool) get_posts( [
 			'post_type'      => 'sondage_reponse',
@@ -387,7 +387,7 @@ class Manager {
 	/**
 	 * Handle the deletion of a sondage response.
 	 */
-	public function delete_response() {
+	public function delete_response(): void {
 		if ( ! isset( $_GET['action'], $_GET['response_id'], $_GET['_wpnonce'] ) || 'dame_delete_sondage_response' !== $_GET['action'] ) {
 			return;
 		}
@@ -422,10 +422,10 @@ class Manager {
 	/**
 	 * Display a custom admin notice when a response is deleted.
 	 *
-	 * @param array $messages Post updated messages.
-	 * @return array
+	 * @param array<string, mixed> $messages Post updated messages.
+	 * @return array<string, mixed>
 	 */
-	public function admin_notices( $messages ) {
+	public function admin_notices( $messages ): void {
 		if ( isset( $_GET['message'] ) && '101' === $_GET['message'] ) {
 			$messages['post'][101] = __( 'Réponse supprimée.', 'dame' );
 		}

@@ -24,7 +24,7 @@ class Sauvegarde {
 	/**
 	 * Register settings.
 	 */
-	public function register() {
+	public function register(): void {
 		add_settings_section(
 			'dame_backup_section',
 			__( 'Sauvegardes automatiques', 'dame' ),
@@ -44,7 +44,7 @@ class Sauvegarde {
 	/**
 	 * Render time field.
 	 */
-	public function render_time_field() {
+	public function render_time_field(): void {
 		$options = get_option( 'dame_options' );
 		$value = isset( $options['backup_time'] ) ? $options['backup_time'] : '';
 		echo '<input type="time" name="dame_options[backup_time]" value="' . esc_attr( $value ) . '" class="regular-text" />';
@@ -53,16 +53,16 @@ class Sauvegarde {
 	/**
 	 * Render the tab content.
 	 */
-	public function render() {
+	public function render(): void {
 		do_settings_sections( 'dame_backup_section_group' );
 	}
 
 	/**
 	 * Sanitize options.
 	 *
-	 * @param array $input New input.
-	 * @param array $existing_options Existing options.
-	 * @return array Sanitized options.
+	 * @param array<string, mixed> $input New input.
+	 * @param array<string, mixed> $existing_options Existing options.
+	 * @return array<string, mixed> Sanitized options.
 	 */
 	public function sanitize( $input, $existing_options ) {
 		if ( isset( $input['backup_time'] ) ) {

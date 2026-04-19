@@ -18,14 +18,16 @@ class Tracker {
 	/**
 	 * Initialize the Tracker.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
 	}
 
 	/**
 	 * Registers the custom REST API routes.
+	 *
+	 * @return void
 	 */
-	public function register_routes() {
+	public function register_routes(): void {
 		register_rest_route(
 			'dame/v1',
 			'/track',
@@ -44,8 +46,9 @@ class Tracker {
 	 * It records the email open event in the database.
 	 *
 	 * @param WP_REST_Request $request The request object.
+	 * @return void
 	 */
-	public function handle_tracking_pixel( $request ) {
+	public function handle_tracking_pixel( $request ): void {
 		global $wpdb;
 
 		$message_id = $request->get_param( 'mid' );
@@ -79,7 +82,7 @@ class Tracker {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->update(
 				$table_name,
-				array( 'opened_at' => current_time( 'mysql', 1 ) ),
+				array( 'opened_at' => current_time( 'mysql', true ) ),
 				array( 'id' => $existing_open ),
 				array( '%s' ),
 				array( '%d' )
@@ -91,7 +94,7 @@ class Tracker {
 				array(
 					'message_id' => $message_id,
 					'email_hash' => $email_hash,
-					'opened_at'  => current_time( 'mysql', 1 ),
+					'opened_at'  => current_time( 'mysql', true ),
 					'user_ip'    => $user_ip,
 				),
 				array(
@@ -111,8 +114,9 @@ class Tracker {
 	 * Sends a 1x1 transparent GIF response.
 	 *
 	 * @param int $status_code The HTTP status code to send.
+	 * @return void
 	 */
-	public function send_pixel_response( $status_code = 200 ) {
+	public function send_pixel_response( $status_code = 200 ): void {
 		status_header( $status_code );
 		header( 'Content-Type: image/gif' );
 		header( 'Cache-Control: no-cache, no-store, must-revalidate' );

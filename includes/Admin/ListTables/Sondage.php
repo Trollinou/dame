@@ -11,7 +11,7 @@ class Sondage {
 	/**
 	 * Initialize.
 	 */
-	public function init() {
+	public function init(): void {
 		add_filter( 'manage_dame_sondage_posts_columns', [ $this, 'add_columns' ] );
 		add_action( 'manage_dame_sondage_posts_custom_column', [ $this, 'display_columns' ], 10, 2 );
 	}
@@ -19,10 +19,10 @@ class Sondage {
 	/**
 	 * Add custom columns.
 	 *
-	 * @param array $columns Existing columns.
-	 * @return array New columns.
+	 * @param array<string, mixed> $columns Existing columns.
+	 * @return array<string, mixed> New columns.
 	 */
-	public function add_columns( $columns ) {
+	public function add_columns( $columns ): void {
 		$new_columns = [];
 		foreach ( $columns as $key => $title ) {
 			$new_columns[ $key ] = $title;
@@ -41,7 +41,7 @@ class Sondage {
 	 * @param string $column Column name.
 	 * @param int    $post_id Post ID.
 	 */
-	public function display_columns( $column, $post_id ) {
+	public function display_columns( $column, $post_id ): void {
 		switch ( $column ) {
 			case 'poll_end_date':
 				$date = get_post_meta( $post_id, '_dame_poll_end_date', true );

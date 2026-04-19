@@ -15,7 +15,7 @@ class Identity {
 	/**
 	 * Register the meta box.
 	 */
-	public function register() {
+	public function register(): void {
 		add_meta_box(
 			'dame_adherent_details_metabox',
 			__( 'Informations sur l\'adhérent', 'dame' ),
@@ -31,7 +31,7 @@ class Identity {
 	 *
 	 * @param \WP_Post $post The post object.
 	 */
-	public function render( $post ) {
+	public function render( $post ): void {
 		wp_nonce_field( 'dame_save_adherent_meta', 'dame_metabox_nonce' );
 
 		$transient_data = get_transient( 'dame_post_data_' . $post->ID );
@@ -190,7 +190,7 @@ class Identity {
 	 *
 	 * @param int $post_id Post ID.
 	 */
-	public function save( $post_id ) {
+	public function save( $post_id ): void {
 		if ( ! isset( $_POST['dame_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_metabox_nonce'], 'dame_save_adherent_meta' ) ) {
 			return;
 		}

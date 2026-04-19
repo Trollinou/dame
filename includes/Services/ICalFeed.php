@@ -20,7 +20,7 @@ class ICalFeed {
 	/**
 	 * Initialize the service.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'init', [ $this, 'register_feed' ] );
 		add_filter( 'query_vars', [ $this, 'add_query_vars' ] );
 		add_action( 'do_feed_dame-agenda-ical', [ $this, 'handle_feed_request' ] );
@@ -32,7 +32,7 @@ class ICalFeed {
 	/**
 	 * Registers the iCal feed and rewrite rule.
 	 */
-	public function register_feed() {
+	public function register_feed(): void {
 		add_feed( 'dame-agenda-ical', [ $this, 'handle_feed_request' ] );
 		add_rewrite_rule( '^feed/agenda/([^/]+)\.ics$', 'index.php?feed=dame-agenda-ical&dame_feed_slug=$matches[1]', 'top' );
 	}
@@ -40,10 +40,10 @@ class ICalFeed {
 	/**
 	 * Adds custom query variables.
 	 *
-	 * @param array $vars The existing query variables.
-	 * @return array The modified query variables.
+	 * @param array<string, mixed> $vars The existing query variables.
+	 * @return array<string, mixed> The modified query variables.
 	 */
-	public function add_query_vars( $vars ) {
+	public function add_query_vars( $vars ): void {
 		$vars[] = 'dame_feed_slug';
 		return $vars;
 	}
@@ -53,7 +53,7 @@ class ICalFeed {
 	 *
 	 * @param int $post_id The post ID.
 	 */
-	public function update_event_meta( $post_id ) {
+	public function update_event_meta( $post_id ): void {
 		if ( wp_is_post_revision( $post_id ) ) {
 			return;
 		}
@@ -72,7 +72,7 @@ class ICalFeed {
 	/**
 	 * Handles the feed request and generates the iCal output.
 	 */
-	public function handle_feed_request() {
+	public function handle_feed_request(): void {
 		$feed_slug = get_query_var( 'dame_feed_slug' );
 		if ( ! $feed_slug ) {
 			return;
@@ -136,7 +136,7 @@ class ICalFeed {
 	/**
 	 * Handles single event download.
 	 */
-	public function handle_single_event_download() {
+	public function handle_single_event_download(): void {
 		if ( isset( $_GET['dame_ics_download'] ) && '1' === $_GET['dame_ics_download'] && isset( $_GET['event_id'] ) ) {
 			$post_id = intval( $_GET['event_id'] );
 			$post    = get_post( $post_id );
@@ -161,7 +161,7 @@ class ICalFeed {
 	/**
 	 * Displays the global feeds notice on the iCal feed list table.
 	 */
-	public function display_global_feeds_notice() {
+	public function display_global_feeds_notice(): void {
 		$default_feeds = array(
 			array(
 				'title'       => __( 'Flux public global', 'dame' ),
@@ -196,8 +196,8 @@ class ICalFeed {
 	/**
 	 * Generates the ICS content.
 	 *
-	 * @param array $event_posts    Array of event posts.
-	 * @param array $feed_details   Feed metadata.
+	 * @param array<string, mixed> $event_posts    Array of event posts.
+	 * @param array<string, mixed> $feed_details   Feed metadata.
 	 * @param bool  $force_download Whether to force download as attachment.
 	 */
 	private function generate_ics( $event_posts, $feed_details, $force_download = false ) {

@@ -15,7 +15,7 @@ class Message {
 	/**
 	 * Initialize actions.
 	 */
-	public function init() {
+	public function init(): void {
 		add_filter( 'post_row_actions', [ $this, 'add_duplicate_link' ], 10, 2 );
 		add_filter( 'post_row_actions', [ $this, 'add_reset_link' ], 10, 2 );
 		add_action( 'admin_action_dame_duplicate', [ $this, 'handle_duplicate' ] );
@@ -25,11 +25,11 @@ class Message {
 	/**
 	 * Add "Duplicate" link to row actions.
 	 *
-	 * @param array    $actions Existing actions.
+	 * @param array<string, mixed> $actions Existing actions.
 	 * @param \WP_Post $post    Current post.
-	 * @return array Modified actions.
+	 * @return array<string, mixed> Modified actions.
 	 */
-	public function add_duplicate_link( $actions, $post ) {
+	public function add_duplicate_link( $actions, $post ): void {
 		if ( 'dame_message' !== $post->post_type ) {
 			return $actions;
 		}
@@ -51,11 +51,11 @@ class Message {
 	/**
 	 * Add "Reset envoi" link to row actions.
 	 *
-	 * @param array    $actions Existing actions.
+	 * @param array<string, mixed> $actions Existing actions.
 	 * @param \WP_Post $post    Current post.
-	 * @return array Modified actions.
+	 * @return array<string, mixed> Modified actions.
 	 */
-	public function add_reset_link( $actions, $post ) {
+	public function add_reset_link( $actions, $post ): void {
 		if ( 'dame_message' !== $post->post_type || ! current_user_can( 'edit_dame_messages' ) ) {
 			return $actions;
 		}
@@ -83,7 +83,7 @@ class Message {
 	/**
 	 * Handle duplication.
 	 */
-	public function handle_duplicate() {
+	public function handle_duplicate(): void {
 		if ( ! ( isset( $_GET['post'] ) || isset( $_POST['post'] ) ) || ( ! isset( $_GET['_wpnonce'] ) ) ) {
 			wp_die( __( 'Données manquantes pour la duplication.', 'dame' ) );
 		}
@@ -125,7 +125,7 @@ class Message {
 	/**
 	 * Handle reset of message send data.
 	 */
-	public function handle_reset() {
+	public function handle_reset(): void {
 		if ( ! ( isset( $_GET['post'] ) || isset( $_POST['post'] ) ) || ( ! isset( $_GET['_wpnonce'] ) ) ) {
 			wp_die( __( 'Données manquantes pour le reset.', 'dame' ) );
 		}

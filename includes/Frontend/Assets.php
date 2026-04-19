@@ -15,7 +15,7 @@ class Assets {
 	/**
 	 * Initializes the frontend assets class.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles_scripts' ) );
 	}
 

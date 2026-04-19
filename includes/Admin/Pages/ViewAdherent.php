@@ -15,14 +15,14 @@ class ViewAdherent {
 	/**
 	 * Initialize the page.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'admin_menu', [ $this, 'register' ] );
 	}
 
 	/**
 	 * Register the hidden admin page.
 	 */
-	public function register() {
+	public function register(): void {
 		add_submenu_page(
 			'dame-hidden', // Parent slug
 			__( 'Consulter la fiche Adhérent', 'dame' ),
@@ -45,7 +45,7 @@ class ViewAdherent {
 	/**
 	 * Render the content of the adherent view page.
 	 */
-	public function render() {
+	public function render(): void {
 		// Check permissions
 		if ( ! current_user_can( 'read_private_pages' ) ) {
 			wp_die( esc_html__( 'Vous n\'avez pas la permission de voir cette page.', 'dame' ) );
@@ -245,7 +245,7 @@ class ViewAdherent {
 	 * @param string $label The label for the field.
 	 * @param string $value The value of the field.
 	 */
-	private function render_field( $label, $value ) {
+	private function render_field( $label, $value ): void {
 		if ( empty( $value ) && $value !== '0' ) {
 			return;
 		}
@@ -272,7 +272,7 @@ class ViewAdherent {
 	 * @param string $label The label for the field.
 	 * @param string $value The value of the field.
 	 */
-	private function render_p_field( $label, $value ) {
+	private function render_p_field( $label, $value ): void {
 		if ( empty( $value ) && $value !== '0' ) {
 			return;
 		}

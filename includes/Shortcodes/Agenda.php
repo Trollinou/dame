@@ -19,7 +19,7 @@ class Agenda {
 	/**
 	 * Initialize the shortcodes and AJAX handlers.
 	 */
-	public function init() {
+	public function init(): void {
 		add_shortcode( 'dame_agenda', [ $this, 'render_agenda' ] );
 		add_shortcode( 'dame_liste_agenda', [ $this, 'render_list' ] );
 		add_action( 'wp_ajax_dame_get_agenda_events', [ $this, 'get_events_ajax' ] );
@@ -29,7 +29,7 @@ class Agenda {
 	/**
 	 * Renders the [dame_agenda] shortcode.
 	 *
-	 * @param array $atts Shortcode attributes.
+	 * @param array<string, mixed> $atts Shortcode attributes.
 	 * @return string The shortcode output.
 	 */
 	public function render_agenda( $atts ) {
@@ -156,10 +156,11 @@ class Agenda {
 	/**
 	 * Helper function to render category checklist recursively.
 	 *
-	 * @param array $categories Array of terms.
-	 * @param int   $parent_id Parent ID.
+	 * @param array<\WP_Term> $categories Array of terms.
+	 * @param int             $parent_id Parent ID.
+	 * @return void
 	 */
-	private function render_category_checklist( $categories, $parent_id = 0 ) {
+	private function render_category_checklist( $categories, $parent_id = 0 ): void {
 		$children = array();
 		foreach ( $categories as $category ) {
 			if ( $category->parent == $parent_id ) {
@@ -178,8 +179,8 @@ class Agenda {
 			?>
 			<li>
 				<label>
-					<input type="checkbox" class="dame-agenda-cat-filter" value="<?php echo esc_attr( $category->term_id ); ?>" checked>
-					<span class="dame-agenda-cat-color" style="background-color: <?php echo esc_attr( $color ); ?>"></span>
+					<input type="checkbox" class="dame-agenda-cat-filter" value="<?php echo esc_attr( (string) $category->term_id ); ?>" checked>
+					<span class="dame-agenda-cat-color" style="background-color: <?php echo esc_attr( (string) $color ); ?>"></span>
 					<?php echo esc_html( $category->name ); ?>
 				</label>
 				<?php $this->render_category_checklist( $categories, $category->term_id ); ?>
@@ -191,8 +192,10 @@ class Agenda {
 
 	/**
 	 * AJAX handler to fetch agenda events.
+	 *
+	 * @return void
 	 */
-	public function get_events_ajax() {
+	public function get_events_ajax(): void {
 		check_ajax_referer( 'dame_agenda_nonce', 'nonce' );
 
 		$start_date_str = isset( $_POST['start_date'] ) ? sanitize_text_field( $_POST['start_date'] ) : '';
@@ -279,9 +282,9 @@ class Agenda {
 		$query = new WP_Query( $args );
 
 		if ( ! empty( $search_term ) ) {
-			remove_filter( 'posts_join', [ $this, 'filter_search_join' ], 10, 2 );
-			remove_filter( 'posts_where', [ $this, 'filter_search_where' ], 10, 2 );
-			remove_filter( 'posts_distinct', [ $this, 'filter_search_distinct' ], 10, 2 );
+			remove_filter( 'posts_join', [ $this, 'filter_search_join' ], 10 );
+			remove_filter( 'posts_where', [ $this, 'filter_search_where' ], 10 );
+			remove_filter( 'posts_distinct', [ $this, 'filter_search_distinct' ], 10 );
 		}
 
 		$events = array();
@@ -399,7 +402,7 @@ class Agenda {
 	/**
 	 * Renders the [dame_liste_agenda] shortcode.
 	 *
-	 * @param array $atts Shortcode attributes.
+	 * @param array<string, mixed> $atts Shortcode attributes.
 	 * @return string The shortcode output.
 	 */
 	public function render_list( $atts ) {

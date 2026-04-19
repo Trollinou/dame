@@ -15,7 +15,7 @@ class Backup {
 	/**
 	 * Initialize the service.
 	 */
-	public function init() {
+	public function init(): void {
 		// Handle manual export/import actions (triggered via admin POST).
 		add_action( 'admin_init', [ $this, 'handle_manual_actions' ] );
 		add_action( 'admin_notices', [ $this, 'display_import_export_notices' ] );
@@ -24,14 +24,14 @@ class Backup {
 	/**
 	 * Adds an admin notice to be displayed on the next page load.
 	 */
-	private function add_admin_notice( $message, $type = 'success' ) {
+	private function add_admin_notice( $message, $type = 'success' ): void {
 		set_transient( 'dame_import_export_notice', array( 'message' => $message, 'type' => $type ), 30 );
 	}
 
 	/**
 	 * Displays the admin notice if one is set.
 	 */
-	public function display_import_export_notices() {
+	public function display_import_export_notices(): void {
 		if ( get_transient( 'dame_import_export_notice' ) ) {
 			$notice = get_transient( 'dame_import_export_notice' );
 			$message = $notice['message'];
@@ -44,7 +44,7 @@ class Backup {
 	/**
 	 * Dispatch manual actions based on POST requests.
 	 */
-	public function handle_manual_actions() {
+	public function handle_manual_actions(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
@@ -97,7 +97,7 @@ class Backup {
 	/**
 	 * Handle contacts export to CSV.
 	 */
-	private function export_csv_contacts() {
+	private function export_csv_contacts(): void {
 		$type_slug = isset( $_POST['contact_type'] ) ? sanitize_key( $_POST['contact_type'] ) : '';
 		if ( empty( $type_slug ) ) {
 			return;
@@ -160,7 +160,7 @@ class Backup {
 	/**
 	 * Handle contacts import from CSV.
 	 */
-	private function import_csv_contacts() {
+	private function import_csv_contacts(): void {
 		$type_slug = isset( $_POST['contact_type'] ) ? sanitize_key( $_POST['contact_type'] ) : '';
 		if ( empty( $type_slug ) || ! isset( $_FILES['dame_import_contacts_file'] ) || $_FILES['dame_import_contacts_file']['error'] !== UPLOAD_ERR_OK ) {
 			$this->add_admin_notice( __( 'Données invalides pour l\'import.', 'dame' ), 'error' );
@@ -287,7 +287,7 @@ class Backup {
 	 * ADHERENTS - CSV
 	 * ------------------------------------------------------------------------- */
 
-	private function export_csv_adherents() {
+	private function export_csv_adherents(): void {
 		$filename = 'dame-export-adherents-' . wp_date( 'Y-m-d' ) . '.csv';
 
 		ob_clean();
@@ -426,7 +426,7 @@ class Backup {
 		exit;
 	}
 
-	private function import_csv_adherents() {
+	private function import_csv_adherents(): void {
 		if ( ! isset( $_FILES['dame_import_csv_file'] ) || $_FILES['dame_import_csv_file']['error'] !== UPLOAD_ERR_OK ) {
 			$this->add_admin_notice( __( 'Erreur lors du téléversement du fichier.', 'dame' ), 'error' );
 			return;
@@ -846,7 +846,7 @@ class Backup {
 		return $data;
 	}
 
-	private function export_json_adherents() {
+	private function export_json_adherents(): void {
 		$data = $this->generate_adherent_export_data();
 		$gz = gzcompress( json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
 		$filename = 'dame-adherents-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
@@ -858,7 +858,7 @@ class Backup {
 		exit;
 	}
 
-	private function import_json_adherents() {
+	private function import_json_adherents(): void {
 		if ( ! isset( $_FILES['dame_import_file'] ) ) return;
 		$json = gzuncompress( file_get_contents( $_FILES['dame_import_file']['tmp_name'] ) );
 		$data = json_decode( $json, true );
@@ -1045,7 +1045,7 @@ class Backup {
 		return $data;
 	}
 
-	private function export_json_agenda() {
+	private function export_json_agenda(): void {
 		$data = $this->generate_agenda_export_data();
 		$gz = gzcompress( json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
 		$filename = 'dame-agenda-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
@@ -1057,7 +1057,7 @@ class Backup {
 		exit;
 	}
 
-	private function import_json_agenda() {
+	private function import_json_agenda(): void {
 		if ( ! isset( $_FILES['dame_agenda_restore_file'] ) ) return;
 		$json = gzuncompress( file_get_contents( $_FILES['dame_agenda_restore_file']['tmp_name'] ) );
 		$data = json_decode( $json, true );
@@ -1099,7 +1099,8 @@ class Backup {
 	 * CRON JOB
 	 * ------------------------------------------------------------------------- */
 
-	public function run_scheduled_backup() {
+	public function run_scheduled_backup(): void {
+		global $wpdb;
 		$upload_dir = wp_upload_dir();
 		$backup_dir = trailingslashit( $upload_dir['basedir'] ) . 'dame-backups';
 		wp_mkdir_p( $backup_dir );

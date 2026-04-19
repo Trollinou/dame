@@ -16,7 +16,7 @@ class Agenda {
 	/**
 	 * Initialize the actions.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'admin_action_dame_duplicate_event', [ $this, 'duplicate_event' ] );
 	}
 

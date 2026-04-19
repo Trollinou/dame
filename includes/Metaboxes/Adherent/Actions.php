@@ -15,7 +15,7 @@ class Actions {
 	/**
 	 * Register the meta box.
 	 */
-	public function register() {
+	public function register(): void {
 		add_meta_box(
 			'dame_special_actions_metabox',
 			__( 'Actions spéciales', 'dame' ),
@@ -34,7 +34,7 @@ class Actions {
 	 *
 	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_scripts( $hook ) {
+	public function enqueue_scripts( $hook ): void {
 		$screen = get_current_screen();
 
 		if ( ! $screen || 'adherent' !== $screen->post_type ) {
@@ -54,8 +54,8 @@ class Actions {
 	/**
 	 * Close the "Actions spéciales" metabox by default.
 	 *
-	 * @param array $classes An array of postbox classes.
-	 * @return array The modified array of classes.
+	 * @param array<string, mixed> $classes An array of postbox classes.
+	 * @return array<string, mixed> The modified array of classes.
 	 */
 	public function close_metabox_by_default( $classes ) {
 		if ( function_exists( 'get_current_screen' ) && get_current_screen() && get_current_screen()->id === 'adherent' ) {
@@ -69,7 +69,7 @@ class Actions {
 	 *
 	 * @param \WP_Post $post The post object.
 	 */
-	public function render( $post ) {
+	public function render( $post ): void {
 		// Get the current season tag ID from options.
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
 		if ( ! $current_season_tag_id ) {
@@ -118,7 +118,7 @@ class Actions {
 	 *
 	 * @param int $post_id Post ID.
 	 */
-	public function save( $post_id ) {
+	public function save( $post_id ): void {
 		// Logic to handle the action is currently handled by legacy hooks or will be migrated later.
 		// If we wanted to handle it here, we would check $_POST['dame_revert_to_pre_inscription'].
 	}

@@ -26,7 +26,7 @@ class Assignation {
 	/**
 	 * Register actions and settings.
 	 */
-	public function register() {
+	public function register(): void {
 		add_action( 'admin_post_dame_assign_user', array( $this, 'handle_assignment' ) );
 		add_action( 'admin_notices', array( $this, 'display_notices' ) );
 	}
@@ -34,7 +34,7 @@ class Assignation {
 	/**
 	 * Render the tab content.
 	 */
-	public function render() {
+	public function render(): void {
 		// Get all linked user IDs first.
 		global $wpdb;
 		$linked_user_ids = $wpdb->get_col(
@@ -145,7 +145,7 @@ class Assignation {
 	/**
 	 * Handle the assignment form submission.
 	 */
-	public function handle_assignment() {
+	public function handle_assignment(): void {
 		if ( ! isset( $_POST['dame_user_assignment_nonce'] ) ) {
 			return;
 		}
@@ -201,7 +201,7 @@ class Assignation {
 	/**
 	 * Display admin notices.
 	 */
-	public function display_notices() {
+	public function display_notices(): void {
 		if ( ! isset( $_GET['page'] ) || 'dame-settings' !== $_GET['page'] ) {
 			return;
 		}
@@ -242,9 +242,9 @@ class Assignation {
 	/**
 	 * Return existing options for this tab.
 	 *
-	 * @param array $input Input options.
-	 * @param array $existing Existing options.
-	 * @return array
+	 * @param array<string, mixed> $input Input options.
+	 * @param array<string, mixed> $existing Existing options.
+	 * @return array<string, mixed>
 	 */
 	public function sanitize( $input, $existing ) {
 		return $existing;

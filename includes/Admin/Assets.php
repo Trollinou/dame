@@ -16,7 +16,7 @@ class Assets {
 	/**
 	 * Initialize the class.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 	}
 
@@ -25,7 +25,7 @@ class Assets {
 	 *
 	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_scripts( $hook ) {
+	public function enqueue_scripts( $hook ): void {
 		$screen = get_current_screen();
 
 		if ( ! $screen ) {

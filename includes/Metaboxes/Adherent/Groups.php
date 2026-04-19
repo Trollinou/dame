@@ -15,7 +15,7 @@ class Groups {
 	/**
 	 * Register the meta box.
 	 */
-	public function register() {
+	public function register(): void {
 		// Remove the default taxonomy metabox and add our custom one with checkboxes.
 		remove_meta_box( 'dame_groupdiv', 'adherent', 'side' );
 
@@ -35,8 +35,8 @@ class Groups {
 	/**
 	 * Open the "Groupes" metabox by default by removing the 'closed' class.
 	 *
-	 * @param array $classes An array of postbox classes.
-	 * @return array The modified array of classes.
+	 * @param array<string, mixed> $classes An array of postbox classes.
+	 * @return array<string, mixed> The modified array of classes.
 	 */
 	public function open_metabox_by_default( $classes ) {
 		if ( function_exists( 'get_current_screen' ) && get_current_screen() && get_current_screen()->id === 'adherent' ) {
@@ -50,7 +50,7 @@ class Groups {
 	 *
 	 * @param \WP_Post $post The post object.
 	 */
-	public function render( $post ) {
+	public function render( $post ): void {
 		$taxonomy = 'dame_group';
 		?>
 		<div id="taxonomy-<?php echo esc_attr( $taxonomy ); ?>" class="categorydiv">
@@ -65,7 +65,7 @@ class Groups {
 						$post->ID,
 						array(
 							'taxonomy'      => $taxonomy,
-							'popular_cats'  => false,
+							'popular_cats'  => [],
 							'checked_ontop' => false, // Keep alphabetical order.
 						)
 					);
@@ -87,7 +87,7 @@ class Groups {
 	 *
 	 * @param int $post_id Post ID.
 	 */
-	public function save( $post_id ) {
+	public function save( $post_id ): void {
 		// Standard taxonomy saving is handled by WordPress core via 'tax_input'.
 	}
 }

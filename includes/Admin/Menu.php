@@ -14,7 +14,7 @@ use DAME\Admin\Pages\MessageReport;
 
 class Menu {
 
-	public function init() {
+	public function init(): void {
 		add_action( 'admin_menu', [ $this, 'add_menus' ], 10 );
 		add_action( 'admin_menu', [ $this, 'reorder_dame_submenu' ], 999 );
 		add_filter( 'parent_file', [ $this, 'highlight_parent_menu' ] );
@@ -24,7 +24,7 @@ class Menu {
 		(new Mailing())->init();
 	}
 
-	public function add_menus() {
+	public function add_menus(): void {
 		// 1. Menu Parent & Tableau de bord (slug: dame-admin)
 		add_menu_page(
 			__( "DAME - Gestion", "dame" ),
@@ -142,7 +142,7 @@ class Menu {
 		$submenu['dame-admin'] = $reordered;
 	}
 
-	public function render_dashboard() {
+	public function render_dashboard(): void {
 		// 1. Saison en cours
 		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
 		$season_term           = get_term( $current_season_tag_id, 'dame_saison_adhesion' );

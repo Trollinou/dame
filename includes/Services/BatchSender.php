@@ -28,7 +28,7 @@ class BatchSender {
 	 * Sends a batch of emails via WP-Cron.
 	 *
 	 * @param int   $message_id  The ID of the message post.
-	 * @param array $emails      An array of email addresses to send to.
+	 * @param array<string, mixed> $emails      An array of email addresses to send to.
 	 * @param int   $retry_count The number of times this batch has been retried.
 	 */
 	public function process_batch( int $message_id, array $emails, int $retry_count = 0 ): void {

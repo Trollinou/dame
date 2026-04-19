@@ -24,7 +24,7 @@ class Anniversaires {
 	/**
 	 * Register settings.
 	 */
-	public function register() {
+	public function register(): void {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
 		add_settings_section(
@@ -56,7 +56,7 @@ class Anniversaires {
 	 *
 	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_scripts( $hook ) {
+	public function enqueue_scripts( $hook ): void {
 		if ( strpos( $hook, 'dame-settings' ) === false || ( isset( $_GET['tab'] ) && $_GET['tab'] !== 'anniversaires' ) ) {
 			return;
 		}
@@ -67,7 +67,7 @@ class Anniversaires {
 	/**
 	 * Render enabled field.
 	 */
-	public function render_enabled_field() {
+	public function render_enabled_field(): void {
 		$options = get_option( 'dame_options' );
 		$checked = isset( $options['birthday_emails_enabled'] ) && $options['birthday_emails_enabled'] ? 'checked' : '';
 		echo '<input type="checkbox" name="dame_options[birthday_emails_enabled]" value="1" ' . esc_attr( $checked ) . ' /> ' . esc_html__( 'Envoyer automatiquement un email le jour de l\'anniversaire.', 'dame' );
@@ -76,7 +76,7 @@ class Anniversaires {
 	/**
 	 * Render slug field.
 	 */
-	public function render_slug_field() {
+	public function render_slug_field(): void {
 		$options = get_option( 'dame_options' );
 		$value = isset( $options['birthday_article_slug'] ) ? $options['birthday_article_slug'] : '';
 		echo '<input type="text" name="dame_options[birthday_article_slug]" value="' . esc_attr( $value ) . '" class="regular-text" />';
@@ -86,16 +86,16 @@ class Anniversaires {
 	/**
 	 * Render the tab content.
 	 */
-	public function render() {
+	public function render(): void {
 		do_settings_sections( 'dame_birthday_section_group' );
 	}
 
 	/**
 	 * Sanitize options.
 	 *
-	 * @param array $input New input.
-	 * @param array $existing_options Existing options.
-	 * @return array Sanitized options.
+	 * @param array<string, mixed> $input New input.
+	 * @param array<string, mixed> $existing_options Existing options.
+	 * @return array<string, mixed> Sanitized options.
 	 */
 	public function sanitize( $input, $existing_options ) {
 		$existing_options['birthday_emails_enabled'] = isset( $input['birthday_emails_enabled'] ) ? 1 : 0;

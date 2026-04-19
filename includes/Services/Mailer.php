@@ -17,7 +17,7 @@ class Mailer {
 	/**
 	 * Initialize the Mailer service.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'phpmailer_init', [ $this, 'configure_smtp' ] );
 		add_filter( 'wp_mail_from', [ $this, 'set_from_email' ] );
 		add_filter( 'wp_mail_from_name', [ $this, 'set_from_name' ] );

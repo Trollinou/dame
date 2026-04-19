@@ -15,22 +15,24 @@ class Season {
 	/**
 	 * Initialize the taxonomy.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'init', [ $this, 'register' ], 0 );
 	}
 
 	/**
 	 * Register the taxonomy.
+	 *
+	 * @return void
 	 */
-	public function register() {
+	public function register(): void {
 		$labels = array(
 			'name'                       => _x( 'Saisons d\'adhésion', 'taxonomy general name', 'dame' ),
 			'singular_name'              => _x( 'Saison d\'adhésion', 'taxonomy singular name', 'dame' ),
 			'search_items'               => __( 'Rechercher les saisons', 'dame' ),
 			'popular_items'              => __( 'Saisons populaires', 'dame' ),
 			'all_items'                  => __( 'Toutes les saisons', 'dame' ),
-			'parent_item'                => null,
-			'parent_item_colon'          => null,
+			'parent_item'                => '',
+			'parent_item_colon'          => '',
 			'edit_item'                  => __( 'Modifier la saison', 'dame' ),
 			'update_item'                => __( 'Mettre à jour la saison', 'dame' ),
 			'add_new_item'               => __( 'Ajouter une nouvelle saison', 'dame' ),

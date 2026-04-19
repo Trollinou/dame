@@ -17,7 +17,7 @@ class Actions {
 	/**
 	 * Initialize the metabox.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'add_meta_boxes', [ $this, 'add_box' ] );
 		add_action( 'save_post', [ $this, 'save' ], 20 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -28,7 +28,7 @@ class Actions {
 	 *
 	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_scripts( $hook ) {
+	public function enqueue_scripts( $hook ): void {
 		$screen = get_current_screen();
 
 		if ( ! $screen || 'dame_pre_inscription' !== $screen->post_type ) {
@@ -48,7 +48,7 @@ class Actions {
 	/**
 	 * Add the meta box.
 	 */
-	public function add_box() {
+	public function add_box(): void {
 		$matched_id = Adherent_Matcher::find_match( get_the_ID() );
 		add_meta_box(
 			'dame_pre_inscription_actions',
@@ -65,9 +65,9 @@ class Actions {
 	 * Render the meta box.
 	 *
 	 * @param \WP_Post $post The post object.
-	 * @param array    $metabox The metabox arguments.
+	 * @param array<string, mixed> $metabox The metabox arguments.
 	 */
-	public function render( $post, $metabox ) {
+	public function render( $post, $metabox ): void {
 		$matched_id = $metabox['args']['matched_id'];
 		wp_nonce_field( 'dame_pre_inscription_process_action', 'dame_pre_inscription_action_nonce' );
 		?>
@@ -97,7 +97,7 @@ class Actions {
 	 *
 	 * @param int $post_id Post ID.
 	 */
-	public function save( $post_id ) {
+	public function save( $post_id ): void {
 		// Note: Field saving is handled by Details class (priority 10).
 		// This runs at priority 20 to handle actions AFTER fields are saved.
 

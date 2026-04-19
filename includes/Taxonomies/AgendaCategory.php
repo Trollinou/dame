@@ -7,6 +7,8 @@
 
 namespace DAME\Taxonomies;
 
+use WP_Term;
+
 /**
  * Class AgendaCategory
  * Handles registration and management of the 'dame_agenda_category' taxonomy, including color picker.
@@ -16,13 +18,13 @@ class AgendaCategory {
 	/**
 	 * Initialize the taxonomy.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'init', [ $this, 'register' ], 0 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_color_picker' ] );
-		add_action( 'dame_agenda_category_add_form_fields', [ $this, 'add_form_fields' ], 10, 2 );
-		add_action( 'dame_agenda_category_edit_form_fields', [ $this, 'edit_form_fields' ], 10, 2 );
-		add_action( 'edited_dame_agenda_category', [ $this, 'save_color' ], 10, 2 );
-		add_action( 'create_dame_agenda_category', [ $this, 'save_color' ], 10, 2 );
+		add_action( 'dame_agenda_category_add_form_fields', [ $this, 'add_form_fields' ], 10, 1 );
+		add_action( 'dame_agenda_category_edit_form_fields', [ $this, 'edit_form_fields' ], 10, 1 );
+		add_action( 'edited_dame_agenda_category', [ $this, 'save_color' ], 10, 1 );
+		add_action( 'create_dame_agenda_category', [ $this, 'save_color' ], 10, 1 );
 		add_filter( 'manage_edit-dame_agenda_category_columns', [ $this, 'add_color_column' ] );
 		add_filter( 'manage_dame_agenda_category_custom_column', [ $this, 'render_color_column' ], 10, 3 );
 	}
@@ -30,7 +32,7 @@ class AgendaCategory {
 	/**
 	 * Register Agenda Category Taxonomy
 	 */
-	public function register() {
+	public function register(): void {
 		$labels = array(
 			'name'              => _x( 'Catégories d\'événements', 'taxonomy general name', 'dame' ),
 			'singular_name'     => _x( 'Catégorie d\'événement', 'taxonomy singular name', 'dame' ),
@@ -64,7 +66,7 @@ class AgendaCategory {
 	 *
 	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_color_picker( $hook ) {
+	public function enqueue_color_picker( $hook ): void {
 		if ( 'term.php' !== $hook && 'edit-tags.php' !== $hook ) {
 			return;
 		}
@@ -80,8 +82,10 @@ class AgendaCategory {
 
 	/**
 	 * Add color picker to the "Add New Category" form.
+	 *
+	 * @param string $taxonomy The taxonomy slug.
 	 */
-	public function add_form_fields() {
+	public function add_form_fields( $taxonomy ): void {
 		?>
 		<div class="form-field">
 			<label for="term_meta[color]"><?php _e( 'Couleur de la catégorie', 'dame' ); ?></label>
@@ -96,7 +100,7 @@ class AgendaCategory {
 	 *
 	 * @param WP_Term $term Current term object.
 	 */
-	public function edit_form_fields( $term ) {
+	public function edit_form_fields( WP_Term $term ): void {
 		$term_id = $term->term_id;
 		$term_meta = get_option( "taxonomy_$term_id" );
 		$color = isset( $term_meta['color'] ) ? $term_meta['color'] : '';
@@ -116,7 +120,7 @@ class AgendaCategory {
 	 *
 	 * @param int $term_id Term ID.
 	 */
-	public function save_color( $term_id ) {
+	public function save_color( $term_id ): void {
 		if ( isset( $_POST['term_meta'] ) ) {
 			$term_meta = get_option( "taxonomy_$term_id" );
 			if ( ! is_array( $term_meta ) ) {
@@ -135,10 +139,10 @@ class AgendaCategory {
 	/**
 	 * Add a "Color" column to the agenda category list table.
 	 *
-	 * @param array $columns Existing columns.
-	 * @return array Modified columns.
+	 * @param array<string, string> $columns Existing columns.
+	 * @return array<string, string> Modified columns.
 	 */
-	public function add_color_column( $columns ) {
+	public function add_color_column( $columns ): array {
 		$columns['color'] = __( 'Couleur', 'dame' );
 		return $columns;
 	}
@@ -151,7 +155,7 @@ class AgendaCategory {
 	 * @param int    $term_id Term ID.
 	 * @return string Modified content.
 	 */
-	public function render_color_column( $content, $column_name, $term_id ) {
+	public function render_color_column( $content, $column_name, $term_id ): string {
 		if ( 'color' === $column_name ) {
 			$term_meta = get_option( "taxonomy_$term_id" );
 			if ( isset( $term_meta['color'] ) && ! empty( $term_meta['color'] ) ) {

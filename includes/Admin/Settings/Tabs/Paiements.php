@@ -24,7 +24,7 @@ class Paiements {
 	/**
 	 * Register settings.
 	 */
-	public function register() {
+	public function register(): void {
 		add_settings_section(
 			'dame_payment_section',
 			__( 'Configuration des paiements', 'dame' ),
@@ -44,7 +44,7 @@ class Paiements {
 	/**
 	 * Render URL field.
 	 */
-	public function render_url_field() {
+	public function render_url_field(): void {
 		$options = get_option( 'dame_options' );
 		$value = isset( $options['payment_url'] ) ? $options['payment_url'] : '';
 		echo '<input type="url" name="dame_options[payment_url]" value="' . esc_attr( $value ) . '" class="regular-text" />';
@@ -53,16 +53,16 @@ class Paiements {
 	/**
 	 * Render the tab content.
 	 */
-	public function render() {
+	public function render(): void {
 		do_settings_sections( 'dame_payment_section_group' );
 	}
 
 	/**
 	 * Sanitize options.
 	 *
-	 * @param array $input New input.
-	 * @param array $existing_options Existing options.
-	 * @return array Sanitized options.
+	 * @param array<string, mixed> $input New input.
+	 * @param array<string, mixed> $existing_options Existing options.
+	 * @return array<string, mixed> Sanitized options.
 	 */
 	public function sanitize( $input, $existing_options ) {
 		if ( isset( $input['payment_url'] ) ) {
