@@ -87,7 +87,7 @@ class Agenda {
 	 * @param string $content The post content.
 	 * @return string The modified post content with event details.
 	 */
-	public function display_event_details( $content ): void {
+	public function display_event_details( $content ): string {
 		// Check if we are on a single 'dame_agenda' post page.
 		if ( is_singular( 'dame_agenda' ) && in_the_loop() && is_main_query() ) {
 			$post_id = get_the_ID();

@@ -425,7 +425,8 @@ class Manager {
 	 * @param array<string, mixed> $messages Post updated messages.
 	 * @return array<string, mixed>
 	 */
-	public function admin_notices( $messages ): void {
+	 public function admin_notices( array $messages ): array {
+
 		if ( isset( $_GET['message'] ) && '101' === $_GET['message'] ) {
 			$messages['post'][101] = __( 'Réponse supprimée.', 'dame' );
 		}

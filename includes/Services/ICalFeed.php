@@ -43,7 +43,7 @@ class ICalFeed {
 	 * @param array<string, mixed> $vars The existing query variables.
 	 * @return array<string, mixed> The modified query variables.
 	 */
-	public function add_query_vars( $vars ): void {
+	public function add_query_vars( $vars ): array {
 		$vars[] = 'dame_feed_slug';
 		return $vars;
 	}

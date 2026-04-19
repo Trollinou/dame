@@ -131,7 +131,7 @@ class Mailing {
 		/**
 		 * Helper pour rendre une liste avec recherche.
 		 */
-		$render_searchable_list = function( string $placeholder, array $items, string $name_attr, array $checked_items, callable $label_callback, callable $data_callback = null ) {
+		$render_searchable_list = function( string $placeholder, array $items, string $name_attr, array $checked_items, callable $label_callback, ?callable $data_callback = null ) {
 			?>
 			<div class="dame-searchable-list-wrapper">
 				<div class="dame-search-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">

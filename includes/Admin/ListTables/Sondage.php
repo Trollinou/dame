@@ -22,7 +22,7 @@ class Sondage {
 	 * @param array<string, mixed> $columns Existing columns.
 	 * @return array<string, mixed> New columns.
 	 */
-	public function add_columns( $columns ): void {
+	public function add_columns( $columns ): array {
 		$new_columns = [];
 		foreach ( $columns as $key => $title ) {
 			$new_columns[ $key ] = $title;

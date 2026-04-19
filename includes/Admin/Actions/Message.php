@@ -1,11 +1,15 @@
 <?php
 /**
- * Message Actions.
+ * Message Admin Actions.
  *
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Admin\Actions;
+
+use WP_Post;
 
 /**
  * Class Message
@@ -13,7 +17,7 @@ namespace DAME\Admin\Actions;
 class Message {
 
 	/**
-	 * Initialize actions.
+	 * Initialize the actions.
 	 */
 	public function init(): void {
 		add_filter( 'post_row_actions', [ $this, 'add_duplicate_link' ], 10, 2 );
@@ -29,7 +33,7 @@ class Message {
 	 * @param \WP_Post $post    Current post.
 	 * @return array<string, mixed> Modified actions.
 	 */
-	public function add_duplicate_link( $actions, $post ): void {
+	public function add_duplicate_link( $actions, $post ): array {
 		if ( 'dame_message' !== $post->post_type ) {
 			return $actions;
 		}
@@ -51,11 +55,12 @@ class Message {
 	/**
 	 * Add "Reset envoi" link to row actions.
 	 *
-	 * @param array<string, mixed> $actions Existing actions.
+	 * @param array<string, mixed>    $actions Existing actions.
 	 * @param \WP_Post $post    Current post.
 	 * @return array<string, mixed> Modified actions.
 	 */
-	public function add_reset_link( $actions, $post ): void {
+	 public function add_reset_link( $actions, $post ): array {
+
 		if ( 'dame_message' !== $post->post_type || ! current_user_can( 'edit_dame_messages' ) ) {
 			return $actions;
 		}

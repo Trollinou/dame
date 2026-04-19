@@ -407,7 +407,7 @@ class Adherent {
 	 * @param WP_Post $post    The post object.
 	 * @return array<string, mixed> The modified row actions.
 	 */
-	public function add_row_actions( $actions, $post ): void {
+	public function add_row_actions( $actions, $post ): array {
 		// Correct CPT slug
 		if ( 'adherent' === $post->post_type ) {
 			// CPT is not public, so the default 'View' link is not needed/broken.
