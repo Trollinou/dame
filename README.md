@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 4.0.0
+**Version:** 4.1.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -60,8 +60,8 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
 ### Préinscription en Ligne
 
 *   **Formulaire de Préinscription :** Un shortcode `[dame_fiche_inscription]` permet d'afficher un formulaire public où les futurs membres peuvent s'inscrire. Le formulaire s'adapte dynamiquement pour les adhérents majeurs et mineurs.
-*   **Formulaire de Contact :** Un shortcode `[dame_contact]` permet d'afficher un formulaire de contact simple (Nom, Email, Sujet, Message) qui envoie un email à l'administrateur.
-*   **Génération de PDF :** Génération de l'attestation de réponse négative au questionnaire de santé.
+*   **Formulaire de Contact Public :** Un shortcode `[dame_contact]` permet d'afficher un formulaire de contact moderne et sécurisé (AJAX, nonce, honeypot) pour permettre aux visiteurs de contacter l'administration directement depuis le site.
+*   **Génération de PDF :** Génération automatique des attestations de santé et autorisations parentales lors de l'inscription.
 *   **Interface de Validation :** Les administrateurs disposent d'une interface dédiée pour examiner, modifier et valider les préinscriptions.
 *   **Rapprochement Automatique :** Le système détecte les doublons potentiels en comparant les nouvelles inscriptions avec la base de données existante (nom, prénom, date de naissance).
 *   **Mise à Jour Facilitée :** Si un doublon est trouvé, un tableau de comparaison met en évidence les différences et permet de mettre à jour la fiche de l'adhérent existant en un clic.
@@ -105,6 +105,20 @@ Le système de gestion des adhésions a été entièrement repensé pour offrir 
     *   **Modèle d'Email Personnalisé :** Le contenu de l'email est basé sur un article WordPress (publié ou privé) dont le slug est à définir dans les options.
     *   **Personnalisation :** Le sujet et le contenu de l'article peuvent inclure les balises `[NOM]`, `[PRENOM]` et `[AGE]` qui seront remplacées par les informations de l'adhérent.
     *   **Rapport d'Envoi :** Un email de résumé est envoyé à l'adresse de l'expéditeur pour lister les adhérents à qui l'email a été envoyé.
+*   **Désinstallation Sécurisée :** Les données sont conservées par défaut lors de la désinstallation, mais peuvent être supprimées via une option.
+
+## Configuration
+
+Pour garantir une bonne délivrabilité des emails envoyés via le plugin, il est fortement recommandé de configurer un serveur SMTP. Allez dans `Réglages > Options DAME` et remplissez les champs de la section "Paramètres d'envoi d'email".
+
+### Sauvegarde Automatique
+
+Vous pouvez configurer l'heure de la sauvegarde journalière dans la section "Paramètres de sauvegarde" de la page d'options.
+
+## Dépendances
+
+Pour la fonctionnalité LMS, ce plugin nécessite le plugin **ROI**.
+n email de résumé est envoyé à l'adresse de l'expéditeur pour lister les adhérents à qui l'email a été envoyé.
 *   **Désinstallation Sécurisée :** Les données sont conservées par défaut lors de la désinstallation, mais peuvent être supprimées via une option.
 
 ## Configuration

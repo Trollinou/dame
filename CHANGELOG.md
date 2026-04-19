@@ -1,5 +1,20 @@
 # Changelog
 
+## 4.1.0 - 2026-04-19
+### Ajout
+- **Module Partenaires :** Nouveau type de contenu "Contact" (`dame_contact`) pour la gestion des partenaires externes (Presse, Élus, Clubs, sponsors).
+- **Taxonomie Contacts :** Introduction de la taxonomie "Types de Contact" pour segmenter les partenaires.
+- **Suivi des Ouvertures (Tracking) :** Implémentation d'un pixel de suivi via l'API REST (`dame/v1/track`) pour mesurer l'engagement des emails envoyés.
+- **Formulaire de Contact Public :** Nouveau shortcode `[dame_contact]` avec traitement AJAX, sécurité par nonce et protection honeypot.
+- **Filtres Géo en Admin :** Ajout de colonnes et filtres par département et région pour les contacts.
+
+### Amélioration
+- **Mailing Multi-cibles :** L'interface d'envoi de messages supporte désormais le ciblage simultané des adhérents et des contacts avec des critères spécifiques à chaque groupe.
+- **Personnalisation Étendue :** Les tags `[NOM]`, `[PRENOM]` et `[AGE]` sont désormais utilisables pour tous les destinataires (adhérents et contacts).
+- **Auto-complétion IGN :** Extension du système d'auto-complétion d'adresse aux fiches contacts.
+- **Historique de Réception :** Enregistrement automatique des messages reçus dans les meta-données des destinataires (`_dame_message_received`).
+- **Performance :** Optimisation du `BatchSender` pour gérer les correspondances multiples d'emails.
+
 ## 4.0.0 - 2026-04-17
 ### Majeur
 - **Réécriture complète :** Migration de l'ensemble de la base de code vers une architecture moderne en Programmation Orientée Objet (POO).
