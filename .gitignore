@@ -3,3 +3,4 @@ includes/.DS_Store
 .DS_Store
 /vendor/
 /.sync.ffs_db
+fix_types.py
