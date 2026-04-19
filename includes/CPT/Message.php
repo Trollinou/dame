@@ -18,6 +18,16 @@ class Message {
 	public function init() {
 		add_action( 'init', [ $this, 'register' ], 0 );
 		add_action( 'before_delete_post', [ $this, 'cleanup_open_data' ] );
+		add_action( 'admin_notices', [ $this, 'display_reset_notice' ] );
+	}
+
+	/**
+	 * Displays a success notice after a message send reset.
+	 */
+	public function display_reset_notice() {
+		if ( isset( $_GET['reset_done'] ) && '1' === $_GET['reset_done'] ) {
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'L\'historique d\'envoi du message a été réinitialisé avec succès.', 'dame' ) . '</p></div>';
+		}
 	}
 
 	/**

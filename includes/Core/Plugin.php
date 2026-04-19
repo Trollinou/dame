@@ -8,6 +8,7 @@
 namespace DAME\Core;
 
 use DAME\CPT\Adherent;
+use DAME\CPT\Contact;
 use DAME\CPT\Message;
 use DAME\CPT\PreInscription;
 use DAME\CPT\Agenda;
@@ -20,7 +21,9 @@ use DAME\Services\BatchSender;
 use DAME\Admin\Pages\Mailing;
 use DAME\Admin\Columns\Message as MessageColumns;
 use DAME\Admin\Actions\Message as MessageActions;
+use DAME\Admin\Actions\Adherent as AdherentActions;
 use DAME\Metaboxes\Message\TestSend;
+use DAME\Metaboxes\Contact\Details as ContactDetails;
 use DAME\Metaboxes\Adherent\Manager as AdherentMetaboxManager;
 use DAME\Metaboxes\PreInscription\Actions as PreInscriptionActions;
 use DAME\Metaboxes\PreInscription\Details as PreInscriptionDetails;
@@ -45,6 +48,7 @@ use DAME\Admin\ListTables\Agenda as AgendaListTable;
 use DAME\Admin\ListTables\Sondage as SondageListTable;
 use DAME\Admin\Actions\Agenda as AgendaActions;
 use DAME\Taxonomies\Season;
+use DAME\Taxonomies\Contact_Type;
 use DAME\Taxonomies\Group;
 use DAME\Taxonomies\AgendaCategory;
 use DAME\Admin\Toolbar;
@@ -92,6 +96,9 @@ class Plugin {
 		// Initialize CPTs.
 		$adherent_cpt = new Adherent();
 		$adherent_cpt->init();
+
+		$contact_cpt = new Contact();
+		$contact_cpt->init();
 
 		$pre_inscription_cpt = new PreInscription();
 		$pre_inscription_cpt->init();
@@ -151,6 +158,9 @@ class Plugin {
 		$season_taxonomy = new Season();
 		$season_taxonomy->init();
 
+		$contact_type_taxonomy = new Contact_Type();
+		$contact_type_taxonomy->init();
+
 		$group_taxonomy = new Group();
 		$group_taxonomy->init();
 
@@ -171,6 +181,9 @@ class Plugin {
 			$admin_menu->init();
 			$adherent_metaboxes = new AdherentMetaboxManager();
 			$adherent_metaboxes->init();
+
+			$contact_details = new ContactDetails();
+			$contact_details->init();
 
 			// Initialize Admin Assets
 			$admin_assets = new Assets();
@@ -208,6 +221,9 @@ class Plugin {
 
 			$message_actions = new MessageActions();
 			$message_actions->init();
+
+			$adherent_actions = new AdherentActions();
+			$adherent_actions->init();
 
 			$message_test_send = new TestSend();
 			$message_test_send->init();

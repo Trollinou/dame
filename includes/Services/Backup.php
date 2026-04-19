@@ -5,6 +5,7 @@ namespace DAME\Services;
 use WP_Query;
 use DateTime;
 use WP_Error;
+use DAME\Core\Utils;
 
 /**
  * Service handling Backups (Export/Import) for Adherents and Agenda.
@@ -77,6 +78,209 @@ class Backup {
 		if ( isset( $_POST['dame_agenda_restore_action'], $_POST['dame_agenda_restore_nonce'] ) && wp_verify_nonce( $_POST['dame_agenda_restore_nonce'], 'dame_agenda_restore_nonce_action' ) ) {
 			$this->import_json_agenda();
 		}
+
+		// 7. Export CSV Contacts
+		if ( isset( $_POST['dame_export_contacts_csv_action'], $_POST['dame_export_contacts_csv_nonce'] ) && wp_verify_nonce( $_POST['dame_export_contacts_csv_nonce'], 'dame_export_contacts_csv_nonce_action' ) ) {
+			$this->export_csv_contacts();
+		}
+
+		// 8. Import CSV Contacts
+		if ( isset( $_POST['dame_import_contacts_csv_action'], $_POST['dame_import_contacts_csv_nonce'] ) && wp_verify_nonce( $_POST['dame_import_contacts_csv_nonce'], 'dame_import_contacts_csv_nonce_action' ) ) {
+			$this->import_csv_contacts();
+		}
+	}
+
+	/* -------------------------------------------------------------------------
+	 * CONTACTS - CSV
+	 * ------------------------------------------------------------------------- */
+
+	/**
+	 * Handle contacts export to CSV.
+	 */
+	private function export_csv_contacts() {
+		$type_slug = isset( $_POST['contact_type'] ) ? sanitize_key( $_POST['contact_type'] ) : '';
+		if ( empty( $type_slug ) ) {
+			return;
+		}
+
+		$filename = 'dame-export-contacts-' . $type_slug . '-' . wp_date( 'Y-m-d' ) . '.csv';
+
+		ob_clean();
+		header( 'Content-Type: text/csv; charset=windows-1252' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+
+		$output = fopen( 'php://output', 'w' );
+
+		// Headers
+		$headers = [
+			'Organisation', 'Nom', 'Prenom', 'Role', 'Email', 'Adresse', 'Complement', 'Code Postal', 'Ville', 'Type'
+		];
+
+		// Convert headers to CP1252
+		$headers_encoded = array_map( fn( $h ) => mb_convert_encoding( (string) $h, 'Windows-1252', 'UTF-8' ), $headers );
+		fputcsv( $output, $headers_encoded, ';' );
+
+		$query = new WP_Query( [
+			'post_type'      => 'dame_contact',
+			'posts_per_page' => -1,
+			'tax_query'      => [
+				[
+					'taxonomy' => 'dame_contact_type',
+					'field'    => 'slug',
+					'terms'    => $type_slug,
+				],
+			],
+		] );
+
+		if ( $query->have_posts() ) {
+			foreach ( $query->posts as $post ) {
+				$row = [
+					get_post_meta( $post->ID, '_dame_contact_organization', true ),
+					get_post_meta( $post->ID, '_dame_contact_last_name', true ),
+					get_post_meta( $post->ID, '_dame_contact_first_name', true ),
+					get_post_meta( $post->ID, '_dame_contact_role', true ),
+					get_post_meta( $post->ID, '_dame_contact_email', true ),
+					get_post_meta( $post->ID, '_dame_contact_address_1', true ),
+					get_post_meta( $post->ID, '_dame_contact_address_2', true ),
+					get_post_meta( $post->ID, '_dame_contact_postcode', true ),
+					get_post_meta( $post->ID, '_dame_contact_city', true ),
+					$type_slug,
+				];
+
+				// Convert row to CP1252
+				$row_encoded = array_map( fn( $val ) => mb_convert_encoding( (string) $val, 'Windows-1252', 'UTF-8' ), $row );
+				fputcsv( $output, $row_encoded, ';' );
+			}
+		}
+
+		fclose( $output );
+		exit;
+	}
+
+	/**
+	 * Handle contacts import from CSV.
+	 */
+	private function import_csv_contacts() {
+		$type_slug = isset( $_POST['contact_type'] ) ? sanitize_key( $_POST['contact_type'] ) : '';
+		if ( empty( $type_slug ) || ! isset( $_FILES['dame_import_contacts_file'] ) || $_FILES['dame_import_contacts_file']['error'] !== UPLOAD_ERR_OK ) {
+			$this->add_admin_notice( __( 'Données invalides pour l\'import.', 'dame' ), 'error' );
+			return;
+		}
+
+		$handle = fopen( $_FILES['dame_import_contacts_file']['tmp_name'], 'r' );
+		if ( ! $handle ) {
+			$this->add_admin_notice( __( 'Impossible d\'ouvrir le fichier CSV.', 'dame' ), 'error' );
+			return;
+		}
+
+		// Read headers and skip
+		fgetcsv( $handle, 0, ';' );
+
+		$created = 0;
+		$updated = 0;
+		$dept_mapping = Data_Provider::get_department_region_mapping();
+
+		while ( ( $row = fgetcsv( $handle, 0, ';' ) ) !== false ) {
+			// Convert to UTF-8
+			$row = array_map( fn( $val ) => mb_convert_encoding( (string) $val, 'UTF-8', 'Windows-1252' ), $row );
+
+			// Map columns: 0:Org, 1:Nom, 2:Prenom, 3:Email, 4:Adresse, 5:Complement, 6:CP, 7:Ville
+			$org       = trim( $row[0] ?? '' );
+			$last_name = trim( $row[1] ?? '' );
+			$first_name = trim( $row[2] ?? '' );
+			$email     = trim( $row[3] ?? '' );
+			$addr1     = trim( $row[4] ?? '' );
+			$addr2     = trim( $row[5] ?? '' );
+			$postcode  = trim( $row[6] ?? '' );
+			$city      = trim( $row[7] ?? '' );
+
+			if ( empty( $last_name ) && empty( $first_name ) && empty( $org ) ) {
+				continue;
+			}
+
+			// Deduplication Logic
+			$args = [
+				'post_type'      => 'dame_contact',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'meta_query'     => [ 'relation' => 'AND' ],
+			];
+
+			if ( empty( $org ) ) {
+				$args['meta_query'][] = [ 'key' => '_dame_contact_last_name', 'value' => $last_name, 'compare' => '=' ];
+				$args['meta_query'][] = [ 'key' => '_dame_contact_first_name', 'value' => $first_name, 'compare' => '=' ];
+				$args['meta_query'][] = [
+					'relation' => 'OR',
+					[ 'key' => '_dame_contact_organization', 'compare' => 'NOT EXISTS' ],
+					[ 'key' => '_dame_contact_organization', 'value' => '', 'compare' => '=' ],
+				];
+			} else {
+				$args['meta_query'][] = [ 'key' => '_dame_contact_organization', 'value' => $org, 'compare' => '=' ];
+				$args['meta_query'][] = [ 'key' => '_dame_contact_last_name', 'value' => $last_name, 'compare' => '=' ];
+				$args['meta_query'][] = [ 'key' => '_dame_contact_first_name', 'value' => $first_name, 'compare' => '=' ];
+			}
+
+			$ids = get_posts( $args );
+			$post_id = ! empty( $ids ) ? (int) $ids[0] : 0;
+
+			$formatted_last  = Utils::format_lastname( $last_name );
+			$formatted_first = Utils::format_firstname( $first_name );
+			
+			$base_name = trim( $formatted_last . ' ' . $formatted_first );
+			if ( ! empty( $org ) ) {
+				$new_title = $org . ( ! empty( $base_name ) ? ' (' . $base_name . ')' : '' );
+			} else {
+				$new_title = $base_name ?: __( 'Contact sans nom', 'dame' );
+			}
+
+			if ( $post_id ) {
+				wp_update_post( [ 'ID' => $post_id, 'post_title' => $new_title ] );
+				$updated++;
+			} else {
+				$post_id = wp_insert_post( [
+					'post_type'   => 'dame_contact',
+					'post_title'  => $new_title,
+					'post_status' => 'publish',
+				] );
+				$created++;
+			}
+
+			if ( $post_id ) {
+				update_post_meta( $post_id, '_dame_contact_organization', $org );
+				update_post_meta( $post_id, '_dame_contact_last_name', $formatted_last );
+				update_post_meta( $post_id, '_dame_contact_first_name', $formatted_first );
+				update_post_meta( $post_id, '_dame_contact_email', sanitize_email( $email ) );
+				update_post_meta( $post_id, '_dame_contact_address_1', $addr1 );
+				update_post_meta( $post_id, '_dame_contact_address_2', $addr2 );
+				update_post_meta( $post_id, '_dame_contact_postcode', $postcode );
+				update_post_meta( $post_id, '_dame_contact_city', $city );
+
+				// Enrichment: Dept & Region
+				$dept_code = substr( $postcode, 0, 2 );
+				if ( strlen( $postcode ) >= 3 ) {
+					if ( strpos( $postcode, '20' ) === 0 ) {
+						$dept_code = (int) substr( $postcode, 2, 1 ) <= 1 ? '2A' : '2B';
+					} elseif ( strpos( $postcode, '97' ) === 0 ) {
+						$dept_code = substr( $postcode, 0, 3 );
+					}
+				}
+				update_post_meta( $post_id, '_dame_contact_department', $dept_code );
+				if ( isset( $dept_mapping[ $dept_code ] ) ) {
+					update_post_meta( $post_id, '_dame_contact_region', $dept_mapping[ $dept_code ] );
+				}
+
+				// Assign Taxonomy
+				wp_set_object_terms( $post_id, $type_slug, 'dame_contact_type' );
+			}
+		}
+
+		fclose( $handle );
+
+		$this->add_admin_notice( sprintf(
+			__( 'Import terminé : %d contacts créés, %d mis à jour.', 'dame' ),
+			$created,
+			$updated
+		) );
 	}
 
 	/* -------------------------------------------------------------------------
@@ -546,11 +750,11 @@ class Backup {
 	public function generate_adherent_export_data() {
 		$data = [
 			'version' => DAME_VERSION,
-			'adherents' => [], 'pre_inscriptions' => [], 'messages' => [], 'message_opens' => [], 'taxonomy_terms' => [], 'options' => []
+			'taxonomy_terms' => [], 'adherents' => [], 'contacts' => [], 'pre_inscriptions' => [], 'messages' => [], 'message_opens' => [], 'options' => []
 		];
 
 		// Taxonomies
-		foreach ( [ 'dame_saison_adhesion', 'dame_group' ] as $tax ) {
+		foreach ( [ 'dame_saison_adhesion', 'dame_group', 'dame_contact_type' ] as $tax ) {
 			$terms = get_terms( [ 'taxonomy' => $tax, 'hide_empty' => false ] );
 			if ( ! is_wp_error( $terms ) ) {
 				foreach ( $terms as $term ) {
@@ -588,6 +792,18 @@ class Backup {
 				$taxs[ $tax ] = wp_get_post_terms( $post->ID, $tax, [ 'fields' => 'slugs' ] );
 			}
 			$data['adherents'][] = [ 'old_id' => $post->ID, 'post_title' => $post->post_title, 'meta_data' => $meta, 'taxonomies' => $taxs ];
+		}
+
+		// Contacts (dame_contact)
+		$query_contacts = new WP_Query( [ 'post_type' => 'dame_contact', 'posts_per_page' => -1, 'post_status' => 'any' ] );
+		foreach ( $query_contacts->posts as $post ) {
+			$meta = [];
+			foreach ( get_post_meta( $post->ID ) as $k => $v ) {
+				if ( strpos( $k, '_dame_' ) === 0 ) $meta[ $k ] = maybe_unserialize( $v[0] );
+			}
+			$taxs = [];
+			$taxs['dame_contact_type'] = wp_get_post_terms( $post->ID, 'dame_contact_type', [ 'fields' => 'slugs' ] );
+			$data['contacts'][] = [ 'old_id' => $post->ID, 'post_title' => $post->post_title, 'meta_data' => $meta, 'taxonomies' => $taxs ];
 		}
 
 		// Options
@@ -651,11 +867,11 @@ class Backup {
 
 		// 1. CLEAR DATA
 		global $wpdb;
-		$posts = get_posts( [ 'post_type' => [ 'adherent', 'dame_pre_inscription', 'dame_message' ], 'posts_per_page' => -1, 'post_status' => 'any', 'fields' => 'ids' ] );
+		$posts = get_posts( [ 'post_type' => [ 'adherent', 'dame_contact', 'dame_pre_inscription', 'dame_message' ], 'posts_per_page' => -1, 'post_status' => 'any', 'fields' => 'ids' ] );
 		foreach ( $posts as $pid ) wp_delete_post( $pid, true );
 		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}dame_message_opens" );
 
-		foreach ( [ 'dame_saison_adhesion', 'dame_group' ] as $tax ) {
+		foreach ( [ 'dame_saison_adhesion', 'dame_group', 'dame_contact_type' ] as $tax ) {
 			$terms = get_terms( [ 'taxonomy' => $tax, 'hide_empty' => false, 'fields' => 'ids' ] );
 			if ( ! is_wp_error( $terms ) ) foreach ( $terms as $tid ) wp_delete_term( $tid, $tax );
 		}
@@ -700,6 +916,26 @@ class Backup {
 		if ( ! empty( $meta_insert_placeholders ) ) {
 			$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
 			$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
+		}
+
+		// Contacts (dame_contact)
+		$contact_meta_insert_values = [];
+		$contact_meta_insert_placeholders = [];
+		foreach ( $data['contacts'] ?? [] as $c ) {
+			$pid = wp_insert_post( [ 'post_title' => $c['post_title'], 'post_type' => 'dame_contact', 'post_status' => 'publish' ] );
+			if ( $pid ) {
+				foreach ( $c['meta_data'] as $k => $v ) {
+					$contact_meta_insert_values[] = $pid;
+					$contact_meta_insert_values[] = $k;
+					$contact_meta_insert_values[] = maybe_serialize( $v );
+					$contact_meta_insert_placeholders[] = '(%d, %s, %s)';
+				}
+				foreach ( $c['taxonomies'] as $tax => $slugs ) wp_set_object_terms( $pid, $slugs, $tax );
+			}
+		}
+		if ( ! empty( $contact_meta_insert_placeholders ) ) {
+			$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $contact_meta_insert_placeholders );
+			$wpdb->query( $wpdb->prepare( $query, $contact_meta_insert_values ) );
 		}
 
 		// Options

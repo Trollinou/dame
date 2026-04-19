@@ -66,9 +66,6 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			const travelTimeInput = document.querySelector(
 				`.dame-js-time[data-group="${ group }"]`
 			);
-			const departmentInput = document.querySelector(
-				`.dame-js-dept[data-group="${ group }"]`
-			); // For linking zip -> dept
 
 			const wrapper = addressInput.closest(
 				'.dame-autocomplete-wrapper'

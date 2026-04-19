@@ -172,8 +172,8 @@ document.addEventListener( 'DOMContentLoaded', function () {
 				}
 
 				// If the global pre-fill function exists (on the public form), call it.
-				if ( typeof prefillRep1 === 'function' ) {
-					prefillRep1();
+				if ( typeof window.prefillRep1 === 'function' ) {
+					window.prefillRep1();
 				}
 
 				resultsContainer.innerHTML = '';

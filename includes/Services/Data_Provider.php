@@ -119,6 +119,17 @@ class Data_Provider {
 	}
 
 	/**
+	 * Returns the list of department codes for a given region.
+	 *
+	 * @param string $region_code The region code.
+	 * @return array List of department codes.
+	 */
+	public static function get_departments_by_region( string $region_code ): array {
+		$mapping = self::get_department_region_mapping();
+		return array_keys( array_filter( $mapping, fn( $r ) => $r === $region_code ) );
+	}
+
+	/**
 	 * Returns a list of French school academies.
 	 *
 	 * @return array

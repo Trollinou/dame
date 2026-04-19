@@ -74,8 +74,17 @@ class Tracker {
 			)
 		);
 
-		// If not already recorded, insert a new record.
-		if ( null === $existing_open ) {
+		// If already recorded, update the timestamp to reflect the latest open.
+		if ( null !== $existing_open ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->update(
+				$table_name,
+				array( 'opened_at' => current_time( 'mysql', 1 ) ),
+				array( 'id' => $existing_open ),
+				array( '%s' ),
+				array( '%d' )
+			);
+		} else {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->insert(
 				$table_name,

@@ -253,6 +253,7 @@ document.addEventListener( 'DOMContentLoaded', function () {
 					errorMsg.textContent = dame_mailing_data.generic_error;
 					articlesContainer.innerHTML = '';
 					articlesContainer.appendChild( errorMsg );
+
 					console.error( 'Error fetching articles:', error );
 				} );
 		}

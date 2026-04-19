@@ -1,10 +1,14 @@
 document.addEventListener( 'DOMContentLoaded', function () {
 	// We call the autocomplete initializers here, as this script is loaded
 	// after dame-public-geo-autocomplete.js, ensuring the function is available.
-	if ( typeof initBirthCityAutocomplete === 'function' ) {
-		initBirthCityAutocomplete( 'dame_birth_city' );
-		initBirthCityAutocomplete( 'dame_legal_rep_1_commune_naissance' );
-		initBirthCityAutocomplete( 'dame_legal_rep_2_commune_naissance' );
+	if ( typeof window.initBirthCityAutocomplete === 'function' ) {
+		window.initBirthCityAutocomplete( 'dame_birth_city' );
+		window.initBirthCityAutocomplete(
+			'dame_legal_rep_1_commune_naissance'
+		);
+		window.initBirthCityAutocomplete(
+			'dame_legal_rep_2_commune_naissance'
+		);
 	}
 
 	const birthDateInput = document.getElementById( 'dame_birth_date' );
@@ -36,12 +40,6 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	const birthCityRequiredIndicator = document.getElementById(
 		'dame_birth_city_required_indicator'
 	);
-	const emailInput = document.getElementById( 'dame_email' );
-	const phoneInput = document.getElementById( 'dame_phone_number' );
-	const address1Input = document.getElementById( 'dame_address_1' );
-	const address2Input = document.getElementById( 'dame_address_2' );
-	const postalCodeInput = document.getElementById( 'dame_postal_code' );
-	const cityInput = document.getElementById( 'dame_city' );
 	const lastNameInput = document.getElementById( 'dame_last_name' );
 
 	// Rep 1 fields
@@ -365,9 +363,6 @@ document.addEventListener( 'DOMContentLoaded', function () {
 				healthRadios.forEach( ( radio ) => ( radio.checked = false ) );
 
 				// Hide the dynamic fields section until a new birth date is entered
-				const dynamicFields = document.getElementById(
-					'dame-dynamic-fields'
-				);
 				if ( dynamicFields ) {
 					dynamicFields.style.display = 'none';
 					// Clear all inputs within the dynamic sections as well

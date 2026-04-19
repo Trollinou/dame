@@ -93,13 +93,24 @@ class Actions {
 			wp_nonce_field( 'dame_revert_to_pre_inscription_action', 'dame_revert_nonce' );
 			?>
 			<p><?php esc_html_e( "Cette action va supprimer cet adhérent et créer une nouvelle pré-inscription avec ses données. L'adhérent disparaîtra de la liste des adhérents.", 'dame' ); ?></p>
-			<button type="submit" name="dame_revert_to_pre_inscription" value="revert" class="button button-secondary">
+			<button type="submit" name="dame_revert_to_pre_inscription" value="revert" class="button button-secondary" style="width: 100%; margin-bottom: 10px;">
 				<?php esc_html_e( "Annuler et renvoyer en pré-inscription", 'dame' ); ?>
 			</button>
 			<?php
 		} else {
-			echo '<p>' . esc_html__( "Cette action n'est disponible que pour les adhérents qui ont uniquement l'adhésion de la saison en cours.", 'dame' ) . '</p>';
+			echo '<p>' . esc_html__( "L'annulation d'adhésion n'est disponible que pour les adhérents qui ont uniquement l'adhésion de la saison en cours.", 'dame' ) . '</p>';
 		}
+
+		// Bouton : Transformer en Contact (Toujours disponible)
+		$transform_url = admin_url( 'admin-post.php?action=dame_transform_to_contact&post_id=' . $post->ID );
+		$transform_url = wp_nonce_url( $transform_url, 'dame_transform_contact_' . $post->ID );
+		?>
+		<hr>
+		<p class="description"><?php esc_html_e( "Crée une fiche Contact avec les informations de cet adhérent et met la fiche adhérent à la corbeille.", 'dame' ); ?></p>
+		<a href="<?php echo esc_url( $transform_url ); ?>" class="button button-secondary" style="width: 100%; text-align: center;" onclick="return confirm('<?php echo esc_js( __( 'Voulez-vous vraiment transformer cet adhérent en contact ? La fiche adhérent actuelle sera mise à la corbeille.', 'dame' ) ); ?>');">
+			<?php esc_html_e( "Transformer en Contact", 'dame' ); ?>
+		</a>
+		<?php
 	}
 
 	/**

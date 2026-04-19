@@ -57,7 +57,7 @@ jQuery( document ).ready( function ( $ ) {
 	// Participant filter
 	$( '#dame_participant_filter' ).on( 'keyup', function () {
 		const value = $( this ).val().toLowerCase();
-		$( '#dame_participants_list li' ).filter( function () {
+		$( '#dame_participants_list li' ).each( function () {
 			$( this ).toggle(
 				$( this ).text().toLowerCase().indexOf( value ) > -1
 			);

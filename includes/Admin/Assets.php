@@ -32,12 +32,14 @@ class Assets {
 			return;
 		}
 
-		// Check if we are on the Adherent CPT, Pre-inscription CPT or Settings Page
+		// Détection des écrans autorisés : Adhérents, Pré-inscriptions, Réglages et Contacts
 		$is_adherent_cpt        = 'adherent' === $screen->post_type;
 		$is_pre_inscription_cpt = 'dame_pre_inscription' === $screen->post_type;
+		$is_contact_cpt         = 'dame_contact' === $screen->post_type; // Nouveau CPT Contact
 		$is_settings_page       = $screen->id && strpos( $screen->id, 'dame-settings' ) !== false;
 
-		if ( ! $is_adherent_cpt && ! $is_settings_page && ! $is_pre_inscription_cpt ) {
+		// Sortie prématurée si nous ne sommes pas sur un écran géré par le plugin
+		if ( ! $is_adherent_cpt && ! $is_settings_page && ! $is_pre_inscription_cpt && ! $is_contact_cpt ) {
 			return;
 		}
 
