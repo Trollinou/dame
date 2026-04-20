@@ -1,5 +1,27 @@
 # Changelog
 
+## 4.1.3 - 2026-04-20
+### Ajout
+- **Tableau de Bord :** Nouveau panel "Sondages en cours" avec tri chronologique et compteur de réponses uniques.
+- **Filtrage :** Ajout d'un filtre par type de licence (A, B, Autres) dans la liste des adhérents.
+- **Raccourcis :** Enrichissement de la Toolbar avec des accès directs aux Adhérents, Contacts, Événements, Sondages et Messages.
+
+### Amélioration
+- **Expérience Utilisateur :**
+    - Les compteurs de licences du tableau de bord sont désormais cliquables pour filtrer instantanément la liste des membres.
+    - Tri automatique (JS + PHP) des dates et créneaux horaires lors de la création d'un sondage.
+    - Pré-remplissage intelligent de l'heure de début lors de l'ajout d'un créneau dans un sondage.
+    - Augmentation de l'historique des "Derniers Adhérents" de 3 à 5 entrées.
+- **Sauvegarde & Restauration :**
+    - Intégration complète des Sondages et des Réponses dans le processus de sauvegarde de l'Agenda.
+    - Préservation des dates de publication (`post_date`) et des statuts (`post_status`) lors de la restauration de tous les types de contenus.
+- **Sécurité & Accès :**
+    - Correction des permissions pour les rôles **Éditeur**, **Staff** et **Entraineur** (accès restauré au tableau de bord).
+    - Attribution des capacités de messagerie au rôle **Entraineur**.
+- **Qualité Technique :**
+    - Mise en conformité stricte avec **PHPStan Level 6** sur l'ensemble des fichiers modifiés (typage fort, types de retour).
+    - Correction du linting JavaScript pour `admin-sondage.js`.
+
 ## 4.1.2 - 2026-04-20
 ### Ajout
 - **Traçabilité des Envois :** Enregistrement de l'heure exacte d'envoi individuelle pour chaque destinataire d'un message (`_dame_message_{ID}_sent_at`).

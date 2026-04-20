@@ -29,7 +29,7 @@ class Menu {
 		add_menu_page(
 			__( "DAME - Gestion", "dame" ),
 			__( "DAME", "dame" ),
-			'manage_options',
+			'read_private_pages',
 			'dame-admin',
 			[ $this, 'render_dashboard' ],
 			'dashicons-groups',
@@ -77,7 +77,7 @@ class Menu {
 		);
 	}
 
-		public function reorder_dame_submenu() {
+	public function reorder_dame_submenu(): void {
 		global $submenu;
 
 		if ( ! isset( $submenu['dame-admin'] ) ) {
@@ -188,7 +188,7 @@ class Menu {
 		// 3. Derniers Adhérents
 		$latest_adherents = get_posts( [
 			'post_type'      => 'adherent',
-			'posts_per_page' => 3,
+			'posts_per_page' => 5,
 			'orderby'        => 'date',
 			'order'          => 'DESC',
 			'post_status'    => 'publish',
@@ -224,6 +224,50 @@ class Menu {
 			'post_status'    => 'publish',
 		] );
 
+		// 6. Sondages en cours
+		$active_polls = [];
+		$all_polls    = get_posts( [
+			'post_type'      => 'sondage',
+			'posts_per_page' => -1,
+			'post_status'    => 'publish',
+		] );
+
+		if ( ! empty( $all_polls ) ) {
+			foreach ( $all_polls as $poll ) {
+				$sondage_data = get_post_meta( $poll->ID, '_dame_sondage_data', true );
+				if ( ! empty( $sondage_data ) ) {
+					$dates = array_column( (array) $sondage_data, 'date' );
+					if ( empty( $dates ) ) {
+						continue;
+					}
+
+					$first_date = min( $dates );
+					$last_date  = max( $dates );
+
+					if ( $last_date >= $today ) {
+						$responses_query = new \WP_Query( [
+							'post_type'      => 'sondage_reponse',
+							'post_status'    => 'publish',
+							'post_parent'    => $poll->ID,
+							'posts_per_page' => 1,
+						] );
+
+						$active_polls[] = [
+							'ID'              => $poll->ID,
+							'title'           => $poll->post_title,
+							'first_date'      => $first_date,
+							'responses_count' => $responses_query->found_posts,
+						];
+					}
+				}
+			}
+
+			// Sort by first_date
+			usort( $active_polls, function( array $a, array $b ) {
+				return strcmp( $a['first_date'], $b['first_date'] );
+			} );
+		}
+
 		// Render HTML
 		?>
 		<div class="wrap">
@@ -252,21 +296,9 @@ class Menu {
 					<!-- Colonne Gauche -->
 					<div class="postbox-container" style="width: 49%; float: left; margin-right: 2%;">
 
-						<!-- Répartition des licences -->
-						<div class="postbox">
-							<h2 class="hndle"><span><?php esc_html_e( 'Répartition des licences', 'dame' ); ?></span></h2>
-							<div class="inside">
-								<ul>
-									<li><strong><?php esc_html_e( 'Licence A :', 'dame' ); ?></strong> <?php echo intval( $licence_counts['A'] ); ?></li>
-									<li><strong><?php esc_html_e( 'Licence B :', 'dame' ); ?></strong> <?php echo intval( $licence_counts['B'] ); ?></li>
-									<li><strong><?php esc_html_e( 'Autres / Non précisé :', 'dame' ); ?></strong> <?php echo intval( $licence_counts['Autres'] ); ?></li>
-								</ul>
-							</div>
-						</div>
-
 						<!-- Derniers Adhérents -->
 						<div class="postbox">
-							<h2 class="hndle"><span><?php esc_html_e( '3 derniers adhérents enregistrés', 'dame' ); ?></span></h2>
+							<h2 class="hndle"><span><?php esc_html_e( '5 derniers adhérents enregistrés', 'dame' ); ?></span></h2>
 							<div class="inside">
 								<?php if ( empty( $latest_adherents ) ) : ?>
 									<p><?php esc_html_e( 'Aucun adhérent trouvé.', 'dame' ); ?></p>
@@ -283,6 +315,33 @@ class Menu {
 									</ul>
 								<?php endif; ?>
 								<p><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=adherent' ) ); ?>"><?php esc_html_e( 'Voir tous les adhérents', 'dame' ); ?></a></p>
+							</div>
+						</div>
+
+						<!-- Répartition des licences -->
+						<div class="postbox">
+							<h2 class="hndle"><span><?php esc_html_e( 'Répartition des licences', 'dame' ); ?></span></h2>
+							<div class="inside">
+								<ul>
+									<li>
+										<strong><?php esc_html_e( 'Licence A :', 'dame' ); ?></strong>
+										<a href="<?php echo esc_url( add_query_arg( [ 'post_type' => 'adherent', 'dame_license_type_filter' => 'A', 'dame_saison_filter' => $current_season_tag_id ], admin_url( 'edit.php' ) ) ); ?>">
+											<?php echo intval( $licence_counts['A'] ); ?>
+										</a>
+									</li>
+									<li>
+										<strong><?php esc_html_e( 'Licence B :', 'dame' ); ?></strong>
+										<a href="<?php echo esc_url( add_query_arg( [ 'post_type' => 'adherent', 'dame_license_type_filter' => 'B', 'dame_saison_filter' => $current_season_tag_id ], admin_url( 'edit.php' ) ) ); ?>">
+											<?php echo intval( $licence_counts['B'] ); ?>
+										</a>
+									</li>
+									<li>
+										<strong><?php esc_html_e( 'Autres / Non précisé :', 'dame' ); ?></strong>
+										<a href="<?php echo esc_url( add_query_arg( [ 'post_type' => 'adherent', 'dame_license_type_filter' => 'Autres', 'dame_saison_filter' => $current_season_tag_id ], admin_url( 'edit.php' ) ) ); ?>">
+											<?php echo intval( $licence_counts['Autres'] ); ?>
+										</a>
+									</li>
+								</ul>
 							</div>
 						</div>
 
@@ -316,6 +375,31 @@ class Menu {
 							</div>
 						</div>
 
+						<!-- Sondages en cours -->
+						<div class="postbox">
+							<h2 class="hndle"><span><?php esc_html_e( 'Sondages en cours', 'dame' ); ?></span></h2>
+							<div class="inside">
+								<?php if ( empty( $active_polls ) ) : ?>
+									<p><?php esc_html_e( 'Aucun sondage en cours.', 'dame' ); ?></p>
+								<?php else : ?>
+									<ul>
+										<?php foreach ( $active_polls as $poll ) :
+											$formatted_date = wp_date( get_option( 'date_format' ), strtotime( $poll['first_date'] ) );
+										?>
+											<li>
+												<strong><?php echo esc_html( $formatted_date ); ?></strong> :
+												<a href="<?php echo esc_url( get_edit_post_link( $poll['ID'] ) ); ?>">
+													<?php echo esc_html( $poll['title'] ); ?>
+												</a>
+												- <span style="color: #666; font-size: 0.9em;"><?php echo intval( $poll['responses_count'] ); ?> <?php echo esc_html( _n( 'réponse', 'réponses', $poll['responses_count'], 'dame' ) ); ?></span>
+											</li>
+										<?php endforeach; ?>
+									</ul>
+								<?php endif; ?>
+								<p><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=sondage' ) ); ?>"><?php esc_html_e( 'Voir tous les sondages', 'dame' ); ?></a></p>
+							</div>
+						</div>
+
 					</div>
 
 					<div class="clear"></div>
@@ -327,8 +411,11 @@ class Menu {
 
 	/**
 	 * Force le menu parent "DAME" à rester ouvert.
+	 *
+	 * @param string $parent_file The parent file.
+	 * @return string
 	 */
-	public function highlight_parent_menu( $parent_file ) {
+	public function highlight_parent_menu( string $parent_file ): string {
 		global $current_screen;
 		$dame_taxonomies = [ 'dame_saison_adhesion', 'dame_group', 'dame_agenda_category', 'dame_contact_type' ];
 
@@ -347,8 +434,11 @@ class Menu {
 
 	/**
 	 * Force la mise en surbrillance (gras) du bon sous-menu.
+	 *
+	 * @param string|null $submenu_file The submenu file.
+	 * @return string|null
 	 */
-	public function highlight_submenu( $submenu_file ) {
+	public function highlight_submenu( ?string $submenu_file ): ?string {
 		global $current_screen;
 
 		// Pour les taxonomies

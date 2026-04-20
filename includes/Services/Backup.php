@@ -758,7 +758,12 @@ class Backup {
 	 * ADHERENTS - JSON (BACKUP/RESTORE)
 	 * ------------------------------------------------------------------------- */
 
-	public function generate_adherent_export_data() {
+	/**
+	 * Generate Adherent export data.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function generate_adherent_export_data(): array {
 		$data = [
 			'version' => DAME_VERSION,
 			'taxonomy_terms' => [], 'adherents' => [], 'contacts' => [], 'pre_inscriptions' => [], 'messages' => [], 'message_opens' => [], 'options' => []
@@ -802,7 +807,15 @@ class Backup {
 			foreach ( [ 'dame_saison_adhesion', 'dame_group' ] as $tax ) {
 				$taxs[ $tax ] = wp_get_post_terms( $post->ID, $tax, [ 'fields' => 'slugs' ] );
 			}
-			$data['adherents'][] = [ 'old_id' => $post->ID, 'post_title' => $post->post_title, 'meta_data' => $meta, 'taxonomies' => $taxs ];
+			$data['adherents'][] = [
+				'old_id'        => $post->ID,
+				'post_title'    => $post->post_title,
+				'post_status'   => $post->post_status,
+				'post_date'     => $post->post_date,
+				'post_date_gmt' => $post->post_date_gmt,
+				'meta_data'     => $meta,
+				'taxonomies'    => $taxs
+			];
 		}
 
 		// Contacts (dame_contact)
@@ -814,7 +827,15 @@ class Backup {
 			}
 			$taxs = [];
 			$taxs['dame_contact_type'] = wp_get_post_terms( $post->ID, 'dame_contact_type', [ 'fields' => 'slugs' ] );
-			$data['contacts'][] = [ 'old_id' => $post->ID, 'post_title' => $post->post_title, 'meta_data' => $meta, 'taxonomies' => $taxs ];
+			$data['contacts'][] = [
+				'old_id'        => $post->ID,
+				'post_title'    => $post->post_title,
+				'post_status'   => $post->post_status,
+				'post_date'     => $post->post_date,
+				'post_date_gmt' => $post->post_date_gmt,
+				'meta_data'     => $meta,
+				'taxonomies'    => $taxs
+			];
 		}
 
 		// Options
@@ -833,7 +854,14 @@ class Backup {
 			foreach ( get_post_meta( $post->ID ) as $k => $v ) {
 				if ( strpos( $k, '_dame_' ) === 0 ) $meta[ $k ] = maybe_unserialize( $v[0] );
 			}
-			$data['pre_inscriptions'][] = [ 'old_id' => $post->ID, 'post_title' => $post->post_title, 'meta_data' => $meta ];
+			$data['pre_inscriptions'][] = [
+				'old_id'        => $post->ID,
+				'post_title'    => $post->post_title,
+				'post_status'   => $post->post_status,
+				'post_date'     => $post->post_date,
+				'post_date_gmt' => $post->post_date_gmt,
+				'meta_data'     => $meta
+			];
 		}
 
 		// Messages
@@ -843,7 +871,15 @@ class Backup {
 			foreach ( get_post_meta( $post->ID ) as $k => $v ) {
 				if ( strpos( $k, '_dame_' ) === 0 ) $meta[ $k ] = maybe_unserialize( $v[0] );
 			}
-			$data['messages'][] = [ 'old_id' => $post->ID, 'post_title' => $post->post_title, 'post_content' => $post->post_content, 'post_status' => $post->post_status, 'meta_data' => $meta ];
+			$data['messages'][] = [
+				'old_id'        => $post->ID,
+				'post_title'    => $post->post_title,
+				'post_content'  => $post->post_content,
+				'post_status'   => $post->post_status,
+				'post_date'     => $post->post_date,
+				'post_date_gmt' => $post->post_date_gmt,
+				'meta_data'     => $meta
+			];
 		}
 
 		// Message opens
@@ -913,7 +949,14 @@ class Backup {
 		$meta_insert_placeholders = [];
 		$adherents_with_pending_meta = [];
 		foreach ( $data['adherents'] ?? [] as $a ) {
-			$pid = wp_insert_post( [ 'post_title' => $a['post_title'], 'post_type' => 'adherent', 'post_status' => 'publish' ] );
+			$post_data = [
+				'post_title'    => $a['post_title'],
+				'post_type'     => 'adherent',
+				'post_status'   => $a['post_status'] ?? 'publish',
+				'post_date'     => $a['post_date'] ?? '',
+				'post_date_gmt' => $a['post_date_gmt'] ?? '',
+			];
+			$pid = wp_insert_post( $post_data );
 			if ( $pid ) {
 				$map_adherents[ $a['old_id'] ] = $pid;
 				$pending_meta = [];
@@ -945,7 +988,14 @@ class Backup {
 		$contact_meta_insert_placeholders = [];
 		$contacts_with_pending_meta = [];
 		foreach ( $data['contacts'] ?? [] as $c ) {
-			$pid = wp_insert_post( [ 'post_title' => $c['post_title'], 'post_type' => 'dame_contact', 'post_status' => 'publish' ] );
+			$post_data = [
+				'post_title'    => $c['post_title'],
+				'post_type'     => 'dame_contact',
+				'post_status'   => $c['post_status'] ?? 'publish',
+				'post_date'     => $c['post_date'] ?? '',
+				'post_date_gmt' => $c['post_date_gmt'] ?? '',
+			];
+			$pid = wp_insert_post( $post_data );
 			if ( $pid ) {
 				$pending_meta = [];
 				foreach ( $c['meta_data'] as $k => $v ) {
@@ -983,7 +1033,14 @@ class Backup {
 		$pi_meta_insert_values = [];
 		$pi_meta_insert_placeholders = [];
 		foreach ( $data['pre_inscriptions'] ?? [] as $pi ) {
-			$pid = wp_insert_post( [ 'post_title' => $pi['post_title'], 'post_type' => 'dame_pre_inscription', 'post_status' => 'pending' ] );
+			$post_data = [
+				'post_title'    => $pi['post_title'],
+				'post_type'     => 'dame_pre_inscription',
+				'post_status'   => $pi['post_status'] ?? 'pending',
+				'post_date'     => $pi['post_date'] ?? '',
+				'post_date_gmt' => $pi['post_date_gmt'] ?? '',
+			];
+			$pid = wp_insert_post( $post_data );
 			if ( $pid ) {
 				foreach ( $pi['meta_data'] as $k => $v ) {
 					$pi_meta_insert_values[] = $pid;
@@ -1003,11 +1060,20 @@ class Backup {
 		$msg_meta_insert_placeholders = [];
 		foreach ( $data['messages'] ?? [] as $m ) {
 			// Sanitize input to match original code
-			$post_title = sanitize_text_field( $m['post_title'] );
-			$post_content = wp_kses_post( $m['post_content'] );
-			$post_status = sanitize_key( $m['post_status'] );
+			$post_title    = sanitize_text_field( $m['post_title'] );
+			$post_content  = wp_kses_post( $m['post_content'] );
+			$post_status   = sanitize_key( $m['post_status'] );
+			$post_date     = $m['post_date'] ?? '';
+			$post_date_gmt = $m['post_date_gmt'] ?? '';
 
-			$pid = wp_insert_post( [ 'post_title' => $post_title, 'post_content' => $post_content, 'post_type' => 'dame_message', 'post_status' => $post_status ] );
+			$pid = wp_insert_post( [
+				'post_title'    => $post_title,
+				'post_content'  => $post_content,
+				'post_type'     => 'dame_message',
+				'post_status'   => $post_status,
+				'post_date'     => $post_date,
+				'post_date_gmt' => $post_date_gmt,
+			] );
 			if ( $pid ) {
 				$map_messages[ $m['old_id'] ] = $pid;
 				if ( isset( $m['meta_data'] ) && is_array( $m['meta_data'] ) ) {
@@ -1096,8 +1162,13 @@ class Backup {
 	 * AGENDA - JSON (BACKUP/RESTORE)
 	 * ------------------------------------------------------------------------- */
 
-	public function generate_agenda_export_data() {
-		$data = [ 'version' => DAME_VERSION, 'events' => [], 'taxonomy_terms' => [] ];
+	/**
+	 * Generate Agenda export data (Events and Polls).
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function generate_agenda_export_data(): array {
+		$data = [ 'version' => DAME_VERSION, 'events' => [], 'taxonomy_terms' => [], 'polls' => [] ];
 		// Agenda Categories
 		$terms = get_terms( [ 'taxonomy' => 'dame_agenda_category', 'hide_empty' => false ] );
 		if ( ! is_wp_error( $terms ) ) {
@@ -1112,7 +1183,46 @@ class Backup {
 			$meta = [];
 			foreach ( get_post_meta( $p->ID ) as $k => $v ) $meta[ $k ] = maybe_unserialize( $v[0] );
 			$cats = wp_get_post_terms( $p->ID, 'dame_agenda_category', [ 'fields' => 'slugs' ] );
-			$data['events'][] = [ 'post_title' => $p->post_title, 'post_content' => $p->post_content, 'meta_data' => $meta, 'categories' => $cats ];
+			$data['events'][] = [
+				'post_title'    => $p->post_title,
+				'post_content'  => $p->post_content,
+				'post_status'   => $p->post_status,
+				'post_date'     => $p->post_date,
+				'post_date_gmt' => $p->post_date_gmt,
+				'meta_data'     => $meta,
+				'categories'    => $cats
+			];
+		}
+		// Polls
+		$polls = get_posts( [ 'post_type' => 'sondage', 'posts_per_page' => -1, 'post_status' => 'any' ] );
+		foreach ( $polls as $poll ) {
+			$poll_meta = [];
+			foreach ( get_post_meta( $poll->ID ) as $k => $v ) $poll_meta[ $k ] = maybe_unserialize( $v[0] );
+			
+			// Responses for this poll
+			$responses = [];
+			$responses_posts = get_posts( [ 'post_type' => 'sondage_reponse', 'post_parent' => $poll->ID, 'posts_per_page' => -1, 'post_status' => 'any' ] );
+			foreach ( $responses_posts as $r ) {
+				$r_meta = [];
+				foreach ( get_post_meta( $r->ID ) as $k => $v ) $r_meta[ $k ] = maybe_unserialize( $v[0] );
+				$responses[] = [
+					'post_title'    => $r->post_title,
+					'post_status'   => $r->post_status,
+					'post_date'     => $r->post_date,
+					'post_date_gmt' => $r->post_date_gmt,
+					'meta_data'     => $r_meta
+				];
+			}
+
+			$data['polls'][] = [
+				'post_title'    => $poll->post_title,
+				'post_content'  => $poll->post_content,
+				'post_status'   => $poll->post_status,
+				'post_date'     => $poll->post_date,
+				'post_date_gmt' => $poll->post_date_gmt,
+				'meta_data'     => $poll_meta,
+				'responses'     => $responses
+			];
 		}
 		return $data;
 	}
@@ -1135,21 +1245,33 @@ class Backup {
 		$data = json_decode( $json, true );
 		if ( ! $data ) return;
 
+		global $wpdb;
+
 		// Clear
-		$posts = get_posts( [ 'post_type' => 'dame_agenda', 'posts_per_page' => -1, 'fields' => 'ids' ] );
+		$posts = get_posts( [ 'post_type' => [ 'dame_agenda', 'sondage', 'sondage_reponse' ], 'posts_per_page' => -1, 'fields' => 'ids', 'post_status' => 'any' ] );
 		foreach ( $posts as $pid ) wp_delete_post( $pid, true );
 		$terms = get_terms( [ 'taxonomy' => 'dame_agenda_category', 'hide_empty' => false, 'fields' => 'ids' ] );
 		foreach ( $terms as $tid ) { delete_option( "taxonomy_$tid" ); wp_delete_term( $tid, 'dame_agenda_category' ); }
 
-		// Import
+		// Import Categories
 		foreach ( $data['taxonomy_terms'] ?? [] as $t ) {
 			$new = wp_insert_term( $t['name'], 'dame_agenda_category', [ 'slug' => $t['slug'], 'description' => $t['description'] ] );
 			if ( ! is_wp_error( $new ) && ! empty( $t['color'] ) ) update_option( "taxonomy_" . $new['term_id'], [ 'color' => $t['color'] ] );
 		}
+
+		// Import Events
 		$agenda_meta_insert_values = [];
 		$agenda_meta_insert_placeholders = [];
 		foreach ( $data['events'] ?? [] as $e ) {
-			$pid = wp_insert_post( [ 'post_title' => $e['post_title'], 'post_content' => $e['post_content'], 'post_type' => 'dame_agenda', 'post_status' => 'publish' ] );
+			$post_data = [
+				'post_title'    => $e['post_title'],
+				'post_content'  => $e['post_content'],
+				'post_type'     => 'dame_agenda',
+				'post_status'   => $e['post_status'] ?? 'publish',
+				'post_date'     => $e['post_date'] ?? '',
+				'post_date_gmt' => $e['post_date_gmt'] ?? '',
+			];
+			$pid = wp_insert_post( $post_data );
 			if ( $pid ) {
 				foreach ( $e['meta_data'] as $k => $v ) {
 					$agenda_meta_insert_values[] = $pid;
@@ -1160,11 +1282,53 @@ class Backup {
 				if ( ! empty( $e['categories'] ) ) wp_set_object_terms( $pid, $e['categories'], 'dame_agenda_category' );
 			}
 		}
+
+		// Import Polls
+		foreach ( $data['polls'] ?? [] as $poll_data ) {
+			$post_data = [
+				'post_title'    => $poll_data['post_title'],
+				'post_content'  => $poll_data['post_content'],
+				'post_type'     => 'sondage',
+				'post_status'   => $poll_data['post_status'] ?? 'publish',
+				'post_date'     => $poll_data['post_date'] ?? '',
+				'post_date_gmt' => $poll_data['post_date_gmt'] ?? '',
+			];
+			$poll_id = wp_insert_post( $post_data );
+			if ( $poll_id ) {
+				foreach ( $poll_data['meta_data'] as $k => $v ) {
+					$agenda_meta_insert_values[] = $poll_id;
+					$agenda_meta_insert_values[] = $k;
+					$agenda_meta_insert_values[] = maybe_serialize( $v );
+					$agenda_meta_insert_placeholders[] = '(%d, %s, %s)';
+				}
+				// Import Responses
+				foreach ( $poll_data['responses'] ?? [] as $resp ) {
+					$resp_post_data = [
+						'post_title'    => $resp['post_title'],
+						'post_type'     => 'sondage_reponse',
+						'post_status'   => $resp['post_status'] ?? 'publish',
+						'post_parent'   => $poll_id,
+						'post_date'     => $resp['post_date'] ?? '',
+						'post_date_gmt' => $resp['post_date_gmt'] ?? '',
+					];
+					$resp_id = wp_insert_post( $resp_post_data );
+					if ( $resp_id ) {
+						foreach ( $resp['meta_data'] as $k => $v ) {
+							$agenda_meta_insert_values[] = $resp_id;
+							$agenda_meta_insert_values[] = $k;
+							$agenda_meta_insert_values[] = maybe_serialize( $v );
+							$agenda_meta_insert_placeholders[] = '(%d, %s, %s)';
+						}
+					}
+				}
+			}
+		}
+
 		if ( ! empty( $agenda_meta_insert_placeholders ) ) {
 			$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $agenda_meta_insert_placeholders );
 			$wpdb->query( $wpdb->prepare( $query, $agenda_meta_insert_values ) );
 		}
-		$this->add_admin_notice( "Agenda restauré avec succès." );
+		$this->add_admin_notice( "Agenda et sondages restaurés avec succès." );
 	}
 
 	/* -------------------------------------------------------------------------

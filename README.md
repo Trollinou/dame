@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 4.1.2
+**Version:** 4.1.3
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -33,7 +33,7 @@ Chaque fiche membre centralise :
 
 ### 3. Classification et Segmentation
 *   **Groupes de Membres :** Classez vos adhérents par niveaux ou fonctions (École d'échecs, Compétition, Bénévoles, Élus) pour des filtres précis.
-*   **Filtres Avancés :** Retrouvez instantanément vos membres par saison, par groupe, par genre ou par catégorie d'âge (calculée automatiquement en UTC).
+*   **Filtres Avancés :** Retrouvez instantanément vos membres par saison, par groupe, par genre, par catégorie d'âge (calculée automatiquement en UTC) ou par type de licence.
 
 ---
 
