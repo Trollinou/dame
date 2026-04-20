@@ -171,7 +171,7 @@ class Saisons {
 					<select id="dame_current_season_selector" name="dame_current_season_selector" style="margin-right: 10px;">
 						<?php if ( ! empty( $seasons ) && ! is_wp_error( $seasons ) ) : ?>
 							<?php foreach ( $seasons as $season ) : ?>
-								<option value="<?php echo esc_attr( $season->term_id ); ?>" <?php selected( $season->term_id, $current_season_tag_id ); ?>>
+								<option value="<?php echo esc_attr( (string) $season->term_id ); ?>" <?php selected( $season->term_id, $current_season_tag_id ); ?>>
 									<?php echo esc_html( $season->name ); ?>
 								</option>
 							<?php endforeach; ?>

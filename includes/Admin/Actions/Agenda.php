@@ -23,7 +23,7 @@ class Agenda {
 	/**
 	 * Handles the event duplication action.
 	 */
-	public function duplicate_event() {
+	public function duplicate_event(): void {
 		if ( ! isset( $_GET['post'] ) || ! isset( $_GET['dame_duplicate_nonce'] ) ) {
 			wp_die( esc_html__( 'Argument manquant.', 'dame' ) );
 		}

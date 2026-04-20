@@ -22,8 +22,10 @@ class Message {
 	public function init(): void {
 		add_filter( 'post_row_actions', [ $this, 'add_duplicate_link' ], 10, 2 );
 		add_filter( 'post_row_actions', [ $this, 'add_reset_link' ], 10, 2 );
+		add_filter( 'post_row_actions', [ $this, 'add_force_sent_link' ], 10, 2 );
 		add_action( 'admin_action_dame_duplicate', [ $this, 'handle_duplicate' ] );
 		add_action( 'admin_action_dame_reset_send', [ $this, 'handle_reset' ] );
+		add_action( 'admin_action_dame_force_sent', [ $this, 'handle_force_sent' ] );
 	}
 
 	/**
@@ -193,6 +195,58 @@ class Message {
 
 		// Redirect back with success message.
 		wp_redirect( admin_url( 'edit.php?post_type=dame_message&reset_done=1' ) );
+		exit;
+	}
+
+	/**
+	 * Add "Forcer Envoyé" link.
+	 * 
+	 * @param array<string, mixed> $actions Existing actions.
+	 * @param \WP_Post $post Current post.
+	 * @return array<string, mixed> Modified actions.
+	 */
+	public function add_force_sent_link( $actions, $post ): array {
+		if ( 'dame_message' !== $post->post_type || ! current_user_can( 'edit_dame_messages' ) ) {
+			return $actions;
+		}
+
+		$status = get_post_meta( $post->ID, '_dame_message_status', true );
+		if ( 'sending' !== $status && 'scheduled' !== $status ) {
+			return $actions;
+		}
+
+		$url = wp_nonce_url(
+			admin_url( 'admin.php?action=dame_force_sent&post=' . $post->ID ),
+			'dame_force_sent_' . $post->ID
+		);
+
+		$actions['force_sent'] = sprintf(
+			'<a href="%s" style="color: #0073aa;">%s</a>',
+			esc_url( $url ),
+			esc_html__( 'Terminer l\'envoi', 'dame' )
+		);
+
+		return $actions;
+	}
+
+	/**
+	 * Handle manual completion.
+	 */
+	public function handle_force_sent(): void {
+		if ( ! ( isset( $_GET['post'] ) || isset( $_POST['post'] ) ) || ( ! isset( $_GET['_wpnonce'] ) ) ) {
+			wp_die( __( 'Données manquantes.', 'dame' ) );
+		}
+
+		$post_id = ( isset( $_GET['post'] ) ? absint( $_GET['post'] ) : absint( $_POST['post'] ) );
+		if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'dame_force_sent_' . $post_id ) ) {
+			wp_die( __( 'Vérification de sécurité échouée.', 'dame' ) );
+		}
+
+		$total = (int) get_post_meta( $post_id, '_dame_scheduled_batches_total', true );
+		update_post_meta( $post_id, '_dame_message_status', 'sent' );
+		update_post_meta( $post_id, '_dame_scheduled_batches_processed', $total );
+
+		wp_redirect( admin_url( 'edit.php?post_type=dame_message' ) );
 		exit;
 	}
 }

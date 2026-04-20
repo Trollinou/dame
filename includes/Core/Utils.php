@@ -63,7 +63,7 @@ class Utils {
 	 * Converts a HEX color to its RGB components.
 	 *
 	 * @param string $hex_color The color in HEX format (e.g., #a1a1a1 or #a1a).
-	 * @return array|null An associative array with r, g, b components, or null if the format is invalid.
+	 * @return array<string, int>|null An associative array with r, g, b components, or null if the format is invalid.
 	 */
 	public static function hex_to_rgb( $hex_color ) {
 		$hex_color = ltrim( $hex_color, '#' );
@@ -146,7 +146,7 @@ class Utils {
 
 		// Get the current season tag ID from options.
 		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
-		if ( ! $current_season_tag_id || 0 === $current_season_tag_id ) {
+		if ( ! $current_season_tag_id ) {
 			return __( "Saison non définie", 'dame' );
 		}
 
@@ -216,7 +216,7 @@ class Utils {
 	/**
 	 * Returns a list of all possible age categories.
 	 *
-	 * @return array An array of age categories.
+	 * @return array<string, string> An array of age categories.
 	 */
 	public static function get_all_age_categories() {
 		return array(
@@ -244,12 +244,12 @@ class Utils {
 	 * Calculates the birth date range for a given age category.
 	 *
 	 * @param string $category_key The key of the age category.
-	 * @return array|null An array containing the start and end dates of the birth range, or null.
+	 * @return array{start: string, end: string}|null An array containing the start and end dates of the birth range, or null.
 	 */
 	public static function get_birth_date_range_for_category( $category_key ) {
 		// Get the current season tag ID from options.
 		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
-		if ( ! $current_season_tag_id || 0 === $current_season_tag_id ) {
+		if ( ! $current_season_tag_id ) {
 			return null;
 		}
 
@@ -311,7 +311,7 @@ class Utils {
 	 * if an email is associated with both.
 	 *
 	 * @param int $message_id The ID of the message post.
-	 * @return array An associative array where keys are email addresses and values are recipient names.
+	 * @return array<string, string> An associative array where keys are email addresses and values are recipient names.
 	 */
 	public static function get_message_recipients( $message_id ) {
 		$message_id = absint( $message_id );
@@ -420,7 +420,7 @@ class Utils {
 	 * It filters out any email addresses where the owner has refused communications.
 	 *
 	 * @param int $adherent_id The ID of the adherent post.
-	 * @return array A simple array of unique email addresses.
+	 * @return array<int, string> A simple array of unique email addresses.
 	 */
 	public static function get_emails_for_adherent( $adherent_id ) {
 		$adherent_id = absint( $adherent_id );

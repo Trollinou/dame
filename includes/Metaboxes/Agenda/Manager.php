@@ -391,7 +391,7 @@ class Manager {
 					$checked = in_array( $adherent->ID, $selected_participants, true ) ? 'checked="checked"' : '';
 					echo '<li>';
 					echo '<label>';
-					echo '<input type="checkbox" name="dame_event_participants[]" value="' . esc_attr( $adherent->ID ) . '" ' . $checked . '> ';
+					echo '<input type="checkbox" name="dame_event_participants[]" value="' . esc_attr( (string) $adherent->ID ) . '" ' . $checked . '> ';
 					echo esc_html( $adherent->post_title );
 					echo '</label>';
 					echo '</li>';

@@ -53,13 +53,19 @@ class Data_Provider {
 			'OCC'  => 'Occitanie',
 			'PDL'  => 'Pays de la Loire',
 			'PACA' => 'Provence-Alpes-Côte d\'Azur',
+			'GUA'  => 'Guadeloupe',
+			'MAR'  => 'Martinique',
+			'GUY'  => 'Guyane',
+			'REU'  => 'La Réunion',
+			'MAY'  => 'Mayotte',
+			'NCL'  => 'Nouvelle-Calédonie',
 		);
 	}
 
 	/**
 	 * Returns a list of French departments.
 	 *
-	 * @return array<string, string>
+	 * @return array<int|string, string>
 	 */
 	public static function get_departments(): array {
 		return array(
@@ -91,6 +97,7 @@ class Data_Provider {
 			'94' => '94 - Val-de-Marne', '95' => '95 - Val-d\'Oise',
 			'971' => '971 - Guadeloupe', '972' => '972 - Martinique', '973' => '973 - Guyane',
 			'974' => '974 - La Réunion', '976' => '976 - Mayotte',
+			'988' => '988 - Nouvelle-Calédonie',
 		);
 	}
 
@@ -114,7 +121,7 @@ class Data_Provider {
 			'09' => 'OCC', '11' => 'OCC', '12' => 'OCC', '30' => 'OCC', '31' => 'OCC', '32' => 'OCC', '34' => 'OCC', '46' => 'OCC', '48' => 'OCC', '65' => 'OCC', '66' => 'OCC', '81' => 'OCC', '82' => 'OCC',
 			'44' => 'PDL', '49' => 'PDL', '53' => 'PDL', '72' => 'PDL', '85' => 'PDL',
 			'04' => 'PACA', '05' => 'PACA', '06' => 'PACA', '13' => 'PACA', '83' => 'PACA', '84' => 'PACA',
-			'971' => 'NA', '972' => 'NA', '973' => 'NA', '974' => 'NA', '976' => 'NA',
+			'971' => 'GUA', '972' => 'MAR', '973' => 'GUY', '974' => 'REU', '976' => 'MAY', '988' => 'NCL',
 		);
 	}
 

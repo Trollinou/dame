@@ -1,5 +1,35 @@
 # Changelog
 
+## 4.1.4 - 2026-04-20
+### Ajout
+- **Gestion des envois bloqués :** Nouveau lien "Terminer l'envoi" dans la liste des messages pour clôturer manuellement les campagnes restées en attente sans effacer l'historique.
+- **Géographie (Nouveaux territoires) :** 
+    - Support complet de la **Nouvelle-Calédonie** avec le code région ISO `NCL` et le département `988`.
+    - Gestion spécifique de **Monaco** : les codes postaux `98000` sont désormais automatiquement rattachés au département `06` (Alpes-Maritimes) et à la région `PACA`.
+    - Mise à jour des régions pour l'ensemble des départements d'Outre-mer (Guadeloupe, Martinique, Guyane, Réunion, Mayotte).
+- **Import CSV Contacts :** Possibilité d'importer le "Statut d'adhésion" et les informations de "Groupes" directement via CSV pour les adhérents.
+
+### Amélioration
+- **Sécurité anti-doublon intelligente :** 
+    - Le système de mailing filtre désormais automatiquement les destinataires ayant déjà reçu le message lors d'un envoi par groupe ou global.
+    - Liberté totale conservée pour le mode "Manuel" qui permet de forcer un renvoi si nécessaire.
+- **Optimisation o2switch :**
+    - Réduction de la taille des lots à **10 mails** (au lieu de 20).
+    - Augmentation de la fréquence à **un lot toutes les 30 secondes**.
+    - Réduction du délai interne à **1 seconde** par mail pour éviter les interruptions serveur.
+- **Rapports de Diffusion :**
+    - Correction d'un bug de "fuite de variables" qui affichait des noms erronés ne correspondant pas aux emails.
+    - Gestion des dates d'envoi manquantes : affichage de "(Date inconnue)" pour les messages envoyés avant la mise en place du traçage.
+- **Import CSV Contacts :** Le moteur d'importation se base désormais sur le nom des colonnes (en-têtes) plutôt que sur leur position fixe, offrant une plus grande flexibilité.
+- **Accessibilité Admin :** Le tableau de bord principal est désormais accessible aux rôles **Éditeur**, **Staff** et **Entraineur**.
+
+### Correction
+- **PHP 8.4 :** Mise en conformité de tous les traitements CSV (`fgetcsv`, `fputcsv`) pour supprimer les avertissements de dépréciation liés aux paramètres d'échappement.
+- **Bugs divers :** 
+    - Correction d'un appel de fonction erroné dans l'import des adhérents.
+    - Correction d'une comparaison logique défaillante sur le statut d'adhésion.
+- **Interface :** Correction du formatage Prettier/ESLint sur les scripts d'auto-complétion et de gestion admin.
+
 ## 4.1.3 - 2026-04-20
 ### Ajout
 - **Tableau de Bord :** Nouveau panel "Sondages en cours" avec tri chronologique et compteur de réponses uniques.

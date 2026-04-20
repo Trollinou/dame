@@ -24,7 +24,7 @@ class Main {
 	/**
 	 * Array of tab instances.
 	 *
-	 * @var array
+	 * @var array<string, object>
 	 */
 	private $tabs = [];
 

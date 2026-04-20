@@ -35,11 +35,17 @@ document.addEventListener( 'DOMContentLoaded', function () {
 							departmentCode = '2B';
 						}
 					}
-				} else if ( departmentCode === '97' ) {
-					// Handle overseas departments
+				} else if (
+					departmentCode === '97' ||
+					postalCode.startsWith( '988' )
+				) {
+					// Handle overseas departments (97x and 988)
 					if ( postalCode.length >= 3 ) {
 						departmentCode = postalCode.substring( 0, 3 );
 					}
+				} else if ( postalCode.startsWith( '980' ) ) {
+					// Handle Monaco (98000 -> 06)
+					departmentCode = '06';
 				}
 
 				let departmentChanged = false;

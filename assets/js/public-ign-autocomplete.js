@@ -286,16 +286,34 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		mainPostalCodeField.addEventListener( 'keyup', function () {
 			const postalCode = this.value;
 			if ( postalCode.length >= 2 ) {
-				const departmentCode = postalCode.substring( 0, 2 );
+				let departmentCode = postalCode.substring( 0, 2 );
 				if ( departmentCode === '20' ) {
 					return;
 				}
+				if (
+					( departmentCode === '97' ||
+						postalCode.startsWith( '988' ) ) &&
+					postalCode.length >= 3
+				) {
+					departmentCode = postalCode.substring( 0, 3 );
+				} else if ( postalCode.startsWith( '980' ) ) {
+					departmentCode = '06';
+				}
+
+				let departmentChanged = false;
 				for ( let i = 0; i < departmentSelect.options.length; i++ ) {
 					const option = departmentSelect.options[ i ];
 					if ( option.value === departmentCode ) {
-						departmentSelect.value = departmentCode;
+						if ( departmentSelect.value !== departmentCode ) {
+							departmentSelect.value = departmentCode;
+							departmentChanged = true;
+						}
 						break;
 					}
+				}
+
+				if ( departmentChanged ) {
+					departmentSelect.dispatchEvent( new Event( 'change' ) );
 				}
 			}
 		} );

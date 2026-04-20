@@ -145,7 +145,7 @@ class PDF_Generator {
 	/**
 	 * Generate Parental Authorization PDF.
 	 */
-	public function generate_parental_auth() {
+	public function generate_parental_auth(): void {
 		$this->load_libraries();
 
 		// 1. Security check

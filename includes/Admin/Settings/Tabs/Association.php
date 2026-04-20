@@ -56,7 +56,7 @@ class Association {
 	/**
 	 * Section callback.
 	 */
-	public function section_callback() {
+	public function section_callback(): void {
 		echo '<p>' . esc_html__( "Saisir ici les informations relatives à l'adresse de l'association. L'autocomplétion est activée sur le champ Adresse.", 'dame' ) . '</p>';
 	}
 

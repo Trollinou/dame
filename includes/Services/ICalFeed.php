@@ -240,11 +240,12 @@ class ICalFeed {
 	/**
 	 * Generates the ICS content.
 	 *
-	 * @param array<string, mixed> $event_posts    Array of event posts.
+	 * @param array<int, \WP_Post> $event_posts    Array of event posts.
 	 * @param array<string, mixed> $feed_details   Feed metadata.
 	 * @param bool  $force_download Whether to force download as attachment.
+	 * @return void
 	 */
-	private function generate_ics( $event_posts, $feed_details, $force_download = false ) {
+	private function generate_ics( $event_posts, $feed_details, $force_download = false ): void {
 		header( 'Content-Type: text/calendar; charset=utf-8' );
 		if ( $force_download ) {
 			header( 'Content-Disposition: attachment; filename="' . sanitize_title( $feed_details['name'] ) . '.ics"' );

@@ -101,7 +101,7 @@ class Message {
 	 *
 	 * @param int $post_id The ID of the post being deleted.
 	 */
-	public function cleanup_open_data( $post_id ) {
+	public function cleanup_open_data( $post_id ): void {
 		// Check if the post being deleted is a 'dame_message'.
 		if ( 'dame_message' !== get_post_type( $post_id ) ) {
 			return;

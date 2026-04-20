@@ -23,8 +23,11 @@ class Backup {
 
 	/**
 	 * Adds an admin notice to be displayed on the next page load.
+	 * 
+	 * @param string $message The notice message.
+	 * @param string $type The notice type (success, error, etc.).
 	 */
-	private function add_admin_notice( $message, $type = 'success' ): void {
+	private function add_admin_notice( string $message, string $type = 'success' ): void {
 		set_transient( 'dame_import_export_notice', array( 'message' => $message, 'type' => $type ), 30 );
 	}
 
@@ -118,7 +121,7 @@ class Backup {
 
 		// Convert headers to CP1252
 		$headers_encoded = array_map( fn( $h ) => mb_convert_encoding( (string) $h, 'Windows-1252', 'UTF-8' ), $headers );
-		fputcsv( $output, $headers_encoded, ';' );
+		fputcsv( $output, $headers_encoded, ';', '"', '\\' );
 
 		$query = new WP_Query( [
 			'post_type'      => 'dame_contact',
@@ -150,7 +153,7 @@ class Backup {
 
 				// Convert row to CP1252
 				$row_encoded = array_map( fn( $val ) => mb_convert_encoding( (string) $val, 'Windows-1252', 'UTF-8' ), $row );
-				fputcsv( $output, $row_encoded, ';' );
+				fputcsv( $output, $row_encoded, ';', '"', '\\' );
 			}
 		}
 
@@ -174,28 +177,48 @@ class Backup {
 			return;
 		}
 
-		// Read headers and skip
-		fgetcsv( $handle, 0, ';' );
+		// Read headers
+		$headers = fgetcsv( $handle, 0, ';', '"', '\\' );
+		if ( ! $headers ) {
+			$this->add_admin_notice( __( 'Impossible de lire l\'en-tête du fichier CSV.', 'dame' ), 'error' );
+			fclose( $handle );
+			return;
+		}
+
+		// Convert headers to UTF-8 and map them
+		$headers = array_map( fn( $h ) => mb_convert_encoding( (string) $h, 'UTF-8', 'Windows-1252' ), $headers );
+		
+		// Remove BOM if present
+		if ( isset( $headers[0] ) ) {
+			$headers[0] = preg_replace( '/^\x{FEFF}/u', '', $headers[0] );
+		}
+
+		$col_map = array_flip( $headers );
 
 		$created = 0;
 		$updated = 0;
 		$dept_mapping = Data_Provider::get_department_region_mapping();
 
-		while ( ( $row = fgetcsv( $handle, 0, ';' ) ) !== false ) {
+		while ( ( $row = fgetcsv( $handle, 0, ';', '"', '\\' ) ) !== false ) {
 			// Convert to UTF-8
 			$row = array_map( fn( $val ) => mb_convert_encoding( (string) $val, 'UTF-8', 'Windows-1252' ), $row );
 
-			// Map columns: 0:Org, 1:Nom, 2:Prenom, 3:Role, 4:Email, 5:Refus, 6:Adresse, 7:Complement, 8:CP, 9:Ville
-			$org       = trim( $row[0] ?? '' );
-			$last_name = trim( $row[1] ?? '' );
-			$first_name = trim( $row[2] ?? '' );
-			$role      = trim( $row[3] ?? '' );
-			$email     = trim( $row[4] ?? '' );
-			$refus     = trim( mb_strtoupper( (string) ($row[5] ?? ''), 'UTF-8' ) ) === 'O' ? '1' : '0';
-			$addr1     = trim( $row[6] ?? '' );
-			$addr2     = trim( $row[7] ?? '' );
-			$postcode  = trim( $row[8] ?? '' );
-			$city      = trim( $row[9] ?? '' );
+			// Map columns based on headers
+			$org        = isset( $col_map['Organisation'] ) ? trim( $row[ $col_map['Organisation'] ] ?? '' ) : '';
+			$last_name  = isset( $col_map['Nom'] ) ? trim( $row[ $col_map['Nom'] ] ?? '' ) : '';
+			$first_name = isset( $col_map['Prenom'] ) ? trim( $row[ $col_map['Prenom'] ] ?? '' ) : '';
+			$role       = isset( $col_map['Role'] ) ? trim( $row[ $col_map['Role'] ] ?? '' ) : '';
+			$email      = isset( $col_map['Email'] ) ? trim( $row[ $col_map['Email'] ] ?? '' ) : '';
+			
+			$refus = '0';
+			if ( isset( $col_map['Refus mailing'] ) ) {
+				$refus = trim( mb_strtoupper( (string) ($row[ $col_map['Refus mailing'] ] ?? ''), 'UTF-8' ) ) === 'O' ? '1' : '0';
+			}
+			
+			$addr1      = isset( $col_map['Adresse'] ) ? trim( $row[ $col_map['Adresse'] ] ?? '' ) : '';
+			$addr2      = isset( $col_map['Complement'] ) ? trim( $row[ $col_map['Complement'] ] ?? '' ) : '';
+			$postcode   = isset( $col_map['Code Postal'] ) ? trim( $row[ $col_map['Code Postal'] ] ?? '' ) : '';
+			$city       = isset( $col_map['Ville'] ) ? trim( $row[ $col_map['Ville'] ] ?? '' ) : '';
 
 			if ( empty( $last_name ) && empty( $first_name ) && empty( $org ) ) {
 				continue;
@@ -265,8 +288,10 @@ class Backup {
 				if ( strlen( $postcode ) >= 3 ) {
 					if ( strpos( $postcode, '20' ) === 0 ) {
 						$dept_code = (int) substr( $postcode, 2, 1 ) <= 1 ? '2A' : '2B';
-					} elseif ( strpos( $postcode, '97' ) === 0 ) {
+					} elseif ( strpos( $postcode, '97' ) === 0 || strpos( $postcode, '988' ) === 0 ) {
 						$dept_code = substr( $postcode, 0, 3 );
+					} elseif ( strpos( $postcode, '980' ) === 0 ) {
+						$dept_code = '06';
 					}
 				}
 				update_post_meta( $post_id, '_dame_contact_department', $dept_code );
@@ -334,7 +359,7 @@ class Backup {
 			}
 		}
 
-		fputcsv( $output, $headers, ';' );
+		fputcsv( $output, $headers, ';', '"', '\\' );
 
 		// --- Dynamic Rows ---
 		$adherents_query = new WP_Query(
@@ -428,7 +453,7 @@ class Backup {
 					}
 				}
 
-				fputcsv( $output, $row, ';' );
+				fputcsv( $output, $row, ';', '"', '\\' );
 			}
 			wp_reset_postdata();
 		}
@@ -461,7 +486,7 @@ class Backup {
 		}
 
 		// Read header row and map columns
-		$header = fgetcsv( $handle, 0, ';' );
+		$header = fgetcsv( $handle, 0, ';', '"', '\\' );
 		if ( false === $header ) {
 			$this->add_admin_notice( __( 'Impossible de lire l\'en-tête du fichier CSV.', 'dame' ), 'error' );
 			fclose( $handle );
@@ -480,7 +505,7 @@ class Backup {
 			'Représentant légal 1 - Adresse', 'Représentant légal 1 - Complément', 'Représentant légal 1 - Code Postal', 'Représentant légal 1 - Ville',
 			'Représentant légal 2 - Nom de naissance', 'Représentant légal 2 - Prénom', 'Représentant légal 2 - Profession', 'Représentant légal 2 - Email', 'Représentant légal 2 - Téléphone',
 			'Représentant légal 2 - Adresse', 'Représentant légal 2 - Complément', 'Représentant légal 2 - Code Postal', 'Représentant légal 2 - Ville',
-			'Autre téléphone', 'Taille vêtements', 'Allergies', 'Régime alimentaire', 'Moyen de locomotion'
+			'Autre téléphone', 'Taille vêtements', 'Allergies', 'Régime alimentaire', 'Moyen de locomotion', 'Statut adhésion'
 		);
 		$col_map = array_flip( $header );
 
@@ -530,13 +555,14 @@ class Backup {
 			'Allergies' => '_dame_allergies',
 			'Régime alimentaire' => '_dame_diet',
 			'Moyen de locomotion' => '_dame_transport',
+			'Statut adhésion' => '_dame_membership_status',
 		);
 
 		$imported_count = 0;
-		$department_region_mapping = dame_get_department_region_mapping();
+		$department_region_mapping = Data_Provider::get_department_region_mapping();
 		$all_seasons = get_terms( [ 'taxonomy' => 'dame_saison_adhesion', 'hide_empty' => false ] );
 
-		while ( ( $row = fgetcsv( $handle, 0, ';' ) ) !== false ) {
+		while ( ( $row = fgetcsv( $handle, 0, ';', '"', '\\' ) ) !== false ) {
 			$member_data = array();
 			foreach ( $expected_headers as $header_name ) {
 				$col_index = isset( $col_map[ $header_name ] ) ? $col_map[ $header_name ] : -1;
@@ -696,8 +722,10 @@ class Backup {
 					if ( strlen( $postal_code ) >= 3 ) {
 						if ( strpos( $postal_code, '20' ) === 0 ) {
 							$department_code = intval( substr( $postal_code, 2, 1 ) ) <= 1 ? '2A' : '2B';
-						} elseif ( strpos( $postal_code, '97' ) === 0 ) {
+						} elseif ( strpos( $postal_code, '97' ) === 0 || strpos( $postal_code, '988' ) === 0 ) {
 							$department_code = substr( $postal_code, 0, 3 );
+						} elseif ( strpos( $postal_code, '980' ) === 0 ) {
+							$department_code = '06';
 						}
 					}
 

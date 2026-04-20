@@ -24,7 +24,7 @@ class MessageReport {
 	/**
 	 * Hide the menu link via CSS.
 	 */
-	public function hide_menu_link() {
+	public function hide_menu_link(): void {
 		echo '<style>
 			a[href="admin.php?page=dame-message-report"],
 			li:has(> a[href="admin.php?page=dame-message-report"]) {
@@ -78,9 +78,9 @@ class MessageReport {
 				$rate = $total_sent > 0 ? round( ( $unique_opens / $total_sent ) * 100, 2 ) : 0;
 				?>
 				<p>
-					<strong><?php esc_html_e( 'Envoyés :', 'dame' ); ?></strong> <?php echo esc_html( $total_sent ); ?><br>
-					<strong><?php esc_html_e( 'Ouvertures uniques :', 'dame' ); ?></strong> <?php echo esc_html( $unique_opens ); ?><br>
-					<strong><?php esc_html_e( 'Taux d\'ouverture :', 'dame' ); ?></strong> <?php echo esc_html( $rate ); ?>%
+					<strong><?php esc_html_e( 'Envoyés :', 'dame' ); ?></strong> <?php echo esc_html( (string) $total_sent ); ?><br>
+					<strong><?php esc_html_e( 'Ouvertures uniques :', 'dame' ); ?></strong> <?php echo esc_html( (string) $unique_opens ); ?><br>
+					<strong><?php esc_html_e( 'Taux d\'ouverture :', 'dame' ); ?></strong> <?php echo esc_html( (string) $rate ); ?>%
 				</p>
 			</div>
 
@@ -112,6 +112,9 @@ class MessageReport {
 									<?php 
 									if ( ! empty( $sent_at ) ) {
 										echo esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $sent_at . ' UTC' ) ) );
+									} elseif ( $is_opened ) {
+										// Fallback to open date if send date was not recorded
+										echo '<span style="color: #888; font-style: italic;">(' . esc_html__( 'Date inconnue', 'dame' ) . ')</span>';
 									} else {
 										echo '—';
 									}
@@ -186,42 +189,38 @@ class MessageReport {
 				// Check all possible email sources for this adherent
 				for ( $i = 1; $i <= 2; $i++ ) {
 					$rep_email = get_post_meta( $pid, "_dame_legal_rep_{$i}_email", true );
-					$refuses   = get_post_meta( $pid, "_dame_legal_rep_{$i}_email_refuses_comms", true );
-
 					if ( ! empty( $rep_email ) && is_email( (string) $rep_email ) ) {
-						$first = get_post_meta( $pid, "_dame_legal_rep_{$i}_first_name", true );
-						$last  = get_post_meta( $pid, "_dame_legal_rep_{$i}_last_name", true );
-						$name  = $format_name( $last, $first );
-						$sent_at = get_post_meta( $pid, "_dame_message_{$message_id}_sent_at", true );
+						$rep_first = get_post_meta( $pid, "_dame_legal_rep_{$i}_first_name", true );
+						$rep_last  = get_post_meta( $pid, "_dame_legal_rep_{$i}_last_name", true );
+						$name      = $format_name( $rep_last, $rep_first );
+						$sent_at   = get_post_meta( $pid, "_dame_message_{$message_id}_sent_at", true );
 						$recipients[ (string) $rep_email ] = array( 'name' => $name, 'sent_at' => $sent_at );
 					}
 				}
 
 				$member_email = get_post_meta( $pid, '_dame_email', true );
-
 				if ( ! empty( $member_email ) && is_email( (string) $member_email ) ) {
-					$first = get_post_meta( $pid, '_dame_first_name', true );
-					$name = $format_name( $last, $first );
-					$sent_at = get_post_meta( $pid, "_dame_message_{$message_id}_sent_at", true );
+					$member_first = get_post_meta( $pid, '_dame_first_name', true );
+					$member_last  = get_post_meta( $pid, '_dame_last_name', true );
+					$name         = $format_name( $member_last, $member_first );
+					$sent_at      = get_post_meta( $pid, "_dame_message_{$message_id}_sent_at", true );
 					$recipients[ (string) $member_email ] = array( 'name' => $name, 'sent_at' => $sent_at );
-					}
-					} elseif ( 'dame_contact' === $post_type ) {
-					$email   = get_post_meta( $pid, '_dame_contact_email', true );
+				}
+			} elseif ( 'dame_contact' === $post_type ) {
+				$contact_email = get_post_meta( $pid, '_dame_contact_email', true );
+				if ( ! empty( $contact_email ) && is_email( (string) $contact_email ) ) {
+					$contact_last  = get_post_meta( $pid, '_dame_contact_last_name', true );
+					$contact_first = get_post_meta( $pid, '_dame_contact_first_name', true );
+					$contact_org   = get_post_meta( $pid, '_dame_contact_organization', true );
 
-					if ( ! empty( $email ) && is_email( (string) $email ) ) {
-					$last  = get_post_meta( $pid, '_dame_contact_last_name', true );
-					$first = get_post_meta( $pid, '_dame_contact_first_name', true );
-					$org   = get_post_meta( $pid, '_dame_contact_organization', true );
-
-					$name = $format_name( $last, $first );
-					if ( ! empty( $org ) ) {
-						$name = (string) $org . ( trim( (string) $name ) ? ' (' . $name . ')' : '' );
+					$name = $format_name( $contact_last, $contact_first );
+					if ( ! empty( $contact_org ) ) {
+						$name = (string) $contact_org . ( trim( (string) $name ) ? ' (' . $name . ')' : '' );
 					}
 					$sent_at = get_post_meta( $pid, "_dame_message_{$message_id}_sent_at", true );
-					$recipients[ (string) $email ] = array( 'name' => $name, 'sent_at' => $sent_at );
-					}
-					}
-
+					$recipients[ (string) $contact_email ] = array( 'name' => $name, 'sent_at' => $sent_at );
+				}
+			}
 		}
 
 		// Sort by Name Alphabetically

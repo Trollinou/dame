@@ -153,7 +153,7 @@ class BatchSender {
 					}
 				}
 			}
-			sleep( 3 ); // Sleep 3 seconds to smooth server load.
+			sleep( 1 ); // Sleep 1 second to respect 20 emails / minute limit on o2switch.
 		}
 
 		// Handle failures with a retry mechanism.

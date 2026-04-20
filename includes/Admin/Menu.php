@@ -29,7 +29,7 @@ class Menu {
 		add_menu_page(
 			__( "DAME - Gestion", "dame" ),
 			__( "DAME", "dame" ),
-			'read_private_pages',
+			'edit_dame_messages',
 			'dame-admin',
 			[ $this, 'render_dashboard' ],
 			'dashicons-groups',

@@ -242,7 +242,7 @@ class Agenda {
 	 *
 	 * @param WP_Query $query The main WP_Query instance.
 	 */
-	public function filter_and_sort( $query ) {
+	public function filter_and_sort( $query ): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( ! is_admin() || ! $query->is_main_query() || ! isset( $_GET['post_type'] ) || 'dame_agenda' !== $_GET['post_type'] ) {
 			return;

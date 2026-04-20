@@ -30,7 +30,7 @@ class Mailer {
 	 *
 	 * @param PHPMailer $phpmailer The PHPMailer object.
 	 */
-	public function configure_smtp( $phpmailer ) {
+	public function configure_smtp( $phpmailer ): void {
 		$options = get_option( 'dame_options', [] );
 
 		// Check if SMTP host is configured (acts as enable_smtp).

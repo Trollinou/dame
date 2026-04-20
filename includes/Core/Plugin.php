@@ -88,7 +88,7 @@ class Plugin {
 	/**
 	 * Starts the plugin execution.
 	 */
-	public function run() {
+	public function run(): void {
 		// Initialize Roles.
 		$roles = new Roles();
 		$roles->init();

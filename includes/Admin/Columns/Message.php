@@ -63,7 +63,18 @@ class Message {
 							echo esc_html( get_the_modified_date( 'd/m/Y H:i', $post_id ) );
 						}
 					} else {
-						echo esc_html( ucfirst( $status ) );
+						$processed = (int) get_post_meta( $post_id, '_dame_scheduled_batches_processed', true );
+						$total     = (int) get_post_meta( $post_id, '_dame_scheduled_batches_total', true );
+						
+						if ( 'scheduled' === $status ) {
+							echo esc_html__( 'Planifié', 'dame' );
+						} else {
+							echo esc_html__( 'En cours', 'dame' );
+						}
+
+						if ( $total > 0 ) {
+							printf( ' (%d/%d)', $processed, $total );
+						}
 					}
 				} else {
 					echo '—';
@@ -87,7 +98,7 @@ class Message {
 				$count = (int) $count;
 
 				if ( $count > 0 ) {
-					echo esc_html( $count );
+					echo esc_html( (string) $count );
 				} else {
 					echo '0';
 				}

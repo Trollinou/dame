@@ -66,7 +66,7 @@ class Settings {
 		foreach ( $categories as $category ) {
 			$checked = in_array( $category->term_id, $selected_categories ) ? 'checked' : '';
 			echo '<label style="display: block;">';
-			echo '<input type="checkbox" name="dame_ical_feed_categories[]" value="' . esc_attr( $category->term_id ) . '" ' . $checked . '> ';
+			echo '<input type="checkbox" name="dame_ical_feed_categories[]" value="' . esc_attr( (string) $category->term_id ) . '" ' . $checked . '> ';
 			echo esc_html( $category->name );
 			echo '</label>';
 		}

@@ -13,7 +13,7 @@ class Cron {
 		add_action( 'admin_init', [ $this, 'schedule_events' ] );
 	}
 
-	public function schedule_events() {
+	public function schedule_events(): void {
 		$options = get_option( 'dame_options', [] );
 		$time_str = ! empty( $options['backup_time'] ) ? $options['backup_time'] : '01:00';
 

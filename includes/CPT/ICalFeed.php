@@ -52,7 +52,6 @@ class ICalFeed {
 			'capability_type'    => 'post',
 			'has_archive'        => false,
 			'hierarchical'       => false,
-			'menu_position'      => null,
 			'supports'           => array( 'title' ),
 		);
 

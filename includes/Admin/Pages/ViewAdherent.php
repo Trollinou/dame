@@ -38,7 +38,7 @@ class ViewAdherent {
 	/**
 	 * Hides the menu link via CSS.
 	 */
-	public function hide_menu_link() {
+	public function hide_menu_link(): void {
 		echo '<style>a[href="admin.php?page=dame-view-adherent"] { display: none !important; }</style>';
 	}
 

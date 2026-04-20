@@ -102,10 +102,10 @@ class Assignation {
 								<td><strong><?php the_title(); ?></strong></td>
 								<td>
 									<?php if ( ! empty( $unlinked_users ) ) : ?>
-										<select name="user_id[<?php echo esc_attr( get_the_ID() ); ?>]">
+										<select name="user_id[<?php echo esc_attr( (string) get_the_ID() ); ?>]">
 											<option value=""><?php esc_html_e( "Sélectionner un utilisateur", "dame" ); ?></option>
 											<?php foreach ( $unlinked_users as $user ) : ?>
-												<option value="<?php echo esc_attr( $user->ID ); ?>">
+												<option value="<?php echo esc_attr( (string) $user->ID ); ?>">
 													<?php echo esc_html( $user->display_name ); ?>
 												</option>
 											<?php endforeach; ?>
@@ -115,7 +115,7 @@ class Assignation {
 									<?php endif; ?>
 								</td>
 								<td>
-									<select name="role[<?php echo esc_attr( get_the_ID() ); ?>]">
+									<select name="role[<?php echo esc_attr( (string) get_the_ID() ); ?>]">
 										<?php foreach ( $roles as $role_value => $role_name ) : ?>
 											<option value="<?php echo esc_attr( $role_value ); ?>" <?php selected( $role_value, 'membre' ); ?>>
 												<?php echo esc_html( $role_name ); ?>
@@ -124,7 +124,7 @@ class Assignation {
 									</select>
 								</td>
 								<td>
-									<button type="submit" name="assign_user" value="<?php echo esc_attr( get_the_ID() ); ?>" class="button button-primary">
+									<button type="submit" name="assign_user" value="<?php echo esc_attr( (string) get_the_ID() ); ?>" class="button button-primary">
 										<?php esc_html_e( "Assigner", "dame" ); ?>
 									</button>
 								</td>

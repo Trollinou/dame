@@ -149,7 +149,7 @@ class Mailing {
 						$data_attrs = $data_callback ? $data_callback($value, $key) : '';
 					?>
 						<label style="display: block;">
-							<input type="checkbox" name="<?php echo esc_attr($name_attr); ?>[]" value="<?php echo esc_attr($id); ?>" <?php checked($is_checked); ?> <?php echo $data_attrs; ?>> 
+							<input type="checkbox" name="<?php echo esc_attr($name_attr); ?>[]" value="<?php echo esc_attr((string) $id); ?>" <?php checked($is_checked); ?> <?php echo $data_attrs; ?>> 
 							<?php echo esc_html($label); ?>
 						</label>
 					<?php endforeach; ?>
@@ -209,7 +209,7 @@ class Mailing {
 									<?php
 									$status = get_post_meta( $message->ID, '_dame_message_status', true );
 									?>
-									<option value="<?php echo esc_attr( $message->ID ); ?>" <?php selected( $state_message, $message->ID ); ?> data-status="<?php echo esc_attr( $status ); ?>"><?php echo esc_html( $message->post_title ); ?> (<?php echo esc_html( $status ? $status : get_post_status( $message->ID ) ); ?>)</option>
+									<option value="<?php echo esc_attr( (string) $message->ID ); ?>" <?php selected( $state_message, $message->ID ); ?> data-status="<?php echo esc_attr( $status ); ?>"><?php echo esc_html( $message->post_title ); ?> (<?php echo esc_html( $status ? $status : get_post_status( $message->ID ) ); ?>)</option>
 								<?php endforeach; ?>
 							</select>
 							<div id="dame_message_warning" style="color: #d63638; display: none; margin-top: 5px;">
@@ -533,11 +533,11 @@ class Mailing {
 		};
 
 
-		if ( 'group' === $adherent_method ) {
+		if ( 'manual' !== $adherent_method ) {
 			$adherent_ids = array_filter( $adherent_ids, $filter_already_received );
 		}
 
-		if ( 'group' === $contact_method ) {
+		if ( 'manual' !== $contact_method ) {
 			$contact_ids = array_filter( $contact_ids, $filter_already_received );
 		}
 
@@ -618,8 +618,8 @@ class Mailing {
 			update_post_meta( $message_id, '_dame_manual_contacts', $meta_manual_contacts );
 		}
 
-		// Découpage en lots (Batching) pour éviter les timeouts
-		$chunks = array_chunk( $recipient_emails, 20 );
+		// Découpage en lots (Batching) pour éviter les timeouts (10 mails par lot pour o2switch)
+		$chunks = array_chunk( $recipient_emails, 10 );
 		$total_batches = count( $chunks );
 		update_post_meta( $message_id, '_dame_scheduled_batches_total', $total_batches );
 		update_post_meta( $message_id, '_dame_scheduled_batches_processed', 0 );
@@ -627,7 +627,7 @@ class Mailing {
 		$delay = 0;
 		foreach ( $chunks as $chunk_emails ) {
 			wp_schedule_single_event( time() + $delay, 'dame_cron_send_batch', [ $message_id, $chunk_emails, 0 ] );
-			$delay += 60; // 1 minute entre chaque lot de 20 mails.
+			$delay += 30; // 30 secondes entre chaque lot de 10 mails (20 mails/min).
 		}
 
 		wp_redirect( add_query_arg( [ 'success' => 1, 'count' => count( $recipient_emails ) ], $base_url ) );

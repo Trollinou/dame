@@ -22,7 +22,7 @@ class Assets {
 	/**
 	 * Enqueues front-end scripts and styles.
 	 */
-	public function enqueue_styles_scripts() {
+	public function enqueue_styles_scripts(): void {
 		// Enqueue the public-facing stylesheet.
 		wp_enqueue_style(
 			'dame-public-styles',

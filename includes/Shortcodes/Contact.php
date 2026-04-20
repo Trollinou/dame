@@ -28,7 +28,7 @@ class Contact {
 	/**
 	 * Renders the shortcode.
 	 *
-	 * @param array $atts Shortcode attributes.
+	 * @param array<string, mixed> $atts Shortcode attributes.
 	 * @return string The HTML output of the contact form.
 	 */
 	public function render( $atts ) {
@@ -92,7 +92,7 @@ class Contact {
 	/**
 	 * Handles the AJAX submission for the contact form.
 	 */
-	public function handle_submission() {
+	public function handle_submission(): void {
 		// 1. Security Check: Verify nonce
 		if ( ! isset( $_POST['dame_contact_nonce_field'] ) || ! wp_verify_nonce( $_POST['dame_contact_nonce_field'], 'dame_contact_nonce' ) ) {
 			wp_send_json_error( [ 'message' => __( "La vérification de sécurité a échoué. Veuillez rafraîchir la page.", "dame" ) ], 403 );
