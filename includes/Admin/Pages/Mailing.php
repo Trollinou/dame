@@ -551,10 +551,7 @@ class Mailing {
 			$recipient_emails = array_merge( $recipient_emails, Data_Provider::get_emails_for_adherent( $aid ) );
 		}
 		foreach ( $contact_ids as $cid ) {
-			$email = get_post_meta( $cid, '_dame_contact_email', true );
-			if ( is_email( $email ) ) {
-				$recipient_emails[] = $email;
-			}
+			$recipient_emails = array_merge( $recipient_emails, Data_Provider::get_emails_for_contact( $cid ) );
 		}
 		$recipient_emails = array_unique( $recipient_emails );
 
@@ -599,6 +596,7 @@ class Mailing {
 		$new_total = $old_count + count( $recipient_emails );
 
 		update_post_meta( $message_id, '_dame_message_status', 'scheduled' );
+		update_post_meta( $message_id, '_dame_sent_date', current_time( 'mysql', true ) );
 		update_post_meta( $message_id, '_dame_message_recipients_count', $new_total );
 		update_post_meta( $message_id, '_dame_adherent_method', $adherent_method );
 		update_post_meta( $message_id, '_dame_contact_method', $contact_method );

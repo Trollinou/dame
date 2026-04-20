@@ -242,4 +242,22 @@ class Data_Provider {
 
 		return array_unique( $emails );
 	}
+
+	/**
+	 * Retrieves the valid email address for a given contact.
+	 *
+	 * @param int $contact_id The ID of the contact post.
+	 * @return array<int, string> List containing the email if accepted.
+	 */
+	public static function get_emails_for_contact( $contact_id ): array {
+		$emails  = array();
+		$email   = get_post_meta( $contact_id, '_dame_contact_email', true );
+		$refuses = get_post_meta( $contact_id, '_dame_contact_no_emails', true );
+
+		if ( ! empty( $email ) && is_email( (string) $email ) && '1' !== $refuses ) {
+			$emails[] = (string) $email;
+		}
+
+		return $emails;
+	}
 }

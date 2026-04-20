@@ -469,13 +469,13 @@ class Agenda {
 				$start_date = new DateTime( $start_date_str );
 				$end_date   = new DateTime( $end_date_str );
 
-				$day_of_week = date_i18n( 'D', $start_date->getTimestamp() );
+				$day_of_week = wp_date( 'D', $start_date->getTimestamp() );
 				$day_number  = $start_date->format( 'd' );
-				$month_abbr  = date_i18n( 'M', $start_date->getTimestamp() );
+				$month_abbr  = wp_date( 'M', $start_date->getTimestamp() );
 
-				$date_display = date_i18n( 'j F Y', $start_date->getTimestamp() );
+				$date_display = wp_date( 'j F Y', $start_date->getTimestamp() );
 				if ( $start_date_str !== $end_date_str ) {
-					$date_display = date_i18n( 'j F Y', $start_date->getTimestamp() ) . ' - ' . date_i18n( 'j F Y', $end_date->getTimestamp() );
+					$date_display = wp_date( 'j F Y', $start_date->getTimestamp() ) . ' - ' . wp_date( 'j F Y', $end_date->getTimestamp() );
 				}
 
 				if ( ! $all_day && $start_time ) {

@@ -91,24 +91,39 @@ class MessageReport {
 					<tr>
 						<th><?php esc_html_e( 'Nom (Adhérent / Responsable)', 'dame' ); ?></th>
 						<th><?php esc_html_e( 'Email', 'dame' ); ?></th>
+						<th><?php esc_html_e( 'Date d\'envoi', 'dame' ); ?></th>
 						<th><?php esc_html_e( 'Statut', 'dame' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
 					<?php if ( ! empty( $recipients ) ) : ?>
-						<?php foreach ( $recipients as $email => $name ) : ?>
+						<?php foreach ( $recipients as $email => $data ) : ?>
 							<?php
-							$hash = md5( mb_strtolower( trim( $email ), 'UTF-8' ) );
+							$name      = $data['name'];
+							$sent_at   = $data['sent_at'];
+							$hash      = md5( mb_strtolower( trim( (string) $email ), 'UTF-8' ) );
 							$is_opened = isset( $opens_by_hash[ $hash ] );
 							$open_data = $is_opened ? $opens_by_hash[ $hash ] : null;
 							?>
 							<tr>
 								<td><?php echo esc_html( $name ); ?></td>
-								<td><?php echo esc_html( $email ); ?></td>
+								<td><?php echo esc_html( (string) $email ); ?></td>
+								<td>
+									<?php 
+									if ( ! empty( $sent_at ) ) {
+										echo esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $sent_at . ' UTC' ) ) );
+									} else {
+										echo '—';
+									}
+									?>
+								</td>
 								<td>
 									<?php if ( $is_opened ) : ?>
 										<span style="color: green; font-weight: bold;">
-											<?php printf( esc_html__( 'Ouvert le %s', 'dame' ), date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $open_data->opened_at ) ) ); ?>
+											<?php 
+											$timestamp = strtotime( $open_data->opened_at . ' UTC' );
+											printf( esc_html__( 'Ouvert le %s', 'dame' ), wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp ) ); 
+											?>
 										</span>
 									<?php else : ?>
 										<span style="color: #888;"><?php esc_html_e( 'Non lu', 'dame' ); ?></span>
@@ -173,39 +188,44 @@ class MessageReport {
 					$rep_email = get_post_meta( $pid, "_dame_legal_rep_{$i}_email", true );
 					$refuses   = get_post_meta( $pid, "_dame_legal_rep_{$i}_email_refuses_comms", true );
 
-					if ( ! empty( $rep_email ) && is_email( (string) $rep_email ) && '1' !== $refuses ) {
+					if ( ! empty( $rep_email ) && is_email( (string) $rep_email ) ) {
 						$first = get_post_meta( $pid, "_dame_legal_rep_{$i}_first_name", true );
 						$last  = get_post_meta( $pid, "_dame_legal_rep_{$i}_last_name", true );
-						$recipients[ (string) $rep_email ] = $format_name( $last, $first );
+						$name  = $format_name( $last, $first );
+						$sent_at = get_post_meta( $pid, "_dame_message_{$message_id}_sent_at", true );
+						$recipients[ (string) $rep_email ] = array( 'name' => $name, 'sent_at' => $sent_at );
 					}
 				}
 
 				$member_email = get_post_meta( $pid, '_dame_email', true );
-				$refuses      = get_post_meta( $pid, '_dame_email_refuses_comms', true );
 
-				if ( ! empty( $member_email ) && is_email( (string) $member_email ) && '1' !== $refuses ) {
+				if ( ! empty( $member_email ) && is_email( (string) $member_email ) ) {
 					$first = get_post_meta( $pid, '_dame_first_name', true );
-					$last  = get_post_meta( $pid, '_dame_last_name', true );
-					$recipients[ (string) $member_email ] = $format_name( $last, $first );
-				}
-			} elseif ( 'dame_contact' === $post_type ) {
-				$email = get_post_meta( $pid, '_dame_contact_email', true );
-				if ( ! empty( $email ) && is_email( (string) $email ) ) {
+					$name = $format_name( $last, $first );
+					$sent_at = get_post_meta( $pid, "_dame_message_{$message_id}_sent_at", true );
+					$recipients[ (string) $member_email ] = array( 'name' => $name, 'sent_at' => $sent_at );
+					}
+					} elseif ( 'dame_contact' === $post_type ) {
+					$email   = get_post_meta( $pid, '_dame_contact_email', true );
+
+					if ( ! empty( $email ) && is_email( (string) $email ) ) {
 					$last  = get_post_meta( $pid, '_dame_contact_last_name', true );
 					$first = get_post_meta( $pid, '_dame_contact_first_name', true );
 					$org   = get_post_meta( $pid, '_dame_contact_organization', true );
-					
+
 					$name = $format_name( $last, $first );
 					if ( ! empty( $org ) ) {
 						$name = (string) $org . ( trim( (string) $name ) ? ' (' . $name . ')' : '' );
 					}
-					$recipients[ (string) $email ] = $name;
-				}
-			}
+					$sent_at = get_post_meta( $pid, "_dame_message_{$message_id}_sent_at", true );
+					$recipients[ (string) $email ] = array( 'name' => $name, 'sent_at' => $sent_at );
+					}
+					}
+
 		}
 
 		// Sort by Name Alphabetically
-		uasort( $recipients, fn( $a, $b ) => strcasecmp( (string) $a, (string) $b ) );
+		uasort( $recipients, fn( $a, $b ) => strcasecmp( (string) $a['name'], (string) $b['name'] ) );
 
 		return $recipients;
 	}

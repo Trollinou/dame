@@ -53,6 +53,7 @@ class Details {
 		$first_name   = get_post_meta( $post->ID, '_dame_contact_first_name', true );
 		$role         = get_post_meta( $post->ID, '_dame_contact_role', true );
 		$email        = get_post_meta( $post->ID, '_dame_contact_email', true );
+		$no_emails    = get_post_meta( $post->ID, '_dame_contact_no_emails', true );
 		$phone        = get_post_meta( $post->ID, '_dame_contact_phone', true );
 		$address_1    = get_post_meta( $post->ID, '_dame_contact_address_1', true );
 		$address_2    = get_post_meta( $post->ID, '_dame_contact_address_2', true );
@@ -94,6 +95,10 @@ class Details {
 				<th><label for="dame_contact_email"><?php esc_html_e( 'Email', 'dame' ); ?></label></th>
 				<td>
 					<input type="email" name="_dame_contact_email" id="dame_contact_email" value="<?php echo esc_attr( $email ); ?>" class="regular-text" />
+					<label>
+						<input type="checkbox" name="_dame_contact_no_emails" value="1" <?php checked( $no_emails, '1' ); ?> />
+						<?php esc_html_e( 'Refus mailing', 'dame' ); ?>
+					</label>
 				</td>
 			</tr>
 			<tr>
@@ -201,10 +206,13 @@ class Details {
 			}
 		}
 
-		// 3. Sauvegarde spécifique pour l'Email
+		// 3. Sauvegarde spécifique pour l'Email et le refus de mailing
 		if ( isset( $_POST['_dame_contact_email'] ) ) {
 			update_post_meta( $post_id, '_dame_contact_email', sanitize_email( $_POST['_dame_contact_email'] ) );
 		}
+
+		$no_emails = isset( $_POST['_dame_contact_no_emails'] ) ? '1' : '0';
+		update_post_meta( $post_id, '_dame_contact_no_emails', $no_emails );
 
 		// 4. Mise à jour automatique du titre natif
 		$organization = isset( $_POST['_dame_contact_organization'] ) ? sanitize_text_field( $_POST['_dame_contact_organization'] ) : '';

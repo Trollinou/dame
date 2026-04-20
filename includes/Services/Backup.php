@@ -113,7 +113,7 @@ class Backup {
 
 		// Headers
 		$headers = [
-			'Organisation', 'Nom', 'Prenom', 'Role', 'Email', 'Adresse', 'Complement', 'Code Postal', 'Ville', 'Type'
+			'Organisation', 'Nom', 'Prenom', 'Role', 'Email', 'Refus mailing', 'Adresse', 'Complement', 'Code Postal', 'Ville', 'Type'
 		];
 
 		// Convert headers to CP1252
@@ -140,6 +140,7 @@ class Backup {
 					get_post_meta( $post->ID, '_dame_contact_first_name', true ),
 					get_post_meta( $post->ID, '_dame_contact_role', true ),
 					get_post_meta( $post->ID, '_dame_contact_email', true ),
+					get_post_meta( $post->ID, '_dame_contact_no_emails', true ) ? 'O' : 'N',
 					get_post_meta( $post->ID, '_dame_contact_address_1', true ),
 					get_post_meta( $post->ID, '_dame_contact_address_2', true ),
 					get_post_meta( $post->ID, '_dame_contact_postcode', true ),
@@ -184,15 +185,17 @@ class Backup {
 			// Convert to UTF-8
 			$row = array_map( fn( $val ) => mb_convert_encoding( (string) $val, 'UTF-8', 'Windows-1252' ), $row );
 
-			// Map columns: 0:Org, 1:Nom, 2:Prenom, 3:Email, 4:Adresse, 5:Complement, 6:CP, 7:Ville
+			// Map columns: 0:Org, 1:Nom, 2:Prenom, 3:Role, 4:Email, 5:Refus, 6:Adresse, 7:Complement, 8:CP, 9:Ville
 			$org       = trim( $row[0] ?? '' );
 			$last_name = trim( $row[1] ?? '' );
 			$first_name = trim( $row[2] ?? '' );
-			$email     = trim( $row[3] ?? '' );
-			$addr1     = trim( $row[4] ?? '' );
-			$addr2     = trim( $row[5] ?? '' );
-			$postcode  = trim( $row[6] ?? '' );
-			$city      = trim( $row[7] ?? '' );
+			$role      = trim( $row[3] ?? '' );
+			$email     = trim( $row[4] ?? '' );
+			$refus     = trim( mb_strtoupper( (string) ($row[5] ?? ''), 'UTF-8' ) ) === 'O' ? '1' : '0';
+			$addr1     = trim( $row[6] ?? '' );
+			$addr2     = trim( $row[7] ?? '' );
+			$postcode  = trim( $row[8] ?? '' );
+			$city      = trim( $row[9] ?? '' );
 
 			if ( empty( $last_name ) && empty( $first_name ) && empty( $org ) ) {
 				continue;
@@ -249,7 +252,9 @@ class Backup {
 				update_post_meta( $post_id, '_dame_contact_organization', $org );
 				update_post_meta( $post_id, '_dame_contact_last_name', $formatted_last );
 				update_post_meta( $post_id, '_dame_contact_first_name', $formatted_first );
+				update_post_meta( $post_id, '_dame_contact_role', $role );
 				update_post_meta( $post_id, '_dame_contact_email', sanitize_email( $email ) );
+				update_post_meta( $post_id, '_dame_contact_no_emails', $refus );
 				update_post_meta( $post_id, '_dame_contact_address_1', $addr1 );
 				update_post_meta( $post_id, '_dame_contact_address_2', $addr2 );
 				update_post_meta( $post_id, '_dame_contact_postcode', $postcode );
@@ -353,9 +358,15 @@ class Backup {
 					$adherent_seasons_slugs = array();
 				}
 
-				// Format dates.
-				$birth_date             = get_post_meta( $post_id, '_dame_birth_date', true );
-				$formatted_birth_date   = $birth_date ? wp_date( 'd/m/Y', strtotime( $birth_date ), new \DateTimeZone('UTC') ) : '';
+				// Format dates (fixed calendar dates, no timezone shift wanted).
+				$birth_date           = get_post_meta( $post_id, '_dame_birth_date', true );
+				$formatted_birth_date = '';
+				if ( ! empty( $birth_date ) ) {
+					$parts = explode( '-', $birth_date );
+					if ( count( $parts ) === 3 ) {
+						$formatted_birth_date = sprintf( '%02d/%02d/%04d', $parts[2], $parts[1], $parts[0] );
+					}
+				}
 
 				// Format booleans.
 				$is_ecole_echecs    = get_post_meta( $post_id, '_dame_is_junior', true ) ? 'O' : 'N';
@@ -900,15 +911,26 @@ class Backup {
 		// Adherents
 		$meta_insert_values = [];
 		$meta_insert_placeholders = [];
+		$adherents_with_pending_meta = [];
 		foreach ( $data['adherents'] ?? [] as $a ) {
 			$pid = wp_insert_post( [ 'post_title' => $a['post_title'], 'post_type' => 'adherent', 'post_status' => 'publish' ] );
 			if ( $pid ) {
 				$map_adherents[ $a['old_id'] ] = $pid;
+				$pending_meta = [];
 				foreach ( $a['meta_data'] as $k => $v ) {
+					// Detect keys that need message ID remapping
+					if ( '_dame_message_received' === $k || preg_match( '/^_dame_message_(\d+)_sent_at$/', $k ) ) {
+						$pending_meta[ $k ] = $v;
+						continue;
+					}
+
 					$meta_insert_values[] = $pid;
 					$meta_insert_values[] = $k;
 					$meta_insert_values[] = maybe_serialize( $v );
 					$meta_insert_placeholders[] = '(%d, %s, %s)';
+				}
+				if ( ! empty( $pending_meta ) ) {
+					$adherents_with_pending_meta[ $pid ] = $pending_meta;
 				}
 				foreach ( $a['taxonomies'] as $tax => $slugs ) wp_set_object_terms( $pid, $slugs, $tax );
 			}
@@ -921,14 +943,25 @@ class Backup {
 		// Contacts (dame_contact)
 		$contact_meta_insert_values = [];
 		$contact_meta_insert_placeholders = [];
+		$contacts_with_pending_meta = [];
 		foreach ( $data['contacts'] ?? [] as $c ) {
 			$pid = wp_insert_post( [ 'post_title' => $c['post_title'], 'post_type' => 'dame_contact', 'post_status' => 'publish' ] );
 			if ( $pid ) {
+				$pending_meta = [];
 				foreach ( $c['meta_data'] as $k => $v ) {
+					// Detect keys that need message ID remapping
+					if ( '_dame_message_received' === $k || preg_match( '/^_dame_message_(\d+)_sent_at$/', $k ) ) {
+						$pending_meta[ $k ] = $v;
+						continue;
+					}
+
 					$contact_meta_insert_values[] = $pid;
 					$contact_meta_insert_values[] = $k;
 					$contact_meta_insert_values[] = maybe_serialize( $v );
 					$contact_meta_insert_placeholders[] = '(%d, %s, %s)';
+				}
+				if ( ! empty( $pending_meta ) ) {
+					$contacts_with_pending_meta[ $pid ] = $pending_meta;
 				}
 				foreach ( $c['taxonomies'] as $tax => $slugs ) wp_set_object_terms( $pid, $slugs, $tax );
 			}
@@ -999,6 +1032,45 @@ class Backup {
 		if ( ! empty( $msg_meta_insert_placeholders ) ) {
 			$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $msg_meta_insert_placeholders );
 			$wpdb->query( $wpdb->prepare( $query, $msg_meta_insert_values ) );
+		}
+
+		// 3. REMAP PENDING METADATA (Linked to Messages)
+		$pending_meta_insert_values = [];
+		$pending_meta_insert_placeholders = [];
+
+		$process_pending = function( $post_id, $meta_array ) use ( &$pending_meta_insert_values, &$pending_meta_insert_placeholders, $map_messages ) {
+			foreach ( $meta_array as $k => $v ) {
+				$remapped_key   = $k;
+				$remapped_value = $v;
+
+				// Case 1: _dame_message_received (Array of message IDs)
+				if ( '_dame_message_received' === $k ) {
+					$vals = is_array( $v ) ? $v : [ $v ];
+					$new_vals = [];
+					foreach ( $vals as $old_mid ) if ( isset( $map_messages[ $old_mid ] ) ) $new_vals[] = (string) $map_messages[ $old_mid ];
+					if ( empty( $new_vals ) ) continue;
+					$remapped_value = count( $new_vals ) === 1 ? $new_vals[0] : $new_vals;
+				}
+				// Case 2: _dame_message_{id}_sent_at (Key contains message ID)
+				elseif ( preg_match( '/^_dame_message_(\d+)_sent_at$/', $k, $matches ) ) {
+					$old_mid = $matches[1];
+					if ( ! isset( $map_messages[ $old_mid ] ) ) continue;
+					$remapped_key = "_dame_message_{$map_messages[ $old_mid ]}_sent_at";
+				}
+
+				$pending_meta_insert_values[] = $post_id;
+				$pending_meta_insert_values[] = $remapped_key;
+				$pending_meta_insert_values[] = maybe_serialize( $remapped_value );
+				$pending_meta_insert_placeholders[] = '(%d, %s, %s)';
+			}
+		};
+
+		foreach ( $adherents_with_pending_meta as $pid => $meta ) $process_pending( $pid, $meta );
+		foreach ( $contacts_with_pending_meta as $pid => $meta ) $process_pending( $pid, $meta );
+
+		if ( ! empty( $pending_meta_insert_placeholders ) ) {
+			$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $pending_meta_insert_placeholders );
+			$wpdb->query( $wpdb->prepare( $query, $pending_meta_insert_values ) );
 		}
 
 		// Message opens

@@ -146,8 +146,10 @@ class BatchSender {
 			} else {
 				// Success: Record that EVERY post associated with this email received the message.
 				if ( ! empty( $target_post_ids ) ) {
+					$sent_at = current_time( 'mysql', true );
 					foreach ( $target_post_ids as $tpid ) {
 						add_post_meta( $tpid, '_dame_message_received', $message_id, false );
+						update_post_meta( $tpid, "_dame_message_{$message_id}_sent_at", $sent_at );
 					}
 				}
 			}
