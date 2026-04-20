@@ -22,7 +22,7 @@ class Roles {
 	/**
 	 * Register custom roles and assign capabilities.
 	 */
-	public function register_roles() {
+	public function register_roles(): void {
 		// Role: Membre
 		add_role(
 			'membre',
@@ -81,7 +81,7 @@ class Roles {
 		add_role( 'entraineur', __( 'Entraineur', 'dame' ), $entraineur_caps );
 
 		// Assign custom message capabilities
-		$roles_to_modify = array( 'administrator', 'editor', 'staff' );
+		$roles_to_modify = array( 'administrator', 'editor', 'staff', 'entraineur' );
 		foreach ( $roles_to_modify as $role_name ) {
 			$role = get_role( $role_name );
 			if ( $role ) {

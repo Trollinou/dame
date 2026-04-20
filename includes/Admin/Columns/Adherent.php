@@ -166,7 +166,7 @@ class Adherent {
 	 *
 	 * @param WP_Query $query The query object.
 	 */
-	public function sort_columns( $query ) {
+	public function sort_columns( $query ): void {
 		if ( ! is_admin() || ! $query->is_main_query() || 'adherent' !== $query->get( 'post_type' ) ) {
 			return;
 		}
@@ -216,7 +216,7 @@ class Adherent {
 				<select name="dame_group_filter">
 					<option value=""><?php _e( 'Tous les groupes', 'dame' ); ?></option>
 					<?php foreach ( $group_terms as $term ) : ?>
-						<option value="<?php echo esc_attr( $term->term_id ); ?>" <?php selected( $term->term_id, $current_group ); ?>><?php echo esc_html( $term->name ); ?></option>
+						<option value="<?php echo esc_attr( (string) $term->term_id ); ?>" <?php selected( $term->term_id, $current_group ); ?>><?php echo esc_html( $term->name ); ?></option>
 					<?php endforeach; ?>
 				</select>
 				<?php
@@ -247,11 +247,22 @@ class Adherent {
 				<select name="dame_saison_filter">
 					<option value=""><?php _e( 'Toutes les saisons', 'dame' ); ?></option>
 					<?php foreach ( $saisons as $saison ) : ?>
-						<option value="<?php echo esc_attr( $saison->term_id ); ?>" <?php selected( $saison->term_id, $current_saison ); ?>><?php echo esc_html( $saison->name ); ?></option>
+						<option value="<?php echo esc_attr( (string) $saison->term_id ); ?>" <?php selected( $saison->term_id, $current_saison ); ?>><?php echo esc_html( $saison->name ); ?></option>
 					<?php endforeach; ?>
 				</select>
 				<?php
 			}
+
+			// License Type filter
+			$current_license = $_GET['dame_license_type_filter'] ?? '';
+			?>
+			<select name="dame_license_type_filter">
+				<option value=""><?php _e( 'Tous les types de licence', 'dame' ); ?></option>
+				<option value="A" <?php selected( 'A', $current_license ); ?>><?php _e( 'Licence A', 'dame' ); ?></option>
+				<option value="B" <?php selected( 'B', $current_license ); ?>><?php _e( 'Licence B', 'dame' ); ?></option>
+				<option value="Autres" <?php selected( 'Autres', $current_license ); ?>><?php _e( 'Autres / Non précisé', 'dame' ); ?></option>
+			</select>
+			<?php
 
 			// Age Category filter
 			$age_categories = \DAME\Core\Utils::get_all_age_categories();
@@ -274,7 +285,7 @@ class Adherent {
 	 *
 	 * @param WP_Query $query The WP_Query instance.
 	 */
-	public function filter_query( $query ) {
+	public function filter_query( $query ): void {
 		global $pagenow;
 		$post_type = $_GET['post_type'] ?? '';
 
@@ -326,6 +337,72 @@ class Adherent {
 						'taxonomy' => 'dame_saison_adhesion',
 						'field'    => 'term_id',
 						'terms'    => $saison_id,
+					);
+				}
+			}
+
+			// License Type filter
+			if ( isset( $_GET['dame_license_type_filter'] ) && ! empty( $_GET['dame_license_type_filter'] ) ) {
+				$license_filter = sanitize_text_field( $_GET['dame_license_type_filter'] );
+
+				if ( 'A' === $license_filter ) {
+					$meta_query[] = array(
+						'relation' => 'OR',
+						array(
+							'key'     => '_dame_license_type',
+							'value'   => 'A',
+							'compare' => '=',
+						),
+						array(
+							'key'     => '_dame_license_type',
+							'value'   => 'Licence A',
+							'compare' => 'LIKE',
+						),
+					);
+				} elseif ( 'B' === $license_filter ) {
+					$meta_query[] = array(
+						'relation' => 'OR',
+						array(
+							'key'     => '_dame_license_type',
+							'value'   => 'B',
+							'compare' => '=',
+						),
+						array(
+							'key'     => '_dame_license_type',
+							'value'   => 'Licence B',
+							'compare' => 'LIKE',
+						),
+					);
+				} elseif ( 'Autres' === $license_filter ) {
+					$meta_query[] = array(
+						'relation' => 'OR',
+						array(
+							'relation' => 'AND',
+							array(
+								'key'     => '_dame_license_type',
+								'value'   => 'A',
+								'compare' => '!=',
+							),
+							array(
+								'key'     => '_dame_license_type',
+								'value'   => 'Licence A',
+								'compare' => 'NOT LIKE',
+							),
+							array(
+								'key'     => '_dame_license_type',
+								'value'   => 'B',
+								'compare' => '!=',
+							),
+							array(
+								'key'     => '_dame_license_type',
+								'value'   => 'Licence B',
+								'compare' => 'NOT LIKE',
+							),
+						),
+						array(
+							'key'     => '_dame_license_type',
+							'compare' => 'NOT EXISTS',
+						),
 					);
 				}
 			}

@@ -51,12 +51,62 @@ class Toolbar {
 			]
 		);
 
+		// Add the "Voir les adhérents" sub-menu item.
+		$wp_admin_bar->add_node(
+			[
+				'id'     => 'dame_view_adherents',
+				'parent' => 'dame_menu',
+				'title'  => __( "Voir les adhérents", "dame" ),
+				'href'   => admin_url( 'edit.php?post_type=adherent' ),
+			]
+		);
+
+		// Add the "Voir les contacts" sub-menu item.
+		$wp_admin_bar->add_node(
+			[
+				'id'     => 'dame_view_contacts',
+				'parent' => 'dame_menu',
+				'title'  => __( "Voir les contacts", "dame" ),
+				'href'   => admin_url( 'edit.php?post_type=dame_contact' ),
+			]
+		);
+
+		// Add the "Voir les évenements" sub-menu item.
+		$wp_admin_bar->add_node(
+			[
+				'id'     => 'dame_view_events',
+				'parent' => 'dame_menu',
+				'title'  => __( "Voir les évenements", "dame" ),
+				'href'   => admin_url( 'edit.php?post_type=dame_agenda' ),
+			]
+		);
+
+		// Add the "Voir les sondages" sub-menu item.
+		$wp_admin_bar->add_node(
+			[
+				'id'     => 'dame_view_polls',
+				'parent' => 'dame_menu',
+				'title'  => __( "Voir les sondages", "dame" ),
+				'href'   => admin_url( 'edit.php?post_type=sondage' ),
+			]
+		);
+
+		// Add the "Voir les messages" sub-menu item.
+		$wp_admin_bar->add_node(
+			[
+				'id'     => 'dame_view_messages',
+				'parent' => 'dame_menu',
+				'title'  => __( "Voir les messages", "dame" ),
+				'href'   => admin_url( 'edit.php?post_type=dame_message' ),
+			]
+		);
+
 		// Add the "Envoyer un article" sub-menu item.
 		$wp_admin_bar->add_node(
 			[
 				'id'     => 'dame_send_article',
 				'parent' => 'dame_menu',
-				'title'  => __( "Envoyer un article", "dame" ),
+				'title'  => __( "Envoyer un message", "dame" ),
 				'href'   => admin_url( 'edit.php?post_type=adherent&page=dame-mailing' ),
 			]
 		);
@@ -97,7 +147,7 @@ class Toolbar {
 	/**
 	 * Displays an admin notice when the manual backup is triggered.
 	 */
-	public function show_backup_notice() {
+	public function show_backup_notice(): void {
 		if ( isset( $_GET['dame_backup_triggered'] ) && '1' === $_GET['dame_backup_triggered'] ) {
 			?>
 			<div class="notice notice-success is-dismissible">

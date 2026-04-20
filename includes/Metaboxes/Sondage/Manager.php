@@ -372,9 +372,19 @@ class Manager {
 						}
 					}
 				}
+				// Sort time slots by start time
+				usort( $new_date_group['time_slots'], function( $a, $b ) {
+					return strcmp( $a['start'], $b['start'] );
+				} );
+
 				$sondage_data[] = $new_date_group;
 			}
 		}
+
+		// Sort dates by date value
+		usort( $sondage_data, function( $a, $b ) {
+			return strcmp( $a['date'], $b['date'] );
+		} );
 
 		if ( ! empty( $sondage_data ) ) {
 			update_post_meta( $post_id, '_dame_sondage_data', $sondage_data );
