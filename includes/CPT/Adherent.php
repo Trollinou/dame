@@ -15,14 +15,14 @@ class Adherent {
 	/**
 	 * Registers the CPT.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'init', [ $this, 'register_post_type' ], 0 );
 	}
 
 	/**
 	 * Register the custom post type.
 	 */
-	public function register_post_type() {
+	public function register_post_type(): void {
 		$labels = array(
 			'name'                  => _x( 'Adhérents', 'Post Type General Name', 'dame' ),
 			'singular_name'         => _x( 'Adhérent', 'Post Type Singular Name', 'dame' ),

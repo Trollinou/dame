@@ -17,7 +17,7 @@ class Sondage {
 	/**
 	 * Initialize shortcode hooks.
 	 */
-	public function init() {
+	public function init(): void {
 		add_shortcode( 'dame_sondage', [ $this, 'render' ] );
 		add_action( 'admin_post_nopriv_dame_submit_sondage', [ $this, 'handle_submission' ] );
 		add_action( 'admin_post_dame_submit_sondage', [ $this, 'handle_submission' ] );
@@ -26,7 +26,7 @@ class Sondage {
 	/**
 	 * Render the sondage shortcode.
 	 *
-	 * @param array $atts Shortcode attributes.
+	 * @param array<string, mixed>|string $atts Shortcode attributes.
 	 * @return string
 	 */
 	public function render( $atts ) {
@@ -34,7 +34,7 @@ class Sondage {
 			[
 				'slug' => '',
 			],
-			$atts,
+			is_array( $atts ) ? $atts : [],
 			'dame_sondage'
 		);
 
@@ -50,7 +50,7 @@ class Sondage {
 
 		$sondage_data = get_post_meta( $sondage->ID, '_dame_sondage_data', true );
 
-		if ( empty( $sondage_data ) ) {
+		if ( empty( $sondage_data ) || ! is_array( $sondage_data ) ) {
 			return '<p>' . __( 'Ce sondage n\'a pas encore été configuré.', 'dame' ) . '</p>';
 		}
 
@@ -62,11 +62,15 @@ class Sondage {
 			'fields'         => 'ids',
 		] );
 
+		/** @var array<int, array<int, int>> $response_counts */
 		$response_counts = [];
 		foreach ( $all_responses as $response_id ) {
-			$responses_data = get_post_meta( $response_id, '_dame_sondage_responses', true );
-			if ( ! empty( $responses_data ) ) {
+			$responses_data = get_post_meta( (int) $response_id, '_dame_sondage_responses', true );
+			if ( ! empty( $responses_data ) && is_array( $responses_data ) ) {
 				foreach ( $responses_data as $date_index => $time_slots ) {
+					if ( ! is_array( $time_slots ) ) {
+						continue;
+					}
 					foreach ( $time_slots as $time_index => $value ) {
 						if ( ! isset( $response_counts[ $date_index ][ $time_index ] ) ) {
 							$response_counts[ $date_index ][ $time_index ] = 0;
@@ -114,19 +118,23 @@ class Sondage {
 			}
 		}
 
+		if ( ! is_array( $user_responses ) ) {
+			$user_responses = [];
+		}
+
 		ob_start();
 		?>
 		<div class="dame-sondage-wrapper">
-			<h3><?php echo esc_html( $sondage->post_title ); ?></h3>
+			<h3><?php echo esc_html( (string) $sondage->post_title ); ?></h3>
 			<?php if ( ! empty( $sondage->post_content ) ) : ?>
 				<div class="sondage-description">
 					<?php echo wpautop( wp_kses_post( $sondage->post_content ) ); ?>
 				</div>
 			<?php endif; ?>
 
-			<form id="dame-sondage-form-<?php echo esc_attr( $sondage->ID ); ?>" class="dame-sondage-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<form id="dame-sondage-form-<?php echo esc_attr( (string) $sondage->ID ); ?>" class="dame-sondage-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="dame_submit_sondage">
-				<input type="hidden" name="sondage_id" value="<?php echo esc_attr( $sondage->ID ); ?>">
+				<input type="hidden" name="sondage_id" value="<?php echo esc_attr( (string) $sondage->ID ); ?>">
 				<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) ); ?>">
 				<?php wp_nonce_field( 'dame_submit_sondage_response_' . $sondage->ID, 'dame_sondage_nonce' ); ?>
 
@@ -136,10 +144,10 @@ class Sondage {
 					$current_user = wp_get_current_user();
 					if ( is_user_logged_in() ) {
 						$user_name = $current_user->display_name;
-						echo '<input type="text" id="sondage_name" name="sondage_name" value="' . esc_attr( $user_name ) . '" readonly required>';
+						echo '<input type="text" id="sondage_name" name="sondage_name" value="' . esc_attr( (string) $user_name ) . '" readonly required>';
 					} else {
 						$guest_name = ! empty( $existing_response ) ? $existing_response[0]->post_title : '';
-						echo '<input type="text" id="sondage_name" name="sondage_name" value="' . esc_attr( $guest_name ) . '" required>';
+						echo '<input type="text" id="sondage_name" name="sondage_name" value="' . esc_attr( (string) $guest_name ) . '" required>';
 					}
 					?>
 				</p>
@@ -170,7 +178,7 @@ class Sondage {
 											$count = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
 											?>
 											<label class="sondage-timeslot-label">
-												<input type="checkbox" name="sondage_responses[<?php echo esc_attr( $date_index ); ?>][<?php echo esc_attr( $time_index ); ?>]" value="1" <?php echo esc_attr( $checked ); ?>>
+												<input type="checkbox" name="sondage_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?>>
 												<?php echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ); ?> (<?php printf( _n( '%d inscrit', '%d inscrits', $count, 'dame' ), $count ); ?>)
 											</label>
 										<?php endforeach; ?>
@@ -192,13 +200,13 @@ class Sondage {
 			</form>
 		</div>
 		<?php
-		return ob_get_clean();
+		return (string) ob_get_clean();
 	}
 
 	/**
 	 * Handle sondage form submission.
 	 */
-	public function handle_submission() {
+	public function handle_submission(): void {
 		if ( ! isset( $_POST['submit_sondage'], $_POST['dame_sondage_nonce'] ) ) {
 			return;
 		}

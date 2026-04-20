@@ -241,14 +241,16 @@ jQuery( document ).ready( function ( $ ) {
 		events.sort( ( a, b ) => {
 			const aStart = parseDateAsLocal( a.start_date );
 			const bStart = parseDateAsLocal( b.start_date );
-			const aEnd = parseDateAsLocal( a.end_date );
-			const bEnd = parseDateAsLocal( b.end_date );
+
 			if ( aStart < bStart ) {
 				return -1;
 			}
 			if ( aStart > bStart ) {
 				return 1;
 			}
+
+			const aEnd = parseDateAsLocal( a.end_date );
+			const bEnd = parseDateAsLocal( b.end_date );
 			const aDuration = aEnd - aStart;
 			const bDuration = bEnd - bStart;
 			if ( aDuration > bDuration ) {
@@ -411,7 +413,7 @@ jQuery( document ).ready( function ( $ ) {
 							.append( ponctuelContainer );
 					}
 					const timeText =
-						event.all_day == '1'
+						event.all_day === '1'
 							? dame_agenda_ajax.i18n.all_day
 							: `${ event.start_time } - ${ event.end_time }`;
 					let styleAttr = `--event-color: ${ event.color }; border-left-color: ${ event.color };`;
@@ -494,7 +496,7 @@ jQuery( document ).ready( function ( $ ) {
 			}
 
 			const timeText =
-				eventData.all_day == '1'
+				eventData.all_day === '1'
 					? dame_agenda_ajax.i18n.all_day
 					: `${ eventData.start_time } - ${ eventData.end_time }`;
 
@@ -565,7 +567,7 @@ jQuery( document ).ready( function ( $ ) {
 	} );
 
 	// Initial Load & History Navigation
-	function handleHistoryChange( event ) {
+	function handleHistoryChange() {
 		const params = new URLSearchParams( window.location.search );
 		const monthParam = params.get( 'month' );
 		if ( monthParam ) {

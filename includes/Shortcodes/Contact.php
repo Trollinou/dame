@@ -19,7 +19,7 @@ class Contact {
 	/**
 	 * Initializes the shortcode and AJAX handlers.
 	 */
-	public function init() {
+	public function init(): void {
 		add_shortcode( 'dame_contact', [ $this, 'render' ] );
 		add_action( 'wp_ajax_dame_submit_contact_form', [ $this, 'handle_submission' ] );
 		add_action( 'wp_ajax_nopriv_dame_submit_contact_form', [ $this, 'handle_submission' ] );

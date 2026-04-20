@@ -46,7 +46,7 @@ class Main {
 	/**
 	 * Initialize the settings page.
 	 */
-	public function init() {
+	public function init(): void {
 
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 	}
@@ -54,7 +54,7 @@ class Main {
 	/**
 	 * Register settings for all tabs.
 	 */
-	public function register_settings() {
+	public function register_settings(): void {
 		// Register the main option group once.
 		register_setting( 'dame_options_group', 'dame_options', [ $this, 'sanitize_options' ] );
 
@@ -69,7 +69,7 @@ class Main {
 	/**
 	 * Add the options page.
 	 */
-	public function add_menu() {
+	public function add_menu(): void {
 		add_options_page(
 			__( 'Options DAME', 'dame' ),
 			__( 'Options DAME', 'dame' ),
@@ -82,7 +82,7 @@ class Main {
 	/**
 	 * Render the options page.
 	 */
-	public function render_page() {
+	public function render_page(): void {
 		$active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'association';
 		?>
 		<div class="wrap">
@@ -122,8 +122,8 @@ class Main {
 	/**
 	 * Sanitize options.
 	 *
-	 * @param array $input The input array.
-	 * @return array The sanitized array.
+	 * @param array<string, mixed> $input The input array.
+	 * @return array<string, mixed> The sanitized array.
 	 */
 	public function sanitize_options( $input ) {
 		$options = get_option( 'dame_options', [] );

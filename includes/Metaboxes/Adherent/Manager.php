@@ -23,7 +23,7 @@ class Manager {
 	/**
 	 * Initialize the manager.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'add_meta_boxes', [ $this, 'add_meta_boxes' ] );
 		add_action( 'save_post', [ $this, 'save_post' ] );
 	}
@@ -31,7 +31,7 @@ class Manager {
 	/**
 	 * Register meta boxes.
 	 */
-	public function add_meta_boxes() {
+	public function add_meta_boxes(): void {
 		$identity = new Identity();
 		$identity->register();
 
@@ -59,7 +59,7 @@ class Manager {
 	 *
 	 * @param int $post_id Post ID.
 	 */
-	public function save_post( $post_id ) {
+	public function save_post( $post_id ): void {
 		// Common security checks.
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
@@ -89,11 +89,5 @@ class Manager {
 
 		$classification = new Classification();
 		$classification->save( $post_id );
-
-		$groups = new Groups();
-		$groups->save( $post_id );
-
-		$actions = new Actions();
-		$actions->save( $post_id );
 	}
 }

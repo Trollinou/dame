@@ -24,7 +24,7 @@ class Desinstallation {
 	/**
 	 * Register settings.
 	 */
-	public function register() {
+	public function register(): void {
 		add_settings_section(
 			'dame_uninstall_section',
 			__( 'Zone de danger', 'dame' ),
@@ -44,7 +44,7 @@ class Desinstallation {
 	/**
 	 * Render delete field.
 	 */
-	public function render_delete_field() {
+	public function render_delete_field(): void {
 		$options = get_option( 'dame_options' );
 		$checked = isset( $options['delete_on_uninstall'] ) && $options['delete_on_uninstall'] ? 'checked' : '';
 		echo '<input type="checkbox" name="dame_options[delete_on_uninstall]" value="1" ' . esc_attr( $checked ) . ' /> ' . esc_html__( 'Supprimer toutes les données lors de la désinstallation du plugin.', 'dame' );
@@ -54,16 +54,16 @@ class Desinstallation {
 	/**
 	 * Render the tab content.
 	 */
-	public function render() {
+	public function render(): void {
 		do_settings_sections( 'dame_uninstall_section_group' );
 	}
 
 	/**
 	 * Sanitize options.
 	 *
-	 * @param array $input New input.
-	 * @param array $existing_options Existing options.
-	 * @return array Sanitized options.
+	 * @param array<string, mixed> $input New input.
+	 * @param array<string, mixed> $existing_options Existing options.
+	 * @return array<string, mixed> Sanitized options.
 	 */
 	public function sanitize( $input, $existing_options ) {
 		$existing_options['delete_on_uninstall'] = isset( $input['delete_on_uninstall'] ) ? 1 : 0;

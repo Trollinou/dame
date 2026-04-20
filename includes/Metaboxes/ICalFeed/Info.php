@@ -18,14 +18,14 @@ class Info {
 	/**
 	 * Initialize the metabox.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'add_meta_boxes', [ $this, 'add_meta_box' ] );
 	}
 
 	/**
 	 * Adds the metabox for iCal Feed information.
 	 */
-	public function add_meta_box() {
+	public function add_meta_box(): void {
 		add_meta_box(
 			'dame_ical_feed_info',
 			__( 'Informations de connexion', 'dame' ),
@@ -41,7 +41,7 @@ class Info {
 	 *
 	 * @param WP_Post $post The post object.
 	 */
-	public function render( $post ) {
+	public function render( $post ): void {
 		$feed_slug = $post->post_name;
 		$feed_url  = home_url( '/feed/agenda/' . $feed_slug . '.ics' );
 

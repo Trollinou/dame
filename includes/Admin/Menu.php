@@ -14,7 +14,7 @@ use DAME\Admin\Pages\MessageReport;
 
 class Menu {
 
-	public function init() {
+	public function init(): void {
 		add_action( 'admin_menu', [ $this, 'add_menus' ], 10 );
 		add_action( 'admin_menu', [ $this, 'reorder_dame_submenu' ], 999 );
 		add_filter( 'parent_file', [ $this, 'highlight_parent_menu' ] );
@@ -24,7 +24,7 @@ class Menu {
 		(new Mailing())->init();
 	}
 
-	public function add_menus() {
+	public function add_menus(): void {
 		// 1. Menu Parent & Tableau de bord (slug: dame-admin)
 		add_menu_page(
 			__( "DAME - Gestion", "dame" ),
@@ -90,16 +90,18 @@ class Menu {
 		$desired_order = [
 			'dame-admin' => __( "Tableau de bord", "dame" ),
 			'edit.php?post_type=adherent' => __( "Tous les adhérents", "dame" ),
+			'edit.php?post_type=dame_contact' => __( "Tous les contacts", "dame" ),
 			'edit.php?post_type=dame_pre_inscription' => __( "Toutes les préinscriptions", "dame" ),
-			'edit-tags.php?taxonomy=dame_saison_adhesion&amp;post_type=adherent' => __( "Saisons d'adhésion", "dame" ),
-			'edit-tags.php?taxonomy=dame_group&amp;post_type=adherent' => __( "Groupes", "dame" ),
+			'edit.php?post_type=dame_agenda' => __( "Tous les évènements", "dame" ),
+			'edit.php?post_type=sondage' => __( "Tous les sondages", "dame" ),
 			'edit.php?post_type=dame_message' => __( "Tous les messages", "dame" ),
 			'dame-mailing' => __( "Envoyer un message", "dame" ),
-			'edit.php?post_type=dame_agenda' => __( "Tous les évènements", "dame" ),
-			'edit-tags.php?taxonomy=dame_agenda_category&amp;post_type=dame_agenda' => __( "Catégories d'évènements", "dame" ),
+			'edit-tags.php?taxonomy=dame_group&amp;post_type=adherent' => __( "Groupes d'Adhérent", "dame" ),
+			'edit-tags.php?taxonomy=dame_contact_type&amp;post_type=dame_contact' => __( "Groupes de Contact", "dame" ),
+			'edit-tags.php?taxonomy=dame_agenda_category&amp;post_type=dame_agenda' => __( "Groupes d'Évènements", "dame" ),
+			'edit-tags.php?taxonomy=dame_saison_adhesion&amp;post_type=adherent' => __( "Saisons d'adhésion", "dame" ),
 			'edit.php?post_type=dame_ical_feed' => __( "Flux d'agenda", "dame" ),
-			'edit.php?post_type=sondage' => __( "Tous les sondages", "dame" ),
-			'dame-backups' => __( "Sauvegardes", "dame" ),
+			'dame-backups' => __( "Sauvegardes et Restaurations", "dame" ),
 			'dame-settings' => __( "Réglages", "dame" ),
 		];
 
@@ -140,7 +142,7 @@ class Menu {
 		$submenu['dame-admin'] = $reordered;
 	}
 
-	public function render_dashboard() {
+	public function render_dashboard(): void {
 		// 1. Saison en cours
 		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
 		$season_term           = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
@@ -328,7 +330,7 @@ class Menu {
 	 */
 	public function highlight_parent_menu( $parent_file ) {
 		global $current_screen;
-		$dame_taxonomies = [ 'dame_saison_adhesion', 'dame_group', 'dame_agenda_category' ];
+		$dame_taxonomies = [ 'dame_saison_adhesion', 'dame_group', 'dame_agenda_category', 'dame_contact_type' ];
 
 		// Pour les taxonomies
 		if ( isset( $current_screen->taxonomy ) && in_array( $current_screen->taxonomy, $dame_taxonomies ) ) {
@@ -359,6 +361,9 @@ class Menu {
 			}
 			if ( $current_screen->taxonomy === 'dame_agenda_category' ) {
 				return 'edit-tags.php?taxonomy=dame_agenda_category&post_type=dame_agenda';
+			}
+			if ( $current_screen->taxonomy === 'dame_contact_type' ) {
+				return 'edit-tags.php?taxonomy=dame_contact_type&post_type=dame_contact';
 			}
 		}
 

@@ -15,15 +15,25 @@ class Message {
 	/**
 	 * Initialize the CPT.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'init', [ $this, 'register' ], 0 );
 		add_action( 'before_delete_post', [ $this, 'cleanup_open_data' ] );
+		add_action( 'admin_notices', [ $this, 'display_reset_notice' ] );
+	}
+
+	/**
+	 * Displays a success notice after a message send reset.
+	 */
+	public function display_reset_notice(): void {
+		if ( isset( $_GET['reset_done'] ) && '1' === $_GET['reset_done'] ) {
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'L\'historique d\'envoi du message a été réinitialisé avec succès.', 'dame' ) . '</p></div>';
+		}
 	}
 
 	/**
 	 * Register the Message CPT.
 	 */
-	public function register() {
+	public function register(): void {
 		$labels = array(
 			'name'                  => _x( 'Messages', 'Post Type General Name', 'dame' ),
 			'singular_name'         => _x( 'Message', 'Post Type Singular Name', 'dame' ),

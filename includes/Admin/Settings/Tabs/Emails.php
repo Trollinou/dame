@@ -24,7 +24,7 @@ class Emails {
 	/**
 	 * Register settings.
 	 */
-	public function register() {
+	public function register(): void {
 		add_settings_section(
 			'dame_mailing_section',
 			__( 'Configuration SMTP', 'dame' ),
@@ -57,9 +57,9 @@ class Emails {
 	/**
 	 * Render field callback.
 	 *
-	 * @param array $args Arguments.
+	 * @param array<string, mixed> $args Arguments.
 	 */
-	public function render_field( $args ) {
+	public function render_field( $args ): void {
 		$key = $args['key'];
 		$options = get_option( 'dame_options' );
 		$value = isset( $options[ $key ] ) ? $options[ $key ] : '';
@@ -89,16 +89,16 @@ class Emails {
 	/**
 	 * Render the tab content.
 	 */
-	public function render() {
+	public function render(): void {
 		do_settings_sections( 'dame_mailing_section_group' );
 	}
 
 	/**
 	 * Sanitize options.
 	 *
-	 * @param array $input New input.
-	 * @param array $existing_options Existing options.
-	 * @return array Sanitized options.
+	 * @param array<string, mixed> $input New input.
+	 * @param array<string, mixed> $existing_options Existing options.
+	 * @return array<string, mixed> Sanitized options.
 	 */
 	public function sanitize( $input, $existing_options ) {
 		if ( isset( $input['sender_email'] ) ) {

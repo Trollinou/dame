@@ -17,7 +17,7 @@ class Details {
 	/**
 	 * Initialize the metabox.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'add_meta_boxes', [ $this, 'add_box' ] );
 		add_action( 'save_post', [ $this, 'save' ] );
 	}
@@ -25,7 +25,7 @@ class Details {
 	/**
 	 * Add the meta box.
 	 */
-	public function add_box() {
+	public function add_box(): void {
 		add_meta_box(
 			'dame_pre_inscription_details_metabox',
 			__( 'Détails de la Préinscription', 'dame' ),
@@ -41,7 +41,7 @@ class Details {
 	 *
 	 * @param \WP_Post $post The post object.
 	 */
-	public function render( $post ) {
+	public function render( $post ): void {
 		wp_nonce_field( 'dame_save_pre_inscription_meta', 'dame_pre_inscription_metabox_nonce' );
 
 		$get_value = function( $field_name ) use ( $post ) {
@@ -172,7 +172,7 @@ class Details {
 	 *
 	 * @param int $post_id Post ID.
 	 */
-	public function save( $post_id ) {
+	public function save( $post_id ): void {
 		if ( ! isset( $_POST['dame_pre_inscription_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_pre_inscription_metabox_nonce'], 'dame_save_pre_inscription_meta' ) ) {
 			return;
 		}

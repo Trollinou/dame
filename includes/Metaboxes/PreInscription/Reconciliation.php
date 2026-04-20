@@ -19,14 +19,14 @@ class Reconciliation {
 	/**
 	 * Initialize the metabox.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'add_meta_boxes', [ $this, 'add_box' ] );
 	}
 
 	/**
 	 * Add the meta box.
 	 */
-	public function add_box() {
+	public function add_box(): void {
 		$matched_id = Adherent_Matcher::find_match( get_the_ID() );
 		if ( $matched_id ) {
 			add_meta_box(
@@ -45,9 +45,9 @@ class Reconciliation {
 	 * Render the meta box.
 	 *
 	 * @param \WP_Post $post The post object.
-	 * @param array    $metabox The metabox arguments.
+	 * @param array<string, mixed> $metabox The metabox arguments.
 	 */
-	public function render( $post, $metabox ) {
+	public function render( $post, $metabox ): void {
 		$pre_inscription_id = $post->ID;
 		$matched_id         = $metabox['args']['matched_id'];
 

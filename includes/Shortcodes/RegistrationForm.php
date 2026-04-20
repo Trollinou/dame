@@ -18,7 +18,7 @@ class RegistrationForm {
 	/**
 	 * Initialize the shortcode and AJAX hooks.
 	 */
-	public function init() {
+	public function init(): void {
 		add_shortcode( 'dame_fiche_inscription', [ $this, 'render' ] );
 		add_action( 'wp_ajax_dame_submit_pre_inscription', [ $this, 'handle_submission' ] );
 		add_action( 'wp_ajax_nopriv_dame_submit_pre_inscription', [ $this, 'handle_submission' ] );
@@ -27,7 +27,7 @@ class RegistrationForm {
 	/**
 	 * Render the form.
 	 *
-	 * @param array $atts Shortcode attributes.
+	 * @param array<string, mixed> $atts Shortcode attributes.
 	 * @return string
 	 */
 	public function render( $atts ) {
@@ -203,8 +203,10 @@ class RegistrationForm {
 
 	/**
 	 * Handle form submission.
+	 *
+	 * @return void
 	 */
-	public function handle_submission() {
+	public function handle_submission(): void {
 		// 1. Security Check: Verify nonce
 		if ( ! isset( $_POST['dame_nonce'] ) || ! wp_verify_nonce( $_POST['dame_nonce'], 'dame_pre_inscription_nonce' ) ) {
 			wp_send_json_error( array( 'message' => __( "La vérification de sécurité a échoué. Veuillez rafraîchir la page.", 'dame' ) ), 403 );
@@ -394,10 +396,8 @@ class RegistrationForm {
 		$meta_insert_values[] = $health_document_status;
 		$meta_insert_placeholders[] = '(%d, %s, %s)';
 
-		if ( ! empty( $meta_insert_placeholders ) ) {
-			$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
-			$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
-		}
+		$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
+		$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
 
 
 		// 6. Send Email Notification

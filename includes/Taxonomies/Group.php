@@ -7,6 +7,8 @@
 
 namespace DAME\Taxonomies;
 
+use WP_Term;
+
 /**
  * Class Group
  */
@@ -15,14 +17,14 @@ class Group {
 	/**
 	 * Initialize the taxonomy.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'init', [ $this, 'register' ], 0 );
 
 		// Fields
-		add_action( 'dame_group_add_form_fields', [ $this, 'add_form_fields' ], 10, 2 );
+		add_action( 'dame_group_add_form_fields', [ $this, 'add_form_fields' ], 10, 1 );
 		add_action( 'dame_group_edit_form_fields', [ $this, 'edit_form_fields' ], 10, 2 );
-		add_action( 'edited_dame_group', [ $this, 'save_group_type' ], 10, 2 );
-		add_action( 'create_dame_group', [ $this, 'save_group_type' ], 10, 2 );
+		add_action( 'edited_dame_group', [ $this, 'save_group_type' ], 10, 1 );
+		add_action( 'create_dame_group', [ $this, 'save_group_type' ], 10, 1 );
 
 		// Columns
 		add_filter( 'manage_edit-dame_group_columns', [ $this, 'add_type_column' ] );
@@ -37,7 +39,7 @@ class Group {
 	/**
 	 * Register the taxonomy.
 	 */
-	public function register() {
+	public function register(): void {
 		$labels = array(
 			'name'                       => _x( 'Groupes', 'taxonomy general name', 'dame' ),
 			'singular_name'              => _x( 'Groupe', 'taxonomy singular name', 'dame' ),
@@ -73,8 +75,10 @@ class Group {
 
 	/**
 	 * Add a "Type" field to the "Add New Group" form.
+	 *
+	 * @param string $taxonomy The taxonomy slug.
 	 */
-	public function add_form_fields() {
+	public function add_form_fields( $taxonomy ): void {
 		?>
 		<div class="form-field">
 			<label for="term_meta[group_type]"><?php _e( 'Type de groupe', 'dame' ); ?></label>
@@ -90,9 +94,10 @@ class Group {
 	/**
 	 * Add a "Type" field to the "Edit Group" form.
 	 *
-	 * @param \WP_Term $term The term object.
+	 * @param WP_Term $term The term object.
+	 * @param string  $taxonomy The taxonomy slug.
 	 */
-	public function edit_form_fields( $term ) {
+	public function edit_form_fields( $term, $taxonomy ): void {
 		$group_type = get_term_meta( $term->term_id, '_dame_group_type', true );
 		if ( empty( $group_type ) ) {
 			$group_type = 'saisonnier'; // Default value
@@ -116,7 +121,7 @@ class Group {
 	 *
 	 * @param int $term_id Term ID.
 	 */
-	public function save_group_type( $term_id ) {
+	public function save_group_type( $term_id ): void {
 		if ( isset( $_POST['term_meta']['group_type'] ) ) {
 			$group_type = sanitize_key( $_POST['term_meta']['group_type'] );
 			update_term_meta( $term_id, '_dame_group_type', $group_type );
@@ -126,10 +131,10 @@ class Group {
 	/**
 	 * Add a "Type" column to the group list table.
 	 *
-	 * @param array $columns Columns array.
-	 * @return array Modified columns array.
+	 * @param array<string, string> $columns Columns array.
+	 * @return array<string, string> Modified columns array.
 	 */
-	public function add_type_column( $columns ) {
+	public function add_type_column( $columns ): array {
 		$columns['group_type'] = __( 'Type', 'dame' );
 		return $columns;
 	}
@@ -142,7 +147,7 @@ class Group {
 	 * @param int    $term_id Term ID.
 	 * @return string Modified content.
 	 */
-	public function render_type_column( $content, $column_name, $term_id ) {
+	public function render_type_column( $content, $column_name, $term_id ): string {
 		if ( 'group_type' === $column_name ) {
 			$group_type = get_term_meta( $term_id, '_dame_group_type', true );
 			if ( 'permanent' === $group_type ) {
@@ -157,11 +162,11 @@ class Group {
 	/**
 	 * Add a "Reset" action to the group taxonomy list table.
 	 *
-	 * @param array    $actions An array of action links.
-	 * @param \WP_Term $term    The term object.
-	 * @return array   The modified array of action links.
+	 * @param array<string, string> $actions An array of action links.
+	 * @param WP_Term $term    The term object.
+	 * @return array<string, string> The modified array of action links.
 	 */
-	public function add_reset_link( $actions, $term ) {
+	public function add_reset_link( $actions, $term ): array {
 		// Check if we are on the 'dame_group' taxonomy screen.
 		if ( 'dame_group' !== $term->taxonomy ) {
 			return $actions;
@@ -194,7 +199,7 @@ class Group {
 	/**
 	 * Handle the group reset action.
 	 */
-	public function handle_reset_action() {
+	public function handle_reset_action(): void {
 		// Check if the action is correct.
 		if ( ! isset( $_GET['action'] ) || 'dame_reset_group' !== $_GET['action'] ) {
 			return;
@@ -229,6 +234,7 @@ class Group {
 
 		// If there are adherents, remove them from the group.
 		if ( ! empty( $adherents ) ) {
+			/** @var int[] $adherents */
 			foreach ( $adherents as $adherent_id ) {
 				wp_remove_object_terms( $adherent_id, $term_id, 'dame_group' );
 			}
@@ -249,7 +255,7 @@ class Group {
 	/**
 	 * Display an admin notice after a group has been reset.
 	 */
-	public function show_reset_notice() {
+	public function show_reset_notice(): void {
 		global $pagenow;
 		// Check if we are on the correct page and the message is set.
 		if (

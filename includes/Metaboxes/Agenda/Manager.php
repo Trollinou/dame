@@ -19,7 +19,7 @@ class Manager {
 	/**
 	 * Initialize the metaboxes and scripts.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'add_meta_boxes', [ $this, 'register_meta_boxes' ] );
 		add_action( 'save_post_dame_agenda', [ $this, 'save' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -30,7 +30,7 @@ class Manager {
 	 *
 	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_scripts( $hook ) {
+	public function enqueue_scripts( $hook ): void {
 		$screen = get_current_screen();
 
 		if ( ! $screen || 'dame_agenda' !== $screen->post_type ) {
@@ -94,7 +94,7 @@ class Manager {
 	/**
 	 * Register the metaboxes.
 	 */
-	public function register_meta_boxes() {
+	public function register_meta_boxes(): void {
 		add_meta_box(
 			'dame_agenda_description_metabox',
 			__( 'Description', 'dame' ),
@@ -126,7 +126,7 @@ class Manager {
 	 *
 	 * @param WP_Post $post The post object.
 	 */
-	public function render_description( $post ) {
+	public function render_description( $post ): void {
 		// Check for transient data in case of a validation error on save.
 		$transient_data = get_transient( 'dame_agenda_post_data_' . $post->ID );
 
@@ -197,7 +197,7 @@ class Manager {
 	 *
 	 * @param WP_Post $post The post object.
 	 */
-	public function render_details( $post ) {
+	public function render_details( $post ): void {
 		wp_nonce_field( 'dame_save_agenda_meta', 'dame_agenda_metabox_nonce' );
 
 		// Check for transient data in case of a validation error on save.
@@ -334,7 +334,7 @@ class Manager {
 	 *
 	 * @param WP_Post $post The post object.
 	 */
-	public function render_participants( $post ) {
+	public function render_participants( $post ): void {
 		// 1. Get the ID of the current season's term.
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
 
@@ -408,7 +408,7 @@ class Manager {
 	 *
 	 * @param int $post_id Post ID
 	 */
-	public function save( $post_id ) {
+	public function save( $post_id ): void {
 		// --- Security checks ---
 		if ( ! isset( $_POST['dame_agenda_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_agenda_metabox_nonce'], 'dame_save_agenda_meta' ) ) {
 			return;
@@ -464,8 +464,7 @@ class Manager {
 			// Update the post to be a draft
 			wp_update_post( array( 'ID' => $post_id, 'post_status' => 'draft' ) );
 
-			// Re-hook the function
-			add_action( 'save_post_dame_agenda', [ $this, 'save' ] );
+			// Re-hook the function add_action( 'save_post_dame_agenda', [ $this, 'save' ] ): void;
 			return;
 		}
 

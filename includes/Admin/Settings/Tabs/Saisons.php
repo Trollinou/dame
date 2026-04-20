@@ -24,7 +24,7 @@ class Saisons {
 	/**
 	 * Register settings.
 	 */
-	public function register() {
+	public function register(): void {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
 		// Registers actions/hooks logic
@@ -41,7 +41,7 @@ class Saisons {
 	 *
 	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_scripts( $hook ) {
+	public function enqueue_scripts( $hook ): void {
 		if ( strpos( $hook, 'dame-settings' ) === false || ( isset( $_GET['tab'] ) && $_GET['tab'] !== 'saisons' ) ) {
 			return;
 		}
@@ -55,7 +55,7 @@ class Saisons {
 	/**
 	 * Render the tab content.
 	 */
-	public function render() {
+	public function render(): void {
 		// Custom UI for Seasons
 		$this->render_ui();
 	}
@@ -63,9 +63,9 @@ class Saisons {
 	/**
 	 * Sanitize options.
 	 *
-	 * @param array $input New input.
-	 * @param array $existing_options Existing options.
-	 * @return array Sanitized options.
+	 * @param array<string, mixed> $input New input.
+	 * @param array<string, mixed> $existing_options Existing options.
+	 * @return array<string, mixed> Sanitized options.
 	 */
 	public function sanitize( $input, $existing_options ) {
 		// Saisons tab doesn't use standard settings API submission
@@ -103,7 +103,7 @@ class Saisons {
 	/**
 	 * Handle actions.
 	 */
-	public function handle_actions() {
+	public function handle_actions(): void {
 		if ( isset( $_POST['dame_season_management_nonce_field'] ) && wp_verify_nonce( $_POST['dame_season_management_nonce_field'], 'dame_season_management_nonce' ) ) {
 			if ( isset( $_POST['dame_action'] ) && 'annual_reset' === $_POST['dame_action'] ) {
 				$new_season_name = $this->get_next_season_name();
@@ -149,7 +149,7 @@ class Saisons {
 	/**
 	 * Render UI.
 	 */
-	public function render_ui() {
+	public function render_ui(): void {
 		$seasons = get_terms( array(
 			'taxonomy'   => 'dame_saison_adhesion',
 			'hide_empty' => false,

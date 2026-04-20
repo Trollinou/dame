@@ -15,7 +15,7 @@ class School {
 	/**
 	 * Register the meta box.
 	 */
-	public function register() {
+	public function register(): void {
 		add_meta_box(
 			'dame_school_info_metabox',
 			__( 'Informations Scolaires', 'dame' ),
@@ -31,7 +31,7 @@ class School {
 	 *
 	 * @param \WP_Post $post The post object.
 	 */
-	public function render( $post ) {
+	public function render( $post ): void {
 		$transient_data = get_transient( 'dame_post_data_' . $post->ID );
 		$get_value = function( $field_name ) use ( $post, $transient_data ) {
 			return isset( $transient_data[ $field_name ] )
@@ -68,7 +68,7 @@ class School {
 	 *
 	 * @param int $post_id Post ID.
 	 */
-	public function save( $post_id ) {
+	public function save( $post_id ): void {
 		if ( ! isset( $_POST['dame_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_metabox_nonce'], 'dame_save_adherent_meta' ) ) {
 			return;
 		}

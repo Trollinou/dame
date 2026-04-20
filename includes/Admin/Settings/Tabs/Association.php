@@ -24,7 +24,7 @@ class Association {
 	/**
 	 * Register settings.
 	 */
-	public function register() {
+	public function register(): void {
 		add_settings_section(
 			'dame_association_section',
 			__( "Informations de l'association", 'dame' ),
@@ -63,9 +63,9 @@ class Association {
 	/**
 	 * Render field callback.
 	 *
-	 * @param array $args Arguments.
+	 * @param array<string, mixed> $args Arguments.
 	 */
-	public function render_field( $args ) {
+	public function render_field( $args ): void {
 		$key = $args['key'];
 		$options = get_option( 'dame_options' );
 		$value = isset( $options[ $key ] ) ? $options[ $key ] : '';
@@ -102,16 +102,16 @@ class Association {
 	/**
 	 * Render the tab content.
 	 */
-	public function render() {
+	public function render(): void {
 		do_settings_sections( 'dame_association_section_group' );
 	}
 
 	/**
 	 * Sanitize options.
 	 *
-	 * @param array $input New input.
-	 * @param array $existing_options Existing options.
-	 * @return array Sanitized options.
+	 * @param array<string, mixed> $input New input.
+	 * @param array<string, mixed> $existing_options Existing options.
+	 * @return array<string, mixed> Sanitized options.
 	 */
 	public function sanitize( $input, $existing_options ) {
 		$fields = [ 'assoc_address_1', 'assoc_address_2', 'assoc_postal_code', 'assoc_city', 'assoc_latitude', 'assoc_longitude' ];

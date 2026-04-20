@@ -7,7 +7,7 @@ use DateTime;
 
 class Birthday {
 
-	public function send_wishes() {
+	public function send_wishes(): void {
 		$options = get_option( 'dame_options' );
 		if ( empty( $options['birthday_emails_enabled'] ) ) return;
 
@@ -57,8 +57,8 @@ class Birthday {
 				$age = ( new DateTime( $birth ) )->diff( new DateTime() )->y;
 			} catch ( \Exception $e ) { continue; }
 
-			$subject = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]' ], [ mb_strtoupper( $nom ), mb_convert_case( $prenom, MB_CASE_TITLE ), $age ], $article->post_title );
-			$content = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]' ], [ mb_strtoupper( $nom ), mb_convert_case( $prenom, MB_CASE_TITLE ), $age ], apply_filters( 'the_content', $article->post_content ) );
+			$subject = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]' ], [ (string) mb_strtoupper( $nom ), (string) mb_convert_case( $prenom, MB_CASE_TITLE ), (string) $age ], $article->post_title );
+			$content = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]' ], [ (string) mb_strtoupper( $nom ), (string) mb_convert_case( $prenom, MB_CASE_TITLE ), (string) $age ], apply_filters( 'the_content', $article->post_content ) );
 
 			$emails = \DAME\Core\Utils::get_emails_for_adherent( $pid );
 			if ( $emails ) {

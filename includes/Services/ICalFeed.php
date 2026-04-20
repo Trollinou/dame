@@ -20,7 +20,7 @@ class ICalFeed {
 	/**
 	 * Initialize the service.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'init', [ $this, 'register_feed' ] );
 		add_filter( 'query_vars', [ $this, 'add_query_vars' ] );
 		add_action( 'do_feed_dame-agenda-ical', [ $this, 'handle_feed_request' ] );
@@ -32,7 +32,7 @@ class ICalFeed {
 	/**
 	 * Registers the iCal feed and rewrite rule.
 	 */
-	public function register_feed() {
+	public function register_feed(): void {
 		add_feed( 'dame-agenda-ical', [ $this, 'handle_feed_request' ] );
 		add_rewrite_rule( '^feed/agenda/([^/]+)\.ics$', 'index.php?feed=dame-agenda-ical&dame_feed_slug=$matches[1]', 'top' );
 	}
@@ -40,10 +40,10 @@ class ICalFeed {
 	/**
 	 * Adds custom query variables.
 	 *
-	 * @param array $vars The existing query variables.
-	 * @return array The modified query variables.
+	 * @param array<string, mixed> $vars The existing query variables.
+	 * @return array<string, mixed> The modified query variables.
 	 */
-	public function add_query_vars( $vars ) {
+	public function add_query_vars( $vars ): array {
 		$vars[] = 'dame_feed_slug';
 		return $vars;
 	}
@@ -53,7 +53,7 @@ class ICalFeed {
 	 *
 	 * @param int $post_id The post ID.
 	 */
-	public function update_event_meta( $post_id ) {
+	public function update_event_meta( $post_id ): void {
 		if ( wp_is_post_revision( $post_id ) ) {
 			return;
 		}
@@ -64,15 +64,59 @@ class ICalFeed {
 			update_post_meta( $post_id, '_dame_ical_uid', $uid );
 		}
 
-		// Increment sequence number.
-		$sequence = (int) get_post_meta( $post_id, '_dame_ical_sequence', true );
-		update_post_meta( $post_id, '_dame_ical_sequence', $sequence + 1 );
+		// Only increment sequence if critical data has changed.
+		$current_sequence = (int) get_post_meta( $post_id, '_dame_ical_sequence', true );
+		if ( $current_sequence === 0 ) {
+			update_post_meta( $post_id, '_dame_ical_sequence', 1 );
+			return;
+		}
+
+		// List of critical fields that should trigger a sequence update.
+		$critical_fields = [
+			'_dame_start_date',
+			'_dame_start_time',
+			'_dame_end_date',
+			'_dame_end_time',
+			'_dame_all_day',
+			'_dame_location_name',
+			'_dame_address_1',
+			'_dame_city',
+			'_dame_agenda_description',
+		];
+
+		$changed = false;
+		foreach ( $critical_fields as $meta_key ) {
+			// Get the value being saved from $_POST (it will be prefixed with 'dame_' and not have the underscore).
+			$post_key = ltrim( $meta_key, '_' );
+			if ( isset( $_POST[ $post_key ] ) ) {
+				$old_value = get_post_meta( $post_id, $meta_key, true );
+				$new_value = wp_unslash( $_POST[ $post_key ] );
+
+				// Simple comparison for strings/numbers.
+				if ( (string) $old_value !== (string) $new_value ) {
+					$changed = true;
+					break;
+				}
+			}
+		}
+
+		// Also check the post title.
+		if ( ! $changed && isset( $_POST['post_title'] ) ) {
+			$post = get_post( $post_id );
+			if ( $post && $_POST['post_title'] !== $post->post_title ) {
+				$changed = true;
+			}
+		}
+
+		if ( $changed ) {
+			update_post_meta( $post_id, '_dame_ical_sequence', $current_sequence + 1 );
+		}
 	}
 
 	/**
 	 * Handles the feed request and generates the iCal output.
 	 */
-	public function handle_feed_request() {
+	public function handle_feed_request(): void {
 		$feed_slug = get_query_var( 'dame_feed_slug' );
 		if ( ! $feed_slug ) {
 			return;
@@ -136,7 +180,7 @@ class ICalFeed {
 	/**
 	 * Handles single event download.
 	 */
-	public function handle_single_event_download() {
+	public function handle_single_event_download(): void {
 		if ( isset( $_GET['dame_ics_download'] ) && '1' === $_GET['dame_ics_download'] && isset( $_GET['event_id'] ) ) {
 			$post_id = intval( $_GET['event_id'] );
 			$post    = get_post( $post_id );
@@ -161,7 +205,7 @@ class ICalFeed {
 	/**
 	 * Displays the global feeds notice on the iCal feed list table.
 	 */
-	public function display_global_feeds_notice() {
+	public function display_global_feeds_notice(): void {
 		$default_feeds = array(
 			array(
 				'title'       => __( 'Flux public global', 'dame' ),
@@ -196,8 +240,8 @@ class ICalFeed {
 	/**
 	 * Generates the ICS content.
 	 *
-	 * @param array $event_posts    Array of event posts.
-	 * @param array $feed_details   Feed metadata.
+	 * @param array<string, mixed> $event_posts    Array of event posts.
+	 * @param array<string, mixed> $feed_details   Feed metadata.
 	 * @param bool  $force_download Whether to force download as attachment.
 	 */
 	private function generate_ics( $event_posts, $feed_details, $force_download = false ) {
@@ -208,10 +252,17 @@ class ICalFeed {
 			header( 'Content-Disposition: inline; filename="' . sanitize_title( $feed_details['name'] ) . '.ics"' );
 		}
 
+		$timezone_string = get_option( 'timezone_string' );
+		if ( empty( $timezone_string ) ) {
+			$timezone_string = 'Europe/Paris';
+		}
+
 		echo "BEGIN:VCALENDAR\r\n";
 		echo "VERSION:2.0\r\n";
 		echo "PRODID:-//DAME Plugin//NONSGML v1.0//EN\r\n";
 		echo "CALSCALE:GREGORIAN\r\n";
+		echo "METHOD:PUBLISH\r\n";
+		echo "X-WR-TIMEZONE:" . $timezone_string . "\r\n";
 		echo $this->fold_line( "NAME:" . $feed_details['name'] ) . "\r\n";
 		echo "SOURCE:" . $feed_details['url'] . "\r\n";
 		echo "REFRESH-INTERVAL;VALUE=DURATION:P1D\r\n";
@@ -255,25 +306,11 @@ class ICalFeed {
 				$dtstart = ';VALUE=DATE:' . $start_date_obj->format( 'Ymd' );
 				$dtend   = ';VALUE=DATE:' . $end_date_obj->format( 'Ymd' );
 			} else {
-				// For timed events, we convert the site's local time to UTC (Zulu time).
-				$timezone_string = get_option( 'timezone_string' );
-				if ( empty( $timezone_string ) ) {
-					$timezone_string = 'Europe/Paris'; // Fallback.
-				}
-				$timezone = new DateTimeZone( $timezone_string );
-
-				$start_datetime_str = $start_date_str . ( ! empty( $start_time ) ? ' ' . $start_time : ' 00:00:00' );
-				$end_datetime_str   = ( ! empty( $end_date_str ) ? $end_date_str : $start_date_str ) . ( ! empty( $end_time ) ? ' ' . $end_time : ' 23:59:59' );
-
-				try {
-					$start_datetime = new DateTime( $start_datetime_str, $timezone );
-					$end_datetime   = new DateTime( $end_datetime_str, $timezone );
-
-					$dtstart = ':' . gmdate( 'Ymd\THis\Z', $start_datetime->getTimestamp() );
-					$dtend   = ':' . gmdate( 'Ymd\THis\Z', $end_datetime->getTimestamp() );
-				} catch ( \Exception $e ) {
-					continue; // Skip invalid dates.
-				}
+				$start_datetime_str = $start_date_str . ( ! empty( $start_time ) ? 'T' . str_replace( ':', '', $start_time ) . '00' : 'T000000' );
+				$end_datetime_str   = ( ! empty( $end_date_str ) ? $end_date_str : $start_date_str ) . ( ! empty( $end_time ) ? 'T' . str_replace( ':', '', $end_time ) . '00' : 'T235959' );
+				
+				$dtstart = ';TZID=' . $timezone_string . ':' . str_replace( '-', '', $start_datetime_str );
+				$dtend   = ';TZID=' . $timezone_string . ':' . str_replace( '-', '', $end_datetime_str );
 			}
 
 			$description = $this->format_for_ics( strip_tags( get_post_meta( $post_id, '_dame_agenda_description', true ) ) );
@@ -340,6 +377,12 @@ class ICalFeed {
 	 * @return string Formatted text.
 	 */
 	private function format_for_ics( $text ) {
+		// Replace non-breaking spaces and other common problematic entities first
+		$text = str_replace( '&nbsp;', ' ', (string) $text );
+		
+		// Strip any remaining HTML tags and decode entities (like &rsquo; to ')
+		$text = html_entity_decode( strip_tags( $text ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		
 		$text = str_replace( '\\', '\\\\', $text );
 		$text = str_replace( ',', '\,', $text );
 		$text = str_replace( ';', '\;', $text );

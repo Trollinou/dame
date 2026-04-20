@@ -138,8 +138,9 @@ class Utils {
 			return __( "Date de naissance manquante", 'dame' );
 		}
 
-		$birth_date = new DateTime( $birth_date_str );
-		if ( ! $birth_date ) {
+		try {
+			$birth_date = new DateTime( $birth_date_str, new \DateTimeZone( 'UTC' ) );
+		} catch ( \Exception $e ) {
 			return __( "Date de naissance invalide", 'dame' );
 		}
 
@@ -163,7 +164,7 @@ class Utils {
 		$season_end_year = (int) $years[1];
 
 		// Calculate age at the beginning of the season's end year.
-		$reference_date = new DateTime( $season_end_year . '-01-01' );
+		$reference_date = new DateTime( $season_end_year . '-01-01', new \DateTimeZone( 'UTC' ) );
 		$age_interval   = $reference_date->diff( $birth_date );
 		$age            = $age_interval->y;
 
@@ -264,7 +265,7 @@ class Utils {
 			return null;
 		}
 		$season_end_year = (int) $years[1];
-		$reference_date  = new DateTime( $season_end_year . '-01-01' );
+		$reference_date  = new DateTime( $season_end_year . '-01-01', new \DateTimeZone( 'UTC' ) );
 
 		$age_map = array(
 			'u8'          => array( 'min' => 0, 'max' => 7 ),

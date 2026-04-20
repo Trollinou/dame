@@ -15,14 +15,14 @@ class PreInscription {
 	/**
 	 * Initialize the CPT.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'init', [ $this, 'register' ], 0 );
 	}
 
 	/**
 	 * Register the post type.
 	 */
-	public function register() {
+	public function register(): void {
 		$labels = array(
 			'name'                  => _x( 'Préinscriptions', 'Post Type General Name', 'dame' ),
 			'singular_name'         => _x( 'Préinscription', 'Post Type Singular Name', 'dame' ),

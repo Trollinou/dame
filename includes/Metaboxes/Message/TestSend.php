@@ -17,7 +17,7 @@ class TestSend {
 	/**
 	 * Initialize the metabox.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'add_meta_boxes', [ $this, 'add_metabox' ] );
 		add_action( 'admin_post_dame_send_test_email', [ $this, 'handle_test_send' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -28,7 +28,7 @@ class TestSend {
 	 *
 	 * @param string $hook The current admin page hook.
 	 */
-	public function enqueue_scripts( $hook ) {
+	public function enqueue_scripts( $hook ): void {
 		$screen = get_current_screen();
 
 		if ( ! $screen || 'dame_message' !== $screen->post_type ) {
@@ -56,7 +56,7 @@ class TestSend {
 	/**
 	 * Add the metabox.
 	 */
-	public function add_metabox() {
+	public function add_metabox(): void {
 		add_meta_box(
 			'dame_message_test_send',
 			__( 'Envoyer un test', 'dame' ),
@@ -72,7 +72,7 @@ class TestSend {
 	 *
 	 * @param \WP_Post $post The post object.
 	 */
-	public function render( $post ) {
+	public function render( $post ): void {
 		$current_user_email = wp_get_current_user()->user_email;
 		?>
 		<p class="description">
@@ -101,7 +101,7 @@ class TestSend {
 	/**
 	 * Handle test email sending.
 	 */
-	public function handle_test_send() {
+	public function handle_test_send(): void {
 		if ( ! isset( $_POST['_wpnonce'], $_POST['post_ID'], $_POST['test_email'] ) ) {
 			wp_die( 'Missing data.' );
 		}

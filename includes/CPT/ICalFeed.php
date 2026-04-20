@@ -16,14 +16,14 @@ class ICalFeed {
 	/**
 	 * Initialize the CPT.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'init', [ $this, 'register' ] );
 	}
 
 	/**
 	 * Register the iCal Feed CPT.
 	 */
-	public function register() {
+	public function register(): void {
 		$labels = array(
 			'name'               => _x( 'Flux iCalendar', 'post type general name', 'dame' ),
 			'singular_name'      => _x( 'Flux iCalendar', 'post type singular name', 'dame' ),

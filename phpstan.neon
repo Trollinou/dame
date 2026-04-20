@@ -4,10 +4,16 @@ parameters:
     level: 6
     phpVersion: 80400 # Force l'analyse pour PHP 8.4
     treatPhpDocTypesAsCertain: false
-    bootstrapFiles:
-        - dame.php
     paths:
         - dame.php
         - includes/
     excludePaths:
         - includes/lib/
+    scanDirectories:
+        - includes/lib/fpdi/src/
+    bootstrapFiles:
+        - tests/phpstan/bootstrap.php
+        - includes/lib/fpdf/fpdf.php
+        - includes/lib/fpdi/src/autoload.php
+    scanFiles:
+        - dame.php

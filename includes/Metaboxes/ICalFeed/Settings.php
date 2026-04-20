@@ -18,7 +18,7 @@ class Settings {
 	/**
 	 * Initialize the metabox.
 	 */
-	public function init() {
+	public function init(): void {
 		add_action( 'add_meta_boxes', [ $this, 'add_meta_box' ] );
 		add_action( 'save_post_dame_ical_feed', [ $this, 'save' ] );
 	}
@@ -26,7 +26,7 @@ class Settings {
 	/**
 	 * Adds the metabox for iCal Feed settings.
 	 */
-	public function add_meta_box() {
+	public function add_meta_box(): void {
 		add_meta_box(
 			'dame_ical_feed_settings',
 			__( 'Configuration du flux', 'dame' ),
@@ -42,7 +42,7 @@ class Settings {
 	 *
 	 * @param WP_Post $post The post object.
 	 */
-	public function render( $post ) {
+	public function render( $post ): void {
 		wp_nonce_field( 'dame_save_ical_feed_meta', 'dame_ical_feed_nonce' );
 
 		$selected_categories = get_post_meta( $post->ID, '_dame_ical_feed_categories', true );
@@ -78,7 +78,7 @@ class Settings {
 	 *
 	 * @param int $post_id The post ID.
 	 */
-	public function save( $post_id ) {
+	public function save( $post_id ): void {
 		if ( ! isset( $_POST['dame_ical_feed_nonce'] ) || ! wp_verify_nonce( $_POST['dame_ical_feed_nonce'], 'dame_save_ical_feed_meta' ) ) {
 			return;
 		}

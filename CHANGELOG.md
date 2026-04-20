@@ -1,5 +1,39 @@
 # Changelog
 
+## 4.1.2 - 2026-04-20
+### Ajout
+- **Traçabilité des Envois :** Enregistrement de l'heure exacte d'envoi individuelle pour chaque destinataire d'un message (`_dame_message_{ID}_sent_at`).
+- **Rapport de Diffusion Amélioré :** Nouvelle colonne "Date d'envoi" dans le rapport détaillé pour visualiser précisément l'instant de départ pour chaque membre.
+
+### Amélioration
+- **Flux iCalendar :** Refonte complète de la gestion des fuseaux horaires pour une compatibilité totale avec les systèmes Apple (iPhone, Mac). Utilisation du paramètre `TZID` et ajout de la balise `X-WR-TIMEZONE`.
+- **Intégrité de l'Agenda :** Nettoyage automatique des entités HTML problématiques (ex: `&rsquo;`, `&nbsp;`) dans les titres et descriptions des flux iCal pour un affichage parfait.
+- **Portabilité des Sauvegardes :** Le script de restauration JSON gère désormais le re-mappage intelligent des IDs de messages au sein des métadonnées complexes.
+- **Précision Sportive :** Les calculs de catégories d'âge sont désormais effectués en UTC pour une équité totale.
+- **Synchronisation Cron :** La planification des tâches est désormais parfaitement synchronisée avec le fuseau horaire WordPress.
+
+## 4.1.1 - 2026-04-20
+### Ajout
+- **Refus Mailing Contacts :** Ajout d'une case à cocher "Refus mailing" sur la fiche des contacts pour permettre l'exclusion des communications partenaires, identique aux adhérents.
+
+### Correction
+- **Rapports de Message :** Correction de l'affichage des horaires d'ouverture qui ne tenaient pas compte du fuseau horaire de l'installation WordPress (passage à `wp_date` et gestion correcte des données stockées en UTC).
+- **Intégrité des Rapports :** Les destinataires ayant reçu un message restent désormais visibles dans le rapport historique même s'ils activent le "Refus mailing" après l'envoi.
+- **Mailing :** Utilisation systématique du service `Data_Provider` pour la collecte des emails, garantissant le respect des préférences de communication pour tous les types de destinataires.
+
+## 4.1.0 - 2026-04-19
+### Ajout
+- **Module Partenaires :** Nouveau type de contenu "Contact" (`dame_contact`) pour la gestion des partenaires externes (Presse, Élus, Clubs, sponsors).
+- **Taxonomie Contacts :** Introduction de la taxonomie "Types de Contact" pour segmenter les partenaires.
+- **Filtres Géo en Admin :** Ajout de colonnes et filtres par département et région pour les contacts.
+
+### Amélioration
+- **Mailing Multi-cibles :** L'interface d'envoi de messages supporte désormais le ciblage simultané des adhérents et des contacts avec des critères spécifiques à chaque groupe.
+- **Personnalisation Étendue :** Les tags `[NOM]`, `[PRENOM]` et `[AGE]` sont désormais utilisables pour tous les destinataires (adhérents et contacts).
+- **Auto-complétion IGN :** Extension du système d'auto-complétion d'adresse aux fiches contacts.
+- **Historique de Réception :** Enregistrement automatique des messages reçus dans les meta-données des destinataires (`_dame_message_received`).
+- **Performance :** Optimisation du `BatchSender` pour gérer les correspondances multiples d'emails.
+
 ## 4.0.0 - 2026-04-17
 ### Majeur
 - **Réécriture complète :** Migration de l'ensemble de la base de code vers une architecture moderne en Programmation Orientée Objet (POO).
