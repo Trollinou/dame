@@ -23,6 +23,5 @@
 /package.sh
 /phpstan.neon
 /src
-/test-results
 /tests
 /webpack.config.js

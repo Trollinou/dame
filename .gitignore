@@ -1,9 +1,8 @@
-node_modules/
 .DS_Store
-/vendor/
-/.sync.ffs_db
-fix_types.py
-.github/
 .gemini/
+.github/
+/.sync.ffs_db
+/vendor/
+fix_types.py
 gha-creds-*.json
-/test-rsync
+node_modules/
