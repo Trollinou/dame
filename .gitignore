@@ -6,3 +6,4 @@ fix_types.py
 .github/
 .gemini/
 gha-creds-*.json
+/test-rsync

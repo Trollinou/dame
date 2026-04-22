@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 4.1.4
+**Version:** 4.1.5
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -13,6 +13,13 @@ Le plugin est structuré autour d'une architecture moderne (POO) garantissant pe
 
 *   **WordPress :** 6.9 ou supérieur
 *   **PHP :** 8.4 ou supérieur
+
+## Développement & Architecture
+DAME utilise un workflow de développement professionnel pour garantir la performance et la maintenabilité :
+*   **Sources :** Tous les fichiers sources (Javascript ES2021, SCSS) se trouvent dans le répertoire `src/`.
+*   **Build Pipeline :** Les fichiers de production (minifiés et optimisés) sont générés dans `assets/` via `npm run build`.
+*   **Dépendances :** Gestion rigoureuse via Composer (librairies tierces) et npm (outils de développement).
+*   **Qualité :** Analyse statique PHP via PHPStan (Level 6) et linting JS via WP-Scripts.
 
 ## Fonctionnalités Cœurs : Gestion des Adhésions
 

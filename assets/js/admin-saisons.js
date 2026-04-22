@@ -1,14 +1,1 @@
-document.addEventListener( 'DOMContentLoaded', function () {
-	const resetButton = document.getElementById( 'dame_annual_reset' );
-	if ( resetButton ) {
-		resetButton.addEventListener( 'click', function ( e ) {
-			if ( ! confirm( dame_saisons_data.confirm_reset ) ) {
-				e.preventDefault();
-			} else {
-				setTimeout( function () {
-					resetButton.disabled = true;
-				}, 0 );
-			}
-		} );
-	}
-} );
+document.addEventListener("DOMContentLoaded",function(){const e=document.getElementById("dame_annual_reset");e&&e.addEventListener("click",function(n){confirm(dame_saisons_data.confirm_reset)?setTimeout(function(){e.disabled=!0},0):n.preventDefault()})});

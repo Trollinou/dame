@@ -28,23 +28,9 @@ class PDF_Generator {
 	}
 
 	/**
-	 * Load PDF libraries.
-	 */
-	private function load_libraries(): void {
-		if ( ! class_exists( 'FPDF' ) ) {
-			require_once dirname( __DIR__, 2 ) . '/includes/lib/fpdf/fpdf.php';
-		}
-		if ( ! class_exists( 'setasign\Fpdi\Fpdi' ) ) {
-			require_once dirname( __DIR__, 2 ) . '/includes/lib/fpdi/src/autoload.php';
-		}
-	}
-
-	/**
 	 * Generate Health Form PDF.
 	 */
 	public function generate_health_form(): void {
-		$this->load_libraries();
-
 		// 1. Security check
 		if ( ! isset( $_GET['post_id'] ) || ! isset( $_GET['_wpnonce'] ) ) {
 			wp_die( __( "Paramètres invalides.", 'dame' ), 400 );
@@ -146,8 +132,6 @@ class PDF_Generator {
 	 * Generate Parental Authorization PDF.
 	 */
 	public function generate_parental_auth(): void {
-		$this->load_libraries();
-
 		// 1. Security check
 		if ( ! isset( $_GET['post_id'] ) || ! isset( $_GET['_wpnonce'] ) ) {
 			wp_die( __( "Paramètres invalides.", 'dame' ), 400 );

@@ -1,5 +1,20 @@
 # Changelog
 
+## 4.1.5 - 2026-04-22
+### Ajout
+- **Minification Javascript :** Intégration de `terser` dans le pipeline de build pour optimiser les scripts côté client.
+- **Gestion des dépendances :** Migration de FPDF et FPDI vers Composer pour une maintenance simplifiée et des mises à jour sécurisées.
+
+### Amélioration
+- **Refonte de l'Architecture (Source vs Dist) :** 
+    - Déplacement de tous les fichiers sources (JS, SCSS) dans le répertoire `src/`.
+    - Centralisation des fichiers compilés et optimisés dans le répertoire `assets/`.
+    - Mise à jour du document de référence `AGENTS.md` pour refléter ces nouveaux standards.
+- **Automatisation du Packaging :**
+    - Le script `package.sh` inclut désormais une étape de build obligatoire (CSS + JS).
+    - Optimisation automatique de l'autoloader Composer (`--optimize-autoloader`) et retrait des dépendances de développement lors de la génération du ZIP.
+- **Sécurité :** Nettoyage des librairies obsolètes dans `includes/lib/`.
+
 ## 4.1.4 - 2026-04-20
 ### Ajout
 - **Gestion des envois bloqués :** Nouveau lien "Terminer l'envoi" dans la liste des messages pour clôturer manuellement les campagnes restées en attente sans effacer l'historique.

@@ -77,11 +77,13 @@ Le projet doit respecter cette structure stricte. L'agent doit placer les fichie
 
 wp-content/plugins/[SLUG]/
 ├─ build/               # [PROD](GÉNÉRÉ) JS/CSS compilés des Blocs Gutenberg
-├─ src/                 # [DEV] (SOURCES) Code React/JSX des Blocs Gutenberg
-│  └─ blocks/           # [DEV]  Un sous-dossier par bloc
-├─ assets/              # [PROD] Assets classiques (Admin JS, Images, CSS global)
+├─ src/                 # [DEV] (SOURCES) Code Source (JS, SCSS, Blocs)
+│  ├─ blocks/           # [DEV] Un sous-dossier par bloc
+│  ├─ js/               # [DEV] Sources Javascript (Admin \& Front)
+│  └─ scss/             # [DEV] Sources SCSS (Admin \& Front)
+├─ assets/              # [PROD] Assets compilés et médias
 │  ├─ css/              # [PROD] (GÉNÉRÉ) CSS compilé et minifié
-│  ├─ scss/             # [DEV]  (SOURCES) SCSS (Admin \& Front global)
+│  ├─ js/               # [PROD] (GÉNÉRÉ) JS minifié
 │  └─ ...
 ├─ includes/            # [PROD] Logique PHP (Namespace: [NAMESPACE])
 │  ├─ Core/             # Chargement, I18n, Plugin_Loader
@@ -143,14 +145,17 @@ wp-content/plugins/[SLUG]/
 
 ### PHP : Autonomie & Autoloading (CRITIQUE)
 - **Autoloader SPL Obligatoire** : Le fichier principal `[SLUG].php` DOIT contenir un autoloader PHP natif (`spl_autoload_register`) pour charger les classes du namespace `[NAMESPACE]`.
-- **Interdiction de Composer Runtime** : Ne jamais utiliser `require 'vendor/autoload.php'` dans le code de production. Le dossier `vendor/` n'existe pas chez le client.
+- **Composer en Production (Autorisé sous conditions)** : 
+  - L'utilisation de Composer est autorisée pour les librairies tierces (ex: FPDF, FPDI).
+  - Le fichier principal DOIT inclure `vendor/autoload.php` s'il existe.
+  - Le répertoire `vendor/` DOIT être livré dans le ZIP final, mais UNIQUEMENT après un `composer install --no-dev --optimize-autoloader`.
 - **Typage Strict** : Tous les nouveaux fichiers ou fichiers refactorisés DOIVENT commencer par `declare(strict_types=1);`.
 - **Constructor Property Promotion** : Obligatoire pour simplifier les classes.
 - **Enums** : Utiliser des `Enum` typés (Backed Enums) pour remplacer les constantes globales ou les tableaux de configuration statiques.
 - **Readonly Classes** : Utiliser `readonly class` pour les DTOs (Data Transfer Objects) et objets de valeur.
 - **Librairies Tierces** :
-  - Si une lib externe est nécessaire (ex: FPDF, Stripe SDK), **l'agent doit instruire de télécharger les fichiers sources** et de les placer dans `includes/lib/`.
-  - Chargement : Utiliser `require_once plugin_dir_path(__FILE__) . 'includes/lib/nom-lib/file.php';` dans le `Plugin_Loader`.
+  - Utiliser Composer via `composer.json`.
+  - Chargement : L'autoloader de Composer gère ces librairies automatiquement. Ne plus utiliser de `require_once` manuel pour les libs présentes dans `vendor`.
 
 ### Stratégie de Refactoring (Legacy vers Modern)
 
@@ -259,14 +264,21 @@ includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon
 parameters:
     level: 6
+    phpVersion: 80400 # Force l'analyse pour PHP 8.4
     treatPhpDocTypesAsCertain: false
-    bootstrapFiles:
-        - dame.php
     paths:
-        - dame.php
+        - [SLUG].php
         - includes/
     excludePaths:
         - includes/lib/
+    scanDirectories:
+        - includes/lib/fpdi/src/ (?)
+    bootstrapFiles:
+        - tests/phpstan/bootstrap.php (?)
+        - includes/lib/fpdf/fpdf.php (?)
+        - includes/lib/fpdi/src/autoload.php(?)
+    scanFiles:
+        - [SLUG].php
 ```
 
 **2. `.eslintrc.json` (ES2021 + WP)**
