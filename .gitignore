@@ -3,6 +3,5 @@
 .github/
 /.sync.ffs_db
 /vendor/
-fix_types.py
 gha-creds-*.json
 node_modules/
