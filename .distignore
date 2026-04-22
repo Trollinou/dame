@@ -1,10 +1,13 @@
+.distignore
 .DS_Store
 .editorconfig
 .eslintrc.json
 .gemini
 .geminirc
 .git
+.github/
 .gitignore
+.sync.ffs_db
 *.py
 *.zip
 */.DS_Store
