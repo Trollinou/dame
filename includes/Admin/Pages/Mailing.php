@@ -618,8 +618,8 @@ class Mailing {
 			update_post_meta( $message_id, '_dame_manual_contacts', $meta_manual_contacts );
 		}
 
-		// Découpage en lots (Batching) pour éviter les timeouts (10 mails par lot pour o2switch)
-		$chunks = array_chunk( $recipient_emails, 10 );
+		// Découpage en lots (Batching) pour éviter les timeouts (20 mails par lot pour o2switch)
+		$chunks = array_chunk( $recipient_emails, 20 );
 		$total_batches = count( $chunks );
 		update_post_meta( $message_id, '_dame_scheduled_batches_total', $total_batches );
 		update_post_meta( $message_id, '_dame_scheduled_batches_processed', 0 );
@@ -627,7 +627,7 @@ class Mailing {
 		$delay = 0;
 		foreach ( $chunks as $chunk_emails ) {
 			wp_schedule_single_event( time() + $delay, 'dame_cron_send_batch', [ $message_id, $chunk_emails, 0 ] );
-			$delay += 30; // 30 secondes entre chaque lot de 10 mails (20 mails/min).
+			$delay += 60; // 60 secondes entre chaque lot de 20 mails (20 mails/min).
 		}
 
 		wp_redirect( add_query_arg( [ 'success' => 1, 'count' => count( $recipient_emails ) ], $base_url ) );

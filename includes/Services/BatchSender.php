@@ -37,6 +37,9 @@ class BatchSender {
 			return; // Stop if message post is deleted.
 		}
 
+		$all_sent_data = []; // To store [post_id => sent_at] for batch update
+		$sent_at_now   = current_time( 'mysql', true );
+
 		// Mark as 'sending' on the first batch.
 		$status = get_post_meta( $message_id, '_dame_message_status', true );
 		if ( 'scheduled' === $status ) {
@@ -126,9 +129,9 @@ class BatchSender {
 
 				$search  = [ '[NOM]', '[PRENOM]', '[AGE]' ];
 				$replace = [
-					mb_strtoupper( $nom, 'UTF-8' ),
-					mb_convert_case( $prenom, MB_CASE_TITLE, 'UTF-8' ),
-					$age
+					esc_html( mb_strtoupper( (string) $nom, 'UTF-8' ) ),
+					esc_html( mb_convert_case( (string) $prenom, MB_CASE_TITLE, 'UTF-8' ) ),
+					esc_html( (string) $age )
 				];
 
 				$personalized_subject = str_replace( $search, $replace, $subject );
@@ -144,16 +147,40 @@ class BatchSender {
 			if ( ! $sent ) {
 				$failed_emails[] = $email;
 			} else {
-				// Success: Record that EVERY post associated with this email received the message.
+				// Success: Collect target IDs for batch marking
 				if ( ! empty( $target_post_ids ) ) {
-					$sent_at = current_time( 'mysql', true );
 					foreach ( $target_post_ids as $tpid ) {
-						add_post_meta( $tpid, '_dame_message_received', $message_id, false );
-						update_post_meta( $tpid, "_dame_message_{$message_id}_sent_at", $sent_at );
+						$all_sent_data[ (int) $tpid ] = $sent_at_now;
 					}
 				}
 			}
-			sleep( 1 ); // Sleep 1 second to respect 20 emails / minute limit on o2switch.
+		}
+
+		// Perform batch database updates for performance
+		if ( ! empty( $all_sent_data ) ) {
+			global $wpdb;
+			$values_received = [];
+			$values_sent_at  = [];
+			$sent_at_key     = "_dame_message_{$message_id}_sent_at";
+
+			foreach ( $all_sent_data as $tpid => $time ) {
+				$values_received[] = $wpdb->prepare( '(%d, %s, %s)', $tpid, '_dame_message_received', (string) $message_id );
+				$values_sent_at[]  = $wpdb->prepare( '(%d, %s, %s)', $tpid, $sent_at_key, $time );
+			}
+
+			if ( count( $values_received ) > 0 ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				$wpdb->query( "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ',', $values_received ) );
+			}
+			if ( count( $values_sent_at ) > 0 ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				$wpdb->query( "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ',', $values_sent_at ) );
+			}
+
+			// Clean cache for all affected posts
+			foreach ( array_keys( $all_sent_data ) as $tpid ) {
+				wp_cache_delete( $tpid, 'post_meta' );
+			}
 		}
 
 		// Handle failures with a retry mechanism.

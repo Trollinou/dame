@@ -184,6 +184,14 @@ class Message {
 			[ '%s', '%s' ]
 		);
 
+		// Also purge the individual send dates
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->delete(
+			$wpdb->postmeta,
+			[ 'meta_key' => "_dame_message_{$post_id}_sent_at" ],
+			[ '%s' ]
+		);
+
 		// 3. Purge tracking data (opens)
 		$table_opens = $wpdb->prefix . 'dame_message_opens';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery

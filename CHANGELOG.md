@@ -1,5 +1,20 @@
 # Changelog
 
+## 4.1.6 - 2026-04-29
+### Amélioration
+- **Optimisation Performance (Mailing) :**
+    - Réduction drastique du nombre de requêtes SQL lors de l'envoi en masse (passage de ~40-80 requêtes à seulement 2 requêtes groupées par lot).
+    - Stabilisation des envois sur les hébergements mutualisés (o2switch) : suppression des `sleep()` internes et configuration de lots de 20 mails toutes les 60 secondes pour éviter les Timeouts serveur.
+- **Rapports de Diffusion :** Correction du problème "Date inconnue" lié à l'interruption des scripts lors de l'écriture en base de données.
+
+### Sécurité
+- **Protection XSS par E-mail :** Échappement systématique (`esc_html`) de toutes les variables de personnalisation (`[NOM]`, `[PRENOM]`, `[AGE]`) injectées dans les e-mails pour prévenir l'exécution de contenu malveillant.
+- **Validation SQL :** Renforcement de la préparation des requêtes groupées via `$wpdb->prepare`.
+
+### Correction
+- **Réinitialisation des Messages :** La fonction "Reset envoi" purge désormais correctement les dates d'envoi individuelles en plus des marqueurs de réception et de suivi.
+- **Conformité PHP :** Ajout des types de retour manquants pour assurer une compatibilité totale avec PHP 8.4 et PHPStan Level 6.
+
 ## 4.1.5 - 2026-04-22
 ### Ajout
 - **Minification Javascript :** Intégration de `terser` dans le pipeline de build pour optimiser les scripts côté client.
