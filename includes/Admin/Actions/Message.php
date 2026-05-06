@@ -21,9 +21,11 @@ class Message {
 	 */
 	public function init(): void {
 		add_filter( 'post_row_actions', [ $this, 'add_duplicate_link' ], 10, 2 );
+		add_filter( 'post_row_actions', [ $this, 'add_to_post_link' ], 10, 2 );
 		add_filter( 'post_row_actions', [ $this, 'add_reset_link' ], 10, 2 );
 		add_filter( 'post_row_actions', [ $this, 'add_force_sent_link' ], 10, 2 );
 		add_action( 'admin_action_dame_duplicate', [ $this, 'handle_duplicate' ] );
+		add_action( 'admin_action_dame_to_post', [ $this, 'handle_to_post' ] );
 		add_action( 'admin_action_dame_reset_send', [ $this, 'handle_reset' ] );
 		add_action( 'admin_action_dame_force_sent', [ $this, 'handle_force_sent' ] );
 	}
@@ -50,6 +52,34 @@ class Message {
 		);
 
 		$actions['duplicate'] = '<a href="' . esc_url( $url ) . '" title="' . esc_attr__( 'Dupliquer ce message', 'dame' ) . '">' . esc_html__( 'Dupliquer', 'dame' ) . '</a>';
+
+		return $actions;
+	}
+
+	/**
+	 * Add "Dupliquer en tant qu'article" link to row actions.
+	 *
+	 * @param array<string, mixed> $actions Existing actions.
+	 * @param \WP_Post $post    Current post.
+	 * @return array<string, mixed> Modified actions.
+	 */
+	public function add_to_post_link( array $actions, WP_Post $post ): array {
+		if ( 'dame_message' !== $post->post_type ) {
+			return $actions;
+		}
+
+		// Option demandée : transformer un message à l'état publié (ou autre) en article.
+		// On limite aux messages qui peuvent être édités.
+		if ( ! current_user_can( 'edit_dame_messages' ) || ! current_user_can( 'edit_posts' ) ) {
+			return $actions;
+		}
+
+		$url = wp_nonce_url(
+			admin_url( 'admin.php?action=dame_to_post&post=' . $post->ID ),
+			'dame_to_post_' . $post->ID
+		);
+
+		$actions['dame_to_post'] = '<a href="' . esc_url( $url ) . '" title="' . esc_attr__( 'Dupliquer ce message en tant qu\'article', 'dame' ) . '">' . esc_html__( 'Dupliquer en article', 'dame' ) . '</a>';
 
 		return $actions;
 	}
@@ -91,24 +121,7 @@ class Message {
 	 * Handle duplication.
 	 */
 	public function handle_duplicate(): void {
-		if ( ! ( isset( $_GET['post'] ) || isset( $_POST['post'] ) ) || ( ! isset( $_GET['_wpnonce'] ) ) ) {
-			wp_die( __( 'Données manquantes pour la duplication.', 'dame' ) );
-		}
-
-		$post_id = ( isset( $_GET['post'] ) ? absint( $_GET['post'] ) : absint( $_POST['post'] ) );
-
-		if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'dame_duplicate_' . $post_id ) ) {
-			wp_die( __( 'Vérification de sécurité échouée.', 'dame' ) );
-		}
-
-		if ( ! current_user_can( 'edit_dame_messages' ) ) {
-			wp_die( __( 'Permission refusée.', 'dame' ) );
-		}
-
-		$post = get_post( $post_id );
-		if ( ! $post || 'dame_message' !== $post->post_type ) {
-			wp_die( __( 'Message introuvable.', 'dame' ) );
-		}
+		$post = $this->get_verified_post( 'dame_duplicate' );
 
 		$new_post_args = array(
 			'post_title'   => $post->post_title . ' (Copie)',
@@ -130,27 +143,54 @@ class Message {
 	}
 
 	/**
+	 * Handle duplication to post.
+	 */
+	public function handle_to_post(): void {
+		$post = $this->get_verified_post( 'dame_to_post', [ 'edit_dame_messages', 'edit_posts' ] );
+
+		$new_post_args = array(
+			'post_title'   => $post->post_title,
+			'post_content' => $post->post_content,
+			'post_status'  => 'draft',
+			'post_type'    => 'post',
+			'post_author'  => get_current_user_id(),
+		);
+
+		// Si le message a été envoyé, on récupère sa date d'envoi
+		$status = get_post_meta( $post->ID, '_dame_message_status', true );
+		if ( 'sent' === $status ) {
+			$sent_date = get_post_meta( $post->ID, '_dame_sent_date', true );
+			if ( ! empty( $sent_date ) ) {
+				// La date peut être un timestamp ou une chaîne Y-m-d H:i:s
+				if ( is_numeric( $sent_date ) ) {
+					$new_post_args['post_date'] = gmdate( 'Y-m-d H:i:s', (int) $sent_date );
+				} else {
+					$new_post_args['post_date'] = $sent_date;
+				}
+			}
+		}
+
+		$new_post_id = wp_insert_post( $new_post_args );
+
+		if ( is_wp_error( $new_post_id ) ) {
+			wp_die( __( 'Erreur lors de la création de l\'article : ', 'dame' ) . esc_html( $new_post_id->get_error_message() ) );
+		}
+
+		// Suppression des catégories par défaut si nécessaire pour respecter "aucune catégorie n'est positionné"
+		// Bien que WP en mette une par défaut, on vide pour s'assurer que l'utilisateur choisisse la sienne.
+		wp_set_post_categories( $new_post_id, array() );
+
+		// Redirect to the edit screen of the new article.
+		wp_redirect( admin_url( 'post.php?action=edit&post=' . $new_post_id ) );
+		exit;
+	}
+
+	/**
 	 * Handle reset of message send data.
 	 */
 	public function handle_reset(): void {
-		if ( ! ( isset( $_GET['post'] ) || isset( $_POST['post'] ) ) || ( ! isset( $_GET['_wpnonce'] ) ) ) {
-			wp_die( __( 'Données manquantes pour le reset.', 'dame' ) );
-		}
-
-		$post_id = ( isset( $_GET['post'] ) ? absint( $_GET['post'] ) : absint( $_POST['post'] ) );
-
-		if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'dame_reset_send_' . $post_id ) ) {
-			wp_die( __( 'Vérification de sécurité échouée.', 'dame' ) );
-		}
-
-		if ( ! current_user_can( 'edit_dame_messages' ) ) {
-			wp_die( __( 'Permission refusée.', 'dame' ) );
-		}
-
-		$post = get_post( $post_id );
-		if ( ! $post || 'dame_message' !== $post->post_type ) {
-			wp_die( __( 'Message introuvable.', 'dame' ) );
-		}
+		$post = $this->get_verified_post( 'dame_reset_send' );
+		$post_id = $post->ID;
 
 		// 1. Reset message metadata
 		update_post_meta( $post_id, '_dame_message_status', 'publish' );
@@ -241,14 +281,8 @@ class Message {
 	 * Handle manual completion.
 	 */
 	public function handle_force_sent(): void {
-		if ( ! ( isset( $_GET['post'] ) || isset( $_POST['post'] ) ) || ( ! isset( $_GET['_wpnonce'] ) ) ) {
-			wp_die( __( 'Données manquantes.', 'dame' ) );
-		}
-
-		$post_id = ( isset( $_GET['post'] ) ? absint( $_GET['post'] ) : absint( $_POST['post'] ) );
-		if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'dame_force_sent_' . $post_id ) ) {
-			wp_die( __( 'Vérification de sécurité échouée.', 'dame' ) );
-		}
+		$post = $this->get_verified_post( 'dame_force_sent' );
+		$post_id = $post->ID;
 
 		$total = (int) get_post_meta( $post_id, '_dame_scheduled_batches_total', true );
 		update_post_meta( $post_id, '_dame_message_status', 'sent' );
@@ -256,5 +290,38 @@ class Message {
 
 		wp_redirect( admin_url( 'edit.php?post_type=dame_message' ) );
 		exit;
+	}
+
+	/**
+	 * Verify the request and get the message post object.
+	 *
+	 * @param string               $nonce_action The base name for the nonce action.
+	 * @param string|array<string> $capabilities Required capabilities.
+	 * @return WP_Post The validated message post.
+	 */
+	private function get_verified_post( string $nonce_action, $capabilities = 'edit_dame_messages' ): WP_Post {
+		if ( ! ( isset( $_GET['post'] ) || isset( $_POST['post'] ) ) || ( ! isset( $_GET['_wpnonce'] ) ) ) {
+			wp_die( esc_html__( 'Données manquantes.', 'dame' ) );
+		}
+
+		$post_id = ( isset( $_GET['post'] ) ? absint( $_GET['post'] ) : absint( $_POST['post'] ) );
+
+		if ( ! wp_verify_nonce( (string) $_REQUEST['_wpnonce'], $nonce_action . '_' . $post_id ) ) {
+			wp_die( esc_html__( 'Vérification de sécurité échouée.', 'dame' ) );
+		}
+
+		$caps = (array) $capabilities;
+		foreach ( $caps as $cap ) {
+			if ( ! current_user_can( $cap ) ) {
+				wp_die( esc_html__( 'Permission refusée.', 'dame' ) );
+			}
+		}
+
+		$post = get_post( $post_id );
+		if ( ! $post instanceof WP_Post || 'dame_message' !== $post->post_type ) {
+			wp_die( esc_html__( 'Message introuvable.', 'dame' ) );
+		}
+
+		return $post;
 	}
 }

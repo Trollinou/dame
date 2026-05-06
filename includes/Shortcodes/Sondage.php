@@ -54,32 +54,24 @@ class Sondage {
 			return '<p>' . __( 'Ce sondage n\'a pas encore été configuré.', 'dame' ) . '</p>';
 		}
 
-		// Get all responses to calculate counts for each time slot
-		$all_responses = get_posts( [
-			'post_type'      => 'sondage_reponse',
-			'post_parent'    => $sondage->ID,
-			'posts_per_page' => -1,
-			'fields'         => 'ids',
-		] );
+		// Get all responses to calculate counts for each time slot via SQL
+		global $wpdb;
+		$table_votes = $wpdb->prefix . 'dame_poll_votes';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$vote_results = $wpdb->get_results( $wpdb->prepare(
+			"SELECT v.choice_key, COUNT(*) as count 
+			 FROM {$table_votes} v
+			 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
+			 WHERE v.poll_id = %d AND p.post_status = 'publish'
+			 GROUP BY v.choice_key",
+			$sondage->ID
+		) );
 
-		/** @var array<int, array<int, int>> $response_counts */
 		$response_counts = [];
-		foreach ( $all_responses as $response_id ) {
-			$responses_data = get_post_meta( (int) $response_id, '_dame_sondage_responses', true );
-			if ( ! empty( $responses_data ) && is_array( $responses_data ) ) {
-				foreach ( $responses_data as $date_index => $time_slots ) {
-					if ( ! is_array( $time_slots ) ) {
-						continue;
-					}
-					foreach ( $time_slots as $time_index => $value ) {
-						if ( ! isset( $response_counts[ $date_index ][ $time_index ] ) ) {
-							$response_counts[ $date_index ][ $time_index ] = 0;
-						}
-						if ( $value == '1' ) {
-							$response_counts[ $date_index ][ $time_index ]++;
-						}
-					}
-				}
+		foreach ( $vote_results as $row ) {
+			$parts = explode( '_', $row->choice_key );
+			if ( count( $parts ) === 2 ) {
+				$response_counts[ (int) $parts[0] ][ (int) $parts[1] ] = (int) $row->count;
 			}
 		}
 
@@ -122,8 +114,14 @@ class Sondage {
 			$user_responses = [];
 		}
 
+		$today = wp_date( 'Y-m-d' );
+
 		ob_start();
 		?>
+		<style>
+			.sondage-timeslot-label.is-past { color: #888; opacity: 0.7; cursor: not-allowed; }
+			.sondage-date-row.is-past { background-color: #f9f9f9; }
+		</style>
 		<div class="dame-sondage-wrapper">
 			<h3><?php echo esc_html( (string) $sondage->post_title ); ?></h3>
 			<?php if ( ! empty( $sondage->post_content ) ) : ?>
@@ -164,9 +162,15 @@ class Sondage {
 							<?php
 								$date_obj       = new DateTime( $date_info['date'] );
 								$formatted_date = date_i18n( 'l j F Y', $date_obj->getTimestamp() );
+								$is_past        = $date_info['date'] < $today;
 							?>
-							<tr>
-								<td><?php echo esc_html( $formatted_date ); ?></td>
+							<tr class="sondage-date-row <?php echo $is_past ? 'is-past' : ''; ?>">
+								<td>
+									<?php echo esc_html( $formatted_date ); ?>
+									<?php if ( $is_past ) : ?>
+										<br><small style="color: #d63638; font-style: italic;"><?php _e( '(Verrouillé)', 'dame' ); ?></small>
+									<?php endif; ?>
+								</td>
 								<td>
 									<?php if ( ! empty( $date_info['time_slots'] ) ) : ?>
 										<?php foreach ( $date_info['time_slots'] as $time_index => $time_slot ) : ?>
@@ -177,8 +181,8 @@ class Sondage {
 											}
 											$count = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
 											?>
-											<label class="sondage-timeslot-label">
-												<input type="checkbox" name="sondage_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?>>
+											<label class="sondage-timeslot-label <?php echo $is_past ? 'is-past' : ''; ?>">
+												<input type="checkbox" name="sondage_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?> <?php disabled( $is_past ); ?>>
 												<?php echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ); ?> (<?php printf( _n( '%d inscrit', '%d inscrits', $count, 'dame' ), $count ); ?>)
 											</label>
 										<?php endforeach; ?>
@@ -220,16 +224,34 @@ class Sondage {
 		$name      = sanitize_text_field( wp_unslash( $_POST['sondage_name'] ) );
 		$responses = isset( $_POST['sondage_responses'] ) ? (array) wp_unslash( $_POST['sondage_responses'] ) : [];
 
-		// Sanitize responses
+		// 1. Get poll configuration to identify past dates
+		$sondage_data = get_post_meta( $sondage_id, '_dame_sondage_data', true );
+		if ( ! is_array( $sondage_data ) ) {
+			$sondage_data = [];
+		}
+		$today = wp_date( 'Y-m-d' );
+		$past_date_indices = [];
+		foreach ( $sondage_data as $idx => $info ) {
+			if ( $info['date'] < $today ) {
+				$past_date_indices[] = (int) $idx;
+			}
+		}
+
+		// 2. Sanitize and filter NEW responses (ignore any manual injection for past dates)
 		$sanitized_responses = [];
 		foreach ( $responses as $date_index => $time_slots ) {
+			$date_index = (int) $date_index;
+			if ( in_array( $date_index, $past_date_indices, true ) ) {
+				continue; // Skip any values submitted for past dates
+			}
 			foreach ( $time_slots as $time_index => $value ) {
-				$sanitized_responses[ intval( $date_index ) ][ intval( $time_index ) ] = 1;
+				$sanitized_responses[ $date_index ][ (int) $time_index ] = 1;
 			}
 		}
 
 		$user_id              = get_current_user_id();
 		$existing_response_id = 0;
+		$previous_meta        = [];
 
 		if ( $user_id ) {
 			$existing_responses = get_posts( [
@@ -242,6 +264,7 @@ class Sondage {
 			] );
 			if ( ! empty( $existing_responses ) ) {
 				$existing_response_id = $existing_responses[0];
+				$previous_meta = get_post_meta( $existing_response_id, '_dame_sondage_responses', true );
 			}
 		} else {
 			$cookie_name = 'dame_sondage_response_' . $sondage_id;
@@ -258,6 +281,16 @@ class Sondage {
 				] );
 				if ( ! empty( $existing_responses ) ) {
 					$existing_response_id = $existing_responses[0];
+					$previous_meta = get_post_meta( $existing_response_id, '_dame_sondage_responses', true );
+				}
+			}
+		}
+
+		// 3. Merge previous choices for PAST dates
+		if ( ! empty( $previous_meta ) && is_array( $previous_meta ) ) {
+			foreach ( $past_date_indices as $idx ) {
+				if ( isset( $previous_meta[ $idx ] ) ) {
+					$sanitized_responses[ $idx ] = $previous_meta[ $idx ];
 				}
 			}
 		}
@@ -280,6 +313,27 @@ class Sondage {
 
 		if ( $response_id ) {
 			update_post_meta( $response_id, '_dame_sondage_responses', $sanitized_responses );
+
+			// Sync with SQL table for real-time stats and race condition prevention
+			global $wpdb;
+			$table_votes = $wpdb->prefix . 'dame_poll_votes';
+			
+			// 1. Clear previous votes for this response on this poll
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->delete( $table_votes, [ 'poll_id' => $sondage_id, 'recipient_id' => $response_id ] );
+
+			// 2. Insert new votes
+			foreach ( $sanitized_responses as $date_index => $time_slots ) {
+				foreach ( $time_slots as $time_index => $value ) {
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+					$wpdb->insert( $table_votes, [
+						'poll_id'      => $sondage_id,
+						'recipient_id' => $response_id, // Unique response ID
+						'choice_key'   => "{$date_index}_{$time_index}",
+						'voted_at'     => current_time( 'mysql', true )
+					] );
+				}
+			}
 
 			if ( ! $user_id ) {
 				$cookie_name  = 'dame_sondage_response_' . $sondage_id;

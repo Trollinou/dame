@@ -211,19 +211,28 @@ class Manager {
 			}
 		}
 
-		foreach ( $responses as $response ) {
-			$response_data = get_post_meta( $response->ID, '_dame_sondage_responses', true );
-			if ( ! empty( $response_data ) ) {
-				foreach ( $response_data as $date_index => $time_slots ) {
-					foreach ( $time_slots as $time_index => $value ) {
-						if ( $value == '1' ) {
-							$slot_key = $date_index . '_' . $time_index;
-							if ( isset( $results[ $slot_key ] ) ) {
-								$results[ $slot_key ]['names'][] = $response->post_title;
-							}
-						}
-					}
-				}
+		// Optimized data fetching via SQL
+		global $wpdb;
+		$table_votes = $wpdb->prefix . 'dame_poll_votes';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$vote_records = $wpdb->get_results( $wpdb->prepare(
+			"SELECT v.recipient_id, v.choice_key 
+			 FROM {$table_votes} v
+			 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
+			 WHERE v.poll_id = %d AND p.post_status = 'publish'",
+			$post->ID
+		) );
+
+		// Index responses for fast title lookup
+		$response_titles = [];
+		foreach ( $responses as $resp ) {
+			$response_titles[ $resp->ID ] = $resp->post_title;
+		}
+
+		foreach ( $vote_records as $v ) {
+			$slot_key = $v->choice_key;
+			if ( isset( $results[ $slot_key ] ) && isset( $response_titles[ $v->recipient_id ] ) ) {
+				$results[ $slot_key ]['names'][] = $response_titles[ $v->recipient_id ];
 			}
 		}
 

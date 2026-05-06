@@ -49,6 +49,14 @@ class Anniversaires {
 			'dame_birthday_section_group',
 			'dame_birthday_section'
 		);
+
+		add_settings_field(
+			'dame_birthday_time',
+			__( 'Heure d\'envoi', 'dame' ),
+			[ $this, 'render_time_field' ],
+			'dame_birthday_section_group',
+			'dame_birthday_section'
+		);
 	}
 
 	/**
@@ -84,6 +92,16 @@ class Anniversaires {
 	}
 
 	/**
+	 * Render time field.
+	 */
+	public function render_time_field(): void {
+		$options = get_option( 'dame_options' );
+		$value = isset( $options['birthday_time'] ) ? $options['birthday_time'] : '09:00';
+		echo '<input type="time" name="dame_options[birthday_time]" value="' . esc_attr( $value ) . '" />';
+		echo '<p class="description">' . esc_html__( 'Heure à laquelle les emails de vœux seront envoyés chaque jour.', 'dame' ) . '</p>';
+	}
+
+	/**
 	 * Render the tab content.
 	 */
 	public function render(): void {
@@ -101,6 +119,12 @@ class Anniversaires {
 		$existing_options['birthday_emails_enabled'] = isset( $input['birthday_emails_enabled'] ) ? 1 : 0;
 		if ( isset( $input['birthday_article_slug'] ) ) {
 			$existing_options['birthday_article_slug'] = sanitize_text_field( $input['birthday_article_slug'] );
+		}
+		if ( isset( $input['birthday_time'] ) ) {
+			$time = sanitize_text_field( $input['birthday_time'] );
+			if ( preg_match( '/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $time ) ) {
+				$existing_options['birthday_time'] = $time;
+			}
 		}
 		return $existing_options;
 	}

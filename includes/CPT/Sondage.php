@@ -17,6 +17,40 @@ class Sondage {
 	 */
 	public function init(): void {
 		add_action( 'init', [ $this, 'register' ] );
+		add_action( 'wp_trash_post', [ $this, 'handle_status_change' ] );
+		add_action( 'untrash_post', [ $this, 'handle_status_change' ] );
+		add_action( 'deleted_post', [ $this, 'handle_deletion' ] );
+	}
+
+	/**
+	 * Handle post status changes (trash/untrash).
+	 * 
+	 * We don't delete from SQL when trashing, but we might want to?
+	 * Actually, the reports only count 'publish' posts.
+	 * If we untrash, we don't need to do anything as the votes were still there.
+	 * 
+	 * Wait, if the user wants them GONE from the count when trashed,
+	 * we should handle it in the SQL query of the reports (already done via join or status check).
+	 * 
+	 * Let's focus on hard deletion first to avoid ID reuse issues.
+	 */
+	public function handle_deletion( int $post_id ): void {
+		$post = get_post( $post_id );
+		if ( ! $post || 'sondage_reponse' !== $post->post_type ) {
+			return;
+		}
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'dame_poll_votes';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->delete( $table_name, [ 'recipient_id' => $post_id ], [ '%d' ] );
+	}
+
+	/**
+	 * Simplified status change handler.
+	 */
+	public function handle_status_change( int $post_id ): void {
+		// For now, we only care about permanent deletion to avoid ID collisions.
 	}
 
 	/**

@@ -15,6 +15,7 @@ use DAME\CPT\Agenda;
 use DAME\CPT\ICalFeed;
 use DAME\CPT\Sondage;
 use DAME\Core\Roles;
+use DAME\Core\Upgrader; 
 use DAME\API\Tracker;
 use DAME\Services\Mailer;
 use DAME\Services\BatchSender;
@@ -93,6 +94,10 @@ class Plugin {
 		$roles = new Roles();
 		$roles->init();
 
+		// Gestion des montées de version et migrations
+		$upgrader = new Upgrader();
+		$upgrader->init();
+		
 		// Initialize CPTs.
 		$adherent_cpt = new Adherent();
 		$adherent_cpt->init();

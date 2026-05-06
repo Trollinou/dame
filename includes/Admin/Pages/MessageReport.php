@@ -49,22 +49,29 @@ class MessageReport {
 
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'dame_message_opens';
+		
+		// 1. Get all recipients for this message
+		$recipients = $this->get_formatted_recipients( $message_id );
+		
+		// 2. Get unique opens count (by email hash)
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$opens = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE message_id = %d", $message_id ) );
+		$unique_opens = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(DISTINCT email_hash) FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL",
+			$message_id
+		) );
 
-		// Index opens by hash for faster lookup
-		$opens_by_hash = array();
-		foreach ( $opens as $open ) {
-			// Store earliest open if multiple? Or list of opens?
-			// The request says "Nom | Email | Date d'ouverture (ou Non lu)".
-			// So we prioritize the first open or just 'Yes'.
-			// Let's store the object.
-			if ( ! isset( $opens_by_hash[ $open->email_hash ] ) ) {
-				$opens_by_hash[ $open->email_hash ] = $open;
-			}
+		// 3. Get all open data to mark individual recipients
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$opens_data = $wpdb->get_results( $wpdb->prepare(
+			"SELECT recipient_id, opened_at FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL",
+			$message_id
+		) );
+
+		$opened_recipients = [];
+		foreach ( $opens_data as $open ) {
+			$opened_recipients[ (int) $open->recipient_id ] = $open->opened_at;
 		}
 
-		$recipients = $this->get_formatted_recipients( $message_id );
 		$message = get_post( $message_id );
 		?>
 		<div class="wrap">
@@ -73,13 +80,18 @@ class MessageReport {
 			<div class="card">
 				<h2><?php esc_html_e( 'Statistiques', 'dame' ); ?></h2>
 				<?php
-				$total_sent = count( $recipients );
-				$unique_opens = count( $opens_by_hash );
-				$rate = $total_sent > 0 ? round( ( $unique_opens / $total_sent ) * 100, 2 ) : 0;
+				$total_targets = count( $recipients );
+				// Count how many have been sent (sent_at is NOT NULL)
+				$sent_count = 0;
+				foreach($recipients as $r) {
+					if (!empty($r['sent_at'])) $sent_count++;
+				}
+				$rate = $total_targets > 0 ? round( ( $unique_opens / $total_targets ) * 100, 2 ) : 0;
 				?>
 				<p>
-					<strong><?php esc_html_e( 'Envoyés :', 'dame' ); ?></strong> <?php echo esc_html( (string) $total_sent ); ?><br>
-					<strong><?php esc_html_e( 'Ouvertures uniques :', 'dame' ); ?></strong> <?php echo esc_html( (string) $unique_opens ); ?><br>
+					<strong><?php esc_html_e( 'Destinataires ciblés :', 'dame' ); ?></strong> <?php echo esc_html( (string) $total_targets ); ?><br>
+					<strong><?php esc_html_e( 'Messages expédiés :', 'dame' ); ?></strong> <?php echo esc_html( (string) $sent_count ); ?> / <?php echo esc_html( (string) $total_targets ); ?><br>
+					<strong><?php esc_html_e( 'Emails ouverts (uniques) :', 'dame' ); ?></strong> <?php echo esc_html( (string) $unique_opens ); ?><br>
 					<strong><?php esc_html_e( 'Taux d\'ouverture :', 'dame' ); ?></strong> <?php echo esc_html( (string) $rate ); ?>%
 				</p>
 			</div>
@@ -97,13 +109,13 @@ class MessageReport {
 				</thead>
 				<tbody>
 					<?php if ( ! empty( $recipients ) ) : ?>
-						<?php foreach ( $recipients as $email => $data ) : ?>
+						<?php foreach ( $recipients as $data ) : ?>
 							<?php
 							$name      = $data['name'];
+							$email     = $data['email'];
 							$sent_at   = $data['sent_at'];
-							$hash      = md5( mb_strtolower( trim( (string) $email ), 'UTF-8' ) );
-							$is_opened = isset( $opens_by_hash[ $hash ] );
-							$open_data = $is_opened ? $opens_by_hash[ $hash ] : null;
+							$pid       = $data['recipient_id'];
+							$opened_at = isset( $opened_recipients[ $pid ] ) ? $opened_recipients[ $pid ] : null;
 							?>
 							<tr>
 								<td><?php echo esc_html( $name ); ?></td>
@@ -112,31 +124,30 @@ class MessageReport {
 									<?php 
 									if ( ! empty( $sent_at ) ) {
 										echo esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $sent_at . ' UTC' ) ) );
-									} elseif ( $is_opened ) {
-										// Fallback to open date if send date was not recorded
-										echo '<span style="color: #888; font-style: italic;">(' . esc_html__( 'Date inconnue', 'dame' ) . ')</span>';
 									} else {
 										echo '—';
 									}
 									?>
 								</td>
 								<td>
-									<?php if ( $is_opened ) : ?>
+									<?php if ( ! empty( $opened_at ) ) : ?>
 										<span style="color: green; font-weight: bold;">
 											<?php 
-											$timestamp = strtotime( $open_data->opened_at . ' UTC' );
+											$timestamp = strtotime( $opened_at . ' UTC' );
 											printf( esc_html__( 'Ouvert le %s', 'dame' ), wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp ) ); 
 											?>
 										</span>
-									<?php else : ?>
+									<?php elseif ( ! empty( $sent_at ) ) : ?>
 										<span style="color: #888;"><?php esc_html_e( 'Non lu', 'dame' ); ?></span>
+									<?php else : ?>
+										<span style="color: #d63638; font-style: italic;"><?php esc_html_e( 'En attente d\'envoi', 'dame' ); ?></span>
 									<?php endif; ?>
 								</td>
 							</tr>
 						<?php endforeach; ?>
 					<?php else : ?>
 						<tr>
-							<td colspan="3"><?php esc_html_e( 'Aucun destinataire trouvé ou liste non disponible pour ce message.', 'dame' ); ?></td>
+							<td colspan="4"><?php esc_html_e( 'Aucun destinataire trouvé ou liste non disponible pour ce message.', 'dame' ); ?></td>
 						</tr>
 					<?php endif; ?>
 				</tbody>
@@ -160,72 +171,25 @@ class MessageReport {
 			return array();
 		}
 
-		$recipients = array();
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'dame_message_opens';
 
-		// Formatting helper: NOM (Upper) Prenom (Title)
-		$format_name = function( $last, $first ) {
-			return mb_strtoupper( (string) $last, 'UTF-8' ) . ' ' . mb_convert_case( (string) $first, MB_CASE_TITLE, 'UTF-8' );
-		};
+		// Get all recipients from the dedicated SQL table
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$results = $wpdb->get_results( $wpdb->prepare(
+			"SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at 
+			FROM {$table_name} 
+			WHERE message_id = %d",
+			$message_id
+		), ARRAY_A );
 
-		// Get all posts (Adherents and Contacts) that received this message
-		$posts = get_posts( [
-			'post_type'      => [ 'adherent', 'dame_contact' ],
-			'post_status'    => 'any',
-			'posts_per_page' => -1,
-			'meta_query'     => [
-				[
-					'key'     => '_dame_message_received',
-					'value'   => (string) $message_id,
-					'compare' => '=',
-				],
-			],
-		] );
-
-		foreach ( $posts as $post ) {
-			$pid       = $post->ID;
-			$post_type = $post->post_type;
-
-			if ( 'adherent' === $post_type ) {
-				// Check all possible email sources for this adherent
-				for ( $i = 1; $i <= 2; $i++ ) {
-					$rep_email = get_post_meta( $pid, "_dame_legal_rep_{$i}_email", true );
-					if ( ! empty( $rep_email ) && is_email( (string) $rep_email ) ) {
-						$rep_first = get_post_meta( $pid, "_dame_legal_rep_{$i}_first_name", true );
-						$rep_last  = get_post_meta( $pid, "_dame_legal_rep_{$i}_last_name", true );
-						$name      = $format_name( $rep_last, $rep_first );
-						$sent_at   = get_post_meta( $pid, "_dame_message_{$message_id}_sent_at", true );
-						$recipients[ (string) $rep_email ] = array( 'name' => $name, 'sent_at' => $sent_at );
-					}
-				}
-
-				$member_email = get_post_meta( $pid, '_dame_email', true );
-				if ( ! empty( $member_email ) && is_email( (string) $member_email ) ) {
-					$member_first = get_post_meta( $pid, '_dame_first_name', true );
-					$member_last  = get_post_meta( $pid, '_dame_last_name', true );
-					$name         = $format_name( $member_last, $member_first );
-					$sent_at      = get_post_meta( $pid, "_dame_message_{$message_id}_sent_at", true );
-					$recipients[ (string) $member_email ] = array( 'name' => $name, 'sent_at' => $sent_at );
-				}
-			} elseif ( 'dame_contact' === $post_type ) {
-				$contact_email = get_post_meta( $pid, '_dame_contact_email', true );
-				if ( ! empty( $contact_email ) && is_email( (string) $contact_email ) ) {
-					$contact_last  = get_post_meta( $pid, '_dame_contact_last_name', true );
-					$contact_first = get_post_meta( $pid, '_dame_contact_first_name', true );
-					$contact_org   = get_post_meta( $pid, '_dame_contact_organization', true );
-
-					$name = $format_name( $contact_last, $contact_first );
-					if ( ! empty( $contact_org ) ) {
-						$name = (string) $contact_org . ( trim( (string) $name ) ? ' (' . $name . ')' : '' );
-					}
-					$sent_at = get_post_meta( $pid, "_dame_message_{$message_id}_sent_at", true );
-					$recipients[ (string) $contact_email ] = array( 'name' => $name, 'sent_at' => $sent_at );
-				}
-			}
+		if ( empty( $results ) ) {
+			return array();
 		}
 
 		// Sort by Name Alphabetically
-		uasort( $recipients, fn( $a, $b ) => strcasecmp( (string) $a['name'], (string) $b['name'] ) );
+		uasort( $results, fn( $a, $b ) => strcasecmp( (string) $a['name'], (string) $b['name'] ) );
 
-		return $recipients;
+		return $results;
 	}
 }

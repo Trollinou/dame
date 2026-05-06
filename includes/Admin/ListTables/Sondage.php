@@ -49,8 +49,16 @@ class Sondage {
 				break;
 
 			case 'poll_votes':
-				$votes = get_post_meta( $post_id, '_dame_poll_votes', true );
-				$total = is_array( $votes ) ? array_sum( $votes ) : 0;
+				global $wpdb;
+				$table_votes = $wpdb->prefix . 'dame_poll_votes';
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				$total = $wpdb->get_var( $wpdb->prepare( 
+					"SELECT COUNT(*) 
+					 FROM {$table_votes} v
+					 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
+					 WHERE v.poll_id = %d AND p.post_status = 'publish'", 
+					$post_id 
+				) );
 				echo intval( $total );
 				break;
 

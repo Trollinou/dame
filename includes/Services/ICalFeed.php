@@ -141,8 +141,8 @@ class ICalFeed {
 		} elseif ( 'prive' === $feed_slug_base ) {
 			$feed_details['name'] = __( 'Tous les événements privés', 'dame' );
 			$args['post_status']  = 'private';
-			if ( ! is_user_logged_in() ) {
-				// Return empty feed for non-logged-in users trying to access private feed.
+			if ( ! current_user_can( 'read_private_posts' ) ) {
+				// Return empty feed for users without proper permissions.
 				$this->generate_ics( array(), $feed_details );
 				return;
 			}
@@ -187,7 +187,7 @@ class ICalFeed {
 
 			if ( $post && 'dame_agenda' === $post->post_type ) {
 				// Check visibility permissions if the post is private.
-				if ( 'private' === $post->post_status && ! is_user_logged_in() ) {
+				if ( 'private' === $post->post_status && ! current_user_can( 'read_private_posts' ) ) {
 					wp_die( esc_html__( 'Vous n\'avez pas la permission de télécharger cet événement.', 'dame' ) );
 				}
 

@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 4.1.6
+**Version:** 4.3.5
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -50,6 +50,7 @@ Chaque fiche membre centralise :
 *   **Mailing Ciblé :** Envoyez des messages à des segments précis (ex: "Toutes les femmes de l'école d'échecs").
 *   **Traçabilité Totale :** Suivi individuel des envois (date/heure précise pour chaque destinataire) et statistiques d'ouverture (Pixel Tracking).
 *   **Gestion des Refus :** Case "Refus mailing" pour respecter les préférences de vos membres et partenaires.
+*   **Duplication flexible :** Transformez n'importe quel Message envoyé en Article WordPress (brouillon) pour alimenter votre blog sans double saisie.
 
 ### Gestion des Partenaires (Contacts)
 *   **Module Dédié :** Un annuaire distinct pour les partenaires externes (Presse, Mairies, Sponsors), intégré au système de messagerie.
@@ -64,7 +65,7 @@ Chaque fiche membre centralise :
 
 ## Portabilité & Sauvegarde
 *   **Exports CSV :** Formats optimisés pour les imports fédéraux (FFE) ou le secrétariat.
-*   **Sauvegardes JSON compressées :** Sauvegardes journalières automatiques par email. Le script d'import gère le re-mappage automatique des IDs pour une restauration parfaite sur n'importe quel serveur.
+*   **Sauvegardes JSON compressées :** Sauvegardes journalières automatiques par email couvrant les Adhérents, l'Agenda et le Contenu du site (Articles, Pages, Menus). Le système force la restauration des IDs originaux pour préserver parfaitement les relations, les liens de menus et la hiérarchie des pages.
 
 ## Dépendances
 Pour la fonctionnalité pédagogique (LMS), ce plugin nécessite le plugin **ROI**.

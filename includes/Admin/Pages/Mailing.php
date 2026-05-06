@@ -546,17 +546,110 @@ class Mailing {
 			$save_state_and_redirect( 'all_already_received' );
 		}
 
-		// 3. Collecte des E-mails
+		// Optimisation : Pré-chargement des caches de métadonnées (Warm-up)
+		// Évite le problème N+1 de get_post_meta dans les boucles de priorité ci-dessous.
+		$all_ids_to_warm = array_merge( $adherent_ids, $contact_ids );
+		if ( ! empty( $all_ids_to_warm ) ) {
+			update_meta_cache( 'post', $all_ids_to_warm );
+		}
+
+		// 3. Collecte des Destinataires et E-mails (Logique de priorité et agrégation stricte)
+		$email_data = []; // email_key => [ 'id' => primary_id, 'names' => [], 'prio' => 1-3, 'raw_email' => '...' ]
+		
+		$format_name = function( $id, $type = 'adherent' ) {
+			if ( 'adherent' === $type ) {
+				$last  = get_post_meta( $id, '_dame_last_name', true );
+				$first = get_post_meta( $id, '_dame_first_name', true );
+			} else {
+				$last  = get_post_meta( $id, '_dame_contact_last_name', true );
+				$first = get_post_meta( $id, '_dame_contact_first_name', true );
+			}
+			$name = mb_strtoupper( (string) $last, 'UTF-8' ) . ' ' . mb_convert_case( (string) $first, MB_CASE_TITLE, 'UTF-8' );
+			
+			if ( 'contact' === $type ) {
+				$org = get_post_meta( $id, '_dame_contact_organization', true );
+				if ( ! empty( $org ) ) $name = (string) $org . ' (' . $name . ')';
+			}
+			return $name;
+		};
+
+		// On s'assure d'avoir des IDs uniques au départ
+		$adherent_ids = array_unique( (array) $adherent_ids );
+		$contact_ids  = array_unique( (array) $contact_ids );
+
+		// Priorité 1 : Emails directs des Adhérents
 		foreach ( $adherent_ids as $aid ) {
-			$recipient_emails = array_merge( $recipient_emails, Data_Provider::get_emails_for_adherent( $aid ) );
+			$email = get_post_meta( $aid, '_dame_email', true );
+			if ( ! empty( $email ) && is_email( $email ) && '1' !== get_post_meta( $aid, '_dame_email_refuses_comms', true ) ) {
+				$raw_email = trim( (string) $email );
+				$lemail    = strtolower( $raw_email );
+				if ( ! isset( $email_data[ $lemail ] ) ) {
+					$email_data[ $lemail ] = [ 'id' => $aid, 'names' => [], 'prio' => 1, 'raw_email' => $raw_email ];
+				}
+				$email_data[ $lemail ]['names'][] = $format_name( $aid );
+			}
 		}
+
+		// Priorité 2 : Emails des Représentants Légaux (si non pris par un Adhérent direct)
+		foreach ( $adherent_ids as $aid ) {
+			for ( $i = 1; $i <= 2; $i++ ) {
+				$email   = get_post_meta( $aid, "_dame_legal_rep_{$i}_email", true );
+				$refuses = get_post_meta( $aid, "_dame_legal_rep_{$i}_email_refuses_comms", true );
+				if ( ! empty( $email ) && is_email( (string) $email ) && '1' !== $refuses ) {
+					$raw_email = trim( (string) $email );
+					$lemail    = strtolower( $raw_email );
+					if ( ! isset( $email_data[ $lemail ] ) ) {
+						$email_data[ $lemail ] = [ 'id' => $aid, 'names' => [], 'prio' => 2, 'raw_email' => $raw_email ];
+					}
+					if ( 2 === $email_data[ $lemail ]['prio'] ) {
+						$email_data[ $lemail ]['names'][] = $format_name( $aid ) . ' (RL)';
+					}
+				}
+			}
+		}
+
+		// Priorité 3 : Emails des Contacts (si non pris par Adhérent ou Représentant)
 		foreach ( $contact_ids as $cid ) {
-			$recipient_emails = array_merge( $recipient_emails, Data_Provider::get_emails_for_contact( $cid ) );
+			$email   = get_post_meta( $cid, '_dame_contact_email', true );
+			$refuses = get_post_meta( $cid, '_dame_contact_no_emails', true );
+			if ( ! empty( $email ) && is_email( (string) $email ) && '1' !== $refuses ) {
+				$raw_email = trim( (string) $email );
+				$lemail    = strtolower( $raw_email );
+				if ( ! isset( $email_data[ $lemail ] ) ) {
+					$email_data[ $lemail ] = [ 'id' => $cid, 'names' => [], 'prio' => 3, 'raw_email' => $raw_email ];
+				}
+				if ( 3 === $email_data[ $lemail ]['prio'] ) {
+					$email_data[ $lemail ]['names'][] = $format_name( $cid, 'contact' );
+				}
+			}
 		}
-		$recipient_emails = array_unique( $recipient_emails );
+
+		// Liste finale des emails pour l'envoi physique
+		$recipient_emails = array_column( $email_data, 'raw_email' );
 
 		if ( empty( $recipient_emails ) ) {
 			$save_state_and_redirect( 'no_valid_emails' );
+		}
+
+		// 3b. Pré-enregistrement SQL (Tracking) - Unicité garantie
+		global $wpdb;
+		$table_tracking = $wpdb->prefix . 'dame_message_opens';
+		$values_sql = [];
+
+		foreach ( $email_data as $info ) {
+			$email = $info['raw_email'];
+			$hash  = md5( strtolower( trim( $email ) ) );
+			$label = implode( ', ', array_unique( $info['names'] ) );
+			$values_sql[] = $wpdb->prepare( 
+				'(%d, %d, %s, %s, %s)', 
+				$message_id, $info['id'], $label, $email, $hash
+			);
+		}
+
+		if ( ! empty( $values_sql ) ) {
+			$wpdb->delete( $table_tracking, [ 'message_id' => $message_id ], [ '%d' ] );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->query( "INSERT INTO {$table_tracking} (message_id, recipient_id, recipient_name, recipient_email, email_hash) VALUES " . implode( ',', $values_sql ) );
 		}
 
 		// 4. Gestion de la Pièce Jointe (Optionnelle)
@@ -591,7 +684,7 @@ class Mailing {
 			delete_post_meta( $message_id, '_dame_message_attachment' );
 		}
 
-		// 5. Sauvegarde et Planification
+		// 5. Sauvegarde et Mise en file d'attente globale
 		$old_count = (int) get_post_meta( $message_id, '_dame_message_recipients_count', true );
 		$new_total = $old_count + count( $recipient_emails );
 
@@ -618,16 +711,14 @@ class Mailing {
 			update_post_meta( $message_id, '_dame_manual_contacts', $meta_manual_contacts );
 		}
 
-		// Découpage en lots (Batching) pour éviter les timeouts (20 mails par lot pour o2switch)
-		$chunks = array_chunk( $recipient_emails, 20 );
-		$total_batches = count( $chunks );
+		// On calcule le nombre de lots théoriques pour l'affichage de progression
+		$total_batches = (int) ceil( count( $recipient_emails ) / 20 );
 		update_post_meta( $message_id, '_dame_scheduled_batches_total', $total_batches );
 		update_post_meta( $message_id, '_dame_scheduled_batches_processed', 0 );
 
-		$delay = 0;
-		foreach ( $chunks as $chunk_emails ) {
-			wp_schedule_single_event( time() + $delay, 'dame_cron_send_batch', [ $message_id, $chunk_emails, 0 ] );
-			$delay += 60; // 60 secondes entre chaque lot de 20 mails (20 mails/min).
+		// On déclenche le processeur global s'il n'est pas déjà planifié
+		if ( ! wp_next_scheduled( 'dame_cron_process_queue' ) ) {
+			wp_schedule_single_event( time(), 'dame_cron_process_queue' );
 		}
 
 		wp_redirect( add_query_arg( [ 'success' => 1, 'count' => count( $recipient_emails ) ], $base_url ) );

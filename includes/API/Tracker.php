@@ -66,45 +66,20 @@ class Tracker {
 
 		$table_name = $wpdb->prefix . 'dame_message_opens';
 		$user_ip    = $this->get_user_ip();
+		$now        = current_time( 'mysql', true );
 
-		// Check if this open has already been recorded.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$existing_open = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT id FROM {$table_name} WHERE message_id = %d AND email_hash = %s",
-				$message_id,
-				$email_hash
-			)
-		);
+		// Update all recipients sharing this email for this message.
+		// Since we now have one row per recipient, we mark everyone with this email as "opened".
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$updated = $wpdb->query( $wpdb->prepare(
+			"UPDATE {$table_name} 
+			SET opened_at = %s, user_ip = %s 
+			WHERE message_id = %d AND email_hash = %s",
+			$now, $user_ip, $message_id, $email_hash
+		) );
 
-		// If already recorded, update the timestamp to reflect the latest open.
-		if ( null !== $existing_open ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->update(
-				$table_name,
-				array( 'opened_at' => current_time( 'mysql', true ) ),
-				array( 'id' => $existing_open ),
-				array( '%s' ),
-				array( '%d' )
-			);
-		} else {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->insert(
-				$table_name,
-				array(
-					'message_id' => $message_id,
-					'email_hash' => $email_hash,
-					'opened_at'  => current_time( 'mysql', true ),
-					'user_ip'    => $user_ip,
-				),
-				array(
-					'%d',
-					'%s',
-					'%s',
-					'%s',
-				)
-			);
-		}
+		// Fallback: If no rows were updated (e.g. log missing but pixel hit), 
+		// we could insert a generic row, but it's better to log only known recipients.
 
 		// Serve a 1x1 transparent GIF image.
 		$this->send_pixel_response();
@@ -133,15 +108,26 @@ class Tracker {
 	 *
 	 * @return string The user's IP address.
 	 */
-	public function get_user_ip() {
+	public function get_user_ip(): string {
+		$ip = '';
+
+		// Check for proxy headers but validate they are valid IPs.
 		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-			$ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
+			$ip = wp_unslash( $_SERVER['HTTP_CLIENT_IP'] );
 		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-			$ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
-		} else {
-			$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+			// X-Forwarded-For can contain a list of IPs. We take the first one.
+			$ips = explode( ',', wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
+			$ip  = trim( $ips[0] );
+		} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+			$ip = wp_unslash( $_SERVER['REMOTE_ADDR'] );
 		}
-		return $ip;
+
+		// Validate the IP address format.
+		if ( ! filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+			return '0.0.0.0';
+		}
+
+		return (string) $ip;
 	}
 
 	/**

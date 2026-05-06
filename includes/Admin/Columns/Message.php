@@ -108,7 +108,7 @@ class Message {
 				global $wpdb;
 				$table_name = $wpdb->prefix . 'dame_message_opens';
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-				$opens = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT email_hash) FROM $table_name WHERE message_id = %d", $post_id ) );
+				$opens = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT email_hash) FROM $table_name WHERE message_id = %d AND opened_at IS NOT NULL", $post_id ) );
 
 				$total = get_post_meta( $post_id, '_dame_message_recipients_count', true );
 				if ( '' === $total ) {

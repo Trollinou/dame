@@ -1,5 +1,95 @@
 # Changelog
 
+## 4.3.5 - 2026-05-06
+### Correction
+- **Intégrité des Sondages (Décomptes) :** Correction d'un bug majeur où les votes des participants supprimés ou mis à la corbeille étaient toujours comptabilisés et attribués à tort à d'autres membres en cas de réutilisation d'ID. Le système filtre désormais strictement les votes par statut de réponse ("publié").
+- **Cycle de vie des données :** Ajout d'un nettoyage automatique de la table SQL des votes lors de la suppression définitive d'un participant.
+
+## 4.3.4 - 2026-05-06
+### Ajout
+- **Verrouillage des Sondages (Intégrité historique) :** Pour les sondages publics, il n'est désormais plus possible de modifier ses choix pour des dates déjà passées. Les plages horaires concernées apparaissent grisées et désactivées (lecture seule). Le système de soumission garantit la conservation des votes passés tout en autorisant les mises à jour pour les dates futures.
+
+## 4.3.3 - 2026-05-06
+### Amélioration
+- **Restauration Intelligente (Auto-Upgrade) :** Le processus d'importation détecte désormais automatiquement si la sauvegarde restaurée provient d'une version antérieure du plugin. Le cas échéant, il déclenche immédiatement les scripts de mise à jour nécessaires pour rendre les anciennes données compatibles avec la structure de base de données actuelle (ex: migration SQL des messages ou des votes).
+
+## 4.3.2 - 2026-05-06
+### Ajout
+- **Sécurisation des Sondages (SQL direct) :** Migration des votes de sondages depuis les métadonnées sérialisées vers une table SQL dédiée (`wp_dame_poll_votes`). Cette architecture élimine les risques de conditions de concurrence (race conditions) lors de votes simultanés et améliore radicalement les performances d'affichage des résultats.
+- **Migration automatique :** Script de récupération de l'historique des votes intégré à la mise à jour v4.3.2.
+- **Sauvegarde & Restauration :** Inclusion de la table des votes dans le module de sauvegarde "Agenda & Sondages" avec conservation des IDs.
+
+## 4.3.1 - 2026-05-06
+### Ajout
+- **Contrôle du débit d'envoi :** L'option "Taille du lot (emails/minute)" est désormais opérationnelle et pilote la file d'attente globale FIFO.
+- **Heure d'envoi des Anniversaires :** Ajout d'un réglage dédié dans l'onglet Anniversaires pour définir l'heure exacte de l'envoi des vœux quotidiens.
+- **Désinstallation complète :** Le script de désinstallation supprime désormais l'intégralité des tables SQL personnalisées, des CPT et des taxonomies du plugin (si l'option est cochée).
+
+## 4.3.0 - 2026-05-06
+### Ajout
+- **Sauvegarde intégrale des Utilisateurs :** Le module de sauvegarde inclut désormais l'intégralité des comptes utilisateurs WordPress (`wp_users` et `wp_usermeta`). Cela garantit que les accès membres et les liaisons Adhérent-Compte sont parfaitement restaurés.
+- **Restauration de Configuration :** Sauvegarde et restauration exhaustive de tous les paramètres du plugin, assurant une reprise d'activité immédiate après sinistre.
+- **Sécurité de Restauration :** Protection de l'administrateur courant lors de l'import des utilisateurs pour éviter toute déconnexion accidentelle.
+
+## 4.2.6 - 2026-05-06
+### Correction
+- **Restauration du Statut Adhérent :** Correction d'un bug où le statut "Actif" n'était pas restauré après un import d'adhérents. Le système sauvegarde et restaure désormais les options critiques comme la "Saison Active", garantissant une cohérence immédiate de l'affichage après restauration.
+
+## 4.2.5 - 2026-05-06
+### Amélioration
+- **Optimisation Performance (Cache warming) :** Accélération majeure des outils de messagerie et de sauvegarde grâce au pré-chargement systématique des métadonnées (Warm-up) et à la mémoïsation des tables de données statiques (Départements, Régions).
+- **Formatage des Contacts :** Amélioration de la lisibilité dans les rapports avec le format "Organisation (NOM Prénom)" pour les partenaires externes.
+- **Robustesse de la Restauration :** Correction des erreurs de "Duplicate Entry" lors de l'import d'éléments protégés (catégorie par défaut).
+
+### Correction
+- **Messagerie (Stabilité) :** Correction d'une erreur fatale dans l'écran de rapport et d'un avertissement `wpdb::prepare`.
+- **Messagerie (Précision) :** Agrégation finale des noms pour les emails partagés au sein des familles, assurant une correspondance parfaite 1 email = 1 ligne de rapport.
+
+## 4.2.4 - 2026-05-04
+### Sécurité
+- **Protection contre le "Spam rétroactif" :** Le processeur global d'envoi a été bridé pour ne traiter que les messages explicitement en attente (`scheduled` ou `sending`). 
+- **Neutralisation de l'historique :** Script de nettoyage automatique pour marquer tous les anciens enregistrements de suivi comme "expédiés", empêchant ainsi toute tentative d'envoi accidentel de messages passés lors de l'activation de la file d'attente globale.
+
+## 4.2.3 - 2026-05-04
+### Sécurité
+- **File d'attente globale FIFO :** Mise en place d'un processeur d'envoi centralisé pour garantir le respect strict de la limite de 20 emails par minute, même lors de l'envoi simultané de plusieurs messages différents. Ce système prévient tout risque de bannissement par l'hébergeur lié à un dépassement de quota.
+- **Gestion des priorités :** Les emails sont désormais traités dans l'ordre de leur planification (Premier arrivé, Premier servi) via une tâche Cron unique et auto-replanifiée.
+
+## 4.2.2 - 2026-05-03
+### Ajout
+- **Agrégation des noms (Emails partagés) :** Pour les familles ou membres partageant le même email, les noms sont désormais automatiquement regroupés sur la même ligne dans le rapport (ex: "JULES DUPONT, ANATOLE DUPONT").
+- **Stockage optimisé :** Ajout de la colonne `recipient_name` dans la table SQL pour figer les noms au moment de l'envoi, améliorant drastiquement les performances d'affichage du rapport.
+- **Migration SQL :** Script de mise à jour automatique vers la v4.2.2 pour enrichir la structure de la base de données sans perte de données.
+
+## 4.2.1 - 2026-05-03
+### Correction
+- **Suivi des messages (Précision & Temps Réel) :** Correction d'une incohérence dans les statistiques de messagerie (envois vs ouvertures). 
+    - Le système assure désormais une ligne unique par destinataire réel, même en cas d'adresses email partagées (familles). 
+    - **Progression en temps réel :** Tous les destinataires cibles (ex: 110) sont désormais affichés dans le rapport dès la planification, avec un statut "En attente d'envoi" pour ceux non encore traités.
+    - **Calcul exact du taux :** Le taux d'ouverture ne comptabilise désormais que les emails réellement ouverts (opened_at IS NOT NULL), évitant d'afficher le nombre de messages envoyés comme des ouvertures.
+    - Migration corrective incluse pour restaurer les destinataires "écrasés" par la v4.2.0.
+
+## 4.2.0 - 2026-05-03
+### Refonte du suivi des messages (Architecture SQL)
+- **Centralisation du suivi :** Abandon de l'utilisation intensive des `postmeta` WordPress pour le suivi des envois. Toutes les données (qui a reçu quel message, quand, et quand il l'a ouvert) sont désormais centralisées dans une table SQL dédiée (`wp_dame_message_opens`).
+- **Migration automatique :** Script de migration intégré pour récupérer tout l'historique existant depuis les métadonnées vers la nouvelle structure SQL lors de la mise à jour vers la v4.2.0.
+- **Fiabilité des sauvegardes :** Correction d'un bug majeur lors de l'export/import où seuls 12 destinataires sur 114 étaient conservés. La nouvelle architecture SQL garantit une restauration à 100% fidèle de l'historique de communication.
+- **Performance accrue :** Les rapports de messages (`MessageReport.php`) sont désormais générés via une simple requête SQL, évitant les scans lents de la table `postmeta`.
+
+## 4.1.7 - 2026-05-03
+### Ajout
+- **Duplication en article :** Nouveau lien "Dupliquer en article" dans la liste des messages. Permet de créer instantanément un brouillon d'article WordPress à partir d'un message envoyé, en conservant la date d'envoi originale comme date de publication.
+- **Sauvegarde du contenu du site :** Nouveau module de sauvegarde et restauration pour les Articles, Pages et Menus de navigation.
+- **Restauration granulaire :** Ajout d'une troisième section dans l'interface de maintenance pour gérer indépendamment le contenu éditorial du site.
+
+### Amélioration
+- **Intégrité des Restaurations (Uniformisation SQL) :** Refonte complète des moteurs d'importation pour les Adhérents, l'Agenda et le Contenu du site. Le système force désormais l'utilisation des IDs originaux via SQL direct, garantissant la préservation parfaite des liens complexes (menus vers pages, messages vers adhérents, réponses vers sondages) même après une purge complète.
+- **Santé du code (Actions Admin) :** Refactorisation du contrôleur d'actions des messages avec centralisation des validations (nonces, permissions) pour une maintenance simplifiée et une sécurité uniforme.
+
+### Sécurité
+- **Correctif IP Spoofing :** Sécurisation du service de traçage des emails (`Tracker.php`) avec validation stricte des adresses IP provenant des en-têtes de proxy (X-Forwarded-For). Empêche la manipulation frauduleuse des statistiques d'ouverture.
+- **Vérification des droits :** Renforcement des contrôles de capacités pour toutes les actions groupées en administration.
+
 ## 4.1.6 - 2026-04-29
 ### Amélioration
 - **Optimisation Performance (Mailing) :**

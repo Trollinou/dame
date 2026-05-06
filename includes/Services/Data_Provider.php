@@ -12,13 +12,28 @@ namespace DAME\Services;
  */
 class Data_Provider {
 
+	/** @var array<string, string>|null */
+	private static $countries = null;
+
+	/** @var array<string, string>|null */
+	private static $regions = null;
+
+	/** @var array<int|string, string>|null */
+	private static $departments = null;
+
+	/** @var array<string, string>|null */
+	private static $academies = null;
+
 	/**
 	 * Returns a list of countries.
 	 *
 	 * @return array<string, string>
 	 */
 	public static function get_countries(): array {
-		return array(
+		if ( null !== self::$countries ) {
+			return self::$countries;
+		}
+		self::$countries = array(
 			'FR' => 'France',
 			'BE' => 'Belgique',
 			'CH' => 'Suisse',
@@ -30,6 +45,7 @@ class Data_Provider {
 			'US' => 'États-Unis',
 			'CA' => 'Canada',
 		);
+		return self::$countries;
 	}
 
 	/**
@@ -38,7 +54,10 @@ class Data_Provider {
 	 * @return array<string, string>
 	 */
 	public static function get_regions(): array {
-		return array(
+		if ( null !== self::$regions ) {
+			return self::$regions;
+		}
+		self::$regions = array(
 			'NA'   => 'N/A',
 			'ARA'  => 'Auvergne-Rhône-Alpes',
 			'BFC'  => 'Bourgogne-Franche-Comté',
@@ -60,6 +79,7 @@ class Data_Provider {
 			'MAY'  => 'Mayotte',
 			'NCL'  => 'Nouvelle-Calédonie',
 		);
+		return self::$regions;
 	}
 
 	/**
@@ -68,7 +88,10 @@ class Data_Provider {
 	 * @return array<int|string, string>
 	 */
 	public static function get_departments(): array {
-		return array(
+		if ( null !== self::$departments ) {
+			return self::$departments;
+		}
+		self::$departments = array(
 			'NA' => 'N/A',
 			'01' => '01 - Ain', '02' => '02 - Aisne', '03' => '03 - Allier', '04' => '04 - Alpes-de-Haute-Provence',
 			'05' => '05 - Hautes-Alpes', '06' => '06 - Alpes-Maritimes', '07' => '07 - Ardèche', '08' => '08 - Ardennes',
@@ -99,6 +122,7 @@ class Data_Provider {
 			'974' => '974 - La Réunion', '976' => '976 - Mayotte',
 			'988' => '988 - Nouvelle-Calédonie',
 		);
+		return self::$departments;
 	}
 
 	/**
@@ -142,7 +166,10 @@ class Data_Provider {
 	 * @return array<string, string>
 	 */
 	public static function get_academies(): array {
-		return array(
+		if ( null !== self::$academies ) {
+			return self::$academies;
+		}
+		self::$academies = array(
 			'NA' => 'N/A',
 			'aix-marseille' => 'Aix-Marseille',
 			'amiens' => 'Amiens',
@@ -175,6 +202,7 @@ class Data_Provider {
 			'toulouse' => 'Toulouse',
 			'versailles' => 'Versailles',
 		);
+		return self::$academies;
 	}
 
 	/**

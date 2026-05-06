@@ -42,6 +42,11 @@ class Backups {
 		wp_localize_script( 'dame-admin-backups-agenda', 'dame_backup_agenda_data', array(
 			'confirm_restore' => __( "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Tous les événements et catégories existants seront supprimés et remplacées. Cette action est irréversible.", "dame" )
 		) );
+
+		wp_enqueue_script( 'dame-admin-backups-site', \DAME_PLUGIN_URL . 'assets/js/admin-backups-site.js', array(), \DAME_VERSION, true );
+		wp_localize_script( 'dame-admin-backups-site', 'dame_backup_site_data', array(
+			'confirm_restore' => __( "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Tous les articles, pages et menus existants seront supprimés et remplacés. Cette action est irréversible.", "dame" )
+		) );
 	}
 
 	/**
@@ -173,6 +178,30 @@ class Backups {
 							<input type="file" id="dame_agenda_restore_file" name="dame_agenda_restore_file" accept=".gz" required style="margin-top: 5px;">
 						</p>
 						<?php submit_button( __( "Restaurer la base de données de l'agenda", "dame" ), 'delete', 'dame_agenda_restore_action', false ); ?>
+					</form>
+				</div>
+			</div>
+
+			<h2 style="margin-top: 40px;"><?php esc_html_e( "Contenu du site", "dame" ); ?></h2>
+			<div class="dame-backup-restore-wrapper" style="display:flex; gap: 20px;">
+				<div class="dame-backup-section" style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+					<h3><?php esc_html_e( "Sauvegarder les articles, pages et menus", "dame" ); ?></h3>
+					<form method="post" action="">
+						<?php wp_nonce_field( 'dame_site_backup_nonce_action', 'dame_site_backup_nonce' ); ?>
+						<input type="hidden" name="dame_site_backup_action" value="1">
+						<?php submit_button( __( "Télécharger la sauvegarde du site (.json.gz)", "dame" ), 'primary', 'submit', false ); ?>
+					</form>
+				</div>
+
+				<div class="dame-restore-section" style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04); border-left: 4px solid #dc3232;">
+					<h3><?php esc_html_e( "Restaurer les articles, pages et menus", "dame" ); ?></h3>
+					<form method="post" enctype="multipart/form-data" id="dame-site-restore-form" action="">
+						<?php wp_nonce_field( 'dame_site_restore_nonce_action', 'dame_site_restore_nonce' ); ?>
+						<p>
+							<label for="dame_site_restore_file"><strong><?php esc_html_e( "Fichier de sauvegarde (.json.gz) :", "dame" ); ?></strong></label><br>
+							<input type="file" id="dame_site_restore_file" name="dame_site_restore_file" accept=".gz" required style="margin-top: 5px;">
+						</p>
+						<?php submit_button( __( "Restaurer le contenu du site", "dame" ), 'delete', 'dame_site_restore_action', false ); ?>
 					</form>
 				</div>
 			</div>

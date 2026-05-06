@@ -30,9 +30,10 @@ class Cron {
 			wp_schedule_event( $backup_timestamp, 'daily', 'dame_daily_backup_event' );
 		}
 
-		// Birthday emails (2 hours after backup)
+		// Birthday emails
 		if ( ! empty( $options['birthday_emails_enabled'] ) ) {
-			$birthday_timestamp = $backup_timestamp + 7200;
+			$birthday_time = ! empty( $options['birthday_time'] ) ? $options['birthday_time'] : '09:00';
+			$birthday_timestamp = $this->get_timestamp_from_local_time( $birthday_time );
 			$scheduled_birthday = wp_next_scheduled( 'dame_birthday_email_event' );
 			
 			if ( $scheduled_birthday && (int) $scheduled_birthday !== (int) $birthday_timestamp ) {
