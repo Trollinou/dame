@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.3.7 - 2026-05-07
+### Correction
+- **Intégrité des Sondages (Doublons) :** Correction d'un bug dans la migration v4.3.2 qui pouvait entraîner la duplication des votes en base de données dans certaines conditions de mise à jour ou de restauration.
+- **Robustesse de l'affichage :** Sécurisation des requêtes SQL (DISTINCT et COUNT DISTINCT) pour garantir des résultats corrects même en présence de données redondantes.
+- **Nettoyage automatique :** Ajout d'un script de migration pour purger les doublons existants dans la table `dame_poll_votes`.
+
+## 4.3.6 - 2026-05-06
+### Correction
+- **Verrouillage des Sondages (Aujourd'hui) :** Extension du verrouillage des dates aux sondages publics pour inclure la date du jour (`<= aujourd'hui`). Il n'est désormais plus possible de modifier sa présence pour une activité ayant lieu le jour même, garantissant la fiabilité des listes d'émargement quotidiennes.
+
 ## 4.3.5 - 2026-05-06
 ### Correction
 - **Intégrité des Sondages (Décomptes) :** Correction d'un bug majeur où les votes des participants supprimés ou mis à la corbeille étaient toujours comptabilisés et attribués à tort à d'autres membres en cas de réutilisation d'ID. Le système filtre désormais strictement les votes par statut de réponse ("publié").

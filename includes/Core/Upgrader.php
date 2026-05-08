@@ -97,6 +97,11 @@ class Upgrader {
 			$this->upgrade_poll_votes_v432();
 		}
 
+		// Version < 4.3.7 : Nettoyage des doublons de votes de sondages
+		if ( version_compare( $old_version, '4.3.7', '<' ) ) {
+			$this->cleanup_poll_votes_v437();
+		}
+
 		// Finalisation
 		update_option( 'dame_plugin_version', $new_version );
 	}
@@ -104,6 +109,26 @@ class Upgrader {
 	/**
 	 * Migration Methods (Ported from functional code)
 	 */
+
+	/**
+	 * Cleanup duplicate poll votes (v4.3.7).
+	 */
+	private function cleanup_poll_votes_v437(): void {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'dame_poll_votes';
+		
+		// This query deletes rows that have the same (poll_id, recipient_id, choice_key) but a higher ID.
+		// It keeps only the row with the lowest ID for each unique vote.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->query( "
+			DELETE v1 FROM $table_name v1
+			INNER JOIN $table_name v2 
+			WHERE v1.id > v2.id 
+			  AND v1.poll_id = v2.poll_id 
+			  AND v1.recipient_id = v2.recipient_id 
+			  AND v1.choice_key = v2.choice_key
+		" );
+	}
 
 	private function migrate_seasons_v220(): void {
 		wp_insert_term( 'Saison antérieure', 'dame_saison_adhesion' );
@@ -418,6 +443,7 @@ class Upgrader {
 			choice_key varchar(255) NOT NULL,
 			voted_at datetime NOT NULL,
 			PRIMARY KEY  (id),
+			UNIQUE KEY poll_vote_unique (poll_id, recipient_id, choice_key),
 			INDEX poll_id_idx (poll_id),
 			INDEX recipient_idx (recipient_id)
 		) $charset_collate;";
@@ -425,7 +451,11 @@ class Upgrader {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 
-		// 2. Migrate existing votes from sondage_reponse posts
+		// 2. Clear table before migration to avoid duplicates if re-run
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->query( "TRUNCATE TABLE $table_name" );
+
+		// 3. Migrate existing votes from sondage_reponse posts
 		$responses = get_posts( [
 			'post_type'      => 'sondage_reponse',
 			'post_status'    => 'publish',

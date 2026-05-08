@@ -53,7 +53,7 @@ class Sondage {
 				$table_votes = $wpdb->prefix . 'dame_poll_votes';
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 				$total = $wpdb->get_var( $wpdb->prepare( 
-					"SELECT COUNT(*) 
+					"SELECT COUNT(DISTINCT v.recipient_id) 
 					 FROM {$table_votes} v
 					 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
 					 WHERE v.poll_id = %d AND p.post_status = 'publish'", 

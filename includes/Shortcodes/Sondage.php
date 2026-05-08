@@ -59,7 +59,7 @@ class Sondage {
 		$table_votes = $wpdb->prefix . 'dame_poll_votes';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$vote_results = $wpdb->get_results( $wpdb->prepare(
-			"SELECT v.choice_key, COUNT(*) as count 
+			"SELECT v.choice_key, COUNT(DISTINCT v.recipient_id) as count 
 			 FROM {$table_votes} v
 			 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
 			 WHERE v.poll_id = %d AND p.post_status = 'publish'
@@ -162,12 +162,12 @@ class Sondage {
 							<?php
 								$date_obj       = new DateTime( $date_info['date'] );
 								$formatted_date = date_i18n( 'l j F Y', $date_obj->getTimestamp() );
-								$is_past        = $date_info['date'] < $today;
+								$is_locked      = $date_info['date'] <= $today;
 							?>
-							<tr class="sondage-date-row <?php echo $is_past ? 'is-past' : ''; ?>">
+							<tr class="sondage-date-row <?php echo $is_locked ? 'is-past' : ''; ?>">
 								<td>
 									<?php echo esc_html( $formatted_date ); ?>
-									<?php if ( $is_past ) : ?>
+									<?php if ( $is_locked ) : ?>
 										<br><small style="color: #d63638; font-style: italic;"><?php _e( '(Verrouillé)', 'dame' ); ?></small>
 									<?php endif; ?>
 								</td>
@@ -181,8 +181,8 @@ class Sondage {
 											}
 											$count = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
 											?>
-											<label class="sondage-timeslot-label <?php echo $is_past ? 'is-past' : ''; ?>">
-												<input type="checkbox" name="sondage_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?> <?php disabled( $is_past ); ?>>
+											<label class="sondage-timeslot-label <?php echo $is_locked ? 'is-past' : ''; ?>">
+												<input type="checkbox" name="sondage_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?> <?php disabled( $is_locked ); ?>>
 												<?php echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ); ?> (<?php printf( _n( '%d inscrit', '%d inscrits', $count, 'dame' ), $count ); ?>)
 											</label>
 										<?php endforeach; ?>
@@ -232,7 +232,7 @@ class Sondage {
 		$today = wp_date( 'Y-m-d' );
 		$past_date_indices = [];
 		foreach ( $sondage_data as $idx => $info ) {
-			if ( $info['date'] < $today ) {
+			if ( $info['date'] <= $today ) {
 				$past_date_indices[] = (int) $idx;
 			}
 		}

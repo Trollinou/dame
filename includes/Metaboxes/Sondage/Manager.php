@@ -216,7 +216,7 @@ class Manager {
 		$table_votes = $wpdb->prefix . 'dame_poll_votes';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$vote_records = $wpdb->get_results( $wpdb->prepare(
-			"SELECT v.recipient_id, v.choice_key 
+			"SELECT DISTINCT v.recipient_id, v.choice_key 
 			 FROM {$table_votes} v
 			 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
 			 WHERE v.poll_id = %d AND p.post_status = 'publish'",
