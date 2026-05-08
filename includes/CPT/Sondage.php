@@ -88,6 +88,8 @@ class Sondage {
 			'menu_position'      => 20,
 			'menu_icon'          => 'dashicons-chart-bar',
 			'supports'           => [ 'title', 'editor' ],
+			'show_in_rest'       => true,
+			'rest_base'          => 'sondages',
 		];
 
 		register_post_type( 'sondage', $sondage_args );
@@ -111,6 +113,8 @@ class Sondage {
 			'supports'            => [ 'title', 'author' ],
 			'show_in_nav_menus'   => false,
 			'show_in_admin_bar'   => false,
+			'show_in_rest'        => true,
+			'rest_base'           => 'sondage-reponses',
 		];
 
 		register_post_type( 'sondage_reponse', $reponse_args );

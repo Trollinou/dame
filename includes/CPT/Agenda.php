@@ -75,7 +75,8 @@ class Agenda {
 			'exclude_from_search'   => false,
 			'publicly_queryable'    => true,
 			'capability_type'       => 'post',
-			'show_in_rest'          => false,
+			'show_in_rest'          => true,
+			'rest_base'             => 'agenda',
 		);
 
 		register_post_type( 'dame_agenda', $args );

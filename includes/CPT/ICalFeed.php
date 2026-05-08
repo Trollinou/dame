@@ -53,6 +53,8 @@ class ICalFeed {
 			'has_archive'        => false,
 			'hierarchical'       => false,
 			'supports'           => array( 'title' ),
+			'show_in_rest'       => true,
+			'rest_base'          => 'ical-feeds',
 		);
 
 		register_post_type( 'dame_ical_feed', $args );

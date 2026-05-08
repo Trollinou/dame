@@ -241,53 +241,20 @@ class Identity {
 		// I'll leave it for now.
 
 		// Title Generation
-		$first_name = sanitize_text_field( wp_unslash( $_POST['dame_first_name'] ) );
-		$last_name  = sanitize_text_field( wp_unslash( $_POST['dame_last_name'] ) );
-
-		$new_title  = \DAME\Core\Utils::format_lastname( $last_name ) . ' ' . \DAME\Core\Utils::format_firstname( $first_name );
+		$new_title = \DAME\Core\Utils::generate_adherent_title( $post_id );
 
 		if ( get_the_title( $post_id ) !== $new_title ) {
-			// Prevent infinite loop
-			remove_action( 'save_post', [ new \DAME\Metaboxes\Adherent\Manager(), 'save_post' ] ); // Attempt to unhook? Hard with object instance.
-				// Actually, remove_action needs the exact same callback.
-				// Since we use [ $this, 'save_post' ] in Manager, and Manager is instantiated new each time? No.
-				// In Plugin.php I will instantiate Manager once.
-				// But here I can't easily unhook "the manager".
-				// Standard WP way: check logic or just update. `wp_update_post` triggers `save_post`.
-				// I should use a static flag or check if title matches.
-
-				// Workaround: Use direct DB update or accept the loop (WP checks for infinite loop? No).
-				// Best way: unhook the specific hook.
-				// But I don't have access to the Manager instance here.
-				// I will skip title update for now? No, required.
-				// I will use `remove_all_actions('save_post')`? Too aggressive.
-
-				// Let's just update it. Infinite loop protection is usually handled by WP or check if title is different.
-				// I am checking `if ( get_the_title( $post_id ) !== $new_title )`.
-				// If I update it, it becomes equal. Next loop it won't update. So it terminates.
-				wp_update_post(
-					array(
-						'ID'         => $post_id,
-						'post_title' => $new_title,
-						'post_name'  => sanitize_title( $new_title ),
-					)
-				);
+			wp_update_post(
+				array(
+					'ID'         => $post_id,
+					'post_title' => $new_title,
+					'post_name'  => sanitize_title( $new_title ),
+				)
+			);
 		}
 
 		// Save Fields
-		$fields = [
-			'dame_first_name' => 'sanitize_text_field', 'dame_last_name' => 'sanitize_text_field', 'dame_birth_name' => 'sanitize_text_field',
-			'dame_birth_date' => 'sanitize_text_field', 'dame_birth_city' => 'sanitize_text_field',
-			'dame_email' => 'sanitize_email', 'dame_address_1' => 'sanitize_text_field',
-			'dame_address_2' => 'sanitize_text_field', 'dame_postal_code' => 'sanitize_text_field',
-			'dame_city' => 'sanitize_text_field', 'dame_phone_number' => 'sanitize_text_field',
-			'dame_sexe' => 'sanitize_text_field',
-			'dame_profession' => 'sanitize_text_field',
-			'dame_country' => 'sanitize_text_field', 'dame_region' => 'sanitize_text_field', 'dame_department' => 'sanitize_text_field',
-			'dame_email_refuses_comms' => 'absint',
-			'dame_latitude' => 'sanitize_text_field', 'dame_longitude' => 'sanitize_text_field',
-			'dame_distance' => 'sanitize_text_field', 'dame_travel_time' => 'sanitize_text_field',
-		];
+		$fields = $this->get_meta_fields();
 
 		foreach ( $fields as $field_name => $sanitize_callback ) {
 			if ( isset( $_POST[ $field_name ] ) ) {
@@ -307,5 +274,26 @@ class Identity {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Returns the list of meta fields and their sanitization callbacks.
+	 *
+	 * @return array<string, string>
+	 */
+	private function get_meta_fields(): array {
+		return [
+			'dame_first_name' => 'sanitize_text_field', 'dame_last_name' => 'sanitize_text_field', 'dame_birth_name' => 'sanitize_text_field',
+			'dame_birth_date' => 'sanitize_text_field', 'dame_birth_city' => 'sanitize_text_field',
+			'dame_email' => 'sanitize_email', 'dame_address_1' => 'sanitize_text_field',
+			'dame_address_2' => 'sanitize_text_field', 'dame_postal_code' => 'sanitize_text_field',
+			'dame_city' => 'sanitize_text_field', 'dame_phone_number' => 'sanitize_text_field',
+			'dame_sexe' => 'sanitize_text_field',
+			'dame_profession' => 'sanitize_text_field',
+			'dame_country' => 'sanitize_text_field', 'dame_region' => 'sanitize_text_field', 'dame_department' => 'sanitize_text_field',
+			'dame_email_refuses_comms' => 'absint',
+			'dame_latitude' => 'sanitize_text_field', 'dame_longitude' => 'sanitize_text_field',
+			'dame_distance' => 'sanitize_text_field', 'dame_travel_time' => 'sanitize_text_field',
+		];
 	}
 }

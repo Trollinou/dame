@@ -120,6 +120,10 @@ class Plugin {
 		$sondage_cpt = new Sondage();
 		$sondage_cpt->init();
 
+		// Initialize REST Meta.
+		$rest_meta = new Post_Meta();
+		$rest_meta->init();
+
 		// Initialize API.
 		$tracker = new Tracker();
 		$tracker->init();

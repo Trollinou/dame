@@ -84,7 +84,8 @@ class Contact {
 			'publicly_queryable'    => false,
 			'capability_type'       => 'post',
 			'show_in_rest'          => true,
-		];
+			'rest_base'             => 'contacts',
+			);
 
 		register_post_type( 'dame_contact', $args );
 	}

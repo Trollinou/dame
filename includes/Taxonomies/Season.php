@@ -53,6 +53,7 @@ class Season {
 			'query_var'         => true,
 			'rewrite'           => array( 'slug' => 'saison-adhesion' ),
 			'show_in_rest'      => true,
+			'rest_base'         => 'seasons',
 		);
 
 		register_taxonomy( 'dame_saison_adhesion', [ 'adherent' ], $args );

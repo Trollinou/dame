@@ -72,6 +72,7 @@ class Adherent {
 			'publicly_queryable'    => false,
 			'capability_type'       => 'post',
 			'show_in_rest'          => true,
+			'rest_base'             => 'adherents',
 		);
 
 		register_post_type( 'adherent', $args );
