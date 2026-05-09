@@ -1,5 +1,5 @@
 {
-  "name": "pwa",
+  "name": "dame-administration",
   "private": true,
   "version": "4.4.0",
   "type": "module",
@@ -40,5 +40,5 @@
     "vitest": "^0.34.6",
     "vue-tsc": "^2.1.10"
   },
-  "description": "An Ionic project"
+  "description": "DAME Administration PWA"
 }

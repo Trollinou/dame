@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>Administration</ion-title>
+        <ion-title>Dame Administration</ion-title>
         <ion-buttons slot="end">
           <ion-button @click="logout">
             <ion-icon slot="icon-only" :icon="logOutOutline"></ion-icon>
@@ -14,7 +14,7 @@
     <ion-content :fullscreen="true" class="ion-padding">
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title size="large">Administration</ion-title>
+          <ion-title size="large">Dame Administration</ion-title>
         </ion-toolbar>
       </ion-header>
 
