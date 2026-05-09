@@ -166,6 +166,7 @@ class Post_Meta {
 			'_dame_distance'                       => 'string',
 			'_dame_travel_time'                    => 'string',
 			'_dame_license_type'                   => 'string',
+			'_dame_license_number'                 => 'string',
 			'_dame_linked_wp_user'                 => 'integer',
 			'_dame_arbitre_level'                  => 'string',
 			'_dame_health_document'                => 'string',

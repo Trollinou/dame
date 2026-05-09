@@ -47,7 +47,12 @@
 
       <!-- Liste des membres -->
       <ion-list v-else-if="filteredMembers.length > 0">
-        <ion-item v-for="member in filteredMembers" :key="member.id" button>
+        <ion-item 
+          v-for="member in filteredMembers" 
+          :key="member.id" 
+          button 
+          @click="goToDetail(member.id)"
+        >
           <ion-label>
             <h2>{{ member.title.raw }}</h2>
           </ion-label>
@@ -91,9 +96,11 @@ import {
 } from '@ionic/vue';
 import { addOutline } from 'ionicons/icons';
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useMemberStore } from '../stores/members';
 import { storeToRefs } from 'pinia';
 
+const router = useRouter();
 const memberStore = useMemberStore();
 const { members, seasons, isLoading } = storeToRefs(memberStore);
 const searchQuery = ref('');
@@ -104,6 +111,13 @@ const selectedSeason = ref<number | 'all'>('all');
  */
 const removeAccents = (str: string): string => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
+/**
+ * Navigation vers le détail d'un adhérent
+ */
+const goToDetail = (id: number) => {
+  router.push('/tabs/members/' + id);
 };
 
 /**

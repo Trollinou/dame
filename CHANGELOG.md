@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.4.1 - 2026-05-09
+### Modifié
+- **Application Mobile (PWA) :** Mise à jour de l'interface de la fiche adhérent avec une meilleure harmonisation visuelle des icônes de contact.
+- **Application Mobile (PWA) :** Optimisation de l'affichage des représentants légaux (boutons d'actions directs) et réorganisation de la carte de contact (priorité aux informations de communication).
+- **Application Mobile (PWA) :** Fiabilisation du déploiement en sous-dossier WordPress via l'utilisation de chemins relatifs et du mode `HashHistory`.
+
 ## 4.4.0 - 2026-05-09
 ### Ajout
 - **API REST Native (Support PWA) :** Activation du support de l'API REST WordPress pour tous les Custom Post Types (`adherents`, `agenda`, `contacts`, `ical-feeds`, `messages`, `pre-inscriptions`, `sondages`) et Taxonomies (`saisons`, `groupes`, `catégories agenda`, `types contact`).

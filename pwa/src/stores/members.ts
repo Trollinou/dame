@@ -10,6 +10,32 @@ export interface Member {
   };
   status: string;
   seasons: number[];
+  meta?: {
+    _dame_email?: string;
+    _dame_phone_number?: string;
+    _dame_birth_date?: string;
+    _dame_sexe?: string;
+    _dame_license_type?: string;
+    _dame_license_number?: string;
+    // Adresse
+    _dame_address_1?: string;
+    _dame_address_2?: string;
+    _dame_postal_code?: string;
+    _dame_city?: string;
+    // Représentant légal 1
+    _dame_legal_rep_1_first_name?: string;
+    _dame_legal_rep_1_last_name?: string;
+    _dame_legal_rep_1_email?: string;
+    _dame_legal_rep_1_phone?: string;
+    _dame_legal_rep_1_profession?: string;
+    // Représentant légal 2
+    _dame_legal_rep_2_first_name?: string;
+    _dame_legal_rep_2_last_name?: string;
+    _dame_legal_rep_2_email?: string;
+    _dame_legal_rep_2_phone?: string;
+    _dame_legal_rep_2_profession?: string;
+    [key: string]: any;
+  };
 }
 
 export interface Season {
