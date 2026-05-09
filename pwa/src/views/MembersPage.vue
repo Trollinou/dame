@@ -1,0 +1,152 @@
+<template>
+  <ion-page>
+    <ion-header :translucent="true">
+      <ion-toolbar>
+        <ion-title>Adhérents</ion-title>
+      </ion-toolbar>
+      <ion-toolbar>
+        <ion-searchbar
+          v-model="searchQuery"
+          placeholder="Rechercher un adhérent..."
+          animated
+        ></ion-searchbar>
+      </ion-toolbar>
+      <ion-toolbar>
+        <ion-item lines="none">
+          <ion-select
+            v-model="selectedSeason"
+            interface="action-sheet"
+            label="Saison"
+            label-placement="start"
+          >
+            <ion-select-option value="all">Toutes les saisons</ion-select-option>
+            <ion-select-option
+              v-for="season in seasons"
+              :key="season.id"
+              :value="season.id"
+            >
+              {{ season.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content :fullscreen="true">
+      <ion-header collapse="condense">
+        <ion-toolbar>
+          <ion-title size="large">Adhérents</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <!-- État de chargement (Spinner uniquement si la liste est vide) -->
+      <div v-if="isLoading && members.length === 0" class="ion-text-center ion-padding">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Récupération de la liste...</p>
+      </div>
+
+      <!-- Liste des membres -->
+      <ion-list v-else-if="filteredMembers.length > 0">
+        <ion-item v-for="member in filteredMembers" :key="member.id" button>
+          <ion-label>
+            <h2>{{ member.title.raw }}</h2>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+
+      <!-- Aucun résultat -->
+      <div v-else class="ion-text-center ion-padding">
+        <p v-if="searchQuery">Aucun adhérent ne correspond à "{{ searchQuery }}".</p>
+        <p v-else>Aucun adhérent trouvé.</p>
+      </div>
+
+      <!-- Bouton Flottant (Ajouter) -->
+      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+        <ion-fab-button @click="addMember">
+          <ion-icon :icon="addOutline"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+    </ion-content>
+  </ion-page>
+</template>
+
+<script setup lang="ts">
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonSearchbar,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonSpinner,
+  IonFab,
+  IonFabButton,
+  IonIcon,
+  IonSelect,
+  IonSelectOption,
+  onIonViewWillEnter
+} from '@ionic/vue';
+import { addOutline } from 'ionicons/icons';
+import { ref, computed } from 'vue';
+import { useMemberStore } from '../stores/members';
+import { storeToRefs } from 'pinia';
+
+const memberStore = useMemberStore();
+const { members, seasons, isLoading } = storeToRefs(memberStore);
+const searchQuery = ref('');
+const selectedSeason = ref<number | 'all'>('all');
+
+/**
+ * Supprime les accents d'une chaîne de caractères
+ */
+const removeAccents = (str: string): string => {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
+/**
+ * Liste filtrée (Saison + Texte)
+ */
+const filteredMembers = computed(() => {
+  let result = members.value;
+
+  // 1. Filtre par Saison
+  if (selectedSeason.value !== 'all') {
+    result = result.filter(member => 
+      member.seasons && member.seasons.includes(selectedSeason.value as number)
+    );
+  }
+
+  // 2. Filtre par Texte
+  if (!searchQuery.value.trim()) {
+    return result;
+  }
+
+  const query = removeAccents(searchQuery.value.toLowerCase());
+  return result.filter(member => {
+    const memberName = removeAccents((member.title.raw || "").toLowerCase());
+    return memberName.includes(query);
+  });
+});
+
+const addMember = () => {
+  console.log("Ajouter un adhérent cliqué");
+};
+
+// Déclenche le fetch dans le store (Gestion silencieuse interne)
+onIonViewWillEnter(async () => {
+  memberStore.fetchMembers();
+  await memberStore.fetchSeasons();
+  
+  // Présélection de la saison en cours (la plus récente)
+  if (selectedSeason.value === 'all' && seasons.value.length > 0) {
+    selectedSeason.value = seasons.value[0].id;
+  }
+});
+</script>
+
+<style scoped>
+ion-list { margin-top: 8px; }
+</style>

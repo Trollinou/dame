@@ -1,5 +1,28 @@
 # Changelog
 
+## 4.4.0 - 2026-05-09
+### Ajout
+- **API REST Native (Support PWA) :** Activation du support de l'API REST WordPress pour tous les Custom Post Types (`adherents`, `agenda`, `contacts`, `ical-feeds`, `messages`, `pre-inscriptions`, `sondages`) et Taxonomies (`saisons`, `groupes`, `catégories agenda`, `types contact`).
+- **Support des Custom Fields :** Ajout du support `'custom-fields'` dans les déclarations `register_post_type` pour les Adhérents, l'Agenda, les Contacts, les Sondages et les Réponses, permettant l'exposition et la modification des métadonnées via l'API REST.
+- **Nettoyage Administration (Sondages) :** Suppression du support `'custom-fields'` pour le type `sondage` afin d'éviter l'affichage de la metabox native de WordPress qui entrait en conflit avec l'interface personnalisée.
+- **Restauration de l'Éditeur Classique (Sondages) :** Désactivation forcée de l'éditeur de blocs (Gutenberg) pour le type `sondage` afin de préserver la disposition des metaboxes personnalisées dans l'administration, tout en maintenant le support complet de l'API REST.
+- **Restauration de l'Administration des Sondages :** Repassage du type `sondage` en mode non-hiérarchique pour corriger l'affichage des metaboxes dans le back-office WordPress, tout en maintenant le type `sondage_reponse` en mode hiérarchique pour l'API REST.
+- **Fiabilisation des Sondages (REST) :** Utilisation de `register_rest_field` pour exposer explicitement les données complexes des sondages (`dame_sondage_data`) ainsi que l'ID du sondage parent pour les réponses (`sondage_id`) à la racine de l'objet JSON.
+- **Endpoints de Données de Référence :** Création de nouveaux points de terminaison personnalisés sous `/wp-json/dame/v1/data/` pour exposer les données statiques (pays, régions, départements, académies, tailles de vêtements, etc.) nécessaires aux formulaires mobiles.
+- **Gestion des Anniversaires via REST :** Ajout d'endpoints dédiés pour récupérer les anniversaires du jour (`/birthdays/today`) et les prochains anniversaires à venir (`/birthdays/upcoming`) avec calcul automatique de l'âge et passage d'année.
+- **Synchronisation des Titres :** Mise en place de hooks REST (`rest_after_insert`) pour la régénération automatique des titres normalisés ("NOM Prénom") lors des créations ou modifications via l'API.
+
+### Sécurité
+- **Contrôle d'Accès REST :** Sécurisation de tous les nouveaux endpoints personnalisés via la capacité `edit_posts`.
+- **Protection des Métadonnées :** Enregistrement sécurisé de plus de 80 clés de métadonnées avec `register_meta` et `auth_callback` pour empêcher toute modification non autorisée.
+
+### Optimisation
+- **Mise en cache intelligente :** Implémentation d'une stratégie de cache via l'API Transients de WordPress pour les données d'anniversaires, avec invalidation automatique lors des modifications d'adhérents.
+
+### Nettoyage & Refactoring
+- **Découplage Architecturel :** Migration de la logique métier et de caching des contrôleurs REST vers un service `Birthday` spécialisé (SRP).
+- **Normalisation :** Centralisation de la génération des titres dans la classe `Utils`.
+
 ## 4.3.7 - 2026-05-07
 ### Correction
 - **Intégrité des Sondages (Doublons) :** Correction d'un bug dans la migration v4.3.2 qui pouvait entraîner la duplication des votes en base de données dans certaines conditions de mise à jour ou de restauration.

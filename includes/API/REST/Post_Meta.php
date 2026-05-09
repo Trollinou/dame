@@ -20,9 +20,48 @@ class Post_Meta {
 	 */
 	public function init(): void {
 		add_action( 'init', [ $this, 'register_all_meta' ] );
+		add_action( 'rest_api_init', [ $this, 'register_custom_rest_fields' ] );
 		add_action( 'rest_after_insert_adherent', [ $this, 'update_titles_after_rest' ] );
 		add_action( 'rest_after_insert_dame_contact', [ $this, 'update_titles_after_rest' ] );
 		add_action( 'rest_after_insert_dame_pre_inscription', [ $this, 'update_titles_after_rest' ] );
+	}
+
+	/**
+	 * Registers custom REST fields that are not automatically handled by register_meta.
+	 */
+	public function register_custom_rest_fields(): void {
+		// Sondage Data
+		register_rest_field(
+			'sondage',
+			'dame_sondage_data',
+			[
+				'get_callback' => function( $post_arr ) {
+					return get_post_meta( $post_arr['id'], '_dame_sondage_data', true );
+				},
+				'update_callback' => function( $value, $post_obj ) {
+					return update_post_meta( $post_obj->ID, '_dame_sondage_data', $value );
+				},
+				'schema' => [
+					'description' => __( 'Structured sondage data (dates and time slots).', 'dame' ),
+					'type'        => 'array',
+				],
+			]
+		);
+
+		// Sondage Response Parent ID
+		register_rest_field(
+			'sondage_reponse',
+			'sondage_id',
+			[
+				'get_callback' => function( $post_arr ) {
+					return wp_get_post_parent_id( $post_arr['id'] );
+				},
+				'schema' => [
+					'description' => __( 'ID of the parent sondage.', 'dame' ),
+					'type'        => 'integer',
+				],
+			]
+		);
 	}
 
 	/**
@@ -298,8 +337,15 @@ class Post_Meta {
 			]
 		);
 	}
-}
-tring',
+
+	/**
+	 * Register meta for Pre-Inscription CPT.
+	 */
+	private function register_pre_inscription_meta(): void {
+		$fields = [
+			'_dame_first_name'                     => 'string',
+			'_dame_last_name'                      => 'string',
+			'_dame_birth_name'                     => 'string',
 			'_dame_birth_date'                     => 'string',
 			'_dame_license_type'                   => 'string',
 			'_dame_birth_city'                     => 'string',

@@ -53,6 +53,8 @@ use DAME\Taxonomies\Contact_Type;
 use DAME\Taxonomies\Group;
 use DAME\Taxonomies\AgendaCategory;
 use DAME\Admin\Toolbar;
+use DAME\API\REST\Post_Meta;
+use DAME\API\REST\Data_Endpoints;
 
 /**
  * The core plugin class.
@@ -120,9 +122,16 @@ class Plugin {
 		$sondage_cpt = new Sondage();
 		$sondage_cpt->init();
 
+		$birthday_service = new Birthday();
+		$birthday_service->init();
+
 		// Initialize REST Meta.
 		$rest_meta = new Post_Meta();
 		$rest_meta->init();
+
+		// Initialize custom REST endpoints.
+		$data_endpoints = new Data_Endpoints( $birthday_service );
+		$data_endpoints->init();
 
 		// Initialize API.
 		$tracker = new Tracker();
@@ -143,9 +152,6 @@ class Plugin {
 
 		$backup_service = new Backup();
 		$backup_service->init();
-
-		$birthday_service = new Birthday();
-		// (Pas de init pour Birthday, il est appelé par le Cron)
 
 		$cron_manager = new Cron();
 		$cron_manager->init();

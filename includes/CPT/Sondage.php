@@ -20,6 +20,21 @@ class Sondage {
 		add_action( 'wp_trash_post', [ $this, 'handle_status_change' ] );
 		add_action( 'untrash_post', [ $this, 'handle_status_change' ] );
 		add_action( 'deleted_post', [ $this, 'handle_deletion' ] );
+		add_filter( 'use_block_editor_for_post_type', [ $this, 'disable_block_editor' ], 10, 2 );
+	}
+
+	/**
+	 * Disables the block editor for this CPT.
+	 *
+	 * @param bool   $use_block_editor Whether to use the block editor.
+	 * @param string $post_type        The post type.
+	 * @return bool
+	 */
+	public function disable_block_editor( bool $use_block_editor, string $post_type ): bool {
+		if ( 'sondage' === $post_type ) {
+			return false;
+		}
+		return $use_block_editor;
 	}
 
 	/**

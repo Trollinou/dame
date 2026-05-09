@@ -57,7 +57,7 @@ class Adherent {
 			'label'                 => __( 'Adhérent', 'dame' ),
 			'description'           => __( 'Les adhérents du club', 'dame' ),
 			'labels'                => $labels,
-			'supports'              => array( 'title' ),
+			'supports'              => array( 'title', 'custom-fields' ),
 			'hierarchical'          => false,
 			'public'                => false,
 			'show_ui'               => true,

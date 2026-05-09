@@ -7,6 +7,178 @@ use DateTime;
 
 class Birthday {
 
+	/**
+	 * Initialize hooks.
+	 */
+	public function init(): void {
+		add_action( 'save_post_adherent', [ self::class, 'clear_birthday_cache' ] );
+		add_action( 'trashed_post', [ self::class, 'clear_birthday_cache' ] );
+		add_action( 'untrashed_post', [ self::class, 'clear_birthday_cache' ] );
+		add_action( 'deleted_post', [ self::class, 'clear_birthday_cache' ] );
+		add_action( 'update_option_dame_current_season_tag_id', [ self::class, 'clear_birthday_cache' ] );
+	}
+
+	/**
+	 * Retrieves members having their birthday today.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function get_today_birthdays(): array {
+		$season_id = (int) get_option( 'dame_current_season_tag_id' );
+		$today_str = wp_date( 'Y-m-d' );
+		$cache_key = 'dame_today_birthdays_' . $today_str . '_' . $season_id;
+
+		$birthdays = get_transient( $cache_key );
+
+		if ( false === $birthdays ) {
+			$args = [
+				'post_type'      => 'adherent',
+				'posts_per_page' => -1,
+				'meta_query'     => [
+					[
+						'key'     => '_dame_birth_date',
+						'value'   => '-' . wp_date( 'm-d' ) . '$',
+						'compare' => 'REGEXP',
+					],
+				],
+			];
+
+			if ( $season_id ) {
+				$args['tax_query'] = [
+					[
+						'taxonomy' => 'dame_saison_adhesion',
+						'field'    => 'term_id',
+						'terms'    => $season_id,
+					],
+				];
+			}
+
+			$query = new WP_Query( $args );
+			$birthdays = [];
+
+			foreach ( $query->posts as $post ) {
+				$birth_date = get_post_meta( $post->ID, '_dame_birth_date', true );
+				$age = 0;
+				if ( ! empty( $birth_date ) ) {
+					try {
+						$date = new DateTime( (string) $birth_date );
+						$now  = new DateTime();
+						$age  = $now->diff( $date )->y;
+					} catch ( \Exception $e ) {
+						$age = 0;
+					}
+				}
+
+				$birthdays[] = [
+					'id'   => $post->ID,
+					'name' => $post->post_title,
+					'age'  => $age,
+				];
+			}
+
+			set_transient( $cache_key, $birthdays, DAY_IN_SECONDS );
+		}
+
+		return is_array( $birthdays ) ? $birthdays : [];
+	}
+
+	/**
+	 * Retrieves upcoming birthdays.
+	 *
+	 * @param int $limit Max number of results.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function get_upcoming_birthdays( int $limit = 10 ): array {
+		$season_id = (int) get_option( 'dame_current_season_tag_id' );
+		$today_str = wp_date( 'Y-m-d' );
+		$cache_key = 'dame_upcoming_birthdays_' . $today_str . '_' . $season_id;
+
+		$upcoming = get_transient( $cache_key );
+
+		if ( false === $upcoming ) {
+			$args = [
+				'post_type'      => 'adherent',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+			];
+
+			if ( $season_id ) {
+				$args['tax_query'] = [
+					[
+						'taxonomy' => 'dame_saison_adhesion',
+						'field'    => 'term_id',
+						'terms'    => $season_id,
+					],
+				];
+			}
+
+			$ids       = get_posts( $args );
+			$today     = new DateTime( 'today', new \DateTimeZone( 'UTC' ) );
+			$upcoming  = [];
+
+			foreach ( $ids as $id ) {
+				$birth_date_str = get_post_meta( $id, '_dame_birth_date', true );
+				if ( empty( $birth_date_str ) ) {
+					continue;
+				}
+
+				try {
+					$birth_date = new DateTime( (string) $birth_date_str, new \DateTimeZone( 'UTC' ) );
+					$this_year_birthday = new DateTime( $today->format( 'Y' ) . '-' . $birth_date->format( 'm-d' ), new \DateTimeZone( 'UTC' ) );
+
+					if ( $this_year_birthday < $today ) {
+						$next_birthday = clone $this_year_birthday;
+						$next_birthday->modify( '+1 year' );
+					} else {
+						$next_birthday = $this_year_birthday;
+					}
+
+					$days_until = $today->diff( $next_birthday )->days;
+					$age        = (int) $next_birthday->format( 'Y' ) - (int) $birth_date->format( 'Y' );
+
+					$upcoming[] = [
+						'id'            => $id,
+						'name'          => get_the_title( $id ),
+						'date'          => $next_birthday->format( 'Y-m-d' ),
+						'days_until'    => $days_until,
+						'next_age'      => $age,
+						'original_date' => $birth_date->format( 'm-d' ),
+					];
+				} catch ( \Exception $e ) {
+					continue;
+				}
+			}
+
+			usort( $upcoming, function( $a, $b ) {
+				if ( $a['days_until'] === $b['days_until'] ) {
+					return strcmp( $a['original_date'], $b['original_date'] );
+				}
+				return $a['days_until'] <=> $b['days_until'];
+			} );
+
+			set_transient( $cache_key, $upcoming, DAY_IN_SECONDS );
+		}
+
+		return array_slice( is_array( $upcoming ) ? $upcoming : [], 0, $limit );
+	}
+
+	/**
+	 * Clears the birthday transients.
+	 *
+	 * @param int $post_id Optional post ID to check type.
+	 */
+	public static function clear_birthday_cache( $post_id = 0 ): void {
+		if ( $post_id && 'adherent' !== get_post_type( $post_id ) ) {
+			return;
+		}
+
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_dame_upcoming_birthdays_%' OR option_name LIKE '_transient_dame_today_birthdays_%'" );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_dame_upcoming_birthdays_%' OR option_name LIKE '_transient_timeout_dame_today_birthdays_%'" );
+	}
+
 	public function send_wishes(): void {
 		$options = get_option( 'dame_options' );
 		if ( empty( $options['birthday_emails_enabled'] ) ) return;

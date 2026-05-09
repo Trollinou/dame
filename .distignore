@@ -28,3 +28,5 @@
 /src
 /tests
 /webpack.config.js
+pwa/node_modules/
+pwa/dist/
