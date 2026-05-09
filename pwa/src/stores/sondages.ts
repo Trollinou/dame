@@ -58,7 +58,7 @@ export const useSondageStore = defineStore('sondages', () => {
     };
 
     try {
-      const baseUrl = 'http://echecs.local/wp-json/wp/v2';
+      const baseUrl = `${import.meta.env.VITE_API_BASE_URL}`;
       
       // On récupère les 100 premiers de chaque (on pourra ajouter la pagination complète si besoin)
       const [sondagesRes, reponsesRes] = await Promise.all([

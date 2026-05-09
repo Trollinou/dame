@@ -186,6 +186,9 @@ class Plugin {
 		$toolbar = new Toolbar();
 		$toolbar->init();
 
+		// Setup PWA Redirect.
+		add_action( 'template_redirect', [ $this, 'handle_pwa_redirect' ] );
+
 		// Initialize Frontend Assets.
 		$frontend_assets = new \DAME\Frontend\Assets();
 		$frontend_assets->init();
@@ -268,6 +271,20 @@ class Plugin {
 
 			// Initialisation des pages de sauvegardes manuelles
 
+		}
+	}
+
+	/**
+	 * Handles the redirection to the PWA.
+	 * 
+	 * Redirects /pwa to the actual PWA index file.
+	 */
+	public function handle_pwa_redirect(): void {
+		$request_uri = trim( (string) parse_url( (string) $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' );
+		if ( 'pwa' === $request_uri ) {
+			$pwa_url = \DAME_PLUGIN_URL . 'pwa/dist/index.html';
+			wp_safe_redirect( $pwa_url, 301 );
+			exit;
 		}
 	}
 }

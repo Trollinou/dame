@@ -30,7 +30,7 @@ export const useMemberStore = defineStore('members', () => {
     if (!token) return;
 
     try {
-      const response = await fetch('http://echecs.local/wp-json/wp/v2/seasons?per_page=100', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/seasons?per_page=100`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -65,7 +65,7 @@ export const useMemberStore = defineStore('members', () => {
     }
 
     try {
-      const baseUrl = 'http://echecs.local/wp-json/wp/v2/adherents?per_page=100&context=edit';
+      const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/adherents?per_page=100&context=edit`;
       const fetchOptions = {
         method: 'GET',
         headers: {

@@ -11,6 +11,7 @@
 - **Endpoints de Données de Référence :** Création de nouveaux points de terminaison personnalisés sous `/wp-json/dame/v1/data/` pour exposer les données statiques (pays, régions, départements, académies, tailles de vêtements, etc.) nécessaires aux formulaires mobiles.
 - **Gestion des Anniversaires via REST :** Ajout d'endpoints dédiés pour récupérer les anniversaires du jour (`/birthdays/today`) et les prochains anniversaires à venir (`/birthdays/upcoming`) avec calcul automatique de l'âge et passage d'année.
 - **Synchronisation des Titres :** Mise en place de hooks REST (`rest_after_insert`) pour la régénération automatique des titres normalisés ("NOM Prénom") lors des créations ou modifications via l'API.
+- **Redirection PWA simplifiée :** Mise en place d'une redirection automatique de `/pwa` vers le point d'entrée physique de l'application mobile (`pwa/dist/index.html`), offrant une URL plus courte et plus propre pour les utilisateurs.
 
 ### Sécurité
 - **Contrôle d'Accès REST :** Sécurisation de tous les nouveaux endpoints personnalisés via la capacité `edit_posts`.

@@ -40,7 +40,7 @@ export const useAgendaStore = defineStore('agenda', () => {
     }
 
     try {
-      const baseUrl = 'http://echecs.local/wp-json/wp/v2/agenda?per_page=100&context=edit';
+      const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/agenda?per_page=100&context=edit`;
       const fetchOptions = {
         method: 'GET',
         headers: {

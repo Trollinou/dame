@@ -28,5 +28,14 @@
 /src
 /tests
 /webpack.config.js
+# --- Exclusions PWA (On ne garde que le dossier pwa/dist/ pour la prod) ---
 pwa/node_modules/
-pwa/dist/
+pwa/src/
+pwa/public/
+pwa/tests/
+pwa/cypress/
+pwa/*.ts
+pwa/*.js
+pwa/*.cjs
+pwa/*.json
+pwa/.*

@@ -29,7 +29,7 @@ export const useContactStore = defineStore('contacts', () => {
     if (!token) return;
 
     try {
-      const response = await fetch('http://echecs.local/wp-json/wp/v2/contact-types?per_page=100', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/contact-types?per_page=100`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -64,7 +64,7 @@ export const useContactStore = defineStore('contacts', () => {
     }
 
     try {
-      const baseUrl = 'http://echecs.local/wp-json/wp/v2/contacts?per_page=100&context=edit';
+      const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/contacts?per_page=100&context=edit`;
       const fetchOptions = {
         method: 'GET',
         headers: {

@@ -79,6 +79,9 @@ Le plugin expose plusieurs points de terminaison (endpoints) personnalisés pour
 ### Authentification
 Toutes les requêtes personnalisées nécessitent que l'utilisateur soit authentifié (`is_user_logged_in()`).
 
+### Accès à l'Application (PWA)
+L'application mobile est accessible via une URL simplifiée : `https://votre-site.com/pwa`. Une redirection automatique est en place pour pointer vers le dossier de distribution du plugin.
+
 ### Support des Métadonnées (Post Meta)
 Le support des `'custom-fields'` a été activé pour les types **Adhérents**, **Agenda**, **Contacts**, **Sondages** et **Réponses**. Cela permet de lire et modifier toutes les métadonnées (dates, emails, téléphones, etc.) directement via les endpoints REST standard de WordPress en utilisant le champ `meta`.
 

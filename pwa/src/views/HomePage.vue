@@ -30,7 +30,7 @@
         </div>
 
         <!-- Liste des anniversaires -->
-        <ion-list v-else-if="birthdays.length > 0" inset="true">
+        <ion-list v-else-if="birthdays.length > 0" :inset="true">
           <ion-item v-for="birthday in birthdays" :key="birthday.id">
             <ion-icon slot="start" :icon="giftOutline" color="primary"></ion-icon>
             <ion-label>
