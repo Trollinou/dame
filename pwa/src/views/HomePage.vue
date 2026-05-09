@@ -107,7 +107,7 @@ const fetchBirthdays = async () => {
   }
 
   try {
-    const response = await fetch('http://echecs.local/wp-json/dame/v1/birthdays/upcoming?limit=5', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dame/v1/birthdays/upcoming?limit=5`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

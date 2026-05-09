@@ -38,7 +38,7 @@ export const useMessageStore = defineStore('messages', () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/messages?context=edit&per_page=100`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/wp/v2/messages?context=edit&per_page=100`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

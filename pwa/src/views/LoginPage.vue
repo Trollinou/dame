@@ -13,7 +13,7 @@
           <p>Connectez-vous à votre dossier administratif</p>
         </div>
 
-        <form @submit.prevent="handleLogin">
+        <form @submit.prevent="handleSubmit">
           <ion-item lines="full" class="ion-margin-bottom">
             <ion-label position="stacked">Identifiant</ion-label>
             <ion-input
@@ -58,14 +58,14 @@ import {
   IonItem,
   IonLabel,
   IonInput,
-  IonButton,
-  toastController,
-  alertController
+  IonButton
 } from '@ionic/vue';
-import { ref, reactive } from 'vue';
-import { useRouter } from 'vue-router';
+import { reactive } from 'vue';
+import { useAuthStore } from '../stores/auth';
+import { storeToRefs } from 'pinia';
 
-const router = useRouter();
+const authStore = useAuthStore();
+const { isLoading } = storeToRefs(authStore);
 
 // État du formulaire
 const credentials = reactive({
@@ -73,61 +73,11 @@ const credentials = reactive({
   password: ''
 });
 
-const isLoading = ref(false);
-
 /**
- * Gère la soumission du formulaire de connexion
+ * Gère la soumission du formulaire
  */
-const handleLogin = async () => {
-  if (!credentials.username || !credentials.password) return;
-
-  isLoading.value = true;
-
-  try {
-    const response = await fetch('http://echecs.local/wp-json/jwt-auth/v1/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: credentials.username,
-        password: credentials.password
-      })
-    });
-
-    const data = await response.json();
-
-    if (response.ok && data.token) {
-      // Stockage du token
-      localStorage.setItem('dame_jwt_token', data.token);
-      
-      // Notification de succès
-      const toast = await toastController.create({
-        message: "Connexion réussie ! Bienvenue.",
-        duration: 2000,
-        color: 'success',
-        position: 'bottom'
-      });
-      await toast.present();
-      
-      // Redirection vers le tableau de bord
-      router.push('/tabs/home');
-      
-    } else {
-      // Gestion des erreurs API (ex: mauvais identifiants)
-      throw new Error(data.message || "Identifiants incorrects.");
-    }
-  } catch (error: any) {
-    // Notification d'erreur
-    const alert = await alertController.create({
-      header: 'Échec de connexion',
-      message: error.message || "Impossible de contacter le serveur.",
-      buttons: ['OK']
-    });
-    await alert.present();
-  } finally {
-    isLoading.value = false;
-  }
+const handleSubmit = () => {
+  authStore.login(credentials.username, credentials.password);
 };
 </script>
 
