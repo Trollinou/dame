@@ -14,12 +14,6 @@
     </ion-header>
 
     <ion-content :fullscreen="true" ref="contentRef">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Agenda</ion-title>
-        </ion-toolbar>
-      </ion-header>
-
       <!-- État de chargement (Spinner bloquant uniquement si vide) -->
       <div v-if="isLoading && events.length === 0" class="ion-text-center ion-padding">
         <ion-spinner name="crescent"></ion-spinner>
@@ -33,10 +27,11 @@
           :key="event.id"
           :id="'event-' + event.id"
           button
+          @click="goToDetail(event.id)"
           :class="{ 'past-event': isPast(event) }"
         >
           <ion-label>
-            <h2 :class="{ 'upcoming-title': !isPast(event) }">{{ event.title.raw }}</h2>
+            <h2 :class="{ 'upcoming-title': !isPast(event) }" v-html="event.title.rendered"></h2>
             <p>{{ formatEventDate(event) }}</p>
           </ion-label>
           <ion-badge v-if="isToday(event)" color="warning" slot="end">Aujourd'hui</ion-badge>
@@ -80,14 +75,17 @@ import {
 } from '@ionic/vue';
 import { addOutline } from 'ionicons/icons';
 import { ref, computed, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAgendaStore, type AgendaEvent } from '../stores/agenda';
 import { storeToRefs } from 'pinia';
 
+const router = useRouter();
 const agendaStore = useAgendaStore();
 const { events, isLoading } = storeToRefs(agendaStore);
 
 const contentRef = ref();
 const searchQuery = ref('');
+const lastViewedEventId = ref<number | null>(null); // Mémorise le dernier événement consulté
 const todayStr = new Date().toISOString().split('T')[0];
 
 /**
@@ -95,6 +93,14 @@ const todayStr = new Date().toISOString().split('T')[0];
  */
 const removeAccents = (str: string): string => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
+/**
+ * Navigation vers le détail d'un événement
+ */
+const goToDetail = (id: number) => {
+  lastViewedEventId.value = id; // Sauvegarde l'ID avant de partir
+  router.push('/tabs/agenda/' + id);
 };
 
 /**
@@ -145,19 +151,29 @@ const formatEventDate = (event: AgendaEvent): string => {
 };
 
 /**
- * Défilement automatique vers l'événement le plus proche d'aujourd'hui
+ * Défilement automatique vers la cible (Dernier consulté ou Aujourd'hui)
  */
-const scrollToToday = () => {
-  const upcomingEvent = events.value.find(event => 
-    (event.meta?._dame_start_date || '') >= todayStr
-  );
+const scrollToTarget = () => {
+  let targetId = lastViewedEventId.value;
 
-  if (upcomingEvent) {
-    const el = document.getElementById('event-' + upcomingEvent.id);
+  // Si pas de dernier consulté, on cherche aujourd'hui ou le futur
+  if (!targetId) {
+    const upcomingEvent = events.value.find(event => 
+      (event.meta?._dame_start_date || '') >= todayStr
+    );
+    if (upcomingEvent) targetId = upcomingEvent.id;
+  }
+
+  if (targetId) {
+    const el = document.getElementById('event-' + targetId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
+  
+  // On réinitialise pour le prochain changement d'onglet (reviendra à aujourd'hui par défaut)
+  // mais on le garde pour le "back" immédiat.
+  // En fait, ne pas le réinitialiser ici permet de rester dessus si on fait plusieurs va-et-vient.
 };
 
 /**
@@ -183,13 +199,13 @@ onIonViewWillEnter(async () => {
   await agendaStore.fetchAgenda();
   // Une fois chargé, on tente un scroll au prochain cycle
   await nextTick();
-  setTimeout(scrollToToday, 200);
+  setTimeout(scrollToTarget, 200);
 });
 
 // Sécurité supplémentaire au cas où les données seraient déjà là
 onIonViewDidEnter(() => {
   if (!isLoading.value && events.value.length > 0) {
-    setTimeout(scrollToToday, 100);
+    setTimeout(scrollToTarget, 100);
   }
 });
 </script>

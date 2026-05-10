@@ -43,17 +43,37 @@ const routes: Array<RouteRecordRaw> = [
         component: ContactsPage
       },
       {
+        path: 'contact/:id',
+        name: 'ContactDetail',
+        component: () => import('@/views/ContactDetailPage.vue')
+      },
+      {
         path: 'agenda',
         component: AgendaPage
+      },
+      {
+        path: 'agenda/:id',
+        name: 'AgendaDetail',
+        component: () => import('@/views/AgendaDetailPage.vue')
       },
       {
         path: 'survey',
         component: SondagesPage
       },
       {
+        path: 'survey/:id',
+        name: 'SurveyDetail',
+        component: () => import('@/views/SondageDetailPage.vue')
+      },
+      {
         path: 'message',
         component: MessagesPage
-      }
+      },
+      {
+        path: 'message/:id',
+        name: 'MessageDetail',
+        component: () => import('@/views/MessageDetailPage.vue')
+      },
     ]
   }
 ]

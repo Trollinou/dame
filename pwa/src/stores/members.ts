@@ -47,6 +47,7 @@ export const useMemberStore = defineStore('members', () => {
   const members = ref<Member[]>([]);
   const seasons = ref<Season[]>([]);
   const isLoading = ref(false);
+  let isFetching = false;
   const lastFetch = ref<number | null>(null);
 
   const fetchSeasons = async () => {
@@ -66,7 +67,6 @@ export const useMemberStore = defineStore('members', () => {
       if (!response.ok) throw new Error("Erreur saisons");
 
       const data: Season[] = await response.json();
-      // Tri alphabétique décroissant (les plus récentes en premier)
       data.sort((a, b) => b.name.localeCompare(a.name));
       seasons.value = data;
     } catch (error) {
@@ -75,22 +75,25 @@ export const useMemberStore = defineStore('members', () => {
   };
 
   const fetchMembers = async (force = false) => {
+    if (isFetching) return;
+
     const now = Date.now();
     if (!force && members.value.length > 0 && lastFetch.value && (now - lastFetch.value < 5 * 60 * 1000)) {
       return;
     }
 
+    isFetching = true;
     if (members.value.length === 0) {
       isLoading.value = true;
     }
 
-    const token = localStorage.getItem('dame_jwt_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
     try {
+      const token = localStorage.getItem('dame_jwt_token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
       const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2/adherents?per_page=100&context=edit`;
       const fetchOptions = {
         method: 'GET',
@@ -138,6 +141,7 @@ export const useMemberStore = defineStore('members', () => {
       }
     } finally {
       isLoading.value = false;
+      isFetching = false;
     }
   };
 

@@ -33,12 +33,6 @@
     </ion-header>
 
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Adhérents</ion-title>
-        </ion-toolbar>
-      </ion-header>
-
       <!-- État de chargement (Spinner uniquement si la liste est vide) -->
       <div v-if="isLoading && members.length === 0" class="ion-text-center ion-padding">
         <ion-spinner name="crescent"></ion-spinner>

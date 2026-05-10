@@ -2,7 +2,12 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>Dame Administration</ion-title>
+        <ion-title>
+          <div style="display: flex; align-items: center;">
+            <img src="/assets/icon/queen.svg" style="height: 24px; margin-right: 10px;" alt="Logo Dame" />
+            Dame
+          </div>
+        </ion-title>
         <ion-buttons slot="end">
           <ion-button @click="logout">
             <ion-icon slot="icon-only" :icon="logOutOutline"></ion-icon>
@@ -12,19 +17,13 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Dame Administration</ion-title>
-        </ion-toolbar>
-      </ion-header>
-
       <div class="dashboard-section">
         <ion-list-header>
           <ion-label>Prochains Anniversaires</ion-label>
         </ion-list-header>
 
-        <!-- État de chargement -->
-        <div v-if="isLoading" class="ion-text-center ion-padding">
+        <!-- État de chargement (Spinner bloquant uniquement si vide) -->
+        <div v-if="isLoading && birthdays.length === 0" class="ion-text-center ion-padding">
           <ion-spinner name="crescent"></ion-spinner>
           <p>Chargement des données...</p>
         </div>
@@ -43,11 +42,11 @@
           </ion-item>
         </ion-list>
 
-        <!-- Liste vide ou Erreur -->
+        <!-- Liste vide -->
         <div v-else class="ion-text-center ion-padding">
-          <p>{{ errorMessage || 'Aucun anniversaire à venir.' }}</p>
-          <ion-button v-if="errorMessage" fill="clear" @click="fetchBirthdays">
-            Réessayer
+          <p>Aucun anniversaire à venir.</p>
+          <ion-button fill="clear" @click="dashboardStore.fetchBirthdays(true)">
+            Rafraîchir
           </ion-button>
         </div>
       </div>
@@ -74,65 +73,28 @@ import {
   onIonViewWillEnter
 } from '@ionic/vue';
 import { giftOutline, logOutOutline } from 'ionicons/icons';
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
 
-// Types
-interface Birthday {
-  id: number;
-  name: string;
-  date: string;
-  days_until: number;
-  next_age: number;
-}
+// Import des stores
+import { useDashboardStore } from '@/stores/dashboard';
+import { useMemberStore } from '@/stores/members';
+import { useAgendaStore } from '@/stores/agenda';
+import { useContactStore } from '@/stores/contacts';
+import { useMessageStore } from '@/stores/messages';
+import { useSondageStore } from '@/stores/sondages';
+import { useAuthStore } from '@/stores/auth';
 
-const router = useRouter();
-const birthdays = ref<Birthday[]>([]);
-const isLoading = ref(true);
-const errorMessage = ref('');
+// Initialisation des stores
+const dashboardStore = useDashboardStore();
+const memberStore = useMemberStore();
+const agendaStore = useAgendaStore();
+const contactStore = useContactStore();
+const messageStore = useMessageStore();
+const sondageStore = useSondageStore();
+const authStore = useAuthStore();
 
-/**
- * Récupère les prochains anniversaires depuis l'API WordPress
- */
-const fetchBirthdays = async () => {
-  isLoading.value = true;
-  errorMessage.value = '';
-  
-  const token = localStorage.getItem('dame_jwt_token');
-
-  if (!token) {
-    errorMessage.value = "Session expirée. Veuillez vous reconnecter.";
-    router.push('/login');
-    return;
-  }
-
-  try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dame/v1/birthdays/upcoming?limit=5`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (response.status === 401 || response.status === 403) {
-      throw new Error("Votre session a expiré.");
-    }
-
-    if (!response.ok) {
-      throw new Error("Erreur lors de la récupération des données.");
-    }
-
-    birthdays.value = await response.json();
-  } catch (error: any) {
-    errorMessage.value = error.message;
-    if (error.message.includes("expiré")) {
-       logout();
-    }
-  } finally {
-    isLoading.value = false;
-  }
-};
+const { birthdays, isLoading } = storeToRefs(dashboardStore);
 
 /**
  * Formatage simple de la date (YYYY-MM-DD -> DD/MM/YYYY)
@@ -146,13 +108,30 @@ const formatDate = (dateString: string) => {
  * Déconnexion
  */
 const logout = () => {
-  localStorage.removeItem('dame_jwt_token');
-  router.push('/login');
+  authStore.logout();
 };
 
-// Charger les données à chaque entrée sur la vue
+/**
+ * Pré-chargement silencieux de TOUTES les données de l'application
+ */
+const preloadAllData = () => {
+  dashboardStore.fetchBirthdays();
+  memberStore.fetchMembers();
+  memberStore.fetchSeasons();
+  agendaStore.fetchAgenda();
+  contactStore.fetchContacts();
+  contactStore.fetchContactTypes();
+  messageStore.fetchMessages();
+  sondageStore.fetchSondagesData();
+};
+
+onMounted(() => {
+  preloadAllData();
+});
+
+// Rafraîchir les données du dashboard à chaque entrée (gestion silencieuse par le store)
 onIonViewWillEnter(() => {
-  fetchBirthdays();
+  dashboardStore.fetchBirthdays();
 });
 </script>
 

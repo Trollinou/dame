@@ -14,12 +14,6 @@
     </ion-header>
 
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Messages</ion-title>
-        </ion-toolbar>
-      </ion-header>
-
       <!-- État de chargement (Silent Refresh) -->
       <div v-if="isLoading && messages.length === 0" class="ion-text-center ion-padding">
         <ion-spinner name="crescent"></ion-spinner>
@@ -65,9 +59,11 @@ import {
   onIonViewWillEnter
 } from '@ionic/vue';
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useMessageStore, type Message } from '../stores/messages';
 import { storeToRefs } from 'pinia';
 
+const router = useRouter();
 const messageStore = useMessageStore();
 const { messages, isLoading } = storeToRefs(messageStore);
 
@@ -105,7 +101,7 @@ const filteredMessages = computed(() => {
  * Action: Voir le message
  */
 const viewMessage = (message: Message) => {
-  console.log("Voir le message:", message.title.rendered);
+  router.push('/tabs/message/' + message.id);
 };
 
 // Chargement des données au montage/entrée

@@ -558,19 +558,10 @@ class Mailing {
 		
 		$format_name = function( $id, $type = 'adherent' ) {
 			if ( 'adherent' === $type ) {
-				$last  = get_post_meta( $id, '_dame_last_name', true );
-				$first = get_post_meta( $id, '_dame_first_name', true );
+				return \DAME\Core\Utils::generate_adherent_title( $id );
 			} else {
-				$last  = get_post_meta( $id, '_dame_contact_last_name', true );
-				$first = get_post_meta( $id, '_dame_contact_first_name', true );
+				return \DAME\Core\Utils::generate_contact_title( $id );
 			}
-			$name = mb_strtoupper( (string) $last, 'UTF-8' ) . ' ' . mb_convert_case( (string) $first, MB_CASE_TITLE, 'UTF-8' );
-			
-			if ( 'contact' === $type ) {
-				$org = get_post_meta( $id, '_dame_contact_organization', true );
-				if ( ! empty( $org ) ) $name = (string) $org . ' (' . $name . ')';
-			}
-			return $name;
 		};
 
 		// On s'assure d'avoir des IDs uniques au départ

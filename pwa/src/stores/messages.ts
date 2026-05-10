@@ -7,37 +7,55 @@ export interface Message {
   date: string;
   title: {
     rendered: string;
+    raw: string;
   };
   content: {
     rendered: string;
+  };
+  report?: {
+    stats: {
+      sent: number;
+      opened: number;
+      rate: number;
+    };
+    recipients: Array<{
+      name: string;
+      email: string;
+      sent_at: string | null;
+      opened_at: string | null;
+    }>;
   };
 }
 
 export const useMessageStore = defineStore('messages', () => {
   const messages = ref<Message[]>([]);
   const isLoading = ref(false);
+  let isFetching = false;
   const lastFetch = ref<number | null>(null);
 
   /**
    * Action: Récupère les messages (Silent Refresh)
    */
   const fetchMessages = async (force = false) => {
+    if (isFetching) return;
+
     const now = Date.now();
     if (!force && messages.value.length > 0 && lastFetch.value && (now - lastFetch.value < 5 * 60 * 1000)) {
       return;
     }
 
+    isFetching = true;
     if (messages.value.length === 0) {
       isLoading.value = true;
     }
 
-    const token = localStorage.getItem('dame_jwt_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
     try {
+      const token = localStorage.getItem('dame_jwt_token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/wp/v2/messages?context=edit&per_page=100`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -50,7 +68,7 @@ export const useMessageStore = defineStore('messages', () => {
 
       const data: Message[] = await response.json();
       
-      // Tri par date décroissante (plus récents en premier)
+      // Tri par date décroissante
       data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
       messages.value = data;
@@ -63,6 +81,7 @@ export const useMessageStore = defineStore('messages', () => {
       }
     } finally {
       isLoading.value = false;
+      isFetching = false;
     }
   };
 

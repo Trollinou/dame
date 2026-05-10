@@ -21,6 +21,21 @@ class Agenda {
 	public function init(): void {
 		add_action( 'init', [ $this, 'register' ], 0 );
 		add_filter( 'the_content', [ $this, 'display_event_details' ] );
+		add_filter( 'use_block_editor_for_post_type', [ $this, 'disable_block_editor' ], 10, 2 );
+	}
+
+	/**
+	 * Disables the block editor for this CPT.
+	 *
+	 * @param bool   $use_block_editor Whether to use the block editor.
+	 * @param string $post_type        The post type.
+	 * @return bool
+	 */
+	public function disable_block_editor( bool $use_block_editor, string $post_type ): bool {
+		if ( 'dame_agenda' === $post_type ) {
+			return false;
+		}
+		return $use_block_editor;
 	}
 
 	/**
@@ -61,7 +76,7 @@ class Agenda {
 			'label'                 => __( 'Événement', 'dame' ),
 			'description'           => __( 'Les événements de l\'agenda', 'dame' ),
 			'labels'                => $labels,
-			'supports'              => array( 'title', 'editor', 'custom-fields' ),
+			'supports'              => array( 'title', 'custom-fields' ),
 			'hierarchical'          => false,
 			'public'                => true,
 			'show_ui'               => true,

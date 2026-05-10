@@ -14,12 +14,6 @@
     </ion-header>
 
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Sondages</ion-title>
-        </ion-toolbar>
-      </ion-header>
-
       <!-- État de chargement (Silent Refresh) -->
       <div v-if="isLoading && sondages.length === 0" class="ion-text-center ion-padding">
         <ion-spinner name="crescent"></ion-spinner>
@@ -68,9 +62,11 @@ import {
   onIonViewWillEnter
 } from '@ionic/vue';
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useSondageStore, type Sondage } from '../stores/sondages';
 import { storeToRefs } from 'pinia';
 
+const router = useRouter();
 const sondageStore = useSondageStore();
 const { sondages, isLoading } = storeToRefs(sondageStore);
 const { getResponseCount } = sondageStore;
@@ -118,11 +114,11 @@ const filteredSondages = computed(() => {
  * Actions
  */
 const viewSondage = (sondage: Sondage) => {
-  console.log("Voir le sondage:", sondage.title.raw);
+  router.push('/tabs/survey/' + sondage.id);
 };
 
 const viewResults = (sondage: Sondage) => {
-  console.log("Voir les résultats du sondage ID:", sondage.id);
+  router.push('/tabs/survey/' + sondage.id);
 };
 
 // Chargement des données au montage/entrée

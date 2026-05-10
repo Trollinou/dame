@@ -11,6 +11,15 @@
     </ion-header>
 
     <ion-content :fullscreen="true">
+      <ion-header collapse="condense">
+        <ion-toolbar>
+          <ion-title size="large">
+            <div class="multiline-large-title" v-if="member">{{ member.title.raw }}</div>
+            <div class="multiline-large-title" v-else>Détails Adhérent</div>
+          </ion-title>
+        </ion-toolbar>
+      </ion-header>
+
       <div v-if="member">
         <!-- Carte Identité -->
         <ion-card>
@@ -264,7 +273,7 @@ const formatGender = (gender?: string) => {
 
 <style scoped>
 .mt-large {
-  margin-top: 30%;
+  margin-top: 5%;
 }
 
 ion-card {
@@ -291,5 +300,14 @@ h3 {
   font-weight: 500;
   margin-top: 0;
   margin-bottom: 2px;
+}
+
+.multiline-large-title {
+  white-space: normal !important;
+  word-wrap: break-word;
+  line-height: 1.2;
+  display: block;
+  width: 100%;
+  padding-bottom: 8px;
 }
 </style>

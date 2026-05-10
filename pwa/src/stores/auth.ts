@@ -5,6 +5,7 @@ import router from '../router';
 
 export const useAuthStore = defineStore('auth', () => {
   const isLoading = ref(false);
+  let isFetching = false;
   const token = ref(localStorage.getItem('dame_jwt_token') || '');
 
   /**
@@ -52,6 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
       await alert.present();
     } finally {
       isLoading.value = false;
+      isFetching = false;
     }
   };
 

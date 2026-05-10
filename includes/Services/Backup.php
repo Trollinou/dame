@@ -920,7 +920,11 @@ class Backup {
 				$data['options']['dame_current_season_tag_slug'] = $term->slug;
 			}
 		}
-		$data['options']['dame_options'] = get_option( 'dame_options' );
+		$dame_options = get_option( 'dame_options' );
+		if ( is_array( $dame_options ) ) {
+			unset( $dame_options['smtp_password'] );
+		}
+		$data['options']['dame_options'] = $dame_options;
 
 		return $data;
 	}

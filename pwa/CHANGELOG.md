@@ -4,6 +4,24 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.4.2] - 2026-05-09
+### Ajouté
+- **Dashboard** : Création du `DashboardStore` Pinia pour la mise en cache des anniversaires et données de l'accueil.
+- **Fiche Événement** : Création de `AgendaDetailPage.vue` avec affichage complet (Lieu, Carte GPS intelligente, Description HTML).
+- **Fiche Contact** : Création de `ContactDetailPage.vue` avec identité professionnelle et actions de communication.
+- **Fiche Sondage** : Création de `SondageDetailPage.vue` avec système d'accordéons par date et liste des inscrits par créneau.
+- **Fiche Message** : Création de `MessageDetailPage.vue` avec visualisation du contenu et rapport statistique d'envoi.
+- **UI/UX** : Intégration du logo "Dame" (Queen SVG) et harmonisation des headers fixes sur toute l'application.
+- **Performance** : Système de pré-chargement global des données au démarrage pour une navigation instantanée.
+
+### Modifié
+- **Architecture** : Migration complète vers Pinia avec gestion du "Silent Refresh" et verrouillage des requêtes simultanées.
+- **Navigation** : Mémorisation de la position de défilement lors du retour depuis une vue détaillée.
+
+### Corrigé
+- **Stabilité** : Correction d'un bug de chargement infini (stuck spinner) lié à la gestion du verrou réseau dans les stores.
+- **UI** : Support du multi-ligne pour les titres longs dans les headers condensés sous iOS.
+
 ## [4.4.1] - 2026-05-09
 ### Corrigé
 - **Fiche Adhérent** : Correction de l'affichage des icônes de contact pour les représentants légaux.

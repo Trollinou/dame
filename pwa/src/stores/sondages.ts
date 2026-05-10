@@ -7,7 +7,10 @@ export interface Sondage {
   title: {
     raw: string;
   };
-  dame_sondage_data: any[]; // Tableau de données du sondage
+  content?: {
+    rendered: string;
+  };
+  dame_sondage_data: any[];
 }
 
 export interface SondageReponse {
@@ -15,52 +18,50 @@ export interface SondageReponse {
   title: {
     raw: string;
   };
-  sondage_id: number; // Mapping direct vers le sondage
+  sondage_id: number;
+  choices?: string[];
 }
 
 export const useSondageStore = defineStore('sondages', () => {
   const sondages = ref<Sondage[]>([]);
   const reponses = ref<SondageReponse[]>([]);
   const isLoading = ref(false);
+  let isFetching = false;
   const lastFetch = ref<number | null>(null);
 
-  /**
-   * Getter: Retourne le nombre de réponses pour un sondage spécifique
-   */
   const getResponseCount = (sondageId: number): number => {
     return reponses.value.filter(r => r.sondage_id === sondageId).length;
   };
 
-  /**
-   * Action: Récupère les sondages et les réponses (Silent Refresh)
-   */
   const fetchSondagesData = async (force = false) => {
+    if (isFetching) return;
+
     const now = Date.now();
     if (!force && sondages.value.length > 0 && lastFetch.value && (now - lastFetch.value < 5 * 60 * 1000)) {
       return;
     }
 
+    isFetching = true;
     if (sondages.value.length === 0) {
       isLoading.value = true;
     }
 
-    const token = localStorage.getItem('dame_jwt_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
-    const fetchOptions = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    };
-
     try {
+      const token = localStorage.getItem('dame_jwt_token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      const fetchOptions = {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      };
+
       const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2`;
       
-      // On récupère les 100 premiers de chaque (on pourra ajouter la pagination complète si besoin)
       const [sondagesRes, reponsesRes] = await Promise.all([
         fetch(`${baseUrl}/sondages?context=edit&per_page=100`, fetchOptions),
         fetch(`${baseUrl}/sondage-reponses?context=edit&per_page=100`, fetchOptions)
@@ -81,6 +82,7 @@ export const useSondageStore = defineStore('sondages', () => {
       }
     } finally {
       isLoading.value = false;
+      isFetching = false;
     }
   };
 

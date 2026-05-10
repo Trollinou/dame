@@ -174,8 +174,7 @@ class MessageReport {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'dame_message_opens';
 
-		// Get all recipients from the dedicated SQL table
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// 1. Récupération des données brutes
 		$results = $wpdb->get_results( $wpdb->prepare(
 			"SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at 
 			FROM {$table_name} 
@@ -187,7 +186,28 @@ class MessageReport {
 			return array();
 		}
 
-		// Sort by Name Alphabetically
+		// 2. CORRECTION : Reconstruction des noms manquants
+		// On boucle sur les résultats pour vérifier si le nom est présent
+		foreach ( $results as $key => $row ) {
+			if ( empty( $row['name'] ) && ! empty( $row['recipient_id'] ) ) {
+				$post_id   = (int) $row['recipient_id'];
+				$post_type = get_post_type( $post_id );
+
+				// On utilise vos nouvelles fonctions de Utils pour retrouver le nom exact
+				if ( 'adherent' === $post_type ) {
+					$results[ $key ]['name'] = \DAME\Core\Utils::generate_adherent_title( $post_id );
+				} elseif ( 'dame_contact' === $post_type ) {
+					$results[ $key ]['name'] = \DAME\Core\Utils::generate_contact_title( $post_id );
+				}
+			}
+			
+			// Sécurité : si toujours vide, on met l'email pour éviter une ligne vide
+			if ( empty( $results[ $key ]['name'] ) ) {
+				$results[ $key ]['name'] = $row['email'];
+			}
+		}
+
+		// 3. Tri alphabétique (maintenant que les noms sont récupérés)
 		uasort( $results, fn( $a, $b ) => strcasecmp( (string) $a['name'], (string) $b['name'] ) );
 
 		return $results;

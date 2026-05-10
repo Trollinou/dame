@@ -5,41 +5,56 @@ import router from '../router';
 export interface AgendaEvent {
   id: number;
   title: {
+    rendered: string;
     raw: string;
   };
+  _dame_agenda_description_html?: string;
   meta: {
     _dame_start_date: string;
     _dame_end_date: string;
     _dame_start_time: string;
     _dame_end_time: string;
     _dame_all_day: number;
+    _dame_competition_type?: string;
+    _dame_level?: string;
+    _dame_location_name?: string;
+    _dame_address?: string;
+    _dame_postal_code?: string;
+    _dame_city?: string;
+    _dame_agenda_description?: string;
   };
 }
 
 export const useAgendaStore = defineStore('agenda', () => {
   const events = ref<AgendaEvent[]>([]);
   const isLoading = ref(false);
+  let isFetching = false;
   const lastFetch = ref<number | null>(null);
 
   const fetchAgenda = async (force = false) => {
+    // 1. Verrouillage pour éviter les appels multiples
+    if (isFetching) return;
+
     const now = Date.now();
-    // Silent refresh: si on a déjà des données et que ça date de moins de 5 min
+    // 2. Cache de 5 minutes
     if (!force && events.value.length > 0 && lastFetch.value && (now - lastFetch.value < 5 * 60 * 1000)) {
       return;
     }
 
-    // On ne montre le spinner que si la liste est vide
+    isFetching = true;
+    
+    // 3. Spinner uniquement si on n'a aucune donnée
     if (events.value.length === 0) {
       isLoading.value = true;
     }
 
-    const token = localStorage.getItem('dame_jwt_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
     try {
+      const token = localStorage.getItem('dame_jwt_token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
       const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2/agenda?per_page=100&context=edit`;
       const fetchOptions = {
         method: 'GET',
@@ -86,7 +101,9 @@ export const useAgendaStore = defineStore('agenda', () => {
         router.push('/login');
       }
     } finally {
+      // 4. Libération systématique du verrou et du spinner
       isLoading.value = false;
+      isFetching = false;
     }
   };
 

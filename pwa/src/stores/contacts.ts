@@ -9,6 +9,19 @@ export interface Contact {
     raw: string;
   };
   'contact-types': number[];
+  meta?: {
+    _dame_contact_first_name?: string;
+    _dame_contact_last_name?: string;
+    _dame_contact_role?: string;
+    _dame_contact_organization?: string;
+    _dame_contact_phone?: string;
+    _dame_contact_email?: string;
+    _dame_contact_address_1?: string;
+    _dame_contact_address_2?: string;
+    _dame_contact_postcode?: string;
+    _dame_contact_city?: string;
+    [key: string]: any;
+  };
 }
 
 export interface ContactType {
@@ -20,6 +33,7 @@ export const useContactStore = defineStore('contacts', () => {
   const contacts = ref<Contact[]>([]);
   const contactTypes = ref<ContactType[]>([]);
   const isLoading = ref(false);
+  let isFetching = false;
   const lastFetch = ref<number | null>(null);
 
   const fetchContactTypes = async () => {
@@ -39,7 +53,6 @@ export const useContactStore = defineStore('contacts', () => {
       if (!response.ok) throw new Error("Erreur types contacts");
 
       const data: ContactType[] = await response.json();
-      // Tri alphabétique croissant
       data.sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
       contactTypes.value = data;
     } catch (error) {
@@ -48,22 +61,25 @@ export const useContactStore = defineStore('contacts', () => {
   };
 
   const fetchContacts = async (force = false) => {
+    if (isFetching) return;
+
     const now = Date.now();
     if (!force && contacts.value.length > 0 && lastFetch.value && (now - lastFetch.value < 5 * 60 * 1000)) {
       return;
     }
 
+    isFetching = true;
     if (contacts.value.length === 0) {
       isLoading.value = true;
     }
 
-    const token = localStorage.getItem('dame_jwt_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
     try {
+      const token = localStorage.getItem('dame_jwt_token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
       const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2/contacts?per_page=100&context=edit`;
       const fetchOptions = {
         method: 'GET',
@@ -114,6 +130,7 @@ export const useContactStore = defineStore('contacts', () => {
       }
     } finally {
       isLoading.value = false;
+      isFetching = false;
     }
   };
 
