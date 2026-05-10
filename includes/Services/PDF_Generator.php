@@ -63,7 +63,7 @@ class PDF_Generator {
 		$age        = $today->diff( $birth_date )->y;
 
 		// 5. Prepare data for PDF
-		$full_name_adherent_for_pdf = mb_strtoupper( $last_name, 'UTF-8' ) . ' ' . $first_name;
+		$full_name_adherent_for_pdf = \DAME\Core\Utils::generate_adherent_title( $post_id );
 		$current_date               = wp_date( 'd/m/Y' );
 
 		// Handle UTF-8 to Windows-1252 conversion for FPDF standard fonts
@@ -105,7 +105,7 @@ class PDF_Generator {
 				wp_die( __( "Données du représentant légal manquantes pour un adhérent mineur.", 'dame' ), 400 );
 			}
 
-			$full_name_rep1_for_pdf   = mb_strtoupper( $legal_rep_1_last_name, 'UTF-8' ) . ' ' . $legal_rep_1_first_name;
+			$full_name_rep1_for_pdf   = \DAME\Core\Utils::format_lastname( (string) $legal_rep_1_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $legal_rep_1_first_name );
 			$full_name_rep1_for_pdf   = mb_convert_encoding( $full_name_rep1_for_pdf, 'ISO-8859-1', 'UTF-8' );
 			$legal_rep_1_city_for_pdf = mb_convert_encoding( $legal_rep_1_city, 'ISO-8859-1', 'UTF-8' );
 
@@ -177,13 +177,13 @@ class PDF_Generator {
 		}
 
 		// 4. Prepare data for PDF
-		$adherent_full_name            = mb_convert_encoding( mb_strtoupper( $last_name, 'UTF-8' ) . ' ' . $first_name, 'ISO-8859-1', 'UTF-8' );
+		$adherent_full_name            = mb_convert_encoding( \DAME\Core\Utils::generate_adherent_title( $post_id ), 'ISO-8859-1', 'UTF-8' );
 		$adherent_birth_date_formatted = mb_convert_encoding( wp_date( 'd/m/Y', strtotime( $birth_date_str ), new \DateTimeZone('UTC') ), 'ISO-8859-1', 'UTF-8' );
 		$adherent_city                 = mb_convert_encoding( $city, 'ISO-8859-1', 'UTF-8' );
 		$current_date                  = wp_date( 'd/m/Y' );
 		$rl1_full_name                 = '';
 		if ( ! empty( $rl1_first_name ) && ! empty( $rl1_last_name ) ) {
-			$rl1_full_name = mb_convert_encoding( mb_strtoupper( $rl1_last_name, 'UTF-8' ) . ' ' . $rl1_first_name, 'ISO-8859-1', 'UTF-8' );
+			$rl1_full_name = mb_convert_encoding( \DAME\Core\Utils::format_lastname( (string) $rl1_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $rl1_first_name ), 'ISO-8859-1', 'UTF-8' );
 		}
 
 		// 5. Generate PDF

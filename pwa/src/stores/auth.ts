@@ -3,6 +3,14 @@ import { ref } from 'vue';
 import { toastController, alertController } from '@ionic/vue';
 import router from '../router';
 
+// Import des autres stores pour nettoyage
+import { useAgendaStore } from './agenda';
+import { useContactStore } from './contacts';
+import { useDashboardStore } from './dashboard';
+import { useMemberStore } from './members';
+import { useMessageStore } from './messages';
+import { useSondageStore } from './sondages';
+
 export const useAuthStore = defineStore('auth', () => {
   const isLoading = ref(false);
   let isFetching = false;
@@ -61,8 +69,19 @@ export const useAuthStore = defineStore('auth', () => {
    * Déconnexion
    */
   const logout = () => {
+    // 1. Vider le token
     token.value = '';
     localStorage.removeItem('dame_jwt_token');
+
+    // 2. Nettoyer tous les autres stores pour éviter le cache stale
+    useAgendaStore().clearData();
+    useContactStore().clearData();
+    useDashboardStore().clearData();
+    useMemberStore().clearData();
+    useMessageStore().clearData();
+    useSondageStore().clearData();
+
+    // 3. Rediriger vers login
     router.push('/login');
   };
 

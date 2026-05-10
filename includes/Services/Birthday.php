@@ -220,6 +220,9 @@ class Birthday {
 			$query->the_post();
 			$pid = get_the_ID();
 			$nom = get_post_meta( $pid, '_dame_last_name', true );
+			if ( empty( $nom ) ) {
+				$nom = get_post_meta( $pid, '_dame_birth_name', true );
+			}
 			$prenom = get_post_meta( $pid, '_dame_first_name', true );
 			$birth = get_post_meta( $pid, '_dame_birth_date', true );
 
@@ -229,8 +232,8 @@ class Birthday {
 				$age = ( new DateTime( $birth ) )->diff( new DateTime() )->y;
 			} catch ( \Exception $e ) { continue; }
 
-			$subject = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]' ], [ (string) mb_strtoupper( $nom ), (string) mb_convert_case( $prenom, MB_CASE_TITLE ), (string) $age ], $article->post_title );
-			$content = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]' ], [ (string) mb_strtoupper( $nom ), (string) mb_convert_case( $prenom, MB_CASE_TITLE ), (string) $age ], apply_filters( 'the_content', $article->post_content ) );
+			$subject = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]' ], [ (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age ], $article->post_title );
+			$content = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]' ], [ (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age ], apply_filters( 'the_content', $article->post_content ) );
 
 			$emails = \DAME\Core\Utils::get_emails_for_adherent( $pid );
 			if ( $emails ) {

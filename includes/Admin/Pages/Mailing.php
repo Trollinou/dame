@@ -638,7 +638,14 @@ class Mailing {
 		}
 
 		if ( ! empty( $values_sql ) ) {
-			$wpdb->delete( $table_tracking, [ 'message_id' => $message_id ], [ '%d' ] );
+			// On évite les doublons en ne supprimant que les destinataires que l'on s'apprête à (ré)insérer
+			// tout en conservant l'historique des autres envois pour ce message (envois cumulés).
+			$emails_to_insert = array_column( $email_data, 'raw_email' );
+			$wpdb->query( $wpdb->prepare(
+				"DELETE FROM {$table_tracking} WHERE message_id = %d AND recipient_email IN (" . implode( ',', array_fill( 0, count( $emails_to_insert ), '%s' ) ) . ")",
+				array_merge( [ $message_id ], $emails_to_insert )
+			) );
+
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->query( "INSERT INTO {$table_tracking} (message_id, recipient_id, recipient_name, recipient_email, email_hash) VALUES " . implode( ',', $values_sql ) );
 		}

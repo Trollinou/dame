@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import router from '../router';
+import { useAuthStore } from './auth';
 
 export interface Contact {
   id: number;
@@ -125,13 +126,21 @@ export const useContactStore = defineStore('contacts', () => {
     } catch (error: any) {
       console.error("Erreur fetchContacts:", error);
       if (error.message === "Session expirée") {
-        localStorage.removeItem('dame_jwt_token');
-        router.push('/login');
+        useAuthStore().logout();
       }
     } finally {
       isLoading.value = false;
       isFetching = false;
     }
+  };
+
+  /**
+   * Réinitialise les données du store (ex: déconnexion)
+   */
+  const clearData = () => {
+    contacts.value = [];
+    contactTypes.value = [];
+    lastFetch.value = null;
   };
 
   return {
@@ -140,6 +149,7 @@ export const useContactStore = defineStore('contacts', () => {
     isLoading,
     lastFetch,
     fetchContacts,
-    fetchContactTypes
+    fetchContactTypes,
+    clearData
   };
 });

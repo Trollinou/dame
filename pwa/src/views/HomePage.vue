@@ -125,13 +125,9 @@ const preloadAllData = () => {
   sondageStore.fetchSondagesData();
 };
 
-onMounted(() => {
-  preloadAllData();
-});
-
 // Rafraîchir les données du dashboard à chaque entrée (gestion silencieuse par le store)
 onIonViewWillEnter(() => {
-  dashboardStore.fetchBirthdays();
+  preloadAllData();
 });
 </script>
 

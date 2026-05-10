@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import router from '../router';
+import { useAuthStore } from './auth';
 
 export interface Birthday {
   id: number;
@@ -55,8 +56,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     } catch (error: any) {
       console.error("Erreur fetchBirthdays:", error);
       if (error.message === "Session expirée") {
-        localStorage.removeItem('dame_jwt_token');
-        router.push('/login');
+        useAuthStore().logout();
       }
     } finally {
       isLoading.value = false;
@@ -64,9 +64,19 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   };
 
+  /**
+   * Réinitialise les données du store (ex: déconnexion)
+   */
+  const clearData = () => {
+    birthdays.value = [];
+    lastFetch.value = null;
+  };
+
   return {
     birthdays,
     isLoading,
-    fetchBirthdays
+    lastFetch,
+    fetchBirthdays,
+    clearData
   };
 });

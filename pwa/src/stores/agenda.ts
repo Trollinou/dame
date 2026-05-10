@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import router from '../router';
+import { useAuthStore } from './auth';
 
 export interface AgendaEvent {
   id: number;
@@ -97,8 +98,7 @@ export const useAgendaStore = defineStore('agenda', () => {
     } catch (error: any) {
       console.error("Erreur fetchAgenda:", error);
       if (error.message === "Session expirée") {
-        localStorage.removeItem('dame_jwt_token');
-        router.push('/login');
+        useAuthStore().logout();
       }
     } finally {
       // 4. Libération systématique du verrou et du spinner
@@ -107,10 +107,19 @@ export const useAgendaStore = defineStore('agenda', () => {
     }
   };
 
+  /**
+   * Réinitialise les données du store (ex: déconnexion)
+   */
+  const clearData = () => {
+    events.value = [];
+    lastFetch.value = null;
+  };
+
   return {
     events,
     isLoading,
     lastFetch,
-    fetchAgenda
+    fetchAgenda,
+    clearData
   };
 });

@@ -1,5 +1,21 @@
 # Changelog
 
+## 4.4.3 - 2026-05-10
+### Ajout
+- **Mailing (Envois cumulés) :** Conservation de l'historique complet des destinataires lors d'envois multiples pour un même message, permettant un suivi précis sur le long terme.
+
+### Modifié
+- **Mailing (Personnalisation) :** Amélioration de la gestion des balises `[NOM]`, `[PRENOM]` et `[AGE]` dans la file d'attente globale SMTP avec récupération intelligente des données (distinction entre l'adhérent et son représentant légal selon l'e-mail).
+- **Mailing (Formatage) :** Utilisation systématique des utilitaires de formatage `Utils` pour les noms et prénoms dans tous les contextes d'envoi et de génération de documents (PDF).
+
+### Correction
+- **Fiabilité de l'identité :** Ajout d'un fallback automatique sur le "Nom de naissance" si le "Nom d'usage" est manquant pour éviter les titres de fiches et les balises de mailing vides.
+- **Rapports de Mailing :** Correction de la perte d'historique des destinataires lors de renvois successifs d'un même message.
+- **Mailing (Filtrage) :** Fiabilisation du marquage des messages reçus (`_dame_message_received`) pour le bon fonctionnement du filtrage incrémental lors des envois groupés.
+- **Authentification** : Correction du bug de "Silent Fetching" qui ne se déclenchait plus après une nouvelle connexion (migration du pré-chargement vers le hook `onIonViewWillEnter` d'Ionic).
+- **Sécurité & Cache** : Implémentation d'un nettoyage complet de tous les stores Pinia (`clearData`) lors de la déconnexion pour éviter la persistance de données entre deux sessions.
+- **Gestion des Sessions** : Centralisation de la logique de déconnexion (`authStore.logout()`) lors de la détection d'une session expirée (erreur 401) dans tous les stores de données.
+
 ## 4.4.2 - 2026-05-09
 ### Ajout
 - **Application Mobile (PWA) :** Création des vues détaillées pour l'Agenda (carte GPS intelligente), les Contacts (actions directes), les Sondages (système d'accordéons) et les Messages (rapports statistiques).

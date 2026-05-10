@@ -458,6 +458,11 @@ class Utils {
 	public static function generate_adherent_title( $post_id ): string {
 		$first_name = get_post_meta( $post_id, '_dame_first_name', true );
 		$last_name  = get_post_meta( $post_id, '_dame_last_name', true );
+
+		if ( empty( $last_name ) ) {
+			$last_name = get_post_meta( $post_id, '_dame_birth_name', true );
+		}
+
 		return trim( self::format_lastname( (string) $last_name ) . ' ' . self::format_firstname( (string) $first_name ) );
 	}
 

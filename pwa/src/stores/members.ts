@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import router from '../router';
+import { useAuthStore } from './auth';
 
 export interface Member {
   id: number;
@@ -136,13 +137,21 @@ export const useMemberStore = defineStore('members', () => {
     } catch (error: any) {
       console.error("Erreur fetchMembers:", error);
       if (error.message === "Session expirée") {
-        localStorage.removeItem('dame_jwt_token');
-        router.push('/login');
+        useAuthStore().logout();
       }
     } finally {
       isLoading.value = false;
       isFetching = false;
     }
+  };
+
+  /**
+   * Réinitialise les données du store (ex: déconnexion)
+   */
+  const clearData = () => {
+    members.value = [];
+    seasons.value = [];
+    lastFetch.value = null;
   };
 
   return {
@@ -151,6 +160,7 @@ export const useMemberStore = defineStore('members', () => {
     isLoading,
     lastFetch,
     fetchMembers,
-    fetchSeasons
+    fetchSeasons,
+    clearData
   };
 });

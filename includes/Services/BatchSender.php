@@ -83,7 +83,7 @@ class BatchSender {
 			}
 
 			$subject     = $message_post->post_title;
-			$content     = $message_post->post_content;
+			$content     = apply_filters( 'the_content', $message_post->post_content );
 			$options     = get_option( 'dame_options' );
 			$from_name   = $options['sender_name'] ?? get_bloginfo( 'name' );
 			$from_email  = $options['sender_email'] ?? get_option( 'admin_email' );
@@ -98,10 +98,57 @@ class BatchSender {
 				$email = $row['recipient_email'];
 				$label = $row['recipient_name'];
 				
-				// Personalization (simplified for global queue)
-				// We use the aggregation label (NOM PRENOM or Organisation...)
-				$search  = [ '[NOM]', '[PRENOM]', '[AGE]' ];
-				$replace = [ $label, '', '' ]; // In aggregated mode, we don't have per-person details easily
+				// Personalization (Extracted from recipient_id)
+				$rid    = (int) $row['recipient_id'];
+				$nom    = '';
+				$prenom = '';
+				$age    = '';
+
+				$type = get_post_type( $rid );
+				if ( 'adherent' === $type ) {
+					// Check if email matches adherent or one of their reps
+					$adherent_email = get_post_meta( $rid, '_dame_email', true );
+					if ( strtolower( trim( (string) $adherent_email ) ) === strtolower( trim( (string) $email ) ) ) {
+						$nom    = (string) get_post_meta( $rid, '_dame_last_name', true );
+						if ( empty( $nom ) ) {
+							$nom = (string) get_post_meta( $rid, '_dame_birth_name', true );
+						}
+						$prenom = (string) get_post_meta( $rid, '_dame_first_name', true );
+						$birth  = (string) get_post_meta( $rid, '_dame_birth_date', true );
+						if ( ! empty( $birth ) ) {
+							try {
+								$age = (string) ( new DateTime( (string) $birth ) )->diff( new DateTime() )->y;
+							} catch ( \Exception $e ) {
+								$age = '';
+							}
+						}
+					} else {
+						// Check legal representatives
+						for ( $i = 1; $i <= 2; $i++ ) {
+							$rep_email = get_post_meta( $rid, "_dame_legal_rep_{$i}_email", true );
+							if ( strtolower( trim( (string) $rep_email ) ) === strtolower( trim( (string) $email ) ) ) {
+								$nom    = (string) get_post_meta( $rid, "_dame_legal_rep_{$i}_last_name", true );
+								$prenom = (string) get_post_meta( $rid, "_dame_legal_rep_{$i}_first_name", true );
+								break;
+							}
+						}
+					}
+				} elseif ( 'dame_contact' === $type ) {
+					$nom    = (string) get_post_meta( $rid, '_dame_contact_last_name', true );
+					$prenom = (string) get_post_meta( $rid, '_dame_contact_first_name', true );
+				}
+
+				if ( empty( $nom ) && empty( $prenom ) ) {
+					$search  = [ '[NOM]', '[PRENOM]', '[AGE]' ];
+					$replace = [ $label, '', '' ];
+				} else {
+					$search  = [ '[NOM]', '[PRENOM]', '[AGE]' ];
+					$replace = [
+						esc_html( \DAME\Core\Utils::format_lastname( (string) $nom ) ),
+						esc_html( \DAME\Core\Utils::format_firstname( (string) $prenom ) ),
+						esc_html( (string) $age )
+					];
+				}
 				
 				$p_subject = str_replace( $search, $replace, $subject );
 				$p_content = str_replace( $search, $replace, $content );
@@ -231,6 +278,9 @@ class BatchSender {
 
 				if ( 'adherent' === $target_type ) {
 					$nom    = (string) get_post_meta( $primary_post_id, '_dame_last_name', true );
+					if ( empty( $nom ) ) {
+						$nom = (string) get_post_meta( $primary_post_id, '_dame_birth_name', true );
+					}
 					$prenom = (string) get_post_meta( $primary_post_id, '_dame_first_name', true );
 					$birth  = (string) get_post_meta( $primary_post_id, '_dame_birth_date', true );
 				} elseif ( 'contact' === $target_type ) {
@@ -253,8 +303,8 @@ class BatchSender {
 
 				$search  = [ '[NOM]', '[PRENOM]', '[AGE]' ];
 				$replace = [
-					esc_html( mb_strtoupper( (string) $nom, 'UTF-8' ) ),
-					esc_html( mb_convert_case( (string) $prenom, MB_CASE_TITLE, 'UTF-8' ) ),
+					esc_html( \DAME\Core\Utils::format_lastname( (string) $nom ) ),
+					esc_html( \DAME\Core\Utils::format_firstname( (string) $prenom ) ),
 					esc_html( (string) $age )
 				];
 
@@ -278,6 +328,8 @@ class BatchSender {
 				
 				// Collect ALL IDs associated with this email for legacy marking (batch count)
 				foreach ( $target_post_ids as $tpid ) {
+					// Mark as received to allow incremental filtering
+					add_post_meta( $tpid, '_dame_message_received', (string) $message_id );
 					$legacy_post_ids[] = (int) $tpid;
 				}
 			}

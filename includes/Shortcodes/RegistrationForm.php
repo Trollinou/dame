@@ -353,7 +353,9 @@ class RegistrationForm {
 		}
 
 		// 4. Create Pre-inscription Post
-		$post_title = mb_strtoupper( $sanitized_data['dame_last_name'], 'UTF-8' ) . ' ' . $sanitized_data['dame_first_name'];
+		$effective_last_name = ! empty( $sanitized_data['dame_last_name'] ) ? $sanitized_data['dame_last_name'] : $sanitized_data['dame_birth_name'];
+		$post_title = \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $sanitized_data['dame_first_name'] );
+		
 		$post_data = array(
 			'post_title'  => $post_title,
 			'post_type'   => 'dame_pre_inscription',
@@ -431,7 +433,7 @@ class RegistrationForm {
 			),
 			'health_questionnaire' => $sanitized_data['dame_health_questionnaire'], // 'oui' or 'non' for the JS logic
 			'post_id'            => $post_id,
-			'full_name'          => mb_strtoupper( $sanitized_data['dame_last_name'], 'UTF-8' ) . ' ' . $sanitized_data['dame_first_name'],
+			'full_name'          => \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $sanitized_data['dame_first_name'] ),
 			'nonce'              => wp_create_nonce( 'dame_generate_health_form_' . $post_id ),
 			'is_minor'           => $is_minor,
 			'payment_url'        => $payment_url,

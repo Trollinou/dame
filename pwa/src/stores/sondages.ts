@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import router from '../router';
+import { useAuthStore } from './auth';
 
 export interface Sondage {
   id: number;
@@ -77,8 +78,7 @@ export const useSondageStore = defineStore('sondages', () => {
     } catch (error: any) {
       console.error("Erreur fetchSondagesData:", error);
       if (error.message === "Session expirée") {
-        localStorage.removeItem('dame_jwt_token');
-        router.push('/login');
+        useAuthStore().logout();
       }
     } finally {
       isLoading.value = false;
@@ -86,11 +86,22 @@ export const useSondageStore = defineStore('sondages', () => {
     }
   };
 
+  /**
+   * Réinitialise les données du store (ex: déconnexion)
+   */
+  const clearData = () => {
+    sondages.value = [];
+    reponses.value = [];
+    lastFetch.value = null;
+  };
+
   return {
     sondages,
     reponses,
     isLoading,
+    lastFetch,
     getResponseCount,
-    fetchSondagesData
+    fetchSondagesData,
+    clearData
   };
 });

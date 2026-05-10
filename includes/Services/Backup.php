@@ -605,7 +605,9 @@ class Backup {
 			$post_id = 0;
 			$email = $member_data['Adresse email'];
 			$license = $member_data['Numéro de licence'];
-			$post_title = mb_strtoupper( $last_name, 'UTF-8' ) . ' ' . $first_name;
+			
+			$effective_last_name = ! empty( $last_name ) ? $last_name : $member_data['Nom de naissance'];
+			$post_title = \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $first_name );
 
 			// Reconciliation
 			$query_args = array(

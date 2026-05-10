@@ -52,6 +52,11 @@ class Adherent {
 		// 1. Récupération des données de l'adhérent
 		$first_name = get_post_meta( $post_id, '_dame_first_name', true );
 		$last_name  = get_post_meta( $post_id, '_dame_last_name', true );
+
+		if ( empty( $last_name ) ) {
+			$last_name = get_post_meta( $post_id, '_dame_birth_name', true );
+		}
+
 		$email      = get_post_meta( $post_id, '_dame_email', true );
 		$phone      = get_post_meta( $post_id, '_dame_phone_number', true );
 		$address_1  = get_post_meta( $post_id, '_dame_address_1', true );
@@ -62,9 +67,7 @@ class Adherent {
 		$region     = get_post_meta( $post_id, '_dame_region', true );
 
 		// 2. Préparation du titre formaté
-		$formatted_last_name  = Utils::format_lastname( $last_name );
-		$formatted_first_name = Utils::format_firstname( $first_name );
-		$new_title            = trim( $formatted_last_name . ' ' . $formatted_first_name );
+		$new_title = Utils::generate_adherent_title( $post_id );
 
 		if ( empty( $new_title ) ) {
 			$new_title = $adherent->post_title;
@@ -83,8 +86,8 @@ class Adherent {
 		}
 
 		// 4. Migration des métadonnées vers le format Contact
-		update_post_meta( $contact_id, '_dame_contact_first_name', $formatted_first_name );
-		update_post_meta( $contact_id, '_dame_contact_last_name', $formatted_last_name );
+		update_post_meta( $contact_id, '_dame_contact_first_name', Utils::format_firstname( (string) $first_name ) );
+		update_post_meta( $contact_id, '_dame_contact_last_name', Utils::format_lastname( (string) $last_name ) );
 		update_post_meta( $contact_id, '_dame_contact_email', $email );
 		update_post_meta( $contact_id, '_dame_contact_phone', $phone );
 		update_post_meta( $contact_id, '_dame_contact_address_1', $address_1 );

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import router from '../router';
+import { useAuthStore } from './auth';
 
 export interface Message {
   id: number;
@@ -76,8 +77,7 @@ export const useMessageStore = defineStore('messages', () => {
     } catch (error: any) {
       console.error("Erreur fetchMessages:", error);
       if (error.message === "Session expirée") {
-        localStorage.removeItem('dame_jwt_token');
-        router.push('/login');
+        useAuthStore().logout();
       }
     } finally {
       isLoading.value = false;
@@ -85,9 +85,19 @@ export const useMessageStore = defineStore('messages', () => {
     }
   };
 
+  /**
+   * Réinitialise les données du store (ex: déconnexion)
+   */
+  const clearData = () => {
+    messages.value = [];
+    lastFetch.value = null;
+  };
+
   return {
     messages,
     isLoading,
-    fetchMessages
+    lastFetch,
+    fetchMessages,
+    clearData
   };
 });
