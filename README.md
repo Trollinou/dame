@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 4.4.3
+**Version:** 4.4.4
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -149,7 +149,41 @@ Récupère les `x` prochains anniversaires à venir à partir d'aujourd'hui. Gè
 ]
 ```
 
-### 4. Ressources Natives WordPress
+### 4. Menu PWA
+Récupère les éléments du menu de navigation nommé "Menu_PWA".
+
+*   **URL :** `/wp-json/dame/v1/pwa-menu`
+*   **Méthode :** `GET`
+*   **Accès :** Public
+**Réponse type :**
+```json
+[
+  {
+    "id": 120,
+    "object_id": 12,
+    "parent": 0,
+    "title": "Accueil",
+    "menu_order": 1
+  },
+  {
+    "id": 121,
+    "object_id": 45,
+    "parent": 0,
+    "title": "Agenda",
+    "menu_order": 2
+  },
+  {
+    "id": 122,
+    "object_id": 46,
+    "parent": 121,
+    "title": "Sous-menu Agenda",
+    "menu_order": 3
+  }
+]
+```
+
+
+### 5. Ressources Natives WordPress
 Le plugin expose également les Custom Post Types et Taxonomies via l'API REST native sous les points de terminaison suivants :
 
 #### Custom Post Types

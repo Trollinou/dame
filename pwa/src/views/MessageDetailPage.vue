@@ -99,7 +99,7 @@
         </div>
         <div v-else>
           <h2>Message introuvable</h2>
-          <ion-button expand="block" fill="outline" router-link="/tabs/message" class="ion-margin-top">
+          <ion-button expand="block" fill="outline" router-link="/tabs/admin/message" class="ion-margin-top">
             Retour à la liste
           </ion-button>
         </div>

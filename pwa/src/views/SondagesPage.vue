@@ -114,11 +114,11 @@ const filteredSondages = computed(() => {
  * Actions
  */
 const viewSondage = (sondage: Sondage) => {
-  router.push('/tabs/survey/' + sondage.id);
+  router.push('/tabs/admin/survey/' + sondage.id);
 };
 
 const viewResults = (sondage: Sondage) => {
-  router.push('/tabs/survey/' + sondage.id);
+  router.push('/tabs/admin/survey/' + sondage.id);
 };
 
 // Chargement des données au montage/entrée

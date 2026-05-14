@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>Connexion DAME</ion-title>
+        <ion-title>Connexion Dame</ion-title>
       </ion-toolbar>
     </ion-header>
 

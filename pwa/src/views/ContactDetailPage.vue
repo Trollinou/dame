@@ -3,7 +3,7 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/contact"></ion-back-button>
+          <ion-back-button default-href="/tabs/admin/contact"></ion-back-button>
         </ion-buttons>
         <ion-title v-if="contact" v-html="contact.title.rendered"></ion-title>
         <ion-title v-else>Détails Contact</ion-title>

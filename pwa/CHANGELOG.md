@@ -4,6 +4,29 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.4.4] - 2026-05-14
+### Ajouté
+- **Navigation Hybride** : Refonte complète de la navigation pour séparer les accès Public (Actualités, Agenda, Tournois) et Privé (Staff uniquement).
+- **Mode Administration** : Implémentation d'un interrupteur (Toggle) dans la barre d'onglets permettant au staff de basculer vers les outils de gestion (Adhérents, Contacts, Sondages, Messages).
+- **Dashboard Public** : Création de `PublicHomePage.vue` offrant une vue synthétique des dernières nouvelles, des prochains événements et des sondages en cours.
+- **Actualités** : Création des vues `NewsPage.vue` (liste avec recherche textuelle et filtrage par catégorie) et `NewsDetailPage.vue` (lecture complète).
+- **Pages Dynamiques** : Création de `GenericPage.vue` pour afficher n'importe quelle page WordPress (utilisé pour les règlements de tournois et pages d'information).
+- **Menu Tournoi** : Intégration de l'endpoint `dame/v1/pwa-menu` pour générer dynamiquement la liste des tournois sous forme de cartes interactives.
+- **Intégration HelloAsso** : Système d'injection dynamique transformant les shortcodes `[helloasso]` en boutons d'inscription Ionic natifs, respectant le placement dans l'éditeur WordPress.
+- **Composable Navigation** : Création de `useInternalLinks.ts` pour intercepter les liens WordPress et rediriger vers `GenericPage` sans quitter la PWA.
+
+### Modifié
+- **Authentification** : Déplacement des actions de profil (Connexion/Déconnexion) vers le header global.
+- **UX/UI** : Harmonisation des formats de date entre l'accueil et l'agenda.
+- **Store d'Authentification** : Gestion des rôles utilisateur (`administrator`, `editor`, `staff`) pour sécuriser l'accès au mode Admin.
+- **PWA Assets** : Mise à jour complète des icônes (192px, 512px, apple-touch, favicon) avec support du mode "maskable" pour Android.
+
+### Corrigé
+- **Stabilité** : Résolution d'une erreur critique `TypeError` dans la barre d'onglets liée aux actions de déconnexion.
+- **Réactivité** : Passage de `isAuthenticated` en propriété calculée pour une mise à jour instantanée de l'interface lors du login/logout.
+- **Navigation** : Correction de tous les liens de retour (Back buttons) dans les vues de détail administratives.
+- **Nettoyage** : Suppression des boutons d'ajout ("+") non fonctionnels dans les vues Agenda, Adhérents et Contacts.
+
 ## [4.4.3] - 2026-05-10
 ### Corrigé
 - **Authentification** : Correction du bug de "Silent Fetching" qui ne se déclenchait plus après une nouvelle connexion (migration du pré-chargement vers le hook `onIonViewWillEnter` d'Ionic).

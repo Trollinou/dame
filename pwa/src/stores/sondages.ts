@@ -49,26 +49,34 @@ export const useSondageStore = defineStore('sondages', () => {
 
     try {
       const token = localStorage.getItem('dame_jwt_token');
-      if (!token) {
-        router.push('/login');
-        return;
+      
+      const context = token ? 'edit' : 'view';
+      const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2`;
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
 
       const fetchOptions = {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        method: 'GET',
+        headers
       };
 
-      const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2`;
-      
       const [sondagesRes, reponsesRes] = await Promise.all([
-        fetch(`${baseUrl}/sondages?context=edit&per_page=100`, fetchOptions),
-        fetch(`${baseUrl}/sondage-reponses?context=edit&per_page=100`, fetchOptions)
+        fetch(`${baseUrl}/sondages?context=${context}&per_page=100`, fetchOptions),
+        fetch(`${baseUrl}/sondage-reponses?context=${context}&per_page=100`, fetchOptions)
       ]);
 
-      if (sondagesRes.status === 401 || reponsesRes.status === 401) throw new Error("Session expirée");
+      if ((sondagesRes.status === 401 || reponsesRes.status === 401) && token) {
+        localStorage.removeItem('dame_jwt_token');
+        isFetching = false;
+        return fetchSondagesData(true);
+      }
+
       if (!sondagesRes.ok || !reponsesRes.ok) throw new Error("Erreur serveur");
 
       sondages.value = await sondagesRes.json();

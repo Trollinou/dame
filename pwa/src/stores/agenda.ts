@@ -51,23 +51,34 @@ export const useAgendaStore = defineStore('agenda', () => {
 
     try {
       const token = localStorage.getItem('dame_jwt_token');
-      if (!token) {
-        router.push('/login');
-        return;
+      
+      // On utilise 'view' par défaut (public) au lieu de 'edit'
+      // Sauf si on est connecté, on peut demander plus de détails
+      const context = token ? 'edit' : 'view';
+      const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2/agenda?per_page=100&context=${context}`;
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2/agenda?per_page=100&context=edit`;
       const fetchOptions = {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers
       };
 
       const response = await fetch(`${baseUrl}&page=1`, fetchOptions);
 
-      if (response.status === 401) throw new Error("Session expirée");
+      // Si on a tenté avec un token et que ça échoue, on vide le token et on tente en public
+      if (response.status === 401 && token) {
+        localStorage.removeItem('dame_jwt_token');
+        isFetching = false;
+        return fetchAgenda(true);
+      }
+
       if (!response.ok) throw new Error("Erreur serveur");
 
       const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '1');
@@ -118,7 +129,6 @@ export const useAgendaStore = defineStore('agenda', () => {
   return {
     events,
     isLoading,
-    lastFetch,
     fetchAgenda,
     clearData
   };

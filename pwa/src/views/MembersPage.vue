@@ -33,7 +33,7 @@
     </ion-header>
 
     <ion-content :fullscreen="true">
-      <!-- État de chargement (Spinner uniquement si la liste est vide) -->
+      <!-- État de chargement -->
       <div v-if="isLoading && members.length === 0" class="ion-text-center ion-padding">
         <ion-spinner name="crescent"></ion-spinner>
         <p>Récupération de la liste...</p>
@@ -58,13 +58,6 @@
         <p v-if="searchQuery">Aucun adhérent ne correspond à "{{ searchQuery }}".</p>
         <p v-else>Aucun adhérent trouvé.</p>
       </div>
-
-      <!-- Bouton Flottant (Ajouter) -->
-      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-        <ion-fab-button @click="addMember">
-          <ion-icon :icon="addOutline"></ion-icon>
-        </ion-fab-button>
-      </ion-fab>
     </ion-content>
   </ion-page>
 </template>
@@ -81,14 +74,11 @@ import {
   IonItem,
   IonLabel,
   IonSpinner,
-  IonFab,
-  IonFabButton,
   IonIcon,
   IonSelect,
   IonSelectOption,
   onIonViewWillEnter
 } from '@ionic/vue';
-import { addOutline } from 'ionicons/icons';
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMemberStore } from '../stores/members';
@@ -100,38 +90,24 @@ const { members, seasons, isLoading } = storeToRefs(memberStore);
 const searchQuery = ref('');
 const selectedSeason = ref<number | 'all'>('all');
 
-/**
- * Supprime les accents d'une chaîne de caractères
- */
 const removeAccents = (str: string): string => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 };
 
-/**
- * Navigation vers le détail d'un adhérent
- */
 const goToDetail = (id: number) => {
-  router.push('/tabs/members/' + id);
+  router.push('/tabs/admin/members/' + id);
 };
 
-/**
- * Liste filtrée (Saison + Texte)
- */
 const filteredMembers = computed(() => {
   let result = members.value;
-
-  // 1. Filtre par Saison
   if (selectedSeason.value !== 'all') {
     result = result.filter(member => 
       member.seasons && member.seasons.includes(selectedSeason.value as number)
     );
   }
-
-  // 2. Filtre par Texte
   if (!searchQuery.value.trim()) {
     return result;
   }
-
   const query = removeAccents(searchQuery.value.toLowerCase());
   return result.filter(member => {
     const memberName = removeAccents((member.title.raw || "").toLowerCase());
@@ -139,16 +115,9 @@ const filteredMembers = computed(() => {
   });
 });
 
-const addMember = () => {
-  console.log("Ajouter un adhérent cliqué");
-};
-
-// Déclenche le fetch dans le store (Gestion silencieuse interne)
 onIonViewWillEnter(async () => {
   memberStore.fetchMembers();
   await memberStore.fetchSeasons();
-  
-  // Présélection de la saison en cours (la plus récente)
   if (selectedSeason.value === 'all' && seasons.value.length > 0) {
     selectedSeason.value = seasons.value[0].id;
   }

@@ -101,7 +101,7 @@ const filteredMessages = computed(() => {
  * Action: Voir le message
  */
 const viewMessage = (message: Message) => {
-  router.push('/tabs/message/' + message.id);
+  router.push('/tabs/admin/message/' + message.id);
 };
 
 // Chargement des données au montage/entrée

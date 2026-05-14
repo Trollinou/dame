@@ -94,18 +94,11 @@
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <div class="description-content" v-html="processedDescription.cleanHtml"></div>
-            
-            <!-- Bouton d'inscription HelloAsso -->
-            <ion-button 
-              v-if="processedDescription.registrationUrl" 
-              expand="block" 
-              class="ion-margin-top" 
-              :href="processedDescription.registrationUrl" 
-              target="_blank"
-            >
-              S'inscrire à l'événement
-            </ion-button>
+            <div 
+              class="description-content" 
+              v-html="processedDescription.cleanHtml"
+              @click="handleInternalLinks"
+            ></div>
           </ion-card-content>
         </ion-card>
       </div>
@@ -158,9 +151,11 @@ import {
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAgendaStore, type AgendaEvent } from '@/stores/agenda';
+import { useInternalLinks } from '@/composables/useInternalLinks';
 
 const route = useRoute();
 const agendaStore = useAgendaStore();
+const { handleInternalLinks } = useInternalLinks();
 
 const eventId = parseInt(route.params.id as string);
 
@@ -195,24 +190,20 @@ const mapUrl = computed(() => {
 });
 
 /**
- * Analyse la description pour extraire le shortcode HelloAsso
+ * Analyse la description pour remplacer les shortcodes HelloAsso par des boutons
  */
 const processedDescription = computed(() => {
   const rawHtml = event.value?._dame_agenda_description_html || event.value?.meta._dame_agenda_description || '';
-  let cleanHtml = rawHtml;
-  let registrationUrl = null;
+  
+  // Regex robuste globale pour détecter [helloasso campaign="URL"]
+  const regex = /\[helloasso\s+campaign=(?:&nbsp;|\s)*[»"']*(https?:\/\/[^&"'\s»\]]+)(?:&nbsp;|\s)*[»"']*[^\]]*\]/gi;
 
-  // Regex pour détecter [helloasso campaign="URL"]
-  const regex = /\[helloasso\s+campaign="([^"]+)"[^\]]*\]/i;
-  const match = rawHtml.match(regex);
+  // Remplacement de chaque shortcode par un bouton Ionic injecté
+  const cleanHtml = rawHtml.replace(regex, (match, url) => {
+    return `<ion-button expand="block" class="ion-margin-top ion-margin-bottom" href="${url}" target="_blank">S'inscrire à l'événement</ion-button>`;
+  });
 
-  if (match && match[1]) {
-    registrationUrl = match[1];
-    // Supprimer le shortcode du HTML
-    cleanHtml = rawHtml.replace(match[0], '');
-  }
-
-  return { cleanHtml, registrationUrl };
+  return { cleanHtml };
 });
 
 /**

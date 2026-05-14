@@ -37,7 +37,7 @@ class Data_Endpoints {
 	/**
 	 * Birthday service.
 	 *
-	 * @var Birthday
+	 * @var \DAME\Services\Birthday
 	 */
 	private \DAME\Services\Birthday $birthday_service;
 
@@ -110,16 +110,56 @@ class Data_Endpoints {
 				],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/pwa-menu',
+			[
+				[
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => [ $this, 'get_pwa_menu' ],
+					'permission_callback' => '__return_true',
+				],
+			]
+		);
 	}
 
 	/**
 	 * Permission callback for the endpoints.
 	 *
-	 * @return bool|\WP_Error
+	 * @return bool
 	 */
 	public function get_permissions_check(): bool {
 		// Only users who can edit posts (Staff, Coaches, Admins) can access this data.
 		return current_user_can( 'edit_posts' );
+	}
+
+	/**
+	 * Retrieves the PWA menu items.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function get_pwa_menu(): WP_REST_Response {
+		$menu_items = wp_get_nav_menu_items( 'Menu_PWA' );
+
+		if ( ! $menu_items || is_wp_error( $menu_items ) ) {
+			return rest_ensure_response( [] );
+		}
+
+		$data = array_map(
+			function ( $item ) {
+				return [
+					'id'         => (int) $item->ID,
+					'object_id'  => (int) $item->object_id,
+					'parent'     => (int) $item->menu_item_parent,
+					'title'      => (string) $item->title,
+					'menu_order' => (int) $item->menu_order,
+				];
+			},
+			$menu_items
+		);
+
+		return rest_ensure_response( $data );
 	}
 
 	/**
@@ -128,7 +168,7 @@ class Data_Endpoints {
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response
 	 */
-	public function get_upcoming_birthdays( \WP_REST_Request $request ): \WP_REST_Response {
+	public function get_upcoming_birthdays( WP_REST_Request $request ): WP_REST_Response {
 		$limit  = (int) $request['limit'];
 		$result = $this->birthday_service->get_upcoming_birthdays( $limit );
 		return rest_ensure_response( $result );
@@ -139,7 +179,7 @@ class Data_Endpoints {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function get_today_birthdays(): \WP_REST_Response {
+	public function get_today_birthdays(): WP_REST_Response {
 		$birthdays = $this->birthday_service->get_today_birthdays();
 		return rest_ensure_response( $birthdays );
 	}
@@ -148,7 +188,7 @@ class Data_Endpoints {
 	 * Callback to retrieve the data based on the requested type.
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @return WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function get_data( WP_REST_Request $request ): mixed {
 		$type = $request['type'];

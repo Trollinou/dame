@@ -3,7 +3,7 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/members"></ion-back-button>
+          <ion-back-button default-href="/tabs/admin/members"></ion-back-button>
         </ion-buttons>
         <ion-title v-if="member" v-html="member.title.rendered"></ion-title>
         <ion-title v-else>Détails Adhérent</ion-title>

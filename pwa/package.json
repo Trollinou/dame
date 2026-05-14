@@ -1,7 +1,7 @@
 {
   "name": "dame-administration",
   "private": true,
-  "version": "4.4.3",
+  "version": "4.4.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -37,5 +37,5 @@
     "vitest": "^0.34.6",
     "vue-tsc": "^2.1.10"
   },
-  "description": "DAME Administration PWA"
+  "description": "Dame PWA"
 }

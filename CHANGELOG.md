@@ -1,5 +1,25 @@
 # Changelog
 
+## 4.4.4 - 2026-05-14
+### Ajout
+- **API REST (PWA Menu) :** Création d'un nouvel endpoint `dame/v1/pwa-menu` permettant de récupérer les éléments du menu "Menu_PWA" avec support de la hiérarchie (ID, Parent, Object ID, Title, Order).
+- **Application Mobile (PWA) :** Refonte complète de la navigation avec séparation des accès Public (Actualités, Agenda, Tournois) et Privé (Staff).
+- **Application Mobile (PWA) :** Mode "Administration" permettant au staff de basculer vers les outils de gestion via un interrupteur dans la barre d'onglets.
+- **Application Mobile (PWA) :** Nouveau Dashboard Public offrant une vue synthétique des nouvelles, événements et sondages.
+- **Application Mobile (PWA) :** Module d'Actualités (`NewsPage` et `NewsDetailPage`) avec recherche et filtrage par catégorie.
+- **Application Mobile (PWA) :** Affichage dynamique des pages WordPress (`GenericPage`) avec interception intelligente des liens internes.
+- **Application Mobile (PWA) :** Menu des Tournois dynamique basé sur l'endpoint REST `pwa-menu`.
+- **Application Mobile (PWA) :** Intégration native des formulaires d'inscription HelloAsso.
+
+### Modifié
+- **Application Mobile (PWA) :** Migration des actions de profil vers le header global et mise à jour des actifs (icônes maskables, splash screens).
+- **Application Mobile (PWA) :** Gestion fine des rôles (`administrator`, `editor`, `staff`) pour la sécurisation du mode Admin.
+
+### Correction
+- **Qualité Code (Data Endpoints) :** Correction de plusieurs erreurs PHPDoc et types de retour dans la classe `Data_Endpoints` pour une conformité totale avec PHPStan Level 6.
+- **Application Mobile (PWA) :** Correction de bugs critiques de navigation, de stabilité (TypeError au logout) et de réactivité de l'interface.
+- **Application Mobile (PWA) :** Nettoyage de l'interface (suppression des boutons d'ajout non fonctionnels).
+
 ## 4.4.3 - 2026-05-10
 ### Ajout
 - **Mailing (Envois cumulés) :** Conservation de l'historique complet des destinataires lors d'envois multiples pour un même message, permettant un suivi précis sur le long terme.

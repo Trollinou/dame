@@ -7,6 +7,9 @@ import ContactsPage from '../views/ContactsPage.vue';
 import AgendaPage from '../views/AgendaPage.vue';
 import SondagesPage from '../views/SondagesPage.vue';
 import MessagesPage from '../views/MessagesPage.vue';
+import TournamentPage from '../views/TournamentPage.vue';
+import GenericPage from '../views/GenericPage.vue';
+import { useAuthStore } from '@/stores/auth';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -15,7 +18,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/login',
-    component: LoginPage
+    redirect: '/tabs/login'
   },
   {
     path: '/tabs/',
@@ -25,27 +28,19 @@ const routes: Array<RouteRecordRaw> = [
         path: '',
         redirect: '/tabs/home'
       },
+      // Routes Publiques
       {
         path: 'home',
-        component: () => import('../views/HomePage.vue')
+        component: () => import('../views/PublicHomePage.vue')
       },
       {
-        path: 'members',
-        component: MembersPage
+        path: 'news',
+        component: () => import('../views/NewsPage.vue')
       },
       {
-        path: 'members/:id',
-        name: 'MemberDetail',
-        component: () => import('@/views/MemberDetailPage.vue')
-      },
-      {
-        path: 'contact',
-        component: ContactsPage
-      },
-      {
-        path: 'contact/:id',
-        name: 'ContactDetail',
-        component: () => import('@/views/ContactDetailPage.vue')
+        path: 'news/:id',
+        name: 'NewsDetail',
+        component: () => import('../views/NewsDetailPage.vue')
       },
       {
         path: 'agenda',
@@ -57,22 +52,66 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/AgendaDetailPage.vue')
       },
       {
-        path: 'survey',
-        component: SondagesPage
+        path: 'tournoi',
+        component: TournamentPage
       },
       {
-        path: 'survey/:id',
-        name: 'SurveyDetail',
+        path: 'admin/survey',
+        component: SondagesPage,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'admin/survey/:id',
+        name: 'SondageDetail',
         component: () => import('@/views/SondageDetailPage.vue')
       },
       {
-        path: 'message',
-        component: MessagesPage
+        path: 'page/:id',
+        name: 'GenericPage',
+        component: GenericPage
       },
       {
-        path: 'message/:id',
+        path: 'login',
+        component: LoginPage
+      },
+      // Routes Privées (Admin)
+      {
+        path: 'admin/dashboard',
+        component: () => import('../views/HomePage.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'admin/members',
+        component: MembersPage,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'admin/members/:id',
+        name: 'MemberDetail',
+        component: () => import('@/views/MemberDetailPage.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'admin/contact',
+        component: ContactsPage,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'admin/contact/:id',
+        name: 'ContactDetail',
+        component: () => import('@/views/ContactDetailPage.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'admin/message',
+        component: MessagesPage,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'admin/message/:id',
         name: 'MessageDetail',
-        component: () => import('@/views/MessageDetailPage.vue')
+        component: () => import('@/views/MessageDetailPage.vue'),
+        meta: { requiresAuth: true }
       },
     ]
   }
@@ -82,5 +121,15 @@ const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
   routes
 })
+
+// Navigation Guard
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next('/tabs/login');
+  } else {
+    next();
+  }
+});
 
 export default router
