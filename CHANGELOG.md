@@ -1,5 +1,19 @@
 # Changelog
 
+## 4.4.5 - 2026-05-15
+### Ajout
+- **Optimisation REST API (Agenda) :** Implémentation du filtrage par date côté serveur via les nouveaux paramètres `after_date` et `before_date` pour l'endpoint `/wp-json/wp/v2/agenda`.
+- **Tri Chronologique (REST) :** Autorisation du paramètre `orderby=meta_value` pour l'agenda, permettant un tri précis basé sur la date de début de l'événement (`_dame_start_date`).
+- **Application Mobile (PWA) :** Implémentation d'une pagination réelle et bidirectionnelle (Infinite Scroll Top/Bottom) pour l'Agenda.
+- **Application Mobile (PWA) :** Optimisation réseau exploitant les nouveaux filtres backend pour minimiser les transferts de données.
+
+### Modifié
+- **Application Mobile (PWA) :** Amélioration de l'UX avec repositionnement automatique sur "Aujourd'hui" et mémorisation intelligente de la position de défilement au retour des détails.
+- **Application Mobile (PWA) :** Optimisation des performances DOM avec limitation de l'affichage initial à 20 événements.
+
+### Correction
+- **Application Mobile (PWA) :** Résolution d'erreurs critiques (`ReferenceError`, warnings Vue `IonButtons`) et nettoyage complet des imports inutilisés.
+
 ## 4.4.4 - 2026-05-14
 ### Ajout
 - **API REST (PWA Menu) :** Création d'un nouvel endpoint `dame/v1/pwa-menu` permettant de récupérer les éléments du menu "Menu_PWA" avec support de la hiérarchie (ID, Parent, Object ID, Title, Order).

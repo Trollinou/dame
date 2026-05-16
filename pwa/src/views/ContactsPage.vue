@@ -32,7 +32,7 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="true">
+    <ion-content :fullscreen="true" class="ion-padding">
       <div v-if="isLoading && contacts.length === 0" class="ion-text-center ion-padding">
         <ion-spinner name="crescent"></ion-spinner>
         <p>Chargement des contacts...</p>
@@ -72,7 +72,6 @@ import {
   IonItem,
   IonLabel,
   IonSpinner,
-  IonIcon,
   IonSelect,
   IonSelectOption,
   onIonViewWillEnter,

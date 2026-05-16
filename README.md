@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 4.4.4
+**Version:** 4.4.5
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -197,6 +197,13 @@ Le plugin expose également les Custom Post Types et Taxonomies via l'API REST n
 | **Préinscriptions** | `/wp-json/wp/v2/pre-inscriptions` |
 | **Sondages** | `/wp-json/wp/v2/sondages` |
 | **Réponses Sondages** | `/wp-json/wp/v2/sondage-reponses` |
+
+**Filtrage de l'Agenda par Date :**
+L'endpoint `/wp-json/wp/v2/agenda` supporte deux paramètres de filtrage supplémentaires basés sur la date de début de l'événement (`_dame_start_date`) :
+*   `after_date` : Récupère les événements commençant à partir de cette date (format `YYYY-MM-DD`).
+*   `before_date` : Récupère les événements commençant avant cette date (format `YYYY-MM-DD`).
+
+*Note : Lorsqu'un de ces filtres est utilisé, les résultats sont automatiquement triés par date de début croissante.*
 
 #### Taxonomies
 | Taxonomie | Endpoint REST |

@@ -23,7 +23,7 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="true">
+    <ion-content :fullscreen="true" class="ion-padding">
       <ion-header collapse="condense">
         <ion-toolbar>
           <ion-title size="large">Dame</ion-title>
@@ -86,7 +86,7 @@
       <ion-list lines="full" class="ion-margin-top ion-margin-bottom">
         <ion-list-header>
           <ion-label color="primary">Sondages en cours</ion-label>
-          <!-- <ion-button fill="clear" router-link="/tabs/admin/survey">Sondages</ion-button> -->
+          <!-- <ion-button fill="clear" router-link="/tabs/survey">Sondages</ion-button> -->
         </ion-list-header>
 
         <div v-if="sondageStore.isLoading" class="ion-text-center ion-padding">
@@ -117,6 +117,7 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
+  IonButtons,
   IonList,
   IonListHeader,
   IonLabel,
@@ -144,29 +145,6 @@ const latestPosts = ref<any[]>([]);
 const isLoadingNews = ref(false);
 
 const todayStr = new Date().toISOString().split('T')[0];
-
-/**
- * Gère le changement de mode Admin via le toggle
- */
-const onToggleAdminMode = () => {
-  if (authStore.adminMode) {
-    router.push('/tabs/admin/dashboard');
-  } else {
-    router.push('/tabs/home');
-  }
-};
-
-const toggleMode = () => {
-  // On inverse le mode
-  authStore.adminMode = !authStore.adminMode;
-  
-  // Redirection automatique
-  if (authStore.adminMode) {
-    router.push('/tabs/admin/dashboard');
-  } else {
-    router.push('/tabs/home');
-  }
-};
 
 /**
  * Gère la déconnexion
@@ -199,7 +177,7 @@ const fetchLatestNews = async () => {
 const upcomingEvents = computed(() => {
   const today = new Date().toISOString().split('T')[0];
   return agendaStore.events
-    .filter(e => (e.meta?._dame_start_date || '') >= today)
+    .filter(e => (e.meta?._dame_end_date || e.meta?._dame_start_date || '') >= today)
     .slice(0, 3);
 });
 

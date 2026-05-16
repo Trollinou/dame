@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace DAME\API\REST;
 
+use WP_REST_Request;
+
 /**
  * Class Post_Meta
  * Handles the registration of custom fields to be exposed in the WordPress REST API.
@@ -24,6 +26,65 @@ class Post_Meta {
 		add_action( 'rest_after_insert_adherent', [ $this, 'update_titles_after_rest' ] );
 		add_action( 'rest_after_insert_dame_contact', [ $this, 'update_titles_after_rest' ] );
 		add_action( 'rest_after_insert_dame_pre_inscription', [ $this, 'update_titles_after_rest' ] );
+		add_filter( 'rest_dame_agenda_query', [ $this, 'filter_agenda_query' ], 10, 2 );
+		add_filter( 'rest_dame_agenda_collection_params', [ $this, 'allow_meta_orderby' ] );
+	}
+
+	/**
+	 * Allows sorting by meta_value for the agenda collection.
+	 *
+	 * @param array<string, mixed> $params Collection parameters.
+	 * @return array<string, mixed> Modified parameters.
+	 */
+	public function allow_meta_orderby( array $params ): array {
+		if ( isset( $params['orderby']['enum'] ) && is_array( $params['orderby']['enum'] ) ) {
+			$params['orderby']['enum'][] = 'meta_value';
+		}
+		return $params;
+	}
+
+	/**
+	 * Filters the agenda query to support after_date and before_date parameters.
+	 *
+	 * @param array<string, mixed> $args    The query arguments.
+	 * @param WP_REST_Request      $request The request object.
+	 * @return array<string, mixed> The modified query arguments.
+	 */
+	public function filter_agenda_query( array $args, WP_REST_Request $request ): array {
+		// 1. Gestion du tri par date de début
+		$orderby = $request->get_param( 'orderby' );
+		if ( 'meta_value' === $orderby ) {
+			$args['meta_key'] = '_dame_start_date';
+			$args['orderby']  = 'meta_value';
+		}
+
+		// 2. Gestion des filtres de fenêtre temporelle (Optimisation Réseau)
+		$after_date  = $request->get_param( 'after_date' );
+		$before_date = $request->get_param( 'before_date' );
+
+		if ( ! isset( $args['meta_query'] ) ) {
+			$args['meta_query'] = [];
+		}
+
+		if ( $after_date ) {
+			$args['meta_query'][] = [
+				'key'     => '_dame_start_date',
+				'value'   => $after_date,
+				'compare' => '>=',
+				'type'    => 'DATE',
+			];
+		}
+
+		if ( $before_date ) {
+			$args['meta_query'][] = [
+				'key'     => '_dame_start_date',
+				'value'   => $before_date,
+				'compare' => '<',
+				'type'    => 'DATE',
+			];
+		}
+
+		return $args;
 	}
 
 	/**

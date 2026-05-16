@@ -13,13 +13,28 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="true" ref="contentRef">
+    <ion-content :fullscreen="true" ref="contentRef" class="ion-padding">
       <ion-header collapse="condense">
         <ion-toolbar>
           <ion-title size="large">Agenda</ion-title>
         </ion-toolbar>
       </ion-header>
-      <!-- État de chargement (Spinner bloquant uniquement si vide) -->
+
+      <!-- Infinite Scroll TOP (Historique) -->
+      <ion-infinite-scroll 
+        v-if="!searchQuery"
+        position="top" 
+        @ionInfinite="loadMorePast($event)" 
+        :disabled="!hasMorePast"
+      >
+        <ion-infinite-scroll-content 
+          loading-spinner="dots" 
+          loading-text="Chargement de l'historique..."
+        >
+        </ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+
+      <!-- État de chargement initial -->
       <div v-if="isLoading && events.length === 0" class="ion-text-center ion-padding">
         <ion-spinner name="crescent"></ion-spinner>
         <p>Chargement de l'agenda...</p>
@@ -48,6 +63,20 @@
         <p v-if="searchQuery">Aucun événement ne correspond à "{{ searchQuery }}".</p>
         <p v-else>Aucun événement trouvé.</p>
       </div>
+
+      <!-- Infinite Scroll BOTTOM (Futur) -->
+      <ion-infinite-scroll 
+        v-if="!searchQuery"
+        @ionInfinite="loadMoreUpcoming($event)" 
+        :disabled="!hasMoreUpcoming"
+      >
+        <ion-infinite-scroll-content 
+          loading-spinner="dots" 
+          loading-text="Chargement des événements futurs..."
+        >
+        </ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+
     </ion-content>
   </ion-page>
 </template>
@@ -64,10 +93,10 @@ import {
   IonItem,
   IonLabel,
   IonSpinner,
-  IonIcon,
   IonBadge,
-  onIonViewWillEnter,
-  onIonViewDidEnter
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  onIonViewWillEnter
 } from '@ionic/vue';
 import { ref, computed, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
@@ -76,19 +105,19 @@ import { storeToRefs } from 'pinia';
 
 const router = useRouter();
 const agendaStore = useAgendaStore();
-const { events, isLoading } = storeToRefs(agendaStore);
+const { events, isLoading, hasMoreUpcoming, hasMorePast } = storeToRefs(agendaStore);
 
-const contentRef = ref();
 const searchQuery = ref('');
-const lastViewedEventId = ref<number | null>(null);
+const upcomingPage = ref(1);
+const pastPage = ref(1);
 const todayStr = new Date().toISOString().split('T')[0];
+const isFirstLoad = ref(true);
 
 const removeAccents = (str: string): string => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 };
 
 const goToDetail = (id: number) => {
-  lastViewedEventId.value = id;
   router.push('/tabs/agenda/' + id);
 };
 
@@ -98,21 +127,18 @@ const formatPart = (dateString: string): string => {
 };
 
 const isPast = (event: AgendaEvent): boolean => {
-  return (event.meta?._dame_start_date || '') < todayStr;
+  const today = new Date().toISOString().split('T')[0];
+  const referenceDate = event.meta?._dame_end_date || event.meta?._dame_start_date || '';
+  return referenceDate < today;
 };
 
 const isToday = (event: AgendaEvent): boolean => {
   const startDate = event.meta?._dame_start_date;
   const endDate = event.meta?._dame_end_date;
-
   if (!startDate) return false;
-
-  // Cas 1 : Événement sur une période (plusieurs jours)
   if (endDate && startDate !== endDate) {
     return todayStr >= startDate && todayStr <= endDate;
   }
-
-  // Cas 2 : Événement sur une seule journée
   return startDate === todayStr;
 };
 
@@ -120,62 +146,77 @@ const formatEventDate = (event: AgendaEvent): string => {
   const meta = event.meta;
   const startDate = meta?._dame_start_date;
   const endDate = meta?._dame_end_date;
-
   if (!startDate) return 'Date non définie';
-
   if (endDate && startDate !== endDate) {
     return `Du ${formatPart(startDate)} au ${formatPart(endDate)}`;
   }
-
   const startTime = meta?._dame_start_time;
   const endTime = meta?._dame_end_time;
   const isAllDay = meta?._dame_all_day === 1;
-
   if (startTime && endTime && !isAllDay) {
     return `Le ${formatPart(startDate)} de ${startTime} à ${endTime}`;
   }
-
   return `Le ${formatPart(startDate)} (Toute la journée)`;
 };
 
-const scrollToTarget = () => {
-  let targetId = lastViewedEventId.value;
-
-  if (!targetId) {
-    const upcomingEvent = events.value.find(event => 
-      (event.meta?._dame_start_date || '') >= todayStr
-    );
-    if (upcomingEvent) targetId = upcomingEvent.id;
+/**
+ * Chargement des événements futurs (Scrolling vers le bas)
+ */
+const loadMoreUpcoming = async (ev: any) => {
+  upcomingPage.value++;
+  const data = await agendaStore.fetchBatch('upcoming', todayStr, upcomingPage.value);
+  if (data.length > 0) {
+    events.value = [...events.value, ...data];
   }
-
-  if (targetId) {
-    const el = document.getElementById('event-' + targetId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }
+  ev.target.complete();
 };
 
-const filteredEvents = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return events.value;
+/**
+ * Chargement des événements passés (Scrolling vers le haut)
+ */
+const loadMorePast = async (ev: any) => {
+  const data = await agendaStore.fetchBatch('past', todayStr, pastPage.value);
+  if (data.length > 0) {
+    // Inversion car le serveur renvoie DESC (plus récent d'abord), on veut ASC pour la liste
+    events.value = [...data.reverse(), ...events.value];
+    pastPage.value++;
   }
+  ev.target.complete();
+};
+
+/**
+ * Filtrage local pour la recherche
+ */
+const filteredEvents = computed(() => {
+  if (!searchQuery.value.trim()) return events.value;
   const query = removeAccents(searchQuery.value.toLowerCase());
-  return events.value.filter(event => {
-    const name = removeAccents((event.title?.raw || "").toLowerCase());
-    return name.includes(query);
-  });
+  return events.value.filter(event => 
+    removeAccents((event.title?.raw || "").toLowerCase()).includes(query)
+  );
 });
 
 onIonViewWillEnter(async () => {
-  await agendaStore.fetchAgenda();
-  await nextTick();
-  setTimeout(scrollToTarget, 200);
-});
-
-onIonViewDidEnter(() => {
-  if (!isLoading.value && events.value.length > 0) {
-    setTimeout(scrollToTarget, 100);
+  if (events.value.length === 0) {
+    isLoading.value = true;
+    const data = await agendaStore.fetchBatch('upcoming', todayStr, 1);
+    events.value = data;
+    isLoading.value = false;
+  }
+  
+  // On ne repositionne la vue que lors du tout premier chargement
+  // Si l'utilisateur revient d'un détail (Back), isFirstLoad sera déjà false
+  if (isFirstLoad.value) {
+    await nextTick();
+    setTimeout(() => {
+      const targetEvent = events.value.find(e => (e.meta?._dame_start_date || '') >= todayStr);
+      if (targetEvent) {
+        const el = document.getElementById('event-' + targetEvent.id);
+        if (el) {
+          el.scrollIntoView({ behavior: 'auto', block: 'center' });
+        }
+      }
+      isFirstLoad.value = false;
+    }, 200);
   }
 });
 </script>

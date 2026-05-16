@@ -10,7 +10,7 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="true">
+    <ion-content :fullscreen="true" class="ion-padding">
       <ion-header collapse="condense">
         <ion-toolbar>
           <ion-title size="large">
@@ -68,7 +68,7 @@
         </div>
         <div v-else>
           <h2>Sondage introuvable</h2>
-          <ion-button expand="block" fill="outline" router-link="/tabs/admin/survey" class="ion-margin-top">
+          <ion-button expand="block" fill="outline" router-link="/tabs/survey" class="ion-margin-top">
             Retour à la liste
           </ion-button>
         </div>

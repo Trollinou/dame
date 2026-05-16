@@ -73,7 +73,6 @@ import {
   onIonViewWillEnter
 } from '@ionic/vue';
 import { giftOutline, logOutOutline } from 'ionicons/icons';
-import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 
 // Import des stores

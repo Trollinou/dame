@@ -4,6 +4,22 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.4.5] - 2026-05-15
+### Ajouté
+- **Pagination Réelle (Agenda)** : Implémentation d'une stratégie de chargement à la demande (Infinite Scroll) bi-directionnelle pour l'Agenda.
+- **Scroll Infini Top/Bottom** : Capacité de charger l'historique (scrolling vers le haut) et les événements futurs (scrolling vers le bas) de manière fluide.
+- **Optimisation Réseau** : Migration vers une architecture de requêtes ciblées (`after_date`, `before_date`) exploitant les nouveaux filtres du backend WordPress pour minimiser le transfert de données.
+
+### Modifié
+- **Performance DOM** : Limitation de l'affichage initial à 20 événements pour garantir une fluidité maximale sur mobile.
+- **UX Agenda** : Repositionnement automatique et instantané sur "Aujourd'hui" lors du premier chargement de la session.
+- **UX Navigation** : Mémorisation intelligente de la position de défilement lors du retour depuis un détail d'événement (évite le scroll forcé sur "Aujourd'hui").
+
+### Corrigé
+- **Imports & Nettoyage** : Revue complète de toutes les vues pour supprimer les imports de composants, d'icônes et de hooks inutilisés.
+- **Résolution de Composants** : Correction d'un warning Vue critique lié à l'absence d'import de `IonButtons` dans plusieurs fichiers (`PublicHomePage.vue`, etc.).
+- **Stabilité** : Correction d'une erreur `ReferenceError` sur la variable `isFirstLoad` dans la vue Agenda.
+
 ## [4.4.4] - 2026-05-14
 ### Ajouté
 - **Navigation Hybride** : Refonte complète de la navigation pour séparer les accès Public (Actualités, Agenda, Tournois) et Privé (Staff uniquement).

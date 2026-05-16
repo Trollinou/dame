@@ -44,7 +44,7 @@
             <ion-label>Contacts</ion-label>
           </ion-tab-button>
 
-          <ion-tab-button tab="admin-survey" href="/tabs/admin/survey">
+          <ion-tab-button tab="admin-survey" href="/tabs/survey">
             <ion-icon :icon="statsChartOutline" />
             <ion-label>Sondages</ion-label>
           </ion-tab-button>
@@ -78,13 +78,7 @@ import {
   IonTabBar,
   IonTabButton,
   IonIcon,
-  IonLabel,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
-  IonButton,
-  IonToggle
+  IonLabel
 } from '@ionic/vue';
 import {
   newspaperOutline,
@@ -93,33 +87,16 @@ import {
   peopleOutline,
   callOutline,
   chatbubbleOutline,
-  personOutline,
-  settingsOutline,
-  logOutOutline,
-  exitOutline,
   statsChartOutline,
   homeOutline,
-  personCircleOutline,
   eyeOutline,
-  eyeOffOutline,
-  powerOutline
+  eyeOffOutline
 } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
 const router = useRouter();
-
-/**
- * Gère le changement de mode Admin via le toggle
- */
-const onToggleAdminMode = () => {
-  if (authStore.adminMode) {
-    router.push('/tabs/admin/dashboard');
-  } else {
-    router.push('/tabs/home');
-  }
-};
 
 const toggleMode = () => {
   // On inverse le mode
@@ -131,13 +108,6 @@ const toggleMode = () => {
   } else {
     router.push('/tabs/home');
   }
-};
-
-/**
- * Gère la déconnexion
- */
-const handleLogout = async () => {
-  await authStore.logout();
 };
 </script>
 

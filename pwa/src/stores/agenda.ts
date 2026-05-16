@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import router from '../router';
-import { useAuthStore } from './auth';
 
 export interface AgendaEvent {
   id: number;
@@ -29,106 +27,86 @@ export interface AgendaEvent {
 export const useAgendaStore = defineStore('agenda', () => {
   const events = ref<AgendaEvent[]>([]);
   const isLoading = ref(false);
-  let isFetching = false;
-  const lastFetch = ref<number | null>(null);
+  const hasMoreUpcoming = ref(true);
+  const hasMorePast = ref(true);
 
-  const fetchAgenda = async (force = false) => {
-    // 1. Verrouillage pour éviter les appels multiples
-    if (isFetching) return;
-
-    const now = Date.now();
-    // 2. Cache de 5 minutes
-    if (!force && events.value.length > 0 && lastFetch.value && (now - lastFetch.value < 5 * 60 * 1000)) {
-      return;
-    }
-
-    isFetching = true;
-    
-    // 3. Spinner uniquement si on n'a aucune donnée
-    if (events.value.length === 0) {
-      isLoading.value = true;
-    }
-
+  /**
+   * Récupère un lot d'événements depuis le serveur
+   * @param direction 'upcoming' (futur) ou 'past' (passé)
+   * @param referenceDate Date charnière (ISO YYYY-MM-DD)
+   * @param page Numéro de page
+   */
+  const fetchBatch = async (direction: 'upcoming' | 'past', referenceDate: string, page: number) => {
     try {
       const token = localStorage.getItem('dame_jwt_token');
-      
-      // On utilise 'view' par défaut (public) au lieu de 'edit'
-      // Sauf si on est connecté, on peut demander plus de détails
       const context = token ? 'edit' : 'view';
-      const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2/agenda?per_page=100&context=${context}`;
+      const perPage = 20;
       
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
+      // Paramètres de tri et de filtre
+      const order = direction === 'upcoming' ? 'asc' : 'desc';
+      const dateParam = direction === 'upcoming' ? `after_date=${referenceDate}` : `before_date=${referenceDate}`;
+      
+      const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2/agenda`;
+      const queryParams = [
+        `per_page=${perPage}`,
+        `page=${page}`,
+        `context=${context}`,
+        `orderby=meta_value`,
+        `meta_key=_dame_start_date`,
+        `order=${order}`,
+        dateParam
+      ].join('&');
 
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const response = await fetch(`${baseUrl}?${queryParams}`, { method: 'GET', headers });
+
+      if (!response.ok) {
+        if (response.status === 400) return []; // Fin de pagination
+        throw new Error("Erreur serveur");
       }
 
-      const fetchOptions = {
-        method: 'GET',
-        headers
-      };
+      const data: AgendaEvent[] = await response.json();
+      
+      // Mise à jour des drapeaux de fin
+      if (direction === 'upcoming' && data.length < perPage) hasMoreUpcoming.value = false;
+      if (direction === 'past' && data.length < perPage) hasMorePast.value = false;
 
-      const response = await fetch(`${baseUrl}&page=1`, fetchOptions);
-
-      // Si on a tenté avec un token et que ça échoue, on vide le token et on tente en public
-      if (response.status === 401 && token) {
-        localStorage.removeItem('dame_jwt_token');
-        isFetching = false;
-        return fetchAgenda(true);
-      }
-
-      if (!response.ok) throw new Error("Erreur serveur");
-
-      const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '1');
-      let allEvents: AgendaEvent[] = await response.json();
-
-      if (totalPages > 1) {
-        const pagePromises = [];
-        for (let i = 2; i <= totalPages; i++) {
-          pagePromises.push(
-            fetch(`${baseUrl}&page=${i}`, fetchOptions).then(res => res.json())
-          );
-        }
-        const results = await Promise.all(pagePromises);
-        results.forEach((pageData: AgendaEvent[]) => {
-          allEvents = allEvents.concat(pageData);
-        });
-      }
-
-      // Tri chronologique sécurisé
-      allEvents.sort((a, b) => {
-        const startA = `${a.meta?._dame_start_date || '9999-12-31'} ${a.meta?._dame_start_time || '00:00'}`;
-        const startB = `${b.meta?._dame_start_date || '9999-12-31'} ${b.meta?._dame_start_time || '00:00'}`;
-        return startA.localeCompare(startB);
-      });
-
-      events.value = allEvents;
-      lastFetch.value = Date.now();
-    } catch (error: any) {
-      console.error("Erreur fetchAgenda:", error);
-      if (error.message === "Session expirée") {
-        useAuthStore().logout();
-      }
-    } finally {
-      // 4. Libération systématique du verrou et du spinner
-      isLoading.value = false;
-      isFetching = false;
+      return data;
+    } catch (error) {
+      console.error(`Erreur fetchBatch ${direction}:`, error);
+      return [];
     }
   };
 
   /**
-   * Réinitialise les données du store (ex: déconnexion)
+   * Méthode de compatibilité pour le reste de l'app (ex: HomePage)
+   * Charge les 20 prochains événements
    */
+  const fetchAgenda = async () => {
+    isLoading.value = true;
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const data = await fetchBatch('upcoming', today, 1);
+      events.value = data;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
   const clearData = () => {
     events.value = [];
-    lastFetch.value = null;
+    hasMoreUpcoming.value = true;
+    hasMorePast.value = true;
   };
 
   return {
     events,
     isLoading,
+    hasMoreUpcoming,
+    hasMorePast,
+    fetchBatch,
     fetchAgenda,
     clearData
   };

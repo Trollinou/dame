@@ -32,7 +32,7 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="true">
+    <ion-content :fullscreen="true" class="ion-padding">
       <!-- État de chargement -->
       <div v-if="isLoading && members.length === 0" class="ion-text-center ion-padding">
         <ion-spinner name="crescent"></ion-spinner>
@@ -74,7 +74,6 @@ import {
   IonItem,
   IonLabel,
   IonSpinner,
-  IonIcon,
   IonSelect,
   IonSelectOption,
   onIonViewWillEnter

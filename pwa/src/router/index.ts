@@ -56,13 +56,13 @@ const routes: Array<RouteRecordRaw> = [
         component: TournamentPage
       },
       {
-        path: 'admin/survey',
-        component: SondagesPage,
-        meta: { requiresAuth: true }
+        path: 'survey',
+        component: SondagesPage
       },
       {
         path: 'admin/survey/:id',
         name: 'SondageDetail',
+        meta: { requiresAuth: true },
         component: () => import('@/views/SondageDetailPage.vue')
       },
       {
