@@ -6,7 +6,8 @@ import { useAuthStore } from './auth';
 export interface Sondage {
   id: number;
   title: {
-    raw: string;
+    rendered: string;
+    raw?: string;
   };
   content?: {
     rendered: string;
@@ -17,7 +18,8 @@ export interface Sondage {
 export interface SondageReponse {
   id: number;
   title: {
-    raw: string;
+    rendered: string;
+    raw?: string;
   };
   sondage_id: number;
   choices?: string[];
@@ -50,7 +52,7 @@ export const useSondageStore = defineStore('sondages', () => {
     try {
       const token = localStorage.getItem('dame_jwt_token');
       
-      const context = token ? 'edit' : 'view';
+      const context = 'view';
       const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2`;
       
       const headers: Record<string, string> = {

@@ -74,6 +74,15 @@ const routes: Array<RouteRecordRaw> = [
         path: 'login',
         component: LoginPage
       },
+      {
+        path: 'register',
+        component: () => import('../views/RegisterPage.vue')
+      },
+      {
+        path: 'select-person',
+        component: () => import('../views/SelectPersonPage.vue'),
+        meta: { requiresAuth: true }
+      },
       // Routes Privées (Admin)
       {
         path: 'admin/dashboard',

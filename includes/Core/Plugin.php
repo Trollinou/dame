@@ -55,6 +55,8 @@ use DAME\Taxonomies\AgendaCategory;
 use DAME\Admin\Toolbar;
 use DAME\API\REST\Post_Meta;
 use DAME\API\REST\Data_Endpoints;
+use DAME\API\REST\Registration;
+use DAME\API\REST\Identities;
 
 /**
  * The core plugin class.
@@ -132,6 +134,12 @@ class Plugin {
 		// Initialize custom REST endpoints.
 		$data_endpoints = new Data_Endpoints( $birthday_service );
 		$data_endpoints->init();
+
+		$registration = new Registration();
+		$registration->init();
+
+		$identities = new Identities();
+		$identities->init();
 
 		// Initialize API.
 		$tracker = new Tracker();

@@ -48,7 +48,7 @@
           @click="goToDetail(member.id)"
         >
           <ion-label>
-            <h2>{{ member.title.raw }}</h2>
+            <h2 v-html="member.title.rendered"></h2>
           </ion-label>
         </ion-item>
       </ion-list>
@@ -109,7 +109,7 @@ const filteredMembers = computed(() => {
   }
   const query = removeAccents(searchQuery.value.toLowerCase());
   return result.filter(member => {
-    const memberName = removeAccents((member.title.raw || "").toLowerCase());
+    const memberName = removeAccents((member.title.rendered || "").toLowerCase());
     return memberName.includes(query);
   });
 });

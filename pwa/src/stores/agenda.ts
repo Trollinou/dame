@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { useAuthStore } from './auth';
 
 export interface AgendaEvent {
   id: number;
@@ -29,20 +30,20 @@ export const useAgendaStore = defineStore('agenda', () => {
   const isLoading = ref(false);
   const hasMoreUpcoming = ref(true);
   const hasMorePast = ref(true);
+  
+  // Etat de la pagination partagé
+  const upcomingPage = ref(1);
+  const pastPage = ref(1);
 
   /**
    * Récupère un lot d'événements depuis le serveur
-   * @param direction 'upcoming' (futur) ou 'past' (passé)
-   * @param referenceDate Date charnière (ISO YYYY-MM-DD)
-   * @param page Numéro de page
    */
   const fetchBatch = async (direction: 'upcoming' | 'past', referenceDate: string, page: number) => {
     try {
       const token = localStorage.getItem('dame_jwt_token');
-      const context = token ? 'edit' : 'view';
+      const context = 'view';
       const perPage = 20;
       
-      // Paramètres de tri et de filtre
       const order = direction === 'upcoming' ? 'asc' : 'desc';
       const dateParam = direction === 'upcoming' ? `after_date=${referenceDate}` : `before_date=${referenceDate}`;
       
@@ -63,13 +64,12 @@ export const useAgendaStore = defineStore('agenda', () => {
       const response = await fetch(`${baseUrl}?${queryParams}`, { method: 'GET', headers });
 
       if (!response.ok) {
-        if (response.status === 400) return []; // Fin de pagination
+        if (response.status === 400) return [];
         throw new Error("Erreur serveur");
       }
 
       const data: AgendaEvent[] = await response.json();
       
-      // Mise à jour des drapeaux de fin
       if (direction === 'upcoming' && data.length < perPage) hasMoreUpcoming.value = false;
       if (direction === 'past' && data.length < perPage) hasMorePast.value = false;
 
@@ -81,15 +81,31 @@ export const useAgendaStore = defineStore('agenda', () => {
   };
 
   /**
-   * Méthode de compatibilité pour le reste de l'app (ex: HomePage)
-   * Charge les 20 prochains événements
+   * Rafraîchit les données de base (utilisé par Home et Pull-to-refresh)
    */
   const fetchAgenda = async () => {
     isLoading.value = true;
     try {
       const today = new Date().toISOString().split('T')[0];
       const data = await fetchBatch('upcoming', today, 1);
-      events.value = data;
+      
+      // --- LOGIQUE DE FUSION INTELLIGENTE ---
+      // On garde tous les événements passés déjà chargés en mémoire
+      const pastEventsInCache = events.value.filter(e => {
+        const refDate = e.meta?._dame_end_date || e.meta?._dame_start_date || '';
+        return refDate < today;
+      });
+
+      // On remplace le bloc futur par les données fraîches
+      // (On réinitialise la pagination future à 1 car on vient de recharger la page 1)
+      const mergedEvents = [...pastEventsInCache, ...data];
+      
+      // Sécurité anti-doublons
+      events.value = mergedEvents.filter((v, i, a) => a.findIndex(t => (t.id === v.id)) === i);
+      
+      upcomingPage.value = 1;
+      hasMoreUpcoming.value = data.length >= 20;
+
     } finally {
       isLoading.value = false;
     }
@@ -99,6 +115,8 @@ export const useAgendaStore = defineStore('agenda', () => {
     events.value = [];
     hasMoreUpcoming.value = true;
     hasMorePast.value = true;
+    upcomingPage.value = 1;
+    pastPage.value = 1;
   };
 
   return {
@@ -106,6 +124,8 @@ export const useAgendaStore = defineStore('agenda', () => {
     isLoading,
     hasMoreUpcoming,
     hasMorePast,
+    upcomingPage,
+    pastPage,
     fetchBatch,
     fetchAgenda,
     clearData

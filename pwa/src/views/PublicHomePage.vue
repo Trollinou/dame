@@ -3,14 +3,34 @@
     <!-- Header Global avec Authentification -->
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>
-          <div style="display: flex; align-items: center;">
+        <!-- Logo à gauche -->
+        <ion-buttons slot="start">
+          <div style="display: flex; align-items: center; padding-left: 12px;">
             <img src="/assets/icon/queen.svg" style="height: 20px; margin-right: 8px;" alt="Logo" />
-            <span style="font-weight: 800; letter-spacing: 0.5px;">DAME</span>
+            <span style="font-weight: 800; letter-spacing: 0.5px; color: var(--ion-color-dark);">DAME</span>
           </div>
-        </ion-title>
+        </ion-buttons>
 
+        <!-- Zone Identité et Actions à droite -->
         <ion-buttons slot="end">
+          <!-- Identité sélectionnée (Cliquable seulement si ce n'est pas un compte virtuel) -->
+          <div 
+            v-if="authStore.selectedIdentity" 
+            @click="authStore.selectedIdentity.id !== 'wp_virtual' ? goToSelectPerson() : null" 
+            style="display: flex; align-items: center; padding: 0 8px; max-width: 250px;"
+            :style="{ cursor: authStore.selectedIdentity.id !== 'wp_virtual' ? 'pointer' : 'default' }"
+          >
+            <div style="display: flex; flex-direction: column; align-items: flex-end; margin-right: 8px; overflow: hidden;">
+              <span style="font-size: 0.85em; font-weight: bold; line-height: 1.1; color: var(--ion-color-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: right;">
+                {{ authStore.selectedIdentity.name }}
+              </span>
+              <span style="font-size: 0.7em; opacity: 0.7; line-height: 1.1; white-space: nowrap;">
+                {{ authStore.selectedIdentity.id === 'wp_virtual' ? 'Gestion' : (authStore.selectedIdentity.type === 'representative' ? 'Resp. Légal' : 'Adhérent') }}
+              </span>
+            </div>
+            <ion-icon :icon="peopleOutline" style="font-size: 24px; color: var(--ion-color-primary); flex-shrink: 0;"></ion-icon>
+          </div>
+
           <!-- Bouton Connexion -->
           <ion-button v-if="!authStore.isAuthenticated" router-link="/login" color="primary" fill="clear">
             <ion-icon slot="icon-only" :icon="personCircleOutline"></ion-icon>
@@ -24,6 +44,11 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
+      <!-- Refresher pour le tirage vers le bas -->
+      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+      </ion-refresher>
+
       <ion-header collapse="condense">
         <ion-toolbar>
           <ion-title size="large">Dame</ion-title>
@@ -96,8 +121,8 @@
         <ion-item v-for="sondage in latestSondages" :key="sondage.id">
           <ion-icon slot="start" :icon="statsChartOutline" color="secondary"></ion-icon>
           <ion-label>
-            <h3 v-html="sondage.title.raw" class="ion-text-wrap" style="font-weight: 600;"></h3>
-            <p>Se termine prochainement</p>
+            <h3 v-html="sondage.title?.rendered || sondage.title?.raw || 'Sondage en cours'" class="ion-text-wrap" style="font-weight: 600;"></h3>
+            <p>Donnez votre avis</p>
           </ion-label>
         </ion-item>
 
@@ -127,10 +152,12 @@ import {
   IonButton,
   IonSpinner,
   IonBadge,
+  IonRefresher,
+  IonRefresherContent,
   onIonViewWillEnter
 } from '@ionic/vue';
-import { calendarOutline, statsChartOutline, newspaperOutline, personCircleOutline, logOutOutline } from 'ionicons/icons';
-import { ref, computed } from 'vue';
+import { calendarOutline, statsChartOutline, newspaperOutline, personCircleOutline, logOutOutline, peopleOutline } from 'ionicons/icons';
+import { ref, computed, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 import { useAgendaStore, type AgendaEvent } from '@/stores/agenda';
@@ -145,6 +172,41 @@ const latestPosts = ref<any[]>([]);
 const isLoadingNews = ref(false);
 
 const todayStr = new Date().toISOString().split('T')[0];
+
+/**
+ * Charge toutes les données de la page
+ */
+const loadAllData = async () => {
+  // On lance tout en parallèle pour la vitesse
+  await Promise.all([
+    fetchLatestNews(),
+    agendaStore.fetchAgenda(),
+    sondageStore.fetchSondagesData(true) // force le rechargement pour les sondages
+  ]);
+};
+
+/**
+ * Gère le rafraîchissement manuel (Pull-to-refresh)
+ */
+const handleRefresh = async (event: any) => {
+  await loadAllData();
+  event.target.complete();
+};
+
+/**
+ * Surveille les changements de connexion pour rafraîchir les données
+ * (Important lors de la déconnexion depuis cette page)
+ */
+watch(() => authStore.isAuthenticated, () => {
+  loadAllData();
+});
+
+/**
+ * Redirige vers le choix de personne
+ */
+const goToSelectPerson = () => {
+  router.push('/tabs/select-person');
+};
 
 /**
  * Gère la déconnexion
@@ -175,11 +237,15 @@ const fetchLatestNews = async () => {
  * Filtre les 3 prochains événements (non passés)
  */
 const upcomingEvents = computed(() => {
-  const today = new Date().toISOString().split('T')[0];
   return agendaStore.events
-    .filter(e => (e.meta?._dame_end_date || e.meta?._dame_start_date || '') >= today)
+    .filter(e => !isPast(e))
     .slice(0, 3);
 });
+
+const isPast = (event: AgendaEvent): boolean => {
+  const referenceDate = event.meta?._dame_end_date || event.meta?._dame_start_date || '';
+  return referenceDate < todayStr;
+};
 
 /**
  * Prend les 2 sondages les plus récents
@@ -246,9 +312,7 @@ const goToNews = (id: number) => router.push(`/tabs/news/${id}`);
 const goToAgenda = (id: number) => router.push(`/tabs/agenda/${id}`);
 
 onIonViewWillEnter(() => {
-  fetchLatestNews();
-  agendaStore.fetchAgenda();
-  sondageStore.fetchSondagesData();
+  loadAllData();
 });
 </script>
 

@@ -4,6 +4,35 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.4.6a] - 2026-05-17
+### Ajouté
+- **Gestion des Événements "En cours"** : Support complet pour les événements ayant commencé dans le passé mais se terminant dans le futur.
+- **Dédoublonnage Automatique** : Implémentation d'un système de filtrage par ID dans l'Agenda pour gérer les chevauchements de requêtes API entre le passé et le futur.
+
+### Modifié
+- **Stabilité du Cache Agenda** : Refonte de la fusion des données dans le store pour empêcher la suppression accidentelle de l'historique lors d'un rafraîchissement depuis la Homepage.
+- **Persistence de la Pagination** : Déplacement de l'état de pagination (`upcomingPage`, `pastPage`) dans le store global pour maintenir la cohérence de l'historique lors de la navigation.
+
+## [4.4.6] - 2026-05-16
+### Ajouté
+- **Gestion Multi-Identités** : Implémentation d'un système de sélection de profil pour les comptes familiaux (un email pour plusieurs adhérents/responsables).
+- **Page de Sélection** : Création de `SelectPersonPage.vue` permettant de choisir l'identité active après la connexion.
+- **Pull-to-Refresh** : Ajout de la fonctionnalité de rafraîchissement par tirage vers le bas sur la page d'accueil pour mettre à jour News, Agenda et Sondages instantanément.
+- **Inscription Publique** : Création de la page `RegisterPage.vue` liée à un nouvel endpoint WordPress pour permettre aux membres de créer leur compte eux-mêmes.
+- **Synchronisation Auto** : Mise en place d'un système de surveillance (Watcher) rafraîchissant automatiquement les données lors des changements de session (Login/Logout).
+
+### Modifié
+- **Sécurité des Rôles** : Refonte complète de la détection des droits. Ajout du rôle `Entraineur` aux accès privilégiés et exclusion stricte du rôle `Membre` des fonctions de gestion.
+- **Stabilité API REST** : Forçage du contexte `view` pour l'Agenda et les Sondages afin d'éliminer les erreurs 403 Forbidden rencontrées par certains profils.
+- **Header Dynamique** : Optimisation de l'affichage de l'identité dans le header avec un conteneur flexible supportant les noms longs sans troncature et suppression de la dépendance restrictive `ion-button`.
+- **UX Inscription** : Clarification du formulaire de connexion et d'inscription (utilisation de l'Identifiant WordPress au lieu de l'Email).
+
+### Corrigé
+- **Titres Sondages** : Résolution du bug masquant les titres des sondages pour les utilisateurs non connectés sur la Homepage.
+- **Identité Virtuelle** : Correction de l'absence de nom pour les comptes administrateurs purs via une récupération forcée du profil WordPress complet (`/me`).
+- **Accès Admin** : Suppression d'un fallback de sécurité qui accordait par erreur des droits d'administration au rôle "Membre".
+- **État Persistant** : Correction du bug dans la page d'inscription qui affichait toujours l'écran de succès lors d'une nouvelle tentative après déconnexion.
+
 ## [4.4.5] - 2026-05-15
 ### Ajouté
 - **Pagination Réelle (Agenda)** : Implémentation d'une stratégie de chargement à la demande (Infinite Scroll) bi-directionnelle pour l'Agenda.

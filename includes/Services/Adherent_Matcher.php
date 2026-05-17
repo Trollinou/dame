@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Services;
 
 use WP_Query;
@@ -58,8 +60,53 @@ class Adherent_Matcher {
 			);
 
 			if ( $query->have_posts() ) {
-				return $query->posts[0];
+				return (int) $query->posts[0];
 			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Checks if an email is associated with an adherent or a legal representative.
+	 *
+	 * @param string $email The email to check.
+	 * @return int The adherent ID if found, 0 otherwise.
+	 */
+	public static function check_if_email_is_member( string $email ): int {
+		if ( ! is_email( $email ) ) {
+			return 0;
+		}
+
+		$query = new WP_Query(
+			[
+				'post_type'      => 'adherent',
+				'post_status'    => 'any',
+				'posts_per_page' => 1,
+				'meta_query'     => [
+					'relation' => 'OR',
+					[
+						'key'     => '_dame_email',
+						'value'   => $email,
+						'compare' => '=',
+					],
+					[
+						'key'     => '_dame_legal_rep_1_email',
+						'value'   => $email,
+						'compare' => '=',
+					],
+					[
+						'key'     => '_dame_legal_rep_2_email',
+						'value'   => $email,
+						'compare' => '=',
+					],
+				],
+				'fields'         => 'ids',
+			]
+		);
+
+		if ( $query->have_posts() ) {
+			return (int) $query->posts[0];
 		}
 
 		return 0;

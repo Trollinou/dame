@@ -68,10 +68,19 @@ class Post_Meta {
 
 		if ( $after_date ) {
 			$args['meta_query'][] = [
-				'key'     => '_dame_start_date',
-				'value'   => $after_date,
-				'compare' => '>=',
-				'type'    => 'DATE',
+				'relation' => 'OR',
+				[
+					'key'     => '_dame_start_date',
+					'value'   => $after_date,
+					'compare' => '>=',
+					'type'    => 'DATE',
+				],
+				[
+					'key'     => '_dame_end_date',
+					'value'   => $after_date,
+					'compare' => '>=',
+					'type'    => 'DATE',
+				],
 			];
 		}
 

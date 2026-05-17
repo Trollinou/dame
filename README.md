@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 4.4.5
+**Version:** 4.4.6a
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -77,7 +77,7 @@ Pour la fonctionnalité pédagogique (LMS), ce plugin nécessite le plugin **ROI
 Le plugin expose plusieurs points de terminaison (endpoints) personnalisés pour permettre l'administration via une application mobile (PWA).
 
 ### Authentification
-Toutes les requêtes personnalisées nécessitent que l'utilisateur soit authentifié (`is_user_logged_in()`).
+Toutes les requêtes personnalisées nécessitent que l'utilisateur soit authentifié (`is_user_logged_in()`), sauf l'endpoint d'inscription.
 
 ### Accès à l'Application (PWA)
 L'application mobile est accessible via une URL simplifiée : `https://votre-site.com/pwa`. Une redirection automatique est en place pour pointer vers le dossier de distribution du plugin.
@@ -182,8 +182,49 @@ Récupère les éléments du menu de navigation nommé "Menu_PWA".
 ]
 ```
 
+### 5. Inscription (Membres uniquement)
+Permet à un membre du club (identifié par son e-mail dans la base adhérent) de créer son compte utilisateur.
 
-### 5. Ressources Natives WordPress
+*   **URL :** `/wp-json/dame/v1/register`
+*   **Méthode :** `POST`
+*   **Accès :** Public
+*   **Paramètres JSON :**
+    *   `username` : Identifiant souhaité.
+    *   `email` : Adresse e-mail (doit correspondre à un adhérent ou RL).
+    *   `password` : Mot de passe.
+
+**Processus :**
+1. Création du compte avec statut "Non vérifié".
+2. Envoi d'un e-mail de vérification avec jeton.
+3. Validation du jeton via le site (redirige vers la PWA).
+4. Liaison automatique de l'utilisateur WordPress avec la fiche Adhérent.
+
+### 6. Mes Identités (Profiles)
+Récupère toutes les fiches adhérents liées à l'adresse e-mail de l'utilisateur connecté.
+
+*   **URL :** `/wp-json/dame/v1/my-identities`
+*   **Méthode :** `GET`
+*   **Accès :** Authentifié
+
+**Réponse type :**
+```json
+[
+  {
+    "id": "member_50",
+    "name": "Lucas DUPONT",
+    "type": "member",
+    "member_id": 50
+  },
+  {
+    "id": "rep_50_1",
+    "name": "Jean DUPONT",
+    "type": "representative",
+    "member_id": 50
+  }
+]
+```
+
+### 7. Ressources Natives WordPress
 Le plugin expose également les Custom Post Types et Taxonomies via l'API REST native sous les points de terminaison suivants :
 
 #### Custom Post Types

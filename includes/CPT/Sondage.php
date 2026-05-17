@@ -91,8 +91,8 @@ class Sondage {
 
 		$sondage_args = [
 			'labels'             => $sondage_labels,
-			'public'             => false,
-			'publicly_queryable' => false,
+			'public'             => true,
+			'publicly_queryable' => true,
 			'show_ui'            => true,
 			'show_in_menu'       => 'dame-admin',
 			'query_var'          => true,

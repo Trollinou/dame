@@ -24,7 +24,7 @@
       <ion-list v-else-if="filteredSondages.length > 0">
         <ion-item v-for="sondage in filteredSondages" :key="sondage.id" button>
           <ion-label @click="viewSondage(sondage)">
-            <h2>{{ sondage.title.raw }}</h2>
+            <h2 v-html="sondage.title.rendered"></h2>
             <p>{{ formatSondageDates(sondage) }}</p>
           </ion-label>
           <ion-badge 
@@ -106,7 +106,7 @@ const filteredSondages = computed(() => {
   
   const query = removeAccents(searchQuery.value.toLowerCase());
   return sondages.value.filter(s => 
-    removeAccents(s.title.raw.toLowerCase()).includes(query)
+    removeAccents(s.title.rendered.toLowerCase()).includes(query)
   );
 });
 

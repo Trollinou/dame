@@ -42,6 +42,12 @@
           >
             {{ isLoading ? 'Connexion en cours...' : 'Se connecter' }}
           </ion-button>
+          
+          <div class="ion-text-center ion-margin-top">
+            <ion-button fill="clear" router-link="/tabs/register" color="medium">
+              Pas encore de compte ? S'inscrire
+            </ion-button>
+          </div>
         </form>
       </div>
     </ion-content>

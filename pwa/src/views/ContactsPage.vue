@@ -47,7 +47,7 @@
           @click="goToDetail(contact.id)"
         >
           <ion-label>
-            <h2>{{ contact.title.raw }}</h2>
+            <h2 v-html="contact.title.rendered"></h2>
           </ion-label>
         </ion-item>
       </ion-list>
@@ -119,7 +119,7 @@ const filteredContacts = computed(() => {
   }
   const query = removeAccents(searchQuery.value.toLowerCase());
   return result.filter(contact => {
-    const name = removeAccents((contact.title.raw || "").toLowerCase());
+    const name = removeAccents((contact.title.rendered || "").toLowerCase());
     return name.includes(query);
   });
 });

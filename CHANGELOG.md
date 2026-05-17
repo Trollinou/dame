@@ -1,5 +1,41 @@
 # Changelog
 
+## 4.4.6a - 2026-05-17
+### Ajout
+- **REST API (Agenda) :** Amélioration du filtrage par date pour inclure les événements "en cours" (ceux ayant commencé dans le passé mais finissant aujourd'hui ou plus tard).
+- **Application Mobile (PWA) :** Support complet pour les événements "en cours" et système de dédoublonnage automatique dans l'Agenda.
+
+### Modifié
+- **Application Mobile (PWA) :** Refonte de la fusion des données (store) pour une meilleure stabilité du cache et persistance globale de l'état de la pagination.
+
+## 4.4.6 - 2026-05-16
+### Ajout
+- **Système d'Inscription (REST API) :** Implémentation d'un nouvel endpoint `POST /dame/v1/register` permettant aux membres du club de créer leur propre compte utilisateur WordPress.
+- **Vérification par Email :** Mise en place d'un système de jetons de vérification envoyés par e-mail avec redirection automatique vers la PWA après validation.
+- **Sécurité (Connexion) :** Restriction de l'accès aux comptes non vérifiés via le filtre `wp_authenticate_user`, avec une exception pour les rôles `Membre` ou supérieurs.
+- **Gestion Multi-Identités (REST API) :** Création de l'endpoint `GET /dame/v1/my-identities` permettant à un utilisateur de récupérer toutes les fiches adhérents liées à son adresse e-mail.
+- **Application Mobile (PWA) :** Implémentation d'un système de sélection de profil pour les comptes familiaux (un email pour plusieurs adhérents/responsables).
+- **Application Mobile (PWA) :** Création de `SelectPersonPage.vue` permettant de choisir l'identité active après la connexion.
+- **Application Mobile (PWA) :** Ajout de la fonctionnalité de rafraîchissement par tirage vers le bas (Pull-to-refresh) sur la page d'accueil.
+- **Application Mobile (PWA) :** Création de la page `RegisterPage.vue` liée au nouvel endpoint d'inscription.
+- **Application Mobile (PWA) :** Mise en place d'un système de synchronisation automatique rafraîchissant les données lors des changements de session.
+
+### Modifié
+- **Sécurité des Rôles (PWA) :** Refonte de la détection des droits incluant le rôle `Entraineur` et isolant strictement le rôle `Membre` des fonctions de gestion.
+- **Stabilité API REST (PWA) :** Forçage du contexte `view` pour l'Agenda et les Sondages afin d'éliminer les erreurs 403 Forbidden.
+- **Interface (PWA) :** Optimisation du header pour l'affichage dynamique de l'identité (nom et rôle) avec support des noms longs et suppression des dépendances restrictives.
+- **Sécurité (Toolbar) :** Restriction de l'affichage de la barre d'outils DAME aux seuls rôles d'encadrement (Staff, Entraineur, Admin), masquage pour les Abonnés et Membres.
+
+### Correction
+- **Qualité Code (Adherent Matcher) :** Fiabilisation de la recherche d'adhérents par email et conformité stricte PHP 8.4.
+- **REST API (Validation) :** Correction d'une erreur fatale `ArgumentCountError` dans les callbacks de validation des routes REST.
+- **Sauvegardes (Restauration) :** Correction critique de la restauration des rôles utilisateurs (mapping dynamique du préfixe de base de données) garantissant la conservation des droits après import.
+- **Redirection PWA :** Refonte de la redirection après vérification d'email pour utiliser l'URL dynamique du site au lieu d'une URL locale.
+- **Application Mobile (PWA) :** Résolution du bug de masquage des titres de sondages pour les utilisateurs non connectés.
+- **Application Mobile (PWA) :** Correction de l'absence de nom pour les comptes administrateurs purs via une récupération forcée du profil complet.
+- **Application Mobile (PWA) :** Suppression d'un fallback de sécurité qui accordait par erreur des droits d'administration au rôle "Membre".
+- **Application Mobile (PWA) :** Correction du bug de l'état persistant sur la page d'inscription après deconnexion.
+
 ## 4.4.5 - 2026-05-15
 ### Ajout
 - **Optimisation REST API (Agenda) :** Implémentation du filtrage par date côté serveur via les nouveaux paramètres `after_date` et `before_date` pour l'endpoint `/wp-json/wp/v2/agenda`.

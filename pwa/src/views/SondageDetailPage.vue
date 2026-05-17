@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/survey"></ion-back-button>
         </ion-buttons>
-        <ion-title v-if="sondage">{{ sondage.title.raw }}</ion-title>
+        <ion-title v-if="sondage" v-html="sondage.title.rendered"></ion-title>
         <ion-title v-else>Détails Sondage</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -14,7 +14,7 @@
       <ion-header collapse="condense">
         <ion-toolbar>
           <ion-title size="large">
-            <div class="multiline-large-title" v-if="sondage">{{ sondage.title.raw }}</div>
+            <div class="multiline-large-title" v-if="sondage" v-html="sondage.title.rendered"></div>
             <div class="multiline-large-title" v-else>Détails Sondage</div>
           </ion-title>
         </ion-toolbar>
@@ -48,8 +48,8 @@
                       color="primary" 
                       v-for="participant in getParticipants(dIndex, tIndex)" 
                       :key="participant.id"
+                      v-html="participant.title.rendered"
                     >
-                      {{ participant.title.raw }}
                     </ion-chip>
                   </div>
                   <p v-else class="no-participants">Aucun inscrit</p>

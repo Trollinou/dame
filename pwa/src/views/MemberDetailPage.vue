@@ -14,7 +14,7 @@
       <ion-header collapse="condense">
         <ion-toolbar>
           <ion-title size="large">
-            <div class="multiline-large-title" v-if="member">{{ member.title.raw }}</div>
+            <div class="multiline-large-title" v-if="member" v-html="member.title.rendered"></div>
             <div class="multiline-large-title" v-else>Détails Adhérent</div>
           </ion-title>
         </ion-toolbar>

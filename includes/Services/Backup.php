@@ -597,8 +597,9 @@ class Backup {
 
 			$first_name = $member_data['Prénom'];
 			$last_name = $member_data['Nom d\'usage'];
+			$birth_name = $member_data['Nom de naissance'];
 
-			if ( empty( $first_name ) || empty( $last_name ) ) {
+			if ( empty( $first_name ) || ( empty( $last_name ) && empty( $birth_name ) ) ) {
 				continue; // Skip rows without a name
 			}
 
@@ -606,7 +607,7 @@ class Backup {
 			$email = $member_data['Adresse email'];
 			$license = $member_data['Numéro de licence'];
 			
-			$effective_last_name = ! empty( $last_name ) ? $last_name : $member_data['Nom de naissance'];
+			$effective_last_name = ! empty( $last_name ) ? $last_name : $birth_name;
 			$post_title = \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $first_name );
 
 			// Reconciliation
@@ -1064,14 +1065,30 @@ class Backup {
 			}
 
 			foreach ( $u['meta'] as $k => $vals ) {
+				// Normalize capability and user_level keys to current prefix
+				$normalized_key = $k;
+				if ( preg_match( '/^(.*)capabilities$/', $k, $matches ) ) {
+					$normalized_key = $wpdb->prefix . 'capabilities';
+				} elseif ( preg_match( '/^(.*)user_level$/', $k, $matches ) ) {
+					$normalized_key = $wpdb->prefix . 'user_level';
+				}
+
 				foreach ( $vals as $v ) {
 					if ( $uid === $current_user_id ) {
 						// For current user, only update keys if they don't exist to avoid breaking session
-						if ( ! get_user_meta( $uid, $k, true ) ) {
-							add_user_meta( $uid, $k, $v, false );
+						if ( ! get_user_meta( $uid, $normalized_key, true ) ) {
+							add_user_meta( $uid, $normalized_key, $v, false );
 						}
 					} else {
-						add_user_meta( $uid, $k, $v, false );
+						// Use update_user_meta for the first value and add_user_meta for subsequent if multiple (rare for these keys)
+						// But here we are iterating over $vals which came from a raw DB query.
+						// To preserve the EXACT raw value (which is already serialized in DB),
+						// it's safer to use $wpdb->insert to avoid double serialization by WP meta functions.
+						$wpdb->insert( $wpdb->usermeta, [
+							'user_id'    => $uid,
+							'meta_key'   => $normalized_key,
+							'meta_value' => $v
+						] );
 					}
 				}
 			}

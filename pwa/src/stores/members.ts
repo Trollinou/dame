@@ -127,8 +127,8 @@ export const useMemberStore = defineStore('members', () => {
 
       // Tri alphabétique (ignore accents et casse)
       allMembers.sort((a, b) => {
-        const nameA = a.title?.raw || '';
-        const nameB = b.title?.raw || '';
+        const nameA = a.title?.raw || a.title?.rendered || '';
+        const nameB = b.title?.raw || b.title?.rendered || '';
         return nameA.localeCompare(nameB, 'fr', { sensitivity: 'base' });
       });
 

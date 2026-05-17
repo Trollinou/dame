@@ -105,11 +105,9 @@ import { storeToRefs } from 'pinia';
 
 const router = useRouter();
 const agendaStore = useAgendaStore();
-const { events, isLoading, hasMoreUpcoming, hasMorePast } = storeToRefs(agendaStore);
+const { events, isLoading, hasMoreUpcoming, hasMorePast, upcomingPage, pastPage } = storeToRefs(agendaStore);
 
 const searchQuery = ref('');
-const upcomingPage = ref(1);
-const pastPage = ref(1);
 const todayStr = new Date().toISOString().split('T')[0];
 const isFirstLoad = ref(true);
 
@@ -135,10 +133,15 @@ const isPast = (event: AgendaEvent): boolean => {
 const isToday = (event: AgendaEvent): boolean => {
   const startDate = event.meta?._dame_start_date;
   const endDate = event.meta?._dame_end_date;
+
   if (!startDate) return false;
+
+  // Cas 1 : Événement sur une période (plusieurs jours)
   if (endDate && startDate !== endDate) {
     return todayStr >= startDate && todayStr <= endDate;
   }
+
+  // Cas 2 : Événement sur une seule journée
   return startDate === todayStr;
 };
 
@@ -166,7 +169,9 @@ const loadMoreUpcoming = async (ev: any) => {
   upcomingPage.value++;
   const data = await agendaStore.fetchBatch('upcoming', todayStr, upcomingPage.value);
   if (data.length > 0) {
-    events.value = [...events.value, ...data];
+    // Filtrage des doublons (au cas où l'API renvoie un événement déjà chargé)
+    const newItems = data.filter(newItem => !events.value.some(existing => existing.id === newItem.id));
+    events.value = [...events.value, ...newItems];
   }
   ev.target.complete();
 };
@@ -178,7 +183,11 @@ const loadMorePast = async (ev: any) => {
   const data = await agendaStore.fetchBatch('past', todayStr, pastPage.value);
   if (data.length > 0) {
     // Inversion car le serveur renvoie DESC (plus récent d'abord), on veut ASC pour la liste
-    events.value = [...data.reverse(), ...events.value];
+    const dataAsc = data.reverse();
+    // Filtrage des doublons (crucial pour les événements en cours qui chevauchent les deux requêtes)
+    const newItems = dataAsc.filter(newItem => !events.value.some(existing => existing.id === newItem.id));
+    
+    events.value = [...newItems, ...events.value];
     pastPage.value++;
   }
   ev.target.complete();
