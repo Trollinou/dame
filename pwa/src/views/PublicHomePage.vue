@@ -6,8 +6,8 @@
         <!-- Logo à gauche -->
         <ion-buttons slot="start">
           <div style="display: flex; align-items: center; padding-left: 12px;">
-            <img src="/assets/icon/queen.svg" style="height: 20px; margin-right: 8px;" alt="Logo" />
-            <span style="font-weight: 800; letter-spacing: 0.5px; color: var(--ion-color-dark);">DAME</span>
+            <img src="/assets/icon/logo.png" style="height: 20px; margin-right: 8px;" alt="Logo" />
+            <span style="font-weight: 800; letter-spacing: 0.5px; color: var(--ion-color-dark);">Echiquier Lédonien</span>
           </div>
         </ion-buttons>
 
@@ -44,93 +44,99 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <!-- Refresher pour le tirage vers le bas -->
-      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
-        <ion-refresher-content></ion-refresher-content>
-      </ion-refresher>
+      <!-- Wrapper respectant la Dynamic Island -->
+      <div class="safe-area-wrapper">
+        <!-- Refresher pour le tirage vers le bas -->
+        <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
+          <ion-refresher-content></ion-refresher-content>
+        </ion-refresher>
 
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Dame</ion-title>
-        </ion-toolbar>
-      </ion-header>
+        <ion-header collapse="condense">
+          <ion-toolbar>
+            <ion-title size="large">Echiquier Lédonien</ion-title>
+          </ion-toolbar>
+        </ion-header>
 
-      <!-- Section Dernières Nouvelles -->
-      <ion-list lines="full">
-        <ion-list-header>
-          <ion-label color="primary">Dernières Nouvelles</ion-label>
-          <ion-button fill="clear" router-link="/tabs/news">Actualités</ion-button>
-        </ion-list-header>
+        <!-- Section Dernières Nouvelles -->
+        <ion-list lines="full">
+          <ion-list-header>
+            <ion-label color="primary">Dernières Nouvelles</ion-label>
+            <ion-button fill="clear" router-link="/tabs/news">Actualités</ion-button>
+          </ion-list-header>
 
-        <div v-if="isLoadingNews" class="ion-text-center ion-padding">
-          <ion-spinner name="dots"></ion-spinner>
-        </div>
-        
-        <ion-item v-for="post in latestPosts" :key="post.id" button @click="goToNews(post.id)">
-          <ion-icon slot="start" :icon="newspaperOutline" color="primary"></ion-icon>
-          <ion-thumbnail slot="start" v-if="getFeaturedImage(post)">
-            <img :src="getFeaturedImage(post) || undefined" alt="Thumbnail" style="border-radius: 4px;" />
-          </ion-thumbnail>
-          <ion-label>
-            <h3 v-html="post.title.rendered" class="ion-text-wrap" style="font-weight: 600;"></h3>
-            <p>{{ formatDate(post.date) }}</p>
-          </ion-label>
-        </ion-item>
+          <div v-if="isLoadingNews" class="ion-text-center ion-padding">
+            <ion-spinner name="dots"></ion-spinner>
+          </div>
+          
+          <ion-item v-for="post in latestPosts" :key="post.id" button @click="goToNews(post.id)">
+            <ion-icon slot="start" :icon="newspaperOutline" color="primary"></ion-icon>
+            <ion-thumbnail slot="start" v-if="getFeaturedImage(post)">
+              <img :src="getFeaturedImage(post) || undefined" alt="Thumbnail" style="border-radius: 4px;" />
+            </ion-thumbnail>
+            <ion-label>
+              <h3 v-html="post.title.rendered" class="ion-text-wrap" style="font-weight: 600;"></h3>
+              <p>{{ formatDate(post.date) }}</p>
+            </ion-label>
+          </ion-item>
 
-        <ion-item v-if="!isLoadingNews && latestPosts.length === 0" lines="none">
-          <ion-label class="ion-text-center">Aucune actualité</ion-label>
-        </ion-item>
-      </ion-list>
+          <ion-item v-if="!isLoadingNews && latestPosts.length === 0" lines="none">
+            <ion-label class="ion-text-center">Aucune actualité</ion-label>
+          </ion-item>
+        </ion-list>
 
-      <!-- Section Prochains Événements -->
-      <ion-list lines="full" class="ion-margin-top">
-        <ion-list-header>
-          <ion-label color="primary">Prochains Événements</ion-label>
-          <ion-button fill="clear" router-link="/tabs/agenda">Agenda</ion-button>
-        </ion-list-header>
+        <!-- Section Prochains Événements -->
+        <ion-list lines="full" class="ion-margin-top">
+          <ion-list-header>
+            <ion-label color="primary">Prochains Événements</ion-label>
+            <ion-button fill="clear" router-link="/tabs/agenda">Agenda</ion-button>
+          </ion-list-header>
 
-        <div v-if="agendaStore.isLoading" class="ion-text-center ion-padding">
-          <ion-spinner name="dots"></ion-spinner>
-        </div>
+          <div v-if="agendaStore.isLoading" class="ion-text-center ion-padding">
+            <ion-spinner name="dots"></ion-spinner>
+          </div>
 
-        <ion-item v-for="event in upcomingEvents" :key="event.id" button @click="goToAgenda(event.id)">
-          <ion-icon slot="start" :icon="calendarOutline" color="primary"></ion-icon>
-          <ion-label>
-            <h3 v-html="event.title.rendered" class="ion-text-wrap" style="font-weight: 600;"></h3>
-            <p>{{ formatEventDate(event) }}</p>
-          </ion-label>
-          <ion-badge v-if="isToday(event)" color="warning" slot="end">Actuellement</ion-badge>
-        </ion-item>
+          <ion-item v-for="event in upcomingEvents" :key="event.id" button @click="goToAgenda(event.id)">
+            <ion-icon slot="start" :icon="calendarOutline" color="primary"></ion-icon>
+            <ion-label>
+              <h3 v-html="event.title.rendered" class="ion-text-wrap" style="font-weight: 600;"></h3>
+              <p>{{ formatEventDate(event) }}</p>
+            </ion-label>
+            <ion-badge v-if="isToday(event)" color="warning" slot="end">Actuellement</ion-badge>
+          </ion-item>
 
-        <ion-item v-if="!agendaStore.isLoading && upcomingEvents.length === 0" lines="none">
-          <ion-label class="ion-text-center">Aucun événement à venir</ion-label>
-        </ion-item>
-      </ion-list>
+          <ion-item v-if="!agendaStore.isLoading && upcomingEvents.length === 0" lines="none">
+            <ion-label class="ion-text-center">Aucun événement à venir</ion-label>
+          </ion-item>
+        </ion-list>
 
-      <!-- Section Sondages en cours -->
-      <ion-list lines="full" class="ion-margin-top ion-margin-bottom">
-        <ion-list-header>
-          <ion-label color="primary">Sondages en cours</ion-label>
-          <!-- <ion-button fill="clear" router-link="/tabs/survey">Sondages</ion-button> -->
-        </ion-list-header>
+        <!-- Section Appel à bénévoles -->
+        <ion-list lines="full" class="ion-margin-top ion-margin-bottom">
+          <ion-list-header>
+            <ion-label color="primary">Appel à bénévoles</ion-label>
+            <ion-button fill="clear" router-link="/tabs/benevolat">Bénévolat</ion-button>
+          </ion-list-header>
 
-        <div v-if="sondageStore.isLoading" class="ion-text-center ion-padding">
-          <ion-spinner name="dots"></ion-spinner>
-        </div>
+          <div v-if="benevolatStore.isLoading" class="ion-text-center ion-padding">
+            <ion-spinner name="dots"></ion-spinner>
+          </div>
 
-        <ion-item v-for="sondage in latestSondages" :key="sondage.id">
-          <ion-icon slot="start" :icon="statsChartOutline" color="secondary"></ion-icon>
-          <ion-label>
-            <h3 v-html="sondage.title?.rendered || sondage.title?.raw || 'Sondage en cours'" class="ion-text-wrap" style="font-weight: 600;"></h3>
-            <p>Donnez votre avis</p>
-          </ion-label>
-        </ion-item>
+          <ion-item v-for="benevolat in latestBenevolats" :key="benevolat.id" button @click="goToBenevolat(benevolat.id)">
+            <ion-icon slot="start" :icon="handRightOutline" color="secondary"></ion-icon>
+            <ion-label>
+              <h3 v-html="benevolat.title?.rendered || benevolat.title?.raw || 'Appel en cours'" class="ion-text-wrap" style="font-weight: 600;"></h3>
+              <p>{{ formatBenevolatDates(benevolat) }}</p>
+            </ion-label>
+            <div slot="end" style="display: flex; align-items: center; gap: 8px;">
+              <ion-badge v-if="benevolatStore.hasUserVoted(benevolat.id) && !authStore.adminMode" color="success">Inscrit</ion-badge>
+              <ion-badge v-if="isBenevolatExpired(benevolat)" color="danger">Terminé</ion-badge>
+            </div>
+          </ion-item>
 
-        <ion-item v-if="!sondageStore.isLoading && latestSondages.length === 0" lines="none">
-          <ion-label class="ion-text-center">Aucun sondage actif</ion-label>
-        </ion-item>
-      </ion-list>
-
+          <ion-item v-if="!benevolatStore.isLoading && latestBenevolats.length === 0" lines="none">
+            <ion-label class="ion-text-center">Aucun appel actif</ion-label>
+          </ion-item>
+        </ion-list>
+      </div>
     </ion-content>
   </ion-page>
 </template>
@@ -156,22 +162,33 @@ import {
   IonRefresherContent,
   onIonViewWillEnter
 } from '@ionic/vue';
-import { calendarOutline, statsChartOutline, newspaperOutline, personCircleOutline, logOutOutline, peopleOutline } from 'ionicons/icons';
+import { calendarOutline, handRightOutline, newspaperOutline, personCircleOutline, logOutOutline, peopleOutline } from 'ionicons/icons';
 import { ref, computed, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 import { useAgendaStore, type AgendaEvent } from '@/stores/agenda';
-import { useSondageStore } from '@/stores/sondages';
+import { useBenevolatStore } from '@/stores/benevolat';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const agendaStore = useAgendaStore();
-const sondageStore = useSondageStore();
+const benevolatStore = useBenevolatStore();
 
 const latestPosts = ref<any[]>([]);
 const isLoadingNews = ref(false);
 
-const todayStr = new Date().toISOString().split('T')[0];
+/**
+ * Calcul de la date locale au format YYYY-MM-DD
+ */
+const getTodayStr = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const todayStr = getTodayStr();
 
 /**
  * Charge toutes les données de la page
@@ -181,7 +198,7 @@ const loadAllData = async () => {
   await Promise.all([
     fetchLatestNews(),
     agendaStore.fetchAgenda(),
-    sondageStore.fetchSondagesData(true) // force le rechargement pour les sondages
+    benevolatStore.fetchBenevolatsData(true)
   ]);
 };
 
@@ -195,7 +212,6 @@ const handleRefresh = async (event: any) => {
 
 /**
  * Surveille les changements de connexion pour rafraîchir les données
- * (Important lors de la déconnexion depuis cette page)
  */
 watch(() => authStore.isAuthenticated, () => {
   loadAllData();
@@ -248,11 +264,50 @@ const isPast = (event: AgendaEvent): boolean => {
 };
 
 /**
- * Prend les 2 sondages les plus récents
+ * Prend les appels à bénévolat actifs, triés par date la plus proche
  */
-const latestSondages = computed(() => {
-  return sondageStore.sondages.slice(0, 2);
+const latestBenevolats = computed(() => {
+  return benevolatStore.benevolats
+    .filter(b => !isBenevolatExpired(b)) // Uniquement les non-terminés
+    .sort((a, b) => {
+      const dateA = a.dame_benevolat_data?.[0]?.date || '';
+      const dateB = b.dame_benevolat_data?.[0]?.date || '';
+      return dateA.localeCompare(dateB); // Ordre chronologique
+    })
+    .slice(0, 2);
 });
+
+/**
+ * Formate la plage de dates
+ */
+const formatBenevolatDates = (benevolat: any): string => {
+  const data = benevolat.dame_benevolat_data;
+  
+  if (Array.isArray(data) && data.length > 0) {
+    const firstDate = data[0].date;
+    const lastDate = data[data.length - 1].date;
+
+    const format = (d: string) => d ? d.split('-').reverse().join('/') : '?';
+    
+    return `Du ${format(firstDate)} au ${format(lastDate)}`;
+  }
+
+  return 'Dates non définies';
+};
+
+/**
+ * Vérifie si un appel est expiré
+ */
+const isBenevolatExpired = (benevolat: any): boolean => {
+  const data = benevolat.dame_benevolat_data;
+  if (Array.isArray(data) && data.length > 0) {
+    const dates = data.map((d: any) => d.date).filter(Boolean);
+    if (dates.length === 0) return false;
+    const maxDate = dates.reduce((max: string, d: string) => d > max ? d : max, dates[0]);
+    return maxDate < todayStr;
+  }
+  return false;
+};
 
 const getFeaturedImage = (post: any): string | null => {
   return post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null;
@@ -310,6 +365,20 @@ const isToday = (event: AgendaEvent): boolean => {
 
 const goToNews = (id: number) => router.push(`/tabs/news/${id}`);
 const goToAgenda = (id: number) => router.push(`/tabs/agenda/${id}`);
+const goToBenevolat = (id: number) => {
+  if (authStore.adminMode) {
+    router.push(`/tabs/admin/benevolat/${id}`);
+  } else {
+    if (authStore.isAuthenticated) {
+      router.push(`/tabs/benevolat/participation/${id}`);
+    } else {
+      router.push({ 
+        path: '/tabs/login', 
+        query: { message: 'Identification requise pour proposer votre aide.' } 
+      });
+    }
+  }
+};
 
 onIonViewWillEnter(() => {
   loadAllData();
@@ -317,6 +386,11 @@ onIonViewWillEnter(() => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 ion-list-header {
   --background: transparent;
   font-size: 1.1em;

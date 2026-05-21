@@ -3,7 +3,7 @@
  * Plugin Name:       DAME - Dossier Administratif des Membres Échiquéens
  * Plugin URI:        https://github.com/trollinou/dame
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           4.4.6a
+ * Version:           4.5.0
  * Requires at least: 6.9
  * Requires PHP:      8.4
  * Author:            Etienne Gagnon
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // 1. Définition des Constantes (CRITIQUE pour le fonctionnement)
 if ( ! defined( 'DAME_VERSION' ) ) {
-	define( 'DAME_VERSION', '4.4.6a' );
+	define( 'DAME_VERSION', '4.5.0' );
 }
 
 if ( ! defined( 'DAME_PLUGIN_DIR' ) ) {
@@ -60,7 +60,7 @@ if ( class_exists( 'DAME\Core\Plugin' ) ) {
  * Fonction d'activation (pour les règles de réécriture)
  */
 function dame_activate_plugin(): void {
-    // Déclenche l'écriture des règles iCal / Sondage
+    // Déclenche l'écriture des règles iCal / Benevolat
     if ( class_exists( 'DAME\Services\ICalFeed' ) ) {
         $ical = new DAME\Services\ICalFeed();
         $ical->register_feed();

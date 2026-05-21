@@ -33,30 +33,32 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <!-- État de chargement -->
-      <div v-if="isLoading && members.length === 0" class="ion-text-center ion-padding">
-        <ion-spinner name="crescent"></ion-spinner>
-        <p>Récupération de la liste...</p>
-      </div>
+      <div class="safe-area-wrapper">
+        <!-- État de chargement -->
+        <div v-if="isLoading && members.length === 0" class="ion-text-center ion-padding">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Récupération de la liste...</p>
+        </div>
 
-      <!-- Liste des membres -->
-      <ion-list v-else-if="filteredMembers.length > 0">
-        <ion-item 
-          v-for="member in filteredMembers" 
-          :key="member.id" 
-          button 
-          @click="goToDetail(member.id)"
-        >
-          <ion-label>
-            <h2 v-html="member.title.rendered"></h2>
-          </ion-label>
-        </ion-item>
-      </ion-list>
+        <!-- Liste des membres -->
+        <ion-list v-else-if="filteredMembers.length > 0">
+          <ion-item 
+            v-for="member in filteredMembers" 
+            :key="member.id" 
+            button 
+            @click="goToDetail(member.id)"
+          >
+            <ion-label>
+              <h2 v-html="member.title.rendered"></h2>
+            </ion-label>
+          </ion-item>
+        </ion-list>
 
-      <!-- Aucun résultat -->
-      <div v-else class="ion-text-center ion-padding">
-        <p v-if="searchQuery">Aucun adhérent ne correspond à "{{ searchQuery }}".</p>
-        <p v-else>Aucun adhérent trouvé.</p>
+        <!-- Aucun résultat -->
+        <div v-else class="ion-text-center ion-padding">
+          <p v-if="searchQuery">Aucun adhérent ne correspond à "{{ searchQuery }}".</p>
+          <p v-else>Aucun adhérent trouvé.</p>
+        </div>
       </div>
     </ion-content>
   </ion-page>
@@ -124,5 +126,10 @@ onIonViewWillEnter(async () => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 ion-list { margin-top: 8px; }
 </style>

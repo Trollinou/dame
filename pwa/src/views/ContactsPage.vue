@@ -33,28 +33,30 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <div v-if="isLoading && contacts.length === 0" class="ion-text-center ion-padding">
-        <ion-spinner name="crescent"></ion-spinner>
-        <p>Chargement des contacts...</p>
-      </div>
+      <div class="safe-area-wrapper">
+        <div v-if="isLoading && contacts.length === 0" class="ion-text-center ion-padding">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Chargement des contacts...</p>
+        </div>
 
-      <ion-list v-else-if="filteredContacts.length > 0">
-        <ion-item 
-          v-for="contact in filteredContacts" 
-          :key="contact.id" 
-          :id="'contact-' + contact.id"
-          button 
-          @click="goToDetail(contact.id)"
-        >
-          <ion-label>
-            <h2 v-html="contact.title.rendered"></h2>
-          </ion-label>
-        </ion-item>
-      </ion-list>
+        <ion-list v-else-if="filteredContacts.length > 0">
+          <ion-item 
+            v-for="contact in filteredContacts" 
+            :key="contact.id" 
+            :id="'contact-' + contact.id"
+            button 
+            @click="goToDetail(contact.id)"
+          >
+            <ion-label>
+              <h2 v-html="contact.title.rendered"></h2>
+            </ion-label>
+          </ion-item>
+        </ion-list>
 
-      <div v-else class="ion-text-center ion-padding">
-        <p v-if="searchQuery">Aucun contact ne correspond à "{{ searchQuery }}".</p>
-        <p v-else>Aucun contact trouvé.</p>
+        <div v-else class="ion-text-center ion-padding">
+          <p v-if="searchQuery">Aucun contact ne correspond à "{{ searchQuery }}".</p>
+          <p v-else>Aucun contact trouvé.</p>
+        </div>
       </div>
     </ion-content>
   </ion-page>
@@ -139,5 +141,10 @@ onIonViewDidEnter(() => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 ion-list { margin-top: 8px; }
 </style>

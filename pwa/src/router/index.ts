@@ -5,7 +5,7 @@ import LoginPage from '../views/LoginPage.vue';
 import MembersPage from '../views/MembersPage.vue';
 import ContactsPage from '../views/ContactsPage.vue';
 import AgendaPage from '../views/AgendaPage.vue';
-import SondagesPage from '../views/SondagesPage.vue';
+import BenevolatPage from '../views/BenevolatPage.vue';
 import MessagesPage from '../views/MessagesPage.vue';
 import TournamentPage from '../views/TournamentPage.vue';
 import GenericPage from '../views/GenericPage.vue';
@@ -56,14 +56,20 @@ const routes: Array<RouteRecordRaw> = [
         component: TournamentPage
       },
       {
-        path: 'survey',
-        component: SondagesPage
+        path: 'benevolat',
+        component: BenevolatPage
       },
       {
-        path: 'admin/survey/:id',
-        name: 'SondageDetail',
+        path: 'benevolat/participation/:id',
+        name: 'BenevolatVote',
         meta: { requiresAuth: true },
-        component: () => import('@/views/SondageDetailPage.vue')
+        component: () => import('@/views/BenevolatVotePage.vue')
+      },
+      {
+        path: 'admin/benevolat/:id',
+        name: 'BenevolatDetail',
+        meta: { requiresAuth: true },
+        component: () => import('@/views/BenevolatDetailPage.vue')
       },
       {
         path: 'page/:id',
@@ -135,7 +141,10 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/tabs/login');
+    next({ 
+      path: '/tabs/login', 
+      query: { message: 'Vous devez être connecté pour accéder à cette page.' } 
+    });
   } else {
     next();
   }

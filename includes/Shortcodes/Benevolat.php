@@ -1,6 +1,6 @@
 <?php
 /**
- * Shortcode for Sondage
+ * Shortcode for Benevolat
  *
  * @package DAME
  */
@@ -10,21 +10,21 @@ namespace DAME\Shortcodes;
 use DateTime;
 
 /**
- * Class Sondage
+ * Class Benevolat
  */
-class Sondage {
+class Benevolat {
 
 	/**
 	 * Initialize shortcode hooks.
 	 */
 	public function init(): void {
-		add_shortcode( 'dame_sondage', [ $this, 'render' ] );
-		add_action( 'admin_post_nopriv_dame_submit_sondage', [ $this, 'handle_submission' ] );
-		add_action( 'admin_post_dame_submit_sondage', [ $this, 'handle_submission' ] );
+		add_shortcode( 'dame_benevolat', [ $this, 'render' ] );
+		add_action( 'admin_post_nopriv_dame_submit_benevolat', [ $this, 'handle_submission' ] );
+		add_action( 'admin_post_dame_submit_benevolat', [ $this, 'handle_submission' ] );
 	}
 
 	/**
-	 * Render the sondage shortcode.
+	 * Render the benevolat shortcode.
 	 *
 	 * @param array<string, mixed>|string $atts Shortcode attributes.
 	 * @return string
@@ -35,28 +35,28 @@ class Sondage {
 				'slug' => '',
 			],
 			is_array( $atts ) ? $atts : [],
-			'dame_sondage'
+			'dame_benevolat'
 		);
 
 		if ( empty( $atts['slug'] ) ) {
-			return '<p>' . __( 'Erreur : Le slug du sondage est manquant.', 'dame' ) . '</p>';
+			return '<p>' . __( 'Erreur : Le slug est manquant.', 'dame' ) . '</p>';
 		}
 
-		$sondage = get_page_by_path( $atts['slug'], OBJECT, 'sondage' );
+		$benevolat = get_page_by_path( $atts['slug'], OBJECT, 'benevolat' );
 
-		if ( ! $sondage ) {
-			return '<p>' . __( 'Erreur : Sondage non trouvé.', 'dame' ) . '</p>';
+		if ( ! $benevolat ) {
+			return '<p>' . __( 'Erreur : Appel à bénévoles non trouvé.', 'dame' ) . '</p>';
 		}
 
-		$sondage_data = get_post_meta( $sondage->ID, '_dame_sondage_data', true );
+		$benevolat_data = get_post_meta( $benevolat->ID, '_dame_benevolat_data', true );
 
-		if ( empty( $sondage_data ) || ! is_array( $sondage_data ) ) {
-			return '<p>' . __( 'Ce sondage n\'a pas encore été configuré.', 'dame' ) . '</p>';
+		if ( empty( $benevolat_data ) || ! is_array( $benevolat_data ) ) {
+			return '<p>' . __( 'Cet appel n\'a pas encore été configuré.', 'dame' ) . '</p>';
 		}
 
 		// Get all responses to calculate counts for each time slot via SQL
 		global $wpdb;
-		$table_votes = $wpdb->prefix . 'dame_poll_votes';
+		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$vote_results = $wpdb->get_results( $wpdb->prepare(
 			"SELECT v.choice_key, COUNT(DISTINCT v.recipient_id) as count 
@@ -64,7 +64,7 @@ class Sondage {
 			 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
 			 WHERE v.poll_id = %d AND p.post_status = 'publish'
 			 GROUP BY v.choice_key",
-			$sondage->ID
+			$benevolat->ID
 		) );
 
 		$response_counts = [];
@@ -81,31 +81,31 @@ class Sondage {
 
 		if ( $current_user_id ) {
 			$existing_response = get_posts( [
-				'post_type'      => 'sondage_reponse',
+				'post_type'      => 'benevolat_reponse',
 				'post_status'    => 'publish',
 				'author'         => $current_user_id,
-				'post_parent'    => $sondage->ID,
+				'post_parent'    => $benevolat->ID,
 				'posts_per_page' => 1,
 			] );
 			if ( ! empty( $existing_response ) ) {
 				$user_has_voted = true;
-				$user_responses = get_post_meta( $existing_response[0]->ID, '_dame_sondage_responses', true );
+				$user_responses = get_post_meta( $existing_response[0]->ID, '_dame_benevolat_responses', true );
 			}
 		} else {
-			$cookie_name = 'dame_sondage_response_' . $sondage->ID;
+			$cookie_name = 'dame_benevolat_response_' . $benevolat->ID;
 			if ( isset( $_COOKIE[ $cookie_name ] ) ) {
 				$guest_response_id = sanitize_text_field( wp_unslash( $_COOKIE[ $cookie_name ] ) );
 				$existing_response = get_posts( [
-					'post_type'      => 'sondage_reponse',
+					'post_type'      => 'benevolat_reponse',
 					'post_status'    => 'publish',
-					'post_parent'    => $sondage->ID,
+					'post_parent'    => $benevolat->ID,
 					'posts_per_page' => 1,
 					'meta_key'       => '_dame_guest_response_id',
 					'meta_value'     => $guest_response_id,
 				] );
 				if ( ! empty( $existing_response ) ) {
 					$user_has_voted = true;
-					$user_responses = get_post_meta( $existing_response[0]->ID, '_dame_sondage_responses', true );
+					$user_responses = get_post_meta( $existing_response[0]->ID, '_dame_benevolat_responses', true );
 				}
 			}
 		}
@@ -119,38 +119,38 @@ class Sondage {
 		ob_start();
 		?>
 		<style>
-			.sondage-timeslot-label.is-past { color: #888; opacity: 0.7; cursor: not-allowed; }
-			.sondage-date-row.is-past { background-color: #f9f9f9; }
+			.benevolat-timeslot-label.is-past { color: #888; opacity: 0.7; cursor: not-allowed; }
+			.benevolat-date-row.is-past { background-color: #f9f9f9; }
 		</style>
-		<div class="dame-sondage-wrapper">
-			<h3><?php echo esc_html( (string) $sondage->post_title ); ?></h3>
-			<?php if ( ! empty( $sondage->post_content ) ) : ?>
-				<div class="sondage-description">
-					<?php echo wpautop( wp_kses_post( $sondage->post_content ) ); ?>
+		<div class="dame-benevolat-wrapper">
+			<h3><?php echo esc_html( (string) $benevolat->post_title ); ?></h3>
+			<?php if ( ! empty( $benevolat->post_content ) ) : ?>
+				<div class="benevolat-description">
+					<?php echo wpautop( wp_kses_post( $benevolat->post_content ) ); ?>
 				</div>
 			<?php endif; ?>
 
-			<form id="dame-sondage-form-<?php echo esc_attr( (string) $sondage->ID ); ?>" class="dame-sondage-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<input type="hidden" name="action" value="dame_submit_sondage">
-				<input type="hidden" name="sondage_id" value="<?php echo esc_attr( (string) $sondage->ID ); ?>">
+			<form id="dame-benevolat-form-<?php echo esc_attr( (string) $benevolat->ID ); ?>" class="dame-benevolat-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="dame_submit_benevolat">
+				<input type="hidden" name="benevolat_id" value="<?php echo esc_attr( (string) $benevolat->ID ); ?>">
 				<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) ); ?>">
-				<?php wp_nonce_field( 'dame_submit_sondage_response_' . $sondage->ID, 'dame_sondage_nonce' ); ?>
+				<?php wp_nonce_field( 'dame_submit_benevolat_response_' . $benevolat->ID, 'dame_benevolat_nonce' ); ?>
 
 				<p>
-					<label for="sondage_name"><?php _e( 'Votre nom :', 'dame' ); ?></label>
+					<label for="benevolat_name"><?php _e( 'Votre nom :', 'dame' ); ?></label>
 					<?php
 					$current_user = wp_get_current_user();
 					if ( is_user_logged_in() ) {
 						$user_name = $current_user->display_name;
-						echo '<input type="text" id="sondage_name" name="sondage_name" value="' . esc_attr( (string) $user_name ) . '" readonly required>';
+						echo '<input type="text" id="benevolat_name" name="benevolat_name" value="' . esc_attr( (string) $user_name ) . '" readonly required>';
 					} else {
 						$guest_name = ! empty( $existing_response ) ? $existing_response[0]->post_title : '';
-						echo '<input type="text" id="sondage_name" name="sondage_name" value="' . esc_attr( (string) $guest_name ) . '" required>';
+						echo '<input type="text" id="benevolat_name" name="benevolat_name" value="' . esc_attr( (string) $guest_name ) . '" required>';
 					}
 					?>
 				</p>
 
-				<table class="dame-sondage-table">
+				<table class="dame-benevolat-table">
 					<thead>
 						<tr>
 							<th><?php _e( 'Date', 'dame' ); ?></th>
@@ -158,13 +158,13 @@ class Sondage {
 						</tr>
 					</thead>
 					<tbody>
-						<?php foreach ( $sondage_data as $date_index => $date_info ) : ?>
+						<?php foreach ( $benevolat_data as $date_index => $date_info ) : ?>
 							<?php
 								$date_obj       = new DateTime( $date_info['date'] );
 								$formatted_date = date_i18n( 'l j F Y', $date_obj->getTimestamp() );
 								$is_locked      = $date_info['date'] <= $today;
 							?>
-							<tr class="sondage-date-row <?php echo $is_locked ? 'is-past' : ''; ?>">
+							<tr class="benevolat-date-row <?php echo $is_locked ? 'is-past' : ''; ?>">
 								<td>
 									<?php echo esc_html( $formatted_date ); ?>
 									<?php if ( $is_locked ) : ?>
@@ -181,8 +181,8 @@ class Sondage {
 											}
 											$count = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
 											?>
-											<label class="sondage-timeslot-label <?php echo $is_locked ? 'is-past' : ''; ?>">
-												<input type="checkbox" name="sondage_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?> <?php disabled( $is_locked ); ?>>
+											<label class="benevolat-timeslot-label <?php echo $is_locked ? 'is-past' : ''; ?>">
+												<input type="checkbox" name="benevolat_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?> <?php disabled( $is_locked ); ?>>
 												<?php echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ); ?> (<?php printf( _n( '%d inscrit', '%d inscrits', $count, 'dame' ), $count ); ?>)
 											</label>
 										<?php endforeach; ?>
@@ -196,9 +196,9 @@ class Sondage {
 				</table>
 
 				<p>
-					<input type="submit" name="submit_sondage" value="<?php echo esc_attr( $user_has_voted ? __( 'Mettre à jour', 'dame' ) : __( 'Voter', 'dame' ) ); ?>">
+					<input type="submit" name="submit_benevolat" value="<?php echo esc_attr( $user_has_voted ? __( 'Mettre à jour', 'dame' ) : __( 'S\'inscrire', 'dame' ) ); ?>">
 					<?php if ( isset( $_GET['vote'] ) && 'success' === $_GET['vote'] ) : ?>
-						<span class="sondage-success-message-inline" style="margin-left: 10px; color: green;"><?php _e( 'Merci, votre réponse a été enregistrée.', 'dame' ); ?></span>
+						<span class="benevolat-success-message-inline" style="margin-left: 10px; color: green;"><?php _e( 'Merci, votre réponse a été enregistrée.', 'dame' ); ?></span>
 					<?php endif; ?>
 				</p>
 			</form>
@@ -208,30 +208,30 @@ class Sondage {
 	}
 
 	/**
-	 * Handle sondage form submission.
+	 * Handle benevolat form submission.
 	 */
 	public function handle_submission(): void {
-		if ( ! isset( $_POST['submit_sondage'], $_POST['dame_sondage_nonce'] ) ) {
+		if ( ! isset( $_POST['submit_benevolat'], $_POST['dame_benevolat_nonce'] ) ) {
 			return;
 		}
 
-		$sondage_id = isset( $_POST['sondage_id'] ) ? intval( $_POST['sondage_id'] ) : 0;
+		$benevolat_id = isset( $_POST['benevolat_id'] ) ? intval( $_POST['benevolat_id'] ) : 0;
 
-		if ( ! $sondage_id || ! wp_verify_nonce( $_POST['dame_sondage_nonce'], 'dame_submit_sondage_response_' . $sondage_id ) ) {
+		if ( ! $benevolat_id || ! wp_verify_nonce( $_POST['dame_benevolat_nonce'], 'dame_submit_benevolat_response_' . $benevolat_id ) ) {
 			wp_die( 'Invalid nonce.' );
 		}
 
-		$name      = sanitize_text_field( wp_unslash( $_POST['sondage_name'] ) );
-		$responses = isset( $_POST['sondage_responses'] ) ? (array) wp_unslash( $_POST['sondage_responses'] ) : [];
+		$name      = sanitize_text_field( wp_unslash( $_POST['benevolat_name'] ) );
+		$responses = isset( $_POST['benevolat_responses'] ) ? (array) wp_unslash( $_POST['benevolat_responses'] ) : [];
 
-		// 1. Get poll configuration to identify past dates
-		$sondage_data = get_post_meta( $sondage_id, '_dame_sondage_data', true );
-		if ( ! is_array( $sondage_data ) ) {
-			$sondage_data = [];
+		// 1. Get configuration to identify past dates
+		$benevolat_data = get_post_meta( $benevolat_id, '_dame_benevolat_data', true );
+		if ( ! is_array( $benevolat_data ) ) {
+			$benevolat_data = [];
 		}
 		$today = wp_date( 'Y-m-d' );
 		$past_date_indices = [];
-		foreach ( $sondage_data as $idx => $info ) {
+		foreach ( $benevolat_data as $idx => $info ) {
 			if ( $info['date'] <= $today ) {
 				$past_date_indices[] = (int) $idx;
 			}
@@ -255,25 +255,25 @@ class Sondage {
 
 		if ( $user_id ) {
 			$existing_responses = get_posts( [
-				'post_type'      => 'sondage_reponse',
+				'post_type'      => 'benevolat_reponse',
 				'post_status'    => 'publish',
 				'author'         => $user_id,
-				'post_parent'    => $sondage_id,
+				'post_parent'    => $benevolat_id,
 				'posts_per_page' => 1,
 				'fields'         => 'ids',
 			] );
 			if ( ! empty( $existing_responses ) ) {
 				$existing_response_id = $existing_responses[0];
-				$previous_meta = get_post_meta( $existing_response_id, '_dame_sondage_responses', true );
+				$previous_meta = get_post_meta( $existing_response_id, '_dame_benevolat_responses', true );
 			}
 		} else {
-			$cookie_name = 'dame_sondage_response_' . $sondage_id;
+			$cookie_name = 'dame_benevolat_response_' . $benevolat_id;
 			if ( isset( $_COOKIE[ $cookie_name ] ) ) {
 				$guest_response_id  = sanitize_text_field( wp_unslash( $_COOKIE[ $cookie_name ] ) );
 				$existing_responses = get_posts( [
-					'post_type'      => 'sondage_reponse',
+					'post_type'      => 'benevolat_reponse',
 					'post_status'    => 'publish',
-					'post_parent'    => $sondage_id,
+					'post_parent'    => $benevolat_id,
 					'posts_per_page' => 1,
 					'fields'         => 'ids',
 					'meta_key'       => '_dame_guest_response_id',
@@ -281,7 +281,7 @@ class Sondage {
 				] );
 				if ( ! empty( $existing_responses ) ) {
 					$existing_response_id = $existing_responses[0];
-					$previous_meta = get_post_meta( $existing_response_id, '_dame_sondage_responses', true );
+					$previous_meta = get_post_meta( $existing_response_id, '_dame_benevolat_responses', true );
 				}
 			}
 		}
@@ -297,9 +297,9 @@ class Sondage {
 
 		$post_data = [
 			'post_title'  => $name,
-			'post_type'   => 'sondage_reponse',
+			'post_type'   => 'benevolat_reponse',
 			'post_status' => 'publish',
-			'post_parent' => $sondage_id,
+			'post_parent' => $benevolat_id,
 			'post_author' => $user_id,
 		];
 
@@ -312,23 +312,23 @@ class Sondage {
 		}
 
 		if ( $response_id ) {
-			update_post_meta( $response_id, '_dame_sondage_responses', $sanitized_responses );
+			update_post_meta( $response_id, '_dame_benevolat_responses', $sanitized_responses );
 
 			// Sync with SQL table for real-time stats and race condition prevention
 			global $wpdb;
-			$table_votes = $wpdb->prefix . 'dame_poll_votes';
+			$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
 			
-			// 1. Clear previous votes for this response on this poll
+			// 1. Clear previous votes for this response
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->delete( $table_votes, [ 'poll_id' => $sondage_id, 'recipient_id' => $response_id ] );
+			$wpdb->delete( $table_votes, [ 'poll_id' => $benevolat_id, 'recipient_id' => $response_id ] );
 
 			// 2. Insert new votes
 			foreach ( $sanitized_responses as $date_index => $time_slots ) {
 				foreach ( $time_slots as $time_index => $value ) {
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 					$wpdb->insert( $table_votes, [
-						'poll_id'      => $sondage_id,
-						'recipient_id' => $response_id, // Unique response ID
+						'poll_id'      => $benevolat_id,
+						'recipient_id' => $response_id,
 						'choice_key'   => "{$date_index}_{$time_index}",
 						'voted_at'     => current_time( 'mysql', true )
 					] );
@@ -336,8 +336,8 @@ class Sondage {
 			}
 
 			if ( ! $user_id ) {
-				$cookie_name  = 'dame_sondage_response_' . $sondage_id;
-				$cookie_value = isset( $_COOKIE[ $cookie_name ] ) ? sanitize_text_field( wp_unslash( $_COOKIE[ $cookie_name ] ) ) : uniqid( 'sondage_' . $sondage_id . '_' );
+				$cookie_name  = 'dame_benevolat_response_' . $benevolat_id;
+				$cookie_value = isset( $_COOKIE[ $cookie_name ] ) ? sanitize_text_field( wp_unslash( $_COOKIE[ $cookie_name ] ) ) : uniqid( 'benevolat_' . $benevolat_id . '_' );
 
 				update_post_meta( $response_id, '_dame_guest_response_id', $cookie_value );
 				// Cookie is valid for 1 year.

@@ -11,18 +11,23 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">
-            <div class="multiline-large-title" v-if="event" v-html="event.title.rendered"></div>
-            <div class="multiline-large-title" v-else>Détails Événement</div>
-          </ion-title>
-        </ion-toolbar>
-      </ion-header>
+      <div v-if="isLoading" class="ion-text-center ion-padding">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
 
-      <div v-if="event">
+      <!-- Wrapper respectant la Dynamic Island sans ajouter de marges excessives -->
+      <div v-else-if="event" class="safe-area-wrapper">
+        <ion-header collapse="condense">
+          <ion-toolbar>
+            <ion-title size="large">
+              <div class="multiline-large-title" v-if="event" v-html="event.title.rendered"></div>
+              <div class="multiline-large-title" v-else>Détails Événement</div>
+            </ion-title>
+          </ion-toolbar>
+        </ion-header>
+
         <!-- Carte Détails -->
-        <ion-card>
+        <ion-card class="ion-no-margin ion-margin-bottom">
           <ion-card-header>
             <ion-card-title>
               <ion-icon :icon="calendarOutline" color="primary"></ion-icon>
@@ -54,7 +59,7 @@
         </ion-card>
 
         <!-- Carte Lieu -->
-        <ion-card v-if="event.meta._dame_location_name || event.meta._dame_address">
+        <ion-card v-if="event.meta._dame_location_name || event.meta._dame_address" class="ion-no-margin ion-margin-bottom">
           <ion-card-header>
             <ion-card-title>
               <ion-icon :icon="locationOutline" color="primary"></ion-icon>
@@ -86,7 +91,7 @@
         </ion-card>
 
         <!-- Carte Description -->
-        <ion-card v-if="processedDescription.cleanHtml">
+        <ion-card v-if="processedDescription.cleanHtml" class="ion-no-margin ion-margin-bottom">
           <ion-card-header>
             <ion-card-title>
               <ion-icon :icon="informationCircleOutline" color="primary"></ion-icon>
@@ -158,6 +163,7 @@ const agendaStore = useAgendaStore();
 const { handleInternalLinks } = useInternalLinks();
 
 const eventId = parseInt(route.params.id as string);
+const isLoading = computed(() => agendaStore.isLoading);
 
 /**
  * Récupère l'événement correspondant dans le store
@@ -241,12 +247,13 @@ const formatEventDate = (event: AgendaEvent): string => {
 </script>
 
 <style scoped>
-.mt-large {
-  margin-top: 5%;
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
 }
 
-ion-card {
-  margin-bottom: 20px;
+.mt-large {
+  margin-top: 5%;
 }
 
 ion-card-title {

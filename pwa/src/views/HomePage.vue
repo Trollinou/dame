@@ -4,8 +4,8 @@
       <ion-toolbar>
         <ion-title>
           <div style="display: flex; align-items: center;">
-            <img src="/assets/icon/queen.svg" style="height: 24px; margin-right: 10px;" alt="Logo Dame" />
-            Dame
+            <img src="/assets/icon/logo.png" style="height: 24px; margin-right: 10px;" alt="Logo Echiquier Lédonien" />
+            Echiquier Lédonien
           </div>
         </ion-title>
         <ion-buttons slot="end">
@@ -17,37 +17,39 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <div class="dashboard-section">
-        <ion-list-header>
-          <ion-label>Prochains Anniversaires</ion-label>
-        </ion-list-header>
+      <div class="safe-area-wrapper">
+        <div class="dashboard-section">
+          <ion-list-header>
+            <ion-label>Prochains Anniversaires</ion-label>
+          </ion-list-header>
 
-        <!-- État de chargement (Spinner bloquant uniquement si vide) -->
-        <div v-if="isLoading && birthdays.length === 0" class="ion-text-center ion-padding">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Chargement des données...</p>
-        </div>
+          <!-- État de chargement (Spinner bloquant uniquement si vide) -->
+          <div v-if="isLoading && birthdays.length === 0" class="ion-text-center ion-padding">
+            <ion-spinner name="crescent"></ion-spinner>
+            <p>Chargement des données...</p>
+          </div>
 
-        <!-- Liste des anniversaires -->
-        <ion-list v-else-if="birthdays.length > 0" :inset="true">
-          <ion-item v-for="birthday in birthdays" :key="birthday.id">
-            <ion-icon slot="start" :icon="giftOutline" color="primary"></ion-icon>
-            <ion-label>
-              <h2>{{ birthday.name }}</h2>
-              <p>{{ formatDate(birthday.date) }}</p>
-            </ion-label>
-            <ion-badge slot="end" color="secondary">
-              {{ birthday.next_age }} ans
-            </ion-badge>
-          </ion-item>
-        </ion-list>
+          <!-- Liste des anniversaires -->
+          <ion-list v-else-if="birthdays.length > 0" :inset="true">
+            <ion-item v-for="birthday in birthdays" :key="birthday.id">
+              <ion-icon slot="start" :icon="giftOutline" color="primary"></ion-icon>
+              <ion-label>
+                <h2>{{ birthday.name }}</h2>
+                <p>{{ formatDate(birthday.date) }}</p>
+              </ion-label>
+              <ion-badge slot="end" color="secondary">
+                {{ birthday.next_age }} ans
+              </ion-badge>
+            </ion-item>
+          </ion-list>
 
-        <!-- Liste vide -->
-        <div v-else class="ion-text-center ion-padding">
-          <p>Aucun anniversaire à venir.</p>
-          <ion-button fill="clear" @click="dashboardStore.fetchBirthdays(true)">
-            Rafraîchir
-          </ion-button>
+          <!-- Liste vide -->
+          <div v-else class="ion-text-center ion-padding">
+            <p>Aucun anniversaire à venir.</p>
+            <ion-button fill="clear" @click="dashboardStore.fetchBirthdays(true)">
+              Rafraîchir
+            </ion-button>
+          </div>
         </div>
       </div>
     </ion-content>
@@ -81,7 +83,7 @@ import { useMemberStore } from '@/stores/members';
 import { useAgendaStore } from '@/stores/agenda';
 import { useContactStore } from '@/stores/contacts';
 import { useMessageStore } from '@/stores/messages';
-import { useSondageStore } from '@/stores/sondages';
+import { useBenevolatStore } from '@/stores/benevolat';
 import { useAuthStore } from '@/stores/auth';
 
 // Initialisation des stores
@@ -90,7 +92,7 @@ const memberStore = useMemberStore();
 const agendaStore = useAgendaStore();
 const contactStore = useContactStore();
 const messageStore = useMessageStore();
-const sondageStore = useSondageStore();
+const benevolatStore = useBenevolatStore();
 const authStore = useAuthStore();
 
 const { birthdays, isLoading } = storeToRefs(dashboardStore);
@@ -121,7 +123,7 @@ const preloadAllData = () => {
   contactStore.fetchContacts();
   contactStore.fetchContactTypes();
   messageStore.fetchMessages();
-  sondageStore.fetchSondagesData();
+  benevolatStore.fetchBenevolatsData();
 };
 
 // Rafraîchir les données du dashboard à chaque entrée (gestion silencieuse par le store)
@@ -131,6 +133,11 @@ onIonViewWillEnter(() => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 .dashboard-section {
   margin-top: 10px;
 }

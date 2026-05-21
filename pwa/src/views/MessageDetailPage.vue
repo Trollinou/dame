@@ -23,85 +23,87 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">
-            <div class="multiline-large-title" v-if="message" v-html="message.title.rendered"></div>
-            <div class="multiline-large-title" v-else>Détails Message</div>
-          </ion-title>
-        </ion-toolbar>
-      </ion-header>
+      <div class="safe-area-wrapper">
+        <ion-header collapse="condense">
+          <ion-toolbar>
+            <ion-title size="large">
+              <div class="multiline-large-title" v-if="message" v-html="message.title.rendered"></div>
+              <div class="multiline-large-title" v-else>Détails Message</div>
+            </ion-title>
+          </ion-toolbar>
+        </ion-header>
 
-      <div v-if="message">
-        <!-- Onglet CONTENU -->
-        <div v-if="currentTab === 'message'">
-          <ion-card>
-            <ion-card-content>
-              <div class="description-content" v-html="message.content.rendered"></div>
-            </ion-card-content>
-          </ion-card>
-        </div>
+        <div v-if="message">
+          <!-- Onglet CONTENU -->
+          <div v-if="currentTab === 'message'">
+            <ion-card class="ion-no-margin">
+              <ion-card-content>
+                <div class="description-content" v-html="message.content.rendered"></div>
+              </ion-card-content>
+            </ion-card>
+          </div>
 
-        <!-- Onglet RAPPORT -->
-        <div v-if="currentTab === 'report'">
-          <ion-card v-if="message.report">
-            <ion-card-content class="stats-card">
-              <div class="stat-item main-stat">
-                <span class="stat-value">{{ message.report.stats.rate }}%</span>
-                <span class="stat-label">Taux d'ouverture</span>
-              </div>
-              <div class="stats-grid">
-                <div class="stat-item">
-                  <span class="stat-value">{{ message.report.stats.sent }}</span>
-                  <span class="stat-label">Envoyés</span>
+          <!-- Onglet RAPPORT -->
+          <div v-if="currentTab === 'report'">
+            <ion-card v-if="message.report" class="ion-no-margin">
+              <ion-card-content class="stats-card">
+                <div class="stat-item main-stat">
+                  <span class="stat-value">{{ message.report.stats.rate }}%</span>
+                  <span class="stat-label">Taux d'ouverture</span>
                 </div>
-                <div class="stat-item">
-                  <span class="stat-value">{{ message.report.stats.opened }}</span>
-                  <span class="stat-label">Ouverts</span>
+                <div class="stats-grid">
+                  <div class="stat-item">
+                    <span class="stat-value">{{ message.report.stats.sent }}</span>
+                    <span class="stat-label">Envoyés</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-value">{{ message.report.stats.opened }}</span>
+                    <span class="stat-label">Ouverts</span>
+                  </div>
                 </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
+              </ion-card-content>
+            </ion-card>
 
-          <ion-list v-if="message.report?.recipients?.length" class="ion-margin-top">
-            <ion-list-header>
-              <ion-label>Destinataires</ion-label>
-            </ion-list-header>
-            <ion-item v-for="(recipient, index) in message.report.recipients" :key="index">
-              <ion-icon 
-                slot="start" 
-                :icon="getRecipientIcon(recipient)" 
-                :color="getRecipientColor(recipient)"
-              ></ion-icon>
-              <ion-label>
-                <h2>{{ recipient.name }}</h2>
-                <p>{{ recipient.email }}</p>
-              </ion-label>
-              <ion-note slot="end" v-if="recipient.opened_at" class="ion-text-end">
-                Ouvert le<br />{{ formatDateTime(recipient.opened_at) }}
-              </ion-note>
-              <ion-note slot="end" v-else-if="recipient.sent_at" class="ion-text-end">
-                Envoyé le<br />{{ formatDateTime(recipient.sent_at) }}
-              </ion-note>
-            </ion-item>
-          </ion-list>
-          <div v-else class="ion-text-center ion-padding">
-            <p>Aucun rapport disponible pour ce message.</p>
+            <ion-list v-if="message.report?.recipients?.length" class="ion-margin-top">
+              <ion-list-header>
+                <ion-label>Destinataires</ion-label>
+              </ion-list-header>
+              <ion-item v-for="(recipient, index) in message.report.recipients" :key="index">
+                <ion-icon 
+                  slot="start" 
+                  :icon="getRecipientIcon(recipient)" 
+                  :color="getRecipientColor(recipient)"
+                ></ion-icon>
+                <ion-label>
+                  <h2>{{ recipient.name }}</h2>
+                  <p>{{ recipient.email }}</p>
+                </ion-label>
+                <ion-note slot="end" v-if="recipient.opened_at" class="ion-text-end">
+                  Ouvert le<br />{{ formatDateTime(recipient.opened_at) }}
+                </ion-note>
+                <ion-note slot="end" v-else-if="recipient.sent_at" class="ion-text-end">
+                  Envoyé le<br />{{ formatDateTime(recipient.sent_at) }}
+                </ion-note>
+              </ion-item>
+            </ion-list>
+            <div v-else class="ion-text-center ion-padding">
+              <p>Aucun rapport disponible pour ce message.</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Chargement ou Introuvable -->
-      <div v-else class="ion-text-center ion-padding mt-large">
-        <div v-if="messageStore.isLoading">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Chargement du message...</p>
-        </div>
-        <div v-else>
-          <h2>Message introuvable</h2>
-          <ion-button expand="block" fill="outline" router-link="/tabs/admin/message" class="ion-margin-top">
-            Retour à la liste
-          </ion-button>
+        <!-- Chargement ou Introuvable -->
+        <div v-else class="ion-text-center ion-padding mt-large">
+          <div v-if="messageStore.isLoading">
+            <ion-spinner name="crescent"></ion-spinner>
+            <p>Chargement du message...</p>
+          </div>
+          <div v-else>
+            <h2>Message introuvable</h2>
+            <ion-button expand="block" fill="outline" router-link="/tabs/admin/message" class="ion-margin-top">
+              Retour à la liste
+            </ion-button>
+          </div>
         </div>
       </div>
     </ion-content>
@@ -186,6 +188,11 @@ const getRecipientColor = (recipient: any) => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 .mt-large {
   margin-top: 5%;
 }

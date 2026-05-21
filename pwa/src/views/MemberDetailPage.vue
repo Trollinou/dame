@@ -11,194 +11,196 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">
-            <div class="multiline-large-title" v-if="member" v-html="member.title.rendered"></div>
-            <div class="multiline-large-title" v-else>Détails Adhérent</div>
-          </ion-title>
-        </ion-toolbar>
-      </ion-header>
+      <div class="safe-area-wrapper">
+        <ion-header collapse="condense">
+          <ion-toolbar>
+            <ion-title size="large">
+              <div class="multiline-large-title" v-if="member" v-html="member.title.rendered"></div>
+              <div class="multiline-large-title" v-else>Détails Adhérent</div>
+            </ion-title>
+          </ion-toolbar>
+        </ion-header>
 
-      <div v-if="member">
-        <!-- Carte Identité -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Identité</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-list lines="none">
-              <ion-item v-if="member.meta?._dame_birth_date">
-                <ion-label>
-                  <p>Date de naissance</p>
-                  <h3>{{ formatDate(member.meta._dame_birth_date) }}</h3>
-                </ion-label>
-              </ion-item>
-              <ion-item v-if="member.meta?._dame_sexe">
-                <ion-label>
-                  <p>Sexe</p>
-                  <h3>{{ formatGender(member.meta._dame_sexe) }}</h3>
-                </ion-label>
-              </ion-item>
-              <ion-item v-if="member.meta?._dame_license_type">
-                <ion-label>
-                  <p>Type de licence</p>
-                  <h3>{{ member.meta._dame_license_type }}</h3>
-                </ion-label>
-              </ion-item>
-              <ion-item v-if="member.meta?._dame_license_number">
-                <ion-label>
-                  <p>Numéro de licence</p>
-                  <h3>{{ member.meta._dame_license_number }}</h3>
-                </ion-label>
-              </ion-item>
-              <ion-item v-if="member.meta?.categorie">
-                <ion-label>
-                  <p>Catégorie</p>
-                  <h3>{{ member.meta.categorie }}</h3>
-                </ion-label>
-              </ion-item>
-            </ion-list>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Carte Contact -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Contact</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-list lines="inset">
-              <!-- Email -->
-              <ion-item v-if="member.meta?._dame_email">
-                <ion-icon slot="start" :icon="mailOutline" color="primary"></ion-icon>
-                <ion-label>
-                  <p>Email</p>
-                  <h3>{{ member.meta._dame_email }}</h3>
-                </ion-label>
-                <ion-button 
-                  slot="end" 
-                  fill="clear" 
-                  :href="'mailto:' + member.meta._dame_email"
-                >
-                  <ion-icon slot="icon-only" :icon="sendOutline"></ion-icon>
-                </ion-button>
-              </ion-item>
-              
-              <!-- Téléphone -->
-              <ion-item v-if="member.meta?._dame_phone_number">
-                <ion-icon slot="start" :icon="callOutline" color="primary"></ion-icon>
-                <ion-label>
-                  <p>Téléphone</p>
-                  <h3>{{ member.meta._dame_phone_number }}</h3>
-                </ion-label>
-                <ion-button 
-                  slot="end" 
-                  fill="clear" 
-                  :href="'tel:' + member.meta._dame_phone_number"
-                >
-                  <ion-icon slot="icon-only" :icon="callOutline"></ion-icon>
-                </ion-button>
-              </ion-item>
-
-              <!-- Adresse -->
-              <ion-item v-if="member.meta?._dame_address_1 || member.meta?._dame_city" lines="none">
-                <ion-icon slot="start" :icon="locationOutline" color="primary"></ion-icon>
-                <ion-label class="ion-text-wrap">
-                  <p>Adresse postale</p>
-                  <h3>{{ member.meta?._dame_address_1 }}</h3>
-                  <h3 v-if="member.meta?._dame_address_2">{{ member.meta?._dame_address_2 }}</h3>
-                  <h3>{{ member.meta?._dame_postal_code }} {{ member.meta?._dame_city }}</h3>
-                </ion-label>
-              </ion-item>
-            </ion-list>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Carte Représentants Légaux -->
-        <ion-card v-if="member.meta?._dame_legal_rep_1_last_name || member.meta?._dame_legal_rep_2_last_name">
-          <ion-card-header>
-            <ion-card-title>Représentants Légaux</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-list lines="inset">
-              <!-- Représentant 1 -->
-              <div v-if="member.meta?._dame_legal_rep_1_last_name" class="ion-padding-bottom">
-                <ion-item-divider color="light">
+        <div v-if="member">
+          <!-- Carte Identité -->
+          <ion-card class="ion-no-margin ion-margin-bottom">
+            <ion-card-header>
+              <ion-card-title>Identité</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list lines="none">
+                <ion-item v-if="member.meta?._dame_birth_date">
                   <ion-label>
-                    {{ member.meta._dame_legal_rep_1_first_name }} {{ member.meta._dame_legal_rep_1_last_name }}
-                    <span v-if="member.meta._dame_legal_rep_1_profession">({{ member.meta._dame_legal_rep_1_profession }})</span>
+                    <p>Date de naissance</p>
+                    <h3>{{ formatDate(member.meta._dame_birth_date) }}</h3>
                   </ion-label>
-                </ion-item-divider>
-                
-                <ion-item 
-                  v-if="member.meta._dame_legal_rep_1_phone" 
-                  :href="'tel:' + member.meta._dame_legal_rep_1_phone"
-                  :detail="false"
-                >
-                  <ion-icon slot="start" :icon="callOutline" color="primary"></ion-icon>
-                  <ion-label>{{ member.meta._dame_legal_rep_1_phone }}</ion-label>
-                  <ion-icon slot="end" :icon="callOutline" color="primary" size="small"></ion-icon>
                 </ion-item>
-                
-                <ion-item 
-                  v-if="member.meta._dame_legal_rep_1_email" 
-                  :href="'mailto:' + member.meta._dame_legal_rep_1_email"
-                  :detail="false"
-                >
-                  <ion-icon slot="start" :icon="mailOutline" color="primary"></ion-icon>
-                  <ion-label>{{ member.meta._dame_legal_rep_1_email }}</ion-label>
-                  <ion-icon slot="end" :icon="sendOutline" color="primary" size="small"></ion-icon>
-                </ion-item>
-              </div>
-
-              <!-- Représentant 2 -->
-              <div v-if="member.meta?._dame_legal_rep_2_last_name">
-                <ion-item-divider color="light">
+                <ion-item v-if="member.meta?._dame_sexe">
                   <ion-label>
-                    {{ member.meta._dame_legal_rep_2_first_name }} {{ member.meta._dame_legal_rep_2_last_name }}
-                    <span v-if="member.meta._dame_legal_rep_2_profession">({{ member.meta._dame_legal_rep_2_profession }})</span>
+                    <p>Sexe</p>
+                    <h3>{{ formatGender(member.meta._dame_sexe) }}</h3>
                   </ion-label>
-                </ion-item-divider>
-                
-                <ion-item 
-                  v-if="member.meta._dame_legal_rep_2_phone" 
-                  :href="'tel:' + member.meta._dame_legal_rep_2_phone"
-                  :detail="false"
-                >
-                  <ion-icon slot="start" :icon="callOutline" color="primary"></ion-icon>
-                  <ion-label>{{ member.meta._dame_legal_rep_2_phone }}</ion-label>
-                  <ion-icon slot="end" :icon="callOutline" color="primary" size="small"></ion-icon>
                 </ion-item>
-                
-                <ion-item 
-                  v-if="member.meta._dame_legal_rep_2_email" 
-                  :href="'mailto:' + member.meta._dame_legal_rep_2_email"
-                  :detail="false"
-                >
-                  <ion-icon slot="start" :icon="mailOutline" color="primary"></ion-icon>
-                  <ion-label>{{ member.meta._dame_legal_rep_2_email }}</ion-label>
-                  <ion-icon slot="end" :icon="sendOutline" color="primary" size="small"></ion-icon>
+                <ion-item v-if="member.meta?._dame_license_type">
+                  <ion-label>
+                    <p>Type de licence</p>
+                    <h3>{{ member.meta._dame_license_type }}</h3>
+                  </ion-label>
                 </ion-item>
-              </div>
-            </ion-list>
-          </ion-card-content>
-        </ion-card>
-      </div>
+                <ion-item v-if="member.meta?._dame_license_number">
+                  <ion-label>
+                    <p>Numéro de licence</p>
+                    <h3>{{ member.meta._dame_license_number }}</h3>
+                  </ion-label>
+                </ion-item>
+                <ion-item v-if="member.meta?.categorie">
+                  <ion-label>
+                    <p>Catégorie</p>
+                    <h3>{{ member.meta.categorie }}</h3>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
 
-      <!-- Chargement ou Introuvable -->
-      <div v-else class="ion-text-center ion-padding mt-large">
-        <div v-if="memberStore.isLoading">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Chargement des données...</p>
+          <!-- Carte Contact -->
+          <ion-card class="ion-no-margin ion-margin-bottom">
+            <ion-card-header>
+              <ion-card-title>Contact</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list lines="inset">
+                <!-- Email -->
+                <ion-item v-if="member.meta?._dame_email">
+                  <ion-icon slot="start" :icon="mailOutline" color="primary"></ion-icon>
+                  <ion-label>
+                    <p>Email</p>
+                    <h3>{{ member.meta._dame_email }}</h3>
+                  </ion-label>
+                  <ion-button 
+                    slot="end" 
+                    fill="clear" 
+                    :href="'mailto:' + member.meta._dame_email"
+                  >
+                    <ion-icon slot="icon-only" :icon="sendOutline"></ion-icon>
+                  </ion-button>
+                </ion-item>
+                
+                <!-- Téléphone -->
+                <ion-item v-if="member.meta?._dame_phone_number">
+                  <ion-icon slot="start" :icon="callOutline" color="primary"></ion-icon>
+                  <ion-label>
+                    <p>Téléphone</p>
+                    <h3>{{ member.meta._dame_phone_number }}</h3>
+                  </ion-label>
+                  <ion-button 
+                    slot="end" 
+                    fill="clear" 
+                    :href="'tel:' + member.meta._dame_phone_number"
+                  >
+                    <ion-icon slot="icon-only" :icon="callOutline"></ion-icon>
+                  </ion-button>
+                </ion-item>
+
+                <!-- Adresse -->
+                <ion-item v-if="member.meta?._dame_address_1 || member.meta?._dame_city" lines="none">
+                  <ion-icon slot="start" :icon="locationOutline" color="primary"></ion-icon>
+                  <ion-label class="ion-text-wrap">
+                    <p>Adresse postale</p>
+                    <h3>{{ member.meta?._dame_address_1 }}</h3>
+                    <h3 v-if="member.meta?._dame_address_2">{{ member.meta?._dame_address_2 }}</h3>
+                    <h3>{{ member.meta?._dame_postal_code }} {{ member.meta?._dame_city }}</h3>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Carte Représentants Légaux -->
+          <ion-card v-if="member.meta?._dame_legal_rep_1_last_name || member.meta?._dame_legal_rep_2_last_name" class="ion-no-margin ion-margin-bottom">
+            <ion-card-header>
+              <ion-card-title>Représentants Légaux</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list lines="inset">
+                <!-- Représentant 1 -->
+                <div v-if="member.meta?._dame_legal_rep_1_last_name" class="ion-padding-bottom">
+                  <ion-item-divider color="light">
+                    <ion-label>
+                      {{ member.meta._dame_legal_rep_1_first_name }} {{ member.meta._dame_legal_rep_1_last_name }}
+                      <span v-if="member.meta._dame_legal_rep_1_profession">({{ member.meta._dame_legal_rep_1_profession }})</span>
+                    </ion-label>
+                  </ion-item-divider>
+                  
+                  <ion-item 
+                    v-if="member.meta._dame_legal_rep_1_phone" 
+                    :href="'tel:' + member.meta._dame_legal_rep_1_phone"
+                    :detail="false"
+                  >
+                    <ion-icon slot="start" :icon="callOutline" color="primary"></ion-icon>
+                    <ion-label>{{ member.meta._dame_legal_rep_1_phone }}</ion-label>
+                    <ion-icon slot="end" :icon="callOutline" color="primary" size="small"></ion-icon>
+                  </ion-item>
+                  
+                  <ion-item 
+                    v-if="member.meta._dame_legal_rep_1_email" 
+                    :href="'mailto:' + member.meta._dame_legal_rep_1_email"
+                    :detail="false"
+                  >
+                    <ion-icon slot="start" :icon="mailOutline" color="primary"></ion-icon>
+                    <ion-label>{{ member.meta._dame_legal_rep_1_email }}</ion-label>
+                    <ion-icon slot="end" :icon="sendOutline" color="primary" size="small"></ion-icon>
+                  </ion-item>
+                </div>
+
+                <!-- Représentant 2 -->
+                <div v-if="member.meta?._dame_legal_rep_2_last_name">
+                  <ion-item-divider color="light">
+                    <ion-label>
+                      {{ member.meta._dame_legal_rep_2_first_name }} {{ member.meta._dame_legal_rep_2_last_name }}
+                      <span v-if="member.meta._dame_legal_rep_2_profession">({{ member.meta._dame_legal_rep_2_profession }})</span>
+                    </ion-label>
+                  </ion-item-divider>
+                  
+                  <ion-item 
+                    v-if="member.meta._dame_legal_rep_2_phone" 
+                    :href="'tel:' + member.meta._dame_legal_rep_2_phone"
+                    :detail="false"
+                  >
+                    <ion-icon slot="start" :icon="callOutline" color="primary"></ion-icon>
+                    <ion-label>{{ member.meta._dame_legal_rep_2_phone }}</ion-label>
+                    <ion-icon slot="end" :icon="callOutline" color="primary" size="small"></ion-icon>
+                  </ion-item>
+                  
+                  <ion-item 
+                    v-if="member.meta._dame_legal_rep_2_email" 
+                    :href="'mailto:' + member.meta._dame_legal_rep_2_email"
+                    :detail="false"
+                  >
+                    <ion-icon slot="start" :icon="mailOutline" color="primary"></ion-icon>
+                    <ion-label>{{ member.meta._dame_legal_rep_2_email }}</ion-label>
+                    <ion-icon slot="end" :icon="sendOutline" color="primary" size="small"></ion-icon>
+                  </ion-item>
+                </div>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
         </div>
-        <div v-else>
-          <ion-icon :icon="personOutline" size="large" color="medium"></ion-icon>
-          <h2>Adhérent introuvable</h2>
-          <p>Cet adhérent n'existe pas ou la liste n'est pas encore chargée.</p>
-          <ion-button expand="block" fill="outline" router-link="/tabs/members" class="ion-margin-top">
-            Retour à la liste
-          </ion-button>
+
+        <!-- Chargement ou Introuvable -->
+        <div v-else class="ion-text-center ion-padding mt-large">
+          <div v-if="memberStore.isLoading">
+            <ion-spinner name="crescent"></ion-spinner>
+            <p>Chargement des données...</p>
+          </div>
+          <div v-else>
+            <ion-icon :icon="personOutline" size="large" color="medium"></ion-icon>
+            <h2>Adhérent introuvable</h2>
+            <p>Cet adhérent n'existe pas ou la liste n'est pas encore chargée.</p>
+            <ion-button expand="block" fill="outline" router-link="/tabs/members" class="ion-margin-top">
+              Retour à la liste
+            </ion-button>
+          </div>
         </div>
       </div>
     </ion-content>
@@ -272,6 +274,11 @@ const formatGender = (gender?: string) => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 .mt-large {
   margin-top: 5%;
 }

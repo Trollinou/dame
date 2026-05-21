@@ -14,31 +14,33 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <!-- État de chargement (Silent Refresh) -->
-      <div v-if="isLoading && messages.length === 0" class="ion-text-center ion-padding">
-        <ion-spinner name="crescent"></ion-spinner>
-        <p>Chargement des messages...</p>
-      </div>
+      <div class="safe-area-wrapper">
+        <!-- État de chargement (Silent Refresh) -->
+        <div v-if="isLoading && messages.length === 0" class="ion-text-center ion-padding">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Chargement des messages...</p>
+        </div>
 
-      <!-- Liste des messages -->
-      <ion-list v-else-if="filteredMessages.length > 0">
-        <ion-item 
-          v-for="message in filteredMessages" 
-          :key="message.id" 
-          button 
-          @click="viewMessage(message)"
-        >
-          <ion-label>
-            <h2 v-html="message.title.rendered"></h2>
-            <p>{{ formatMessageDate(message.date) }}</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
+        <!-- Liste des messages -->
+        <ion-list v-else-if="filteredMessages.length > 0">
+          <ion-item 
+            v-for="message in filteredMessages" 
+            :key="message.id" 
+            button 
+            @click="viewMessage(message)"
+          >
+            <ion-label>
+              <h2 v-html="message.title.rendered"></h2>
+              <p>{{ formatMessageDate(message.date) }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
 
-      <!-- Aucun résultat -->
-      <div v-else class="ion-text-center ion-padding">
-        <p v-if="searchQuery">Aucun message trouvé pour "{{ searchQuery }}".</p>
-        <p v-else>Aucun message disponible.</p>
+        <!-- Aucun résultat -->
+        <div v-else class="ion-text-center ion-padding">
+          <p v-if="searchQuery">Aucun message trouvé pour "{{ searchQuery }}".</p>
+          <p v-else>Aucun message disponible.</p>
+        </div>
       </div>
     </ion-content>
   </ion-page>
@@ -111,6 +113,11 @@ onIonViewWillEnter(() => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 ion-list { margin-top: 8px; }
 h2 { font-weight: bold; }
 </style>

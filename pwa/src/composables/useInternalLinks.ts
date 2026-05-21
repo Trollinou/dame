@@ -19,6 +19,19 @@ export function useInternalLinks() {
    */
   const handleInternalLinks = (event: MouseEvent) => {
     const target = event.target as HTMLElement;
+    
+    // 1. Gestion des éléments avec data-path (Boutons injectés)
+    const clickableWithData = target.closest('[data-path]');
+    if (clickableWithData) {
+      const path = clickableWithData.getAttribute('data-path');
+      if (path) {
+        event.preventDefault();
+        router.push(path);
+        return;
+      }
+    }
+
+    // 2. Gestion des liens <a> classiques
     const anchor = target.closest('a');
 
     if (anchor && anchor.href) {

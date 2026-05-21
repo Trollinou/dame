@@ -7,49 +7,52 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Tournois</ion-title>
-        </ion-toolbar>
-      </ion-header>
+      <!-- Wrapper respectant la Dynamic Island sans ajouter de marges excessives -->
+      <div class="safe-area-wrapper">
+        <ion-header collapse="condense">
+          <ion-toolbar>
+            <ion-title size="large">Tournois</ion-title>
+          </ion-toolbar>
+        </ion-header>
 
-      <div v-if="isLoading" class="ion-text-center ion-padding">
-        <ion-spinner name="crescent"></ion-spinner>
-        <p>Chargement des tournois...</p>
-      </div>
+        <div v-if="isLoading" class="ion-text-center ion-padding">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Chargement des tournois...</p>
+        </div>
 
-      <div v-else-if="error" class="ion-text-center ion-padding">
-        <p color="danger">{{ error }}</p>
-        <ion-button fill="clear" @click="fetchMenu">Réessayer</ion-button>
-      </div>
+        <div v-else-if="error" class="ion-text-center ion-padding">
+          <p color="danger">{{ error }}</p>
+          <ion-button fill="clear" @click="fetchMenu">Réessayer</ion-button>
+        </div>
 
-      <div v-else>
-        <ion-card 
-          v-for="item in topLevelItems" 
-          :key="item.id" 
-          class="tournament-card" 
-          button 
-          @click="goToPage(item.object_id)"
-        >
-          <ion-card-header>
-            <div class="card-icon-container">
-              <ion-icon :icon="trophyOutline" color="primary"></ion-icon>
-            </div>
-            <ion-card-subtitle>Compétition</ion-card-subtitle>
-            <ion-card-title v-html="item.title"></ion-card-title>
-          </ion-card-header>
+        <div v-else>
+          <ion-card 
+            v-for="item in topLevelItems" 
+            :key="item.id" 
+            class="tournament-card ion-no-margin ion-margin-bottom" 
+            button 
+            @click="goToPage(item.object_id)"
+          >
+            <ion-card-header>
+              <div class="card-icon-container">
+                <ion-icon :icon="trophyOutline" color="primary"></ion-icon>
+              </div>
+              <ion-card-subtitle>Compétition</ion-card-subtitle>
+              <ion-card-title v-html="item.title"></ion-card-title>
+            </ion-card-header>
 
-          <ion-card-content>
-            <p>Découvrez les détails, les horaires et les modalités d'inscription pour ce tournoi.</p>
-            <div class="cta-container">
-              <span class="cta-text">Voir les détails</span>
-              <ion-icon :icon="chevronForwardOutline" size="small"></ion-icon>
-            </div>
-          </ion-card-content>
-        </ion-card>
+            <ion-card-content>
+              <p>Découvrez les détails, les horaires et les modalités d'inscription pour ce tournoi.</p>
+              <div class="cta-container">
+                <span class="cta-text">Voir les détails</span>
+                <ion-icon :icon="chevronForwardOutline" size="small"></ion-icon>
+              </div>
+            </ion-card-content>
+          </ion-card>
 
-        <div v-if="topLevelItems.length === 0 && !isLoading" class="ion-text-center ion-padding">
-          <p>Aucun tournoi disponible pour le moment.</p>
+          <div v-if="topLevelItems.length === 0 && !isLoading" class="ion-text-center ion-padding">
+            <p>Aucun tournoi disponible pour le moment.</p>
+          </div>
         </div>
       </div>
     </ion-content>
@@ -125,8 +128,12 @@ onIonViewWillEnter(() => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 .tournament-card {
-  margin-bottom: 20px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

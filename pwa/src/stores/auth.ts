@@ -9,7 +9,7 @@ import { useContactStore } from './contacts';
 import { useDashboardStore } from './dashboard';
 import { useMemberStore } from './members';
 import { useMessageStore } from './messages';
-import { useSondageStore } from './sondages';
+import { useBenevolatStore } from './benevolat';
 
 export interface Identity {
   id: string;
@@ -175,7 +175,7 @@ export const useAuthStore = defineStore('auth', () => {
     useDashboardStore().clearData();
     useMemberStore().clearData();
     useMessageStore().clearData();
-    useSondageStore().clearData();
+    useBenevolatStore().clearData();
     router.push('/tabs/home');
   };
 

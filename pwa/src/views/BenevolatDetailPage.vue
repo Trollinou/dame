@@ -3,10 +3,10 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/survey"></ion-back-button>
+          <ion-back-button default-href="/tabs/benevolat"></ion-back-button>
         </ion-buttons>
-        <ion-title v-if="sondage" v-html="sondage.title.rendered"></ion-title>
-        <ion-title v-else>Détails Sondage</ion-title>
+        <ion-title v-if="benevolat" v-html="benevolat.title.rendered"></ion-title>
+        <ion-title v-else>Détails Bénévolat</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -14,26 +14,26 @@
       <ion-header collapse="condense">
         <ion-toolbar>
           <ion-title size="large">
-            <div class="multiline-large-title" v-if="sondage" v-html="sondage.title.rendered"></div>
-            <div class="multiline-large-title" v-else>Détails Sondage</div>
+            <div class="multiline-large-title" v-if="benevolat" v-html="benevolat.title.rendered"></div>
+            <div class="multiline-large-title" v-else>Détails Bénévolat</div>
           </ion-title>
         </ion-toolbar>
       </ion-header>
 
-      <div v-if="sondage">
+      <div v-if="benevolat" class="safe-area-wrapper">
         <!-- Carte Description -->
-        <ion-card v-if="sondage.content?.rendered">
+        <ion-card v-if="benevolat.content?.rendered" class="ion-no-margin ion-margin-bottom">
           <ion-card-header>
             <ion-card-title>Description</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <div class="description-content" v-html="sondage.content.rendered"></div>
+            <div class="description-content" v-html="benevolat.content.rendered"></div>
           </ion-card-content>
         </ion-card>
 
         <!-- Accordéons des dates -->
         <ion-accordion-group>
-          <ion-accordion v-for="(day, dIndex) in sondage.dame_sondage_data" :key="dIndex" :value="'day-' + dIndex">
+          <ion-accordion v-for="(day, dIndex) in benevolat.dame_benevolat_data" :key="dIndex" :value="'day-' + dIndex">
             <ion-item slot="header" color="light">
               <ion-label>{{ formatDate(day.date) }}</ion-label>
             </ion-item>
@@ -52,7 +52,7 @@
                     >
                     </ion-chip>
                   </div>
-                  <p v-else class="no-participants">Aucun inscrit</p>
+                  <p v-else class="no-participants">Aucune participation</p>
                 </ion-card-content>
               </ion-card>
             </div>
@@ -62,13 +62,13 @@
 
       <!-- Chargement ou Introuvable -->
       <div v-else class="ion-text-center ion-padding mt-large">
-        <div v-if="sondageStore.isLoading">
+        <div v-if="benevolatStore.isLoading">
           <ion-spinner name="crescent"></ion-spinner>
-          <p>Chargement du sondage...</p>
+          <p>Chargement...</p>
         </div>
         <div v-else>
-          <h2>Sondage introuvable</h2>
-          <ion-button expand="block" fill="outline" router-link="/tabs/survey" class="ion-margin-top">
+          <h2>Appel introuvable</h2>
+          <ion-button expand="block" fill="outline" router-link="/tabs/benevolat" class="ion-margin-top">
             Retour à la liste
           </ion-button>
         </div>
@@ -101,13 +101,13 @@ import {
 } from '@ionic/vue';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { useSondageStore } from '@/stores/sondages';
+import { useBenevolatStore } from '@/stores/benevolat';
 
 const route = useRoute();
-const sondageStore = useSondageStore();
-const sondageId = parseInt(route.params.id as string);
+const benevolatStore = useBenevolatStore();
+const benevolatId = parseInt(route.params.id as string);
 
-const sondage = computed(() => sondageStore.sondages.find(s => s.id === sondageId));
+const benevolat = computed(() => benevolatStore.benevolats.find(b => b.id === benevolatId));
 
 /**
  * Formate la date en français
@@ -128,8 +128,8 @@ const formatDate = (dateString: string) => {
  */
 const getParticipants = (dayIndex: number, timeIndex: number) => {
   const choiceKey = `${dayIndex}_${timeIndex}`;
-  return sondageStore.reponses.filter(r => 
-    r.sondage_id === sondageId && 
+  return benevolatStore.reponses.filter(r => 
+    r.benevolat_id === benevolatId && 
     Array.isArray(r.choices) && 
     r.choices.includes(choiceKey)
   );
@@ -137,6 +137,11 @@ const getParticipants = (dayIndex: number, timeIndex: number) => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 .mt-large {
   margin-top: 5%;
 }

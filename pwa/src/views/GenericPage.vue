@@ -14,7 +14,8 @@
         <ion-spinner name="crescent"></ion-spinner>
       </div>
 
-      <div v-else-if="page" class="ion-padding">
+      <!-- Wrapper respectant la Dynamic Island sans ajouter de marges excessives -->
+      <div v-else-if="page" class="safe-area-wrapper">
         <h1 v-html="page.title.rendered"></h1>
         
         <!-- Contenu de la page avec boutons injectés et interception des liens -->
@@ -110,6 +111,11 @@ onMounted(fetchPage);
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 h1 { font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; }
 .content :deep(img) { max-width: 100%; height: auto; }
 .content :deep(table) { width: 100%; border-collapse: collapse; margin-bottom: 16px; }

@@ -40,67 +40,69 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Actualités</ion-title>
-        </ion-toolbar>
-      </ion-header>
-      <!-- État de chargement initial -->
-      <div v-if="isLoading && posts.length === 0" class="ion-text-center ion-padding">
-        <ion-spinner name="crescent"></ion-spinner>
-        <p>Chargement des actualités...</p>
-      </div>
-
-      <!-- Erreur -->
-      <div v-else-if="error" class="ion-text-center ion-padding">
-        <p color="danger">{{ error }}</p>
-        <ion-button fill="clear" @click="fetchPosts(true)">Réessayer</ion-button>
-      </div>
-
-      <!-- Liste des articles -->
-      <div v-else>
-        <ion-card 
-          v-for="post in posts" 
-          :key="post.id" 
-          class="news-card" 
-          button 
-          @click="goToDetail(post.id)"
-        >
-          <!-- Image mise en avant -->
-          <img 
-            v-if="getFeaturedImage(post)" 
-            :src="getFeaturedImage(post) || undefined" 
-            :alt="post.title.rendered"
-            class="featured-image"
-          />
-          
-          <ion-card-header>
-            <ion-card-subtitle>{{ formatDate(post.date) }}</ion-card-subtitle>
-            <ion-card-title v-html="post.title.rendered"></ion-card-title>
-          </ion-card-header>
-
-          <ion-card-content>
-            <div v-html="post.excerpt.rendered"></div>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Aucun article -->
-        <div v-if="posts.length === 0 && !isLoading" class="ion-text-center ion-padding">
-          <p>Aucune actualité trouvée.</p>
+      <div class="safe-area-wrapper">
+        <ion-header collapse="condense">
+          <ion-toolbar>
+            <ion-title size="large">Actualités</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <!-- État de chargement initial -->
+        <div v-if="isLoading && posts.length === 0" class="ion-text-center ion-padding">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Chargement des actualités...</p>
         </div>
-      </div>
 
-      <!-- Infinite Scroll -->
-      <ion-infinite-scroll 
-        @ionInfinite="loadMore($event)" 
-        :disabled="!hasMorePosts"
-      >
-        <ion-infinite-scroll-content 
-          loading-spinner="dots" 
-          loading-text="Chargement de plus d'articles..."
+        <!-- Erreur -->
+        <div v-else-if="error" class="ion-text-center ion-padding">
+          <p color="danger">{{ error }}</p>
+          <ion-button fill="clear" @click="fetchPosts(true)">Réessayer</ion-button>
+        </div>
+
+        <!-- Liste des articles -->
+        <div v-else>
+          <ion-card 
+            v-for="post in posts" 
+            :key="post.id" 
+            class="news-card ion-no-margin ion-margin-bottom" 
+            button 
+            @click="goToDetail(post.id)"
+          >
+            <!-- Image mise en avant -->
+            <img 
+              v-if="getFeaturedImage(post)" 
+              :src="getFeaturedImage(post) || undefined" 
+              :alt="post.title.rendered"
+              class="featured-image"
+            />
+            
+            <ion-card-header>
+              <ion-card-subtitle>{{ formatDate(post.date) }}</ion-card-subtitle>
+              <ion-card-title v-html="post.title.rendered"></ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <div v-html="post.excerpt.rendered"></div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Aucun article -->
+          <div v-if="posts.length === 0 && !isLoading" class="ion-text-center ion-padding">
+            <p>Aucune actualité trouvée.</p>
+          </div>
+        </div>
+
+        <!-- Infinite Scroll -->
+        <ion-infinite-scroll 
+          @ionInfinite="loadMore($event)" 
+          :disabled="!hasMorePosts"
         >
-        </ion-infinite-scroll-content>
-      </ion-infinite-scroll>
+          <ion-infinite-scroll-content 
+            loading-spinner="dots" 
+            loading-text="Chargement de plus d'articles..."
+          >
+          </ion-infinite-scroll-content>
+        </ion-infinite-scroll>
+      </div>
     </ion-content>
   </ion-page>
 </template>
@@ -291,8 +293,12 @@ onIonViewWillEnter(() => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 .news-card {
-  margin-bottom: 20px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

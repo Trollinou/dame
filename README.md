@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 4.4.6a
+**Version:** 4.5.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -55,6 +55,12 @@ Chaque fiche membre centralise :
 ### Gestion des Partenaires (Contacts)
 *   **Module Dédié :** Un annuaire distinct pour les partenaires externes (Presse, Mairies, Sponsors), intégré au système de messagerie.
 
+### Appels à Bénévoles (Participation)
+*   **Planification :** Créez des événements (tournois, fêtes) et définissez des créneaux horaires.
+*   **Recrutement Simple :** Les membres s'inscrivent sur les créneaux via le site ou l'application mobile.
+*   **Suivi en Temps Réel :** Tableau récapitulatif des inscrits par créneau dans l'administration.
+*   **Protection des Données :** Les votes sur des dates passées sont verrouillés pour préserver l'historique.
+
 ### Agenda & Flux iCalendar
 *   **Calendrier Interactif :** Gestion des événements, compétitions et entraînements.
 *   **Flux ICS Magiques :** Abonnement direct sur iPhone, Android ou Mac avec gestion intelligente des fuseaux horaires (plus de décalage été/hiver).
@@ -83,173 +89,49 @@ Toutes les requêtes personnalisées nécessitent que l'utilisateur soit authent
 L'application mobile est accessible via une URL simplifiée : `https://votre-site.com/pwa`. Une redirection automatique est en place pour pointer vers le dossier de distribution du plugin.
 
 ### Support des Métadonnées (Post Meta)
-Le support des `'custom-fields'` a été activé pour les types **Adhérents**, **Agenda**, **Contacts**, **Sondages** et **Réponses**. Cela permet de lire et modifier toutes les métadonnées (dates, emails, téléphones, etc.) directement via les endpoints REST standard de WordPress en utilisant le champ `meta`.
+Le support des `'custom-fields'` a été activé pour les types **Adhérents**, **Agenda**, **Contacts**, **Benevolat** et **Benevolat_Reponse**. Cela permet de lire et modifier toutes les métadonnées directement via les endpoints REST standard.
 
-**Note spécifique aux Sondages :**
-Les données de configuration des sondages (dates et horaires) sont exposées à la racine de l'objet JSON sous la clé `dame_sondage_data`. 
-
-Pour les **Réponses aux Sondages**, l'ID du sondage parent est disponible à la racine sous la clé `sondage_id`.
+**Note spécifique au Bénévolat :**
+Les données de configuration (dates et horaires) sont exposées sous la clé `dame_benevolat_data`. 
+Pour les **Réponses**, l'ID du bénévolat parent est disponible sous la clé `benevolat_id` et les choix sous `choices`.
 
 ### 1. Données de Référence (Lookups)
 Utilisées pour alimenter les formulaires de l'application.
-
 *   **URL :** `/wp-json/dame/v1/data/{type}`
 *   **Méthode :** `GET`
-*   **Types disponibles :**
-    *   `countries` : Liste des pays.
-    *   `regions` : Régions françaises.
-    *   `departments` : Départements français.
-    *   `department-region-mapping` : Correspondance départements -> régions.
-    *   `academies` : Académies scolaires.
-    *   `health-document-options` : Statuts des documents de santé.
-    *   `clothing-sizes` : Tailles de vêtements.
-
-**Exemple JS :**
-```javascript
-fetch('/wp-json/dame/v1/data/regions')
-  .then(response => response.json())
-  .then(data => console.log(data));
-```
 
 ### 2. Anniversaires du Jour
-Récupère la liste des adhérents dont c'est l'anniversaire aujourd'hui pour la saison en cours.
-
 *   **URL :** `/wp-json/dame/v1/birthdays/today`
 *   **Méthode :** `GET`
 
-**Réponse type :**
-```json
-[
-  {
-    "id": 123,
-    "name": "DUPONT Jean",
-    "age": 25
-  }
-]
-```
-
 ### 3. Prochains Anniversaires
-Récupère les `x` prochains anniversaires à venir à partir d'aujourd'hui. Gère automatiquement le passage à l'année suivante.
-
 *   **URL :** `/wp-json/dame/v1/birthdays/upcoming`
 *   **Méthode :** `GET`
-*   **Paramètres :**
-    *   `limit` (optionnel, défaut: 10) : Nombre de résultats souhaités.
-
-**Réponse type :**
-```json
-[
-  {
-    "id": 124,
-    "name": "MARTIN Sophie",
-    "date": "2026-05-15",
-    "days_until": 7,
-    "next_age": 12
-  }
-]
-```
 
 ### 4. Menu PWA
-Récupère les éléments du menu de navigation nommé "Menu_PWA".
-
 *   **URL :** `/wp-json/dame/v1/pwa-menu`
 *   **Méthode :** `GET`
-*   **Accès :** Public
-**Réponse type :**
-```json
-[
-  {
-    "id": 120,
-    "object_id": 12,
-    "parent": 0,
-    "title": "Accueil",
-    "menu_order": 1
-  },
-  {
-    "id": 121,
-    "object_id": 45,
-    "parent": 0,
-    "title": "Agenda",
-    "menu_order": 2
-  },
-  {
-    "id": 122,
-    "object_id": 46,
-    "parent": 121,
-    "title": "Sous-menu Agenda",
-    "menu_order": 3
-  }
-]
-```
 
 ### 5. Inscription (Membres uniquement)
-Permet à un membre du club (identifié par son e-mail dans la base adhérent) de créer son compte utilisateur.
-
+Permet à un membre du club de créer son compte utilisateur WordPress.
 *   **URL :** `/wp-json/dame/v1/register`
 *   **Méthode :** `POST`
-*   **Accès :** Public
-*   **Paramètres JSON :**
-    *   `username` : Identifiant souhaité.
-    *   `email` : Adresse e-mail (doit correspondre à un adhérent ou RL).
-    *   `password` : Mot de passe.
-
-**Processus :**
-1. Création du compte avec statut "Non vérifié".
-2. Envoi d'un e-mail de vérification avec jeton.
-3. Validation du jeton via le site (redirige vers la PWA).
-4. Liaison automatique de l'utilisateur WordPress avec la fiche Adhérent.
 
 ### 6. Mes Identités (Profiles)
-Récupère toutes les fiches adhérents liées à l'adresse e-mail de l'utilisateur connecté.
-
+Récupère les identités liées à l'email de l'utilisateur connecté.
 *   **URL :** `/wp-json/dame/v1/my-identities`
 *   **Méthode :** `GET`
-*   **Accès :** Authentifié
+*   **Logique :** Si l'utilisateur est un adulte majeur unique lié à cet email, seul son profil de membre est renvoyé. Pour les familles, tous les profils (adhérents + représentants) sont listés.
 
-**Réponse type :**
-```json
-[
-  {
-    "id": "member_50",
-    "name": "Lucas DUPONT",
-    "type": "member",
-    "member_id": 50
-  },
-  {
-    "id": "rep_50_1",
-    "name": "Jean DUPONT",
-    "type": "representative",
-    "member_id": 50
-  }
-]
-```
+### 7. Gestion du Bénévolat
+*   **Récupérer mon vote :** `GET /wp-json/dame/v1/benevolats/{id}/my-vote`
+*   **Voter / Modifier :** `POST /wp-json/dame/v1/benevolats/{id}/vote`
+    *   Corps : `{ "choices": ["0_1", "1_0"] }`
 
-### 7. Ressources Natives WordPress
-Le plugin expose également les Custom Post Types et Taxonomies via l'API REST native sous les points de terminaison suivants :
-
-#### Custom Post Types
-| Type de contenu | Endpoint REST |
-| :--- | :--- |
-| **Adhérents** | `/wp-json/wp/v2/adherents` |
-| **Agenda** | `/wp-json/wp/v2/agenda` |
-| **Contacts** | `/wp-json/wp/v2/contacts` |
-| **Flux iCal** | `/wp-json/wp/v2/ical-feeds` |
-| **Messages** | `/wp-json/wp/v2/messages` |
-| **Préinscriptions** | `/wp-json/wp/v2/pre-inscriptions` |
-| **Sondages** | `/wp-json/wp/v2/sondages` |
-| **Réponses Sondages** | `/wp-json/wp/v2/sondage-reponses` |
-
-**Filtrage de l'Agenda par Date :**
-L'endpoint `/wp-json/wp/v2/agenda` supporte deux paramètres de filtrage supplémentaires basés sur la date de début de l'événement (`_dame_start_date`) :
-*   `after_date` : Récupère les événements commençant à partir de cette date (format `YYYY-MM-DD`).
-*   `before_date` : Récupère les événements commençant avant cette date (format `YYYY-MM-DD`).
-
-*Note : Lorsqu'un de ces filtres est utilisé, les résultats sont automatiquement triés par date de début croissante.*
-
-#### Taxonomies
-| Taxonomie | Endpoint REST |
-| :--- | :--- |
-| **Catégories Agenda** | `/wp-json/wp/v2/agenda-categories` |
-| **Types de Contact** | `/wp-json/wp/v2/contact-types` |
-| **Groupes** | `/wp-json/wp/v2/groups` |
-| **Saisons** | `/wp-json/wp/v2/seasons` |
+### 8. Ressources Natives WordPress
+Le plugin expose les Custom Post Types via `/wp-json/wp/v2/` :
+*   **Adhérents :** `adherents`
+*   **Agenda :** `agenda` (supporte `after_date` et `before_date`)
+*   **Contacts :** `contacts`
+*   **Bénévolat :** `benevolats`
+*   **Réponses :** `benevolat-reponses`

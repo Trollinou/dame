@@ -90,13 +90,13 @@ class Toolbar {
 			]
 		);
 
-		// Add the "Voir les sondages" sub-menu item.
+		// Add the "Voir les bénévolats" sub-menu item.
 		$wp_admin_bar->add_node(
 			[
 				'id'     => 'dame_view_polls',
 				'parent' => 'dame_menu',
-				'title'  => __( "Voir les sondages", "dame" ),
-				'href'   => admin_url( 'edit.php?post_type=sondage' ),
+				'title'  => __( "Appels à bénévoles", "dame" ),
+				'href'   => admin_url( 'edit.php?post_type=benevolat' ),
 			]
 		);
 

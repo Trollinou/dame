@@ -4,6 +4,25 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.0] - 2026-05-18
+### Ajouté
+- **Module Bénévolat** : Implémentation complète de la gestion des participations bénévoles (remplace le module Sondages).
+- **Vote Public** : Création de `BenevolatVotePage.vue` permettant aux adhérents de proposer leur aide sur des créneaux spécifiques.
+- **Indicateurs de Participation** : Ajout de badges "Inscrit" (participation enregistrée) et "Terminé" (événement passé) pour une meilleure visibilité.
+- **Affluence en Temps Réel** : Affichage du nombre d'inscrits par créneau dans le formulaire de participation.
+
+### Modifié
+- **Refactoring Sémantique** : Migration globale du terme "Sondage" vers "Bénévolat" dans tout le code source (Vues, Stores, Router, API).
+- **Architecture des Stores** : Renommage de `useSondageStore` en `useBenevolatStore` avec support du cache local pour le suivi des participations.
+- **Intégration Articles** : Mise à jour du système d'interception transformant les formulaires de bénévolat en boutons d'action natifs "Proposer mon aide".
+- **Tri des Bénévolats** : Implémentation d'un double tri (chronologique pour les appels en cours, antéchronologique pour les terminés).
+- **Optimisation Mobile** : Ajustement de la barre d'onglets pour supporter l'affichage de 6 boutons sur les écrans Android étroits.
+
+### Corrigé
+- **Affichage Paysage** : Correction chirurgicale des contenus coupés par la Dynamic Island/Notch via l'intégration des zones de sécurité (Safe Areas) sur toutes les pages de détails.
+- **Navigation Admin** : Résolution du problème de surlignage de l'onglet Bénévolat lors de la sélection en mode gestionnaire.
+- **Synchro WordPress** : Correction de l'envoi de l'identité du membre (`member_id`) lors de la participation pour une liaison correcte avec le plugin WP.
+
 ## [4.4.6a] - 2026-05-17
 ### Ajouté
 - **Gestion des Événements "En cours"** : Support complet pour les événements ayant commencé dans le passé mais se terminant dans le futur.

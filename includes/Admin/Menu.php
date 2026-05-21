@@ -68,7 +68,7 @@ class Menu {
 
 		// Page cachée : Rapport détaillé d'un message
 		add_submenu_page(
-			'dame-admin', // <-- Changement ici
+			'dame-admin', 
 			__( "Rapport du message", "dame" ),
 			__( "Rapport", "dame" ),
 			'edit_dame_messages',
@@ -93,7 +93,7 @@ class Menu {
 			'edit.php?post_type=dame_contact' => __( "Tous les contacts", "dame" ),
 			'edit.php?post_type=dame_pre_inscription' => __( "Toutes les préinscriptions", "dame" ),
 			'edit.php?post_type=dame_agenda' => __( "Tous les évènements", "dame" ),
-			'edit.php?post_type=sondage' => __( "Tous les sondages", "dame" ),
+			'edit.php?post_type=benevolat' => __( "Appels à bénévoles", "dame" ),
 			'edit.php?post_type=dame_message' => __( "Tous les messages", "dame" ),
 			'dame-mailing' => __( "Envoyer un message", "dame" ),
 			'edit-tags.php?taxonomy=dame_group&amp;post_type=adherent' => __( "Groupes d'Adhérent", "dame" ),
@@ -113,7 +113,6 @@ class Menu {
 
 				if ( $item_url === $target_url || $item[2] === $url ) {
 					$item[0] = $new_title;
-					// SÉCURITÉ PHP 8.1 : S'assurer que l'index 3 (Page Title) existe
 					if ( ! isset( $item[3] ) ) {
 						$item[3] = $new_title;
 					}
@@ -127,7 +126,6 @@ class Menu {
 			if ( ! $found ) {
 				$cap = ( strpos( $url, 'edit-tags.php' ) !== false ) ? 'manage_categories' : 'manage_options';
 				$clean_url = str_replace( '&amp;', '&', $url );
-				// SÉCURITÉ PHP 8.1 : Ajout du 4ème paramètre (Index 3)
 				$reordered[] = [ $new_title, $cap, $clean_url, $new_title ];
 			}
 		}
@@ -195,13 +193,10 @@ class Menu {
 		] );
 
 		// 4. Préinscriptions en attente
-		// Note : wp_count_posts returns object with properties as statuses. 'draft' or 'pending' might be used for new ones.
-		// As per standard WP, 'draft' or a custom status like 'pending' is used. Let's get total minus publish, or just count 'draft'.
-		// Often forms save as draft or pending. We will check post_status = 'pending' or 'draft'.
 		$pre_inscriptions_query = new \WP_Query( [
 			'post_type'      => 'dame_pre_inscription',
 			'post_status'    => [ 'pending', 'draft' ],
-			'posts_per_page' => 1, // We only need the count
+			'posts_per_page' => 1,
 		] );
 		$pending_preinscriptions = $pre_inscriptions_query->found_posts;
 
@@ -224,19 +219,19 @@ class Menu {
 			'post_status'    => 'publish',
 		] );
 
-		// 6. Sondages en cours
-		$active_polls = [];
-		$all_polls    = get_posts( [
-			'post_type'      => 'sondage',
+		// 6. Bénévolats en cours
+		$active_benevolats = [];
+		$all_benevolats    = get_posts( [
+			'post_type'      => 'benevolat',
 			'posts_per_page' => -1,
 			'post_status'    => 'publish',
 		] );
 
-		if ( ! empty( $all_polls ) ) {
-			foreach ( $all_polls as $poll ) {
-				$sondage_data = get_post_meta( $poll->ID, '_dame_sondage_data', true );
-				if ( ! empty( $sondage_data ) ) {
-					$dates = array_column( (array) $sondage_data, 'date' );
+		if ( ! empty( $all_benevolats ) ) {
+			foreach ( $all_benevolats as $benevolat ) {
+				$benevolat_data = get_post_meta( $benevolat->ID, '_dame_benevolat_data', true );
+				if ( ! empty( $benevolat_data ) ) {
+					$dates = array_column( (array) $benevolat_data, 'date' );
 					if ( empty( $dates ) ) {
 						continue;
 					}
@@ -246,15 +241,15 @@ class Menu {
 
 					if ( $last_date >= $today ) {
 						$responses_query = new \WP_Query( [
-							'post_type'      => 'sondage_reponse',
+							'post_type'      => 'benevolat_reponse',
 							'post_status'    => 'publish',
-							'post_parent'    => $poll->ID,
+							'post_parent'    => $benevolat->ID,
 							'posts_per_page' => 1,
 						] );
 
-						$active_polls[] = [
-							'ID'              => $poll->ID,
-							'title'           => $poll->post_title,
+						$active_benevolats[] = [
+							'ID'              => $benevolat->ID,
+							'title'           => $benevolat->post_title,
 							'first_date'      => $first_date,
 							'responses_count' => $responses_query->found_posts,
 						];
@@ -262,13 +257,11 @@ class Menu {
 				}
 			}
 
-			// Sort by first_date
-			usort( $active_polls, function( array $a, array $b ) {
+			usort( $active_benevolats, function( array $a, array $b ) {
 				return strcmp( $a['first_date'], $b['first_date'] );
 			} );
 		}
 
-		// Render HTML
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Tableau de Bord DAME', 'dame' ); ?></h1>
@@ -296,7 +289,6 @@ class Menu {
 					<!-- Colonne Gauche -->
 					<div class="postbox-container" style="width: 49%; float: left; margin-right: 2%;">
 
-						<!-- Derniers Adhérents -->
 						<div class="postbox">
 							<h2 class="hndle"><span><?php esc_html_e( '5 derniers adhérents enregistrés', 'dame' ); ?></span></h2>
 							<div class="inside">
@@ -318,7 +310,6 @@ class Menu {
 							</div>
 						</div>
 
-						<!-- Répartition des licences -->
 						<div class="postbox">
 							<h2 class="hndle"><span><?php esc_html_e( 'Répartition des licences', 'dame' ); ?></span></h2>
 							<div class="inside">
@@ -350,7 +341,6 @@ class Menu {
 					<!-- Colonne Droite -->
 					<div class="postbox-container" style="width: 49%; float: left;">
 
-						<!-- Prochains événements -->
 						<div class="postbox">
 							<h2 class="hndle"><span><?php esc_html_e( '5 prochains événements (Agenda)', 'dame' ); ?></span></h2>
 							<div class="inside">
@@ -375,28 +365,27 @@ class Menu {
 							</div>
 						</div>
 
-						<!-- Sondages en cours -->
 						<div class="postbox">
-							<h2 class="hndle"><span><?php esc_html_e( 'Sondages en cours', 'dame' ); ?></span></h2>
+							<h2 class="hndle"><span><?php esc_html_e( 'Bénévolats en cours', 'dame' ); ?></span></h2>
 							<div class="inside">
-								<?php if ( empty( $active_polls ) ) : ?>
-									<p><?php esc_html_e( 'Aucun sondage en cours.', 'dame' ); ?></p>
+								<?php if ( empty( $active_benevolats ) ) : ?>
+									<p><?php esc_html_e( 'Aucun appel en cours.', 'dame' ); ?></p>
 								<?php else : ?>
 									<ul>
-										<?php foreach ( $active_polls as $poll ) :
-											$formatted_date = wp_date( get_option( 'date_format' ), strtotime( $poll['first_date'] ) );
+										<?php foreach ( $active_benevolats as $benevolat ) :
+											$formatted_date = wp_date( get_option( 'date_format' ), strtotime( $benevolat['first_date'] ) );
 										?>
 											<li>
 												<strong><?php echo esc_html( $formatted_date ); ?></strong> :
-												<a href="<?php echo esc_url( get_edit_post_link( $poll['ID'] ) ); ?>">
-													<?php echo esc_html( $poll['title'] ); ?>
+												<a href="<?php echo esc_url( get_edit_post_link( $benevolat['ID'] ) ); ?>">
+													<?php echo esc_html( $benevolat['title'] ); ?>
 												</a>
-												- <span style="color: #666; font-size: 0.9em;"><?php echo intval( $poll['responses_count'] ); ?> <?php echo esc_html( _n( 'réponse', 'réponses', $poll['responses_count'], 'dame' ) ); ?></span>
+												- <span style="color: #666; font-size: 0.9em;"><?php echo intval( $benevolat['responses_count'] ); ?> <?php echo esc_html( _n( 'réponse', 'réponses', $benevolat['responses_count'], 'dame' ) ); ?></span>
 											</li>
 										<?php endforeach; ?>
 									</ul>
 								<?php endif; ?>
-								<p><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=sondage' ) ); ?>"><?php esc_html_e( 'Voir tous les sondages', 'dame' ); ?></a></p>
+								<p><a href="<?php echo esc_url( admin_url( 'edit.php?post_type=benevolat' ) ); ?>"><?php esc_html_e( 'Appels à bénévoles', 'dame' ); ?></a></p>
 							</div>
 						</div>
 
@@ -409,22 +398,14 @@ class Menu {
 		<?php
 	}
 
-	/**
-	 * Force le menu parent "DAME" à rester ouvert.
-	 *
-	 * @param string $parent_file The parent file.
-	 * @return string
-	 */
 	public function highlight_parent_menu( string $parent_file ): string {
 		global $current_screen;
 		$dame_taxonomies = [ 'dame_saison_adhesion', 'dame_group', 'dame_agenda_category', 'dame_contact_type' ];
 
-		// Pour les taxonomies
 		if ( isset( $current_screen->taxonomy ) && in_array( $current_screen->taxonomy, $dame_taxonomies ) ) {
 			return 'dame-admin';
 		}
 
-		// Pour la page cachée du rapport de message
 		if ( isset( $_GET['page'] ) && $_GET['page'] === 'dame-message-report' ) {
 			return 'dame-admin';
 		}
@@ -432,16 +413,9 @@ class Menu {
 		return $parent_file;
 	}
 
-	/**
-	 * Force la mise en surbrillance (gras) du bon sous-menu.
-	 *
-	 * @param string|null $submenu_file The submenu file.
-	 * @return string|null
-	 */
 	public function highlight_submenu( ?string $submenu_file ): ?string {
 		global $current_screen;
 
-		// Pour les taxonomies
 		if ( isset( $current_screen->taxonomy ) ) {
 			if ( $current_screen->taxonomy === 'dame_saison_adhesion' ) {
 				return 'edit-tags.php?taxonomy=dame_saison_adhesion&post_type=adherent';
@@ -457,7 +431,6 @@ class Menu {
 			}
 		}
 
-		// Pour la page cachée du rapport de message (met en surbrillance "Tous les messages")
 		if ( isset( $_GET['page'] ) && $_GET['page'] === 'dame-message-report' ) {
 			return 'edit.php?post_type=dame_message';
 		}

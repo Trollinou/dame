@@ -11,116 +11,118 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">
-            <div class="multiline-large-title" v-if="contact" v-html="contact.title.rendered"></div>
-            <div class="multiline-large-title" v-else>Détails Contact</div>
-          </ion-title>
-        </ion-toolbar>
-      </ion-header>
+      <div class="safe-area-wrapper">
+        <ion-header collapse="condense">
+          <ion-toolbar>
+            <ion-title size="large">
+              <div class="multiline-large-title" v-if="contact" v-html="contact.title.rendered"></div>
+              <div class="multiline-large-title" v-else>Détails Contact</div>
+            </ion-title>
+          </ion-toolbar>
+        </ion-header>
 
-      <div v-if="contact">
-        <!-- Carte Identité -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon :icon="personOutline" color="primary"></ion-icon>
-              Identité
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <div v-if="contact.meta?._dame_contact_organization" class="organization-name">
-              {{ contact.meta._dame_contact_organization }}
-            </div>
-            <div class="contact-name">
-              {{ contact.meta?._dame_contact_first_name }} {{ contact.meta?._dame_contact_last_name }}
-            </div>
-            <div v-if="contact.meta?._dame_contact_role" class="role-name">
-              {{ contact.meta._dame_contact_role }}
-            </div>
-          </ion-card-content>
-        </ion-card>
+        <div v-if="contact">
+          <!-- Carte Identité -->
+          <ion-card class="ion-no-margin ion-margin-bottom">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon :icon="personOutline" color="primary"></ion-icon>
+                Identité
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div v-if="contact.meta?._dame_contact_organization" class="organization-name">
+                {{ contact.meta._dame_contact_organization }}
+              </div>
+              <div class="contact-name">
+                {{ contact.meta?._dame_contact_first_name }} {{ contact.meta?._dame_contact_last_name }}
+              </div>
+              <div v-if="contact.meta?._dame_contact_role" class="role-name">
+                {{ contact.meta._dame_contact_role }}
+              </div>
+            </ion-card-content>
+          </ion-card>
 
-        <!-- Carte Coordonnées -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon :icon="callOutline" color="primary"></ion-icon>
-              Coordonnées
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-list lines="inset">
-              <!-- Email -->
-              <ion-item v-if="contact.meta?._dame_contact_email">
-                <ion-icon slot="start" :icon="mailOutline" color="primary"></ion-icon>
-                <ion-label>
-                  <p>Email</p>
-                  <h3>{{ contact.meta._dame_contact_email }}</h3>
-                </ion-label>
-                <ion-button 
-                  slot="end" 
-                  fill="clear" 
-                  :href="'mailto:' + contact.meta._dame_contact_email"
-                >
-                  <ion-icon slot="icon-only" :icon="sendOutline"></ion-icon>
-                </ion-button>
-              </ion-item>
-              
-              <!-- Téléphone -->
-              <ion-item v-if="contact.meta?._dame_contact_phone">
-                <ion-icon slot="start" :icon="callOutline" color="primary"></ion-icon>
-                <ion-label>
-                  <p>Téléphone</p>
-                  <h3>{{ contact.meta._dame_contact_phone }}</h3>
-                </ion-label>
-                <ion-button 
-                  slot="end" 
-                  fill="clear" 
-                  :href="'tel:' + contact.meta._dame_contact_phone"
-                >
-                  <ion-icon slot="icon-only" :icon="callOutline"></ion-icon>
-                </ion-button>
-              </ion-item>
+          <!-- Carte Coordonnées -->
+          <ion-card class="ion-no-margin ion-margin-bottom">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon :icon="callOutline" color="primary"></ion-icon>
+                Coordonnées
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list lines="inset">
+                <!-- Email -->
+                <ion-item v-if="contact.meta?._dame_contact_email">
+                  <ion-icon slot="start" :icon="mailOutline" color="primary"></ion-icon>
+                  <ion-label>
+                    <p>Email</p>
+                    <h3>{{ contact.meta._dame_contact_email }}</h3>
+                  </ion-label>
+                  <ion-button 
+                    slot="end" 
+                    fill="clear" 
+                    :href="'mailto:' + contact.meta._dame_contact_email"
+                  >
+                    <ion-icon slot="icon-only" :icon="sendOutline"></ion-icon>
+                  </ion-button>
+                </ion-item>
+                
+                <!-- Téléphone -->
+                <ion-item v-if="contact.meta?._dame_contact_phone">
+                  <ion-icon slot="start" :icon="callOutline" color="primary"></ion-icon>
+                  <ion-label>
+                    <p>Téléphone</p>
+                    <h3>{{ contact.meta._dame_contact_phone }}</h3>
+                  </ion-label>
+                  <ion-button 
+                    slot="end" 
+                    fill="clear" 
+                    :href="'tel:' + contact.meta._dame_contact_phone"
+                  >
+                    <ion-icon slot="icon-only" :icon="callOutline"></ion-icon>
+                  </ion-button>
+                </ion-item>
 
-              <!-- Adresse -->
-              <ion-item v-if="contact.meta?._dame_contact_address_1 || contact.meta?._dame_contact_city" lines="none">
-                <ion-icon slot="start" :icon="locationOutline" color="primary"></ion-icon>
-                <ion-label class="ion-text-wrap">
-                  <p>Adresse postale</p>
-                  <h3>{{ contact.meta?._dame_contact_address_1 }}</h3>
-                  <h3 v-if="contact.meta?._dame_contact_address_2">{{ contact.meta?._dame_contact_address_2 }}</h3>
-                  <h3>{{ contact.meta?._dame_contact_postcode }} {{ contact.meta?._dame_contact_city }}</h3>
-                </ion-label>
-                <ion-button 
-                  slot="end" 
-                  fill="clear" 
-                  :href="mapUrl" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
-                  <ion-icon slot="icon-only" :icon="locationOutline"></ion-icon>
-                </ion-button>
-              </ion-item>
-            </ion-list>
-          </ion-card-content>
-        </ion-card>
-      </div>
-
-      <!-- Chargement ou Introuvable -->
-      <div v-else class="ion-text-center ion-padding mt-large">
-        <div v-if="contactStore.isLoading">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Chargement du contact...</p>
+                <!-- Adresse -->
+                <ion-item v-if="contact.meta?._dame_contact_address_1 || contact.meta?._dame_contact_city" lines="none">
+                  <ion-icon slot="start" :icon="locationOutline" color="primary"></ion-icon>
+                  <ion-label class="ion-text-wrap">
+                    <p>Adresse postale</p>
+                    <h3>{{ contact.meta?._dame_contact_address_1 }}</h3>
+                    <h3 v-if="contact.meta?._dame_contact_address_2">{{ contact.meta?._dame_contact_address_2 }}</h3>
+                    <h3>{{ contact.meta?._dame_contact_postcode }} {{ contact.meta?._dame_contact_city }}</h3>
+                  </ion-label>
+                  <ion-button 
+                    slot="end" 
+                    fill="clear" 
+                    :href="mapUrl" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <ion-icon slot="icon-only" :icon="locationOutline"></ion-icon>
+                  </ion-button>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
         </div>
-        <div v-else>
-          <ion-icon :icon="personOutline" size="large" color="medium"></ion-icon>
-          <h2>Contact introuvable</h2>
-          <p>Ce contact n'existe pas ou la liste n'est pas encore chargée.</p>
-          <ion-button expand="block" fill="outline" router-link="/tabs/contact" class="ion-margin-top">
-            Retour à la liste
-          </ion-button>
+
+        <!-- Chargement ou Introuvable -->
+        <div v-else class="ion-text-center ion-padding mt-large">
+          <div v-if="contactStore.isLoading">
+            <ion-spinner name="crescent"></ion-spinner>
+            <p>Chargement du contact...</p>
+          </div>
+          <div v-else>
+            <ion-icon :icon="personOutline" size="large" color="medium"></ion-icon>
+            <h2>Contact introuvable</h2>
+            <p>Ce contact n'existe pas ou la liste n'est pas encore chargée.</p>
+            <ion-button expand="block" fill="outline" router-link="/tabs/contact" class="ion-margin-top">
+              Retour à la liste
+            </ion-button>
+          </div>
         </div>
       </div>
     </ion-content>
@@ -195,6 +197,11 @@ const mapUrl = computed(() => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 .mt-large {
   margin-top: 5%;
 }

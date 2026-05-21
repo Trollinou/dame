@@ -21,9 +21,14 @@
             <ion-label>Agenda</ion-label>
           </ion-tab-button>
 
+          <ion-tab-button tab="benevolat" href="/tabs/benevolat">
+            <ion-icon :icon="handRightOutline" />
+            <ion-label>Bénévolat</ion-label>
+          </ion-tab-button>
+
           <ion-tab-button tab="tournoi" href="/tabs/tournoi">
             <ion-icon :icon="trophyOutline" />
-            <ion-label>Tournoi</ion-label>
+            <ion-label>Tournois</ion-label>
           </ion-tab-button>
         </template>
 
@@ -36,7 +41,7 @@
 
           <ion-tab-button tab="admin-members" href="/tabs/admin/members">
             <ion-icon :icon="peopleOutline" />
-            <ion-label>Adhérents</ion-label>
+            <ion-label>Membres</ion-label>
           </ion-tab-button>
 
           <ion-tab-button tab="admin-contact" href="/tabs/admin/contact">
@@ -44,9 +49,9 @@
             <ion-label>Contacts</ion-label>
           </ion-tab-button>
 
-          <ion-tab-button tab="admin-survey" href="/tabs/survey">
-            <ion-icon :icon="statsChartOutline" />
-            <ion-label>Sondages</ion-label>
+          <ion-tab-button tab="benevolat" href="/tabs/benevolat">
+            <ion-icon :icon="handRightOutline" />
+            <ion-label>Bénévolat</ion-label>
           </ion-tab-button>
 
           <ion-tab-button tab="admin-message" href="/tabs/admin/message">
@@ -61,7 +66,6 @@
           @click="toggleMode"
           class="admin-switch-button"
         >
-          <!-- L'icône change dynamiquement selon le mode actuel -->
           <ion-icon :icon="authStore.adminMode ? eyeOffOutline : eyeOutline" color="primary" />
           <ion-label>{{ authStore.adminMode ? 'Public' : 'Admin' }}</ion-label>
         </ion-tab-button>
@@ -87,7 +91,7 @@ import {
   peopleOutline,
   callOutline,
   chatbubbleOutline,
-  statsChartOutline,
+  handRightOutline,
   homeOutline,
   eyeOutline,
   eyeOffOutline
@@ -99,10 +103,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 const toggleMode = () => {
-  // On inverse le mode
   authStore.adminMode = !authStore.adminMode;
-  
-  // Redirection automatique
   if (authStore.adminMode) {
     router.push('/tabs/admin/dashboard');
   } else {
@@ -112,48 +113,31 @@ const toggleMode = () => {
 </script>
 
 <style scoped>
-.tab-admin-switch {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  min-width: 50px;
-  height: 100%;
-  cursor: pointer;
-  /* Retrait du padding safe-area qui décalait l'alignement sur navigateur */
+ion-tab-bar {
+  --border: 0;
+  /* On laisse Ionic gérer le flex par défaut pour éviter les bugs iOS */
 }
 
-ion-toggle {
-  --handle-width: 12px;
-  --handle-height: 12px;
-  --track-background: var(--ion-color-light-shade);
-  --track-background-checked: var(--ion-color-primary);
-  margin: 0;
-  padding: 0;
-  /* On remonte le toggle pour qu'il soit au niveau des icônes */
-  margin-top: -4px; 
+ion-tab-button {
+  --padding-start: 0px;
+  --padding-end: 0px;
+  min-width: 0;
 }
 
-.toggle-label {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--ion-color-medium);
-  margin-top: 2px;
-  /* Assure que le texte est bien sur une seule ligne */
+ion-icon {
+  font-size: 20px; /* Taille intermédiaire */
+}
+
+ion-label {
+  font-size: 9px;
+  letter-spacing: -0.2px;
   white-space: nowrap;
 }
 
-/* Ajustement précis du rail du toggle */
-ion-toggle::part(track) {
-  width: 26px;
-  height: 14px;
+.admin-switch-button {
+  min-width: 45px;
 }
 
-.admin-toggle-btn {
-  --color-selected: var(--ion-color-warning); /* Une couleur distincte comme l'ambre */
-  --color: var(--ion-color-primary);
-  font-weight: bold;
-}
+/* On garde le reste des styles pour le toggle s'il est utilisé ailleurs, 
+   mais ici on utilise des ion-tab-button standard */
 </style>
-

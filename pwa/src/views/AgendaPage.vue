@@ -14,69 +14,70 @@
     </ion-header>
 
     <ion-content :fullscreen="true" ref="contentRef" class="ion-padding">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Agenda</ion-title>
-        </ion-toolbar>
-      </ion-header>
+      <div class="safe-area-wrapper">
+        <ion-header collapse="condense">
+          <ion-toolbar>
+            <ion-title size="large">Agenda</ion-title>
+          </ion-toolbar>
+        </ion-header>
 
-      <!-- Infinite Scroll TOP (Historique) -->
-      <ion-infinite-scroll 
-        v-if="!searchQuery"
-        position="top" 
-        @ionInfinite="loadMorePast($event)" 
-        :disabled="!hasMorePast"
-      >
-        <ion-infinite-scroll-content 
-          loading-spinner="dots" 
-          loading-text="Chargement de l'historique..."
+        <!-- Infinite Scroll TOP (Historique) -->
+        <ion-infinite-scroll 
+          v-if="!searchQuery"
+          position="top" 
+          @ionInfinite="loadMorePast($event)" 
+          :disabled="!hasMorePast"
         >
-        </ion-infinite-scroll-content>
-      </ion-infinite-scroll>
+          <ion-infinite-scroll-content 
+            loading-spinner="dots" 
+            loading-text="Chargement de l'historique..."
+          >
+          </ion-infinite-scroll-content>
+        </ion-infinite-scroll>
 
-      <!-- État de chargement initial -->
-      <div v-if="isLoading && events.length === 0" class="ion-text-center ion-padding">
-        <ion-spinner name="crescent"></ion-spinner>
-        <p>Chargement de l'agenda...</p>
+        <!-- État de chargement initial -->
+        <div v-if="isLoading && events.length === 0" class="ion-text-center ion-padding">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Chargement de l'agenda...</p>
+        </div>
+
+        <!-- Liste des événements -->
+        <ion-list v-else-if="filteredEvents.length > 0">
+          <ion-item
+            v-for="event in filteredEvents"
+            :key="event.id"
+            :id="'event-' + event.id"
+            button
+            @click="goToDetail(event.id)"
+            :class="{ 'past-event': isPast(event) }"
+          >
+            <ion-label>
+              <h2 :class="{ 'upcoming-title': !isPast(event) }" v-html="event.title.rendered"></h2>
+              <p>{{ formatEventDate(event) }}</p>
+            </ion-label>
+            <ion-badge v-if="isToday(event)" color="warning" slot="end">Actuellement</ion-badge>
+          </ion-item>
+        </ion-list>
+
+        <!-- Aucun résultat -->
+        <div v-else class="ion-text-center ion-padding">
+          <p v-if="searchQuery">Aucun événement ne correspond à "{{ searchQuery }}".</p>
+          <p v-else>Aucun événement trouvé.</p>
+        </div>
+
+        <!-- Infinite Scroll BOTTOM (Futur) -->
+        <ion-infinite-scroll 
+          v-if="!searchQuery"
+          @ionInfinite="loadMoreUpcoming($event)" 
+          :disabled="!hasMoreUpcoming"
+        >
+          <ion-infinite-scroll-content 
+            loading-spinner="dots" 
+            loading-text="Chargement des événements futurs..."
+          >
+          </ion-infinite-scroll-content>
+        </ion-infinite-scroll>
       </div>
-
-      <!-- Liste des événements -->
-      <ion-list v-else-if="filteredEvents.length > 0">
-        <ion-item
-          v-for="event in filteredEvents"
-          :key="event.id"
-          :id="'event-' + event.id"
-          button
-          @click="goToDetail(event.id)"
-          :class="{ 'past-event': isPast(event) }"
-        >
-          <ion-label>
-            <h2 :class="{ 'upcoming-title': !isPast(event) }" v-html="event.title.rendered"></h2>
-            <p>{{ formatEventDate(event) }}</p>
-          </ion-label>
-          <ion-badge v-if="isToday(event)" color="warning" slot="end">Actuellement</ion-badge>
-        </ion-item>
-      </ion-list>
-
-      <!-- Aucun résultat -->
-      <div v-else class="ion-text-center ion-padding">
-        <p v-if="searchQuery">Aucun événement ne correspond à "{{ searchQuery }}".</p>
-        <p v-else>Aucun événement trouvé.</p>
-      </div>
-
-      <!-- Infinite Scroll BOTTOM (Futur) -->
-      <ion-infinite-scroll 
-        v-if="!searchQuery"
-        @ionInfinite="loadMoreUpcoming($event)" 
-        :disabled="!hasMoreUpcoming"
-      >
-        <ion-infinite-scroll-content 
-          loading-spinner="dots" 
-          loading-text="Chargement des événements futurs..."
-        >
-        </ion-infinite-scroll-content>
-      </ion-infinite-scroll>
-
     </ion-content>
   </ion-page>
 </template>
@@ -231,6 +232,11 @@ onIonViewWillEnter(async () => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 ion-list { margin-top: 8px; }
 h2 { font-weight: bold; }
 p { color: var(--ion-color-medium); }

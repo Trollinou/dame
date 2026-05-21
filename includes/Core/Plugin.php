@@ -13,7 +13,7 @@ use DAME\CPT\Message;
 use DAME\CPT\PreInscription;
 use DAME\CPT\Agenda;
 use DAME\CPT\ICalFeed;
-use DAME\CPT\Sondage;
+use DAME\CPT\Benevolat;
 use DAME\Core\Roles;
 use DAME\Core\Upgrader; 
 use DAME\API\Tracker;
@@ -32,21 +32,21 @@ use DAME\Metaboxes\PreInscription\Reconciliation as PreInscriptionReconciliation
 use DAME\Metaboxes\Agenda\Manager as AgendaMetaboxManager;
 use DAME\Metaboxes\ICalFeed\Settings as ICalFeedSettings;
 use DAME\Metaboxes\ICalFeed\Info as ICalFeedInfo;
-use DAME\Metaboxes\Sondage\Manager as SondageMetaboxManager;
+use DAME\Metaboxes\Benevolat\Manager as BenevolatMetaboxManager;
 use DAME\Services\PDF_Generator;
 use DAME\Services\ICalFeed as ICalFeedService;
 use DAME\Services\Backup;
 use DAME\Services\Birthday;
 use DAME\Shortcodes\RegistrationForm;
 use DAME\Shortcodes\Agenda as AgendaShortcode;
-use DAME\Shortcodes\Sondage as SondageShortcode;
+use DAME\Shortcodes\Benevolat as BenevolatShortcode;
 use DAME\Shortcodes\Contact as ContactShortcode;
 use DAME\Admin\Assets;
 use DAME\Admin\Pages\ViewAdherent;
 use DAME\Admin\Settings\Main as SettingsMain;
 use DAME\Admin\Columns\Adherent as AdherentColumns;
 use DAME\Admin\ListTables\Agenda as AgendaListTable;
-use DAME\Admin\ListTables\Sondage as SondageListTable;
+use DAME\Admin\ListTables\Benevolat as BenevolatListTable;
 use DAME\Admin\Actions\Agenda as AgendaActions;
 use DAME\Taxonomies\Season;
 use DAME\Taxonomies\Contact_Type;
@@ -57,6 +57,7 @@ use DAME\API\REST\Post_Meta;
 use DAME\API\REST\Data_Endpoints;
 use DAME\API\REST\Registration;
 use DAME\API\REST\Identities;
+use DAME\API\REST\Benevolat as Benevolat_REST;
 
 /**
  * The core plugin class.
@@ -121,8 +122,8 @@ class Plugin {
 		$ical_feed_cpt = new ICalFeed();
 		$ical_feed_cpt->init();
 
-		$sondage_cpt = new Sondage();
-		$sondage_cpt->init();
+		$benevolat_cpt = new Benevolat();
+		$benevolat_cpt->init();
 
 		$birthday_service = new Birthday();
 		$birthday_service->init();
@@ -140,6 +141,9 @@ class Plugin {
 
 		$identities = new Identities();
 		$identities->init();
+
+		$benevolat_rest = new Benevolat_REST();
+		$benevolat_rest->init();
 
 		// Initialize API.
 		$tracker = new Tracker();
@@ -171,8 +175,8 @@ class Plugin {
 		$agenda_shortcode = new AgendaShortcode();
 		$agenda_shortcode->init();
 
-		$sondage_shortcode = new SondageShortcode();
-		$sondage_shortcode->init();
+		$benevolat_shortcode = new BenevolatShortcode();
+		$benevolat_shortcode->init();
 
 		$contact_shortcode = new ContactShortcode();
 		$contact_shortcode->init();
@@ -264,14 +268,14 @@ class Plugin {
 			$ical_feed_info = new ICalFeedInfo();
 			$ical_feed_info->init();
 
-			$sondage_metaboxes = new SondageMetaboxManager();
-			$sondage_metaboxes->init();
+			$benevolat_metaboxes = new BenevolatMetaboxManager();
+			$benevolat_metaboxes->init();
 
 			$agenda_list_table = new AgendaListTable();
 			$agenda_list_table->init();
 
-			$sondage_list_table = new SondageListTable();
-			$sondage_list_table->init();
+			$benevolat_list_table = new BenevolatListTable();
+			$benevolat_list_table->init();
 
 			$agenda_actions = new AgendaActions();
 			$agenda_actions->init();

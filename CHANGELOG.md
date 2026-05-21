@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.5.0] - 2026-05-18
+
+### Plugin WordPress (Backend)
+- **Refactoring Global :** Remplacement intégral du terme "Sondage" par "Benevolat" dans tout le backend (CPT, REST API, Tables SQL, Meta keys).
+- **CPT :** Le slug `sondage` devient `benevolat` et `sondage_reponse` devient `benevolat_reponse`.
+- **API REST :** Les routes `/dame/v1/sondages` sont désormais accessibles via `/dame/v1/benevolats`.
+- **API REST :** Refonte de la logique des identités (`my-identities`) : détection intelligente "Solo-Adulte" pour supprimer les doublons de profil pour les membres majeurs uniques.
+- **Base de données :** Migration automatique de la table `dame_poll_votes` vers `dame_benevolat_votes`.
+- **Sécurité :** Protection contre les modifications de votes sur des dates passées.
+
+### Application Mobile (PWA)
+- **Module Bénévolat :** Implémentation complète de la gestion des participations bénévoles (remplace le module Sondages).
+- **Participation Publique :** Nouvelle vue permettant aux adhérents de proposer leur aide sur des créneaux spécifiques directement depuis leur mobile.
+- **Indicateurs Visuels :** Ajout de badges "Inscrit" et "Terminé" pour un suivi clair des engagements.
+- **Affluence :** Affichage du nombre d'inscrits par créneau en temps réel.
+- **Refactoring Sémantique :** Migration globale du terme "Sondage" vers "Bénévolat" dans tout le code source (Vues, Stores, Router, API).
+- **Safe Areas :** Optimisation de l'affichage pour les écrans avec encoche (Dynamic Island/Notch) en mode paysage.
+
 ## 4.4.6a - 2026-05-17
 ### Ajout
 - **REST API (Agenda) :** Amélioration du filtrage par date pour inclure les événements "en cours" (ceux ayant commencé dans le passé mais finissant aujourd'hui ou plus tard).

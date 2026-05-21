@@ -10,79 +10,81 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <div class="register-container">
-        <div class="register-header">
-          <img src="/assets/icon/queen.svg" alt="Logo Dame" style="height: 60px; margin-bottom: 10px;" />
-          <h2>Créer un compte</h2>
-          <p>Réservé aux adhérents et représentants légaux</p>
+      <div class="safe-area-wrapper">
+        <div class="register-container">
+          <div class="register-header">
+            <img src="/assets/icon/logo.png" alt="Logo Echiquier Lédonien" style="height: 60px; margin-bottom: 10px;" />
+            <h2>Créer un compte</h2>
+            <p>Réservé aux adhérents et représentants légaux</p>
+          </div>
+
+          <div v-if="successMessage" class="success-message ion-padding ion-text-center">
+            <ion-icon :icon="checkmarkCircleOutline" color="success" style="font-size: 3rem;"></ion-icon>
+            <h3>Inscription réussie !</h3>
+            <p>{{ successMessage }}</p>
+            <ion-button expand="block" router-link="/tabs/login" class="ion-margin-top">
+              Retour à la connexion
+            </ion-button>
+          </div>
+
+          <form v-else @submit.prevent="handleRegister" class="register-form">
+            <ion-list lines="none" class="form-list">
+              <ion-item class="input-item">
+                <ion-icon slot="start" :icon="personOutline" color="medium"></ion-icon>
+                <ion-input 
+                  v-model="username" 
+                  type="text" 
+                  placeholder="Identifiant (pour la connexion)" 
+                  required
+                ></ion-input>
+              </ion-item>
+
+              <ion-item class="input-item">
+                <ion-icon slot="start" :icon="mailOutline" color="medium"></ion-icon>
+                <ion-input 
+                  v-model="email" 
+                  type="email" 
+                  placeholder="Votre adresse email" 
+                  required
+                ></ion-input>
+              </ion-item>
+
+              <ion-item class="input-item">
+                <ion-icon slot="start" :icon="lockClosedOutline" color="medium"></ion-icon>
+                <ion-input 
+                  v-model="password" 
+                  type="password" 
+                  placeholder="Mot de passe" 
+                  required
+                ></ion-input>
+              </ion-item>
+              
+              <ion-item class="input-item">
+                <ion-icon slot="start" :icon="lockClosedOutline" color="medium"></ion-icon>
+                <ion-input 
+                  v-model="confirmPassword" 
+                  type="password" 
+                  placeholder="Confirmer le mot de passe" 
+                  required
+                ></ion-input>
+              </ion-item>
+            </ion-list>
+
+            <ion-text color="danger" v-if="errorMessage" class="error-message">
+              <p>{{ errorMessage }}</p>
+            </ion-text>
+
+            <ion-button 
+              expand="block" 
+              type="submit" 
+              class="ion-margin-top" 
+              :disabled="isLoading"
+            >
+              <ion-spinner v-if="isLoading" name="crescent"></ion-spinner>
+              <span v-else>S'inscrire</span>
+            </ion-button>
+          </form>
         </div>
-
-        <div v-if="successMessage" class="success-message ion-padding ion-text-center">
-          <ion-icon :icon="checkmarkCircleOutline" color="success" style="font-size: 3rem;"></ion-icon>
-          <h3>Inscription réussie !</h3>
-          <p>{{ successMessage }}</p>
-          <ion-button expand="block" router-link="/tabs/login" class="ion-margin-top">
-            Retour à la connexion
-          </ion-button>
-        </div>
-
-        <form v-else @submit.prevent="handleRegister" class="register-form">
-          <ion-list lines="none" class="form-list">
-            <ion-item class="input-item">
-              <ion-icon slot="start" :icon="personOutline" color="medium"></ion-icon>
-              <ion-input 
-                v-model="username" 
-                type="text" 
-                placeholder="Identifiant (pour la connexion)" 
-                required
-              ></ion-input>
-            </ion-item>
-
-            <ion-item class="input-item">
-              <ion-icon slot="start" :icon="mailOutline" color="medium"></ion-icon>
-              <ion-input 
-                v-model="email" 
-                type="email" 
-                placeholder="Votre adresse email" 
-                required
-              ></ion-input>
-            </ion-item>
-
-            <ion-item class="input-item">
-              <ion-icon slot="start" :icon="lockClosedOutline" color="medium"></ion-icon>
-              <ion-input 
-                v-model="password" 
-                type="password" 
-                placeholder="Mot de passe" 
-                required
-              ></ion-input>
-            </ion-item>
-            
-            <ion-item class="input-item">
-              <ion-icon slot="start" :icon="lockClosedOutline" color="medium"></ion-icon>
-              <ion-input 
-                v-model="confirmPassword" 
-                type="password" 
-                placeholder="Confirmer le mot de passe" 
-                required
-              ></ion-input>
-            </ion-item>
-          </ion-list>
-
-          <ion-text color="danger" v-if="errorMessage" class="error-message">
-            <p>{{ errorMessage }}</p>
-          </ion-text>
-
-          <ion-button 
-            expand="block" 
-            type="submit" 
-            class="ion-margin-top" 
-            :disabled="isLoading"
-          >
-            <ion-spinner v-if="isLoading" name="crescent"></ion-spinner>
-            <span v-else>S'inscrire</span>
-          </ion-button>
-        </form>
       </div>
     </ion-content>
   </ion-page>
@@ -192,6 +194,11 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
+.safe-area-wrapper {
+  padding-left: var(--ion-safe-area-left, 0);
+  padding-right: var(--ion-safe-area-right, 0);
+}
+
 .register-container {
   max-width: 400px;
   margin: 0 auto;

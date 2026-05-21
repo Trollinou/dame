@@ -1141,8 +1141,8 @@ class Backup {
 			}
 		}
 
-		// Events and Polls
-		$post_types = [ 'dame_agenda', 'sondage', 'sondage_reponse' ];
+		// Events and Benevolat
+		$post_types = [ 'dame_agenda', 'benevolat', 'benevolat_reponse' ];
 		$query = new WP_Query( [ 'post_type' => $post_types, 'posts_per_page' => -1, 'post_status' => 'any' ] );
 		
 		// Optimisation : Pré-chargement des métadonnées
@@ -1165,12 +1165,12 @@ class Backup {
 			];
 		}
 
-		// Poll Votes
+		// Benevolat Votes
 		global $wpdb;
-		$table_votes = $wpdb->prefix . 'dame_poll_votes';
+		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
 		$votes_data = $wpdb->get_results( "SELECT * FROM {$table_votes}", ARRAY_A );
 		if ( is_array( $votes_data ) ) {
-			$data['poll_votes'] = $votes_data;
+			$data['benevolat_votes'] = $votes_data;
 		}
 
 		return $data;
@@ -1195,14 +1195,14 @@ class Backup {
 		if ( ! $data ) return;
 
 		global $wpdb;
-		$post_types = [ 'dame_agenda', 'sondage', 'sondage_reponse' ];
+		$post_types = [ 'dame_agenda', 'benevolat', 'benevolat_reponse' ];
 
 		// 1. PURGE
 		$posts_to_delete = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_type IN ('" . implode( "','", $post_types ) . "')" );
 		foreach ( $posts_to_delete as $pid ) wp_delete_post( (int) $pid, true );
 		$terms = get_terms( [ 'taxonomy' => 'dame_agenda_category', 'hide_empty' => false, 'fields' => 'ids' ] );
 		foreach ( $terms as $tid ) { delete_option( "taxonomy_$tid" ); wp_delete_term( (int) $tid, 'dame_agenda_category' ); }
-		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}dame_poll_votes" );
+		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}dame_benevolat_votes" );
 
 		// 2. RESTORE TAXONOMIES
 		foreach ( $data['taxonomy_terms'] ?? [] as $t ) {
@@ -1253,9 +1253,10 @@ class Backup {
 			if ( ! empty( $p['categories'] ) ) wp_set_object_terms( $pid, $p['categories'], 'dame_agenda_category' );
 		}
 
-		// 4. RESTORE POLL VOTES
-		foreach ( $data['poll_votes'] ?? [] as $vote ) {
-			$wpdb->insert( "{$wpdb->prefix}dame_poll_votes", [
+		// 4. RESTORE VOTES
+		$votes = $data['benevolat_votes'] ?? $data['poll_votes'] ?? [];
+		foreach ( $votes as $vote ) {
+			$wpdb->insert( "{$wpdb->prefix}dame_benevolat_votes", [
 				'poll_id'      => $vote['poll_id'],
 				'recipient_id' => $vote['recipient_id'],
 				'choice_key'   => $vote['choice_key'],
@@ -1271,7 +1272,7 @@ class Backup {
 		update_option( 'dame_plugin_version', $backup_version );
 		( new \DAME\Core\Upgrader() )->check_for_updates();
 
-		$this->add_admin_notice( "Restauration de l'agenda et des sondages terminée avec succès (Données mises à jour)." );
+		$this->add_admin_notice( "Restauration de l'agenda et des appels à bénévoles terminée avec succès (Données mises à jour)." );
 		}
 
 	/* -------------------------------------------------------------------------

@@ -100,47 +100,47 @@ class Post_Meta {
 	 * Registers custom REST fields that are not automatically handled by register_meta.
 	 */
 	public function register_custom_rest_fields(): void {
-		// Sondage Data
+		// Benevolat Data
 		register_rest_field(
-			'sondage',
-			'dame_sondage_data',
+			'benevolat',
+			'dame_benevolat_data',
 			[
 				'get_callback' => function( $post_arr ) {
-					return get_post_meta( $post_arr['id'], '_dame_sondage_data', true );
+					return get_post_meta( $post_arr['id'], '_dame_benevolat_data', true );
 				},
 				'update_callback' => function( $value, $post_obj ) {
-					return update_post_meta( $post_obj->ID, '_dame_sondage_data', $value );
+					return update_post_meta( $post_obj->ID, '_dame_benevolat_data', $value );
 				},
 				'schema' => [
-					'description' => __( 'Structured sondage data (dates and time slots).', 'dame' ),
+					'description' => __( 'Structured data (dates and time slots).', 'dame' ),
 					'type'        => 'array',
 				],
 			]
 		);
 
-		// Sondage Response Parent ID
+		// Benevolat Response Parent ID
 		register_rest_field(
-			'sondage_reponse',
-			'sondage_id',
+			'benevolat_reponse',
+			'benevolat_id',
 			[
 				'get_callback' => function( $post_arr ) {
 					return wp_get_post_parent_id( $post_arr['id'] );
 				},
 				'schema' => [
-					'description' => __( 'ID of the parent sondage.', 'dame' ),
+					'description' => __( 'ID of the parent benevolat.', 'dame' ),
 					'type'        => 'integer',
 				],
 			]
 		);
 
-		// Choix sélectionnés pour une réponse de sondage
+		// Choix sélectionnés pour une réponse
 		register_rest_field(
-			'sondage_reponse',
+			'benevolat_reponse',
 			'choices',
 			[
 				'get_callback' => function( $post_arr ) {
 					global $wpdb;
-					$table = $wpdb->prefix . 'dame_poll_votes';
+					$table = $wpdb->prefix . 'dame_benevolat_votes';
 					// Récupère toutes les clés de choix (ex: "0_1", "1_0") pour cette réponse
 					$choices = $wpdb->get_col( $wpdb->prepare( 
 						"SELECT choice_key FROM {$table} WHERE recipient_id = %d", 
@@ -272,7 +272,7 @@ class Post_Meta {
 		$this->register_adherent_meta();
 		$this->register_agenda_meta();
 		$this->register_contact_meta();
-		$this->register_sondage_meta();
+		$this->register_benevolat_meta();
 		$this->register_ical_feed_meta();
 		$this->register_pre_inscription_meta();
 	}
@@ -449,15 +449,15 @@ class Post_Meta {
 	}
 
 	/**
-	 * Register meta for Sondage CPT.
+	 * Register meta for Benevolat CPT.
 	 */
-	private function register_sondage_meta(): void {
-		// Sondage data is a complex array.
+	private function register_benevolat_meta(): void {
+		// Benevolat data is a complex array.
 		register_meta(
 			'post',
-			'_dame_sondage_data',
+			'_dame_benevolat_data',
 			[
-				'object_subtype'    => 'sondage',
+				'object_subtype'    => 'benevolat',
 				'show_in_rest'      => [
 					'schema' => [
 						'type'  => 'array',
@@ -477,6 +477,23 @@ class Post_Meta {
 								],
 							],
 						],
+					],
+				],
+				'single'            => true,
+				'type'              => 'array',
+				'auth_callback'     => [ $this, 'auth_callback' ],
+			]
+		);
+
+		register_meta(
+			'post',
+			'_dame_benevolat_responses',
+			[
+				'object_subtype'    => 'benevolat_reponse',
+				'show_in_rest'      => [
+					'schema' => [
+						'type'  => 'array',
+						'items' => [ 'type' => 'integer' ],
 					],
 				],
 				'single'            => true,

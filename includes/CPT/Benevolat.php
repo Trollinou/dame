@@ -1,6 +1,6 @@
 <?php
 /**
- * Custom Post Type: Sondage
+ * Custom Post Type: Benevolat
  *
  * @package DAME
  */
@@ -8,9 +8,9 @@
 namespace DAME\CPT;
 
 /**
- * Class Sondage
+ * Class Benevolat
  */
-class Sondage {
+class Benevolat {
 
 	/**
 	 * Initialize the CPT hooks.
@@ -31,7 +31,7 @@ class Sondage {
 	 * @return bool
 	 */
 	public function disable_block_editor( bool $use_block_editor, string $post_type ): bool {
-		if ( 'sondage' === $post_type ) {
+		if ( 'benevolat' === $post_type ) {
 			return false;
 		}
 		return $use_block_editor;
@@ -39,24 +39,15 @@ class Sondage {
 
 	/**
 	 * Handle post status changes (trash/untrash).
-	 * 
-	 * We don't delete from SQL when trashing, but we might want to?
-	 * Actually, the reports only count 'publish' posts.
-	 * If we untrash, we don't need to do anything as the votes were still there.
-	 * 
-	 * Wait, if the user wants them GONE from the count when trashed,
-	 * we should handle it in the SQL query of the reports (already done via join or status check).
-	 * 
-	 * Let's focus on hard deletion first to avoid ID reuse issues.
 	 */
 	public function handle_deletion( int $post_id ): void {
 		$post = get_post( $post_id );
-		if ( ! $post || 'sondage_reponse' !== $post->post_type ) {
+		if ( ! $post || 'benevolat_reponse' !== $post->post_type ) {
 			return;
 		}
 
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'dame_poll_votes';
+		$table_name = $wpdb->prefix . 'dame_benevolat_votes';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$wpdb->delete( $table_name, [ 'recipient_id' => $post_id ], [ '%d' ] );
 	}
@@ -72,31 +63,31 @@ class Sondage {
 	 * Register the custom post types.
 	 */
 	public function register(): void {
-		$sondage_labels = [
-			'name'               => _x( 'Sondages', 'post type general name', 'dame' ),
-			'singular_name'      => _x( 'Sondage', 'post type singular name', 'dame' ),
-			'menu_name'          => _x( 'Sondages', 'admin menu', 'dame' ),
-			'name_admin_bar'     => _x( 'Sondage', 'add new on admin bar', 'dame' ),
-			'add_new'            => _x( 'Ajouter', 'sondage', 'dame' ),
-			'add_new_item'       => __( 'Ajouter un nouveau sondage', 'dame' ),
-			'new_item'           => __( 'Nouveau sondage', 'dame' ),
-			'edit_item'          => __( 'Modifier le sondage', 'dame' ),
-			'view_item'          => __( 'Voir le sondage', 'dame' ),
-			'all_items'          => __( 'Tous les sondages', 'dame' ),
-			'search_items'       => __( 'Rechercher des sondages', 'dame' ),
-			'parent_item_colon'  => __( 'Sondages parents:', 'dame' ),
-			'not_found'          => __( 'Aucun sondage trouvé.', 'dame' ),
-			'not_found_in_trash' => __( 'Aucun sondage trouvé dans la corbeille.', 'dame' ),
+		$benevolat_labels = [
+			'name'               => _x( 'Bénévolat', 'post type general name', 'dame' ),
+			'singular_name'      => _x( 'Bénévolat', 'post type singular name', 'dame' ),
+			'menu_name'          => _x( 'Bénévolat', 'admin menu', 'dame' ),
+			'name_admin_bar'     => _x( 'Bénévolat', 'add new on admin bar', 'dame' ),
+			'add_new'            => _x( 'Nouvel appel', 'benevolat', 'dame' ),
+			'add_new_item'       => __( 'Nouvel appel à bénévoles', 'dame' ),
+			'new_item'           => __( 'Nouveau bénévolat', 'dame' ),
+			'edit_item'          => __( 'Modifier l\'appel', 'dame' ),
+			'view_item'          => __( 'Voir l\'appel', 'dame' ),
+			'all_items'          => __( 'Appels à bénévoles', 'dame' ),
+			'search_items'       => __( 'Rechercher des appels', 'dame' ),
+			'parent_item_colon'  => __( 'Appels parents:', 'dame' ),
+			'not_found'          => __( 'Aucun appel trouvé.', 'dame' ),
+			'not_found_in_trash' => __( 'Aucun appel trouvé dans la corbeille.', 'dame' ),
 		];
 
-		$sondage_args = [
-			'labels'             => $sondage_labels,
+		$benevolat_args = [
+			'labels'             => $benevolat_labels,
 			'public'             => true,
 			'publicly_queryable' => true,
 			'show_ui'            => true,
 			'show_in_menu'       => 'dame-admin',
 			'query_var'          => true,
-			'rewrite'            => [ 'slug' => 'sondage' ],
+			'rewrite'            => [ 'slug' => 'benevolat' ],
 			'capability_type'    => 'post',
 			'has_archive'        => false,
 			'hierarchical'       => false,
@@ -104,14 +95,14 @@ class Sondage {
 			'menu_icon'          => 'dashicons-chart-bar',
 			'supports'           => [ 'title', 'editor' ],
 			'show_in_rest'       => true,
-			'rest_base'          => 'sondages',
+			'rest_base'          => 'benevolats',
 		];
 
-		register_post_type( 'sondage', $sondage_args );
+		register_post_type( 'benevolat', $benevolat_args );
 
 		$reponse_labels = [
-			'name'          => _x( 'Réponses aux sondages', 'post type general name', 'dame' ),
-			'singular_name' => _x( 'Réponse de sondage', 'post type singular name', 'dame' ),
+			'name'          => _x( 'Réponses au bénévolat', 'post type general name', 'dame' ),
+			'singular_name' => _x( 'Réponse de bénévolat', 'post type singular name', 'dame' ),
 		];
 
 		$reponse_args = [
@@ -121,7 +112,7 @@ class Sondage {
 			'show_ui'             => false,
 			'show_in_menu'        => false,
 			'query_var'           => true,
-			'rewrite'             => [ 'slug' => 'sondage_reponse' ],
+			'rewrite'             => [ 'slug' => 'benevolat_reponse' ],
 			'capability_type'     => 'post',
 			'has_archive'         => false,
 			'hierarchical'        => false,
@@ -129,9 +120,9 @@ class Sondage {
 			'show_in_nav_menus'   => false,
 			'show_in_admin_bar'   => false,
 			'show_in_rest'        => true,
-			'rest_base'           => 'sondage-reponses',
+			'rest_base'           => 'benevolat-reponses',
 		];
 
-		register_post_type( 'sondage_reponse', $reponse_args );
+		register_post_type( 'benevolat_reponse', $reponse_args );
 	}
 }
