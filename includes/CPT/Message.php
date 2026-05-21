@@ -88,6 +88,7 @@ class Message {
 				'create_posts'       => 'edit_dame_messages',
 			),
 			'show_in_rest'        => true, // Enable block editor support
+			'rest_base'           => 'messages',
 		);
 
 		register_post_type( 'dame_message', $args );

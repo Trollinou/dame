@@ -69,7 +69,7 @@ class Contact {
 			'label'                 => __( 'Contact', 'dame' ),
 			'description'           => __( 'Contacts externes (Presse, Élus, Clubs voisins)', 'dame' ),
 			'labels'                => $labels,
-			'supports'              => [ 'title' ],
+			'supports'              => [ 'title', 'custom-fields' ],
 			'hierarchical'          => false,
 			'public'                => false,
 			'show_ui'               => true,
@@ -84,6 +84,7 @@ class Contact {
 			'publicly_queryable'    => false,
 			'capability_type'       => 'post',
 			'show_in_rest'          => true,
+			'rest_base'             => 'contacts',
 		];
 
 		register_post_type( 'dame_contact', $args );

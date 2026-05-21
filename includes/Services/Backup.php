@@ -597,15 +597,18 @@ class Backup {
 
 			$first_name = $member_data['Prénom'];
 			$last_name = $member_data['Nom d\'usage'];
+			$birth_name = $member_data['Nom de naissance'];
 
-			if ( empty( $first_name ) || empty( $last_name ) ) {
+			if ( empty( $first_name ) || ( empty( $last_name ) && empty( $birth_name ) ) ) {
 				continue; // Skip rows without a name
 			}
 
 			$post_id = 0;
 			$email = $member_data['Adresse email'];
 			$license = $member_data['Numéro de licence'];
-			$post_title = mb_strtoupper( $last_name, 'UTF-8' ) . ' ' . $first_name;
+			
+			$effective_last_name = ! empty( $last_name ) ? $last_name : $birth_name;
+			$post_title = \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $first_name );
 
 			// Reconciliation
 			$query_args = array(
@@ -920,7 +923,11 @@ class Backup {
 				$data['options']['dame_current_season_tag_slug'] = $term->slug;
 			}
 		}
-		$data['options']['dame_options'] = get_option( 'dame_options' );
+		$dame_options = get_option( 'dame_options' );
+		if ( is_array( $dame_options ) ) {
+			unset( $dame_options['smtp_password'] );
+		}
+		$data['options']['dame_options'] = $dame_options;
 
 		return $data;
 	}
@@ -1058,14 +1065,30 @@ class Backup {
 			}
 
 			foreach ( $u['meta'] as $k => $vals ) {
+				// Normalize capability and user_level keys to current prefix
+				$normalized_key = $k;
+				if ( preg_match( '/^(.*)capabilities$/', $k, $matches ) ) {
+					$normalized_key = $wpdb->prefix . 'capabilities';
+				} elseif ( preg_match( '/^(.*)user_level$/', $k, $matches ) ) {
+					$normalized_key = $wpdb->prefix . 'user_level';
+				}
+
 				foreach ( $vals as $v ) {
 					if ( $uid === $current_user_id ) {
 						// For current user, only update keys if they don't exist to avoid breaking session
-						if ( ! get_user_meta( $uid, $k, true ) ) {
-							add_user_meta( $uid, $k, $v, false );
+						if ( ! get_user_meta( $uid, $normalized_key, true ) ) {
+							add_user_meta( $uid, $normalized_key, $v, false );
 						}
 					} else {
-						add_user_meta( $uid, $k, $v, false );
+						// Use update_user_meta for the first value and add_user_meta for subsequent if multiple (rare for these keys)
+						// But here we are iterating over $vals which came from a raw DB query.
+						// To preserve the EXACT raw value (which is already serialized in DB),
+						// it's safer to use $wpdb->insert to avoid double serialization by WP meta functions.
+						$wpdb->insert( $wpdb->usermeta, [
+							'user_id'    => $uid,
+							'meta_key'   => $normalized_key,
+							'meta_value' => $v
+						] );
 					}
 				}
 			}
@@ -1118,8 +1141,8 @@ class Backup {
 			}
 		}
 
-		// Events and Polls
-		$post_types = [ 'dame_agenda', 'sondage', 'sondage_reponse' ];
+		// Events and Benevolat
+		$post_types = [ 'dame_agenda', 'benevolat', 'benevolat_reponse' ];
 		$query = new WP_Query( [ 'post_type' => $post_types, 'posts_per_page' => -1, 'post_status' => 'any' ] );
 		
 		// Optimisation : Pré-chargement des métadonnées
@@ -1142,12 +1165,12 @@ class Backup {
 			];
 		}
 
-		// Poll Votes
+		// Benevolat Votes
 		global $wpdb;
-		$table_votes = $wpdb->prefix . 'dame_poll_votes';
+		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
 		$votes_data = $wpdb->get_results( "SELECT * FROM {$table_votes}", ARRAY_A );
 		if ( is_array( $votes_data ) ) {
-			$data['poll_votes'] = $votes_data;
+			$data['benevolat_votes'] = $votes_data;
 		}
 
 		return $data;
@@ -1172,14 +1195,14 @@ class Backup {
 		if ( ! $data ) return;
 
 		global $wpdb;
-		$post_types = [ 'dame_agenda', 'sondage', 'sondage_reponse' ];
+		$post_types = [ 'dame_agenda', 'benevolat', 'benevolat_reponse' ];
 
 		// 1. PURGE
 		$posts_to_delete = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_type IN ('" . implode( "','", $post_types ) . "')" );
 		foreach ( $posts_to_delete as $pid ) wp_delete_post( (int) $pid, true );
 		$terms = get_terms( [ 'taxonomy' => 'dame_agenda_category', 'hide_empty' => false, 'fields' => 'ids' ] );
 		foreach ( $terms as $tid ) { delete_option( "taxonomy_$tid" ); wp_delete_term( (int) $tid, 'dame_agenda_category' ); }
-		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}dame_poll_votes" );
+		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}dame_benevolat_votes" );
 
 		// 2. RESTORE TAXONOMIES
 		foreach ( $data['taxonomy_terms'] ?? [] as $t ) {
@@ -1230,9 +1253,10 @@ class Backup {
 			if ( ! empty( $p['categories'] ) ) wp_set_object_terms( $pid, $p['categories'], 'dame_agenda_category' );
 		}
 
-		// 4. RESTORE POLL VOTES
-		foreach ( $data['poll_votes'] ?? [] as $vote ) {
-			$wpdb->insert( "{$wpdb->prefix}dame_poll_votes", [
+		// 4. RESTORE VOTES
+		$votes = $data['benevolat_votes'] ?? $data['poll_votes'] ?? [];
+		foreach ( $votes as $vote ) {
+			$wpdb->insert( "{$wpdb->prefix}dame_benevolat_votes", [
 				'poll_id'      => $vote['poll_id'],
 				'recipient_id' => $vote['recipient_id'],
 				'choice_key'   => $vote['choice_key'],
@@ -1248,7 +1272,7 @@ class Backup {
 		update_option( 'dame_plugin_version', $backup_version );
 		( new \DAME\Core\Upgrader() )->check_for_updates();
 
-		$this->add_admin_notice( "Restauration de l'agenda et des sondages terminée avec succès (Données mises à jour)." );
+		$this->add_admin_notice( "Restauration de l'agenda et des appels à bénévoles terminée avec succès (Données mises à jour)." );
 		}
 
 	/* -------------------------------------------------------------------------

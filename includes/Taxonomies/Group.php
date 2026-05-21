@@ -68,6 +68,7 @@ class Group {
 			'query_var'         => true,
 			'rewrite'           => array( 'slug' => 'groupe' ),
 			'show_in_rest'      => true,
+			'rest_base'         => 'groups',
 		);
 
 		register_taxonomy( 'dame_group', [ 'adherent' ], $args );

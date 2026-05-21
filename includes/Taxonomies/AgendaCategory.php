@@ -56,6 +56,7 @@ class AgendaCategory {
 			'query_var'         => true,
 			'rewrite'           => array( 'slug' => 'agenda-category' ),
 			'show_in_rest'      => true,
+			'rest_base'         => 'agenda-categories',
 		);
 
 		register_taxonomy( 'dame_agenda_category', array( 'dame_agenda' ), $args );

@@ -448,4 +448,39 @@ class Utils {
 
 		return array_unique( $emails );
 	}
+
+	/**
+	 * Generates the standardized title for an Adherent post.
+	 *
+	 * @param int $post_id The ID of the adherent post.
+	 * @return string The generated title.
+	 */
+	public static function generate_adherent_title( $post_id ): string {
+		$first_name = get_post_meta( $post_id, '_dame_first_name', true );
+		$last_name  = get_post_meta( $post_id, '_dame_last_name', true );
+
+		if ( empty( $last_name ) ) {
+			$last_name = get_post_meta( $post_id, '_dame_birth_name', true );
+		}
+
+		return trim( self::format_lastname( (string) $last_name ) . ' ' . self::format_firstname( (string) $first_name ) );
+	}
+
+	/**
+	 * Generates the standardized title for a Contact post.
+	 *
+	 * @param int $post_id The ID of the contact post.
+	 * @return string The generated title.
+	 */
+	public static function generate_contact_title( $post_id ): string {
+		$organization = get_post_meta( $post_id, '_dame_contact_organization', true );
+		$first_name   = get_post_meta( $post_id, '_dame_contact_first_name', true );
+		$last_name    = get_post_meta( $post_id, '_dame_contact_last_name', true );
+		$base_name    = trim( self::format_lastname( (string) $last_name ) . ' ' . self::format_firstname( (string) $first_name ) );
+
+		if ( ! empty( $organization ) ) {
+			return (string) $organization . ( ! empty( $base_name ) ? ' (' . $base_name . ')' : '' );
+		}
+		return $base_name ?: __( 'Contact sans nom', 'dame' );
+	}
 }

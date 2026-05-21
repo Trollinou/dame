@@ -102,6 +102,11 @@ class Upgrader {
 			$this->cleanup_poll_votes_v437();
 		}
 
+		// Version < 4.5.0 : Renommage Sondage -> Benevolat
+		if ( version_compare( $old_version, '4.5.0', '<' ) ) {
+			$this->rename_sondage_to_benevolat_v450();
+		}
+
 		// Finalisation
 		update_option( 'dame_plugin_version', $new_version );
 	}
@@ -109,6 +114,39 @@ class Upgrader {
 	/**
 	 * Migration Methods (Ported from functional code)
 	 */
+
+	/**
+	 * Rename Sondage to Benevolat (v4.5.0).
+	 */
+	private function rename_sondage_to_benevolat_v450(): void {
+		global $wpdb;
+
+		// 1. Rename SQL Table
+		$old_table = $wpdb->prefix . 'dame_poll_votes';
+		$new_table = $wpdb->prefix . 'dame_benevolat_votes';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->query( "RENAME TABLE $old_table TO $new_table" );
+
+		// 2. Update Post Types
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->update( $wpdb->posts, [ 'post_type' => 'benevolat' ], [ 'post_type' => 'sondage' ] );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->update( $wpdb->posts, [ 'post_type' => 'benevolat_reponse' ], [ 'post_type' => 'sondage_reponse' ] );
+
+		// 3. Update Meta Keys
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->query( "UPDATE $wpdb->postmeta SET meta_key = REPLACE(meta_key, '_dame_sondage_', '_dame_benevolat_') WHERE meta_key LIKE '_dame_sondage_%'" );
+		
+		// 4. Update specific non-standard meta keys if any
+		// _dame_guest_response_id is still fine as it's not "sondage" specific in its prefix, but wait
+		// the cookie name was dame_sondage_response_... let's check if there are others.
+		// Actually, let's just do a broad replace for any meta key containing "sondage"
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->query( "UPDATE $wpdb->postmeta SET meta_key = REPLACE(meta_key, 'sondage', 'benevolat') WHERE meta_key LIKE '%sondage%'" );
+
+		flush_rewrite_rules();
+	}
 
 	/**
 	 * Cleanup duplicate poll votes (v4.3.7).

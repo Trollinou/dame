@@ -75,6 +75,7 @@ class PreInscription {
 			),
 			'map_meta_cap'          => true,
 			'show_in_rest'          => true,
+			'rest_base'             => 'pre-inscriptions',
 		);
 
 		register_post_type( 'dame_pre_inscription', $args );

@@ -558,19 +558,10 @@ class Mailing {
 		
 		$format_name = function( $id, $type = 'adherent' ) {
 			if ( 'adherent' === $type ) {
-				$last  = get_post_meta( $id, '_dame_last_name', true );
-				$first = get_post_meta( $id, '_dame_first_name', true );
+				return \DAME\Core\Utils::generate_adherent_title( $id );
 			} else {
-				$last  = get_post_meta( $id, '_dame_contact_last_name', true );
-				$first = get_post_meta( $id, '_dame_contact_first_name', true );
+				return \DAME\Core\Utils::generate_contact_title( $id );
 			}
-			$name = mb_strtoupper( (string) $last, 'UTF-8' ) . ' ' . mb_convert_case( (string) $first, MB_CASE_TITLE, 'UTF-8' );
-			
-			if ( 'contact' === $type ) {
-				$org = get_post_meta( $id, '_dame_contact_organization', true );
-				if ( ! empty( $org ) ) $name = (string) $org . ' (' . $name . ')';
-			}
-			return $name;
 		};
 
 		// On s'assure d'avoir des IDs uniques au départ
@@ -647,7 +638,14 @@ class Mailing {
 		}
 
 		if ( ! empty( $values_sql ) ) {
-			$wpdb->delete( $table_tracking, [ 'message_id' => $message_id ], [ '%d' ] );
+			// On évite les doublons en ne supprimant que les destinataires que l'on s'apprête à (ré)insérer
+			// tout en conservant l'historique des autres envois pour ce message (envois cumulés).
+			$emails_to_insert = array_column( $email_data, 'raw_email' );
+			$wpdb->query( $wpdb->prepare(
+				"DELETE FROM {$table_tracking} WHERE message_id = %d AND recipient_email IN (" . implode( ',', array_fill( 0, count( $emails_to_insert ), '%s' ) ) . ")",
+				array_merge( [ $message_id ], $emails_to_insert )
+			) );
+
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->query( "INSERT INTO {$table_tracking} (message_id, recipient_id, recipient_name, recipient_email, email_hash) VALUES " . implode( ',', $values_sql ) );
 		}

@@ -22,6 +22,19 @@ if ! npm run build; then
     exit 1
 fi
 
+# ---> NOUVELLE ÉTAPE : Compilation de la PWA <---
+echo "📱 Compilation de la PWA..."
+cd pwa || exit 1
+# On installe les dépendances PWA (au cas où) et on compile
+npm install
+if ! npm run build; then
+    echo "❌ Erreur : Le build de la PWA a échoué. Packaging annulé."
+    exit 1
+fi
+# On remonte à la racine du plugin
+cd ..
+# ------------------------------------------------
+
 echo "📦 Préparation du répertoire temporaire..."
 rm -f "$ZIP_NAME"
 rm -rf "$BUILD_DIR"
@@ -63,3 +76,4 @@ cd ..
 rm -rf "$BUILD_DIR"
 
 echo "✅ Package créé avec succès : ${ZIP_NAME} (Environnement local préservé)"
+echo "ℹ️  La PWA a été compilée avec succès et incluse dans le plugin."

@@ -1,6 +1,6 @@
 {
   "name": "dame",
-  "version": "4.3.7",
+  "version": "4.5.0",
   "description": "Dossier Administratif des Membres Échiquéens",
   "scripts": {
     "build:css": "sass src/scss/:assets/css/ --style=compressed --no-source-map",
@@ -15,5 +15,8 @@
     "@wordpress/scripts": "^32.0.0",
     "sass": "^1.99.0",
     "terser": "^5.46.1"
+  },
+  "dependencies": {
+    "pinia": "^3.0.4"
   }
 }

@@ -57,7 +57,7 @@ class Adherent {
 			'label'                 => __( 'Adhérent', 'dame' ),
 			'description'           => __( 'Les adhérents du club', 'dame' ),
 			'labels'                => $labels,
-			'supports'              => array( 'title' ),
+			'supports'              => array( 'title', 'custom-fields' ),
 			'hierarchical'          => false,
 			'public'                => false,
 			'show_ui'               => true,
@@ -72,6 +72,7 @@ class Adherent {
 			'publicly_queryable'    => false,
 			'capability_type'       => 'post',
 			'show_in_rest'          => true,
+			'rest_base'             => 'adherents',
 		);
 
 		register_post_type( 'adherent', $args );

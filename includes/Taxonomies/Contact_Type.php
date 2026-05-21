@@ -52,6 +52,7 @@ class Contact_Type {
 			'query_var'         => true,
 			'rewrite'           => [ 'slug' => 'type-contact' ],
 			'show_in_rest'      => true,
+			'rest_base'         => 'contact-types',
 			'public'            => true,
 		];
 

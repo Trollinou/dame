@@ -215,14 +215,7 @@ class Details {
 		update_post_meta( $post_id, '_dame_contact_no_emails', $no_emails );
 
 		// 4. Mise à jour automatique du titre natif
-		$organization = isset( $_POST['_dame_contact_organization'] ) ? sanitize_text_field( $_POST['_dame_contact_organization'] ) : '';
-		$base_name    = trim( $last_name . ' ' . $first_name );
-
-		if ( ! empty( $organization ) ) {
-			$new_title = $organization . ( ! empty( $base_name ) ? ' (' . $base_name . ')' : '' );
-		} else {
-			$new_title = $base_name ?: __( 'Contact sans nom', 'dame' );
-		}
+		$new_title = Utils::generate_contact_title( $post_id );
 
 		if ( get_the_title( $post_id ) !== $new_title ) {
 			// Désactivation temporaire du hook pour éviter la boucle infinie

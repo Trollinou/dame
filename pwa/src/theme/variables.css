@@ -1,0 +1,15 @@
+/* Safe Area Insets pour encoches et Dynamic Island */
+:root {
+  --ion-safe-area-left: env(safe-area-inset-left);
+  --ion-safe-area-right: env(safe-area-inset-right);
+  --ion-safe-area-top: env(safe-area-inset-top);
+  --ion-safe-area-bottom: env(safe-area-inset-bottom);
+}
+
+/* On laisse Ionic gérer .ion-padding normalement pour éviter les doubles marges */
+
+/* Ajustement pour les headers pour éviter qu'ils glissent sous l'encoche en paysage */
+ion-toolbar {
+  --padding-start: var(--ion-safe-area-left, 0);
+  --padding-end: var(--ion-safe-area-right, 0);
+}

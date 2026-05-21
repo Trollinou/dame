@@ -192,11 +192,9 @@ class Details {
 		}
 
 		// Update Post Title based on names
-		$first_name = isset( $_POST['dame_first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_first_name'] ) ) : '';
-		$last_name  = isset( $_POST['dame_last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_last_name'] ) ) : '';
+		$new_title = \DAME\Core\Utils::generate_adherent_title( $post_id );
 
-		if ( $first_name && $last_name ) {
-			$new_title = \DAME\Core\Utils::format_lastname( $last_name ) . ' ' . \DAME\Core\Utils::format_firstname( $first_name );
+		if ( $new_title ) {
 			if ( get_the_title( $post_id ) !== $new_title ) {
 				wp_update_post(
 					array(

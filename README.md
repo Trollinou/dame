@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 4.3.7
+**Version:** 4.5.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -55,6 +55,12 @@ Chaque fiche membre centralise :
 ### Gestion des Partenaires (Contacts)
 *   **Module Dédié :** Un annuaire distinct pour les partenaires externes (Presse, Mairies, Sponsors), intégré au système de messagerie.
 
+### Appels à Bénévoles (Participation)
+*   **Planification :** Créez des événements (tournois, fêtes) et définissez des créneaux horaires.
+*   **Recrutement Simple :** Les membres s'inscrivent sur les créneaux via le site ou l'application mobile.
+*   **Suivi en Temps Réel :** Tableau récapitulatif des inscrits par créneau dans l'administration.
+*   **Protection des Données :** Les votes sur des dates passées sont verrouillés pour préserver l'historique.
+
 ### Agenda & Flux iCalendar
 *   **Calendrier Interactif :** Gestion des événements, compétitions et entraînements.
 *   **Flux ICS Magiques :** Abonnement direct sur iPhone, Android ou Mac avec gestion intelligente des fuseaux horaires (plus de décalage été/hiver).
@@ -69,3 +75,63 @@ Chaque fiche membre centralise :
 
 ## Dépendances
 Pour la fonctionnalité pédagogique (LMS), ce plugin nécessite le plugin **ROI**.
+
+---
+
+## API REST pour PWA Mobile
+
+Le plugin expose plusieurs points de terminaison (endpoints) personnalisés pour permettre l'administration via une application mobile (PWA).
+
+### Authentification
+Toutes les requêtes personnalisées nécessitent que l'utilisateur soit authentifié (`is_user_logged_in()`), sauf l'endpoint d'inscription.
+
+### Accès à l'Application (PWA)
+L'application mobile est accessible via une URL simplifiée : `https://votre-site.com/pwa`. Une redirection automatique est en place pour pointer vers le dossier de distribution du plugin.
+
+### Support des Métadonnées (Post Meta)
+Le support des `'custom-fields'` a été activé pour les types **Adhérents**, **Agenda**, **Contacts**, **Benevolat** et **Benevolat_Reponse**. Cela permet de lire et modifier toutes les métadonnées directement via les endpoints REST standard.
+
+**Note spécifique au Bénévolat :**
+Les données de configuration (dates et horaires) sont exposées sous la clé `dame_benevolat_data`. 
+Pour les **Réponses**, l'ID du bénévolat parent est disponible sous la clé `benevolat_id` et les choix sous `choices`.
+
+### 1. Données de Référence (Lookups)
+Utilisées pour alimenter les formulaires de l'application.
+*   **URL :** `/wp-json/dame/v1/data/{type}`
+*   **Méthode :** `GET`
+
+### 2. Anniversaires du Jour
+*   **URL :** `/wp-json/dame/v1/birthdays/today`
+*   **Méthode :** `GET`
+
+### 3. Prochains Anniversaires
+*   **URL :** `/wp-json/dame/v1/birthdays/upcoming`
+*   **Méthode :** `GET`
+
+### 4. Menu PWA
+*   **URL :** `/wp-json/dame/v1/pwa-menu`
+*   **Méthode :** `GET`
+
+### 5. Inscription (Membres uniquement)
+Permet à un membre du club de créer son compte utilisateur WordPress.
+*   **URL :** `/wp-json/dame/v1/register`
+*   **Méthode :** `POST`
+
+### 6. Mes Identités (Profiles)
+Récupère les identités liées à l'email de l'utilisateur connecté.
+*   **URL :** `/wp-json/dame/v1/my-identities`
+*   **Méthode :** `GET`
+*   **Logique :** Si l'utilisateur est un adulte majeur unique lié à cet email, seul son profil de membre est renvoyé. Pour les familles, tous les profils (adhérents + représentants) sont listés.
+
+### 7. Gestion du Bénévolat
+*   **Récupérer mon vote :** `GET /wp-json/dame/v1/benevolats/{id}/my-vote`
+*   **Voter / Modifier :** `POST /wp-json/dame/v1/benevolats/{id}/vote`
+    *   Corps : `{ "choices": ["0_1", "1_0"] }`
+
+### 8. Ressources Natives WordPress
+Le plugin expose les Custom Post Types via `/wp-json/wp/v2/` :
+*   **Adhérents :** `adherents`
+*   **Agenda :** `agenda` (supporte `after_date` et `before_date`)
+*   **Contacts :** `contacts`
+*   **Bénévolat :** `benevolats`
+*   **Réponses :** `benevolat-reponses`

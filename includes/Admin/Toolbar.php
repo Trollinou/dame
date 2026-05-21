@@ -32,6 +32,15 @@ class Toolbar {
 	 * @param \WP_Admin_Bar $wp_admin_bar The WP_Admin_Bar instance.
 	 */
 	public function add_nodes( $wp_admin_bar ): void {
+		// Do not show for Subscribers or Members.
+		$user          = wp_get_current_user();
+		$allowed_roles = [ 'staff', 'entraineur', 'editor', 'administrator' ];
+		$user_roles    = (array) $user->roles;
+
+		if ( ! array_intersect( $allowed_roles, $user_roles ) ) {
+			return;
+		}
+
 		// Add the main DAME menu item.
 		$wp_admin_bar->add_node(
 			[
@@ -71,23 +80,23 @@ class Toolbar {
 			]
 		);
 
-		// Add the "Voir les évenements" sub-menu item.
+		// Add the "Voir les événements" sub-menu item.
 		$wp_admin_bar->add_node(
 			[
 				'id'     => 'dame_view_events',
 				'parent' => 'dame_menu',
-				'title'  => __( "Voir les évenements", "dame" ),
+				'title'  => __( "Voir les événements", "dame" ),
 				'href'   => admin_url( 'edit.php?post_type=dame_agenda' ),
 			]
 		);
 
-		// Add the "Voir les sondages" sub-menu item.
+		// Add the "Voir les bénévolats" sub-menu item.
 		$wp_admin_bar->add_node(
 			[
 				'id'     => 'dame_view_polls',
 				'parent' => 'dame_menu',
-				'title'  => __( "Voir les sondages", "dame" ),
-				'href'   => admin_url( 'edit.php?post_type=sondage' ),
+				'title'  => __( "Appels à bénévoles", "dame" ),
+				'href'   => admin_url( 'edit.php?post_type=benevolat' ),
 			]
 		);
 
