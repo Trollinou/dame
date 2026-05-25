@@ -20,6 +20,7 @@ use DAME\API\Tracker;
 use DAME\Services\Mailer;
 use DAME\Services\BatchSender;
 use DAME\Admin\Pages\Mailing;
+use DAME\Admin\Pages\ImportFFE;
 use DAME\Admin\Columns\Message as MessageColumns;
 use DAME\Admin\Actions\Message as MessageActions;
 use DAME\Admin\Actions\Adherent as AdherentActions;
@@ -244,6 +245,9 @@ class Plugin {
 			// Initialize Message Pages & Actions
 			$mailing_page = new Mailing();
 			$mailing_page->init();
+
+			$ffe_import_page = new ImportFFE();
+			$ffe_import_page->init();
 
 
 			$message_columns = new MessageColumns();

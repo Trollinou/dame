@@ -9,6 +9,7 @@ namespace DAME\Admin;
 
 use DAME\Admin\Pages\Mailing;
 use DAME\Admin\Pages\Backups;
+use DAME\Admin\Pages\ImportFFE;
 use DAME\Admin\Settings\Main as SettingsMain;
 use DAME\Admin\Pages\MessageReport;
 
@@ -56,6 +57,16 @@ class Menu {
 			[ new Backups(), 'render' ]
 		);
 
+		// Import FFE
+		add_submenu_page(
+			'dame-admin',
+			__( "Import fichier FFE", "dame" ),
+			__( "Import FFE", "dame" ),
+			'manage_options',
+			'dame-import-ffe',
+			[ new ImportFFE(), 'render' ]
+		);
+
 		// Réglages
 		add_submenu_page(
 			'dame-admin',
@@ -101,6 +112,7 @@ class Menu {
 			'edit-tags.php?taxonomy=dame_agenda_category&amp;post_type=dame_agenda' => __( "Groupes d'Évènements", "dame" ),
 			'edit-tags.php?taxonomy=dame_saison_adhesion&amp;post_type=adherent' => __( "Saisons d'adhésion", "dame" ),
 			'edit.php?post_type=dame_ical_feed' => __( "Flux d'agenda", "dame" ),
+			'dame-import-ffe' => __( "Import FFE", "dame" ),
 			'dame-backups' => __( "Sauvegardes et Restaurations", "dame" ),
 			'dame-settings' => __( "Réglages", "dame" ),
 		];

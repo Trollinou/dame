@@ -50,10 +50,27 @@ export const useBenevolatStore = defineStore('benevolat', () => {
     const identity = authStore.selectedIdentity;
     if (!identity) return false;
 
-    return reponses.value.some(r => 
-      r.benevolat_id === benevolatId && 
-      (r.meta?._dame_member_id === identity.member_id || r.title.rendered.toLowerCase().trim() === identity.name.toLowerCase().trim())
-    );
+    return reponses.value.some(r => {
+      if (r.benevolat_id !== benevolatId) return false;
+      
+      const rMemberId = Number(r.meta?._dame_member_id);
+      const iMemberId = Number(identity.member_id);
+      
+      // 1. Vérification stricte par ID (les ID doivent être valides > 0)
+      if (iMemberId > 0 && rMemberId === iMemberId) {
+        return true;
+      }
+      
+      // 2. Fallback par Nom (uniquement si ce n'est pas un profil générique)
+      const rName = r.title?.rendered?.toLowerCase().trim();
+      const iName = identity.name?.toLowerCase().trim();
+      
+      if (iName && rName && iName !== 'gestionnaire' && iName !== 'adhérent' && rName === iName) {
+        return true;
+      }
+      
+      return false;
+    });
   };
 
   const markAsVoted = (benevolatId: number) => {
@@ -82,10 +99,10 @@ export const useBenevolatStore = defineStore('benevolat', () => {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      // Routes Standard WordPress pour la liste
+      // Routes Standard WordPress pour la liste avec interdiction de cache navigateur
       const [benevolatsRes, reponsesRes] = await Promise.all([
-        fetch(`${apiUrl}/wp/v2/benevolats?context=view&per_page=100`, { headers }),
-        fetch(`${apiUrl}/wp/v2/benevolat-reponses?context=view&per_page=100`, { headers })
+        fetch(`${apiUrl}/wp/v2/benevolats?context=view&per_page=100`, { headers, cache: 'no-store' }),
+        fetch(`${apiUrl}/wp/v2/benevolat-reponses?context=view&per_page=100`, { headers, cache: 'no-store' })
       ]);
 
       if (benevolatsRes.status === 401 && token) {

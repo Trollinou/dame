@@ -43,6 +43,11 @@ class Classification {
 		};
 
 		$license_number = $get_value( 'dame_license_number' );
+		$fide_id        = get_post_meta( $post->ID, '_dame_fide_id', true );
+		$ffe_id         = get_post_meta( $post->ID, '_dame_ffe_id', true );
+		$elo_standard   = get_post_meta( $post->ID, '_dame_elo_standard', true ) ?: '0';
+		$elo_rapide     = get_post_meta( $post->ID, '_dame_elo_rapide', true ) ?: '0';
+		$elo_blitz      = get_post_meta( $post->ID, '_dame_elo_blitz', true ) ?: '0';
 
 		$license_type = get_post_meta( $post->ID, '_dame_license_type', true );
 		if ( ! $license_type ) {
@@ -61,10 +66,32 @@ class Classification {
 		$arbitre_options = ['Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2'];
 
 		?>
-		<p>
-			<label for="dame_license_number"><strong><?php _e( 'Numéro de licence', 'dame' ); ?></strong></label>
-			<input type="text" id="dame_license_number" name="dame_license_number" value="<?php echo esc_attr( $license_number ); ?>" style="width:100%;" placeholder="A12345" pattern="[A-Z][0-9]{5}" />
-		</p>
+		<div style="display: flex; gap: 10px; margin-bottom: 12px;">
+			<div style="flex: 1.5;">
+				<label for="dame_license_number"><strong><?php _e( 'Numéro de licence', 'dame' ); ?></strong></label>
+				<input type="text" id="dame_license_number" name="dame_license_number" value="<?php echo esc_attr( $license_number ); ?>" style="width:100%;" placeholder="A12345" pattern="[A-Z][0-9]{5}" />
+			</div>
+			<div style="flex: 1;">
+				<label for="dame_fide_id"><strong><?php _e( 'ID FIDE', 'dame' ); ?></strong></label>
+				<input type="text" id="dame_fide_id" value="<?php echo esc_attr( $fide_id ?: '' ); ?>" style="width:100%;" readonly />
+			</div>
+		</div>
+
+		<div style="display: flex; gap: 10px; margin-bottom: 12px;">
+			<div style="flex: 1;">
+				<label for="dame_elo_standard"><strong><?php _e( 'ELO Std', 'dame' ); ?></strong></label>
+				<input type="text" id="dame_elo_standard" value="<?php echo esc_attr( $elo_standard ); ?>" style="width:100%;" readonly />
+			</div>
+			<div style="flex: 1;">
+				<label for="dame_elo_rapide"><strong><?php _e( 'ELO Rap', 'dame' ); ?></strong></label>
+				<input type="text" id="dame_elo_rapide" value="<?php echo esc_attr( $elo_rapide ); ?>" style="width:100%;" readonly />
+			</div>
+			<div style="flex: 1;">
+				<label for="dame_elo_blitz"><strong><?php _e( 'ELO Blz', 'dame' ); ?></strong></label>
+				<input type="text" id="dame_elo_blitz" value="<?php echo esc_attr( $elo_blitz ); ?>" style="width:100%;" readonly />
+			</div>
+		</div>
+		<input type="hidden" name="dame_ffe_id" value="<?php echo esc_attr( $ffe_id ); ?>">
 		<hr>
 		<?php
 		// --- Display current status and season history ---

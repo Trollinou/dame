@@ -4,6 +4,45 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.3] - 2026-05-22
+### Ajouté
+- **Espace de Jeu (Échecs)** : Intégration complète d'un échiquier interactif contre l'IA.
+- **Moteur Stockfish 18** : Support de Stockfish via Web Worker (version single-thread) avec force ajustable de 1320 à 2800 ELO.
+- **Système de Suggestion (Aide)** : Nouveau moteur d'IA à la demande proposant le meilleur coup via une flèche visuelle verte.
+- **Compteurs de Performance** : Suivi des annulations ("Oups !") et des coups parfaits (correspondant à l'aide) directement sur les boutons d'action.
+- **Suivi Matériel** : Affichage dynamique des pièces capturées et du score d'avantage (+X) au-dessus et en-dessous de l'échiquier.
+- **Timer de Partie** : Chronomètre automatique démarrant au premier coup et s'arrêtant en fin de match.
+- **Vue d'Analyse Dédiée** : Page séparée pour consulter l'historique complet des coups dans un tableau structuré (3 tours par ligne) avec navigation interactive et surbrillance du coup courant.
+
+### Modifié
+- **Ergonomie Mobile** : Mise en page figée (scroll-y="false") pour supprimer les décalages de coordonnées de clic sur l'échiquier.
+- **Robustesse Fin de Partie** : Utilisation de `chess.js` pour expliciter les raisons des matchs nuls (Pat, matériel insuffisant, répétition, 50 coups).
+- **Formatage PGN** : Utilisation de symboles de pièces Unicode agrandis et pleins pour une meilleure lisibilité.
+- **Optimisation Build** : Passage à la cible `es2022` et retrait du plugin legacy pour supporter nativement les BigInt et WebAssembly.
+
+### Corrigé
+- **Décalage Tactile** : Stabilisation complète de l'échiquier via un layout Flexbox empêchant tout mouvement parasite lors de la sélection des pièces.
+
+## [4.5.2] - 2026-05-22
+### Corrigé
+- **Agenda (Infinite Scroll)** : Correction d'une boucle infinie d'appels API lors du défilement vers le bas. L'application détecte désormais correctement la fin de la liste (erreur 400 de WordPress) et désactive le chargement automatique pour éviter les erreurs en cascade dans la console.
+
+## [4.5.1] - 2026-05-22
+### Ajouté
+- **Classements ELO Dynamiques** : Affichage des indices Standard, Rapide et Blitz sur la page d'accueil pour les adhérents connectés.
+- **Gestion des Familles (ELO)** : Support de l'imbrication des membres rattachés (`associated_members`) permettant aux responsables légaux de voir les classements de tous leurs enfants.
+- **Interface Adaptive** : Double mode d'affichage (Grille horizontale pour les joueurs seuls, Liste alignée avec en-têtes pour les familles).
+
+### Modifié
+- **Sécurité des Sessions** : Purge systématique de toutes les données privées (Identités, ELOs, Inscriptions Bénévolat) lors de la déconnexion pour éviter toute fuite de données entre deux utilisateurs sur le même appareil.
+- **Robustesse Bénévolat** : Refonte de la détection de participation (`hasUserVoted`) avec vérification stricte des IDs (> 0) et exclusion des profils génériques pour éliminer les "faux positifs" d'inscription.
+- **Optimisation Cycle de Vie** : Migration de la page de sélection vers les hooks Ionic (`onIonViewWillEnter`) pour garantir la fraîcheur des données malgré le cache du navigateur.
+- **UI/UX** : Condensation de l'affichage famille (marges réduites) et alignement parfait des cartes ELO sur la largeur des listes d'actualités.
+
+### Corrigé
+- **Cache API** : Ajout de l'en-tête `cache: 'no-store'` sur les requêtes sensibles (Identités, Bénévolat) pour forcer la synchronisation avec le serveur WordPress lors du changement de compte.
+- **Identification Mineurs** : Correction de l'étiquetage des mineurs utilisant leur propre email (bascule automatique de 'Gestion' vers 'Adhérent').
+
 ## [4.5.0] - 2026-05-18
 ### Ajouté
 - **Module Bénévolat** : Implémentation complète de la gestion des participations bénévoles (remplace le module Sondages).

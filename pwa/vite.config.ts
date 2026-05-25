@@ -1,16 +1,12 @@
-/// <reference types="vitest" />
-
-import legacy from '@vitejs/plugin-legacy'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: './',
+  base: './', // Chemins relatifs pour les assets (indispensable pour WordPress)
   plugins: [
-    vue(),
-    legacy()
+    vue()
   ],
   resolve: {
     alias: {
@@ -19,6 +15,7 @@ export default defineConfig({
   },
 // --- NOUVELLE SECTION D'OPTIMISATION ---
   build: {
+    target: 'es2022', // Indispensable pour supporter les BigInt (0xffn) de chess.js
     chunkSizeWarningLimit: 800, // On augmente légèrement la tolérance pour Ionic
     rollupOptions: {
       output: {

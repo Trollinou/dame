@@ -77,7 +77,7 @@ class Identities {
 	}
 
 	/**
-	 * Retrieves identities linked to the current user's email.
+	 * Retrieves identities linked to the current user's email based on business rules.
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 * @return WP_REST_Response|WP_Error
@@ -87,132 +87,179 @@ class Identities {
 		$email        = $current_user->user_email;
 
 		if ( empty( $email ) ) {
-			return new WP_Error(
-				'no_email',
-				__( 'Utilisateur sans email', 'dame' ),
-				[ 'status' => 400 ]
-			);
+			return new WP_Error( 'no_email', __( 'Utilisateur sans email', 'dame' ), [ 'status' => 400 ] );
 		}
 
-		$raw_results = [];
-		$member_ids  = [];
+		// 1. REQUÊTES DE BASE (Uniquement les membres actifs)
+		$args_base = [
+			'post_type'      => 'adherent',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+		];
 
-		// 1. RECHERCHE : Trouver tous les Adhérents liés à cet email (directement ou via RL).
-		$query = new WP_Query(
-			[
-				'post_type'      => 'adherent',
-				'post_status'    => 'any',
-				'posts_per_page' => -1,
-				'meta_query'     => [
-					'relation' => 'OR',
-					[ 'key' => '_dame_email', 'value' => $email, 'compare' => '=' ],
-					[ 'key' => '_dame_legal_rep_1_email', 'value' => $email, 'compare' => '=' ],
-					[ 'key' => '_dame_legal_rep_2_email', 'value' => $email, 'compare' => '=' ],
-				],
-			]
-		);
+		// Requête A (Directe : l'utilisateur est le joueur)
+		$query_a = new WP_Query( array_merge( $args_base, [
+			'meta_query' => [ [ 'key' => '_dame_email', 'value' => $email, 'compare' => '=' ] ],
+		] ) );
 
-		if ( $query->have_posts() ) {
-			while ( $query->have_posts() ) {
-				$query->the_post();
-				$post_id = get_the_ID();
-				$member_ids[] = $post_id;
+		// Requête B (Responsable Légal : l'utilisateur est le parent)
+		$query_b = new WP_Query( array_merge( $args_base, [
+			'meta_query' => [
+				'relation' => 'OR',
+				[ 'key' => '_dame_legal_rep_1_email', 'value' => $email, 'compare' => '=' ],
+				[ 'key' => '_dame_legal_rep_2_email', 'value' => $email, 'compare' => '=' ],
+			],
+		] ) );
 
-				// Match Adhérent direct
-				if ( $email === get_post_meta( $post_id, '_dame_email', true ) ) {
-					$raw_results[] = [
-						'id'        => 'member_' . $post_id,
-						'name'      => get_the_title( $post_id ),
-						'type'      => 'member',
-						'member_id' => $post_id,
-					];
-				}
+		$adherents_a = $query_a->posts;
+		$adherents_b = $query_b->posts;
 
-				// Match Représentant Légal 1
-				if ( $email === get_post_meta( $post_id, '_dame_legal_rep_1_email', true ) ) {
-					$first_name = get_post_meta( $post_id, '_dame_legal_rep_1_first_name', true );
-					$last_name  = get_post_meta( $post_id, '_dame_legal_rep_1_last_name', true );
-					$raw_results[] = [
-						'id'        => 'rep_' . $post_id . '_1',
-						'name'      => trim( (string) $first_name . ' ' . (string) $last_name ),
-						'type'      => 'representative',
-						'member_id' => $post_id,
-					];
-				}
+		$identities = [];
+		$seen_ids   = []; // Pour éviter les doublons techniques
 
-				// Match Représentant Légal 2
-				if ( $email === get_post_meta( $post_id, '_dame_legal_rep_2_email', true ) ) {
-					$first_name = get_post_meta( $post_id, '_dame_legal_rep_2_first_name', true );
-					$last_name  = get_post_meta( $post_id, '_dame_legal_rep_2_last_name', true );
-					$raw_results[] = [
-						'id'        => 'rep_' . $post_id . '_2',
-						'name'      => trim( (string) $first_name . ' ' . (string) $last_name ),
-						'type'      => 'representative',
-						'member_id' => $post_id,
-					];
-				}
-			}
-			wp_reset_postdata();
+		// 2. CONSTRUCTION DES IDENTITÉS
+		
+		// AJOUT DES PROFILS JOUEURS (Adhérents directs)
+		foreach ( $adherents_a as $adh ) {
+			$identities[] = $this->prepare_full_identity( $adh, 'member', [] );
+			$seen_ids[]   = 'member_' . $adh->ID;
 		}
 
-		// 2. LOGIQUE DE FILTRAGE
-		$unique_member_ids = array_unique( $member_ids );
-		$final_identities  = $raw_results;
-
-		// CAS SPÉCIAL : Un seul adhérent trouvé
-		if ( count( $unique_member_ids ) === 1 ) {
-			$post_id    = $unique_member_ids[0];
-			$birth_date = get_post_meta( $post_id, '_dame_birth_date', true );
-			$is_major   = false;
-
-			if ( ! empty( $birth_date ) ) {
-				$birth      = new \DateTime( (string) $birth_date );
-				$today      = new \DateTime();
-				$age        = $today->diff( $birth )->y;
-				$is_major   = $age >= 18;
-			}
-
-			// Si majeur, on ne garde que l'identité de type 'member'
-			if ( $is_major ) {
-				// On cherche s'il y a une entrée 'member' dans nos résultats
-				$member_entry = null;
-				foreach ( $raw_results as $entry ) {
-					if ( $entry['type'] === 'member' ) {
-						$member_entry = $entry;
-						break;
-					}
-				}
-
-				// Si on a trouvé une entrée 'member', on ne renvoie que celle-là
-				if ( $member_entry ) {
-					$final_identities = [ $member_entry ];
-				} else {
-					// Si l'adulte n'a pas d'email adhérent mais est trouvé via RL, on transforme l'entrée RL en Adhérent
-					// pour éviter d'afficher "Jean (RL)" alors qu'il est seul et adulte.
-					if ( ! empty( $raw_results ) ) {
-						$first_rep = $raw_results[0];
-						$final_identities = [ [
-							'id'        => 'member_' . $post_id,
-							'name'      => get_the_title( $post_id ),
-							'type'      => 'member',
-							'member_id' => $post_id,
-						] ];
-					}
-				}
+		// AJOUT DES PROFILS PARENTS (Responsables Légaux)
+		if ( ! empty( $adherents_b ) ) {
+			$reps = $this->extract_representative_identities( $adherents_b, $email );
+			foreach ( $reps as $rep ) {
+				$identities[] = $rep;
 			}
 		}
 
-		// 3. AJOUT DE L'IDENTITÉ ADMIN (SI AUTORISÉ)
+		// 3. CAS PARTICULIER : Identité Admin
 		$allowed_roles = [ 'staff', 'entraineur', 'editor', 'administrator' ];
 		if ( array_intersect( $allowed_roles, (array) $current_user->roles ) ) {
-			array_unshift( $final_identities, [
-				'id'        => 'wp_virtual',
-				'name'      => $current_user->display_name,
-				'type'      => 'admin',
-				'member_id' => 0,
+			array_unshift( $identities, [
+				'id'                => 'wp_virtual',
+				'name'              => $current_user->display_name,
+				'firstname'         => $current_user->first_name ?: $current_user->display_name,
+				'type'              => 'admin',
+				'member_id'         => 0,
+				'elo_standard'      => 'NC',
+				'elo_rapide'        => 'NC',
+				'elo_blitz'         => 'NC',
+				'associated_members' => [],
 			] );
 		}
 
-		return rest_ensure_response( $final_identities );
+		return rest_ensure_response( $identities );
+	}
+
+	/**
+	 * Extracts representative identities from a list of adherents.
+	 */
+	private function extract_representative_identities( array $adherents, string $email ): array {
+		$reps = [];
+		$seen_names = [];
+
+		foreach ( $adherents as $adh ) {
+			$rep_names_to_check = [];
+			
+			// On vérifie RL1
+			if ( get_post_meta( $adh->ID, '_dame_legal_rep_1_email', true ) === $email ) {
+				$rep_names_to_check[] = trim( get_post_meta( $adh->ID, '_dame_legal_rep_1_first_name', true ) . ' ' . get_post_meta( $adh->ID, '_dame_legal_rep_1_last_name', true ) );
+			}
+			// On vérifie RL2
+			if ( get_post_meta( $adh->ID, '_dame_legal_rep_2_email', true ) === $email ) {
+				$rep_names_to_check[] = trim( get_post_meta( $adh->ID, '_dame_legal_rep_2_first_name', true ) . ' ' . get_post_meta( $adh->ID, '_dame_legal_rep_2_last_name', true ) );
+			}
+
+			foreach ( array_unique( $rep_names_to_check ) as $rep_name ) {
+				if ( empty( $rep_name ) ) continue;
+
+				if ( ! isset( $seen_names[ $rep_name ] ) ) {
+					$reps[ $rep_name ] = [
+						'id'                => 'rep_' . md5( $rep_name ),
+						'name'              => $rep_name,
+						'firstname'         => explode( ' ', $rep_name )[0],
+						'type'              => 'representative',
+						'elo_standard'      => 'NC',
+						'elo_rapide'        => 'NC',
+						'elo_blitz'         => 'NC',
+						'associated_members' => [], // On remplira après
+					];
+					$seen_names[ $rep_name ] = $rep_name;
+				}
+				
+				// On ajoute cet enfant à la liste des membres associés de ce parent
+				$reps[ $rep_name ]['associated_members'][] = [
+					'firstname'    => $this->get_firstname( $adh->ID ),
+					'elo_standard' => get_post_meta( $adh->ID, '_dame_elo_standard', true ) ?: 'NC',
+					'elo_rapide'   => get_post_meta( $adh->ID, '_dame_elo_rapide', true ) ?: 'NC',
+					'elo_blitz'    => get_post_meta( $adh->ID, '_dame_elo_blitz', true ) ?: 'NC',
+				];
+			}
+		}
+
+		return array_values( $reps );
+	}
+
+	/**
+	 * Prepares a full identity object.
+	 */
+	private function prepare_full_identity( \WP_Post $post, string $type, array $associated_adherents ): array {
+		$post_id = $post->ID;
+		return [
+			'id'                => 'member_' . $post_id,
+			'name'              => get_the_title( $post_id ),
+			'firstname'         => $this->get_firstname( $post_id ),
+			'type'              => $type,
+			'elo_standard'      => get_post_meta( $post_id, '_dame_elo_standard', true ) ?: 'NC',
+			'elo_rapide'        => get_post_meta( $post_id, '_dame_elo_rapide', true ) ?: 'NC',
+			'elo_blitz'         => get_post_meta( $post_id, '_dame_elo_blitz', true ) ?: 'NC',
+			'associated_members' => $this->prepare_associated_members( $associated_adherents ),
+		];
+	}
+
+	/**
+	 * Prepares the list of associated members for the JSON response.
+	 */
+	private function prepare_associated_members( array $adherents ): array {
+		$list = [];
+		foreach ( $adherents as $adh ) {
+			$list[] = [
+				'firstname'    => $this->get_firstname( $adh->ID ),
+				'elo_standard' => get_post_meta( $adh->ID, '_dame_elo_standard', true ) ?: 'NC',
+				'elo_rapide'   => get_post_meta( $adh->ID, '_dame_elo_rapide', true ) ?: 'NC',
+				'elo_blitz'    => get_post_meta( $adh->ID, '_dame_elo_blitz', true ) ?: 'NC',
+			];
+		}
+		return $list;
+	}
+
+	/**
+	 * Gets the first name of an adherent.
+	 */
+	private function get_firstname( int $post_id ): string {
+		$firstname = get_post_meta( $post_id, '_dame_first_name', true );
+		if ( empty( $firstname ) ) {
+			$parts = explode( ' ', get_the_title( $post_id ) );
+			$firstname = ( count( $parts ) > 1 ) ? implode( ' ', array_slice( $parts, 1 ) ) : $parts[0];
+		}
+		return (string) $firstname;
+	}
+
+	/**
+	 * Checks if an adherent is major.
+	 */
+	private function is_major( int $post_id ): bool {
+		$birth_date = get_post_meta( $post_id, '_dame_birth_date', true );
+		if ( empty( $birth_date ) ) {
+			return true; // Default to major if unknown
+		}
+		try {
+			$birth = new \DateTime( (string) $birth_date );
+			$today = new \DateTime();
+			return $today->diff( $birth )->y >= 18;
+		} catch ( \Exception $e ) {
+			return true;
+		}
 	}
 }

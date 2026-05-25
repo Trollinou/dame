@@ -7,8 +7,10 @@ import ContactsPage from '../views/ContactsPage.vue';
 import AgendaPage from '../views/AgendaPage.vue';
 import BenevolatPage from '../views/BenevolatPage.vue';
 import MessagesPage from '../views/MessagesPage.vue';
-import TournamentPage from '../views/TournamentPage.vue';
-import GenericPage from '../views/GenericPage.vue';
+const TournamentPage = () => import('../views/TournamentPage.vue');
+import PlayPage from '../views/PlayPage.vue';
+const AnalysisPage = () => import('../views/AnalysisPage.vue');
+const GenericPage = () => import('../views/GenericPage.vue');
 import { useAuthStore } from '@/stores/auth';
 
 const routes: Array<RouteRecordRaw> = [
@@ -54,6 +56,14 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'tournoi',
         component: TournamentPage
+      },
+      {
+        path: 'play',
+        component: PlayPage
+      },
+      {
+        path: 'analysis',
+        component: AnalysisPage
       },
       {
         path: 'benevolat',
@@ -137,17 +147,16 @@ const router = createRouter({
   routes
 })
 
-// Navigation Guard
-router.beforeEach((to, from, next) => {
+// Navigation Guard (Vue Router 4 style)
+router.beforeEach((to) => {
   const authStore = useAuthStore();
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next({ 
+    return { 
       path: '/tabs/login', 
       query: { message: 'Vous devez être connecté pour accéder à cette page.' } 
-    });
-  } else {
-    next();
+    };
   }
+  return true;
 });
 
 export default router

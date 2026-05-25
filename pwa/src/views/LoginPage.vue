@@ -73,7 +73,8 @@ import {
   IonLabel,
   IonInput,
   IonButton,
-  IonIcon
+  IonIcon,
+  onIonViewWillLeave
 } from '@ionic/vue';
 import { informationCircleOutline } from 'ionicons/icons';
 import { reactive, computed } from 'vue';
@@ -100,6 +101,16 @@ const credentials = reactive({
 const handleSubmit = () => {
   authStore.login(credentials.username, credentials.password);
 };
+
+/**
+ * Sécurité Accessibilité : Retire le focus de l'élément actif lors du changement de page
+ * Évite l'avertissement "Blocked aria-hidden on an element because its descendant retained focus"
+ */
+onIonViewWillLeave(() => {
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+});
 </script>
 
 <style scoped>

@@ -16,6 +16,10 @@ export interface Identity {
   name: string;
   type: 'member' | 'representative';
   member_id: number;
+  firstname?: string;
+  elo_standard?: number | string;
+  elo_rapide?: number | string;
+  elo_blitz?: number | string;
 }
 
 export const useAuthStore = defineStore('auth', () => {

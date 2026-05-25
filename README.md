@@ -69,6 +69,11 @@ Chaque fiche membre centralise :
 *   **Zéro Saisie Manuelle :** Formulaire public générant des fiches de préinscription.
 *   **Rapprochement :** Système intelligent pour fusionner une préinscription avec un membre déjà existant en base.
 
+### Synchronisation FFE (Fédération Française des Échecs)
+*   **Daily Sync :** Synchronisation automatisée chaque jour à midi pour récupérer les classements ELO (Standard, Rapide, Blitz) et les numéros de licence officiels.
+*   **Import CSV :** Outil d'importation manuelle optimisé avec algorithme de correspondance à double niveau (Licence, puis Nom) pour maintenir la base de données à jour sans doublons.
+*   **FIDE ID :** Récupération automatique des identifiants FIDE manquants via scraping sécurisé.
+
 ## Portabilité & Sauvegarde
 *   **Exports CSV :** Formats optimisés pour les imports fédéraux (FFE) ou le secrétariat.
 *   **Sauvegardes JSON compressées :** Sauvegardes journalières automatiques par email couvrant les Adhérents, l'Agenda et le Contenu du site (Articles, Pages, Menus). Le système force la restauration des IDs originaux pour préserver parfaitement les relations, les liens de menus et la hiérarchie des pages.

@@ -33,6 +33,7 @@ class Association {
 		);
 
 		$fields = [
+			'assoc_ffe_id' => __( 'Id de référence du club (FFE)', 'dame' ),
 			'assoc_address_1' => __( 'Adresse', 'dame' ),
 			'assoc_address_2' => __( 'Complément', 'dame' ),
 			'assoc_postal_code' => __( 'Code Postal', 'dame' ),
@@ -74,10 +75,14 @@ class Association {
 		$wrapper_end = '';
 		$readonly = '';
 		$class = 'regular-text';
+		$type = 'text';
 		$extra_attr = '';
 		$data_group = 'data-group="settings"';
 
-		if ( 'assoc_address_1' === $key ) {
+		if ( 'assoc_ffe_id' === $key ) {
+			$type = 'number';
+			$class = 'small-text';
+		} elseif ( 'assoc_address_1' === $key ) {
 			$wrapper_start = '<div class="dame-autocomplete-wrapper" style="position: relative;">';
 			$wrapper_end = '</div>';
 			$extra_attr = 'autocomplete="off"';
@@ -95,7 +100,7 @@ class Association {
 		}
 
 		echo $wrapper_start; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo '<input type="text" id="dame_' . esc_attr( $key ) . '" name="dame_options[' . esc_attr( $key ) . ']" value="' . esc_attr( $value ) . '" class="' . esc_attr( $class ) . '" ' . $readonly . ' ' . $extra_attr . ' ' . $data_group . ' />'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo '<input type="' . esc_attr( $type ) . '" id="dame_' . esc_attr( $key ) . '" name="dame_options[' . esc_attr( $key ) . ']" value="' . esc_attr( (string) $value ) . '" class="' . esc_attr( $class ) . '" ' . $readonly . ' ' . $extra_attr . ' ' . $data_group . ' />'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo $wrapper_end; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
@@ -114,10 +119,14 @@ class Association {
 	 * @return array<string, mixed> Sanitized options.
 	 */
 	public function sanitize( $input, $existing_options ) {
-		$fields = [ 'assoc_address_1', 'assoc_address_2', 'assoc_postal_code', 'assoc_city', 'assoc_latitude', 'assoc_longitude' ];
+		$fields = [ 'assoc_ffe_id', 'assoc_address_1', 'assoc_address_2', 'assoc_postal_code', 'assoc_city', 'assoc_latitude', 'assoc_longitude' ];
 		foreach ( $fields as $field ) {
 			if ( isset( $input[ $field ] ) ) {
-				$existing_options[ $field ] = sanitize_text_field( $input[ $field ] );
+				if ( 'assoc_ffe_id' === $field ) {
+					$existing_options[ $field ] = absint( $input[ $field ] );
+				} else {
+					$existing_options[ $field ] = sanitize_text_field( $input[ $field ] );
+				}
 			}
 		}
 		return $existing_options;

@@ -57,8 +57,17 @@
           </ion-toolbar>
         </ion-header>
 
+        <!-- Espace de Jeu (Uniquement si connecté) -->
+        <div v-if="authStore.isAuthenticated">
+          <ion-card style="--background: var(--ion-color-step-50, #f4f5f8); margin-top: 8px; margin-bottom: 0;">
+              <ion-button expand="block" color="primary" style="margin: 0;" @click="goToPlay">
+               ♟️ Jouer une partie ♟️
+              </ion-button>
+          </ion-card>
+        </div>
+
         <!-- Section Dernières Nouvelles -->
-        <ion-list lines="full">
+        <ion-list lines="full" style="margin: 0;">
           <ion-list-header>
             <ion-label color="primary">Dernières Nouvelles</ion-label>
             <ion-button fill="clear" router-link="/tabs/news">Actualités</ion-button>
@@ -85,7 +94,7 @@
         </ion-list>
 
         <!-- Section Prochains Événements -->
-        <ion-list lines="full" class="ion-margin-top">
+        <ion-list lines="full" style="margin: 0;">
           <ion-list-header>
             <ion-label color="primary">Prochains Événements</ion-label>
             <ion-button fill="clear" router-link="/tabs/agenda">Agenda</ion-button>
@@ -110,7 +119,7 @@
         </ion-list>
 
         <!-- Section Appel à bénévoles -->
-        <ion-list lines="full" class="ion-margin-top ion-margin-bottom">
+        <ion-list lines="full" style="margin: 0;">
           <ion-list-header>
             <ion-label color="primary">Appel à bénévoles</ion-label>
             <ion-button fill="clear" router-link="/tabs/benevolat">Bénévolat</ion-button>
@@ -160,6 +169,10 @@ import {
   IonBadge,
   IonRefresher,
   IonRefresherContent,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
   onIonViewWillEnter
 } from '@ionic/vue';
 import { calendarOutline, handRightOutline, newspaperOutline, personCircleOutline, logOutOutline, peopleOutline } from 'ionicons/icons';
@@ -194,12 +207,19 @@ const todayStr = getTodayStr();
  * Charge toutes les données de la page
  */
 const loadAllData = async () => {
-  // On lance tout en parallèle pour la vitesse
-  await Promise.all([
+  const tasks = [
     fetchLatestNews(),
-    agendaStore.fetchAgenda(),
-    benevolatStore.fetchBenevolatsData(true)
-  ]);
+    agendaStore.fetchAgenda()
+  ];
+
+  if (authStore.isAuthenticated) {
+    tasks.push(benevolatStore.fetchBenevolatsData(true));
+  } else {
+    // CRITIQUE : Purge des données de session pour éviter la persistance
+    benevolatStore.clearData();
+  }
+
+  await Promise.all(tasks);
 };
 
 /**
@@ -222,6 +242,13 @@ watch(() => authStore.isAuthenticated, () => {
  */
 const goToSelectPerson = () => {
   router.push('/tabs/select-person');
+};
+
+/**
+ * Redirige vers l'espace de jeu
+ */
+const goToPlay = () => {
+  router.push('/tabs/play');
 };
 
 /**

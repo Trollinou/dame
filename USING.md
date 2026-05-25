@@ -46,7 +46,31 @@ Vous pouvez diffuser l'appel de deux manières :
 -   Dès qu'une journée est passée, les inscriptions pour cette journée sont **automatiquement verrouillées** pour préserver l'historique des présences.
 -   Un appel dont toutes les dates sont passées s'affiche comme "Terminé".
 
-## 4. Application Mobile (PWA)
+## 4. Gestion des données FFE (Fédération Française des Échecs)
+
+Le plugin DAME permet de synchroniser automatiquement les classements ELO et les numéros de licence de vos membres avec le site fédéral.
+
+### a. Configuration du club
+Avant toute chose, vous devez renseigner l'identifiant de votre club :
+1.  Allez dans `DAME > Réglages > Association`.
+2.  Renseignez le champ **Id de référence du club (FFE)** (ex: 571).
+3.  Enregistrez les modifications.
+
+### b. Synchronisation automatique (Daily Sync)
+Une fois le club configuré, le plugin lance automatiquement chaque jour à **12:00 (Midi)** une tâche de synchronisation qui :
+-   Récupère les derniers ELOs (Standard, Rapide, Blitz).
+-   Met à jour les numéros de licence officiels.
+-   Récupère les IDs FIDE manquants.
+-   Met à jour l'ID FFE technique pour chaque membre.
+
+### c. Import manuel (Fichier CSV)
+Si vous souhaitez forcer une mise à jour massive à partir d'un export CSV téléchargé sur le site de la FFE :
+1.  Allez dans `DAME > Import FFE`.
+2.  Sélectionnez votre fichier CSV (séparateur `;`).
+3.  Lancez l'importation.
+Le système utilise un algorithme de correspondance intelligent (Licence puis Nom) pour mettre à jour vos fiches adhérents sans doublons.
+
+## 5. Application Mobile (PWA)
 
 L'application est accessible à l'adresse : `https://votre-site.com/pwa`.
 

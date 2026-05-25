@@ -1,22 +1,44 @@
 # Changelog
 
-## [4.5.0] - 2026-05-18
+## [4.5.3] - 2026-05-22
 
 ### Plugin WordPress (Backend)
-- **Refactoring Global :** Remplacement intégral du terme "Sondage" par "Benevolat" dans tout le backend (CPT, REST API, Tables SQL, Meta keys).
-- **CPT :** Le slug `sondage` devient `benevolat` et `sondage_reponse` devient `benevolat_reponse`.
-- **API REST :** Les routes `/dame/v1/sondages` sont désormais accessibles via `/dame/v1/benevolats`.
-- **API REST :** Refonte de la logique des identités (`my-identities`) : détection intelligente "Solo-Adulte" pour supprimer les doublons de profil pour les membres majeurs uniques.
-- **Base de données :** Migration automatique de la table `dame_poll_votes` vers `dame_benevolat_votes`.
-- **Sécurité :** Protection contre les modifications de votes sur des dates passées.
+- **Correction ELO :** Fiabilisation de l'extraction des classements sur le site FFE (remplacement des espaces insécables au lieu de la troncature) pour préserver la lettre d'indice (ex: "1299 E").
+- **Optimisation Batch :** Ajout d'une limite de sécurité à 10 recherches d'ID FIDE par exécution quotidienne pour prévenir les timeouts PHP.
 
 ### Application Mobile (PWA)
-- **Module Bénévolat :** Implémentation complète de la gestion des participations bénévoles (remplace le module Sondages).
-- **Participation Publique :** Nouvelle vue permettant aux adhérents de proposer leur aide sur des créneaux spécifiques directement depuis leur mobile.
-- **Indicateurs Visuels :** Ajout de badges "Inscrit" et "Terminé" pour un suivi clair des engagements.
-- **Affluence :** Affichage du nombre d'inscrits par créneau en temps réel.
-- **Refactoring Sémantique :** Migration globale du terme "Sondage" vers "Bénévolat" dans tout le code source (Vues, Stores, Router, API).
-- **Safe Areas :** Optimisation de l'affichage pour les écrans avec encoche (Dynamic Island/Notch) en mode paysage.
+- **Espace de Jeu (Échecs) :** Intégration complète d'un échiquier interactif contre l'IA (Stockfish 18).
+- **Moteur Stockfish :** Support via Web Worker avec force ajustable de 1320 à 2800 ELO.
+- **Système de Suggestion :** Nouveau moteur d'IA proposant le meilleur coup via une flèche visuelle.
+- **Suivi de Performance :** Compteurs d'annulations et de coups parfaits ; affichage dynamique du matériel capturé.
+- **Vue d'Analyse :** Page dédiée pour consulter l'historique complet des coups (tableau 3 tours par ligne) avec navigation interactive.
+- **UI/UX :** Stabilisation de l'échiquier (layout Flexbox) et retrait du plugin legacy (cibles es2022).
+
+## [4.5.2] - 2026-05-22
+
+### Application Mobile (PWA)
+- **Agenda (Infinite Scroll) :** Correction d'une boucle infinie d'appels API lors du défilement. Détection automatique de fin de liste pour désactiver le chargement.
+
+## [4.5.1] - 2026-05-22
+
+### Plugin WordPress (Backend)
+- **Synchronisation FFE Automatisée :** Création d'un service de batch (`FFESyncBatch`) remplaçant les scripts externes. Synchronisation quotidienne à 12:00 via WP-Cron (ELOs, Licences, ID FIDE).
+- **Import CSV FFE :** Nouvel outil d'import manuel avec algorithme de correspondance à double niveau (Licence, puis Nom normalisé).
+- **API REST (Identités) :** Refonte complète de la logique `my-identities` appliquant 4 règles métier pour supporter les comptes familiaux (un seul email pour plusieurs profils).
+- **API REST (Données Sportives) :** Inclusion systématique des 3 classements ELO et du prénom du joueur.
+- **Interface Adhérent :** Mise à jour de la metabox "Classification" intégrant les champs ELO et FIDE en lecture seule.
+- **Réglages :** Ajout de l'identifiant de référence du club (ID FFE) dans l'onglet Association.
+- **Corrections :** Suppression d'erreurs de syntaxe PHP et mise en conformité PHP 8.4 des appels `fgetcsv`.
+
+### Application Mobile (PWA)
+- **Classements ELO Dynamiques :** Affichage des indices Standard, Rapide et Blitz sur la page d'accueil pour les adhérents connectés.
+- **Gestion des Familles (ELO) :** Support de l'imbrication des membres rattachés permettant aux responsables légaux de voir les classements de tous leurs enfants.
+- **Interface Adaptive :** Double mode d'affichage (Grille horizontale pour les joueurs seuls, Liste alignée pour les familles).
+- **Sécurité des Sessions :** Purge systématique de toutes les données privées lors de la déconnexion.
+- **Robustesse Bénévolat :** Refonte de la détection de participation avec vérification stricte des identités.
+- **UI/UX :** Optimisation du cycle de vie des pages Ionic et condensation de l'affichage famille.
+
+## [4.5.0] - 2026-05-18
 
 ## 4.4.6a - 2026-05-17
 ### Ajout

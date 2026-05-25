@@ -26,7 +26,7 @@
           v-if="!searchQuery"
           position="top" 
           @ionInfinite="loadMorePast($event)" 
-          :disabled="!hasMorePast"
+          :disabled="!hasMorePast || isLoading"
         >
           <ion-infinite-scroll-content 
             loading-spinner="dots" 
@@ -69,7 +69,7 @@
         <ion-infinite-scroll 
           v-if="!searchQuery"
           @ionInfinite="loadMoreUpcoming($event)" 
-          :disabled="!hasMoreUpcoming"
+          :disabled="!hasMoreUpcoming || isLoading"
         >
           <ion-infinite-scroll-content 
             loading-spinner="dots" 

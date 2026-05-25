@@ -4,12 +4,14 @@ namespace DAME\Core;
 
 use DAME\Services\Backup;
 use DAME\Services\Birthday;
+use DAME\Services\FFESyncBatch;
 use DateTime;
 
 class Cron {
 	public function init(): void {
 		add_action( 'dame_daily_backup_event', function() { ( new Backup() )->run_scheduled_backup(); } );
 		add_action( 'dame_birthday_email_event', function() { ( new Birthday() )->send_wishes(); } );
+		add_action( 'dame_ffe_sync_event', function() { ( new FFESyncBatch() )->run(); } );
 		add_action( 'admin_init', [ $this, 'schedule_events' ] );
 	}
 
@@ -46,6 +48,15 @@ class Cron {
 			}
 		} else {
 			wp_clear_scheduled_hook( 'dame_birthday_email_event' );
+		}
+
+		// FFE Sync
+		$ffe_sync_time = '12:00';
+		$ffe_sync_timestamp = $this->get_timestamp_from_local_time( $ffe_sync_time );
+		$scheduled_ffe_sync = wp_next_scheduled( 'dame_ffe_sync_event' );
+
+		if ( ! $scheduled_ffe_sync ) {
+			wp_schedule_event( $ffe_sync_timestamp, 'daily', 'dame_ffe_sync_event' );
 		}
 	}
 

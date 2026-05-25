@@ -65,14 +65,17 @@ import {
   IonSpinner,
   IonButton,
   IonButtons,
-  IonBackButton
+  IonBackButton,
+  onIonViewWillEnter,
+  onIonViewWillLeave,
+  onIonViewDidLeave
 } from '@ionic/vue';
 import { 
   peopleOutline, 
   personOutline, 
   chevronForwardOutline 
 } from 'ionicons/icons';
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore, type Identity } from '@/stores/auth';
 
@@ -83,10 +86,13 @@ const identities = ref<Identity[]>([]);
 const isLoading = ref(true);
 
 const fetchIdentities = async () => {
+  // Purge de sécurité avant le chargement
+  identities.value = [];
   isLoading.value = true;
   try {
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dame/v1/my-identities`, {
-      headers: { 'Authorization': `Bearer ${authStore.token}` }
+      headers: { 'Authorization': `Bearer ${authStore.token}` },
+      cache: 'no-store' // Force à ne pas utiliser le cache du navigateur
     });
     if (response.ok) {
       identities.value = await response.json();
@@ -110,12 +116,23 @@ const handleSelect = (identity: Identity) => {
   router.push('/tabs/home');
 };
 
-onMounted(() => {
+onIonViewWillEnter(() => {
   if (!authStore.isAuthenticated) {
     router.push('/login');
     return;
   }
   fetchIdentities();
+});
+
+onIonViewWillLeave(() => {
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+});
+
+onIonViewDidLeave(() => {
+  // Purge garantie quand on quitte la vue (déconnexion ou sélection validée)
+  identities.value = [];
 });
 </script>
 

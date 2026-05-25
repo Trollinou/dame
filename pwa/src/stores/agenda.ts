@@ -30,6 +30,7 @@ export const useAgendaStore = defineStore('agenda', () => {
   const isLoading = ref(false);
   const hasMoreUpcoming = ref(true);
   const hasMorePast = ref(true);
+  let isFetching = false;
   
   // Etat de la pagination partagé
   const upcomingPage = ref(1);
@@ -39,6 +40,9 @@ export const useAgendaStore = defineStore('agenda', () => {
    * Récupère un lot d'événements depuis le serveur
    */
   const fetchBatch = async (direction: 'upcoming' | 'past', referenceDate: string, page: number) => {
+    if (isFetching) return [];
+    isFetching = true;
+
     try {
       const token = localStorage.getItem('dame_jwt_token');
       const context = 'view';
@@ -64,12 +68,28 @@ export const useAgendaStore = defineStore('agenda', () => {
       const response = await fetch(`${baseUrl}?${queryParams}`, { method: 'GET', headers });
 
       if (!response.ok) {
-        if (response.status === 400) return [];
+        // WordPress renvoie 400 quand on demande une page qui n'existe plus (fin de liste)
+        if (response.status === 400) {
+          if (direction === 'upcoming') hasMoreUpcoming.value = false;
+          if (direction === 'past') hasMorePast.value = false;
+          return [];
+        }
         throw new Error("Erreur serveur");
+      }
+
+      // Lecture du nombre total de pages renvoyé par WordPress
+      const totalPagesStr = response.headers.get('X-WP-TotalPages');
+      const totalPages = totalPagesStr ? parseInt(totalPagesStr, 10) : 1;
+
+      // Si on est arrivé à la dernière page, on coupe la pagination
+      if (page >= totalPages) {
+        if (direction === 'upcoming') hasMoreUpcoming.value = false;
+        if (direction === 'past') hasMorePast.value = false;
       }
 
       const data: AgendaEvent[] = await response.json();
       
+      // Fallback de sécurité : si on reçoit moins que perPage
       if (direction === 'upcoming' && data.length < perPage) hasMoreUpcoming.value = false;
       if (direction === 'past' && data.length < perPage) hasMorePast.value = false;
 
@@ -77,6 +97,8 @@ export const useAgendaStore = defineStore('agenda', () => {
     } catch (error) {
       console.error(`Erreur fetchBatch ${direction}:`, error);
       return [];
+    } finally {
+      isFetching = false;
     }
   };
 
@@ -104,7 +126,6 @@ export const useAgendaStore = defineStore('agenda', () => {
       events.value = mergedEvents.filter((v, i, a) => a.findIndex(t => (t.id === v.id)) === i);
       
       upcomingPage.value = 1;
-      hasMoreUpcoming.value = data.length >= 20;
 
     } finally {
       isLoading.value = false;
