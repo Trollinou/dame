@@ -156,6 +156,12 @@ class ImportFFE {
 
 	/**
 	 * Process a single CSV row using pre-built lookup tables.
+	 *
+	 * @param string[]             $row                 CSV row.
+	 * @param array<string, int>   $members_by_license  Lookup table by license.
+	 * @param array<string, int>   $members_by_name     Lookup table by name.
+	 * @param int[]                $updated_ids         Array of updated post IDs.
+	 * @param int                  $updated_count       Counter for updated records.
 	 */
 	private function process_import_row( array $row, array $members_by_license, array $members_by_name, array &$updated_ids, int &$updated_count ): void {
 		if ( count( $row ) < 3 ) {
@@ -200,6 +206,8 @@ class ImportFFE {
 
 	/**
 	 * Get all active adherents.
+	 *
+	 * @return \WP_Post[]
 	 */
 	private function get_active_adherents(): array {
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );

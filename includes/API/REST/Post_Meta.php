@@ -100,6 +100,23 @@ class Post_Meta {
 	 * Registers custom REST fields that are not automatically handled by register_meta.
 	 */
 	public function register_custom_rest_fields(): void {
+		// Catégorie d'âge pour les adhérents
+		register_rest_field(
+			'adherent',
+			'dame_age_category',
+			[
+				'get_callback' => function( $post_arr ) {
+					$birth_date = get_post_meta( $post_arr['id'], '_dame_birth_date', true );
+					$gender     = get_post_meta( $post_arr['id'], '_dame_sexe', true );
+					return \DAME\Core\Utils::get_adherent_age_category( $birth_date, $gender );
+				},
+				'schema' => [
+					'description' => __( 'Catégorie d\'âge calculée.', 'dame' ),
+					'type'        => 'string',
+				],
+			]
+		);
+
 		// Benevolat Data
 		register_rest_field(
 			'benevolat',
@@ -373,6 +390,10 @@ class Post_Meta {
 			'_dame_legal_rep_2_honorabilite'       => 'string',
 			'_dame_school_name'                    => 'string',
 			'_dame_school_academy'                 => 'string',
+			'_dame_fide_id'                        => 'string',
+			'_dame_elo_standard'                   => 'string',
+			'_dame_elo_rapide'                     => 'string',
+			'_dame_elo_blitz'                      => 'string',
 		];
 
 		$this->register_fields( 'adherent', $fields );

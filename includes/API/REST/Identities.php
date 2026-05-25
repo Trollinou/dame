@@ -154,6 +154,10 @@ class Identities {
 
 	/**
 	 * Extracts representative identities from a list of adherents.
+	 *
+	 * @param \WP_Post[] $adherents List of adherent posts.
+	 * @param string     $email     Email to check.
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function extract_representative_identities( array $adherents, string $email ): array {
 		$reps = [];
@@ -203,6 +207,11 @@ class Identities {
 
 	/**
 	 * Prepares a full identity object.
+	 *
+	 * @param \WP_Post   $post                 The adherent post.
+	 * @param string     $type                 Identity type.
+	 * @param \WP_Post[] $associated_adherents Associated adherent posts.
+	 * @return array<string, mixed>
 	 */
 	private function prepare_full_identity( \WP_Post $post, string $type, array $associated_adherents ): array {
 		$post_id = $post->ID;
@@ -220,6 +229,9 @@ class Identities {
 
 	/**
 	 * Prepares the list of associated members for the JSON response.
+	 *
+	 * @param \WP_Post[] $adherents List of adherent posts.
+	 * @return array<int, array<string, mixed>>
 	 */
 	private function prepare_associated_members( array $adherents ): array {
 		$list = [];
@@ -244,22 +256,5 @@ class Identities {
 			$firstname = ( count( $parts ) > 1 ) ? implode( ' ', array_slice( $parts, 1 ) ) : $parts[0];
 		}
 		return (string) $firstname;
-	}
-
-	/**
-	 * Checks if an adherent is major.
-	 */
-	private function is_major( int $post_id ): bool {
-		$birth_date = get_post_meta( $post_id, '_dame_birth_date', true );
-		if ( empty( $birth_date ) ) {
-			return true; // Default to major if unknown
-		}
-		try {
-			$birth = new \DateTime( (string) $birth_date );
-			$today = new \DateTime();
-			return $today->diff( $birth )->y >= 18;
-		} catch ( \Exception $e ) {
-			return true;
-		}
 	}
 }

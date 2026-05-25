@@ -4,6 +4,17 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.4] - 2026-05-25
+### Ajouté
+- **Section Licence** : Création d'une nouvelle section dédiée dans la fiche adhérent regroupant les informations sportives.
+- **Classements ELO** : Affichage stylisé des indices Standard, Rapide et Blitz sur une seule ligne via une grille de badges.
+- **Données FFE & FIDE** : Intégration du numéro de licence FFE (avec type) et de l'identifiant FIDE côte à côte.
+- **Catégorie d'Âge** : Affichage de la catégorie (ex: U12, Sénior) dans la section Identité.
+- **Badges de Liste** : Ajout de badges visuels pour la catégorie d'âge directement dans la liste globale des adhérents pour un repérage rapide.
+
+### Modifié
+- **Organisation de la Fiche** : Extraction des données de licence de la section Identité pour alléger la lecture et clarifier le profil sportif.
+
 ## [4.5.3] - 2026-05-22
 ### Ajouté
 - **Espace de Jeu (Échecs)** : Intégration complète d'un échiquier interactif contre l'IA.

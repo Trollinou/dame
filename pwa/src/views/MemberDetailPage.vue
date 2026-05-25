@@ -41,24 +41,53 @@
                     <h3>{{ formatGender(member.meta._dame_sexe) }}</h3>
                   </ion-label>
                 </ion-item>
-                <ion-item v-if="member.meta?._dame_license_type">
-                  <ion-label>
-                    <p>Type de licence</p>
-                    <h3>{{ member.meta._dame_license_type }}</h3>
-                  </ion-label>
-                </ion-item>
-                <ion-item v-if="member.meta?._dame_license_number">
-                  <ion-label>
-                    <p>Numéro de licence</p>
-                    <h3>{{ member.meta._dame_license_number }}</h3>
-                  </ion-label>
-                </ion-item>
-                <ion-item v-if="member.meta?.categorie">
+                <ion-item v-if="member.dame_age_category">
                   <ion-label>
                     <p>Catégorie</p>
-                    <h3>{{ member.meta.categorie }}</h3>
+                    <h3>{{ member.dame_age_category }}</h3>
                   </ion-label>
                 </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Carte Licence -->
+          <ion-card class="ion-no-margin ion-margin-bottom">
+            <ion-card-header>
+              <ion-card-title>Licence</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list lines="none">
+                <!-- Grille Infos Licence -->
+                <div class="license-grid-container">
+                  <div class="license-box" v-if="member.meta?._dame_license_number">
+                    <span class="license-label">Licence FFE</span>
+                    <span class="license-value">
+                      {{ member.meta._dame_license_number }}
+                      <small v-if="member.meta._dame_license_type">({{ member.meta._dame_license_type }})</small>
+                    </span>
+                  </div>
+                  <div class="license-box" v-if="member.meta?._dame_fide_id">
+                    <span class="license-label">FIDE ID</span>
+                    <span class="license-value">{{ member.meta._dame_fide_id }}</span>
+                  </div>
+                </div>
+                
+                <!-- Grille Elo -->
+                <div v-if="member.meta?._dame_elo_standard || member.meta?._dame_elo_rapide || member.meta?._dame_elo_blitz" class="elo-grid-container">
+                  <div class="elo-box" v-if="member.meta?._dame_elo_standard">
+                    <span class="elo-label">Standard</span>
+                    <span class="elo-value">{{ member.meta._dame_elo_standard }}</span>
+                  </div>
+                  <div class="elo-box" v-if="member.meta?._dame_elo_rapide">
+                    <span class="elo-label">Rapide</span>
+                    <span class="elo-value">{{ member.meta._dame_elo_rapide }}</span>
+                  </div>
+                  <div class="elo-box" v-if="member.meta?._dame_elo_blitz">
+                    <span class="elo-label">Blitz</span>
+                    <span class="elo-value">{{ member.meta._dame_elo_blitz }}</span>
+                  </div>
+                </div>
               </ion-list>
             </ion-card-content>
           </ion-card>
@@ -316,5 +345,54 @@ h3 {
   display: block;
   width: 100%;
   padding-bottom: 8px;
+}
+
+.elo-grid-container {
+  display: flex;
+  gap: 10px;
+  padding: 10px 16px;
+  justify-content: space-between;
+}
+
+.license-grid-container {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px 10px 16px;
+}
+
+.license-box,
+.elo-box {
+  flex: 1;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 0;
+}
+
+.license-label,
+.elo-label {
+  font-size: 0.75em;
+  color: var(--ion-color-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.license-value,
+.elo-value {
+  font-weight: bold;
+  font-size: 1.1em;
+  color: var(--ion-color-dark);
+}
+
+.license-value small {
+  font-weight: normal;
+  font-size: 0.8em;
+  margin-left: 4px;
 }
 </style>

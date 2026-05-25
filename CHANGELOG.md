@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.5.4] - 2026-05-25
+
+### Plugin WordPress (Backend)
+- **API REST (Adhérent) :** Exposition de nouveaux champs méta (`_dame_fide_id`, `_dame_elo_standard`, `_dame_elo_rapide`, `_dame_elo_blitz`) pour consommation par la PWA.
+- **API REST (Catégorie d'Âge) :** Ajout d'un champ calculé `dame_age_category` utilisant la logique métier centralisée pour une cohérence parfaite entre Web et Mobile.
+- **Qualité de Code :** Correction de l'intégralité des erreurs PHPStan (Level 6) : typage strict des itérables, suppression de code mort et sécurisation des manipulations DOM.
+
+### Application Mobile (PWA)
+- **Section Licence :** Création d'une nouvelle section dédiée dans la fiche adhérent regroupant les informations sportives.
+- **Classements ELO :** Affichage stylisé des indices Standard, Rapide et Blitz sur une seule ligne via une grille de badges.
+- **Données FFE & FIDE :** Intégration du numéro de licence FFE (avec type) et de l'identifiant FIDE côte à côte.
+- **Catégorie d'Âge :** Affichage de la catégorie (ex: U12, Sénior) dans la section Identité et ajout de badges visuels dans la liste globale.
+- **Organisation de la Fiche :** Extraction des données de licence de la section Identité pour clarifier le profil sportif.
+
 ## [4.5.3] - 2026-05-22
 
 ### Plugin WordPress (Backend)

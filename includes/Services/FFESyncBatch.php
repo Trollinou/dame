@@ -145,9 +145,12 @@ class FFESyncBatch {
 					$link_node = $xpath->query( "td[4]/a", $row );
 					$id_ffe = '';
 					if ( $link_node->length > 0 ) {
-						$href = $link_node->item(0)->getAttribute('href');
-						if ( preg_match( '/Id=(.+)/', $href, $matches ) ) {
-							$id_ffe = $matches[1];
+						$link_element = $link_node->item(0);
+						if ( $link_element instanceof \DOMElement ) {
+							$href = $link_element->getAttribute('href');
+							if ( preg_match( '/Id=(.+)/', $href, $matches ) ) {
+								$id_ffe = $matches[1];
+							}
 						}
 					}
 
@@ -186,6 +189,9 @@ class FFESyncBatch {
 		$inputs = $xpath->query( "//input[@type='hidden']" );
 		if ( $inputs ) {
 			foreach ( $inputs as $input ) {
+				if ( ! $input instanceof \DOMElement ) {
+					continue;
+				}
 				$name = $input->getAttribute('name');
 				$value = $input->getAttribute('value');
 				if ( $name ) {
@@ -209,6 +215,9 @@ class FFESyncBatch {
 
 		if ( $links ) {
 			foreach ( $links as $link ) {
+				if ( ! $link instanceof \DOMElement ) {
+					continue;
+				}
 				if ( trim( $link->textContent ) === $next_page_num ) {
 					$href = $link->getAttribute('href');
 					if ( preg_match( "/__doPostBack\('(.*?)','(.*?)'\)/", $href, $matches ) ) {
@@ -303,6 +312,8 @@ class FFESyncBatch {
 
 	/**
 	 * Get all active adherents.
+	 *
+	 * @return \WP_Post[]
 	 */
 	private function get_active_adherents(): array {
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );

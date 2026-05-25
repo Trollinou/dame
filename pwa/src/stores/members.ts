@@ -5,6 +5,7 @@ import { useAuthStore } from './auth';
 
 export interface Member {
   id: number;
+  dame_age_category?: string;
   title: {
     rendered: string;
     raw: string;
@@ -18,6 +19,11 @@ export interface Member {
     _dame_sexe?: string;
     _dame_license_type?: string;
     _dame_license_number?: string;
+    // Echecs
+    _dame_fide_id?: string;
+    _dame_elo_standard?: string | number;
+    _dame_elo_rapide?: string | number;
+    _dame_elo_blitz?: string | number;
     // Adresse
     _dame_address_1?: string;
     _dame_address_2?: string;

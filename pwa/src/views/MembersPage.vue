@@ -51,6 +51,9 @@
             <ion-label>
               <h2 v-html="member.title.rendered"></h2>
             </ion-label>
+            <ion-badge v-if="member.dame_age_category" slot="end" color="light">
+              {{ member.dame_age_category }}
+            </ion-badge>
           </ion-item>
         </ion-list>
 
