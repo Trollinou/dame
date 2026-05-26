@@ -317,7 +317,7 @@ const requestHint = () => {
   if (boardApi.getTurnColor() === playerColor) {
     const fen = boardApi.getFen();
     hintEngine.postMessage(`position fen ${fen}`);
-    hintEngine.postMessage('go movetime 1500');
+    hintEngine.postMessage('go movetime 2000');
   }
 };
 
@@ -473,7 +473,7 @@ const handleMove = (moveInfo?: any) => {
   if (boardApi.getTurnColor() === computerColor) {
     const fen = boardApi.getFen();
     engine.postMessage(`position fen ${fen}`);
-    engine.postMessage('go movetime 1000');
+    engine.postMessage('go movetime 2000');
   } else {
     // Si c'est au tour du joueur, on demande une aide si activée
     if (isHintEnabled.value) {
@@ -520,7 +520,7 @@ const startNewGame = () => {
     engine.postMessage('isready');
     if (finalColor === 'black') {
       engine.postMessage('position startpos');
-      engine.postMessage('go movetime 1000');
+      engine.postMessage('go movetime 2000');
     }
   }
 };

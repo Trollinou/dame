@@ -77,11 +77,11 @@
             
             <ion-card-header>
               <ion-card-subtitle>{{ formatDate(post.date) }}</ion-card-subtitle>
-              <ion-card-title v-html="post.title.rendered"></ion-card-title>
+              <ion-card-title v-safe-html="post.title.rendered"></ion-card-title>
             </ion-card-header>
 
             <ion-card-content>
-              <div v-html="post.excerpt.rendered"></div>
+              <div v-safe-html="post.excerpt.rendered"></div>
             </ion-card-content>
           </ion-card>
 
@@ -130,7 +130,7 @@ import {
   InfiniteScrollCustomEvent,
   onIonViewWillEnter
 } from '@ionic/vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 interface WPPost {

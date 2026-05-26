@@ -5,7 +5,8 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/news"></ion-back-button>
         </ion-buttons>
-        <ion-title v-if="post" v-html="post.title.rendered"></ion-title>
+        <ion-title v-if="post" v-safe-html="post.title.rendered"></ion-title>
+        <ion-title v-else>Actualité</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -17,14 +18,18 @@
       <!-- Wrapper respectant la Dynamic Island sans ajouter de marges excessives -->
       <div v-else-if="post" class="safe-area-wrapper">
         <img v-if="featuredImage" :src="featuredImage" class="detail-image" />
-        <h1 v-html="post.title.rendered"></h1>
+        <h1 v-safe-html="post.title.rendered"></h1>
         <p class="date">{{ formatDate(post.date) }}</p>
         
         <div 
           class="content" 
-          v-html="processedContent.cleanHtml" 
+          v-safe-html="processedContent.cleanHtml" 
           @click="handleInternalLinks"
         ></div>
+      </div>
+
+      <div v-else class="ion-text-center ion-padding">
+        <p>Actualité introuvable.</p>
       </div>
     </ion-content>
   </ion-page>

@@ -30,7 +30,7 @@
             
             <ion-item v-for="benevolat in openBenevolats" :key="benevolat.id" button>
               <ion-label @click="viewBenevolat(benevolat)">
-                <h2 v-html="benevolat.title.rendered"></h2>
+                <h2 v-safe-html="benevolat.title.rendered"></h2>
                 <p>{{ formatBenevolatDates(benevolat) }}</p>
               </ion-label>
               <div slot="end" style="display: flex; align-items: center; gap: 8px;">
@@ -59,7 +59,7 @@
             
             <ion-item v-for="benevolat in finishedBenevolats" :key="benevolat.id" button class="finished-item">
               <ion-label @click="viewBenevolat(benevolat)">
-                <h2 v-html="benevolat.title.rendered"></h2>
+                <h2 v-safe-html="benevolat.title.rendered"></h2>
                 <p>{{ formatBenevolatDates(benevolat) }}</p>
               </ion-label>
               <div slot="end" style="display: flex; align-items: center; gap: 8px;">

@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.5.5] - 2026-05-26
+
+### Plugin WordPress (Backend)
+- **Sécurité (Inscription) :** [security fix] Correction d'une faille critique permettant de contourner la vérification d'e-mail. Les nouveaux inscrits reçoivent désormais le rôle `subscriber` par défaut et sont promus au rôle `membre` uniquement après validation du jeton envoyé par e-mail.
+- **Logique Métier (Catégories) :** Correction de l'oubli du suffixe "F" pour les catégories d'âge adultes (SéniorF, Sénior+F, VétéranF) pour les membres de sexe féminin. Mise à jour automatique des filtres admin et de l'API REST associée.
+- **API REST (Données) :** Nouvel endpoint `department-region-mapping` permettant de récupérer la relation complète entre départements et régions pour optimiser les filtres dynamiques côté client.
+
+### Application Mobile (PWA)
+- **Tri des Adhérents :** Nouveau sélecteur de tri par Nom (A-Z/Z-A) et par Catégorie d'âge (respectant l'ordre sportif U8 -> Vétéran) sur la page des adhérents.
+- **Filtrage des Contacts :** Ajout de filtres par Région et par Département sur la page des contacts.
+- **Données de Référence :** Intégration d'un nouveau store `referenceData` pour récupérer dynamiquement les régions, départements et leur mapping depuis WordPress.
+- **Mapping Intelligent :** Filtrage dynamique de la liste des départements en fonction de la région sélectionnée et vice-versa.
+- **Interface des Filtres :** Passage des sélecteurs (Saison, Tri, Région, etc.) en mode `action-sheet` pour une meilleure lisibilité sur mobile des intitulés longs.
+- **Uniformisation UI :** Utilisation d'une grille Ionic (`ion-grid`) pour aligner tous les filtres sur une seule ligne dans le header, optimisant l'espace vertical.
+- **Sécurité (XSS) :** Migration massive de `v-html` vers une nouvelle directive personnalisée `v-safe-html` utilisant `DOMPurify` pour prévenir l'injection de scripts malveillants tout en préservant les composants Ionic autorisés.
+- **Sécurité (Accès) :** Renforcement du contrôle d'accès sur les routes administratives via le router Vue (`requiresAdmin`), empêchant les utilisateurs non autorisés d'accéder aux données sensibles.
+- **Optimisation de Rendu :** Amélioration de la directive `v-safe-html` avec une détection de changement de valeur, supprimant les recalculs et manipulations du DOM inutiles.
+
 ## [4.5.4] - 2026-05-25
 
 ### Plugin WordPress (Backend)

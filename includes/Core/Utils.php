@@ -185,14 +185,14 @@ class Utils {
 		} elseif ( $age <= 19 ) {
 			$category = 'U20';
 		} elseif ( $age <= 49 ) {
-			return 'Sénior';
+			$category = 'Sénior';
 		} elseif ( $age <= 64 ) {
-			return 'Sénior+';
+			$category = 'Sénior+';
 		} else {
-			return 'Vétéran';
+			$category = 'Vétéran';
 		}
 
-		// Append 'F' for female gender in youth categories.
+		// Append 'F' for female gender.
 		if ( 'Féminin' === $gender ) {
 			$category .= 'F';
 		}
@@ -220,23 +220,26 @@ class Utils {
 	 */
 	public static function get_all_age_categories() {
 		return array(
-			'u8'          => 'U8',
-			'u8f'         => 'U8F',
-			'u10'         => 'U10',
-			'u10f'        => 'U10F',
-			'u12'         => 'U12',
-			'u12f'        => 'U12F',
-			'u14'         => 'U14',
-			'u14f'        => 'U14F',
-			'u16'         => 'U16',
-			'u16f'        => 'U16F',
-			'u18'         => 'U18',
-			'u18f'        => 'U18F',
-			'u20'         => 'U20',
-			'u20f'        => 'U20F',
-			'senior'      => 'Sénior',
-			'senior-plus' => 'Sénior+',
-			'veteran'     => 'Vétéran',
+			'u8'           => 'U8',
+			'u8f'          => 'U8F',
+			'u10'          => 'U10',
+			'u10f'         => 'U10F',
+			'u12'          => 'U12',
+			'u12f'         => 'U12F',
+			'u14'          => 'U14',
+			'u14f'         => 'U14F',
+			'u16'          => 'U16',
+			'u16f'         => 'U16F',
+			'u18'          => 'U18',
+			'u18f'         => 'U18F',
+			'u20'          => 'U20',
+			'u20f'         => 'U20F',
+			'senior'       => 'Sénior',
+			'seniorf'      => 'SéniorF',
+			'senior-plus'  => 'Sénior+',
+			'senior-plusf' => 'Sénior+F',
+			'veteran'      => 'Vétéran',
+			'veteranf'     => 'VétéranF',
 		);
 	}
 

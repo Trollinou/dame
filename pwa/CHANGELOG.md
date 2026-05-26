@@ -4,7 +4,27 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.5.4] - 2026-05-25
+## [4.5.5] - 2026-05-26
+### Ajouté
+- **Tri des Adhérents** : Nouveau sélecteur de tri par Nom (A-Z/Z-A) et par Catégorie d'âge (respectant l'ordre sportif U8 -> Vétéran) sur la page des adhérents.
+- **Filtrage des Contacts** : Ajout de filtres par Région et par Département sur la page des contacts.
+- **Données de Référence** : Intégration d'un nouveau store `referenceData` pour récupérer dynamiquement les régions, départements et leur mapping depuis WordPress.
+- **Mapping Intelligent** : Filtrage dynamique de la liste des départements en fonction de la région sélectionnée et vice-versa.
+
+### Modifié
+- **Interface des Filtres** : Passage des sélecteurs (Saison, Tri, Région, etc.) en mode `action-sheet` pour une meilleure lisibilité sur mobile des intitulés longs.
+- **Uniformisation UI** : Utilisation d'une grille Ionic (`ion-grid`) pour aligner tous les filtres sur une seule ligne dans le header, optimisant l'espace vertical.
+
+### Corrigé
+- **Sécurité (XSS)** : Migration massive de `v-html` vers une nouvelle directive personnalisée `v-safe-html` utilisant `DOMPurify` pour prévenir l'injection de scripts malveillants tout en préservant les composants Ionic autorisés.
+- **Sécurité (Accès)** : Renforcement du contrôle d'accès sur les routes administratives via le router Vue (`requiresAdmin`), empêchant les utilisateurs non autorisés d'accéder aux données sensibles.
+- **Fuite d'État** : Réinitialisation forcée du mode administration (`adminMode`) lors de la déconnexion.
+- **Composants Vue** : Correction d'un avertissement lié à l'absence d'import de `IonBadge` dans la vue des adhérents.
+
+### Optimisé
+- **Performance de Rendu** : Amélioration de la directive `v-safe-html` avec une détection de changement de valeur, supprimant les recalculs et manipulations du DOM inutiles lors des mises à jour d'état (ex: saisie recherche).
+
+## [4.5.4] - 2026-05-26
 ### Ajouté
 - **Section Licence** : Création d'une nouvelle section dédiée dans la fiche adhérent regroupant les informations sportives.
 - **Classements ELO** : Affichage stylisé des indices Standard, Rapide et Blitz sur une seule ligne via une grille de badges.
@@ -14,6 +34,10 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Modifié
 - **Organisation de la Fiche** : Extraction des données de licence de la section Identité pour alléger la lecture et clarifier le profil sportif.
+- **Uniformisation des Dates** : Migration vers l'utilisation systématique de la date locale (YYYY-MM-DD) au lieu de la date UTC (toISOString) pour les calculs de l'agenda, évitant les disparités d'affichage au passage de minuit.
+
+### Corrigé
+- **Gestion des Sessions (Agenda)** : Ajout d'une détection automatique des erreurs 401 (Unauthorized) dans le store de l'agenda. Les sessions expirées ou corrompues déclenchent désormais une déconnexion immédiate, évitant l'affichage persistant d'une liste vide pour les utilisateurs déconnectés du serveur.
 
 ## [4.5.3] - 2026-05-22
 ### Ajouté

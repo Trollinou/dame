@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/benevolat"></ion-back-button>
         </ion-buttons>
-        <ion-title v-if="benevolat" v-html="benevolat.title.rendered"></ion-title>
+        <ion-title v-if="benevolat" v-safe-html="benevolat.title.rendered"></ion-title>
         <ion-title v-else>Détails Bénévolat</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -14,7 +14,7 @@
       <ion-header collapse="condense">
         <ion-toolbar>
           <ion-title size="large">
-            <div class="multiline-large-title" v-if="benevolat" v-html="benevolat.title.rendered"></div>
+            <div class="multiline-large-title" v-if="benevolat" v-safe-html="benevolat.title.rendered"></div>
             <div class="multiline-large-title" v-else>Détails Bénévolat</div>
           </ion-title>
         </ion-toolbar>
@@ -27,7 +27,7 @@
             <ion-card-title>Description</ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            <div class="description-content" v-html="benevolat.content.rendered"></div>
+            <div class="description-content" v-safe-html="benevolat.content.rendered"></div>
           </ion-card-content>
         </ion-card>
 
@@ -48,7 +48,7 @@
                       color="primary" 
                       v-for="participant in getParticipants(dIndex, tIndex)" 
                       :key="participant.id"
-                      v-html="participant.title.rendered"
+                      v-safe-html="participant.title.rendered"
                     >
                     </ion-chip>
                   </div>

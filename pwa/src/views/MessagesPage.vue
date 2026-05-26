@@ -30,7 +30,7 @@
             @click="viewMessage(message)"
           >
             <ion-label>
-              <h2 v-html="message.title.rendered"></h2>
+              <h2 v-safe-html="message.title.rendered"></h2>
               <p>{{ formatMessageDate(message.date) }}</p>
             </ion-label>
           </ion-item>

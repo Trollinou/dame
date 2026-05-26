@@ -112,7 +112,7 @@ class Registration {
 				'user_login' => $username,
 				'user_email' => $email,
 				'user_pass'  => $password,
-				'role'       => 'membre',
+				'role'       => 'subscriber',
 			]
 		);
 
@@ -182,8 +182,9 @@ class Registration {
 			wp_die( __( 'Le jeton de vérification a expiré.', 'dame' ) );
 		}
 
-		// Passe le user_meta '_dame_is_verified' à 1 et supprime le token.
+		// Passe le user_meta '_dame_is_verified' à 1, change le rôle à 'membre' et supprime le token.
 		update_user_meta( $user->ID, '_dame_is_verified', 1 );
+		$user->set_role( 'membre' );
 		delete_user_meta( $user->ID, '_dame_verification_token' );
 		delete_user_meta( $user->ID, '_dame_verification_token_expiration' );
 
@@ -218,7 +219,7 @@ class Registration {
 	 */
 	public function block_unverified_login( $user, $password ): WP_User|WP_Error {
 		if ( $user instanceof WP_User ) {
-			// Bypass verification for roles 'Membre' or higher.
+			// Bypass verification for Members, Staff and Admins.
 			$allowed_roles = [ 'membre', 'staff', 'entraineur', 'editor', 'administrator' ];
 			$user_roles    = (array) $user->roles;
 

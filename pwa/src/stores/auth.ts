@@ -171,6 +171,7 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = '';
     user.value = null;
     selectedIdentity.value = null;
+    adminMode.value = false;
     localStorage.removeItem('dame_jwt_token');
     localStorage.removeItem('dame_user');
     localStorage.removeItem('dame_selected_identity');

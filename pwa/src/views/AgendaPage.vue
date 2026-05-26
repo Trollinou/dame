@@ -52,7 +52,7 @@
             :class="{ 'past-event': isPast(event) }"
           >
             <ion-label>
-              <h2 :class="{ 'upcoming-title': !isPast(event) }" v-html="event.title.rendered"></h2>
+              <h2 :class="{ 'upcoming-title': !isPast(event) }" v-safe-html="event.title.rendered"></h2>
               <p>{{ formatEventDate(event) }}</p>
             </ion-label>
             <ion-badge v-if="isToday(event)" color="warning" slot="end">Actuellement</ion-badge>
@@ -109,7 +109,7 @@ const agendaStore = useAgendaStore();
 const { events, isLoading, hasMoreUpcoming, hasMorePast, upcomingPage, pastPage } = storeToRefs(agendaStore);
 
 const searchQuery = ref('');
-const todayStr = new Date().toISOString().split('T')[0];
+const todayStr = agendaStore.getTodayLocal();
 const isFirstLoad = ref(true);
 
 const removeAccents = (str: string): string => {
@@ -126,7 +126,7 @@ const formatPart = (dateString: string): string => {
 };
 
 const isPast = (event: AgendaEvent): boolean => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = agendaStore.getTodayLocal();
   const referenceDate = event.meta?._dame_end_date || event.meta?._dame_start_date || '';
   return referenceDate < today;
 };

@@ -83,7 +83,7 @@
               <img :src="getFeaturedImage(post) || undefined" alt="Thumbnail" style="border-radius: 4px;" />
             </ion-thumbnail>
             <ion-label>
-              <h3 v-html="post.title.rendered" class="ion-text-wrap" style="font-weight: 600;"></h3>
+              <h3 v-safe-html="post.title.rendered" class="ion-text-wrap" style="font-weight: 600;"></h3>
               <p>{{ formatDate(post.date) }}</p>
             </ion-label>
           </ion-item>
@@ -107,7 +107,7 @@
           <ion-item v-for="event in upcomingEvents" :key="event.id" button @click="goToAgenda(event.id)">
             <ion-icon slot="start" :icon="calendarOutline" color="primary"></ion-icon>
             <ion-label>
-              <h3 v-html="event.title.rendered" class="ion-text-wrap" style="font-weight: 600;"></h3>
+              <h3 v-safe-html="event.title.rendered" class="ion-text-wrap" style="font-weight: 600;"></h3>
               <p>{{ formatEventDate(event) }}</p>
             </ion-label>
             <ion-badge v-if="isToday(event)" color="warning" slot="end">Actuellement</ion-badge>
@@ -132,7 +132,7 @@
           <ion-item v-for="benevolat in latestBenevolats" :key="benevolat.id" button @click="goToBenevolat(benevolat.id)">
             <ion-icon slot="start" :icon="handRightOutline" color="secondary"></ion-icon>
             <ion-label>
-              <h3 v-html="benevolat.title?.rendered || benevolat.title?.raw || 'Appel en cours'" class="ion-text-wrap" style="font-weight: 600;"></h3>
+              <h3 v-safe-html="benevolat.title?.rendered || benevolat.title?.raw || 'Appel en cours'" class="ion-text-wrap" style="font-weight: 600;"></h3>
               <p>{{ formatBenevolatDates(benevolat) }}</p>
             </ion-label>
             <div slot="end" style="display: flex; align-items: center; gap: 8px;">

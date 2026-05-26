@@ -13,3 +13,20 @@ ion-toolbar {
   --padding-start: var(--ion-safe-area-left, 0);
   --padding-end: var(--ion-safe-area-right, 0);
 }
+
+/* Personnalisation des popovers de filtrage */
+.custom-filter-popover {
+  --width: 280px;
+  --max-height: 400px;
+}
+
+.custom-filter-popover ion-list {
+  background: var(--ion-background-color, #fff);
+}
+
+/* Taille de police normale dans les listes de sélection */
+.custom-filter-popover ion-radio {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  font-size: 0.9rem;
+}

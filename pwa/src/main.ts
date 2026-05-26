@@ -4,6 +4,7 @@ import router from './router';
 
 import { IonicVue } from '@ionic/vue';
 import { createPinia } from 'pinia';
+import { vSafeHtml } from './directives/safeHtml';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -40,6 +41,8 @@ const app = createApp(App)
   .use(IonicVue)
   .use(pinia)
   .use(router);
+
+app.directive('safe-html', vSafeHtml);
 
 router.isReady().then(() => {
   app.mount('#app');

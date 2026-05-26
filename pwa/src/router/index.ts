@@ -78,7 +78,7 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'admin/benevolat/:id',
         name: 'BenevolatDetail',
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, requiresAdmin: true },
         component: () => import('@/views/BenevolatDetailPage.vue')
       },
       {
@@ -103,40 +103,40 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'admin/dashboard',
         component: () => import('../views/HomePage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresAdmin: true }
       },
       {
         path: 'admin/members',
         component: MembersPage,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresAdmin: true }
       },
       {
         path: 'admin/members/:id',
         name: 'MemberDetail',
         component: () => import('@/views/MemberDetailPage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresAdmin: true }
       },
       {
         path: 'admin/contact',
         component: ContactsPage,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresAdmin: true }
       },
       {
         path: 'admin/contact/:id',
         name: 'ContactDetail',
         component: () => import('@/views/ContactDetailPage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresAdmin: true }
       },
       {
         path: 'admin/message',
         component: MessagesPage,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresAdmin: true }
       },
       {
         path: 'admin/message/:id',
         name: 'MessageDetail',
         component: () => import('@/views/MessageDetailPage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresAdmin: true }
       },
     ]
   }
@@ -150,12 +150,23 @@ const router = createRouter({
 // Navigation Guard (Vue Router 4 style)
 router.beforeEach((to) => {
   const authStore = useAuthStore();
+
+  // 1. Vérification de l'authentification de base
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return { 
       path: '/tabs/login', 
       query: { message: 'Vous devez être connecté pour accéder à cette page.' } 
     };
   }
+
+  // 2. Vérification des droits d'administration
+  if (to.meta.requiresAdmin && !authStore.isAdmin) {
+    return { 
+      path: '/tabs/home', 
+      query: { message: 'Accès refusé : Droits insuffisants.' } 
+    };
+  }
+
   return true;
 });
 

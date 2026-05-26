@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/agenda"></ion-back-button>
         </ion-buttons>
-        <ion-title v-if="event" v-html="event.title.rendered"></ion-title>
+        <ion-title v-if="event" v-safe-html="event.title.rendered"></ion-title>
         <ion-title v-else>Détails Événement</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -20,7 +20,7 @@
         <ion-header collapse="condense">
           <ion-toolbar>
             <ion-title size="large">
-              <div class="multiline-large-title" v-if="event" v-html="event.title.rendered"></div>
+              <div class="multiline-large-title" v-if="event" v-safe-html="event.title.rendered"></div>
               <div class="multiline-large-title" v-else>Détails Événement</div>
             </ion-title>
           </ion-toolbar>
@@ -101,7 +101,7 @@
           <ion-card-content>
             <div 
               class="description-content" 
-              v-html="processedDescription.cleanHtml"
+              v-safe-html="processedDescription.cleanHtml"
               @click="handleInternalLinks"
             ></div>
           </ion-card-content>

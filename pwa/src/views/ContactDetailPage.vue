@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/admin/contact"></ion-back-button>
         </ion-buttons>
-        <ion-title v-if="contact" v-html="contact.title.rendered"></ion-title>
+        <ion-title v-if="contact" v-safe-html="contact.title.rendered"></ion-title>
         <ion-title v-else>Détails Contact</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -15,7 +15,7 @@
         <ion-header collapse="condense">
           <ion-toolbar>
             <ion-title size="large">
-              <div class="multiline-large-title" v-if="contact" v-html="contact.title.rendered"></div>
+              <div class="multiline-large-title" v-if="contact" v-safe-html="contact.title.rendered"></div>
               <div class="multiline-large-title" v-else>Détails Contact</div>
             </ion-title>
           </ion-toolbar>

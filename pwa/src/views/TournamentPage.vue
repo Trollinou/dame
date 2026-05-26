@@ -38,7 +38,7 @@
                 <ion-icon :icon="trophyOutline" color="primary"></ion-icon>
               </div>
               <ion-card-subtitle>Compétition</ion-card-subtitle>
-              <ion-card-title v-html="item.title"></ion-card-title>
+              <ion-card-title v-safe-html="item.title"></ion-card-title>
             </ion-card-header>
 
             <ion-card-content>

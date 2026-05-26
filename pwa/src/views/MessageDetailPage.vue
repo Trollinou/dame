@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/message"></ion-back-button>
         </ion-buttons>
-        <ion-title v-if="message" v-html="message.title.rendered"></ion-title>
+        <ion-title v-if="message" v-safe-html="message.title.rendered"></ion-title>
         <ion-title v-else>Détails Message</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -27,7 +27,7 @@
         <ion-header collapse="condense">
           <ion-toolbar>
             <ion-title size="large">
-              <div class="multiline-large-title" v-if="message" v-html="message.title.rendered"></div>
+              <div class="multiline-large-title" v-if="message" v-safe-html="message.title.rendered"></div>
               <div class="multiline-large-title" v-else>Détails Message</div>
             </ion-title>
           </ion-toolbar>
@@ -38,7 +38,7 @@
           <div v-if="currentTab === 'message'">
             <ion-card class="ion-no-margin">
               <ion-card-content>
-                <div class="description-content" v-html="message.content.rendered"></div>
+                <div class="description-content" v-safe-html="message.content.rendered"></div>
               </ion-card-content>
             </ion-card>
           </div>

@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/admin/members"></ion-back-button>
         </ion-buttons>
-        <ion-title v-if="member" v-html="member.title.rendered"></ion-title>
+        <ion-title v-if="member" v-safe-html="member.title.rendered"></ion-title>
         <ion-title v-else>Détails Adhérent</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -15,7 +15,7 @@
         <ion-header collapse="condense">
           <ion-toolbar>
             <ion-title size="large">
-              <div class="multiline-large-title" v-if="member" v-html="member.title.rendered"></div>
+              <div class="multiline-large-title" v-if="member" v-safe-html="member.title.rendered"></div>
               <div class="multiline-large-title" v-else>Détails Adhérent</div>
             </ion-title>
           </ion-toolbar>

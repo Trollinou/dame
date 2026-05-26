@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/benevolat"></ion-back-button>
         </ion-buttons>
-        <ion-title v-if="benevolat" v-html="benevolat.title.rendered"></ion-title>
+        <ion-title v-if="benevolat" v-safe-html="benevolat.title.rendered"></ion-title>
         <ion-title v-else>Participation</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -14,8 +14,8 @@
       <div v-if="benevolat" class="safe-area-wrapper">
         <!-- Titre et Description -->
         <div class="header-section">
-          <h1 v-html="benevolat.title.rendered"></h1>
-          <div v-if="benevolat.content?.rendered" class="description-content" v-html="benevolat.content.rendered"></div>
+          <h1 v-safe-html="benevolat.title.rendered"></h1>
+          <div v-if="benevolat.content?.rendered" class="description-content" v-safe-html="benevolat.content.rendered"></div>
         </div>
 
         <ion-list-header class="ion-no-padding">

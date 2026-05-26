@@ -68,6 +68,12 @@ export const useAgendaStore = defineStore('agenda', () => {
       const response = await fetch(`${baseUrl}?${queryParams}`, { method: 'GET', headers });
 
       if (!response.ok) {
+        // Gestion de la session expirée
+        if (response.status === 401) {
+          useAuthStore().logout();
+          return [];
+        }
+
         // WordPress renvoie 400 quand on demande une page qui n'existe plus (fin de liste)
         if (response.status === 400) {
           if (direction === 'upcoming') hasMoreUpcoming.value = false;
@@ -103,12 +109,20 @@ export const useAgendaStore = defineStore('agenda', () => {
   };
 
   /**
+   * Récupère la date du jour au format YYYY-MM-DD (Locale)
+   */
+  const getTodayLocal = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
+
+  /**
    * Rafraîchit les données de base (utilisé par Home et Pull-to-refresh)
    */
   const fetchAgenda = async () => {
     isLoading.value = true;
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getTodayLocal();
       const data = await fetchBatch('upcoming', today, 1);
       
       // --- LOGIQUE DE FUSION INTELLIGENTE ---
@@ -147,6 +161,7 @@ export const useAgendaStore = defineStore('agenda', () => {
     hasMorePast,
     upcomingPage,
     pastPage,
+    getTodayLocal,
     fetchBatch,
     fetchAgenda,
     clearData

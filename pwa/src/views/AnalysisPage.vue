@@ -59,13 +59,13 @@
                     <span 
                       :class="['move-san', { 'active-move': move.white.ply === currentPly }]"
                       @click="viewPly(move.white.ply)"
-                      v-html="formatSan(move.white.san)"
+                      v-safe-html="formatSan(move.white.san)"
                     ></span>
                     <span 
                       v-if="move.black"
                       :class="['move-san', { 'active-move': move.black.ply === currentPly }]"
                       @click="viewPly(move.black.ply)"
-                      v-html="formatSan(move.black.san)"
+                      v-safe-html="formatSan(move.black.san)"
                     ></span>
                     <span v-else class="move-san empty"></span>
                   </div>

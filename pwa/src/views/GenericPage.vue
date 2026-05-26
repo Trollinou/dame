@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/tournoi"></ion-back-button>
         </ion-buttons>
-        <ion-title v-if="page" v-html="page.title.rendered"></ion-title>
+        <ion-title v-if="page" v-safe-html="page.title.rendered"></ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -16,12 +16,12 @@
 
       <!-- Wrapper respectant la Dynamic Island sans ajouter de marges excessives -->
       <div v-else-if="page" class="safe-area-wrapper">
-        <h1 v-html="page.title.rendered"></h1>
-        
+        <h1 v-safe-html="page.title.rendered"></h1>
+
         <!-- Contenu de la page avec boutons injectés et interception des liens -->
         <div 
           class="content" 
-          v-html="processedContent.cleanHtml" 
+          v-safe-html="processedContent.cleanHtml" 
           @click="handleInternalLinks"
         ></div>
       </div>
