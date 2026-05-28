@@ -6,6 +6,7 @@ import { useAuthStore } from './auth';
 export interface Message {
   id: number;
   date: string;
+  modified: string;
   title: {
     rendered: string;
     raw: string;
@@ -100,4 +101,6 @@ export const useMessageStore = defineStore('messages', () => {
     fetchMessages,
     clearData
   };
+}, {
+  persist: true
 });

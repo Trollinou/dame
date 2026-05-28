@@ -181,14 +181,16 @@ import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 import { useAgendaStore, type AgendaEvent } from '@/stores/agenda';
 import { useBenevolatStore } from '@/stores/benevolat';
+import { useNewsStore } from '@/stores/news';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const agendaStore = useAgendaStore();
 const benevolatStore = useBenevolatStore();
+const newsStore = useNewsStore();
 
-const latestPosts = ref<any[]>([]);
-const isLoadingNews = ref(false);
+const latestPosts = computed(() => newsStore.posts.slice(0, 3));
+const isLoadingNews = computed(() => newsStore.isLoading);
 
 /**
  * Calcul de la date locale au format YYYY-MM-DD
@@ -259,20 +261,14 @@ const handleLogout = async () => {
 };
 
 /**
- * Récupère les 3 dernières actualités
+ * Récupère les 3 dernières actualités (via le store)
  */
 const fetchLatestNews = async () => {
-  isLoadingNews.value = true;
   try {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL;
-    const response = await fetch(`${apiUrl}/wp/v2/posts?_embed&per_page=3`);
-    if (response.ok) {
-      latestPosts.value = await response.json();
-    }
+    await newsStore.fetchPosts();
   } catch (err) {
-    console.error("Erreur news dashboard:", err);
-  } finally {
-    isLoadingNews.value = false;
+    // L'erreur est déjà logguée par le store, on ignore ici pour garder le cache à l'écran
+    console.warn("Échec refresh news home (serveur coupé ?), utilisation du cache.");
   }
 };
 

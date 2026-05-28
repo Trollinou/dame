@@ -1,6 +1,6 @@
 {
   "name": "dame",
-  "version": "4.5.5",
+  "version": "4.5.6",
   "description": "Dossier Administratif des Membres Échiquéens",
   "scripts": {
     "build:css": "sass src/scss/:assets/css/ --style=compressed --no-source-map",

@@ -2,9 +2,11 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import router from '../router';
 import { useAuthStore } from './auth';
+import { safeFetch } from '@/utils/safeFetch';
 
 export interface Benevolat {
   id: number;
+  modified: string;
   title: {
     rendered: string;
     raw?: string;
@@ -17,6 +19,7 @@ export interface Benevolat {
 
 export interface BenevolatReponse {
   id: number;
+  modified: string;
   title: {
     rendered: string;
     raw?: string;
@@ -88,6 +91,9 @@ export const useBenevolatStore = defineStore('benevolat', () => {
       return;
     }
 
+    // Protection proactive contre les erreurs réseau console
+    if (!navigator.onLine && benevolats.value.length > 0) return;
+
     isFetching = true;
     if (benevolats.value.length === 0) {
       isLoading.value = true;
@@ -96,13 +102,17 @@ export const useBenevolatStore = defineStore('benevolat', () => {
     try {
       const token = localStorage.getItem('dame_jwt_token');
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
+      
+      // Si on est hors ligne, on ne tente même pas le fetch
+      if (!navigator.onLine) throw new Error("Offline");
+
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
       // Routes Standard WordPress pour la liste avec interdiction de cache navigateur
       const [benevolatsRes, reponsesRes] = await Promise.all([
-        fetch(`${apiUrl}/wp/v2/benevolats?context=view&per_page=100`, { headers, cache: 'no-store' }),
-        fetch(`${apiUrl}/wp/v2/benevolat-reponses?context=view&per_page=100`, { headers, cache: 'no-store' })
+        safeFetch(`${apiUrl}/wp/v2/benevolats?context=view&per_page=100`, { headers, cache: 'no-store' }, 4000),
+        safeFetch(`${apiUrl}/wp/v2/benevolat-reponses?context=view&per_page=100`, { headers, cache: 'no-store' }, 4000)
       ]);
 
       if (benevolatsRes.status === 401 && token) {
@@ -110,7 +120,12 @@ export const useBenevolatStore = defineStore('benevolat', () => {
         return;
       }
 
-      if (!benevolatsRes.ok) throw new Error("Erreur chargement bénévolats");
+      if (!benevolatsRes.ok) {
+        if (benevolatsRes.status >= 500) {
+          console.warn("Serveur Bénévolat indisponible (500+)");
+        }
+        throw new Error("Erreur chargement bénévolats");
+      }
 
       benevolats.value = await benevolatsRes.json();
       
@@ -120,7 +135,9 @@ export const useBenevolatStore = defineStore('benevolat', () => {
 
       lastFetch.value = Date.now();
     } catch (error: any) {
-      console.error("Erreur fetchBenevolatsData:", error);
+      if (error.message !== "Offline") {
+        console.error("Erreur fetchBenevolatsData:", error);
+      }
     } finally {
       isLoading.value = false;
       isFetching = false;
@@ -146,4 +163,6 @@ export const useBenevolatStore = defineStore('benevolat', () => {
     fetchBenevolatsData,
     clearData
   };
+}, {
+  persist: true
 });

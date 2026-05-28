@@ -10,6 +10,8 @@ import { useDashboardStore } from './dashboard';
 import { useMemberStore } from './members';
 import { useMessageStore } from './messages';
 import { useBenevolatStore } from './benevolat';
+import { useTournamentStore } from './tournament';
+import { useNewsStore } from './news';
 
 export interface Identity {
   id: string;
@@ -181,6 +183,8 @@ export const useAuthStore = defineStore('auth', () => {
     useMemberStore().clearData();
     useMessageStore().clearData();
     useBenevolatStore().clearData();
+    useTournamentStore().clearData();
+    useNewsStore().clearData();
     router.push('/tabs/home');
   };
 
@@ -189,4 +193,6 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated, isAdmin, isLoading,
     login, logout, selectIdentity, checkIdentities
   };
+}, {
+  persist: true
 });

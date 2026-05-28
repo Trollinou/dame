@@ -26,8 +26,13 @@
         ></div>
       </div>
 
-      <div v-else class="ion-text-center ion-padding">
-        <p>Page introuvable.</p>
+      <div v-else class="ion-text-center ion-padding offline-container">
+        <div v-if="error">
+          <ion-icon :icon="cloudOfflineOutline" size="large" color="medium"></ion-icon>
+          <p class="ion-margin-top">{{ error }}</p>
+          <ion-button fill="solid" class="ion-margin-top" @click="fetchPage">Réessayer</ion-button>
+        </div>
+        <p v-else>Page introuvable.</p>
       </div>
     </ion-content>
   </ion-page>
@@ -43,15 +48,20 @@ import {
   IonButtons,
   IonBackButton,
   IonSpinner,
-  IonButton
+  IonButton,
+  IonIcon
 } from '@ionic/vue';
+import { cloudOfflineOutline } from 'ionicons/icons';
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useInternalLinks } from '@/composables/useInternalLinks';
+import { useTournamentStore } from '@/stores/tournament';
 
 const route = useRoute();
+const tournamentStore = useTournamentStore();
 const page = ref<any>(null);
 const isLoading = ref(true);
+const error = ref<string | null>(null);
 const { handleInternalLinks } = useInternalLinks();
 
 /**
@@ -74,10 +84,26 @@ const processedContent = computed(() => {
 const fetchPage = async () => {
   isLoading.value = true;
   page.value = null;
+  error.value = null;
   
   const idOrSlug = route.params.id;
   const isId = /^\d+$/.test(idOrSlug as string);
   
+  // Si c'est un ID numérique, on peut tenter d'utiliser le TournamentStore
+  if (isId) {
+    const pageId = Number(idOrSlug);
+    
+    // On tente de récupérer via le store (qui gère le cache persistant)
+    const result = await tournamentStore.fetchPage(pageId);
+    if (result) {
+      page.value = result;
+      isLoading.value = false;
+      // Si on est hors ligne, on s'arrête là car on a affiché le cache
+      if (!navigator.onLine) return;
+    }
+  }
+
+  // Si on n'a rien trouvé dans le store ou si on veut tenter un refresh
   try {
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
     let url = `${apiUrl}/wp/v2/pages/`;
@@ -92,9 +118,21 @@ const fetchPage = async () => {
     if (response.ok) {
       const data = await response.json();
       page.value = isId ? data : data[0];
+      if (!page.value) {
+        error.value = "Page introuvable.";
+      }
+    } else if (!page.value) {
+      error.value = "Impossible de charger la page.";
     }
   } catch (err) {
     console.error(err);
+    if (!page.value) {
+      if (!navigator.onLine) {
+        error.value = "Vous êtes hors-ligne. Cette page nécessite une connexion internet pour être affichée.";
+      } else {
+        error.value = "Une erreur réseau est survenue.";
+      }
+    }
   } finally {
     isLoading.value = false;
   }
@@ -117,6 +155,13 @@ onMounted(fetchPage);
 }
 
 h1 { font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; }
+.offline-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 50px;
+}
 .content :deep(img) { max-width: 100%; height: auto; }
 .content :deep(table) { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
 .content :deep(th), .content :deep(td) { border: 1px solid var(--ion-color-light); padding: 8px; text-align: left; }

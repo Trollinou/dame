@@ -4,6 +4,7 @@ import router from './router';
 
 import { IonicVue } from '@ionic/vue';
 import { createPinia } from 'pinia';
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { vSafeHtml } from './directives/safeHtml';
 
 /* Core CSS required for Ionic components to work properly */
@@ -35,8 +36,10 @@ import '@ionic/vue/css/palettes/dark.system.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import { registerSW } from 'virtual:pwa-register';
 
 const pinia = createPinia();
+pinia.use(piniaPluginPersistedstate);
 const app = createApp(App)
   .use(IonicVue)
   .use(pinia)
@@ -46,4 +49,6 @@ app.directive('safe-html', vSafeHtml);
 
 router.isReady().then(() => {
   app.mount('#app');
+  // Enregistrement du Service Worker pour le support hors-ligne
+  registerSW({ immediate: true });
 });

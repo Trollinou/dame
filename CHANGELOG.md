@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.5.6] - 2026-05-27
+
+### Plugin WordPress (Backend)
+- **Version Bump :** Passage du plugin en version 4.5.6 pour s'aligner sur les évolutions majeures de l'application mobile.
+
+### Application Mobile (PWA)
+- **Progressive Web App (PWA) :** Implémentation complète via `vite-plugin-pwa` permettant l'installation sur l'écran d'accueil et la mise en cache de l'interface et du moteur de jeu.
+- **Mode Hors-Ligne (Jeu) :** L'espace de jeu et l'analyse fonctionnent désormais à 100% hors connexion grâce au moteur Stockfish WASM local.
+- **Persistance des Données :** Intégration de `pinia-plugin-persistedstate` pour sauvegarder localement les sessions, le contenu de l'agenda, les contacts et l'état des parties en cours.
+- **Espace de Jeu (Échecs) :** Nouveau layout responsive optimisé pour iPad et iPhone (mode paysage) avec panneau latéral d'action et mini-interface.
+- **Suivi de Performance :** Les compteurs d'aide ("Aide") et d'annulation ("Oups !") sont sauvegardés en temps réel.
+- **Cache de Page Intelligent :** Téléchargement proactif du contenu HTML des tournois pour garantir une disponibilité "zéro délai" hors-ligne.
+- **Sécurité et Stabilité :** Utilitaire `safeFetch` avec timeout, blocage des appels réseau en mode déconnecté et correction des bugs de rotation d'écran sur l'échiquier.
+
 ## [4.5.5] - 2026-05-26
 
 ### Plugin WordPress (Backend)

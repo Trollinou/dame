@@ -13,7 +13,7 @@
       <div class="game-layout safe-area-wrapper ion-padding-horizontal">
         
         <!-- Nouvelle Barre d'Information (Haut) -->
-        <div class="game-info-bar ion-margin-top" v-if="engineLoaded">
+        <div class="game-info-bar" v-if="engineLoaded">
           <div class="matchup-info">
             {{ authStore.selectedIdentity?.firstname || 'Adhérent' }} vs Stockfish ({{ gameSettings.level }} ELO)
           </div>
@@ -22,88 +22,95 @@
           </div>
         </div>
 
-        <div class="board-container" :class="{ 'ion-margin-top': !engineLoaded }">
-          
-          <!-- Bande supérieure (Adversaire) -->
-          <div class="captured-bar top">
-            <div class="player-info">Adversaire</div>
-            <div class="captured-pieces">
-              <span v-for="(p, i) in capturedByOpponent" :key="i" class="captured-piece">
-                {{ pieceToSymbol(p) }}
-              </span>
-            </div>
-            <div class="material-wrapper">
-              <div v-if="materialDiffDisplay.opponent" class="material-count">
-                +{{ materialDiffDisplay.opponent }}
+        <div class="main-container" :class="{ 'landscape-mode': isLandscape }">
+          <div class="board-section">
+            <div class="board-container">
+              
+              <!-- Bande supérieure (Adversaire) -->
+              <div class="captured-bar top">
+                <div class="player-info">Adversaire</div>
+                <div class="captured-pieces">
+                  <span v-for="(p, i) in capturedByOpponent" :key="i" class="captured-piece">
+                    {{ pieceToSymbol(p) }}
+                  </span>
+                </div>
+                <div class="material-wrapper">
+                  <div v-if="materialDiffDisplay.opponent" class="material-count">
+                    +{{ materialDiffDisplay.opponent }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Échiquier -->
+              <TheChessboard 
+                v-if="engineLoaded"
+                :key="`board-${isLandscape ? 'l' : 'p'}-${renderKey}`"
+                :board-config="boardConfig" 
+                @board-created="handleBoardCreated" 
+                @move="handleMove"
+                @check="handleCheck"
+                @checkmate="handleCheckmate"
+                @stalemate="handleStalemate"
+                @draw="handleDraw"
+              />
+
+              <!-- Bande inférieure (Joueur) -->
+              <div class="captured-bar bottom">
+                <div class="player-info">Toi</div>
+                <div class="captured-pieces">
+                  <span v-for="(p, i) in capturedByPlayer" :key="i" class="captured-piece">
+                    {{ pieceToSymbol(p) }}
+                  </span>
+                </div>
+                <div v-if="materialDiffDisplay.player" class="material-count">
+                  +{{ materialDiffDisplay.player }}
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Échiquier -->
-          <TheChessboard 
-            v-if="engineLoaded"
-            :board-config="boardConfig" 
-            @board-created="handleBoardCreated" 
-            @move="handleMove"
-            @check="handleCheck"
-            @checkmate="handleCheckmate"
-            @stalemate="handleStalemate"
-            @draw="handleDraw"
-          />
-
-          <!-- Bande inférieure (Joueur) -->
-          <div class="captured-bar bottom">
-            <div class="player-info">Toi</div>
-            <div class="captured-pieces">
-              <span v-for="(p, i) in capturedByPlayer" :key="i" class="captured-piece">
-                {{ pieceToSymbol(p) }}
-              </span>
+          <div class="side-section" v-if="engineLoaded">
+            <!-- Zone de messages fixe -->
+            <div class="message-zone ion-text-center">
+              <div v-if="gameStatus.message" :class="['status-banner', gameStatus.color]">
+                {{ gameStatus.message }}
+              </div>
+              <div v-else class="status-placeholder">
+                C'est au tour des {{ boardApi?.getTurnColor() === 'white' ? 'Blancs' : 'Noirs' }}
+              </div>
             </div>
-            <div v-if="materialDiffDisplay.player" class="material-count">
-              +{{ materialDiffDisplay.player }}
+            
+            <div class="actions-container">
+              <ion-grid class="ion-no-padding">
+                <ion-row>
+                  <ion-col :size="isLandscape ? '12' : '3'" class="ion-margin-bottom">
+                    <ion-button expand="block" @click="resetGame" color="secondary" style="font-size: 0.7rem; --padding-start: 2px; --padding-end: 2px;">
+                      Nouv.
+                    </ion-button>
+                  </ion-col>
+                  <ion-col :size="isLandscape ? '12' : '3'" class="ion-margin-bottom">
+                    <ion-button expand="block" @click="toggleHint" :color="isHintEnabled ? 'success' : 'medium'" style="font-size: 0.7rem; --padding-start: 2px; --padding-end: 2px;">
+                      {{ helpCount > 0 ? `Aide : ${helpCount}` : 'Aide' }}
+                    </ion-button>
+                  </ion-col>
+                  <ion-col :size="isLandscape ? '12' : '3'" class="ion-margin-bottom">
+                    <ion-button expand="block" @click="undoMove" color="warning" style="font-size: 0.7rem; --padding-start: 2px; --padding-end: 2px;">
+                      {{ oupsCount > 0 ? `Oups : ${oupsCount}` : 'Oups !' }}
+                    </ion-button>
+                  </ion-col>
+                  <ion-col :size="isLandscape ? '12' : '3'" class="ion-margin-bottom">
+                    <ion-button expand="block" @click="goToAnalysis" color="tertiary" style="font-size: 0.7rem; --padding-start: 2px; --padding-end: 2px;">
+                      Analyse
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
             </div>
           </div>
           
-          <!-- Zone de messages fixe -->
-          <div class="message-zone ion-text-center" v-if="engineLoaded">
-            <div v-if="gameStatus.message" :class="['status-banner', gameStatus.color]">
-              {{ gameStatus.message }}
-            </div>
-            <div v-else class="status-placeholder">
-              C'est au tour des {{ boardApi?.getTurnColor() === 'white' ? 'Blancs' : 'Noirs' }}
-            </div>
-          </div>
-          
-          <div v-if="!engineLoaded" class="ion-text-center ion-padding">
+          <div v-if="!engineLoaded" class="ion-text-center ion-padding board-section">
             <ion-spinner name="crescent"></ion-spinner>
             <p>Initialisation de l'IA...</p>
-          </div>
-          
-          <div class="actions-container" v-if="engineLoaded">
-            <ion-grid class="ion-no-padding">
-              <ion-row>
-                <ion-col size="3" class="ion-padding-end">
-                  <ion-button expand="block" @click="resetGame" color="secondary" style="font-size: 0.7rem; --padding-start: 2px; --padding-end: 2px;">
-                    Nouv.
-                  </ion-button>
-                </ion-col>
-                <ion-col size="3" class="ion-padding-end">
-                  <ion-button expand="block" @click="toggleHint" :color="isHintEnabled ? 'success' : 'medium'" style="font-size: 0.7rem; --padding-start: 2px; --padding-end: 2px;">
-                    {{ helpCount > 0 ? `Aide : ${helpCount}` : 'Aide' }}
-                  </ion-button>
-                </ion-col>
-                <ion-col size="3" class="ion-padding-end">
-                  <ion-button expand="block" @click="undoMove" color="warning" style="font-size: 0.7rem; --padding-start: 2px; --padding-end: 2px;">
-                    {{ oupsCount > 0 ? `Oups : ${oupsCount}` : 'Oups !' }}
-                  </ion-button>
-                </ion-col>
-                <ion-col size="3">
-                  <ion-button expand="block" @click="goToAnalysis" color="tertiary" style="font-size: 0.7rem; --padding-start: 2px; --padding-end: 2px;">
-                    Analyse
-                  </ion-button>
-                </ion-col>
-              </ion-row>
-            </ion-grid>
           </div>
         </div>
 
@@ -200,6 +207,18 @@ import { Chess } from 'chess.js';
 const authStore = useAuthStore();
 const chessStore = useChessStore();
 const router = useRouter();
+
+const isLandscape = ref(window.innerWidth > window.innerHeight);
+const renderKey = ref(0);
+let resizeTimeout: any = null;
+
+const updateOrientation = () => {
+  if (resizeTimeout) clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    isLandscape.value = window.innerWidth > window.innerHeight;
+    renderKey.value++; // Force la recréation de l'échiquier une fois le layout stabilisé
+  }, 200); // Attendre 200ms que la rotation soit finie
+};
 
 let boardApi: any = null;
 let engine: Worker | null = null;
@@ -440,6 +459,19 @@ const refreshDisplay = () => {
 
 const handleBoardCreated = (api: any) => {
   boardApi = api;
+  
+  // RECHARGEMENT DE LA PARTIE EN COURS ET DES COMPTEURS
+  if (chessStore.currentPgn) {
+    boardApi.loadPgn(chessStore.currentPgn);
+    boardConfig.orientation = chessStore.orientation;
+    gameSettings.level = chessStore.engineElo;
+    gameSettings.playerColor = chessStore.orientation;
+    
+    // Restauration des statistiques
+    helpCount.value = chessStore.helpCount || 0;
+    oupsCount.value = chessStore.oupsCount || 0;
+  }
+  
   refreshDisplay();
 };
 
@@ -447,13 +479,23 @@ const handleMove = (moveInfo?: any) => {
   if (!boardApi || !engine) return;
   refreshDisplay();
 
-  // Détection du coup suggéré (Aide)
+  // Détection du coup suggéré (Aide) avant sauvegarde pour incrémenter le compteur
   if (moveInfo && lastSuggestedMove) {
     const playedMove = moveInfo.from + moveInfo.to;
     if (playedMove === lastSuggestedMove) {
       helpCount.value++;
     }
   }
+
+  // Sauvegarde automatique avec les compteurs à jour
+  chessStore.saveGame(
+    boardApi.getPgn(),
+    boardConfig.orientation,
+    gameSettings.level,
+    helpCount.value,
+    oupsCount.value
+  );
+
   // On efface la suggestion après chaque coup
   lastSuggestedMove = '';
 
@@ -502,6 +544,9 @@ const startNewGame = () => {
   // Reset aide lors d'une nouvelle partie
   isHintEnabled.value = false;
   terminateHintEngine();
+
+  // Nettoyage de la partie précédente dans le store
+  chessStore.clearGame();
 
   let finalColor: 'white' | 'black' = 'white';
   if (gameSettings.playerColor === 'random') {
@@ -581,6 +626,15 @@ const undoMove = () => {
   }
   refreshDisplay();
 
+  // Sauvegarde après annulation (avec les compteurs d'aide et de oups)
+  chessStore.saveGame(
+    boardApi.getPgn(),
+    boardConfig.orientation,
+    gameSettings.level,
+    helpCount.value,
+    oupsCount.value
+  );
+
   // Recalcule l'aide si activée
   if (isHintEnabled.value) {
     requestHint();
@@ -588,6 +642,7 @@ const undoMove = () => {
 };
 
 onMounted(() => {
+  window.addEventListener('resize', updateOrientation);
   gameSettings.level = getInitialElo();
   try {
     engine = new Worker('stockfish/stockfish.js');
@@ -620,6 +675,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', updateOrientation);
   if (engine) engine.terminate();
   if (hintEngine) hintEngine.terminate();
 });
@@ -645,20 +701,180 @@ onIonViewWillLeave(() => {
   overflow: hidden;
 }
 
-.board-container {
-  max-width: 100%;
-  width: 500px;
+.main-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 800px;
   margin: 0 auto;
+}
+
+.main-container.landscape-mode {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  max-width: 100%;
+}
+
+.board-section {
+  display: block; /* Évite de casser les coordonnées de clics de l'échiquier */
+  width: 100%;
+}
+
+.landscape-mode .board-section {
+  flex: 0 0 auto;
+  width: auto; /* CRUCIAL: Empêche la section de prendre 100% de la largeur en paysage, ce qui poussait les boutons dehors */
+}
+
+.board-container {
+  width: 100%;
+  max-width: 500px; /* Taille par défaut pour téléphones */
+  margin: 0 auto; /* Centrage horizontal stable */
   flex-shrink: 0;
+  position: relative;
+}
+
+/* Agrandissement spécifique pour tablettes en portrait (iPad) */
+@media (min-width: 768px) and (orientation: portrait) {
+  .board-container {
+    max-width: 750px; /* Utilise mieux la largeur de l'iPad */
+  }
+  
+  .board-section {
+    padding: 20px 0;
+  }
+}
+
+/* --- CORRECTIONS FINALES DE STABILITÉ --- */
+
+/* On n'applique ces contraintes QUE en mode paysage pour préserver le mode portrait */
+.landscape-mode :deep(.main-wrap) {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.landscape-mode :deep(.main-board) {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.landscape-mode :deep(.cg-wrap) {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+}
+
+.landscape-mode .board-container {
+  /* On définit une largeur stable qui sera aussi la hauteur de l'échiquier seul */
+  width: 68vh !important; 
+  height: auto !important;
+  max-width: 100%;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.landscape-mode .board-section {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centrage vertical du bloc jeu */
+}
+
+.main-container.landscape-mode {
+  display: flex;
+  flex-direction: row;
+  align-items: center; /* Centrage vertical global */
+  justify-content: center;
+  gap: 30px; /* Écart réduit pour laisser plus de place aux boutons */
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0 !important;
+}
+
+.side-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 10;
+}
+
+.landscape-mode .side-section {
+  flex: 1; /* Permet au panneau de s'étirer ou se contracter */
+  min-width: 150px; /* Largeur minimale garantie */
+  max-width: 250px; /* Ne prend pas trop de place si l'écran est très large */
+  padding-left: 10px;
+}
+
+/* Boutons uniformes : on force la même largeur pour tous */
+.actions-container ion-col {
+  padding: 0 2px !important; /* Ajoute 5px d'espace total entre les boutons */
+}
+
+.actions-container ion-button {
+  width: 100%;
+  margin: 0;
+  --border-radius: 8px;
+}
+
+.landscape-mode .actions-container ion-col {
+  padding: 0 0 4px 0 !important; /* En paysage, espacement vertical plutôt qu'horizontal */
+}
+
+
+/* Optimisation spécifique pour les téléphones en paysage (petite hauteur) */
+@media (max-height: 500px) and (orientation: landscape) {
+  /* On cache le header Ionic pour gagner 56px de hauteur précieux */
+  ion-header {
+    display: none !important;
+  }
+
+  .game-layout {
+    padding-top: 5px !important;
+  }
+
+  .landscape-mode .board-container {
+    width: 62vh !important; /* Taille ajustée pour tenir avec les barres fines */
+  }
+  
+  .game-info-bar { 
+    padding: 2px 10px !important; 
+    margin-bottom: 2px !important; 
+    border: none !important;
+  }
+  .matchup-info { font-size: 0.7rem !important; }
+  .game-timer { font-size: 0.8rem !important; }
+  
+  .captured-bar { 
+    height: 18px !important; 
+    padding: 0 5px !important; 
+    gap: 4px !important; 
+  }
+  .player-info { font-size: 0.55rem !important; min-width: 45px !important; }
+  .captured-piece { font-size: 0.9rem !important; }
+  
+  .status-banner { font-size: 0.75rem !important; padding: 3px !important; }
+  .actions-container ion-button { height: 28px !important; font-size: 0.65rem !important; }
+  
+  .side-section { min-width: 150px !important; padding-left: 10px !important; }
+  .message-zone { margin-bottom: 8px !important; min-height: 28px !important; }
 }
 
 .game-info-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 4px;
-  margin-top: 8px; /* Espace haut de page */
-  margin-bottom: 8px;
+  padding: 4px 4px;
+  margin-bottom: 2px;
   border-bottom: 1px solid var(--ion-color-light-shade);
 }
 

@@ -5,6 +5,7 @@ import { useAuthStore } from './auth';
 
 export interface Member {
   id: number;
+  modified: string;
   dame_age_category?: string;
   title: {
     rendered: string;
@@ -169,4 +170,6 @@ export const useMemberStore = defineStore('members', () => {
     fetchSeasons,
     clearData
   };
+}, {
+  persist: true
 });

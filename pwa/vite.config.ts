@@ -1,12 +1,43 @@
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import { defineConfig } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   base: './', // Chemins relatifs pour les assets (indispensable pour WordPress)
   plugins: [
-    vue()
+    vue(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'assets/icon/*.png', 'stockfish/*'],
+      manifest: {
+        name: 'Echiquier Lédonien',
+        short_name: 'Echiquier Lédonien',
+        description: 'Echiquier Lédonien PWA',
+        theme_color: '#ffffff',
+        icons: [
+          {
+            src: 'assets/icon/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
+          {
+            src: 'assets/icon/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ]
+      },
+      workbox: {
+        // On s'assure que tous les assets nécessaires sont mis en cache
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,wasm}'],
+        // On augmente la limite de taille pour le fichier WASM de Stockfish (environ 7Mo)
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+      }
+    })
   ],
   resolve: {
     alias: {

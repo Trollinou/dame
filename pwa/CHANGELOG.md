@@ -4,6 +4,34 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.6] - 2026-05-27
+### Ajouté
+- **Progressive Web App (PWA)** : Implémentation complète via `vite-plugin-pwa` avec Service Worker, permettant l'installation de l'application sur l'écran d'accueil et la mise en cache de l'interface et du moteur de jeu (Stockfish WASM).
+- **Mode Hors-Ligne (Jeu)** : L'espace de jeu et l'analyse fonctionnent désormais à 100% hors connexion, le moteur d'échecs s'exécutant localement sur l'appareil.
+- **Persistance Globale des Données** : Ajout du plugin `pinia-plugin-persistedstate` sur la quasi-totalité des stores (`auth`, `chess`, `members`, `contacts`, `agenda`, `messages`, `benevolat`).
+- **Persistance des Statistiques de Jeu** : Les compteurs d'aide ("Aide") et d'annulation ("Oups !") sont désormais sauvegardés en temps réel et restaurés lors de la reprise d'une partie.
+- **Cache de Page Intelligent** : Le store des tournois télécharge silencieusement et de manière proactive le contenu HTML complet de tous les tournois dès le chargement de la liste pour garantir leur disponibilité hors-ligne "zéro délai".
+- **Synchronisation Optimisée (Fraîcheur)** : Implémentation d'une stratégie de "Freshness" basée sur le nouveau champ WordPress `modified`. L'application bloque les appels réseau silencieux de mise à jour si les données locales sont suffisamment récentes, évitant ainsi la saturation serveur et les erreurs console.
+
+### Modifié
+- **Layout Espace de Jeu (Responsive)** : Refonte totale du layout de la page de jeu. En mode paysage, l'échiquier bascule automatiquement sur un affichage en deux colonnes (jeu à gauche, boutons d'action sur un panneau latéral droit).
+- **Adaptation iPad (Portrait/Paysage)** : Agrandissement significatif de la surface de l'échiquier sur les écrans de tablette pour un meilleur confort de jeu et d'analyse (jusqu'à 760px en portrait).
+- **Optimisation iPhone Paysage** : Création d'une "Mini-Interface" en mode paysage pour les téléphones (masquage du header, barres de pièces ultra-fines, boutons slim) maximisant l'espace alloué au plateau.
+- **Layout d'Analyse (Responsive)** : Application du même modèle en deux colonnes à la page d'analyse (Paysage), avec un tableau d'historique compacté et un défilement optimisé pour ne pas tronquer l'affichage.
+- **Mécanique de Centrage de l'Échiquier** : Remplacement des conteneurs Flexbox par un affichage standard en mode portrait afin de stabiliser définitivement les coordonnées internes de clic sur les pièces.
+- **Ergonomie des Boutons** : Ajout d'un espacement de sécurité (4-5px) entre les boutons d'action et les flèches de navigation pour éviter les clics accidentels et améliorer le confort visuel.
+
+### Corrigé
+- **Sécurité et Stabilité Réseau** : Implémentation d'un utilitaire `safeFetch` avec timeout (4s) pour toutes les requêtes d'arrière-plan. Bloque les erreurs de type "CORS" ou "502 Bad Gateway" en cas de coupure du serveur.
+- **Erreurs Console (Mode Hors-Ligne)** : Toutes les requêtes API vérifient maintenant `navigator.onLine` avant d'être lancées. Si l'appareil est déconnecté et possède déjà du cache, l'application est totalement silencieuse au lieu de générer des avertissements techniques.
+- **Interactivité après Rotation** : Correction du bug rendant les pièces in-cliquables après avoir pivoté l'appareil. Le composant d'échiquier est maintenant automatiquement détruit puis recréé (via l'attribut `key`) après un debounce de 200ms lors de la rotation de l'écran.
+- **Alignement de l'Historique** : Correction du rendu des lignes incomplètes dans le tableau des coups (dernière ligne) par l'injection de cellules fantômes invisibles, garantissant un alignement vertical parfait.
+- **Affichage des Numéros de Coups** : Correction d'un bug de retour à la ligne sur les petits écrans (wrap) empêchant le point de séparation de se retrouver sous le numéro du coup.
+- **Défaut de Scroll de l'Historique (iPad Portrait)** : Application d'un `min-height: 0` sur la section parente pour débloquer le défilement vertical (`overflow-y`) de la liste des coups qui restait précédemment bloquée ou tronquée.
+- **Saut brutal du scroll dans l'Historique** : Correction du calcul de la position active (`watch currentPly`) en utilisant `getBoundingClientRect` au lieu de `offsetTop` pour garantir un recentrage fluide sur le bon coup, sans sauter à la fin de la liste.
+- **Erreur au Démarrage (Home)** : Correction d'une `ReferenceError: newsStore` liée à un import manquant sur la page d'accueil.
+- **Store (Actualités)** : Exposition de la méthode `savePost` permettant la mise à jour manuelle du cache pour les articles consultés individuellement.
+
 ## [4.5.5] - 2026-05-26
 ### Ajouté
 - **Tri des Adhérents** : Nouveau sélecteur de tri par Nom (A-Z/Z-A) et par Catégorie d'âge (respectant l'ordre sportif U8 -> Vétéran) sur la page des adhérents.

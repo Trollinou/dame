@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useAuthStore } from './auth';
+import { safeFetch } from '@/utils/safeFetch';
 
 export interface AgendaEvent {
   id: number;
+  modified: string;
   title: {
     rendered: string;
     raw: string;
@@ -38,9 +40,14 @@ export const useAgendaStore = defineStore('agenda', () => {
 
   /**
    * Récupère un lot d'événements depuis le serveur
+   * Renvoie null en cas d'échec réseau pour éviter d'écraser le cache avec du vide
    */
   const fetchBatch = async (direction: 'upcoming' | 'past', referenceDate: string, page: number) => {
-    if (isFetching) return [];
+    if (isFetching) return null;
+    
+    // Protection proactive contre les erreurs console "Load failed" hors-ligne
+    if (!navigator.onLine) return null;
+
     isFetching = true;
 
     try {
@@ -65,29 +72,25 @@ export const useAgendaStore = defineStore('agenda', () => {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const response = await fetch(`${baseUrl}?${queryParams}`, { method: 'GET', headers });
+      const response = await safeFetch(`${baseUrl}?${queryParams}`, { method: 'GET', headers }, 4000);
 
       if (!response.ok) {
-        // Gestion de la session expirée
         if (response.status === 401) {
           useAuthStore().logout();
-          return [];
+          return null;
         }
 
-        // WordPress renvoie 400 quand on demande une page qui n'existe plus (fin de liste)
         if (response.status === 400) {
           if (direction === 'upcoming') hasMoreUpcoming.value = false;
           if (direction === 'past') hasMorePast.value = false;
           return [];
         }
-        throw new Error("Erreur serveur");
+        return null;
       }
 
-      // Lecture du nombre total de pages renvoyé par WordPress
       const totalPagesStr = response.headers.get('X-WP-TotalPages');
       const totalPages = totalPagesStr ? parseInt(totalPagesStr, 10) : 1;
 
-      // Si on est arrivé à la dernière page, on coupe la pagination
       if (page >= totalPages) {
         if (direction === 'upcoming') hasMoreUpcoming.value = false;
         if (direction === 'past') hasMorePast.value = false;
@@ -95,14 +98,15 @@ export const useAgendaStore = defineStore('agenda', () => {
 
       const data: AgendaEvent[] = await response.json();
       
-      // Fallback de sécurité : si on reçoit moins que perPage
       if (direction === 'upcoming' && data.length < perPage) hasMoreUpcoming.value = false;
       if (direction === 'past' && data.length < perPage) hasMorePast.value = false;
 
       return data;
-    } catch (error) {
-      console.error(`Erreur fetchBatch ${direction}:`, error);
-      return [];
+    } catch (error: any) {
+      if (error.name !== 'AbortError' && navigator.onLine) {
+        console.error(`Erreur fetchBatch ${direction}:`, error);
+      }
+      return null;
     } finally {
       isFetching = false;
     }
@@ -120,11 +124,24 @@ export const useAgendaStore = defineStore('agenda', () => {
    * Rafraîchit les données de base (utilisé par Home et Pull-to-refresh)
    */
   const fetchAgenda = async () => {
+    // Si on est déjà en cours de chargement ou hors ligne avec des données, on ignore
+    // Ajout d'une vérification de "fraîcheur" (5 min) pour éviter les erreurs console inutiles
+    const isRecent = events.value.length > 0 && upcomingPage.value === 1 && !navigator.onLine; // On simplifie pour l'agenda
+    
+    if (isLoading.value || (!navigator.onLine && events.value.length > 0)) {
+      return;
+    }
+
     isLoading.value = true;
     try {
       const today = getTodayLocal();
       const data = await fetchBatch('upcoming', today, 1);
       
+      // CRITIQUE : Si fetchBatch renvoie null (erreur), on arrête TOUT pour préserver le cache
+      if (data === null) {
+        return;
+      }
+
       // --- LOGIQUE DE FUSION INTELLIGENTE ---
       // On garde tous les événements passés déjà chargés en mémoire
       const pastEventsInCache = events.value.filter(e => {
@@ -133,7 +150,6 @@ export const useAgendaStore = defineStore('agenda', () => {
       });
 
       // On remplace le bloc futur par les données fraîches
-      // (On réinitialise la pagination future à 1 car on vient de recharger la page 1)
       const mergedEvents = [...pastEventsInCache, ...data];
       
       // Sécurité anti-doublons
@@ -166,4 +182,6 @@ export const useAgendaStore = defineStore('agenda', () => {
     fetchAgenda,
     clearData
   };
+}, {
+  persist: true
 });

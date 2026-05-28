@@ -15,17 +15,23 @@
           </ion-toolbar>
         </ion-header>
 
-        <div v-if="isLoading" class="ion-text-center ion-padding">
+        <div v-if="tournamentStore.isLoading" class="ion-text-center ion-padding">
           <ion-spinner name="crescent"></ion-spinner>
           <p>Chargement des tournois...</p>
         </div>
 
-        <div v-else-if="error" class="ion-text-center ion-padding">
-          <p color="danger">{{ error }}</p>
-          <ion-button fill="clear" @click="fetchMenu">Réessayer</ion-button>
+        <div v-else-if="error && topLevelItems.length === 0" class="ion-text-center ion-padding offline-container">
+          <ion-icon :icon="cloudOfflineOutline" size="large" color="medium"></ion-icon>
+          <p class="ion-margin-top">{{ error }}</p>
+          <ion-button fill="solid" class="ion-margin-top" @click="fetchMenu">Réessayer</ion-button>
         </div>
 
         <div v-else>
+          <!-- Message d'avertissement si on affiche des données en cache alors qu'on est hors-ligne -->
+          <div v-if="error && topLevelItems.length > 0" class="offline-banner">
+            <ion-icon :icon="cloudOfflineOutline"></ion-icon>
+            <span>Mode hors-ligne : Affichage des données en cache</span>
+          </div>
           <ion-card 
             v-for="item in topLevelItems" 
             :key="item.id" 
@@ -50,7 +56,7 @@
             </ion-card-content>
           </ion-card>
 
-          <div v-if="topLevelItems.length === 0 && !isLoading" class="ion-text-center ion-padding">
+          <div v-if="topLevelItems.length === 0 && !tournamentStore.isLoading" class="ion-text-center ion-padding">
             <p>Aucun tournoi disponible pour le moment.</p>
           </div>
         </div>
@@ -76,45 +82,33 @@ import {
   IonButton,
   onIonViewWillEnter
 } from '@ionic/vue';
-import { trophyOutline, chevronForwardOutline } from 'ionicons/icons';
+import { trophyOutline, chevronForwardOutline, cloudOfflineOutline } from 'ionicons/icons';
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-
-interface MenuItem {
-  id: number;
-  title: string;
-  object_id: number; // ID de la page WordPress
-  parent: string | number;
-}
+import { useTournamentStore } from '@/stores/tournament';
 
 const router = useRouter();
-const menuItems = ref<MenuItem[]>([]);
-const isLoading = ref(false);
+const tournamentStore = useTournamentStore();
 const error = ref<string | null>(null);
 
 /**
  * Filtre pour ne garder que les items de premier niveau
  */
 const topLevelItems = computed(() => {
-  return menuItems.value.filter(item => String(item.parent) === "0");
+  return tournamentStore.menuItems.filter(item => String(item.parent) === "0");
 });
 
 const fetchMenu = async () => {
-  isLoading.value = true;
   error.value = null;
 
   try {
-    const apiUrl = import.meta.env.VITE_API_BASE_URL;
-    // URL de l'API personnalisée dame/v1/pwa-menu
-    const response = await fetch(`${apiUrl}/dame/v1/pwa-menu`);
-    
-    if (!response.ok) throw new Error("Impossible de charger le menu.");
-    
-    menuItems.value = await response.json();
+    await tournamentStore.fetchMenu();
   } catch (err: any) {
-    error.value = err.message || "Une erreur est survenue.";
-  } finally {
-    isLoading.value = false;
+    if (!navigator.onLine) {
+      error.value = "Vous êtes hors-ligne. Les informations sur les tournois nécessitent une connexion internet pour être mises à jour.";
+    } else {
+      error.value = "Impossible de charger les tournois. Veuillez vérifier votre connexion.";
+    }
   }
 };
 
@@ -166,5 +160,26 @@ ion-card-subtitle {
 
 .cta-text {
   margin-right: 5px;
+}
+
+.offline-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.offline-banner {
+  background: var(--ion-color-warning);
+  color: var(--ion-color-warning-contrast);
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 15px;
 }
 </style>

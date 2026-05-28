@@ -5,6 +5,7 @@ import { useAuthStore } from './auth';
 
 export interface Contact {
   id: number;
+  modified: string;
   title: {
     rendered: string;
     raw: string;
@@ -152,4 +153,6 @@ export const useContactStore = defineStore('contacts', () => {
     fetchContactTypes,
     clearData
   };
+}, {
+  persist: true
 });

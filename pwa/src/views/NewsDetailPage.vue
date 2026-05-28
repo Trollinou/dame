@@ -28,8 +28,13 @@
         ></div>
       </div>
 
-      <div v-else class="ion-text-center ion-padding">
-        <p>Actualité introuvable.</p>
+      <div v-else class="ion-text-center ion-padding offline-container">
+        <div v-if="error">
+          <ion-icon :icon="cloudOfflineOutline" size="large" color="medium"></ion-icon>
+          <p class="ion-margin-top">{{ error }}</p>
+          <ion-button fill="solid" class="ion-margin-top" @click="fetchPost">Réessayer</ion-button>
+        </div>
+        <p v-else>Actualité introuvable.</p>
       </div>
     </ion-content>
   </ion-page>
@@ -48,13 +53,18 @@ import {
   IonButton,
   IonIcon
 } from '@ionic/vue';
+import { cloudOfflineOutline } from 'ionicons/icons';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useInternalLinks } from '@/composables/useInternalLinks';
+import { useNewsStore } from '@/stores/news';
+import { safeFetch } from '@/utils/safeFetch';
 
 const route = useRoute();
+const newsStore = useNewsStore();
 const post = ref<any>(null);
 const isLoading = ref(true);
+const error = ref<string | null>(null);
 const { handleInternalLinks } = useInternalLinks();
 
 const featuredImage = computed(() => {
@@ -86,14 +96,55 @@ const processedContent = computed(() => {
 });
 
 const fetchPost = async () => {
+  const postId = Number(route.params.id);
+  
+  // 1. Tenter de récupérer depuis le store d'abord (cache)
+  const cachedPost = newsStore.getPostById(postId);
+  if (cachedPost) {
+    post.value = cachedPost;
+    isLoading.value = false;
+    error.value = null;
+    
+    // STRATÉGIE RADICALE : Si l'article est en cache, on ne tente AUCUN refresh
+    // Cela garantit zéro erreur console si le serveur est coupé.
+    return;
+  }
+
+  // 2. Si PAS en cache, on prépare le fetch
+  isLoading.value = true;
+  error.value = null;
+
+  // 3. Si on est hors-ligne et qu'on n'a PAS l'article en cache
+  if (!navigator.onLine) {
+    error.value = "Vous êtes hors-ligne. Cet article n'est pas encore disponible en cache.";
+    isLoading.value = false;
+    return;
+  }
+
+  // 4. Tentative de récupération serveur
   try {
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
-    const response = await fetch(`${apiUrl}/wp/v2/posts/${route.params.id}?_embed`);
+    const response = await safeFetch(`${apiUrl}/wp/v2/posts/${postId}?_embed`, {}, 4000);
+    
     if (response.ok) {
-      post.value = await response.json();
+      const data = await response.json();
+      post.value = data;
+      // On sauvegarde dans le store pour la prochaine fois (hors-ligne)
+      newsStore.savePost(data);
+    } else {
+      // Cas spécifique pour le serveur en maintenance ou erreur 502/503
+      if (response.status >= 500) {
+        throw new Error("Le serveur est momentanément indisponible.");
+      }
+      throw new Error("Impossible de charger l'article.");
     }
-  } catch (err) {
-    console.error(err);
+  } catch (err: any) {
+    console.error("Erreur fetchPost:", err);
+    if (!navigator.onLine) {
+      error.value = "Vous êtes hors-ligne. Cet article n'est pas encore disponible en cache.";
+    } else {
+      error.value = err.message || "Une erreur réseau est survenue. Veuillez vérifier votre connexion.";
+    }
   } finally {
     isLoading.value = false;
   }
@@ -122,6 +173,14 @@ onMounted(fetchPost);
   height: auto;
   border-radius: 8px;
   margin-bottom: 16px;
+}
+
+.offline-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 50px;
 }
 h1 { font-size: 1.5rem; font-weight: bold; }
 .date { color: var(--ion-color-medium); margin-bottom: 16px; }

@@ -169,7 +169,7 @@ const formatEventDate = (event: AgendaEvent): string => {
 const loadMoreUpcoming = async (ev: any) => {
   upcomingPage.value++;
   const data = await agendaStore.fetchBatch('upcoming', todayStr, upcomingPage.value);
-  if (data.length > 0) {
+  if (data && data.length > 0) {
     // Filtrage des doublons (au cas où l'API renvoie un événement déjà chargé)
     const newItems = data.filter(newItem => !events.value.some(existing => existing.id === newItem.id));
     events.value = [...events.value, ...newItems];
@@ -182,9 +182,9 @@ const loadMoreUpcoming = async (ev: any) => {
  */
 const loadMorePast = async (ev: any) => {
   const data = await agendaStore.fetchBatch('past', todayStr, pastPage.value);
-  if (data.length > 0) {
+  if (data && data.length > 0) {
     // Inversion car le serveur renvoie DESC (plus récent d'abord), on veut ASC pour la liste
-    const dataAsc = data.reverse();
+    const dataAsc = [...data].reverse();
     // Filtrage des doublons (crucial pour les événements en cours qui chevauchent les deux requêtes)
     const newItems = dataAsc.filter(newItem => !events.value.some(existing => existing.id === newItem.id));
     
@@ -209,7 +209,9 @@ onIonViewWillEnter(async () => {
   if (events.value.length === 0) {
     isLoading.value = true;
     const data = await agendaStore.fetchBatch('upcoming', todayStr, 1);
-    events.value = data;
+    if (data) {
+      events.value = data;
+    }
     isLoading.value = false;
   }
   
