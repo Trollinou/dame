@@ -101,6 +101,7 @@ class Contact {
 		$new_columns = [];
 		foreach ( $columns as $key => $label ) {
 			if ( 'date' === $key ) {
+				$new_columns['dame_contact_sexe']   = __( 'Civ.', 'dame' );
 				$new_columns['dame_contact_email']  = __( 'Email', 'dame' );
 				$new_columns['dame_contact_phone']  = __( 'Téléphone', 'dame' );
 				$new_columns['dame_contact_dept']   = __( 'Département', 'dame' );
@@ -119,6 +120,17 @@ class Contact {
 	 */
 	public function render_custom_columns( string $column, int $post_id ): void {
 		switch ( $column ) {
+			case 'dame_contact_sexe':
+				$sexe = (string) get_post_meta( $post_id, '_dame_contact_sexe', true );
+				if ( 'Masculin' === $sexe ) {
+					echo esc_html__( 'Monsieur', 'dame' );
+				} elseif ( 'Féminin' === $sexe ) {
+					echo esc_html__( 'Madame', 'dame' );
+				} else {
+					echo esc_html__( 'Non précisé', 'dame' );
+				}
+				break;
+
 			case 'dame_contact_email':
 				$email = (string) get_post_meta( $post_id, '_dame_contact_email', true );
 				if ( $email ) {
@@ -168,6 +180,15 @@ class Contact {
 			'hide_empty'      => false,
 			'value_field'     => 'slug',
 		] );
+
+		// Filtre par Civilité (Meta)
+		$selected_gender = isset( $_GET['dame_filter_gender'] ) ? sanitize_text_field( (string) $_GET['dame_filter_gender'] ) : '';
+		echo '<select name="dame_filter_gender">';
+		echo '<option value="">' . esc_html__( 'Toutes les civilités', 'dame' ) . '</option>';
+		echo '<option value="Masculin" ' . selected( $selected_gender, 'Masculin', false ) . '>' . esc_html__( 'Monsieur', 'dame' ) . '</option>';
+		echo '<option value="Féminin" ' . selected( $selected_gender, 'Féminin', false ) . '>' . esc_html__( 'Madame', 'dame' ) . '</option>';
+		echo '<option value="Non précisé" ' . selected( $selected_gender, 'Non précisé', false ) . '>' . esc_html__( 'Non précisé', 'dame' ) . '</option>';
+		echo '</select>';
 
 		// Filtre par Département (Meta)
 		$departments   = Data_Provider::get_departments();
@@ -228,6 +249,36 @@ class Contact {
 				'value'   => sanitize_text_field( (string) $_GET['dame_filter_region'] ),
 				'compare' => '=',
 			];
+		}
+
+		// Filtrage Civilité
+		if ( ! empty( $_GET['dame_filter_gender'] ) ) {
+			$gender_filter = sanitize_text_field( (string) $_GET['dame_filter_gender'] );
+			if ( 'Non précisé' === $gender_filter ) {
+				$meta_query[] = [
+					'relation' => 'OR',
+					[
+						'key'     => '_dame_contact_sexe',
+						'value'   => 'Non précisé',
+						'compare' => '=',
+					],
+					[
+						'key'     => '_dame_contact_sexe',
+						'compare' => 'NOT EXISTS',
+					],
+					[
+						'key'     => '_dame_contact_sexe',
+						'value'   => '',
+						'compare' => '=',
+					],
+				];
+			} else {
+				$meta_query[] = [
+					'key'     => '_dame_contact_sexe',
+					'value'   => $gender_filter,
+					'compare' => '=',
+				];
+			}
 		}
 
 		if ( ! empty( $meta_query ) ) {

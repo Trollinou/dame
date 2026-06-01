@@ -47,6 +47,7 @@ class Adherent {
 		$new_columns = array(
 			'cb'                     => $columns['cb'],
 			'title'                  => __( 'Nom de l\'adhérent', 'dame' ),
+			'dame_sexe'              => __( 'Civ.', 'dame' ),
 			'dame_age_category'      => __( 'Catégorie d\'âge', 'dame' ),
 			'dame_license_number'    => __( 'Licence', 'dame' ),
 			'dame_phone'             => __( 'Téléphone', 'dame' ),
@@ -68,6 +69,17 @@ class Adherent {
 	 */
 	public function render_columns( $column, $post_id ): void {
 		switch ( $column ) {
+			case 'dame_sexe':
+				$sexe = get_post_meta( $post_id, '_dame_sexe', true );
+				if ( 'Masculin' === $sexe ) {
+					echo esc_html__( 'Monsieur', 'dame' );
+				} elseif ( 'Féminin' === $sexe ) {
+					echo esc_html__( 'Madame', 'dame' );
+				} else {
+					echo esc_html__( 'Non précisé', 'dame' );
+				}
+				break;
+
 			case 'dame_age_category':
 				$birth_date_str = get_post_meta( $post_id, '_dame_birth_date', true );
 				$gender         = get_post_meta( $post_id, '_dame_sexe', true );
@@ -264,6 +276,17 @@ class Adherent {
 			</select>
 			<?php
 
+			// Gender filter
+			$current_gender = $_GET['dame_gender_filter'] ?? '';
+			?>
+			<select name="dame_gender_filter">
+				<option value=""><?php _e( 'Toutes les civilités', 'dame' ); ?></option>
+				<option value="Masculin" <?php selected( 'Masculin', $current_gender ); ?>><?php _e( 'Monsieur', 'dame' ); ?></option>
+				<option value="Féminin" <?php selected( 'Féminin', $current_gender ); ?>><?php _e( 'Madame', 'dame' ); ?></option>
+				<option value="Non précisé" <?php selected( 'Non précisé', $current_gender ); ?>><?php _e( 'Non précisé', 'dame' ); ?></option>
+			</select>
+			<?php
+
 			// Age Category filter
 			$age_categories = \DAME\Core\Utils::get_all_age_categories();
 			if ( ! empty( $age_categories ) ) {
@@ -427,6 +450,36 @@ class Adherent {
 							'value' => 'Féminin',
 						);
 					}
+				}
+			}
+
+			// Gender filter
+			if ( isset( $_GET['dame_gender_filter'] ) && ! empty( $_GET['dame_gender_filter'] ) ) {
+				$gender_filter = sanitize_text_field( $_GET['dame_gender_filter'] );
+				if ( 'Non précisé' === $gender_filter ) {
+					$meta_query[] = array(
+						'relation' => 'OR',
+						array(
+							'key'     => '_dame_sexe',
+							'value'   => 'Non précisé',
+							'compare' => '=',
+						),
+						array(
+							'key'     => '_dame_sexe',
+							'compare' => 'NOT EXISTS',
+						),
+						array(
+							'key'     => '_dame_sexe',
+							'value'   => '',
+							'compare' => '=',
+						),
+					);
+				} else {
+					$meta_query[] = array(
+						'key'     => '_dame_sexe',
+						'value'   => $gender_filter,
+						'compare' => '=',
+					);
 				}
 			}
 
