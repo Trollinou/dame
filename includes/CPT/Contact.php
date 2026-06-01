@@ -29,6 +29,7 @@ class Contact {
 			add_action( 'restrict_manage_posts', [ $this, 'add_custom_filters' ] );
 			add_action( 'pre_get_posts', [ $this, 'filter_posts_by_meta' ] );
 			add_action( 'admin_init', [ $this, 'save_last_list_url' ] );
+			add_action( 'load-edit.php', [ $this, 'remove_date_filter' ] );
 		}
 	}
 
@@ -301,6 +302,16 @@ class Contact {
 					update_user_meta( $user_id, 'dame_last_contact_list_url', $path_query );
 				}
 			}
+		}
+	}
+
+	/**
+	 * Removes the date filter from the Contact CPT admin list.
+	 */
+	public function remove_date_filter(): void {
+		$screen = get_current_screen();
+		if ( $screen && strpos( $screen->id, 'edit-dame_contact' ) !== false ) {
+			add_filter( 'months_dropdown_results', '__return_empty_array' );
 		}
 	}
 }
