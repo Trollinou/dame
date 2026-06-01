@@ -234,15 +234,6 @@ class Adherent {
 				<?php
 			}
 
-			// Membership Status filter
-			$current_status = $_GET['dame_membership_filter'] ?? '';
-			?>
-			<select name="dame_membership_filter">
-				<option value=""><?php _e( 'Tous les statuts d\'adhésion', 'dame' ); ?></option>
-				<option value="active" <?php selected( 'active', $current_status ); ?>><?php _e( 'Adhésion active', 'dame' ); ?></option>
-				<option value="inactive" <?php selected( 'inactive', $current_status ); ?>><?php _e( 'Adhésion inactive', 'dame' ); ?></option>
-			</select>
-			<?php
 
 			// Season filter
 			$saisons = get_terms(
@@ -329,28 +320,6 @@ class Adherent {
 				}
 			}
 
-			// Membership Status filter
-			if ( isset( $_GET['dame_membership_filter'] ) && ! empty( $_GET['dame_membership_filter'] ) ) {
-				$status_filter         = sanitize_key( $_GET['dame_membership_filter'] );
-				$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-
-				if ( $current_season_tag_id ) {
-					if ( 'active' === $status_filter ) {
-						$tax_query[] = array(
-							'taxonomy' => 'dame_saison_adhesion',
-							'field'    => 'term_id',
-							'terms'    => (int) $current_season_tag_id,
-						);
-					} elseif ( 'inactive' === $status_filter ) {
-						$tax_query[] = array(
-							'taxonomy' => 'dame_saison_adhesion',
-							'field'    => 'term_id',
-							'terms'    => (int) $current_season_tag_id,
-							'operator' => 'NOT IN',
-						);
-					}
-				}
-			}
 
 			// Season filter
 			if ( isset( $_GET['dame_saison_filter'] ) && ! empty( $_GET['dame_saison_filter'] ) ) {
