@@ -40,7 +40,9 @@ jQuery( document ).ready( function ( $ ) {
 				const $slotsWrapper = $dateGroup.find(
 					'.benevolat-time-slots-wrapper'
 				);
-				const $slots = $slotsWrapper.find( '.benevolat-time-slot-group' );
+				const $slots = $slotsWrapper.find(
+					'.benevolat-time-slot-group'
+				);
 
 				const sortedSlots = $slots.toArray().sort( function ( a, b ) {
 					const timeA =
