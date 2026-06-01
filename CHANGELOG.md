@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.5.8] - 2026-06-01
+
+### Plugin WordPress (Backend)
+- **Conservation des Filtres :** Implémentation du mécanisme de retour à la liste filtrée pour les Adhérents, Événements, Appels à bénévoles et Messages. Mémorisation de l'URL dans le profil utilisateur (`user_meta`).
+- **Bouton de retour :** Rendu visuel d'un bouton moderne et premium avec effet de survol dynamique et micro-animations.
+- **Colonnes & Filtres :**
+  - Ajout de la colonne "Civ." (Civilité) pour les listes Adhérents et Contacts.
+  - Ajout d'un filtre par civilité ("Monsieur", "Madame", "Non précisé") pour les listes Adhérents et Contacts.
+  - Suppression du filtre obsolète de statut d'adhésion sur les Adhérents.
+  - Suppression du filtre obsolète de date sur les Contacts.
+
 ## [4.5.7] - 2026-06-01
 
 ### Plugin WordPress (Backend)
