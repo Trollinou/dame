@@ -28,6 +28,7 @@ class Contact {
 			add_action( 'manage_dame_contact_posts_custom_column', [ $this, 'render_custom_columns' ], 10, 2 );
 			add_action( 'restrict_manage_posts', [ $this, 'add_custom_filters' ] );
 			add_action( 'pre_get_posts', [ $this, 'filter_posts_by_meta' ] );
+			add_action( 'admin_init', [ $this, 'save_last_list_url' ] );
 		}
 	}
 
@@ -231,6 +232,24 @@ class Contact {
 
 		if ( ! empty( $meta_query ) ) {
 			$query->set( 'meta_query', $meta_query );
+		}
+	}
+
+	/**
+	 * Saves the last contact list URL with its query parameters.
+	 */
+	public function save_last_list_url(): void {
+		global $pagenow;
+		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'dame_contact' === $_GET['post_type'] ) {
+			$user_id = get_current_user_id();
+			if ( $user_id ) {
+				$url = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+				if ( $url ) {
+					$parsed = parse_url( $url );
+					$path_query = ( $parsed['path'] ?? '' ) . ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' );
+					update_user_meta( $user_id, 'dame_last_contact_list_url', $path_query );
+				}
+			}
 		}
 	}
 }

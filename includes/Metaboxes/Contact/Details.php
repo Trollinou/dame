@@ -69,7 +69,22 @@ class Details {
 		$departments = Data_Provider::get_departments();
 		$regions     = Data_Provider::get_regions();
 
+		$user_id  = get_current_user_id();
+		$list_url = $user_id ? (string) get_user_meta( $user_id, 'dame_last_contact_list_url', true ) : '';
+		if ( empty( $list_url ) ) {
+			$list_url = admin_url( 'edit.php?post_type=dame_contact' );
+		} else {
+			$list_url = admin_url( ltrim( str_replace( '/wp-admin/', '', $list_url ), '/' ) );
+		}
+
 		?>
+		<div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ccd0d4;">
+			<a href="<?php echo esc_url( $list_url ); ?>" class="button">
+				<span class="dashicons dashicons-arrow-left-alt" style="vertical-align: text-top; margin-top: 3px;"></span>
+				<?php esc_html_e( 'Retour à la liste filtrée', 'dame' ); ?>
+			</a>
+		</div>
+
 		<table class="form-table">
 			<tr>
 				<th><label for="dame_contact_organization"><?php esc_html_e( 'Organisation', 'dame' ); ?></label></th>
