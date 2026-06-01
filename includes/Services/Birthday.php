@@ -225,6 +225,7 @@ class Birthday {
 			}
 			$prenom = get_post_meta( $pid, '_dame_first_name', true );
 			$birth = get_post_meta( $pid, '_dame_birth_date', true );
+			$sexe  = get_post_meta( $pid, '_dame_sexe', true );
 
 			if ( empty( $prenom ) || empty( $birth ) ) continue;
 
@@ -232,8 +233,13 @@ class Birthday {
 				$age = ( new DateTime( $birth ) )->diff( new DateTime() )->y;
 			} catch ( \Exception $e ) { continue; }
 
-			$subject = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]' ], [ (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age ], $article->post_title );
-			$content = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]' ], [ (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age ], apply_filters( 'the_content', $article->post_content ) );
+			$civilite = 'Monsieur';
+			if ( 'Féminin' === $sexe ) {
+				$civilite = 'Madame';
+			}
+
+			$subject = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ], [ (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age, (string) $civilite ], $article->post_title );
+			$content = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ], [ (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age, (string) $civilite ], apply_filters( 'the_content', $article->post_content ) );
 
 			$emails = \DAME\Core\Utils::get_emails_for_adherent( $pid );
 			if ( $emails ) {

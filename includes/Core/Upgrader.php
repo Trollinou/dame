@@ -107,6 +107,11 @@ class Upgrader {
 			$this->rename_sondage_to_benevolat_v450();
 		}
 
+		// Version < 4.5.7 : Sexe des contacts par défaut
+		if ( version_compare( $old_version, '4.5.7', '<' ) ) {
+			$this->initialize_contact_gender_v457();
+		}
+
 		// Finalisation
 		update_option( 'dame_plugin_version', $new_version );
 	}
@@ -146,6 +151,25 @@ class Upgrader {
 		$wpdb->query( "UPDATE $wpdb->postmeta SET meta_key = REPLACE(meta_key, 'sondage', 'benevolat') WHERE meta_key LIKE '%sondage%'" );
 
 		flush_rewrite_rules();
+	}
+
+	/**
+	 * Initializes all contacts' gender to 'Non précisé' if not set (v4.5.7).
+	 */
+	private function initialize_contact_gender_v457(): void {
+		$contacts = get_posts( [
+			'post_type'      => 'dame_contact',
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'fields'         => 'ids',
+		] );
+
+		foreach ( $contacts as $id ) {
+			$sexe = get_post_meta( $id, '_dame_contact_sexe', true );
+			if ( empty( $sexe ) ) {
+				update_post_meta( $id, '_dame_contact_sexe', 'Non précisé' );
+			}
+		}
 	}
 
 	/**

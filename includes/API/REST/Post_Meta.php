@@ -454,6 +454,7 @@ class Post_Meta {
 			'_dame_contact_organization' => 'string',
 			'_dame_contact_last_name'    => 'string',
 			'_dame_contact_first_name'   => 'string',
+			'_dame_contact_sexe'         => 'string',
 			'_dame_contact_role'         => 'string',
 			'_dame_contact_email'        => 'string',
 			'_dame_contact_no_emails'    => 'string',

@@ -34,6 +34,9 @@
               <div v-if="contact.meta?._dame_contact_organization" class="organization-name">
                 {{ contact.meta._dame_contact_organization }}
               </div>
+              <div v-if="contact.meta?._dame_contact_sexe && contact.meta._dame_contact_sexe !== 'Non précisé'" class="contact-gender">
+                {{ formatGender(contact.meta._dame_contact_sexe) }}
+              </div>
               <div class="contact-name">
                 {{ contact.meta?._dame_contact_first_name }} {{ contact.meta?._dame_contact_last_name }}
               </div>
@@ -194,6 +197,21 @@ const mapUrl = computed(() => {
     return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
   }
 });
+
+/**
+ * Formate le genre pour l'affichage
+ */
+const formatGender = (gender?: string) => {
+  if (!gender || gender === 'Non précisé') return '';
+  const mapping: Record<string, string> = {
+    'M': 'Masculin',
+    'F': 'Féminin',
+    'H': 'Masculin',
+    'Masculin': 'Masculin',
+    'Féminin': 'Féminin'
+  };
+  return mapping[gender] || gender;
+};
 </script>
 
 <style scoped>
@@ -257,5 +275,11 @@ h3 {
   font-size: 1em;
   color: var(--ion-color-primary);
   font-weight: 500;
+}
+
+.contact-gender {
+  font-size: 0.85em;
+  color: var(--ion-color-medium);
+  margin-top: 4px;
 }
 </style>

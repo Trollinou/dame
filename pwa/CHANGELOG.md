@@ -4,6 +4,10 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.7] - 2026-06-01
+### Ajouté
+- **Fiche Contact** : Affichage dynamique du sexe (genre) au-dessus du prénom et du nom du contact si renseigné.
+
 ## [4.5.6] - 2026-05-27
 ### Ajouté
 - **Progressive Web App (PWA)** : Implémentation complète via `vite-plugin-pwa` avec Service Worker, permettant l'installation de l'application sur l'écran d'accueil et la mise en cache de l'interface et du moteur de jeu (Stockfish WASM).

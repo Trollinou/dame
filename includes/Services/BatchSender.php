@@ -102,6 +102,7 @@ class BatchSender {
 				$rid    = (int) $row['recipient_id'];
 				$nom    = '';
 				$prenom = '';
+				$sexe   = '';
 				$age    = '';
 
 				$type = get_post_type( $rid );
@@ -114,6 +115,7 @@ class BatchSender {
 							$nom = (string) get_post_meta( $rid, '_dame_birth_name', true );
 						}
 						$prenom = (string) get_post_meta( $rid, '_dame_first_name', true );
+						$sexe   = (string) get_post_meta( $rid, '_dame_sexe', true );
 						$birth  = (string) get_post_meta( $rid, '_dame_birth_date', true );
 						if ( ! empty( $birth ) ) {
 							try {
@@ -136,17 +138,24 @@ class BatchSender {
 				} elseif ( 'dame_contact' === $type ) {
 					$nom    = (string) get_post_meta( $rid, '_dame_contact_last_name', true );
 					$prenom = (string) get_post_meta( $rid, '_dame_contact_first_name', true );
+					$sexe   = (string) get_post_meta( $rid, '_dame_contact_sexe', true );
+				}
+
+				$civilite = 'Monsieur';
+				if ( 'Féminin' === $sexe ) {
+					$civilite = 'Madame';
 				}
 
 				if ( empty( $nom ) && empty( $prenom ) ) {
-					$search  = [ '[NOM]', '[PRENOM]', '[AGE]' ];
-					$replace = [ $label, '', '' ];
+					$search  = [ '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ];
+					$replace = [ $label, '', '', $civilite ];
 				} else {
-					$search  = [ '[NOM]', '[PRENOM]', '[AGE]' ];
+					$search  = [ '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ];
 					$replace = [
 						esc_html( \DAME\Core\Utils::format_lastname( (string) $nom ) ),
 						esc_html( \DAME\Core\Utils::format_firstname( (string) $prenom ) ),
-						esc_html( (string) $age )
+						esc_html( (string) $age ),
+						esc_html( $civilite )
 					];
 				}
 				
@@ -274,6 +283,7 @@ class BatchSender {
 
 				$nom    = '';
 				$prenom = '';
+				$sexe   = '';
 				$birth  = '';
 
 				if ( 'adherent' === $target_type ) {
@@ -282,14 +292,21 @@ class BatchSender {
 						$nom = (string) get_post_meta( $primary_post_id, '_dame_birth_name', true );
 					}
 					$prenom = (string) get_post_meta( $primary_post_id, '_dame_first_name', true );
+					$sexe   = (string) get_post_meta( $primary_post_id, '_dame_sexe', true );
 					$birth  = (string) get_post_meta( $primary_post_id, '_dame_birth_date', true );
 				} elseif ( 'contact' === $target_type ) {
 					$nom    = (string) get_post_meta( $primary_post_id, '_dame_contact_last_name', true );
 					$prenom = (string) get_post_meta( $primary_post_id, '_dame_contact_first_name', true );
+					$sexe   = (string) get_post_meta( $primary_post_id, '_dame_contact_sexe', true );
 				} elseif ( strpos( $target_type, 'rep' ) === 0 ) {
 					$rep_num = str_replace( 'rep', '', $target_type );
 					$nom    = (string) get_post_meta( $primary_post_id, "_dame_legal_rep_{$rep_num}_last_name", true );
 					$prenom = (string) get_post_meta( $primary_post_id, "_dame_legal_rep_{$rep_num}_first_name", true );
+				}
+
+				$civilite = 'Monsieur';
+				if ( 'Féminin' === $sexe ) {
+					$civilite = 'Madame';
 				}
 
 				$age = '';
@@ -301,11 +318,12 @@ class BatchSender {
 					}
 				}
 
-				$search  = [ '[NOM]', '[PRENOM]', '[AGE]' ];
+				$search  = [ '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ];
 				$replace = [
 					esc_html( \DAME\Core\Utils::format_lastname( (string) $nom ) ),
 					esc_html( \DAME\Core\Utils::format_firstname( (string) $prenom ) ),
-					esc_html( (string) $age )
+					esc_html( (string) $age ),
+					esc_html( $civilite )
 				];
 
 				$personalized_subject = str_replace( $search, $replace, $subject );

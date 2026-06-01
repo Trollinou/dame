@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.5.7] - 2026-06-01
+
+### Plugin WordPress (Backend)
+- **Personnalisation :** Ajout du tag `[CIVILITE]` qui se résout en "Monsieur" ou "Madame" selon le sexe.
+- **Contacts :** Ajout du champ "Sexe" (Masculin, Féminin, Non précisé) dans les fiches contact.
+- **Migration :** Initialisation automatique du sexe des contacts existants à "Non précisé" lors de la mise à jour en version 4.5.7.
+
+### Application Mobile (PWA)
+- **Fiche Contact :** Affichage dynamique du sexe (genre) au-dessus du prénom et du nom du contact si renseigné.
+
 ## [4.5.6] - 2026-05-27
 
 ### Plugin WordPress (Backend)

@@ -51,6 +51,10 @@ class Details {
 		$organization = get_post_meta( $post->ID, '_dame_contact_organization', true );
 		$last_name    = get_post_meta( $post->ID, '_dame_contact_last_name', true );
 		$first_name   = get_post_meta( $post->ID, '_dame_contact_first_name', true );
+		$sexe         = get_post_meta( $post->ID, '_dame_contact_sexe', true );
+		if ( ! $sexe ) {
+			$sexe = 'Non précisé';
+		}
 		$role         = get_post_meta( $post->ID, '_dame_contact_role', true );
 		$email        = get_post_meta( $post->ID, '_dame_contact_email', true );
 		$no_emails    = get_post_meta( $post->ID, '_dame_contact_no_emails', true );
@@ -83,6 +87,14 @@ class Details {
 				<th><label for="dame_contact_first_name"><?php esc_html_e( 'Prénom', 'dame' ); ?></label></th>
 				<td>
 					<input type="text" name="_dame_contact_first_name" id="dame_contact_first_name" value="<?php echo esc_attr( $first_name ); ?>" class="regular-text" />
+				</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Sexe', 'dame' ); ?></th>
+				<td>
+					<label style="margin-right: 15px;"><input type="radio" name="_dame_contact_sexe" value="Masculin" <?php checked( $sexe, 'Masculin' ); ?> /> <?php esc_html_e( 'Masculin', 'dame' ); ?></label>
+					<label style="margin-right: 15px;"><input type="radio" name="_dame_contact_sexe" value="Féminin" <?php checked( $sexe, 'Féminin' ); ?> /> <?php esc_html_e( 'Féminin', 'dame' ); ?></label>
+					<label><input type="radio" name="_dame_contact_sexe" value="Non précisé" <?php checked( $sexe, 'Non précisé' ); ?> /> <?php esc_html_e( 'Non précisé', 'dame' ); ?></label>
 				</td>
 			</tr>
 			<tr>
@@ -190,6 +202,7 @@ class Details {
 		// 2. Sauvegarde des autres champs standards
 		$fields = [
 			'_dame_contact_organization',
+			'_dame_contact_sexe',
 			'_dame_contact_role',
 			'_dame_contact_phone',
 			'_dame_contact_address_1',
