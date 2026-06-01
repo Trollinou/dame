@@ -96,6 +96,21 @@ class TestSend {
 		<div id="dame_test_result" style="margin-top:10px;"></div>
 
 		<?php
+		$user_id  = get_current_user_id();
+		$list_url = $user_id ? (string) get_user_meta( $user_id, 'dame_last_message_list_url', true ) : '';
+		if ( empty( $list_url ) ) {
+			$list_url = admin_url( 'edit.php?post_type=dame_message' );
+		} else {
+			$list_url = admin_url( ltrim( str_replace( '/wp-admin/', '', $list_url ), '/' ) );
+		}
+		?>
+		<div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ccd0d4;">
+			<a href="<?php echo esc_url( $list_url ); ?>" class="button">
+				<span class="dashicons dashicons-arrow-left-alt" style="vertical-align: text-top; margin-top: 3px;"></span>
+				<?php esc_html_e( 'Retour à la liste filtrée', 'dame' ); ?>
+			</a>
+		</div>
+		<?php
 	}
 
 	/**

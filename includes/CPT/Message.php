@@ -12,13 +12,13 @@ namespace DAME\CPT;
  */
 class Message {
 
-	/**
-	 * Initialize the CPT.
-	 */
 	public function init(): void {
 		add_action( 'init', [ $this, 'register' ], 0 );
 		add_action( 'before_delete_post', [ $this, 'cleanup_open_data' ] );
 		add_action( 'admin_notices', [ $this, 'display_reset_notice' ] );
+		if ( is_admin() ) {
+			add_action( 'admin_init', [ $this, 'save_last_list_url' ] );
+		}
 	}
 
 	/**
@@ -118,5 +118,23 @@ class Message {
 			array( 'message_id' => $post_id ),
 			array( '%d' )
 		);
+	}
+
+	/**
+	 * Saves the last message list URL with its query parameters.
+	 */
+	public function save_last_list_url(): void {
+		global $pagenow;
+		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'dame_message' === $_GET['post_type'] ) {
+			$user_id = get_current_user_id();
+			if ( $user_id ) {
+				$url = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+				if ( $url ) {
+					$parsed = parse_url( $url );
+					$path_query = ( $parsed['path'] ?? '' ) . ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' );
+					update_user_meta( $user_id, 'dame_last_message_list_url', $path_query );
+				}
+			}
+		}
 	}
 }

@@ -12,15 +12,15 @@ namespace DAME\CPT;
  */
 class Benevolat {
 
-	/**
-	 * Initialize the CPT hooks.
-	 */
 	public function init(): void {
 		add_action( 'init', [ $this, 'register' ] );
 		add_action( 'wp_trash_post', [ $this, 'handle_status_change' ] );
 		add_action( 'untrash_post', [ $this, 'handle_status_change' ] );
 		add_action( 'deleted_post', [ $this, 'handle_deletion' ] );
 		add_filter( 'use_block_editor_for_post_type', [ $this, 'disable_block_editor' ], 10, 2 );
+		if ( is_admin() ) {
+			add_action( 'admin_init', [ $this, 'save_last_list_url' ] );
+		}
 	}
 
 	/**
@@ -124,5 +124,23 @@ class Benevolat {
 		];
 
 		register_post_type( 'benevolat_reponse', $reponse_args );
+	}
+
+	/**
+	 * Saves the last benevolat list URL with its query parameters.
+	 */
+	public function save_last_list_url(): void {
+		global $pagenow;
+		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'benevolat' === $_GET['post_type'] ) {
+			$user_id = get_current_user_id();
+			if ( $user_id ) {
+				$url = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+				if ( $url ) {
+					$parsed = parse_url( $url );
+					$path_query = ( $parsed['path'] ?? '' ) . ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' );
+					update_user_meta( $user_id, 'dame_last_benevolat_list_url', $path_query );
+				}
+			}
+		}
 	}
 }

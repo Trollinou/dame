@@ -22,6 +22,9 @@ class Agenda {
 		add_action( 'init', [ $this, 'register' ], 0 );
 		add_filter( 'the_content', [ $this, 'display_event_details' ] );
 		add_filter( 'use_block_editor_for_post_type', [ $this, 'disable_block_editor' ], 10, 2 );
+		if ( is_admin() ) {
+			add_action( 'admin_init', [ $this, 'save_last_list_url' ] );
+		}
 	}
 
 	/**
@@ -252,5 +255,23 @@ class Agenda {
 			$content = $details_html . $content;
 		}
 		return $content;
+	}
+
+	/**
+	 * Saves the last agenda list URL with its query parameters.
+	 */
+	public function save_last_list_url(): void {
+		global $pagenow;
+		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'dame_agenda' === $_GET['post_type'] ) {
+			$user_id = get_current_user_id();
+			if ( $user_id ) {
+				$url = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+				if ( $url ) {
+					$parsed = parse_url( $url );
+					$path_query = ( $parsed['path'] ?? '' ) . ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' );
+					update_user_meta( $user_id, 'dame_last_agenda_list_url', $path_query );
+				}
+			}
+		}
 	}
 }

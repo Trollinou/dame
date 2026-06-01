@@ -106,7 +106,23 @@ class Manager {
 		] );
 
 		$is_locked = $responses_exist;
+
+		$user_id  = get_current_user_id();
+		$list_url = $user_id ? (string) get_user_meta( $user_id, 'dame_last_benevolat_list_url', true ) : '';
+		if ( empty( $list_url ) ) {
+			$list_url = admin_url( 'edit.php?post_type=benevolat' );
+		} else {
+			$list_url = admin_url( ltrim( str_replace( '/wp-admin/', '', $list_url ), '/' ) );
+		}
+
 		?>
+		<div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ccd0d4;">
+			<a href="<?php echo esc_url( $list_url ); ?>" class="button">
+				<span class="dashicons dashicons-arrow-left-alt" style="vertical-align: text-top; margin-top: 3px;"></span>
+				<?php esc_html_e( 'Retour à la liste filtrée', 'dame' ); ?>
+			</a>
+		</div>
+
 		<div id="benevolat-config-container">
 			<?php if ( $is_locked ) : ?>
 				<p><strong><?php _e( 'Cet appel est verrouillé car il a déjà reçu des réponses. Vous ne pouvez plus modifier les dates ou les plages horaires.', 'dame' ); ?></strong></p>

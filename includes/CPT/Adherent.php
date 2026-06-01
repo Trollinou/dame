@@ -17,6 +17,9 @@ class Adherent {
 	 */
 	public function init(): void {
 		add_action( 'init', [ $this, 'register_post_type' ], 0 );
+		if ( is_admin() ) {
+			add_action( 'admin_init', [ $this, 'save_last_list_url' ] );
+		}
 	}
 
 	/**
@@ -76,5 +79,23 @@ class Adherent {
 		);
 
 		register_post_type( 'adherent', $args );
+	}
+
+	/**
+	 * Saves the last adherent list URL with its query parameters.
+	 */
+	public function save_last_list_url(): void {
+		global $pagenow;
+		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'adherent' === $_GET['post_type'] ) {
+			$user_id = get_current_user_id();
+			if ( $user_id ) {
+				$url = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+				if ( $url ) {
+					$parsed = parse_url( $url );
+					$path_query = ( $parsed['path'] ?? '' ) . ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' );
+					update_user_meta( $user_id, 'dame_last_adherent_list_url', $path_query );
+				}
+			}
+		}
 	}
 }

@@ -5,7 +5,11 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\Adherent;
+
+use WP_Post;
 
 /**
  * Class Identity
@@ -27,11 +31,11 @@ class Identity {
 	}
 
 	/**
-	 * Render the meta box.
+	 * Render the metabox.
 	 *
-	 * @param \WP_Post $post The post object.
+	 * @param WP_Post $post Post object.
 	 */
-	public function render( $post ): void {
+	public function render( WP_Post $post ): void {
 		wp_nonce_field( 'dame_save_adherent_meta', 'dame_metabox_nonce' );
 
 		$transient_data = get_transient( 'dame_post_data_' . $post->ID );
@@ -40,6 +44,23 @@ class Identity {
 			// It should be deleted at the end of the request or handled differently.
 			// For now, let's leave it.
 		}
+
+		$user_id  = get_current_user_id();
+		$list_url = $user_id ? (string) get_user_meta( $user_id, 'dame_last_adherent_list_url', true ) : '';
+		if ( empty( $list_url ) ) {
+			$list_url = admin_url( 'edit.php?post_type=adherent' );
+		} else {
+			$list_url = admin_url( ltrim( str_replace( '/wp-admin/', '', $list_url ), '/' ) );
+		}
+
+		?>
+		<div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ccd0d4;">
+			<a href="<?php echo esc_url( $list_url ); ?>" class="button">
+				<span class="dashicons dashicons-arrow-left-alt" style="vertical-align: text-top; margin-top: 3px;"></span>
+				<?php esc_html_e( 'Retour à la liste filtrée', 'dame' ); ?>
+			</a>
+		</div>
+		<?php
 
 		$get_value = function( $field_name, $default = '' ) use ( $post, $transient_data ) {
 			return isset( $transient_data[ $field_name ] )

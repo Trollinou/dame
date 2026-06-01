@@ -142,7 +142,21 @@ class Manager {
 		$competition_level   = $get_value( 'competition_level', 'departementale' );
 		$description         = $get_value( 'agenda_description' );
 
+		$user_id  = get_current_user_id();
+		$list_url = $user_id ? (string) get_user_meta( $user_id, 'dame_last_agenda_list_url', true ) : '';
+		if ( empty( $list_url ) ) {
+			$list_url = admin_url( 'edit.php?post_type=dame_agenda' );
+		} else {
+			$list_url = admin_url( ltrim( str_replace( '/wp-admin/', '', $list_url ), '/' ) );
+		}
+
 		?>
+		<div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ccd0d4;">
+			<a href="<?php echo esc_url( $list_url ); ?>" class="button">
+				<span class="dashicons dashicons-arrow-left-alt" style="vertical-align: text-top; margin-top: 3px;"></span>
+				<?php esc_html_e( 'Retour à la liste filtrée', 'dame' ); ?>
+			</a>
+		</div>
 		<style>
 			.dame-radio-group { display: flex; gap: 1em; margin-bottom: 0.5em; }
 			.dame-radio-group label { display: flex; align-items: center; gap: 0.2em; }
