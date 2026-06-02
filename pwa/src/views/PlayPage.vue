@@ -328,14 +328,34 @@ const terminateHintEngine = () => {
 };
 
 /**
+ * Reconstruit la commande de position UCI avec l'historique complet des coups
+ * pour permettre la détection de la triple répétition par le moteur.
+ */
+const getEnginePositionCommand = (): string => {
+  if (!boardApi) return 'position startpos';
+  try {
+    const pgn = boardApi.getPgn();
+    if (!pgn) return 'position startpos';
+    const tempGame = new Chess();
+    tempGame.loadPgn(pgn);
+    const moves = tempGame.history({ verbose: true });
+    if (moves.length === 0) return 'position startpos';
+    const movesStr = moves.map(m => m.from + m.to + (m.promotion || '')).join(' ');
+    return `position startpos moves ${movesStr}`;
+  } catch (err) {
+    console.error("Erreur lors de la génération de la commande position UCI, repli sur le FEN :", err);
+    return `position fen ${boardApi.getFen()}`;
+  }
+};
+
+/**
  * Demande une suggestion au moteur d'aide
  */
 const requestHint = () => {
   if (!boardApi || !hintEngine || !isHintEnabled.value) return;
   const playerColor = boardConfig.orientation;
   if (boardApi.getTurnColor() === playerColor) {
-    const fen = boardApi.getFen();
-    hintEngine.postMessage(`position fen ${fen}`);
+    hintEngine.postMessage(getEnginePositionCommand());
     hintEngine.postMessage('go movetime 2000');
   }
 };
@@ -477,6 +497,13 @@ const handleBoardCreated = (api: any) => {
 
 const handleMove = (moveInfo?: any) => {
   if (!boardApi || !engine) return;
+  
+  // Sécurité : si la partie est terminée, on annule immédiatement tout coup tenté
+  if (boardConfig.viewOnly) {
+    boardApi.undoLastMove();
+    return;
+  }
+  
   refreshDisplay();
 
   // Détection du coup suggéré (Aide) avant sauvegarde pour incrémenter le compteur
@@ -513,8 +540,7 @@ const handleMove = (moveInfo?: any) => {
   }
   const computerColor = boardConfig.orientation === 'white' ? 'black' : 'white';
   if (boardApi.getTurnColor() === computerColor) {
-    const fen = boardApi.getFen();
-    engine.postMessage(`position fen ${fen}`);
+    engine.postMessage(getEnginePositionCommand());
     engine.postMessage('go movetime 2000');
   } else {
     // Si c'est au tour du joueur, on demande une aide si activée
@@ -568,6 +594,10 @@ const startNewGame = () => {
       engine.postMessage('go movetime 2000');
     }
   }
+  if (hintEngine) {
+    hintEngine.postMessage('ucinewgame');
+    hintEngine.postMessage('isready');
+  }
 };
 
 const handleCheck = (color: string) => {
@@ -581,6 +611,9 @@ const handleCheckmate = (color: string) => {
   gameStatus.color = 'danger';
   boardConfig.viewOnly = true;
   stopTimer();
+  setTimeout(() => {
+    renderKey.value++;
+  }, 100);
 };
 
 const handleStalemate = () => {
@@ -588,6 +621,9 @@ const handleStalemate = () => {
   gameStatus.color = 'medium';
   boardConfig.viewOnly = true;
   stopTimer();
+  setTimeout(() => {
+    renderKey.value++;
+  }, 100);
 };
 
 const handleDraw = () => {
@@ -595,6 +631,9 @@ const handleDraw = () => {
   gameStatus.color = 'medium';
   boardConfig.viewOnly = true;
   stopTimer();
+  setTimeout(() => {
+    renderKey.value++;
+  }, 100);
 };
 
 const resetGame = () => {
