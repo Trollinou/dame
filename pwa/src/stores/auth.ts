@@ -82,22 +82,23 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true;
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/jwt-auth/v1/token`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/simple-jwt-login/v1/auth`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
 
       const data = await response.json();
+      const jwtToken = data.jwt || (data.data && data.data.jwt);
 
-      if (response.ok && data.token) {
-        token.value = data.token;
+      if (response.ok && jwtToken) {
+        token.value = jwtToken;
         localStorage.setItem('dame_jwt_token', token.value);
 
-        // 1. Récupérer le profil avec context=edit pour avoir les RÔLES
-        // WordPress ne renvoie les rôles que dans ce contexte
-        let roles: string[] = data.user_roles || [];
-        let displayName = data.user_display_name;
+        // Récupérer le profil complet via l'API WordPress standard
+        let roles: string[] = [];
+        let displayName = username;
+        let email = '';
 
         try {
           const profileRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/wp/v2/users/me?context=edit`, {
@@ -108,14 +109,15 @@ export const useAuthStore = defineStore('auth', () => {
             const profile = await profileRes.json();
             if (profile.roles) roles = profile.roles;
             if (profile.name) displayName = profile.name;
+            if (profile.email) email = profile.email;
           }
         } catch (e) {
-          console.warn("Profil complet non accessible, utilisation des données limitées.");
+          console.warn("Profil complet non accessible, utilisation des données d'identifiants.");
         }
 
         user.value = {
           name: displayName,
-          email: data.user_email,
+          email: email,
           roles: roles
         };
 
@@ -125,7 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
         await checkIdentities(token.value);
 
       } else {
-        throw new Error(data.message || "Erreur d'identifiants");
+        throw new Error(data.message || (data.data && data.data.message) || "Erreur d'identifiants");
       }
     } catch (error: any) {
       const alert = await alertController.create({

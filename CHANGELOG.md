@@ -7,6 +7,8 @@
 - **Optimisation de la taille du plugin :** Externalisation de Stockfish vers le plugin ROI. Allègement du livrable DAME de 7,3 Mo par la suppression des fichiers physiques WASM et JS.
 
 ### Application Mobile (PWA)
+- **Migration JWT (Simple JWT Login) :** Adaptation du store d'authentification PWA pour supporter la transition vers le plugin *Simple JWT Login*. Mise à jour de l'endpoint d'authentification (`/simple-jwt-login/v1/auth`) et fiabilisation de la récupération du profil utilisateur et des rôles depuis l'API WordPress native.
+- **Configuration API Locale :** Remplacement de l'adresse de l'API locale par `dev.local` dans la configuration de développement.
 - **Gestion dynamique de l'Échiquier :** Masquage complet du bouton d'accès au jeu "Jouer une partie" si le module ROI n'est pas actif sur le site.
 - **Chargement dynamique de Stockfish :** Modification de `PlayPage.vue` pour instancier les Workers Web en utilisant l'URL d'assets fournie dynamiquement par le plugin ROI.
 - **Cache dynamique Workbox :** Configuration de la stratégie `CacheFirst` (`runtimeCaching`) dans le Service Worker pour intercepter et stocker localement le binaire de Stockfish issu du plugin ROI lors de la première connexion en ligne.
