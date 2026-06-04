@@ -93,8 +93,8 @@
                       {{ helpCount > 0 ? `Aide : ${helpCount}` : 'Aide' }}
                     </ion-button>
                   </ion-col>
-                  <ion-col :size="isLandscape ? '12' : '3'" class="ion-margin-bottom">
-                    <ion-button expand="block" @click="undoMove" color="warning" style="font-size: 0.7rem; --padding-start: 2px; --padding-end: 2px;">
+                   <ion-col :size="isLandscape ? '12' : '3'" class="ion-margin-bottom">
+                    <ion-button expand="block" @click="undoMove" :disabled="boardConfig.viewOnly" color="warning" style="font-size: 0.7rem; --padding-start: 2px; --padding-end: 2px;">
                       {{ oupsCount > 0 ? `Oups : ${oupsCount}` : 'Oups !' }}
                     </ion-button>
                   </ion-col>
@@ -616,6 +616,7 @@ const handleCheckmate = (color: string) => {
   gameStatus.color = 'danger';
   boardConfig.viewOnly = true;
   stopTimer();
+  chessStore.saveCompletedGame(timerSeconds.value);
   setTimeout(() => {
     renderKey.value++;
   }, 100);
@@ -626,6 +627,7 @@ const handleStalemate = () => {
   gameStatus.color = 'medium';
   boardConfig.viewOnly = true;
   stopTimer();
+  chessStore.saveCompletedGame(timerSeconds.value);
   setTimeout(() => {
     renderKey.value++;
   }, 100);
@@ -636,6 +638,7 @@ const handleDraw = () => {
   gameStatus.color = 'medium';
   boardConfig.viewOnly = true;
   stopTimer();
+  chessStore.saveCompletedGame(timerSeconds.value);
   setTimeout(() => {
     renderKey.value++;
   }, 100);
@@ -646,6 +649,7 @@ const resetGame = () => {
 };
 
 const undoMove = () => {
+  if (boardConfig.viewOnly) return;
   if (!boardApi || boardApi.getCurrentPlyNumber() === 0) return;
 
   oupsCount.value++;
