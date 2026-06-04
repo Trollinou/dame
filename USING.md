@@ -76,6 +76,6 @@ L'application est accessible à l'adresse : `https://votre-site.com/pwa`.
 
 -   **Public :** Consultation des actualités, de l'agenda et des appels à bénévoles.
 -   **Membres :** Inscription, connexion, choix du profil (si famille) et participation aux appels à bénévoles.
--   **Espace de Jeu :** Jouez contre l'IA (Stockfish) directement dans l'application, avec système d'aide et analyse de partie.
--   **Mode Hors-Ligne :** L'application est installable (PWA) et fonctionne même sans connexion internet pour consulter l'agenda ou jouer aux échecs.
+-   **Espace de Jeu & Suivi :** Jouez contre l'IA (Stockfish) directement dans l'application avec système d'aide, analyse de partie et blocage de l'annulation en fin de partie. Vos parties terminées sont sauvegardées automatiquement sur votre profil adhérent (avec synchronisation hors-ligne intégrée si la connexion internet est coupée).
+-   **Mode Hors-Ligne :** L'application est installable (PWA) et fonctionne même sans connexion internet pour consulter l'agenda, jouer aux échecs ou mettre en attente la sauvegarde de vos parties.
 -   **Staff :** Mode administration permettant de consulter les fiches membres et les rapports de messages en mobilité.

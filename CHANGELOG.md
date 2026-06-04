@@ -11,6 +11,8 @@
 - **Chargement dynamique de Stockfish :** Modification de `PlayPage.vue` pour instancier les Workers Web en utilisant l'URL d'assets fournie dynamiquement par le plugin ROI.
 - **Cache dynamique Workbox :** Configuration de la stratégie `CacheFirst` (`runtimeCaching`) dans le Service Worker pour intercepter et stocker localement le binaire de Stockfish issu du plugin ROI lors de la première connexion en ligne.
 - **Garde de navigation (Router) :** Sécurisation des routes `/play` et `/analysis` en interdisant leur accès si le module ROI est inactif.
+- **Sauvegarde et suivi des parties d'échecs :** Intégration de la sauvegarde automatique des parties d'échecs terminées vers le plugin ROI pour les profils adhérents (type `member`), avec gestion de file d'attente locale (`localStorage`) pour le mode hors ligne et synchronisation automatique.
+- **Fin de partie définitive :** Blocage de l'annulation de coups (bouton Oups) dès que la partie est terminée.
 
 ## [4.5.8] - 2026-06-01
 
