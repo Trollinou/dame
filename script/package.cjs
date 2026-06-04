@@ -113,6 +113,9 @@ function isIgnored(relPath) {
 }
 
 function copyFiltered(src, dest) {
+    if (!fs.existsSync(src)) {
+        return;
+    }
     const stats = fs.statSync(src);
     const relPath = path.relative(rootDir, src);
 

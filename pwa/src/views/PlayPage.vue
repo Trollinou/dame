@@ -611,6 +611,7 @@ const handleCheck = (color: string) => {
 };
 
 const handleCheckmate = (color: string) => {
+  if (boardConfig.viewOnly) return;
   const winner = color === 'white' ? 'Les Noirs gagnent' : 'Les Blancs gagnent';
   gameStatus.message = `🏁 MAT ! ${winner}.`;
   gameStatus.color = 'danger';
@@ -623,6 +624,7 @@ const handleCheckmate = (color: string) => {
 };
 
 const handleStalemate = () => {
+  if (boardConfig.viewOnly) return;
   gameStatus.message = '🤝 Match Nul par Pat.';
   gameStatus.color = 'medium';
   boardConfig.viewOnly = true;
@@ -634,6 +636,7 @@ const handleStalemate = () => {
 };
 
 const handleDraw = () => {
+  if (boardConfig.viewOnly) return;
   gameStatus.message = `🤝 ${getDrawReason()}`;
   gameStatus.color = 'medium';
   boardConfig.viewOnly = true;

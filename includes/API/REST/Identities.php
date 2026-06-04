@@ -220,6 +220,7 @@ class Identities {
 			'name'              => get_the_title( $post_id ),
 			'firstname'         => $this->get_firstname( $post_id ),
 			'type'              => $type,
+			'member_id'         => $post_id,
 			'elo_standard'      => get_post_meta( $post_id, '_dame_elo_standard', true ) ?: 'NC',
 			'elo_rapide'        => get_post_meta( $post_id, '_dame_elo_rapide', true ) ?: 'NC',
 			'elo_blitz'         => get_post_meta( $post_id, '_dame_elo_blitz', true ) ?: 'NC',

@@ -5,6 +5,7 @@
 ### Plugin WordPress (Backend)
 - **Détection du module ROI :** Ajout de l'endpoint REST `/dame/v1/pwa-config` permettant de savoir si le plugin ROI (apprentissage) est actif et d'exposer l'URL absolue de ses assets.
 - **Optimisation de la taille du plugin :** Externalisation de Stockfish vers le plugin ROI. Allègement du livrable DAME de 7,3 Mo par la suppression des fichiers physiques WASM et JS.
+- **API REST (Identités) :** Correction de l'absence du champ `member_id` dans la réponse de l'endpoint `/dame/v1/my-identities` pour les membres physiques.
 
 ### Application Mobile (PWA)
 - **Migration JWT (Simple JWT Login) :** Adaptation du store d'authentification PWA pour supporter la transition vers le plugin *Simple JWT Login*. Mise à jour de l'endpoint d'authentification (`/simple-jwt-login/v1/auth`) et fiabilisation de la récupération du profil utilisateur et des rôles depuis l'API WordPress native.

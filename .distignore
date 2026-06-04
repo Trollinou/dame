@@ -4,6 +4,7 @@
 .eslintrc.json
 .gemini
 .geminirc
+.antigravitycli
 .git
 .github/
 .gitignore
