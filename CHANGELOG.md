@@ -16,6 +16,12 @@
 - **Sauvegarde et suivi des parties d'échecs :** Intégration de la sauvegarde automatique des parties d'échecs terminées vers le plugin ROI pour les profils adhérents (type `member`), avec gestion de file d'attente locale (`localStorage`) pour le mode hors ligne et synchronisation automatique.
 - **Fin de partie définitive :** Blocage de l'annulation de coups (bouton Oups) dès que la partie est terminée.
 
+### Outillage & Automatisation
+- **Script de Packaging Node.js :** Remplacement du script shell obsolète `package.sh` par un script Node.js multiplateforme moderne `script/package.cjs`.
+- **Intégration LocalWP :** Auto-détection intelligente et support automatique des environnements de développement PHP et Composer de l'application *Local* (LocalWP) sur Windows et macOS.
+- **Chargement dynamique d'extensions :** Résolution des erreurs d'environnement PHP (notamment l'absence d'OpenSSL CLI sur Windows) via le chargement à la volée des extensions PHP de l'instance LocalWP lors de la phase de packaging.
+- **Gestion d'exclusions :** Amélioration du mécanisme d'exclusion de dossiers (ex: exclusion récursive propre du dossier `pwa/node_modules/` via l'extension du support des motifs `.distignore` se terminant par `/`).
+
 ## [4.5.8] - 2026-06-01
 
 ### Plugin WordPress (Backend)
