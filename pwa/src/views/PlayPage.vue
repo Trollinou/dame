@@ -289,13 +289,18 @@ const boardConfig = reactive({
   viewOnly: false,
 });
 
+const getWorkerUrl = () => {
+  const base = authStore.stockfishUrl;
+  return base ? `${base}stockfish.js` : 'stockfish/stockfish.js';
+};
+
 /**
  * Initialise le moteur de suggestion (Aide)
  */
 const initHintEngine = () => {
   if (hintEngine) return;
   try {
-    hintEngine = new Worker('stockfish/stockfish.js');
+    hintEngine = new Worker(getWorkerUrl());
     hintEngine.onmessage = (event) => {
       const line = event.data.trim();
       if (line.startsWith('bestmove')) {
@@ -683,8 +688,15 @@ const undoMove = () => {
 onMounted(() => {
   window.addEventListener('resize', updateOrientation);
   gameSettings.level = getInitialElo();
+  
+  if (!authStore.isRoiActive) {
+    console.warn("Le module ROI n'est pas actif, impossible d'initialiser le moteur Stockfish.");
+    engineLoaded.value = true; // Évite le loader infini
+    return;
+  }
+
   try {
-    engine = new Worker('stockfish/stockfish.js');
+    engine = new Worker(getWorkerUrl());
     engine.onmessage = (event) => {
       const line = event.data.trim();
       if (line === 'uciok' || line.includes('id author')) {

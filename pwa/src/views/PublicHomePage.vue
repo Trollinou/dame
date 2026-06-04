@@ -57,8 +57,8 @@
           </ion-toolbar>
         </ion-header>
 
-        <!-- Espace de Jeu (Uniquement si connecté) -->
-        <div v-if="authStore.isAuthenticated">
+        <!-- Espace de Jeu (Uniquement si connecté et ROI actif) -->
+        <div v-if="authStore.isAuthenticated && authStore.isRoiActive">
           <ion-card style="--background: var(--ion-color-step-50, #f4f5f8); margin-top: 8px; margin-bottom: 0;">
               <ion-button expand="block" color="primary" style="margin: 0;" @click="goToPlay">
                ♟️ Jouer une partie ♟️
@@ -205,13 +205,11 @@ const getTodayStr = () => {
 
 const todayStr = getTodayStr();
 
-/**
- * Charge toutes les données de la page
- */
 const loadAllData = async () => {
   const tasks = [
     fetchLatestNews(),
-    agendaStore.fetchAgenda()
+    agendaStore.fetchAgenda(),
+    authStore.fetchPwaConfig()
   ];
 
   if (authStore.isAuthenticated) {

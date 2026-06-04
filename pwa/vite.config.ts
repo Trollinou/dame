@@ -10,7 +10,7 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'assets/icon/*.png', 'stockfish/*'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'assets/icon/*.png'],
       manifest: {
         name: 'Echiquier Lédonien',
         short_name: 'Echiquier Lédonien',
@@ -33,9 +33,25 @@ export default defineConfig({
       },
       workbox: {
         // On s'assure que tous les assets nécessaires sont mis en cache
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,wasm}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         // On augmente la limite de taille pour le fichier WASM de Stockfish (environ 7Mo)
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            urlPattern: /.*\/roi\/includes\/chess\/dist\/stockfish\.(js|wasm)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'roi-stockfish-cache',
+              expiration: {
+                maxEntries: 2,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 jours
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          }
+        ]
       }
     })
   ],

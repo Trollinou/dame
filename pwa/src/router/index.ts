@@ -167,6 +167,14 @@ router.beforeEach((to) => {
     };
   }
 
+  // 3. Vérification de l'activation du module de jeu (requiert ROI)
+  const chessRoutes = ['/tabs/play', '/tabs/analysis'];
+  if (chessRoutes.includes(to.path) && !authStore.isRoiActive) {
+    return { 
+      path: '/tabs/home'
+    };
+  }
+
   return true;
 });
 

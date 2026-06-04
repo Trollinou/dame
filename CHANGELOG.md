@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.6.0] - 2026-06-04
+
+### Plugin WordPress (Backend)
+- **Détection du module ROI :** Ajout de l'endpoint REST `/dame/v1/pwa-config` permettant de savoir si le plugin ROI (apprentissage) est actif et d'exposer l'URL absolue de ses assets.
+- **Optimisation de la taille du plugin :** Externalisation de Stockfish vers le plugin ROI. Allègement du livrable DAME de 7,3 Mo par la suppression des fichiers physiques WASM et JS.
+
+### Application Mobile (PWA)
+- **Gestion dynamique de l'Échiquier :** Masquage complet du bouton d'accès au jeu "Jouer une partie" si le module ROI n'est pas actif sur le site.
+- **Chargement dynamique de Stockfish :** Modification de `PlayPage.vue` pour instancier les Workers Web en utilisant l'URL d'assets fournie dynamiquement par le plugin ROI.
+- **Cache dynamique Workbox :** Configuration de la stratégie `CacheFirst` (`runtimeCaching`) dans le Service Worker pour intercepter et stocker localement le binaire de Stockfish issu du plugin ROI lors de la première connexion en ligne.
+- **Garde de navigation (Router) :** Sécurisation des routes `/play` et `/analysis` en interdisant leur accès si le module ROI est inactif.
+
 ## [4.5.8] - 2026-06-01
 
 ### Plugin WordPress (Backend)

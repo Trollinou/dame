@@ -188,10 +188,29 @@ export const useAuthStore = defineStore('auth', () => {
     router.push('/tabs/home');
   };
 
+  const isRoiActive = ref(localStorage.getItem('dame_roi_active') !== 'false');
+  const stockfishUrl = ref(localStorage.getItem('dame_stockfish_url') || '');
+
+  const fetchPwaConfig = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dame/v1/pwa-config`);
+      if (response.ok) {
+        const data = await response.json();
+        isRoiActive.value = !!data.roi_active;
+        stockfishUrl.value = data.stockfish_url || '';
+        localStorage.setItem('dame_roi_active', String(isRoiActive.value));
+        localStorage.setItem('dame_stockfish_url', stockfishUrl.value);
+      }
+    } catch (error) {
+      console.warn("Erreur chargement pwa-config, utilisation du cache :", error);
+    }
+  };
+
   return {
     token, user, selectedIdentity, adminMode,
     isAuthenticated, isAdmin, isLoading,
-    login, logout, selectIdentity, checkIdentities
+    login, logout, selectIdentity, checkIdentities,
+    isRoiActive, stockfishUrl, fetchPwaConfig
   };
 }, {
   persist: true

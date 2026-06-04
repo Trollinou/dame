@@ -122,6 +122,18 @@ class Data_Endpoints {
 				],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/pwa-config',
+			[
+				[
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => [ $this, 'get_pwa_config' ],
+					'permission_callback' => '__return_true',
+				],
+			]
+		);
 	}
 
 	/**
@@ -132,6 +144,25 @@ class Data_Endpoints {
 	public function get_permissions_check(): bool {
 		// Only users who can edit posts (Staff, Coaches, Admins) can access this data.
 		return current_user_can( 'edit_posts' );
+	}
+
+	/**
+	 * Retrieves the PWA configuration.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function get_pwa_config(): WP_REST_Response {
+		$roi_active = defined( 'ROI_VERSION' );
+		$stockfish_url = '';
+		
+		if ( $roi_active ) {
+			$stockfish_url = plugins_url( 'roi/includes/chess/dist/' );
+		}
+
+		return rest_ensure_response( [
+			'roi_active'    => $roi_active,
+			'stockfish_url' => $stockfish_url,
+		] );
 	}
 
 	/**

@@ -4,6 +4,15 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.6.0] - 2026-06-04
+### Ajouté
+- **Cache dynamique Workbox** : Configuration de la stratégie `CacheFirst` (`runtimeCaching`) dans le Service Worker pour intercepter et stocker localement le binaire de Stockfish issu du plugin ROI lors de la première connexion en ligne.
+- **Garde de navigation (Router)** : Sécurisation des routes `/play` et `/analysis` en interdisant leur accès si le module ROI est inactif.
+
+### Modifié
+- **Chargement dynamique de Stockfish** : Modification de `PlayPage.vue` pour instancier les Workers Web en utilisant l'URL d'assets fournie dynamiquement par le plugin ROI.
+- **Gestion dynamique de l'Échiquier** : Masquage complet du bouton d'accès au jeu "Jouer une partie" si le module ROI n'est pas actif sur le site.
+
 ## [4.5.8] - 2026-06-01
 ### Modifié
 - Alignement de version avec le plugin principal WordPress.

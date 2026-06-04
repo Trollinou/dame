@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 4.5.8
+**Version:** 4.6.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -117,7 +117,12 @@ Utilisées pour alimenter les formulaires de l'application.
 *   **URL :** `/wp-json/dame/v1/pwa-menu`
 *   **Méthode :** `GET`
 
-### 5. Inscription (Membres uniquement)
+### 5. Configuration PWA
+Retourne la configuration globale de l'application (comme l'activation et les chemins d'assets du module ROI).
+*   **URL :** `/wp-json/dame/v1/pwa-config`
+*   **Méthode :** `GET`
+
+### 6. Inscription (Membres uniquement)
 Permet à un membre du club de créer son compte utilisateur WordPress.
 *   **URL :** `/wp-json/dame/v1/register`
 *   **Méthode :** `POST`
