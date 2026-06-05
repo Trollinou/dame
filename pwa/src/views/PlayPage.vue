@@ -31,7 +31,7 @@
                 <div class="player-info">Adversaire</div>
                 <div class="captured-pieces">
                   <span v-for="(p, i) in capturedByOpponent" :key="i" class="captured-piece">
-                    {{ pieceToSymbol(p) }}
+                    {{ p }}
                   </span>
                 </div>
                 <div class="material-wrapper">
@@ -59,7 +59,7 @@
                 <div class="player-info">Toi</div>
                 <div class="captured-pieces">
                   <span v-for="(p, i) in capturedByPlayer" :key="i" class="captured-piece">
-                    {{ pieceToSymbol(p) }}
+                    {{ p }}
                   </span>
                 </div>
                 <div v-if="materialDiffDisplay.player" class="material-count">
@@ -200,6 +200,7 @@ import 'vue3-chessboard/style.css';
 import { useAuthStore } from '@/stores/auth';
 import { useChessStore } from '@/stores/chess';
 import { Chess } from 'chess.js';
+import { undoMove as apiUndoMove, getFormattedCapturedPieces, getMaterialDiffDisplay, getGameOverReason } from '@/utils/boardApiWrapper';
 
 /**
  * États et API
@@ -267,9 +268,7 @@ const stopTimer = () => {
   }
 };
 
-// États pour les pièces capturées et matériel
-const capturedPieces = reactive<{ white: any[], black: any[] }>({ white: [], black: [] });
-const materialDiff = ref(0);
+// États pour les pièces capturées et matériel (gérés par le wrapper)
 
 const gameStatus = reactive({
   message: '',
@@ -393,18 +392,7 @@ const goToAnalysis = () => {
   }
 };
 
-/**
- * Analyse la raison du match nul via chess.js
- */
-const getDrawReason = () => {
-  if (!boardApi) return 'Match Nul.';
-  const game = new Chess(boardApi.getFen());
-  if (game.isStalemate()) return 'Match Nul par Pat.';
-  if (game.isInsufficientMaterial()) return 'Match Nul par matériel insuffisant.';
-  if (game.isThreefoldRepetition()) return 'Match Nul par triple répétition.';
-  if (game.isDraw()) return 'Match Nul (règle des 50 coups).';
-  return 'Match Nul.';
-};
+
 
 /**
  * Détermine l'ELO par défaut du joueur (Rapide)
@@ -431,41 +419,29 @@ const applyEngineStrength = (level: number) => {
 };
 
 /**
- * Traduit le type de pièce en symbole unicode
- */
-const pieceToSymbol = (p: any) => {
-  const type = typeof p === 'string' ? p : p?.type;
-  if (!type) return '';
-  const map: any = { 'p': '♟', 'n': '♞', 'b': '♝', 'r': '♜', 'q': '♛', 'k': '♚' };
-  return map[type.toLowerCase()] || '';
-};
-
-/**
  * Pièces capturées par le joueur
  */
 const capturedByPlayer = computed(() => {
-  return boardConfig.orientation === 'white' ? capturedPieces.black : capturedPieces.white;
+  if (!boardApi) return [];
+  const captures = getFormattedCapturedPieces(boardApi);
+  return boardConfig.orientation === 'white' ? captures.white : captures.black;
 });
 
 /**
  * Pièces capturées par l'ordinateur
  */
 const capturedByOpponent = computed(() => {
-  return boardConfig.orientation === 'white' ? capturedPieces.white : capturedPieces.black;
+  if (!boardApi) return [];
+  const captures = getFormattedCapturedPieces(boardApi);
+  return boardConfig.orientation === 'white' ? captures.black : captures.white;
 });
 
 /**
  * Différence matérielle affichée
  */
 const materialDiffDisplay = computed(() => {
-  const diff = Number(materialDiff.value) || 0;
-  if (diff === 0) return { player: null, opponent: null };
-  const isWhite = boardConfig.orientation === 'white';
-  const playerWins = isWhite ? diff > 0 : diff < 0;
-  return {
-    player: playerWins ? Math.abs(diff) : null,
-    opponent: !playerWins ? Math.abs(diff) : null
-  };
+  if (!boardApi) return { player: null, opponent: null };
+  return getMaterialDiffDisplay(boardApi, boardConfig.orientation);
 });
 
 /**
@@ -474,11 +450,6 @@ const materialDiffDisplay = computed(() => {
 const refreshDisplay = () => {
   if (boardApi) {
     currentPly.value = boardApi.getCurrentPlyNumber();
-    const material = boardApi.getMaterialCount();
-    materialDiff.value = material?.materialDiff ?? 0;
-    const captures = boardApi.getCapturedPieces();
-    capturedPieces.white = captures.white || [];
-    capturedPieces.black = captures.black || [];
   }
 };
 
@@ -612,8 +583,7 @@ const handleCheck = (color: string) => {
 
 const handleCheckmate = (color: string) => {
   if (boardConfig.viewOnly) return;
-  const winner = color === 'white' ? 'Les Noirs gagnent' : 'Les Blancs gagnent';
-  gameStatus.message = `🏁 MAT ! ${winner}.`;
+  gameStatus.message = `🏁 ${getGameOverReason(boardApi)}`;
   gameStatus.color = 'danger';
   boardConfig.viewOnly = true;
   stopTimer();
@@ -625,7 +595,7 @@ const handleCheckmate = (color: string) => {
 
 const handleStalemate = () => {
   if (boardConfig.viewOnly) return;
-  gameStatus.message = '🤝 Match Nul par Pat.';
+  gameStatus.message = `🤝 ${getGameOverReason(boardApi)}`;
   gameStatus.color = 'medium';
   boardConfig.viewOnly = true;
   stopTimer();
@@ -637,7 +607,7 @@ const handleStalemate = () => {
 
 const handleDraw = () => {
   if (boardConfig.viewOnly) return;
-  gameStatus.message = `🤝 ${getDrawReason()}`;
+  gameStatus.message = `🤝 ${getGameOverReason(boardApi)}`;
   gameStatus.color = 'medium';
   boardConfig.viewOnly = true;
   stopTimer();
@@ -660,13 +630,7 @@ const undoMove = () => {
   // Efface les flèches d'aide
   boardApi.hideMoves();
 
-  const playerColor = boardConfig.orientation;
-  if (boardApi.getTurnColor() === playerColor) {
-    boardApi.undoLastMove();
-    boardApi.undoLastMove();
-  } else {
-    boardApi.undoLastMove();
-  }
+  apiUndoMove(boardApi, true, boardConfig.orientation);
   boardConfig.viewOnly = false;
   const game = new Chess(boardApi.getFen());
   if (game.inCheck()) {

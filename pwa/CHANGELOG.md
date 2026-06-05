@@ -10,6 +10,7 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Garde de navigation (Router)** : Sécurisation des routes `/play` et `/analysis` en interdisant leur accès si le module ROI est inactif.
 
 ### Modifié
+- **Centralisation API & Nettoyage** : Refactoring de `PlayPage.vue` pour utiliser un wrapper de compatibilité locale `boardApiWrapper.ts`. Déplacement de la logique d'annulation double, du formatage des pièces capturées et du différentiel matériel, ainsi que du message de fin de partie, hors de la vue UI.
 - **Chargement dynamique de Stockfish** : Modification de `PlayPage.vue` pour instancier les Workers Web en utilisant l'URL d'assets fournie dynamiquement par le plugin ROI.
 - **Gestion dynamique de l'Échiquier** : Masquage complet du bouton d'accès au jeu "Jouer une partie" si le module ROI n'est pas actif sur le site.
 
