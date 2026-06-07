@@ -39,20 +39,35 @@
                     +{{ materialDiffDisplay.opponent }}
                   </div>
                 </div>
+                <!-- Horloge Adversaire -->
+                <div v-if="clockSettings.preset !== 'none'" class="game-clock opponent-clock" :class="{ active: activeClockColor === opponentColor }">
+                  {{ opponentFormattedTime }}
+                </div>
               </div>
 
-              <!-- Échiquier -->
-              <TheChessboard 
-                v-if="engineLoaded"
-                :key="`board-${isLandscape ? 'l' : 'p'}-${renderKey}`"
-                :board-config="boardConfig" 
-                @board-created="handleBoardCreated" 
-                @move="handleMove"
-                @check="handleCheck"
-                @checkmate="handleCheckmate"
-                @stalemate="handleStalemate"
-                @draw="handleDraw"
-              />
+              <!-- Échiquier et Evaluation Bar -->
+              <div class="board-wrapper-with-bar">
+                <TheChessboard 
+                  v-if="engineLoaded"
+                  :key="`board-${isLandscape ? 'l' : 'p'}-${renderKey}`"
+                  :board-config="boardConfig" 
+                  :player-color="boardConfig.playerColor"
+                  @board-created="handleBoardCreated" 
+                  @move="handleMove"
+                  @check="handleCheck"
+                  @checkmate="handleCheckmate"
+                  @stalemate="handleStalemate"
+                  @draw="handleDraw"
+                />
+                
+                <!-- Barre d'Évaluation -->
+                <div class="evaluation-bar" :title="computedEvalTooltip">
+                  <div
+                    class="evaluation-bar-fill"
+                    :style="computedEvalStyle"
+                  ></div>
+                </div>
+              </div>
 
               <!-- Bande inférieure (Joueur) -->
               <div class="captured-bar bottom">
@@ -64,6 +79,10 @@
                 </div>
                 <div v-if="materialDiffDisplay.player" class="material-count">
                   +{{ materialDiffDisplay.player }}
+                </div>
+                <!-- Horloge Joueur -->
+                <div v-if="clockSettings.preset !== 'none'" class="game-clock player-clock" :class="{ active: activeClockColor === playerColor }">
+                  {{ playerFormattedTime }}
                 </div>
               </div>
             </div>
@@ -136,6 +155,18 @@
               </ion-item>
 
               <ion-item class="ion-margin-top">
+                <ion-label position="stacked">Cadence (Pendule)</ion-label>
+                <ion-select v-model="gameSettings.clockPreset" interface="popover">
+                  <ion-select-option value="none">Sans pendule</ion-select-option>
+                  <ion-select-option value="1+0">1 min (Bullet)</ion-select-option>
+                  <ion-select-option value="3+2">3 min + 2 s (Blitz)</ion-select-option>
+                  <ion-select-option value="5+0">5 min KO (Blitz)</ion-select-option>
+                  <ion-select-option value="10+5">10 min + 5 s (Rapide)</ion-select-option>
+                  <ion-select-option value="15+10">15 min + 10 s (Rapide)</ion-select-option>
+                </ion-select>
+              </ion-item>
+
+              <ion-item class="ion-margin-top">
                 <ion-label position="stacked">Niveau de l'IA (ELO : {{ gameSettings.level }})</ion-label>
                 <ion-range 
                   v-model="gameSettings.level" 
@@ -201,6 +232,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useChessStore } from '@/stores/chess';
 import { Chess } from 'chess.js';
 import { undoMove as apiUndoMove, getFormattedCapturedPieces, getMaterialDiffDisplay, getGameOverReason } from '@/utils/boardApiWrapper';
+import { StockfishManager } from '@/utils/stockfishManager';
 
 /**
  * États et API
@@ -222,27 +254,117 @@ const updateOrientation = () => {
 };
 
 let boardApi: any = null;
-let engine: Worker | null = null;
-let hintEngine: Worker | null = null;
+let stockfishManager: StockfishManager | null = null;
 const engineLoaded = ref(false);
 const showSettings = ref(false);
 const isHintEnabled = ref(false);
 const currentPly = ref(0);
 const oupsCount = ref(0);
 const helpCount = ref(0);
-let lastSuggestedMove = '';
+const lastSuggestedMove = ref('');
 
-// Timer de la partie
-const timerSeconds = ref(0);
+// Score de la barre d'évaluation
+const evalScoreType = ref('cp');
+const evalScoreValue = ref(0);
+
+const computedEvalTooltip = computed(() => {
+  let scoreFromWhite = 0;
+  const currentStockfishColor = boardConfig.orientation === 'white' ? 'black' : 'white';
+  
+  if (evalScoreType.value === 'cp') {
+    scoreFromWhite = currentStockfishColor === 'white' ? evalScoreValue.value : -evalScoreValue.value;
+    const evalFromWhite = scoreFromWhite / 100;
+    const sign = evalFromWhite > 0 ? '+' : '';
+    return `${sign}${evalFromWhite.toFixed(2)}`;
+  } else if (evalScoreType.value === 'mate') {
+    const isWhiteAdvantage =
+      (currentStockfishColor === 'white' && evalScoreValue.value > 0) ||
+      (currentStockfishColor === 'black' && evalScoreValue.value < 0);
+    const absMoves = Math.abs(evalScoreValue.value);
+    const sideChar = isWhiteAdvantage ? 'B' : 'N';
+    return `Mat #${absMoves}${sideChar}`;
+  }
+  return '0.00';
+});
+
+const computedEvalStyle = computed(() => {
+  let scoreFromWhite = 0;
+  const currentStockfishColor = boardConfig.orientation === 'white' ? 'black' : 'white';
+
+  if (evalScoreType.value === 'cp') {
+    scoreFromWhite = currentStockfishColor === 'white' ? evalScoreValue.value : -evalScoreValue.value;
+  } else if (evalScoreType.value === 'mate') {
+    const isWhiteAdvantage =
+      (currentStockfishColor === 'white' && evalScoreValue.value > 0) ||
+      (currentStockfishColor === 'black' && evalScoreValue.value < 0);
+    scoreFromWhite = isWhiteAdvantage ? 1000 : -1000;
+  }
+
+  const clampedScore = Math.max(-1000, Math.min(1000, scoreFromWhite));
+  const percentageWhite = 50 + (clampedScore / 1000) * 50;
+
+  if (boardConfig.orientation === 'white') {
+    return {
+      height: `${percentageWhite}%`,
+      marginTop: 'auto',
+      marginBottom: '0'
+    };
+  } else {
+    return {
+      height: `${percentageWhite}%`,
+      marginTop: '0',
+      marginBottom: 'auto'
+    };
+  }
+});
+
+// Pendule d'échecs professionnelle
+const clockSettings = reactive({
+  preset: 'none' as 'none' | '1+0' | '3+2' | '5+0' | '10+5' | '15+10',
+  wtime: 0, // ms
+  btime: 0, // ms
+  winc: 0,  // ms
+  binc: 0,  // ms
+});
+
+const activeClockColor = ref<'white' | 'black' | null>(null);
+const playerColor = computed<'white' | 'black'>(() => boardConfig.orientation);
+const opponentColor = computed<'white' | 'black'>(() => boardConfig.orientation === 'white' ? 'black' : 'white');
+
+const formatClockTime = (timeMs: number): string => {
+  if (timeMs <= 0) return '00:00';
+  const totalSeconds = timeMs / 1000;
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = Math.floor(totalSeconds % 60);
+  
+  if (totalSeconds < 10) {
+    // Affichage des dixièmes sous les 10 secondes
+    const tenths = Math.floor((timeMs % 1000) / 100);
+    return `${seconds}.${tenths}`;
+  }
+  
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+};
+
+const playerFormattedTime = computed(() => {
+  return playerColor.value === 'white' ? formatClockTime(clockSettings.wtime) : formatClockTime(clockSettings.btime);
+});
+
+const opponentFormattedTime = computed(() => {
+  return opponentColor.value === 'white' ? formatClockTime(clockSettings.wtime) : formatClockTime(clockSettings.btime);
+});
+
+// Timer global de la partie (historique)
+const timerTenths = ref(0);
 let timerInterval: any = null;
 const isTimerRunning = ref(false);
 
-/**
- * Formate le temps en MI:SS
- */
+const timerSeconds = computed(() => Math.floor(timerTenths.value / 10));
+
 const formattedTime = computed(() => {
-  const min = Math.floor(timerSeconds.value / 60);
-  const sec = timerSeconds.value % 60;
+  const totalSecs = timerSeconds.value;
+  const min = Math.floor(totalSecs / 60);
+  const sec = totalSecs % 60;
   return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
 });
 
@@ -253,8 +375,24 @@ const startTimer = () => {
   if (isTimerRunning.value) return;
   isTimerRunning.value = true;
   timerInterval = setInterval(() => {
-    timerSeconds.value++;
-  }, 1000);
+    // Incrémente le temps de jeu global (en 100ms)
+    timerTenths.value++;
+
+    // Décompte la pendule active de 100ms
+    if (clockSettings.preset !== 'none' && activeClockColor.value) {
+      if (activeClockColor.value === 'white') {
+        clockSettings.wtime = Math.max(0, clockSettings.wtime - 100);
+        if (clockSettings.wtime <= 0) {
+          handleTimeOut('white');
+        }
+      } else {
+        clockSettings.btime = Math.max(0, clockSettings.btime - 100);
+        if (clockSettings.btime <= 0) {
+          handleTimeOut('black');
+        }
+      }
+    }
+  }, 100); // Résolution à 100ms pour les dixièmes de seconde
 };
 
 /**
@@ -278,63 +416,10 @@ const gameStatus = reactive({
 // Réglages de la partie
 const gameSettings = reactive({
   playerColor: 'white' as 'white' | 'black' | 'random',
+  clockPreset: 'none' as 'none' | '1+0' | '3+2' | '5+0' | '10+5' | '15+10',
   level: 1320
 });
 
-const boardConfig = reactive({
-  coordinates: true,
-  autoCastling: true,
-  orientation: 'white' as 'white' | 'black',
-  viewOnly: false,
-});
-
-const getWorkerUrl = () => {
-  const base = authStore.stockfishUrl;
-  return base ? `${base}stockfish.js` : 'stockfish/stockfish.js';
-};
-
-/**
- * Initialise le moteur de suggestion (Aide)
- */
-const initHintEngine = () => {
-  if (hintEngine) return;
-  try {
-    hintEngine = new Worker(getWorkerUrl());
-    hintEngine.onmessage = (event) => {
-      const line = event.data.trim();
-      if (line.startsWith('bestmove')) {
-        const move = line.split(' ')[1]; // ex: "e2e4"
-        if (move && move !== '(none)' && boardApi && isHintEnabled.value) {
-          lastSuggestedMove = move;
-          const from = move.substring(0, 2);
-          const to = move.substring(2, 4);
-          boardApi.drawMove(from as any, to as any, 'green');
-        }
-      }
-    };
-    hintEngine.postMessage('uci');
-    hintEngine.postMessage('setoption name UCI_LimitStrength value false');
-    hintEngine.postMessage('setoption name Hash value 32');
-    hintEngine.postMessage('isready');
-  } catch (err) {
-    console.error("Échec moteur aide :", err);
-  }
-};
-
-/**
- * Termine le moteur de suggestion
- */
-const terminateHintEngine = () => {
-  if (hintEngine) {
-    hintEngine.terminate();
-    hintEngine = null;
-  }
-};
-
-/**
- * Reconstruit la commande de position UCI avec l'historique complet des coups
- * pour permettre la détection de la triple répétition par le moteur.
- */
 const getEnginePositionCommand = (): string => {
   if (!boardApi) return 'position startpos';
   try {
@@ -352,15 +437,31 @@ const getEnginePositionCommand = (): string => {
   }
 };
 
+const boardConfig = reactive({
+  coordinates: true,
+  autoCastling: true,
+  orientation: 'white' as 'white' | 'black',
+  playerColor: 'white' as 'white' | 'black' | 'both',
+  viewOnly: false,
+});
+
+const getWorkerUrl = () => {
+  const base = authStore.stockfishUrl;
+  return base ? `${base}stockfish.js` : 'stockfish/stockfish.js';
+};
+
+/**
+ * Reconstruit la commande de position UCI avec l'historique complet des coups
+ * pour permettre la détection de la triple répétition par le moteur.
+ */
 /**
  * Demande une suggestion au moteur d'aide
  */
 const requestHint = () => {
-  if (!boardApi || !hintEngine || !isHintEnabled.value) return;
+  if (!boardApi || !stockfishManager || !isHintEnabled.value) return;
   const playerColor = boardConfig.orientation;
   if (boardApi.getTurnColor() === playerColor) {
-    hintEngine.postMessage(getEnginePositionCommand());
-    hintEngine.postMessage('go movetime 2000');
+    stockfishManager.startEvaluation(getEnginePositionCommand());
   }
 };
 
@@ -370,11 +471,16 @@ const requestHint = () => {
 const toggleHint = () => {
   isHintEnabled.value = !isHintEnabled.value;
   if (isHintEnabled.value) {
-    initHintEngine();
-    setTimeout(requestHint, 500);
+    if (boardApi && stockfishManager) {
+      const playerColor = boardConfig.orientation;
+      if (boardApi.getTurnColor() === playerColor) {
+        stockfishManager.startEvaluation(getEnginePositionCommand());
+      }
+    }
   } else {
-    terminateHintEngine();
-    if (boardApi) boardApi.hideMoves();
+    if (boardApi) {
+      boardApi.hideMoves();
+    }
   }
 };
 
@@ -392,8 +498,6 @@ const goToAnalysis = () => {
   }
 };
 
-
-
 /**
  * Détermine l'ELO par défaut du joueur (Rapide)
  */
@@ -404,18 +508,6 @@ const getInitialElo = () => {
   if (isNaN(eloNum) || eloNum < 1320) return 1320;
   if (eloNum > 2800) return 2800;
   return eloNum;
-};
-
-/**
- * Applique la force du moteur
- */
-const applyEngineStrength = (level: number) => {
-  if (!engine) return;
-  const safeLevel = Math.floor(Number(level));
-  if (!isNaN(safeLevel)) {
-    engine.postMessage('setoption name UCI_LimitStrength value true');
-    engine.postMessage(`setoption name UCI_Elo value ${safeLevel}`);
-  }
 };
 
 /**
@@ -460,6 +552,7 @@ const handleBoardCreated = (api: any) => {
   if (chessStore.currentPgn) {
     boardApi.loadPgn(chessStore.currentPgn);
     boardConfig.orientation = chessStore.orientation;
+    boardConfig.playerColor = chessStore.orientation;
     gameSettings.level = chessStore.engineElo;
     gameSettings.playerColor = chessStore.orientation;
     
@@ -471,8 +564,23 @@ const handleBoardCreated = (api: any) => {
   refreshDisplay();
 };
 
+const handleTimeOut = (flaggedColor: 'white' | 'black') => {
+  stopTimer();
+  boardConfig.viewOnly = true;
+  activeClockColor.value = null;
+
+  const winner = flaggedColor === 'white' ? 'Noirs' : 'Blancs';
+  gameStatus.message = `🏁 Perdu au temps ! Les ${winner} ont gagné.`;
+  gameStatus.color = 'danger';
+  
+  chessStore.saveCompletedGame(timerSeconds.value);
+  setTimeout(() => {
+    renderKey.value++;
+  }, 100);
+};
+
 const handleMove = (moveInfo?: any) => {
-  if (!boardApi || !engine) return;
+  if (!boardApi || !stockfishManager) return;
   
   // Sécurité : si la partie est terminée, on annule immédiatement tout coup tenté
   if (boardConfig.viewOnly) {
@@ -483,10 +591,25 @@ const handleMove = (moveInfo?: any) => {
   refreshDisplay();
 
   // Détection du coup suggéré (Aide) avant sauvegarde pour incrémenter le compteur
-  if (moveInfo && lastSuggestedMove) {
+  if (moveInfo && lastSuggestedMove.value && isHintEnabled.value) {
     const playedMove = moveInfo.from + moveInfo.to;
-    if (playedMove === lastSuggestedMove) {
+    if (playedMove === lastSuggestedMove.value) {
       helpCount.value++;
+    }
+  }
+
+  // Application des incréments (Fischer) sur le coup qui vient de se terminer
+  const justFinishedColor = boardApi.getTurnColor() === 'white' ? 'black' : 'white';
+  const plyCount = boardApi.getCurrentPlyNumber();
+
+  if (clockSettings.preset !== 'none' && plyCount > 1) {
+    if (justFinishedColor === 'white') {
+      clockSettings.wtime += clockSettings.winc;
+      // Ajout bonus au 40ème coup (80 plys)
+      if (plyCount === 80) clockSettings.wtime += 30000; // +30s au 40ème coup
+    } else {
+      clockSettings.btime += clockSettings.binc;
+      if (plyCount === 81) clockSettings.btime += 30000;
     }
   }
 
@@ -500,12 +623,15 @@ const handleMove = (moveInfo?: any) => {
   );
 
   // On efface la suggestion après chaque coup
-  lastSuggestedMove = '';
+  lastSuggestedMove.value = '';
 
   // Démarre le chrono au premier coup joué de la partie
-  if (boardApi.getCurrentPlyNumber() === 1 && !isTimerRunning.value) {
+  if (plyCount === 1) {
     startTimer();
   }
+
+  // Changement de l'horloge active
+  activeClockColor.value = boardApi.getTurnColor();
 
   // Efface les flèches d'aide
   boardApi.hideMoves();
@@ -514,15 +640,20 @@ const handleMove = (moveInfo?: any) => {
     gameStatus.message = '';
     gameStatus.color = 'medium';
   }
+
   const computerColor = boardConfig.orientation === 'white' ? 'black' : 'white';
+  const positionCmd = getEnginePositionCommand();
+
   if (boardApi.getTurnColor() === computerColor) {
-    engine.postMessage(getEnginePositionCommand());
-    engine.postMessage('go movetime 2000');
-  } else {
-    // Si c'est au tour du joueur, on demande une aide si activée
-    if (isHintEnabled.value) {
-      requestHint();
+    if (clockSettings.preset !== 'none') {
+      const timeParams = `wtime ${clockSettings.wtime} winc ${clockSettings.winc} btime ${clockSettings.btime} binc ${clockSettings.binc}`;
+      stockfishManager.startOpponentMove(positionCmd, timeParams);
+    } else {
+      stockfishManager.startOpponentMove(positionCmd, 5000);
     }
+  } else {
+    // Si c'est au tour du joueur, on commence les calculs d'évaluation / conseil
+    stockfishManager.startEvaluation(positionCmd);
   }
 };
 
@@ -538,14 +669,48 @@ const startNewGame = () => {
   
   // Reset compteurs et chrono
   stopTimer();
-  timerSeconds.value = 0;
+  timerTenths.value = 0;
   oupsCount.value = 0;
   helpCount.value = 0;
-  lastSuggestedMove = '';
+  lastSuggestedMove.value = '';
+  activeClockColor.value = null;
+
+  // Configuration de la cadence
+  clockSettings.preset = gameSettings.clockPreset;
+  if (gameSettings.clockPreset === '1+0') {
+    clockSettings.wtime = 60000;
+    clockSettings.btime = 60000;
+    clockSettings.winc = 0;
+    clockSettings.binc = 0;
+  } else if (gameSettings.clockPreset === '3+2') {
+    clockSettings.wtime = 180000;
+    clockSettings.btime = 180000;
+    clockSettings.winc = 2000;
+    clockSettings.binc = 2000;
+  } else if (gameSettings.clockPreset === '5+0') {
+    clockSettings.wtime = 300000;
+    clockSettings.btime = 300000;
+    clockSettings.winc = 0;
+    clockSettings.binc = 0;
+  } else if (gameSettings.clockPreset === '10+5') {
+    clockSettings.wtime = 600000;
+    clockSettings.btime = 600000;
+    clockSettings.winc = 5000;
+    clockSettings.binc = 5000;
+  } else if (gameSettings.clockPreset === '15+10') {
+    clockSettings.wtime = 900000;
+    clockSettings.btime = 900000;
+    clockSettings.winc = 10000;
+    clockSettings.binc = 10000;
+  } else {
+    clockSettings.wtime = 0;
+    clockSettings.btime = 0;
+    clockSettings.winc = 0;
+    clockSettings.binc = 0;
+  }
 
   // Reset aide lors d'une nouvelle partie
   isHintEnabled.value = false;
-  terminateHintEngine();
 
   // Nettoyage de la partie précédente dans le store
   chessStore.clearGame();
@@ -557,22 +722,29 @@ const startNewGame = () => {
     finalColor = gameSettings.playerColor;
   }
   boardConfig.orientation = finalColor;
+  boardConfig.playerColor = finalColor;
   if (boardApi) {
     boardApi.resetBoard();
     refreshDisplay();
   }
-  if (engine) {
-    applyEngineStrength(gameSettings.level);
-    engine.postMessage('ucinewgame');
-    engine.postMessage('isready');
+  if (stockfishManager) {
+    stockfishManager.initOpponentWorker(gameSettings.level);
+    stockfishManager.setOpponentElo(gameSettings.level);
+    
+    const positionCmd = 'position startpos';
     if (finalColor === 'black') {
-      engine.postMessage('position startpos');
-      engine.postMessage('go movetime 2000');
+      activeClockColor.value = 'white'; // Les Blancs (IA) commencent
+      startTimer(); // Démarre le chrono
+      
+      if (clockSettings.preset !== 'none') {
+        const timeParams = `wtime ${clockSettings.wtime} winc ${clockSettings.winc} btime ${clockSettings.btime} binc ${clockSettings.binc}`;
+        stockfishManager.startOpponentMove(positionCmd, timeParams);
+      } else {
+        stockfishManager.startOpponentMove(positionCmd, 5000);
+      }
+    } else {
+      stockfishManager.startEvaluation(positionCmd);
     }
-  }
-  if (hintEngine) {
-    hintEngine.postMessage('ucinewgame');
-    hintEngine.postMessage('isready');
   }
 };
 
@@ -588,6 +760,9 @@ const handleCheckmate = (color: string) => {
   boardConfig.viewOnly = true;
   stopTimer();
   chessStore.saveCompletedGame(timerSeconds.value);
+  if (stockfishManager) {
+    stockfishManager.stopEvaluation();
+  }
   setTimeout(() => {
     renderKey.value++;
   }, 100);
@@ -600,6 +775,9 @@ const handleStalemate = () => {
   boardConfig.viewOnly = true;
   stopTimer();
   chessStore.saveCompletedGame(timerSeconds.value);
+  if (stockfishManager) {
+    stockfishManager.stopEvaluation();
+  }
   setTimeout(() => {
     renderKey.value++;
   }, 100);
@@ -612,6 +790,9 @@ const handleDraw = () => {
   boardConfig.viewOnly = true;
   stopTimer();
   chessStore.saveCompletedGame(timerSeconds.value);
+  if (stockfishManager) {
+    stockfishManager.stopEvaluation();
+  }
   setTimeout(() => {
     renderKey.value++;
   }, 100);
@@ -650,9 +831,14 @@ const undoMove = () => {
     oupsCount.value
   );
 
-  // Recalcule l'aide si activée
-  if (isHintEnabled.value) {
-    requestHint();
+  const computerColor = boardConfig.orientation === 'white' ? 'black' : 'white';
+  const positionCmd = getEnginePositionCommand();
+  if (stockfishManager) {
+    if (boardApi.getTurnColor() === computerColor) {
+      stockfishManager.startOpponentMove(positionCmd, 5000);
+    } else {
+      stockfishManager.startEvaluation(positionCmd);
+    }
   }
 };
 
@@ -667,39 +853,42 @@ onMounted(() => {
   }
 
   try {
-    engine = new Worker(getWorkerUrl());
-    engine.onmessage = (event) => {
-      const line = event.data.trim();
-      if (line === 'uciok' || line.includes('id author')) {
-        if (!engineLoaded.value) {
-          applyEngineStrength(gameSettings.level);
-          engine?.postMessage('isready');
-          engineLoaded.value = true;
-        }
-        return;
-      }
-      if (line.startsWith('bestmove')) {
-        const move = line.split(' ')[1];
-        if (move && boardApi) {
-          boardApi.move(move);
+    stockfishManager = new StockfishManager(getWorkerUrl());
+    stockfishManager.setCallbacks({
+      onBestMove: (bestMove) => {
+        if (boardApi) {
+          boardApi.move(bestMove);
           refreshDisplay();
         }
+      },
+      onEvaluation: (scoreType, scoreValue) => {
+        evalScoreType.value = scoreType;
+        evalScoreValue.value = scoreValue;
+      },
+      onHint: (bestMove) => {
+        lastSuggestedMove.value = bestMove;
+        if (isHintEnabled.value && boardApi) {
+          const from = bestMove.substring(0, 2);
+          const to = bestMove.substring(2, 4);
+          boardApi.drawMove(from as any, to as any, 'green');
+        }
       }
-    };
-    engine.postMessage('uci');
-    setTimeout(() => {
-      if (!engineLoaded.value) engineLoaded.value = true;
-    }, 3000);
+    });
+
+    stockfishManager.initEvaluationWorker();
+    stockfishManager.initOpponentWorker(gameSettings.level);
+    engineLoaded.value = true;
   } catch (err) {
-    console.error("Erreur moteur :", err);
+    console.error("Erreur d'initialisation du StockfishManager :", err);
     engineLoaded.value = true;
   }
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateOrientation);
-  if (engine) engine.terminate();
-  if (hintEngine) hintEngine.terminate();
+  if (stockfishManager) {
+    stockfishManager.terminate();
+  }
 });
 
 onIonViewWillLeave(() => {
@@ -962,4 +1151,58 @@ onIonViewWillLeave(() => {
 .status-banner.danger { background-color: var(--ion-color-danger); color: #fff; }
 .status-banner.medium { background-color: var(--ion-color-light); color: var(--ion-color-medium-shade); }
 .status-placeholder { color: var(--ion-color-medium); font-style: italic; font-size: 0.9rem; }
+
+/* CSS pour l'intégration de la barre d'évaluation */
+.board-wrapper-with-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  position: relative;
+  width: 100%;
+}
+
+.board-wrapper-with-bar :deep(.cg-wrap) {
+  flex: 1;
+}
+
+.evaluation-bar {
+  width: 12px;
+  background-color: #404040;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-left: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--ion-color-light-shade);
+}
+
+.evaluation-bar-fill {
+  width: 100%;
+  background-color: #ececec;
+  transition: height 0.3s ease;
+}
+
+/* Styles pour les horloges de la pendule */
+.game-clock {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.95rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  background-color: #2b2b2b;
+  color: #a0a0a0;
+  border-radius: 4px;
+  margin-left: auto;
+  min-width: 60px;
+  text-align: center;
+  border: 1px solid #444;
+  transition: all 0.2s ease;
+}
+
+.game-clock.active {
+  background-color: var(--ion-color-primary);
+  color: #ffffff;
+  border-color: var(--ion-color-primary-tint);
+  box-shadow: 0 0 6px var(--ion-color-primary-tint);
+}
 </style>
