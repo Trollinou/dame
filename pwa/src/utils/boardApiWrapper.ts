@@ -22,8 +22,8 @@ export function undoMove(boardApi: any, vsComputer = false, playerColor: 'white'
 /**
  * Returns captured pieces mapped directly to Unicode symbols.
  */
-export function getFormattedCapturedPieces(boardApi: any): { white: string[]; black: string[] } {
-  if (!boardApi) return { white: [], black: [] };
+export function getFormattedCapturedPieces(boardApi: any, enabled = true): { white: string[]; black: string[] } {
+  if (!boardApi || !enabled) return { white: [], black: [] };
   
   const captured = boardApi.getCapturedPieces() || { white: [], black: [] };
   const pieceToSymbol = (p: any) => {
@@ -42,8 +42,8 @@ export function getFormattedCapturedPieces(boardApi: any): { white: string[]; bl
 /**
  * Calculates material difference display from player's perspective.
  */
-export function getMaterialDiffDisplay(boardApi: any, playerColor: 'white' | 'black'): { player: number | null; opponent: number | null } {
-  if (!boardApi) return { player: null, opponent: null };
+export function getMaterialDiffDisplay(boardApi: any, playerColor: 'white' | 'black', enabled = true): { player: number | null; opponent: number | null } {
+  if (!boardApi || !enabled) return { player: null, opponent: null };
   
   const diff = boardApi.getMaterialCount()?.materialDiff ?? 0;
   if (diff === 0) return { player: null, opponent: null };

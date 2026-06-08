@@ -28,16 +28,16 @@
               
               <!-- Bande supérieure (Adversaire) -->
               <div class="captured-bar top">
+                <div class="material-wrapper">
+                  <div v-if="materialDiffDisplay.opponent" class="material-count">
+                    +{{ materialDiffDisplay.opponent }}
+                  </div>
+                </div>
                 <div class="player-info">Adversaire</div>
                 <div class="captured-pieces">
                   <span v-for="(p, i) in capturedByOpponent" :key="i" class="captured-piece">
                     {{ p }}
                   </span>
-                </div>
-                <div class="material-wrapper">
-                  <div v-if="materialDiffDisplay.opponent" class="material-count">
-                    +{{ materialDiffDisplay.opponent }}
-                  </div>
                 </div>
                 <!-- Horloge Adversaire -->
                 <div v-if="clockSettings.preset !== 'none'" class="game-clock opponent-clock" :class="{ active: activeClockColor === opponentColor }">
@@ -71,14 +71,16 @@
 
               <!-- Bande inférieure (Joueur) -->
               <div class="captured-bar bottom">
+                <div class="material-wrapper">
+                  <div v-if="materialDiffDisplay.player" class="material-count">
+                    +{{ materialDiffDisplay.player }}
+                  </div>
+                </div>
                 <div class="player-info">Toi</div>
                 <div class="captured-pieces">
                   <span v-for="(p, i) in capturedByPlayer" :key="i" class="captured-piece">
                     {{ p }}
                   </span>
-                </div>
-                <div v-if="materialDiffDisplay.player" class="material-count">
-                  +{{ materialDiffDisplay.player }}
                 </div>
                 <!-- Horloge Joueur -->
                 <div v-if="clockSettings.preset !== 'none'" class="game-clock player-clock" :class="{ active: activeClockColor === playerColor }">
@@ -182,6 +184,11 @@
                 </ion-range>
               </ion-item>
 
+              <ion-item class="ion-margin-top">
+                <ion-label>Indicateur matériel</ion-label>
+                <ion-toggle v-model="showMaterialIndicator"></ion-toggle>
+              </ion-item>
+
               <ion-button expand="block" class="ion-margin-top" @click="startNewGame">
                 Lancer la partie
               </ion-button>
@@ -215,6 +222,7 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonToggle,
   onIonViewWillLeave
 } from '@ionic/vue';
 import { 
@@ -233,6 +241,7 @@ import { useChessStore } from '@/stores/chess';
 import { Chess } from 'chess.js';
 import { undoMove as apiUndoMove, getFormattedCapturedPieces, getMaterialDiffDisplay, getGameOverReason } from '@/utils/boardApiWrapper';
 import { StockfishManager } from '@/utils/stockfishManager';
+import { ChessClock } from '@/utils/ChessClock';
 
 /**
  * États et API
@@ -318,6 +327,9 @@ const computedEvalStyle = computed(() => {
   }
 });
 
+// Instanciation de la pendule partagée
+const clock = new ChessClock();
+
 // Pendule d'échecs professionnelle
 const clockSettings = reactive({
   preset: 'none' as 'none' | '1+0' | '3+2' | '5+0' | '10+5' | '15+10',
@@ -331,33 +343,27 @@ const activeClockColor = ref<'white' | 'black' | null>(null);
 const playerColor = computed<'white' | 'black'>(() => boardConfig.orientation);
 const opponentColor = computed<'white' | 'black'>(() => boardConfig.orientation === 'white' ? 'black' : 'white');
 
-const formatClockTime = (timeMs: number): string => {
-  if (timeMs <= 0) return '00:00';
-  const totalSeconds = timeMs / 1000;
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = Math.floor(totalSeconds % 60);
-  
-  if (totalSeconds < 10) {
-    // Affichage des dixièmes sous les 10 secondes
-    const tenths = Math.floor((timeMs % 1000) / 100);
-    return `${seconds}.${tenths}`;
-  }
-  
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-};
-
 const playerFormattedTime = computed(() => {
-  return playerColor.value === 'white' ? formatClockTime(clockSettings.wtime) : formatClockTime(clockSettings.btime);
+  return playerColor.value === 'white' ? ChessClock.formatTime(clockSettings.wtime) : ChessClock.formatTime(clockSettings.btime);
 });
 
 const opponentFormattedTime = computed(() => {
-  return opponentColor.value === 'white' ? formatClockTime(clockSettings.wtime) : formatClockTime(clockSettings.btime);
+  return opponentColor.value === 'white' ? ChessClock.formatTime(clockSettings.wtime) : ChessClock.formatTime(clockSettings.btime);
 });
 
 // Timer global de la partie (historique)
 const timerTenths = ref(0);
-let timerInterval: any = null;
-const isTimerRunning = ref(false);
+
+// Liaison des callbacks de la pendule
+clock.onTick = (wtime, btime) => {
+  clockSettings.wtime = wtime;
+  clockSettings.btime = btime;
+  timerTenths.value = clock.timerTenths;
+};
+
+clock.onTimeOut = (flaggedColor) => {
+  handleTimeOut(flaggedColor);
+};
 
 const timerSeconds = computed(() => Math.floor(timerTenths.value / 10));
 
@@ -372,38 +378,14 @@ const formattedTime = computed(() => {
  * Démarre le chrono
  */
 const startTimer = () => {
-  if (isTimerRunning.value) return;
-  isTimerRunning.value = true;
-  timerInterval = setInterval(() => {
-    // Incrémente le temps de jeu global (en 100ms)
-    timerTenths.value++;
-
-    // Décompte la pendule active de 100ms
-    if (clockSettings.preset !== 'none' && activeClockColor.value) {
-      if (activeClockColor.value === 'white') {
-        clockSettings.wtime = Math.max(0, clockSettings.wtime - 100);
-        if (clockSettings.wtime <= 0) {
-          handleTimeOut('white');
-        }
-      } else {
-        clockSettings.btime = Math.max(0, clockSettings.btime - 100);
-        if (clockSettings.btime <= 0) {
-          handleTimeOut('black');
-        }
-      }
-    }
-  }, 100); // Résolution à 100ms pour les dixièmes de seconde
+  clock.start();
 };
 
 /**
  * Arrête le chrono
  */
 const stopTimer = () => {
-  isTimerRunning.value = false;
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
+  clock.stop();
 };
 
 // États pour les pièces capturées et matériel (gérés par le wrapper)
@@ -510,12 +492,14 @@ const getInitialElo = () => {
   return eloNum;
 };
 
+const showMaterialIndicator = ref(true);
+
 /**
  * Pièces capturées par le joueur
  */
 const capturedByPlayer = computed(() => {
   if (!boardApi) return [];
-  const captures = getFormattedCapturedPieces(boardApi);
+  const captures = getFormattedCapturedPieces(boardApi, showMaterialIndicator.value);
   return boardConfig.orientation === 'white' ? captures.white : captures.black;
 });
 
@@ -524,7 +508,7 @@ const capturedByPlayer = computed(() => {
  */
 const capturedByOpponent = computed(() => {
   if (!boardApi) return [];
-  const captures = getFormattedCapturedPieces(boardApi);
+  const captures = getFormattedCapturedPieces(boardApi, showMaterialIndicator.value);
   return boardConfig.orientation === 'white' ? captures.black : captures.white;
 });
 
@@ -533,7 +517,7 @@ const capturedByOpponent = computed(() => {
  */
 const materialDiffDisplay = computed(() => {
   if (!boardApi) return { player: null, opponent: null };
-  return getMaterialDiffDisplay(boardApi, boardConfig.orientation);
+  return getMaterialDiffDisplay(boardApi, boardConfig.orientation, showMaterialIndicator.value);
 });
 
 /**
@@ -567,6 +551,7 @@ const handleBoardCreated = (api: any) => {
 const handleTimeOut = (flaggedColor: 'white' | 'black') => {
   stopTimer();
   boardConfig.viewOnly = true;
+  clock.setActiveColor(null);
   activeClockColor.value = null;
 
   const winner = flaggedColor === 'white' ? 'Noirs' : 'Blancs';
@@ -602,16 +587,9 @@ const handleMove = (moveInfo?: any) => {
   const justFinishedColor = boardApi.getTurnColor() === 'white' ? 'black' : 'white';
   const plyCount = boardApi.getCurrentPlyNumber();
 
-  if (clockSettings.preset !== 'none' && plyCount > 1) {
-    if (justFinishedColor === 'white') {
-      clockSettings.wtime += clockSettings.winc;
-      // Ajout bonus au 40ème coup (80 plys)
-      if (plyCount === 80) clockSettings.wtime += 30000; // +30s au 40ème coup
-    } else {
-      clockSettings.btime += clockSettings.binc;
-      if (plyCount === 81) clockSettings.btime += 30000;
-    }
-  }
+  clock.applyIncrement(justFinishedColor, plyCount);
+  clockSettings.wtime = clock.wtime;
+  clockSettings.btime = clock.btime;
 
   // Sauvegarde automatique avec les compteurs à jour
   chessStore.saveGame(
@@ -631,7 +609,8 @@ const handleMove = (moveInfo?: any) => {
   }
 
   // Changement de l'horloge active
-  activeClockColor.value = boardApi.getTurnColor();
+  clock.setActiveColor(boardApi.getTurnColor());
+  activeClockColor.value = clock.activeColor;
 
   // Efface les flèches d'aide
   boardApi.hideMoves();
@@ -668,7 +647,7 @@ const startNewGame = () => {
   boardConfig.viewOnly = false;
   
   // Reset compteurs et chrono
-  stopTimer();
+  clock.reset();
   timerTenths.value = 0;
   oupsCount.value = 0;
   helpCount.value = 0;
@@ -676,38 +655,12 @@ const startNewGame = () => {
   activeClockColor.value = null;
 
   // Configuration de la cadence
-  clockSettings.preset = gameSettings.clockPreset;
-  if (gameSettings.clockPreset === '1+0') {
-    clockSettings.wtime = 60000;
-    clockSettings.btime = 60000;
-    clockSettings.winc = 0;
-    clockSettings.binc = 0;
-  } else if (gameSettings.clockPreset === '3+2') {
-    clockSettings.wtime = 180000;
-    clockSettings.btime = 180000;
-    clockSettings.winc = 2000;
-    clockSettings.binc = 2000;
-  } else if (gameSettings.clockPreset === '5+0') {
-    clockSettings.wtime = 300000;
-    clockSettings.btime = 300000;
-    clockSettings.winc = 0;
-    clockSettings.binc = 0;
-  } else if (gameSettings.clockPreset === '10+5') {
-    clockSettings.wtime = 600000;
-    clockSettings.btime = 600000;
-    clockSettings.winc = 5000;
-    clockSettings.binc = 5000;
-  } else if (gameSettings.clockPreset === '15+10') {
-    clockSettings.wtime = 900000;
-    clockSettings.btime = 900000;
-    clockSettings.winc = 10000;
-    clockSettings.binc = 10000;
-  } else {
-    clockSettings.wtime = 0;
-    clockSettings.btime = 0;
-    clockSettings.winc = 0;
-    clockSettings.binc = 0;
-  }
+  clock.setPreset(gameSettings.clockPreset);
+  clockSettings.preset = clock.preset;
+  clockSettings.wtime = clock.wtime;
+  clockSettings.btime = clock.btime;
+  clockSettings.winc = clock.winc;
+  clockSettings.binc = clock.binc;
 
   // Reset aide lors d'une nouvelle partie
   isHintEnabled.value = false;
@@ -733,7 +686,8 @@ const startNewGame = () => {
     
     const positionCmd = 'position startpos';
     if (finalColor === 'black') {
-      activeClockColor.value = 'white'; // Les Blancs (IA) commencent
+      clock.setActiveColor('white'); // Les Blancs (IA) commencent
+      activeClockColor.value = clock.activeColor;
       startTimer(); // Démarre le chrono
       
       if (clockSettings.preset !== 'none') {
@@ -875,7 +829,7 @@ onMounted(() => {
       }
     });
 
-    stockfishManager.initEvaluationWorker();
+    // evalWorker est initialisé à la demande, pas besoin de le lancer ici
     stockfishManager.initOpponentWorker(gameSettings.level);
     engineLoaded.value = true;
   } catch (err) {
@@ -1124,7 +1078,7 @@ onIonViewWillLeave(() => {
 .captured-bar.bottom { border-radius: 0 0 8px 8px; border-top: none; margin-bottom: 12px; } /* Espace sous barre Toi */
 
 .captured-pieces { display: flex; flex: 1; flex-wrap: nowrap; overflow: hidden; gap: 1px; }
-.captured-piece { font-size: 1.2rem; line-height: 1; color: #333; }
+.captured-piece { font-size: 1.2rem; line-height: 1; color: #333; font-family: "Lucida Sans Unicode", "Arial Unicode MS", "Noto Sans Chess", sans-serif; }
 .material-wrapper { min-width: 30px; text-align: right; }
 .material-count { font-size: 0.75rem; font-weight: bold; color: var(--ion-color-primary); }
 
