@@ -82,10 +82,20 @@ export class StockfishManager {
     }
   }
 
+  private lastPositionCommand = '';
+
+  private evalTimeout: any = null;
+
   /**
    * Démarre l'analyse d'évaluation sur une position (go infinite)
    */
   startEvaluation(positionCommand: string): void {
+    if (this.isEvalRunning && this.lastPositionCommand === positionCommand) {
+      console.log("[StockfishManager] Évaluation déjà en cours pour cette position, pas de redémarrage.");
+      return;
+    }
+    console.log("[StockfishManager] startEvaluation appelé pour :", positionCommand);
+    this.lastPositionCommand = positionCommand;
     this.initEvaluationWorker();
     this.stopEvaluation(); // Arrêter tout calcul précédent
 
@@ -95,8 +105,19 @@ export class StockfishManager {
     this.isEvalRunning = true;
 
     if (this.evalWorker) {
+      console.log("[StockfishManager] PostMessage au evalWorker :", positionCommand, "puis 'go infinite'");
       this.evalWorker.postMessage(positionCommand);
       this.evalWorker.postMessage('go infinite');
+
+      // Limiter le temps de calcul à 5 secondes
+      this.evalTimeout = setTimeout(() => {
+        if (this.isEvalRunning) {
+          console.log("[StockfishManager] Timeout de 5s atteint pour l'évaluation. Arrêt.");
+          this.stopEvaluation();
+        }
+      }, 5000);
+    } else {
+      console.error("[StockfishManager] evalWorker non disponible");
     }
   }
 
@@ -104,16 +125,22 @@ export class StockfishManager {
    * Arrête le moteur d'évaluation
    */
   stopEvaluation(): void {
-    if (this.evalWorker && this.isEvalRunning) {
-      this.evalWorker.postMessage('stop');
-      this.isEvalRunning = false;
+    console.log("[StockfishManager] stopEvaluation demandé");
+    if (this.evalTimeout) {
+      clearTimeout(this.evalTimeout);
+      this.evalTimeout = null;
     }
+    if (this.evalWorker) {
+      this.evalWorker.postMessage('stop');
+    }
+    this.isEvalRunning = false;
   }
 
   /**
    * Démarre la recherche du coup d'opposition (IA adverse)
    */
   startOpponentMove(positionCommand: string, searchParams: number | string = 5000): void {
+    console.log("[StockfishManager] startOpponentMove pour l'IA adverse. Params :", searchParams);
     if (this.opponentWorker) {
       this.stopEvaluation(); // Arrêter le moteur de conseil/évaluation pendant le tour de l'IA adverse
       
@@ -124,17 +151,22 @@ export class StockfishManager {
 
       this.opponentWorker.postMessage(positionCommand);
       if (typeof searchParams === 'string') {
+        console.log(`[StockfishManager] PostMessage au opponentWorker : go ${searchParams}`);
         this.opponentWorker.postMessage(`go ${searchParams}`);
         
         // Cap opponent think time at 15 seconds
         this.opponentTimeout = setTimeout(() => {
           if (this.opponentWorker) {
+            console.log("[StockfishManager] Timeout IA adverse atteint (15s), envoi de 'stop'");
             this.opponentWorker.postMessage('stop');
           }
         }, 15000);
       } else {
+        console.log(`[StockfishManager] PostMessage au opponentWorker : go movetime ${searchParams}`);
         this.opponentWorker.postMessage(`go movetime ${searchParams}`);
       }
+    } else {
+      console.error("[StockfishManager] opponentWorker non disponible");
     }
   }
 
@@ -189,6 +221,7 @@ export class StockfishManager {
         const isStableMate = this.lastScoreType === 'mate' && this.stabilityCounter >= 3;
 
         if (this.isEvalRunning && (isStableCp || isStableMate || elapsed >= 30000)) {
+          console.log(`[StockfishManager] Stabilité atteinte (stab=${this.stabilityCounter}, score=${this.lastScoreType} ${this.lastScoreValue}, elapsed=${elapsed}ms). Arrêt évaluation.`);
           this.stopEvaluation();
         }
       }
@@ -197,6 +230,7 @@ export class StockfishManager {
     if (line.startsWith('bestmove')) {
       const parts = line.split(' ');
       const bestMove = parts[1];
+      console.log("[StockfishManager] bestmove reçu du evalWorker :", bestMove);
       if (bestMove && bestMove !== '(none)' && this.onHint) {
         this.onHint(bestMove);
       }

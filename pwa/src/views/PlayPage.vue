@@ -454,14 +454,24 @@ const toggleHint = () => {
   isHintEnabled.value = !isHintEnabled.value;
   if (isHintEnabled.value) {
     if (boardApi && stockfishManager) {
-      const playerColor = boardConfig.orientation;
-      if (boardApi.getTurnColor() === playerColor) {
-        stockfishManager.startEvaluation(getEnginePositionCommand());
+      // Si on a déjà une suggestion pré-calculée, on l'affiche immédiatement
+      if (lastSuggestedMove.value) {
+        const from = lastSuggestedMove.value.substring(0, 2);
+        const to = lastSuggestedMove.value.substring(2, 4);
+        boardApi.drawMove(from as any, to as any, 'green');
+      } else {
+        const playerColor = boardConfig.orientation;
+        if (boardApi.getTurnColor() === playerColor) {
+          stockfishManager.startEvaluation(getEnginePositionCommand());
+        }
       }
     }
   } else {
     if (boardApi) {
       boardApi.hideMoves();
+    }
+    if (stockfishManager) {
+      stockfishManager.stopEvaluation();
     }
   }
 };
@@ -632,6 +642,7 @@ const handleMove = (moveInfo?: any) => {
     }
   } else {
     // Si c'est au tour du joueur, on commence les calculs d'évaluation / conseil
+    // (soit pour la jauge d'évaluation qui est toujours visible, soit si l'aide est active)
     stockfishManager.startEvaluation(positionCmd);
   }
 };
@@ -662,8 +673,7 @@ const startNewGame = () => {
   clockSettings.winc = clock.winc;
   clockSettings.binc = clock.binc;
 
-  // Reset aide lors d'une nouvelle partie
-  isHintEnabled.value = false;
+
 
   // Nettoyage de la partie précédente dans le store
   chessStore.clearGame();
@@ -812,7 +822,6 @@ onMounted(() => {
       onBestMove: (bestMove) => {
         if (boardApi) {
           boardApi.move(bestMove);
-          refreshDisplay();
         }
       },
       onEvaluation: (scoreType, scoreValue) => {
