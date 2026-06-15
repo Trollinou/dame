@@ -234,8 +234,8 @@ import {
 } from 'ionicons/icons';
 import { ref, onMounted, onUnmounted, reactive, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { TheChessboard } from 'vue3-chessboard';
-import 'vue3-chessboard/style.css';
+import TheChessboard from 'eg-chessboard/vue';
+import 'eg-chessboard/style.css';
 import { useAuthStore } from '@/stores/auth';
 import { useChessStore } from '@/stores/chess';
 import { Chess } from 'chess.js';

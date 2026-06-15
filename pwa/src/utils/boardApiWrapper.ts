@@ -1,7 +1,7 @@
 import { Chess } from 'chess.js';
 
 /**
- * Undo moves on the vue3-chessboard api.
+ * Undo moves on the eg-chessboard api.
  * If vsComputer is true, it undos two moves if it is the player's turn to revert both the computer's response and player's move.
  */
 export function undoMove(boardApi: any, vsComputer = false, playerColor: 'white' | 'black'): void {

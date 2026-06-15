@@ -119,8 +119,8 @@ import {
   playForwardOutline 
 } from 'ionicons/icons';
 import { ref, onMounted, onUnmounted, reactive, watch, computed } from 'vue';
-import { TheChessboard } from 'vue3-chessboard';
-import 'vue3-chessboard/style.css';
+import TheChessboard from 'eg-chessboard/vue';
+import 'eg-chessboard/style.css';
 import { useChessStore } from '@/stores/chess';
 
 const chessStore = useChessStore();
