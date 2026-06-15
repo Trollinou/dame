@@ -67,11 +67,15 @@ export default defineConfig({
     modulePreload: false, // Désactive le préchargement automatique (résout les warnings "unused preload" dans WordPress)
     rollupOptions: {
       output: {
-        manualChunks: {
-          // On sépare le moteur Vue.js
-          'vue-vendor': ['vue', 'vue-router', 'pinia'],
-          // On sépare le moteur Ionic (très lourd)
-          'ionic-vendor': ['@ionic/vue', '@ionic/vue-router', 'ionicons']
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('vue') || id.includes('pinia')) {
+              return 'vue-vendor';
+            }
+            if (id.includes('@ionic') || id.includes('ionicons')) {
+              return 'ionic-vendor';
+            }
+          }
         }
       }
     }

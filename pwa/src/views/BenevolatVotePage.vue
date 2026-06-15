@@ -121,7 +121,7 @@ const benevolat = computed(() => benevolatStore.benevolats.find(b => b.id === be
 /**
  * Récupère le nombre d'inscrits pour un créneau
  */
-const getSlotParticipantCount = (dayIndex: number, timeIndex: number) => {
+const getSlotParticipantCount = (dayIndex: number | string, timeIndex: number | string) => {
   const choiceKey = `${dayIndex}_${timeIndex}`;
   return benevolatStore.reponses.filter(r => 
     r.benevolat_id === benevolatId && 

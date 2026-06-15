@@ -11,12 +11,12 @@
     "watch": "sass --watch src/scss/:assets/css/"
   },
   "devDependencies": {
-    "@playwright/test": "^1.59.1",
-    "@wordpress/scripts": "^32.0.0",
-    "adm-zip": "^0.5.10",
-    "minimatch": "^9.0.3",
-    "sass": "^1.99.0",
-    "terser": "^5.46.1"
+    "@playwright/test": "^1.60.0",
+    "@wordpress/scripts": "^32.4.0",
+    "adm-zip": "^0.5.17",
+    "minimatch": "^10.2.5",
+    "sass": "^1.101.0",
+    "terser": "^5.48.0"
   },
   "dependencies": {
     "pinia": "^3.0.4"

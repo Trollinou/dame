@@ -126,7 +126,7 @@ const formatDate = (dateString: string) => {
 /**
  * Récupère les participants pour un créneau spécifique
  */
-const getParticipants = (dayIndex: number, timeIndex: number) => {
+const getParticipants = (dayIndex: number | string, timeIndex: number | string) => {
   const choiceKey = `${dayIndex}_${timeIndex}`;
   return benevolatStore.reponses.filter(r => 
     r.benevolat_id === benevolatId && 
