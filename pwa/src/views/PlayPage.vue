@@ -52,21 +52,15 @@
                   :key="`board-${isLandscape ? 'l' : 'p'}-${renderKey}`"
                   :board-config="boardConfig" 
                   :player-color="boardConfig.playerColor"
+                  :stockfish-config="stockfishConfig"
                   @board-created="handleBoardCreated" 
                   @move="handleMove"
                   @check="handleCheck"
                   @checkmate="handleCheckmate"
                   @stalemate="handleStalemate"
                   @draw="handleDraw"
+                  @stockfish-hint="handleStockfishHint"
                 />
-                
-                <!-- Barre d'Évaluation -->
-                <div class="evaluation-bar" :title="computedEvalTooltip">
-                  <div
-                    class="evaluation-bar-fill"
-                    :style="computedEvalStyle"
-                  ></div>
-                </div>
               </div>
 
               <!-- Bande inférieure (Joueur) -->
@@ -240,7 +234,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useChessStore } from '@/stores/chess';
 import { Chess } from 'chess.js';
 import { undoMove as apiUndoMove, getFormattedCapturedPieces, getMaterialDiffDisplay, getGameOverReason } from '@/utils/boardApiWrapper';
-import { StockfishManager } from '@/utils/stockfishManager';
+import type { StockfishConfig } from 'eg-chessboard';
 import { ChessClock } from '@/utils/ChessClock';
 
 /**
@@ -263,7 +257,6 @@ const updateOrientation = () => {
 };
 
 let boardApi: any = null;
-let stockfishManager: StockfishManager | null = null;
 const engineLoaded = ref(false);
 const showSettings = ref(false);
 const isHintEnabled = ref(false);
@@ -272,60 +265,7 @@ const oupsCount = ref(0);
 const helpCount = ref(0);
 const lastSuggestedMove = ref('');
 
-// Score de la barre d'évaluation
-const evalScoreType = ref('cp');
-const evalScoreValue = ref(0);
 
-const computedEvalTooltip = computed(() => {
-  let scoreFromWhite = 0;
-  const currentStockfishColor = boardConfig.orientation === 'white' ? 'black' : 'white';
-  
-  if (evalScoreType.value === 'cp') {
-    scoreFromWhite = currentStockfishColor === 'white' ? evalScoreValue.value : -evalScoreValue.value;
-    const evalFromWhite = scoreFromWhite / 100;
-    const sign = evalFromWhite > 0 ? '+' : '';
-    return `${sign}${evalFromWhite.toFixed(2)}`;
-  } else if (evalScoreType.value === 'mate') {
-    const isWhiteAdvantage =
-      (currentStockfishColor === 'white' && evalScoreValue.value > 0) ||
-      (currentStockfishColor === 'black' && evalScoreValue.value < 0);
-    const absMoves = Math.abs(evalScoreValue.value);
-    const sideChar = isWhiteAdvantage ? 'B' : 'N';
-    return `Mat #${absMoves}${sideChar}`;
-  }
-  return '0.00';
-});
-
-const computedEvalStyle = computed(() => {
-  let scoreFromWhite = 0;
-  const currentStockfishColor = boardConfig.orientation === 'white' ? 'black' : 'white';
-
-  if (evalScoreType.value === 'cp') {
-    scoreFromWhite = currentStockfishColor === 'white' ? evalScoreValue.value : -evalScoreValue.value;
-  } else if (evalScoreType.value === 'mate') {
-    const isWhiteAdvantage =
-      (currentStockfishColor === 'white' && evalScoreValue.value > 0) ||
-      (currentStockfishColor === 'black' && evalScoreValue.value < 0);
-    scoreFromWhite = isWhiteAdvantage ? 1000 : -1000;
-  }
-
-  const clampedScore = Math.max(-1000, Math.min(1000, scoreFromWhite));
-  const percentageWhite = 50 + (clampedScore / 1000) * 50;
-
-  if (boardConfig.orientation === 'white') {
-    return {
-      height: `${percentageWhite}%`,
-      marginTop: 'auto',
-      marginBottom: '0'
-    };
-  } else {
-    return {
-      height: `${percentageWhite}%`,
-      marginTop: '0',
-      marginBottom: 'auto'
-    };
-  }
-});
 
 // Instanciation de la pendule partagée
 const clock = new ChessClock();
@@ -432,20 +372,17 @@ const getWorkerUrl = () => {
   return base ? `${base}stockfish.js` : 'stockfish/stockfish.js';
 };
 
-/**
- * Reconstruit la commande de position UCI avec l'historique complet des coups
- * pour permettre la détection de la triple répétition par le moteur.
- */
-/**
- * Demande une suggestion au moteur d'aide
- */
-const requestHint = () => {
-  if (!boardApi || !stockfishManager || !isHintEnabled.value) return;
-  const playerColor = boardConfig.orientation;
-  if (boardApi.getTurnColor() === playerColor) {
-    stockfishManager.startEvaluation(getEnginePositionCommand());
-  }
-};
+const stockfishConfig = computed<StockfishConfig>(() => {
+  const playerCol = boardConfig.orientation;
+  return {
+    whiteMode: playerCol === 'white' ? 'hint' : 'elo',
+    whiteElo: playerCol === 'black' ? gameSettings.level : undefined,
+    blackMode: playerCol === 'black' ? 'hint' : 'elo',
+    blackElo: playerCol === 'white' ? gameSettings.level : undefined,
+    stockfishMoveTime: 2000,
+    workerUrl: getWorkerUrl()
+  };
+});
 
 /**
  * Bascule l'activation de l'aide
@@ -453,26 +390,25 @@ const requestHint = () => {
 const toggleHint = () => {
   isHintEnabled.value = !isHintEnabled.value;
   if (isHintEnabled.value) {
-    if (boardApi && stockfishManager) {
-      // Si on a déjà une suggestion pré-calculée, on l'affiche immédiatement
-      if (lastSuggestedMove.value) {
-        const from = lastSuggestedMove.value.substring(0, 2);
-        const to = lastSuggestedMove.value.substring(2, 4);
-        boardApi.drawMove(from as any, to as any, 'green');
-      } else {
-        const playerColor = boardConfig.orientation;
-        if (boardApi.getTurnColor() === playerColor) {
-          stockfishManager.startEvaluation(getEnginePositionCommand());
-        }
-      }
+    helpCount.value++;
+    if (boardApi && lastSuggestedMove.value) {
+      const from = lastSuggestedMove.value.substring(0, 2);
+      const to = lastSuggestedMove.value.substring(2, 4);
+      boardApi.drawMove(from as any, to as any, 'green');
     }
   } else {
     if (boardApi) {
       boardApi.hideMoves();
     }
-    if (stockfishManager) {
-      stockfishManager.stopEvaluation();
-    }
+  }
+};
+
+const handleStockfishHint = (bestMove: string) => {
+  lastSuggestedMove.value = bestMove;
+  if (isHintEnabled.value && boardApi) {
+    const from = bestMove.substring(0, 2);
+    const to = bestMove.substring(2, 4);
+    boardApi.drawMove(from as any, to as any, 'green');
   }
 };
 
@@ -575,7 +511,7 @@ const handleTimeOut = (flaggedColor: 'white' | 'black') => {
 };
 
 const handleMove = (moveInfo?: any) => {
-  if (!boardApi || !stockfishManager) return;
+  if (!boardApi) return;
   
   // Sécurité : si la partie est terminée, on annule immédiatement tout coup tenté
   if (boardConfig.viewOnly) {
@@ -629,22 +565,6 @@ const handleMove = (moveInfo?: any) => {
     gameStatus.message = '';
     gameStatus.color = 'medium';
   }
-
-  const computerColor = boardConfig.orientation === 'white' ? 'black' : 'white';
-  const positionCmd = getEnginePositionCommand();
-
-  if (boardApi.getTurnColor() === computerColor) {
-    if (clockSettings.preset !== 'none') {
-      const timeParams = `wtime ${clockSettings.wtime} winc ${clockSettings.winc} btime ${clockSettings.btime} binc ${clockSettings.binc}`;
-      stockfishManager.startOpponentMove(positionCmd, timeParams);
-    } else {
-      stockfishManager.startOpponentMove(positionCmd, 5000);
-    }
-  } else {
-    // Si c'est au tour du joueur, on commence les calculs d'évaluation / conseil
-    // (soit pour la jauge d'évaluation qui est toujours visible, soit si l'aide est active)
-    stockfishManager.startEvaluation(positionCmd);
-  }
 };
 
 const openNewGameMenu = () => {
@@ -690,25 +610,10 @@ const startNewGame = () => {
     boardApi.resetBoard();
     refreshDisplay();
   }
-  if (stockfishManager) {
-    stockfishManager.initOpponentWorker(gameSettings.level);
-    stockfishManager.setOpponentElo(gameSettings.level);
-    
-    const positionCmd = 'position startpos';
-    if (finalColor === 'black') {
-      clock.setActiveColor('white'); // Les Blancs (IA) commencent
-      activeClockColor.value = clock.activeColor;
-      startTimer(); // Démarre le chrono
-      
-      if (clockSettings.preset !== 'none') {
-        const timeParams = `wtime ${clockSettings.wtime} winc ${clockSettings.winc} btime ${clockSettings.btime} binc ${clockSettings.binc}`;
-        stockfishManager.startOpponentMove(positionCmd, timeParams);
-      } else {
-        stockfishManager.startOpponentMove(positionCmd, 5000);
-      }
-    } else {
-      stockfishManager.startEvaluation(positionCmd);
-    }
+  if (finalColor === 'black') {
+    clock.setActiveColor('white'); // Les Blancs (IA) commencent
+    activeClockColor.value = clock.activeColor;
+    startTimer(); // Démarre le chrono
   }
 };
 
@@ -724,9 +629,6 @@ const handleCheckmate = (color: string) => {
   boardConfig.viewOnly = true;
   stopTimer();
   chessStore.saveCompletedGame(timerSeconds.value);
-  if (stockfishManager) {
-    stockfishManager.stopEvaluation();
-  }
   setTimeout(() => {
     renderKey.value++;
   }, 100);
@@ -739,9 +641,6 @@ const handleStalemate = () => {
   boardConfig.viewOnly = true;
   stopTimer();
   chessStore.saveCompletedGame(timerSeconds.value);
-  if (stockfishManager) {
-    stockfishManager.stopEvaluation();
-  }
   setTimeout(() => {
     renderKey.value++;
   }, 100);
@@ -754,9 +653,6 @@ const handleDraw = () => {
   boardConfig.viewOnly = true;
   stopTimer();
   chessStore.saveCompletedGame(timerSeconds.value);
-  if (stockfishManager) {
-    stockfishManager.stopEvaluation();
-  }
   setTimeout(() => {
     renderKey.value++;
   }, 100);
@@ -794,64 +690,16 @@ const undoMove = () => {
     helpCount.value,
     oupsCount.value
   );
-
-  const computerColor = boardConfig.orientation === 'white' ? 'black' : 'white';
-  const positionCmd = getEnginePositionCommand();
-  if (stockfishManager) {
-    if (boardApi.getTurnColor() === computerColor) {
-      stockfishManager.startOpponentMove(positionCmd, 5000);
-    } else {
-      stockfishManager.startEvaluation(positionCmd);
-    }
-  }
 };
 
 onMounted(() => {
   window.addEventListener('resize', updateOrientation);
   gameSettings.level = getInitialElo();
-  
-  if (!authStore.isRoiActive) {
-    console.warn("Le module ROI n'est pas actif, impossible d'initialiser le moteur Stockfish.");
-    engineLoaded.value = true; // Évite le loader infini
-    return;
-  }
-
-  try {
-    stockfishManager = new StockfishManager(getWorkerUrl());
-    stockfishManager.setCallbacks({
-      onBestMove: (bestMove) => {
-        if (boardApi) {
-          boardApi.move(bestMove);
-        }
-      },
-      onEvaluation: (scoreType, scoreValue) => {
-        evalScoreType.value = scoreType;
-        evalScoreValue.value = scoreValue;
-      },
-      onHint: (bestMove) => {
-        lastSuggestedMove.value = bestMove;
-        if (isHintEnabled.value && boardApi) {
-          const from = bestMove.substring(0, 2);
-          const to = bestMove.substring(2, 4);
-          boardApi.drawMove(from as any, to as any, 'green');
-        }
-      }
-    });
-
-    // evalWorker est initialisé à la demande, pas besoin de le lancer ici
-    stockfishManager.initOpponentWorker(gameSettings.level);
-    engineLoaded.value = true;
-  } catch (err) {
-    console.error("Erreur d'initialisation du StockfishManager :", err);
-    engineLoaded.value = true;
-  }
+  engineLoaded.value = true;
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateOrientation);
-  if (stockfishManager) {
-    stockfishManager.terminate();
-  }
 });
 
 onIonViewWillLeave(() => {
