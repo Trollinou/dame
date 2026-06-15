@@ -10,3 +10,4 @@ pwa/dist/
 /pwa/.vscode
 /.antigravitycli
 *.zip
+pwa/src/utils/desktop.ini
