@@ -86,6 +86,9 @@ const route = useRoute();
 const authStore = useAuthStore();
 const { isLoading } = storeToRefs(authStore);
 
+// Force reset isLoading to false to avoid being stuck if it was persisted as true
+authStore.isLoading = false;
+
 // Récupération du message de redirection depuis les paramètres d'URL
 const redirectMessage = computed(() => route.query.message as string);
 

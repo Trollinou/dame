@@ -130,6 +130,7 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error(data.message || (data.data && data.data.message) || "Erreur d'identifiants");
       }
     } catch (error: any) {
+      console.error('Erreur de connexion:', error);
       const alert = await alertController.create({
         header: 'Échec de connexion',
         message: error.message || "Erreur serveur.",
@@ -215,5 +216,7 @@ export const useAuthStore = defineStore('auth', () => {
     isRoiActive, stockfishUrl, fetchPwaConfig
   };
 }, {
-  persist: true
+  persist: {
+    omit: ['isLoading']
+  }
 });
