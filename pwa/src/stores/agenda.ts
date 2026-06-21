@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useAuthStore } from './auth';
 import { safeFetch } from '@/utils/safeFetch';
+import { useQueryClient } from '@tanstack/vue-query';
 
 export interface AgendaEvent {
   id: number;
@@ -28,6 +29,7 @@ export interface AgendaEvent {
 }
 
 export const useAgendaStore = defineStore('agenda', () => {
+  const queryClient = useQueryClient();
   const events = ref<AgendaEvent[]>([]);
   const isLoading = ref(false);
   const hasMoreUpcoming = ref(true);
@@ -40,72 +42,82 @@ export const useAgendaStore = defineStore('agenda', () => {
   const pastPage = ref(1);
 
   /**
-   * Récupère un lot d'événements depuis le serveur
-   * Renvoie null en cas d'échec réseau pour éviter d'écraser le cache avec du vide
+   * Récupère un lot d'événements depuis le serveur en passant par TanStack Query
    */
   const fetchBatch = async (direction: 'upcoming' | 'past', referenceDate: string, page: number) => {
     if (direction === 'upcoming' && isFetchingUpcoming) return null;
     if (direction === 'past' && isFetchingPast) return null;
-    
-    // Protection proactive contre les erreurs console "Load failed" hors-ligne
-    if (!navigator.onLine) return null;
 
     if (direction === 'upcoming') isFetchingUpcoming = true;
     if (direction === 'past') isFetchingPast = true;
 
     try {
-      const token = localStorage.getItem('dame_jwt_token');
-      const context = 'view';
-      const perPage = 20;
-      
-      const order = direction === 'upcoming' ? 'asc' : 'desc';
-      const dateParam = direction === 'upcoming' ? `after_date=${referenceDate}` : `before_date=${referenceDate}`;
-      
-      const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2/agenda`;
-      const queryParams = [
-        `per_page=${perPage}`,
-        `page=${page}`,
-        `context=${context}`,
-        `orderby=meta_value`,
-        `meta_key=_dame_start_date`,
-        `order=${order}`,
-        dateParam
-      ].join('&');
+      return await queryClient.fetchQuery({
+        queryKey: ['agenda', direction, referenceDate, page],
+        queryFn: async () => {
+          if (!navigator.onLine) {
+            throw new Error("Offline");
+          }
 
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
+          const token = localStorage.getItem('dame_jwt_token');
+          const context = 'view';
+          const perPage = 20;
+          
+          const order = direction === 'upcoming' ? 'asc' : 'desc';
+          const dateParam = direction === 'upcoming' ? `after_date=${referenceDate}` : `before_date=${referenceDate}`;
+          
+          const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2/agenda`;
+          const queryParams = [
+            `per_page=${perPage}`,
+            `page=${page}`,
+            `context=${context}`,
+            `orderby=meta_value`,
+            `meta_key=_dame_start_date`,
+            `order=${order}`,
+            dateParam
+          ].join('&');
 
-      const response = await safeFetch(`${baseUrl}?${queryParams}`, { method: 'GET', headers }, 4000);
+          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+          if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          useAuthStore().logout();
-          return null;
-        }
+          const response = await safeFetch(`${baseUrl}?${queryParams}`, { method: 'GET', headers }, 4000);
 
-        if (response.status === 400) {
-          if (direction === 'upcoming') hasMoreUpcoming.value = false;
-          if (direction === 'past') hasMorePast.value = false;
-          return [];
-        }
-        return null;
-      }
+          if (!response.ok) {
+            if (response.status === 401) {
+              useAuthStore().logout();
+              throw new Error("Unauthorized");
+            }
 
-      const totalPagesStr = response.headers.get('X-WP-TotalPages');
-      const totalPages = totalPagesStr ? parseInt(totalPagesStr, 10) : 1;
+            if (response.status === 400) {
+              if (direction === 'upcoming') hasMoreUpcoming.value = false;
+              if (direction === 'past') hasMorePast.value = false;
+              return [];
+            }
+            throw new Error(`Server status ${response.status}`);
+          }
 
-      if (page >= totalPages) {
-        if (direction === 'upcoming') hasMoreUpcoming.value = false;
-        if (direction === 'past') hasMorePast.value = false;
-      }
+          const totalPagesStr = response.headers.get('X-WP-TotalPages');
+          const totalPages = totalPagesStr ? parseInt(totalPagesStr, 10) : 1;
 
-      const data: AgendaEvent[] = await response.json();
-      
-      if (direction === 'upcoming' && data.length < perPage) hasMoreUpcoming.value = false;
-      if (direction === 'past' && data.length < perPage) hasMorePast.value = false;
+          if (page >= totalPages) {
+            if (direction === 'upcoming') hasMoreUpcoming.value = false;
+            if (direction === 'past') hasMorePast.value = false;
+          }
 
-      return data;
+          const data: AgendaEvent[] = await response.json();
+          
+          if (direction === 'upcoming' && data.length < perPage) hasMoreUpcoming.value = false;
+          if (direction === 'past' && data.length < perPage) hasMorePast.value = false;
+
+          return data;
+        },
+        staleTime: 1000 * 60 * 5, // 5 minutes
+      });
     } catch (error: any) {
+      if (error.message === "Offline") {
+        const cached = queryClient.getQueryData<AgendaEvent[]>(['agenda', direction, referenceDate, page]);
+        if (cached) return cached;
+      }
       if (error.name !== 'AbortError' && navigator.onLine) {
         console.error(`Erreur fetchBatch ${direction}:`, error);
       }
