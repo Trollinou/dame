@@ -121,10 +121,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const data = await callSdk('authenticate', {
         username,
-        password,
-        email: null,
-        password_hash: null
-      });
+        password
+      } as any);
 
       const jwtToken = data.jwt || (data.data && data.data.jwt);
 
