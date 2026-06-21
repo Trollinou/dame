@@ -166,9 +166,22 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch (error: any) {
       console.error('Erreur de connexion:', error);
+      
+      let errorMessage = "Erreur serveur.";
+      if (error && error.response) {
+        try {
+          const parsed = JSON.parse(error.response);
+          errorMessage = parsed.message || (parsed.data && parsed.data.message) || errorMessage;
+        } catch {
+          errorMessage = error.response || errorMessage;
+        }
+      } else if (error && error.message) {
+        errorMessage = error.message;
+      }
+
       const alert = await alertController.create({
         header: 'Échec de connexion',
-        message: error.message || "Erreur serveur.",
+        message: errorMessage,
         buttons: ['OK']
       });
       await alert.present();
