@@ -57,7 +57,7 @@
           </ion-toolbar>
         </ion-header>
 
-        <!-- Espace de Jeu (Uniquement si connecté et ROI actif) -->
+        <!-- TEMP_DISABLED: Bouton Jouer
         <div v-if="authStore.isAuthenticated && authStore.isRoiActive">
           <ion-card style="--background: var(--ion-color-step-50, #f4f5f8); margin-top: 8px; margin-bottom: 0;">
               <ion-button expand="block" color="primary" style="margin: 0;" @click="goToPlay">
@@ -65,6 +65,7 @@
               </ion-button>
           </ion-card>
         </div>
+        -->
 
         <!-- Section Dernières Nouvelles -->
         <ion-list lines="full" style="margin: 0;">

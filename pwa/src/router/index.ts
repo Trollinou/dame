@@ -8,8 +8,9 @@ import AgendaPage from '../views/AgendaPage.vue';
 import BenevolatPage from '../views/BenevolatPage.vue';
 import MessagesPage from '../views/MessagesPage.vue';
 const TournamentPage = () => import('../views/TournamentPage.vue');
-import PlayPage from '../views/PlayPage.vue';
-const AnalysisPage = () => import('../views/AnalysisPage.vue');
+// TEMP_DISABLED: Imports jeu
+// import PlayPage from '../views/PlayPage.vue';
+// const AnalysisPage = () => import('../views/AnalysisPage.vue');
 const GenericPage = () => import('../views/GenericPage.vue');
 import { useAuthStore } from '@/stores/auth';
 
@@ -57,14 +58,15 @@ const routes: Array<RouteRecordRaw> = [
         path: 'tournoi',
         component: TournamentPage
       },
-      {
-        path: 'play',
-        component: PlayPage
-      },
-      {
-        path: 'analysis',
-        component: AnalysisPage
-      },
+      // TEMP_DISABLED: Routes jeu
+      // {
+      //   path: 'play',
+      //   component: PlayPage
+      // },
+      // {
+      //   path: 'analysis',
+      //   component: AnalysisPage
+      // },
       {
         path: 'benevolat',
         component: BenevolatPage

@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { toastController, alertController } from '@ionic/vue';
+import { SimpleJwtLogin } from 'simple-jwt-login';
+import { App } from '@capacitor/app';
 import router from '../router';
 
 // Import des autres stores pour nettoyage
@@ -77,21 +79,56 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('dame_selected_identity', JSON.stringify(identity));
   };
 
+  const getSiteRootUrl = () => {
+    const url = import.meta.env.VITE_API_BASE_URL || '';
+    return url.replace(/\/wp-json\/?$/, '');
+  };
+
+  const callSdk = async (method: 'authenticate' | 'validateToken' | 'revokeToken', params: any): Promise<any> => {
+    return new Promise((resolve, reject) => {
+      const client = new SimpleJwtLogin(getSiteRootUrl());
+      client.withCallback((response: any, status: number) => {
+        if (status === 200 || status === 201) {
+          resolve(response);
+        } else {
+          reject(response);
+        }
+      });
+      client[method](params);
+    });
+  };
+
+  const validateSession = async () => {
+    if (!token.value) return;
+    try {
+      const response = await callSdk('validateToken', { JWT: token.value });
+      if (response && response.success === false) {
+        logout();
+      }
+    } catch (error) {
+      console.warn("Session validation failed:", error);
+      // Si le serveur renvoie explicitement une erreur ou si la validation échoue
+      if (error && typeof error === 'object' && ('error' in error || 'message' in error)) {
+        logout();
+      }
+    }
+  };
+
   const login = async (username: string, password: string) => {
     if (!username || !password) return;
     isLoading.value = true;
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/simple-jwt-login/v1/auth`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+      const data = await callSdk('authenticate', {
+        username,
+        password,
+        email: null,
+        password_hash: null
       });
 
-      const data = await response.json();
       const jwtToken = data.jwt || (data.data && data.data.jwt);
 
-      if (response.ok && jwtToken) {
+      if (jwtToken) {
         token.value = jwtToken;
         localStorage.setItem('dame_jwt_token', token.value);
 
@@ -173,6 +210,11 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   const logout = () => {
+    if (token.value) {
+      callSdk('revokeToken', { JWT: token.value }).catch((e) => {
+        console.warn("Erreur lors de la révocation du jeton sur le serveur:", e);
+      });
+    }
     token.value = '';
     user.value = null;
     selectedIdentity.value = null;
@@ -193,6 +235,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isRoiActive = ref(localStorage.getItem('dame_roi_active') !== 'false');
   const stockfishUrl = ref(localStorage.getItem('dame_stockfish_url') || '');
+  const wasmUrl = ref(localStorage.getItem('dame_wasm_url') || '');
 
   const fetchPwaConfig = async () => {
     try {
@@ -201,19 +244,43 @@ export const useAuthStore = defineStore('auth', () => {
         const data = await response.json();
         isRoiActive.value = !!data.roi_active;
         stockfishUrl.value = data.stockfish_url || '';
+        wasmUrl.value = data.wasm_url || '';
         localStorage.setItem('dame_roi_active', String(isRoiActive.value));
         localStorage.setItem('dame_stockfish_url', stockfishUrl.value);
+        localStorage.setItem('dame_wasm_url', wasmUrl.value);
       }
     } catch (error) {
       console.warn("Erreur chargement pwa-config, utilisation du cache :", error);
     }
   };
 
+  // Écoute du retour au premier plan (Foreground)
+  try {
+    App.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) {
+        validateSession();
+      }
+    });
+  } catch (e) {
+    console.warn("Capacitor App listener non disponible :", e);
+  }
+
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        validateSession();
+      }
+    });
+  }
+
+  // Validation initiale au démarrage du store
+  validateSession();
+
   return {
     token, user, selectedIdentity, adminMode,
     isAuthenticated, isAdmin, isLoading,
     login, logout, selectIdentity, checkIdentities,
-    isRoiActive, stockfishUrl, fetchPwaConfig
+    isRoiActive, stockfishUrl, wasmUrl, fetchPwaConfig
   };
 }, {
   persist: {

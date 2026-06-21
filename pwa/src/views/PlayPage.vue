@@ -364,12 +364,28 @@ const boardConfig = reactive({
   autoCastling: true,
   orientation: 'white' as 'white' | 'black',
   playerColor: 'white' as 'white' | 'black' | 'both',
+  movable: {
+    color: 'white' as 'white' | 'black' | 'both',
+  },
   viewOnly: false,
 });
 
 const getWorkerUrl = () => {
   const base = authStore.stockfishUrl;
-  return base ? `${base}stockfish.js` : 'stockfish/stockfish.js';
+  console.log('[PlayPage Debug] authStore.stockfishUrl base:', base);
+  if (authStore.wasmUrl) {
+    (window as any).dameWasmUrl = authStore.wasmUrl;
+  }
+  if (base) {
+    const url = `${base}stockfish.js`;
+    console.log('[PlayPage Debug] Resolved worker URL from base:', url);
+    return url;
+  }
+  const fallback = import.meta.env.DEV 
+    ? '/stockfish/stockfish.js' 
+    : new URL(/* @vite-ignore */ '../stockfish/stockfish.js', import.meta.url).href;
+  console.log('[PlayPage Debug] Resolved fallback worker URL:', fallback);
+  return fallback;
 };
 
 const stockfishConfig = computed<StockfishConfig>(() => {
@@ -483,6 +499,7 @@ const handleBoardCreated = (api: any) => {
     boardApi.loadPgn(chessStore.currentPgn);
     boardConfig.orientation = chessStore.orientation;
     boardConfig.playerColor = chessStore.orientation;
+    boardConfig.movable.color = chessStore.orientation;
     gameSettings.level = chessStore.engineElo;
     gameSettings.playerColor = chessStore.orientation;
     
@@ -606,6 +623,8 @@ const startNewGame = () => {
   }
   boardConfig.orientation = finalColor;
   boardConfig.playerColor = finalColor;
+  boardConfig.movable.color = finalColor;
+  renderKey.value++;
   if (boardApi) {
     boardApi.resetBoard();
     refreshDisplay();

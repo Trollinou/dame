@@ -63,7 +63,7 @@ export default defineConfig({
 // --- NOUVELLE SECTION D'OPTIMISATION ---
   build: {
     target: 'es2022', // Indispensable pour supporter les BigInt (0xffn) de chess.js
-    chunkSizeWarningLimit: 800, // On augmente légèrement la tolérance pour Ionic
+    chunkSizeWarningLimit: 1500, // On augmente la tolérance pour Ionic
     modulePreload: false, // Désactive le préchargement automatique (résout les warnings "unused preload" dans WordPress)
     rollupOptions: {
       output: {

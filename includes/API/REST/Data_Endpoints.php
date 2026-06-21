@@ -154,14 +154,17 @@ class Data_Endpoints {
 	public function get_pwa_config(): WP_REST_Response {
 		$roi_active = defined( 'ROI_VERSION' );
 		$stockfish_url = '';
+		$wasm_url = '';
 		
 		if ( $roi_active ) {
-			$stockfish_url = plugins_url( 'roi/includes/chess/dist/' );
+			$stockfish_url = plugins_url( 'roi/assets/js/' );
+			$wasm_url = rest_url( 'roi/v1/stockfish-wasm' );
 		}
 
 		return rest_ensure_response( [
 			'roi_active'    => $roi_active,
 			'stockfish_url' => $stockfish_url,
+			'wasm_url'      => $wasm_url,
 		] );
 	}
 

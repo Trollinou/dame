@@ -4,6 +4,17 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.6.1] - 2026-06-21
+### Ajouté
+- **TanStack Query (Vue Query)** : Intégration globale du gestionnaire de cache et de requêtes pour la PWA.
+- **Gestion intelligente du cycle de vie (Capacitor/Web)** : Liaison du `focusManager` de TanStack Query aux événements natifs de Capacitor (`appStateChange`) et du navigateur (`visibilitychange`). Les requêtes périodiques sont automatiquement interrompues lorsque l'application passe en arrière-plan (veille) et relancées au premier plan, réduisant ainsi la consommation de données et de batterie.
+
+### Modifié
+- **Migration Authentification SDK** : Remplacement des requêtes `fetch` brutes par l'intégration du SDK officiel `simple-jwt-login`.
+- **Révocation du jeton** : Le jeton JWT est maintenant proprement révoqué côté serveur WordPress lors de la déconnexion.
+- **Validation automatique de session** : Déclenchement d'un contrôle de validité du jeton avec déconnexion propre de la PWA au démarrage et à chaque retour au premier plan de l'application.
+- **Optimisation Build** : Ajustement de la limite d'avertissement de taille des fichiers JS (`chunkSizeWarningLimit` à 1500 kB) dans `vite.config.ts` pour accueillir proprement le bundle d'Ionic.
+
 ## [4.6.0] - 2026-06-04
 ### Ajouté
 - **Cache dynamique Workbox** : Configuration de la stratégie `CacheFirst` (`runtimeCaching`) dans le Service Worker pour intercepter et stocker localement le binaire de Stockfish issu du plugin ROI lors de la première connexion en ligne.
