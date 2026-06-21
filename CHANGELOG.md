@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.6.1] - 2026-06-21
+
+### Plugin WordPress (Backend)
+- **Manifest Dynamique :** Interception de `/dame-manifest.json` pour générer à la volée le manifest de la PWA à partir du titre et du logo du site WordPress.
+- **Invitation à l'installation (Bannière) :** Ajout d'un système d'invitation à l'installation sur tout le site WordPress avec bannière premium (effet glassmorphism, support du mode sombre).
+- **Logique d'installation :**
+  - **Android/Chromium :** Interception de l'événement `beforeinstallprompt` avec bouton « Installer ».
+  - **iOS/Safari :** Infobulle d'aide étape par étape (Partage -> Sur l'écran d'accueil) avec cooldown de 7 jours (sauvegardé en `localStorage`).
+  - **Service Worker :** Enregistrement automatique du Service Worker de la PWA sur le frontend WordPress.
+
 ## [4.6.0] - 2026-06-04
 
 ### Plugin WordPress (Backend)

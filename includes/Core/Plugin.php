@@ -199,8 +199,9 @@ class Plugin {
 		$toolbar = new Toolbar();
 		$toolbar->init();
 
-		// Setup PWA Redirect.
+		// Setup PWA Redirect and Manifest.
 		add_action( 'template_redirect', [ $this, 'handle_pwa_redirect' ] );
+		add_action( 'wp_head', [ $this, 'inject_pwa_manifest_link' ] );
 
 		// Initialize Frontend Assets.
 		$frontend_assets = new \DAME\Frontend\Assets();
@@ -291,16 +292,53 @@ class Plugin {
 	}
 
 	/**
-	 * Handles the redirection to the PWA.
+	 * Handles the redirection to the PWA and serving the dynamic manifest.
 	 * 
-	 * Redirects /pwa to the actual PWA index file.
+	 * Redirects /pwa to the actual PWA index file and serves /dame-manifest.json.
 	 */
 	public function handle_pwa_redirect(): void {
 		$request_uri = trim( (string) parse_url( (string) $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' );
+		
 		if ( 'pwa' === $request_uri ) {
 			$pwa_url = \DAME_PLUGIN_URL . 'pwa/dist/index.html';
 			wp_safe_redirect( $pwa_url, 301 );
 			exit;
+		}
+
+		if ( 'dame-manifest.json' === $request_uri ) {
+			header( 'Content-Type: application/manifest+json; charset=utf-8' );
+			echo wp_json_encode( [
+				'name'             => get_bloginfo( 'name' ),
+				'short_name'       => get_bloginfo( 'name' ),
+				'start_url'        => home_url( '/pwa' ),
+				'display'          => 'standalone',
+				'background_color' => '#ffffff',
+				'theme_color'      => '#ffffff',
+				'icons'            => [
+					[
+						'src'     => get_site_icon_url( 192 ) ?: \DAME_PLUGIN_URL . 'pwa/dist/assets/icon/icon-192.png',
+						'sizes'   => '192x192',
+						'type'    => 'image/png',
+						'purpose' => 'any maskable',
+					],
+					[
+						'src'     => get_site_icon_url( 512 ) ?: \DAME_PLUGIN_URL . 'pwa/dist/assets/icon/icon-512.png',
+						'sizes'   => '512x512',
+						'type'    => 'image/png',
+						'purpose' => 'any maskable',
+					]
+				]
+			] );
+			exit;
+		}
+	}
+
+	/**
+	 * Injects the PWA manifest link in the head of public pages.
+	 */
+	public function inject_pwa_manifest_link(): void {
+		if ( ! is_admin() ) {
+			echo '<link rel="manifest" href="' . esc_url( home_url( '/dame-manifest.json' ) ) . '">' . "\n";
 		}
 	}
 }

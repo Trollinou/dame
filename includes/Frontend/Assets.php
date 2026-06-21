@@ -31,6 +31,34 @@ class Assets {
 			\DAME_VERSION
 		);
 
+		// Enqueue PWA Installer Styles & Scripts
+		wp_enqueue_style(
+			'dame-public-pwa-installer',
+			\DAME_PLUGIN_URL . 'assets/css/public-pwa-installer.css',
+			array(),
+			\DAME_VERSION
+		);
+
+		wp_enqueue_script(
+			'dame-public-pwa-installer',
+			\DAME_PLUGIN_URL . 'assets/js/public-pwa-installer.js',
+			array(),
+			\DAME_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'dame-public-pwa-installer',
+			'damePwaInstaller',
+			array(
+				'swUrl'    => \DAME_PLUGIN_URL . 'pwa/dist/sw.js',
+				'pwaScope' => \DAME_PLUGIN_URL . 'pwa/dist/',
+				'siteName' => get_bloginfo( 'name' ),
+				'siteIcon' => get_site_icon_url( 192 ) ?: \DAME_PLUGIN_URL . 'pwa/dist/assets/icon/icon-192.png',
+				'pwaUrl'   => home_url( '/pwa' ),
+			)
+		);
+
 		// Enqueue the single event script on single event pages for the GPS button functionality.
 		if ( is_singular( 'dame_agenda' ) ) {
 			wp_enqueue_script(
