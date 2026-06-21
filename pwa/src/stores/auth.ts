@@ -114,6 +114,45 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const translateErrorMessage = (msg: string): string => {
+    if (!msg) return "Erreur de connexion.";
+    const lowerMsg = msg.toLowerCase().trim();
+
+    const translations: { [key: string]: string } = {
+      "wrong user credentials.": "Identifiants incorrects.",
+      "wrong username or password.": "Identifiants incorrects.",
+      "wrong email or password.": "Identifiants incorrects.",
+      "user not found.": "Utilisateur non trouvé.",
+      "missing username or email.": "Nom d'utilisateur ou e-mail manquant.",
+      "missing password.": "Mot de passe manquant.",
+      "token is expired.": "Votre session a expiré. Veuillez vous reconnecter.",
+      "jwt is expired.": "Votre session a expiré. Veuillez vous reconnecter.",
+      "invalid token.": "Session de connexion invalide.",
+      "jwt is invalid.": "Session de connexion invalide.",
+      "token has been revoked.": "Votre session a été fermée sur le serveur.",
+      "validation failed.": "Échec de la validation de session."
+    };
+
+    if (translations[lowerMsg]) {
+      return translations[lowerMsg];
+    }
+
+    if (lowerMsg.includes("credential") || lowerMsg.includes("wrong password") || lowerMsg.includes("incorrect")) {
+      return "Identifiants incorrects.";
+    }
+    if (lowerMsg.includes("expired")) {
+      return "Votre session a expiré. Veuillez vous reconnecter.";
+    }
+    if (lowerMsg.includes("invalid")) {
+      return "Session invalide. Veuillez vous reconnecter.";
+    }
+    if (lowerMsg.includes("not found")) {
+      return "Utilisateur non trouvé.";
+    }
+
+    return msg;
+  };
+
   const login = async (username: string, password: string) => {
     if (!username || !password) return;
     isLoading.value = true;
@@ -181,7 +220,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       const alert = await alertController.create({
         header: 'Échec de connexion',
-        message: errorMessage,
+        message: translateErrorMessage(errorMessage),
         buttons: ['OK']
       });
       await alert.present();
