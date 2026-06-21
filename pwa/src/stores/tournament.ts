@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { safeFetch } from '@/utils/safeFetch';
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
 
 export interface MenuItem {
   id: number;
@@ -18,23 +19,13 @@ export interface CachedPage {
 }
 
 export const useTournamentStore = defineStore('tournament', () => {
-  const menuItems = ref<MenuItem[]>([]);
+  const queryClient = useQueryClient();
   const cachedPages = ref<Record<number, CachedPage>>({});
-  const isLoading = ref(false);
-  const lastFetch = ref<number | null>(null);
 
-  const fetchMenu = async (force = false) => {
-    const now = Date.now();
-    if (!force && menuItems.value.length > 0 && lastFetch.value && (now - lastFetch.value < 60 * 60 * 1000)) {
-      return;
-    }
-
-    if (!navigator.onLine && menuItems.value.length > 0) {
-      return;
-    }
-
-    isLoading.value = true;
-    try {
+  // Query pour récupérer le menu des tournois
+  const { data: rawMenuItems, isLoading, refetch } = useQuery<MenuItem[]>({
+    queryKey: ['tournament', 'menu'],
+    queryFn: async () => {
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await safeFetch(`${apiUrl}/dame/v1/pwa-menu`, {}, 4000);
       
@@ -42,79 +33,68 @@ export const useTournamentStore = defineStore('tournament', () => {
       
       const newData: MenuItem[] = await response.json();
       
-      // Comparaison pour mise à jour intelligente
-      const hasChanged = JSON.stringify(newData.map(i => ({ id: i.id, mod: i.modified }))) !== 
-                         JSON.stringify(menuItems.value.map(i => ({ id: i.id, mod: i.modified })));
-
-      if (hasChanged || menuItems.value.length === 0) {
-        menuItems.value = newData;
-        
-        // PRÉ-CHARGEMENT PROACTIF : On charge le contenu de chaque page de tournoi
-        // pour qu'ils soient disponibles hors-ligne sans même avoir à cliquer dessus.
-        if (navigator.onLine) {
-          newData.forEach(item => {
-            if (item.object_id) {
-              fetchPage(item.object_id);
-            }
-          });
-        }
+      // PRÉ-CHARGEMENT PROACTIF : On charge le contenu de chaque page de tournoi
+      // pour qu'ils soient disponibles hors-ligne sans même avoir à cliquer dessus.
+      if (navigator.onLine) {
+        newData.forEach(item => {
+          if (item.object_id) {
+            fetchPage(item.object_id);
+          }
+        });
       }
+      
+      return newData;
+    }
+  });
 
-      lastFetch.value = Date.now();
-    } catch (err: any) {
-      console.error("Erreur fetchMenu:", err);
-      if (menuItems.value.length === 0) throw err;
-    } finally {
-      isLoading.value = false;
+  const menuItems = computed(() => rawMenuItems.value || []);
+
+  const fetchMenu = async (force = false) => {
+    if (force) {
+      await queryClient.invalidateQueries({ queryKey: ['tournament', 'menu'] });
+    } else {
+      await refetch();
     }
   };
 
   /**
    * Récupère une page de détail (depuis le cache ou le réseau)
    */
-  const fetchPage = async (pageId: number) => {
-    const cached = cachedPages.value[pageId];
-    
-    // Si on est hors ligne, on renvoie le cache (même s'il est vide, la vue gérera)
-    if (!navigator.onLine) return cached;
+  const fetchPage = async (pageId: number): Promise<CachedPage | undefined> => {
+    const queryKey = ['tournament', 'page', pageId];
 
-    // Si on a un cache, on peut le renvoyer tout de suite pour l'affichage rapide
-    // mais on lancera quand même un fetch si on est en ligne pour vérifier les mises à jour.
-    
-    try {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL;
-      const response = await safeFetch(`${apiUrl}/wp/v2/pages/${pageId}`, {}, 4000);
-      if (response.ok) {
-        const pageData: CachedPage = await response.json();
-        
-        // On ne met à jour le cache que si la date de modification a changé
-        if (!cached || cached.modified !== pageData.modified) {
-          cachedPages.value[pageId] = pageData;
-        }
-        return pageData;
-      }
-    } catch (err) {
-      console.error(`Erreur fetchPage ${pageId}:`, err);
+    if (!navigator.onLine) {
+      return queryClient.getQueryData<CachedPage>(queryKey);
     }
 
-    return cached;
+    try {
+      return await queryClient.fetchQuery<CachedPage>({
+        queryKey,
+        queryFn: async () => {
+          const apiUrl = import.meta.env.VITE_API_BASE_URL;
+          const response = await safeFetch(`${apiUrl}/wp/v2/pages/${pageId}`, {}, 4000);
+          if (!response.ok) throw new Error(`Erreur chargement page ${pageId}`);
+          return await response.json();
+        },
+        staleTime: 1000 * 60 * 60, // 1 heure de validité
+      });
+    } catch (err) {
+      console.error(`Erreur fetchPage ${pageId}:`, err);
+      return queryClient.getQueryData<CachedPage>(queryKey);
+    }
   };
 
   const clearData = () => {
-    menuItems.value = [];
-    cachedPages.value = {};
-    lastFetch.value = null;
+    // Le cache global est nettoyé par queryClient.clear() au logout
   };
 
   return {
     menuItems,
     cachedPages,
     isLoading,
-    lastFetch,
     fetchMenu,
     fetchPage,
     clearData
   };
-}, {
-  persist: true
 });
+

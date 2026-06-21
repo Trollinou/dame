@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { computed } from 'vue';
+import { useQuery } from '@tanstack/vue-query';
 
 export interface ReferenceItem {
   code: string;
@@ -7,11 +8,6 @@ export interface ReferenceItem {
 }
 
 export const useReferenceDataStore = defineStore('referenceData', () => {
-  const regions = ref<ReferenceItem[]>([]);
-  const departments = ref<ReferenceItem[]>([]);
-  const deptRegionMap = ref<Record<string, string>>({});
-  const isLoading = ref(false);
-
   const getHeaders = () => {
     const token = localStorage.getItem('dame_jwt_token');
     const headers: Record<string, string> = {
@@ -23,88 +19,90 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
     return headers;
   };
 
-  const fetchRegions = async () => {
-    if (regions.value.length > 0) return;
-    isLoading.value = true;
-    try {
+  // 1. Regions Query
+  const { data: rawRegions, isLoading: isRegionsLoading } = useQuery<ReferenceItem[]>({
+    queryKey: ['reference', 'regions'],
+    queryFn: async () => {
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await fetch(`${apiUrl}/dame/v1/data/regions`, {
         headers: getHeaders()
       });
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Format spécifique : objet {"code": "Nom"}
-        if (data && typeof data === 'object' && !Array.isArray(data)) {
-          regions.value = Object.entries(data).map(([code, name]) => ({ 
-            code, 
-            name: name as string 
-          }));
-        } else if (Array.isArray(data)) {
-          regions.value = data.map((item: any) => ({
-            code: item.code || item.id || item.slug || '',
-            name: item.name || item.label || ''
-          })).filter(item => item.code && item.name);
-        }
-        
-        // Tri par nom
-        regions.value.sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
-      }
-    } catch (error) {
-      console.error("Erreur fetchRegions:", error);
-    } finally {
-      isLoading.value = false;
-    }
-  };
+      if (!response.ok) throw new Error("Erreur fetchRegions");
 
-  const fetchDepartments = async () => {
-    if (departments.value.length > 0) return;
-    isLoading.value = true;
-    try {
+      const data = await response.json();
+      let formatted: ReferenceItem[] = [];
+
+      if (data && typeof data === 'object' && !Array.isArray(data)) {
+        formatted = Object.entries(data).map(([code, name]) => ({
+          code,
+          name: name as string
+        }));
+      } else if (Array.isArray(data)) {
+        formatted = data.map((item: any) => ({
+          code: item.code || item.id || item.slug || '',
+          name: item.name || item.label || ''
+        })).filter(item => item.code && item.name);
+      }
+
+      formatted.sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
+      return formatted;
+    }
+  });
+
+  const regions = computed(() => rawRegions.value || []);
+
+  // 2. Departments Query
+  const { data: rawDepartments, isLoading: isDepartmentsLoading } = useQuery<ReferenceItem[]>({
+    queryKey: ['reference', 'departments'],
+    queryFn: async () => {
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await fetch(`${apiUrl}/dame/v1/data/departments`, {
         headers: getHeaders()
       });
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Format spécifique : objet {"code": "Nom"}
-        if (data && typeof data === 'object' && !Array.isArray(data)) {
-          departments.value = Object.entries(data).map(([code, name]) => ({ 
-            code, 
-            name: name as string 
-          }));
-        } else if (Array.isArray(data)) {
-          departments.value = data.map((item: any) => ({
-            code: item.code || item.id || item.slug || '',
-            name: item.name || item.label || ''
-          })).filter(item => item.code && item.name);
-        }
-        
-        // Tri par nom
-        departments.value.sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
-      }
-    } catch (error) {
-      console.error("Erreur fetchDepartments:", error);
-    } finally {
-      isLoading.value = false;
-    }
-  };
+      if (!response.ok) throw new Error("Erreur fetchDepartments");
 
-  const fetchMapping = async () => {
-    if (Object.keys(deptRegionMap.value).length > 0) return;
-    try {
+      const data = await response.json();
+      let formatted: ReferenceItem[] = [];
+
+      if (data && typeof data === 'object' && !Array.isArray(data)) {
+        formatted = Object.entries(data).map(([code, name]) => ({
+          code,
+          name: name as string
+        }));
+      } else if (Array.isArray(data)) {
+        formatted = data.map((item: any) => ({
+          code: item.code || item.id || item.slug || '',
+          name: item.name || item.label || ''
+        })).filter(item => item.code && item.name);
+      }
+
+      formatted.sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
+      return formatted;
+    }
+  });
+
+  const departments = computed(() => rawDepartments.value || []);
+
+  // 3. Mapping Query
+  const { data: rawDeptRegionMap } = useQuery<Record<string, string>>({
+    queryKey: ['reference', 'mapping'],
+    queryFn: async () => {
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await fetch(`${apiUrl}/dame/v1/data/department-region-mapping`, {
         headers: getHeaders()
       });
-      if (response.ok) {
-        deptRegionMap.value = await response.json();
-      }
-    } catch (error) {
-      console.error("Erreur fetchMapping:", error);
+      if (!response.ok) throw new Error("Erreur fetchMapping");
+      return await response.json();
     }
-  };
+  });
+
+  const deptRegionMap = computed(() => rawDeptRegionMap.value || {});
+
+  const isLoading = computed(() => isRegionsLoading.value || isDepartmentsLoading.value);
+
+  const fetchRegions = async () => {};
+  const fetchDepartments = async () => {};
+  const fetchMapping = async () => {};
 
   return {
     regions,
@@ -116,3 +114,4 @@ export const useReferenceDataStore = defineStore('referenceData', () => {
     fetchMapping
   };
 });
+

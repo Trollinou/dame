@@ -27,9 +27,10 @@ export const useNewsStore = defineStore('news', () => {
   const queryClient = useQueryClient();
 
   const isCustomLoading = ref(false);
+  const customPosts = ref<Post[] | null>(null);
 
   // Liste des actualités (Clé de cache public)
-  const { data: posts, isLoading: isQueryLoading } = useQuery<Post[]>({
+  const { data: queryPosts, isLoading: isQueryLoading, refetch } = useQuery<Post[]>({
     queryKey: ['news', 'list'],
     queryFn: async () => {
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -38,7 +39,13 @@ export const useNewsStore = defineStore('news', () => {
       if (!response.ok) throw new Error("Impossible de charger les actualités.");
       return response.json();
     },
-    initialData: []
+  });
+
+  const posts = computed({
+    get: () => customPosts.value !== null ? customPosts.value : (queryPosts.value || []),
+    set: (val) => {
+      customPosts.value = val;
+    }
   });
 
   const isLoading = computed({
@@ -51,6 +58,8 @@ export const useNewsStore = defineStore('news', () => {
   const fetchPosts = async (force = false) => {
     if (force) {
       await queryClient.invalidateQueries({ queryKey: ['news', 'list'] });
+    } else {
+      await refetch();
     }
   };
 
@@ -77,6 +86,7 @@ export const useNewsStore = defineStore('news', () => {
   };
 
   const clearData = () => {
+    customPosts.value = null;
     queryClient.setQueryData(['news', 'list'], []);
   };
 

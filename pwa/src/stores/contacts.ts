@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import router from '../router';
+import { computed } from 'vue';
 import { useAuthStore } from './auth';
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
 
 export interface Contact {
   id: number;
@@ -32,55 +32,15 @@ export interface ContactType {
 }
 
 export const useContactStore = defineStore('contacts', () => {
-  const contacts = ref<Contact[]>([]);
-  const contactTypes = ref<ContactType[]>([]);
-  const isLoading = ref(false);
-  let isFetching = false;
-  const lastFetch = ref<number | null>(null);
+  const authStore = useAuthStore();
+  const queryClient = useQueryClient();
 
-  const fetchContactTypes = async () => {
-    if (contactTypes.value.length > 0) return;
-
-    const token = localStorage.getItem('dame_jwt_token');
-    if (!token) return;
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/wp/v2/contact-types?per_page=100`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) throw new Error("Erreur types contacts");
-
-      const data: ContactType[] = await response.json();
-      data.sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
-      contactTypes.value = data;
-    } catch (error) {
-      console.error("Erreur fetchContactTypes:", error);
-    }
-  };
-
-  const fetchContacts = async (force = false) => {
-    if (isFetching) return;
-
-    const now = Date.now();
-    if (!force && contacts.value.length > 0 && lastFetch.value && (now - lastFetch.value < 5 * 60 * 1000)) {
-      return;
-    }
-
-    isFetching = true;
-    if (contacts.value.length === 0) {
-      isLoading.value = true;
-    }
-
-    try {
+  // 1. Liste des contacts (Clé admin privée)
+  const { data: contacts, isLoading: isContactsLoading } = useQuery<Contact[]>({
+    queryKey: ['admin', 'contacts', 'list'],
+    queryFn: async () => {
       const token = localStorage.getItem('dame_jwt_token');
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      if (!token) throw new Error("Non authentifié");
 
       const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2/contacts?per_page=100&context=edit`;
       const fetchOptions = {
@@ -93,7 +53,10 @@ export const useContactStore = defineStore('contacts', () => {
 
       const response = await fetch(`${baseUrl}&page=1`, fetchOptions);
 
-      if (response.status === 401) throw new Error("Session expirée");
+      if (response.status === 401) {
+        authStore.logout();
+        throw new Error("Session expirée");
+      }
       if (!response.ok) throw new Error("Erreur serveur");
 
       const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '1');
@@ -115,44 +78,68 @@ export const useContactStore = defineStore('contacts', () => {
         });
       }
 
-      // Tri alphabétique (ignore accents et casse)
       allContacts.sort((a, b) => {
         const nameA = a.title?.raw || a.title?.rendered || '';
         const nameB = b.title?.raw || b.title?.rendered || '';
         return nameA.localeCompare(nameB, 'fr', { sensitivity: 'base' });
       });
 
-      contacts.value = allContacts;
-      lastFetch.value = Date.now();
-    } catch (error: any) {
-      console.error("Erreur fetchContacts:", error);
-      if (error.message === "Session expirée") {
-        useAuthStore().logout();
+      return allContacts;
+    },
+    enabled: computed(() => authStore.isAdmin),
+    initialData: []
+  });
+
+  // 2. Types de contacts (Clé admin privée)
+  const { data: contactTypes, isLoading: isTypesLoading } = useQuery<ContactType[]>({
+    queryKey: ['admin', 'contactTypes', 'list'],
+    queryFn: async () => {
+      const token = localStorage.getItem('dame_jwt_token');
+      if (!token) throw new Error("Non authentifié");
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/wp/v2/contact-types?per_page=100`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 401) {
+        authStore.logout();
+        throw new Error("Session expirée");
       }
-    } finally {
-      isLoading.value = false;
-      isFetching = false;
+      if (!response.ok) throw new Error("Erreur types contacts");
+
+      const data: ContactType[] = await response.json();
+      data.sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
+      return data;
+    },
+    enabled: computed(() => authStore.isAdmin),
+    initialData: []
+  });
+
+  const isLoading = computed(() => isContactsLoading.value || isTypesLoading.value);
+
+  const fetchContacts = async (force = false) => {
+    if (force) {
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'contacts'] });
     }
   };
 
-  /**
-   * Réinitialise les données du store (ex: déconnexion)
-   */
+  const fetchContactTypes = async () => {
+    // Géré automatiquement par TanStack Query (enabled: isAdmin)
+  };
+
   const clearData = () => {
-    contacts.value = [];
-    contactTypes.value = [];
-    lastFetch.value = null;
+    // Le cache global est nettoyé par queryClient.clear() au logout
   };
 
   return {
     contacts,
     contactTypes,
     isLoading,
-    lastFetch,
     fetchContacts,
     fetchContactTypes,
     clearData
   };
-}, {
-  persist: true
 });

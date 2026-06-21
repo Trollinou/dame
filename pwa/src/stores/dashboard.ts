@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { computed } from 'vue';
 import router from '../router';
 import { useAuthStore } from './auth';
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
 
 export interface Birthday {
   id: number;
@@ -12,32 +13,16 @@ export interface Birthday {
 }
 
 export const useDashboardStore = defineStore('dashboard', () => {
-  const birthdays = ref<Birthday[]>([]);
-  const isLoading = ref(false);
-  let isFetching = false;
-  const lastFetch = ref<number | null>(null);
+  const authStore = useAuthStore();
+  const queryClient = useQueryClient();
 
-  /**
-   * Récupère les prochains anniversaires (Silent Refresh)
-   */
-  const fetchBirthdays = async (force = false) => {
-    if (isFetching) return;
-
-    const now = Date.now();
-    if (!force && birthdays.value.length > 0 && lastFetch.value && (now - lastFetch.value < 5 * 60 * 1000)) {
-      return;
-    }
-
-    isFetching = true;
-    if (birthdays.value.length === 0) {
-      isLoading.value = true;
-    }
-
-    try {
+  const { data: rawBirthdays, isLoading } = useQuery<Birthday[]>({
+    queryKey: ['dashboard', 'birthdays'],
+    queryFn: async () => {
       const token = localStorage.getItem('dame_jwt_token');
       if (!token) {
         router.push('/login');
-        return;
+        throw new Error("Non authentifié");
       }
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dame/v1/birthdays/upcoming?limit=5`, {
@@ -48,19 +33,25 @@ export const useDashboardStore = defineStore('dashboard', () => {
         }
       });
 
-      if (response.status === 401) throw new Error("Session expirée");
+      if (response.status === 401) {
+        authStore.logout();
+        throw new Error("Session expirée");
+      }
       if (!response.ok) throw new Error("Erreur serveur");
 
-      birthdays.value = await response.json();
-      lastFetch.value = Date.now();
-    } catch (error: any) {
-      console.error("Erreur fetchBirthdays:", error);
-      if (error.message === "Session expirée") {
-        useAuthStore().logout();
-      }
-    } finally {
-      isLoading.value = false;
-      isFetching = false;
+      return await response.json();
+    },
+    enabled: computed(() => authStore.isAuthenticated)
+  });
+
+  const birthdays = computed(() => rawBirthdays.value || []);
+
+  /**
+   * Récupère les prochains anniversaires (Silent Refresh)
+   */
+  const fetchBirthdays = async (force = false) => {
+    if (force) {
+      await queryClient.invalidateQueries({ queryKey: ['dashboard', 'birthdays'] });
     }
   };
 
@@ -68,15 +59,14 @@ export const useDashboardStore = defineStore('dashboard', () => {
    * Réinitialise les données du store (ex: déconnexion)
    */
   const clearData = () => {
-    birthdays.value = [];
-    lastFetch.value = null;
+    // Le cache global est nettoyé par queryClient.clear() au logout
   };
 
   return {
     birthdays,
     isLoading,
-    lastFetch,
     fetchBirthdays,
     clearData
   };
 });
+

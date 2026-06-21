@@ -37,19 +37,20 @@ export const useBenevolatStore = defineStore('benevolat', () => {
   const userVotedIds = ref<number[]>([]);
 
   // 1. Liste publique des appels à bénévolat (Clé public)
-  const { data: benevolats, isLoading: isBenevolatsLoading } = useQuery<Benevolat[]>({
+  const { data: rawBenevolats, isLoading: isBenevolatsLoading } = useQuery<Benevolat[]>({
     queryKey: ['benevolat', 'list', 'public'],
     queryFn: async () => {
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await safeFetch(`${apiUrl}/wp/v2/benevolats?context=view&per_page=100`, {}, 4000);
       if (!response.ok) throw new Error("Erreur chargement bénévolats");
       return response.json();
-    },
-    initialData: []
+    }
   });
 
+  const benevolats = computed(() => rawBenevolats.value || []);
+
   // 2. Réponses utilisateur (Clé privée, isolée par identité pour éviter les fuites)
-  const { data: reponses, isLoading: isReponsesLoading } = useQuery<BenevolatReponse[]>({
+  const { data: rawReponses, isLoading: isReponsesLoading } = useQuery<BenevolatReponse[]>({
     queryKey: ['benevolat', 'user-vote', authStore.selectedIdentity?.member_id || 'anonymous'],
     queryFn: async () => {
       const token = localStorage.getItem('dame_jwt_token');
@@ -66,11 +67,12 @@ export const useBenevolatStore = defineStore('benevolat', () => {
       if (!response.ok) throw new Error("Erreur chargement réponses");
       return response.json();
     },
-    enabled: computed(() => authStore.isAuthenticated),
-    initialData: []
+    enabled: computed(() => authStore.isAuthenticated)
   });
 
-  const isLoading = computed(() => isBenevolatsLoading.value || isReponsesLoading.value);
+  const reponses = computed(() => rawReponses.value || []);
+
+  const isLoading = computed(() => isBenevolatsLoading.value || (authStore.isAuthenticated && isReponsesLoading.value));
 
   const getResponseCount = (benevolatId: number): number => {
     if (!reponses.value) return 0;

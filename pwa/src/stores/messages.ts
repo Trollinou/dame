@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import router from '../router';
+import { computed } from 'vue';
 import { useAuthStore } from './auth';
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
 
 export interface Message {
   id: number;
@@ -30,33 +30,14 @@ export interface Message {
 }
 
 export const useMessageStore = defineStore('messages', () => {
-  const messages = ref<Message[]>([]);
-  const isLoading = ref(false);
-  let isFetching = false;
-  const lastFetch = ref<number | null>(null);
+  const authStore = useAuthStore();
+  const queryClient = useQueryClient();
 
-  /**
-   * Action: Récupère les messages (Silent Refresh)
-   */
-  const fetchMessages = async (force = false) => {
-    if (isFetching) return;
-
-    const now = Date.now();
-    if (!force && messages.value.length > 0 && lastFetch.value && (now - lastFetch.value < 5 * 60 * 1000)) {
-      return;
-    }
-
-    isFetching = true;
-    if (messages.value.length === 0) {
-      isLoading.value = true;
-    }
-
-    try {
+  const { data: messages, isLoading } = useQuery<Message[]>({
+    queryKey: ['admin', 'messages', 'list'],
+    queryFn: async () => {
       const token = localStorage.getItem('dame_jwt_token');
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      if (!token) throw new Error("Non authentifié");
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/wp/v2/messages?context=edit&per_page=100`, {
         headers: {
@@ -65,42 +46,34 @@ export const useMessageStore = defineStore('messages', () => {
         }
       });
 
-      if (response.status === 401) throw new Error("Session expirée");
+      if (response.status === 401) {
+        authStore.logout();
+        throw new Error("Session expirée");
+      }
       if (!response.ok) throw new Error("Erreur serveur");
 
       const data: Message[] = await response.json();
-      
-      // Tri par date décroissante
       data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      return data;
+    },
+    enabled: computed(() => authStore.isAdmin),
+    initialData: []
+  });
 
-      messages.value = data;
-      lastFetch.value = Date.now();
-    } catch (error: any) {
-      console.error("Erreur fetchMessages:", error);
-      if (error.message === "Session expirée") {
-        useAuthStore().logout();
-      }
-    } finally {
-      isLoading.value = false;
-      isFetching = false;
+  const fetchMessages = async (force = false) => {
+    if (force) {
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'messages'] });
     }
   };
 
-  /**
-   * Réinitialise les données du store (ex: déconnexion)
-   */
   const clearData = () => {
-    messages.value = [];
-    lastFetch.value = null;
+    // Le cache global est nettoyé par queryClient.clear() au logout
   };
 
   return {
     messages,
     isLoading,
-    lastFetch,
     fetchMessages,
     clearData
   };
-}, {
-  persist: true
 });

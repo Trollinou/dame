@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import router from '../router';
+import { computed } from 'vue';
 import { useAuthStore } from './auth';
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
 
 export interface Member {
   id: number;
@@ -52,55 +52,15 @@ export interface Season {
 }
 
 export const useMemberStore = defineStore('members', () => {
-  const members = ref<Member[]>([]);
-  const seasons = ref<Season[]>([]);
-  const isLoading = ref(false);
-  let isFetching = false;
-  const lastFetch = ref<number | null>(null);
+  const authStore = useAuthStore();
+  const queryClient = useQueryClient();
 
-  const fetchSeasons = async () => {
-    if (seasons.value.length > 0) return;
-
-    const token = localStorage.getItem('dame_jwt_token');
-    if (!token) return;
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/wp/v2/seasons?per_page=100`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) throw new Error("Erreur saisons");
-
-      const data: Season[] = await response.json();
-      data.sort((a, b) => b.name.localeCompare(a.name));
-      seasons.value = data;
-    } catch (error) {
-      console.error("Erreur fetchSeasons:", error);
-    }
-  };
-
-  const fetchMembers = async (force = false) => {
-    if (isFetching) return;
-
-    const now = Date.now();
-    if (!force && members.value.length > 0 && lastFetch.value && (now - lastFetch.value < 5 * 60 * 1000)) {
-      return;
-    }
-
-    isFetching = true;
-    if (members.value.length === 0) {
-      isLoading.value = true;
-    }
-
-    try {
+  // 1. Liste des adhérents (Clé admin privée)
+  const { data: members, isLoading: isMembersLoading } = useQuery<Member[]>({
+    queryKey: ['admin', 'members', 'list'],
+    queryFn: async () => {
       const token = localStorage.getItem('dame_jwt_token');
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      if (!token) throw new Error("Non authentifié");
 
       const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/wp/v2/adherents?per_page=100&context=edit`;
       const fetchOptions = {
@@ -113,7 +73,10 @@ export const useMemberStore = defineStore('members', () => {
 
       const response = await fetch(`${baseUrl}&page=1`, fetchOptions);
 
-      if (response.status === 401) throw new Error("Session expirée");
+      if (response.status === 401) {
+        authStore.logout();
+        throw new Error("Session expirée");
+      }
       if (!response.ok) throw new Error("Erreur lors de l'accès à l'API");
 
       const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '1');
@@ -132,44 +95,68 @@ export const useMemberStore = defineStore('members', () => {
         });
       }
 
-      // Tri alphabétique (ignore accents et casse)
       allMembers.sort((a, b) => {
         const nameA = a.title?.raw || a.title?.rendered || '';
         const nameB = b.title?.raw || b.title?.rendered || '';
         return nameA.localeCompare(nameB, 'fr', { sensitivity: 'base' });
       });
 
-      members.value = allMembers;
-      lastFetch.value = Date.now();
-    } catch (error: any) {
-      console.error("Erreur fetchMembers:", error);
-      if (error.message === "Session expirée") {
-        useAuthStore().logout();
+      return allMembers;
+    },
+    enabled: computed(() => authStore.isAdmin),
+    initialData: []
+  });
+
+  // 2. Liste des saisons (Clé admin privée)
+  const { data: seasons, isLoading: isSeasonsLoading } = useQuery<Season[]>({
+    queryKey: ['admin', 'seasons', 'list'],
+    queryFn: async () => {
+      const token = localStorage.getItem('dame_jwt_token');
+      if (!token) throw new Error("Non authentifié");
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/wp/v2/seasons?per_page=100`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 401) {
+        authStore.logout();
+        throw new Error("Session expirée");
       }
-    } finally {
-      isLoading.value = false;
-      isFetching = false;
+      if (!response.ok) throw new Error("Erreur saisons");
+
+      const data: Season[] = await response.json();
+      data.sort((a, b) => b.name.localeCompare(a.name));
+      return data;
+    },
+    enabled: computed(() => authStore.isAdmin),
+    initialData: []
+  });
+
+  const isLoading = computed(() => isMembersLoading.value || isSeasonsLoading.value);
+
+  const fetchMembers = async (force = false) => {
+    if (force) {
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'members'] });
     }
   };
 
-  /**
-   * Réinitialise les données du store (ex: déconnexion)
-   */
+  const fetchSeasons = async () => {
+    // Géré automatiquement par TanStack Query (enabled: isAdmin)
+  };
+
   const clearData = () => {
-    members.value = [];
-    seasons.value = [];
-    lastFetch.value = null;
+    // Le cache global est nettoyé par queryClient.clear() au logout
   };
 
   return {
     members,
     seasons,
     isLoading,
-    lastFetch,
     fetchMembers,
     fetchSeasons,
     clearData
   };
-}, {
-  persist: true
 });
