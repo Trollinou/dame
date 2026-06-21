@@ -159,10 +159,14 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true;
 
     try {
-      const data = await callSdk('authenticate', {
-        username,
-        password
-      } as any);
+      const authParams: any = { password };
+      if (username.includes('@')) {
+        authParams.email = username;
+      } else {
+        authParams.username = username;
+      }
+
+      const data = await callSdk('authenticate', authParams);
 
       const jwtToken = data.jwt || (data.data && data.data.jwt);
 
