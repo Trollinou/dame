@@ -185,8 +185,19 @@ export const useAuthStore = defineStore('auth', () => {
             if (profile.roles) roles = profile.roles;
             if (profile.name) displayName = profile.name;
             if (profile.email) email = profile.email;
+
+            // Bloquer la connexion si l'utilisateur a uniquement le rôle "subscriber" (e-mail non validé)
+            if (roles.length === 1 && roles.includes('subscriber')) {
+              await callSdk('revokeToken', { JWT: token.value }).catch(() => {});
+              token.value = '';
+              localStorage.removeItem('dame_jwt_token');
+              throw new Error("Veuillez valider votre adresse e-mail avant de vous connecter.");
+            }
           }
-        } catch (e) {
+        } catch (e: any) {
+          if (e.message && e.message.includes("Veuillez valider")) {
+            throw e;
+          }
           console.warn("Profil complet non accessible, utilisation des données d'identifiants.");
         }
 
