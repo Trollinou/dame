@@ -297,7 +297,12 @@ class Plugin {
 	 * Redirects /pwa to the actual PWA index file and serves /dame-manifest.json.
 	 */
 	public function handle_pwa_redirect(): void {
+		$home_path = trim( (string) parse_url( home_url(), PHP_URL_PATH ), '/' );
 		$request_uri = trim( (string) parse_url( (string) $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' );
+
+		if ( ! empty( $home_path ) && 0 === strpos( $request_uri, $home_path ) ) {
+			$request_uri = trim( substr( $request_uri, strlen( $home_path ) ), '/' );
+		}
 		
 		if ( 'pwa' === $request_uri ) {
 			$pwa_url = \DAME_PLUGIN_URL . 'pwa/dist/index.html';
