@@ -159,7 +159,8 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true;
 
     try {
-      const authParams: any = { password };
+      const base64Password = btoa(unescape(encodeURIComponent(password)));
+      const authParams: any = { password: base64Password };
       if (username.includes('@')) {
         authParams.email = username;
       } else {
