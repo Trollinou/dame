@@ -15,6 +15,10 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Validation automatique de session** : Déclenchement d'un contrôle de validité du jeton avec déconnexion propre de la PWA au démarrage et à chaque retour au premier plan de l'application.
 - **Optimisation Build** : Ajustement de la limite d'avertissement de taille des fichiers JS (`chunkSizeWarningLimit` à 1500 kB) dans `vite.config.ts` pour accueillir proprement le bundle d'Ionic.
 
+### Corrigé
+- **Sécurité (Connexion)** : Blocage de la connexion sur la PWA et révocation immédiate du jeton JWT si le compte de l'utilisateur n'a pas encore validé son e-mail (détection du rôle unique `subscriber`).
+- **Affichage Anonyme & Actualités** : Correction du bug d'initialisation de TanStack Query (`initialData` considéré comme frais) empêchant le chargement automatique des actualités et des appels à bénévolat pour les visiteurs déconnectés.
+
 ## [4.6.0] - 2026-06-04
 ### Ajouté
 - **Cache dynamique Workbox** : Configuration de la stratégie `CacheFirst` (`runtimeCaching`) dans le Service Worker pour intercepter et stocker localement le binaire de Stockfish issu du plugin ROI lors de la première connexion en ligne.
