@@ -318,6 +318,9 @@ class Plugin {
 	 * Outputs the dynamic manifest JSON and exits.
 	 */
 	private function serve_dynamic_manifest(): void {
+		if ( ob_get_length() ) {
+			ob_clean();
+		}
 		header( 'Content-Type: application/manifest+json; charset=utf-8' );
 		echo wp_json_encode( [
 			'name'             => get_bloginfo( 'name' ),
