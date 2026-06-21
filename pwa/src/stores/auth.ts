@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { toastController, alertController } from '@ionic/vue';
 import { SimpleJwtLogin } from 'simple-jwt-login';
 import { App } from '@capacitor/app';
+import { useQueryClient } from '@tanstack/vue-query';
 import router from '../router';
 
 // Import des autres stores pour nettoyage
@@ -264,6 +265,13 @@ export const useAuthStore = defineStore('auth', () => {
       callSdk('revokeToken', { JWT: token.value }).catch((e) => {
         console.warn("Erreur lors de la révocation du jeton sur le serveur:", e);
       });
+    }
+
+    try {
+      const queryClient = useQueryClient();
+      queryClient.clear(); // Vide le cache mémoire + le cache persistant LocalStorage de TanStack Query
+    } catch (e) {
+      console.warn("Erreur lors de l'effacement du QueryClient:", e);
     }
     token.value = '';
     user.value = null;
