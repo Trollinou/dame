@@ -166,13 +166,18 @@
 
     // iOS flow (no beforeinstallprompt event, show instructions manually)
     if (isIOS) {
-        // We delay slightly to avoid blocking page load
-        window.addEventListener('DOMContentLoaded', () => {
+        const initIOSBanner = () => {
             setTimeout(() => {
                 if (!bannerElement) {
                     createBanner(true);
                 }
             }, 2000);
-        });
+        };
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', initIOSBanner);
+        } else {
+            initIOSBanner();
+        }
     }
 })();
