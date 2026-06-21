@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { safeFetch } from '@/utils/safeFetch';
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
 
 export interface Post {
   id: number;
@@ -23,82 +24,68 @@ export interface Post {
 }
 
 export const useNewsStore = defineStore('news', () => {
-  const posts = ref<Post[]>([]);
-  const isLoading = ref(false);
-  const lastFetch = ref<number | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchPosts = async (force = false) => {
-    const now = Date.now();
-    if (!force && posts.value.length > 0 && lastFetch.value && (now - lastFetch.value < 60 * 60 * 1000)) {
-      return;
-    }
+  const isCustomLoading = ref(false);
 
-    if (!navigator.onLine && posts.value.length > 0) {
-      return;
-    }
-
-    isLoading.value = true;
-    try {
+  // Liste des actualités (Clé de cache public)
+  const { data: posts, isLoading: isQueryLoading } = useQuery<Post[]>({
+    queryKey: ['news', 'list'],
+    queryFn: async () => {
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await safeFetch(`${apiUrl}/wp/v2/posts?_embed&per_page=20`, {}, 4000);
 
       if (!response.ok) throw new Error("Impossible de charger les actualités.");
+      return response.json();
+    },
+    initialData: []
+  });
 
-      const newData: Post[] = await response.json();
+  const isLoading = computed({
+    get: () => isQueryLoading.value || isCustomLoading.value,
+    set: (val) => {
+      isCustomLoading.value = val;
+    }
+  });
 
-      // On compare avec l'existant pour ne mettre à jour que si nécessaire
-      const hasChanged = JSON.stringify(newData.map(p => ({ id: p.id, mod: p.modified }))) !==
-        JSON.stringify(posts.value.slice(0, 20).map(p => ({ id: p.id, mod: p.modified })));
-
-      if (hasChanged || posts.value.length === 0) {
-        posts.value = newData;
-      }
-
-      lastFetch.value = Date.now();
-    } catch (err: any) {
-      console.error("Erreur fetchPosts:", err);
-      if (posts.value.length === 0) {
-        throw err;
-      }
-    } finally {
-      isLoading.value = false;
+  const fetchPosts = async (force = false) => {
+    if (force) {
+      await queryClient.invalidateQueries({ queryKey: ['news', 'list'] });
     }
   };
 
   /**
-   * Sauvegarde ou met à jour un article unique dans le store
+   * Sauvegarde ou met à jour un article unique directement dans le cache de TanStack Query
    */
   const savePost = (post: Post) => {
-    const index = posts.value.findIndex(p => p.id === post.id);
-    if (index !== -1) {
-      posts.value[index] = post;
-    } else {
-      posts.value.unshift(post);
-      // On garde une limite raisonnable pour le cache
-      if (posts.value.length > 100) {
-        posts.value.pop();
+    queryClient.setQueryData<Post[]>(['news', 'list'], (old) => {
+      const currentList = old || [];
+      const index = currentList.findIndex(p => p.id === post.id);
+      if (index !== -1) {
+        const copy = [...currentList];
+        copy[index] = post;
+        return copy;
+      } else {
+        return [post, ...currentList];
       }
-    }
+    });
   };
 
   const getPostById = (id: number): Post | undefined => {
-    return posts.value.find(p => p.id === id);
+    const list = queryClient.getQueryData<Post[]>(['news', 'list']) || [];
+    return list.find(p => p.id === id);
   };
 
   const clearData = () => {
-    posts.value = [];
-    lastFetch.value = null;
+    queryClient.setQueryData(['news', 'list'], []);
   };
 
   return {
     posts,
     isLoading,
-    lastFetch,
     fetchPosts,
     savePost,
     getPostById,
     clearData
   };
-}, {
-  persist: true
 });
