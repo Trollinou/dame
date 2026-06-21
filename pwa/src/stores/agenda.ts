@@ -32,7 +32,8 @@ export const useAgendaStore = defineStore('agenda', () => {
   const isLoading = ref(false);
   const hasMoreUpcoming = ref(true);
   const hasMorePast = ref(true);
-  let isFetching = false;
+  let isFetchingUpcoming = false;
+  let isFetchingPast = false;
   
   // Etat de la pagination partagé
   const upcomingPage = ref(1);
@@ -43,12 +44,14 @@ export const useAgendaStore = defineStore('agenda', () => {
    * Renvoie null en cas d'échec réseau pour éviter d'écraser le cache avec du vide
    */
   const fetchBatch = async (direction: 'upcoming' | 'past', referenceDate: string, page: number) => {
-    if (isFetching) return null;
+    if (direction === 'upcoming' && isFetchingUpcoming) return null;
+    if (direction === 'past' && isFetchingPast) return null;
     
     // Protection proactive contre les erreurs console "Load failed" hors-ligne
     if (!navigator.onLine) return null;
 
-    isFetching = true;
+    if (direction === 'upcoming') isFetchingUpcoming = true;
+    if (direction === 'past') isFetchingPast = true;
 
     try {
       const token = localStorage.getItem('dame_jwt_token');
@@ -108,7 +111,8 @@ export const useAgendaStore = defineStore('agenda', () => {
       }
       return null;
     } finally {
-      isFetching = false;
+      if (direction === 'upcoming') isFetchingUpcoming = false;
+      if (direction === 'past') isFetchingPast = false;
     }
   };
 
