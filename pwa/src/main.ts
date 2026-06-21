@@ -6,10 +6,9 @@ import { IonicVue } from '@ionic/vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { vSafeHtml } from './directives/safeHtml';
-import { VueQueryPlugin, QueryClient, focusManager } from '@tanstack/vue-query';
+import { VueQueryPlugin, focusManager } from '@tanstack/vue-query';
 import { App as CapacitorApp } from '@capacitor/app';
-import { persistQueryClient } from '@tanstack/query-persist-client-core';
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import { queryClient } from './queryClient';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -44,28 +43,6 @@ import { registerSW } from 'virtual:pwa-register';
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: true,
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 60 * 24, // 24 heures (Garbage Collection / cacheTime)
-    },
-  },
-});
-
-// Persistance du cache de requêtes pour le support hors-ligne
-const persister = createSyncStoragePersister({
-  storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-  key: 'DAME_QUERY_CACHE',
-});
-
-persistQueryClient({
-  queryClient,
-  persister,
-  maxAge: 1000 * 60 * 60 * 24, // 24 heures
-});
 
 // Lier le focusManager de TanStack Query au cycle de vie natif de Capacitor
 try {
