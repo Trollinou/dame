@@ -56,7 +56,7 @@ export const useMemberStore = defineStore('members', () => {
   const queryClient = useQueryClient();
 
   // 1. Liste des adhérents (Clé admin privée)
-  const { data: members, isLoading: isMembersLoading } = useQuery<Member[]>({
+  const { data: rawMembers, isLoading: isMembersLoading, refetch: refetchMembers } = useQuery<Member[]>({
     queryKey: ['admin', 'members', 'list'],
     queryFn: async () => {
       const token = localStorage.getItem('dame_jwt_token');
@@ -103,12 +103,13 @@ export const useMemberStore = defineStore('members', () => {
 
       return allMembers;
     },
-    enabled: computed(() => authStore.isAdmin),
-    initialData: []
+    enabled: computed(() => authStore.isAdmin)
   });
 
+  const members = computed(() => rawMembers.value || []);
+
   // 2. Liste des saisons (Clé admin privée)
-  const { data: seasons, isLoading: isSeasonsLoading } = useQuery<Season[]>({
+  const { data: rawSeasons, isLoading: isSeasonsLoading, refetch: refetchSeasons } = useQuery<Season[]>({
     queryKey: ['admin', 'seasons', 'list'],
     queryFn: async () => {
       const token = localStorage.getItem('dame_jwt_token');
@@ -131,20 +132,23 @@ export const useMemberStore = defineStore('members', () => {
       data.sort((a, b) => b.name.localeCompare(a.name));
       return data;
     },
-    enabled: computed(() => authStore.isAdmin),
-    initialData: []
+    enabled: computed(() => authStore.isAdmin)
   });
+
+  const seasons = computed(() => rawSeasons.value || []);
 
   const isLoading = computed(() => isMembersLoading.value || isSeasonsLoading.value);
 
   const fetchMembers = async (force = false) => {
     if (force) {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'members'] });
+    } else {
+      await refetchMembers();
     }
   };
 
   const fetchSeasons = async () => {
-    // Géré automatiquement par TanStack Query (enabled: isAdmin)
+    await refetchSeasons();
   };
 
   const clearData = () => {

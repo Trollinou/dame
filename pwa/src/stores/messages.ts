@@ -33,7 +33,7 @@ export const useMessageStore = defineStore('messages', () => {
   const authStore = useAuthStore();
   const queryClient = useQueryClient();
 
-  const { data: messages, isLoading } = useQuery<Message[]>({
+  const { data: rawMessages, isLoading, refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ['admin', 'messages', 'list'],
     queryFn: async () => {
       const token = localStorage.getItem('dame_jwt_token');
@@ -56,13 +56,16 @@ export const useMessageStore = defineStore('messages', () => {
       data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       return data;
     },
-    enabled: computed(() => authStore.isAdmin),
-    initialData: []
+    enabled: computed(() => authStore.isAdmin)
   });
+
+  const messages = computed(() => rawMessages.value || []);
 
   const fetchMessages = async (force = false) => {
     if (force) {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'messages'] });
+    } else {
+      await refetchMessages();
     }
   };
 

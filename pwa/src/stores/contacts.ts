@@ -36,7 +36,7 @@ export const useContactStore = defineStore('contacts', () => {
   const queryClient = useQueryClient();
 
   // 1. Liste des contacts (Clé admin privée)
-  const { data: contacts, isLoading: isContactsLoading } = useQuery<Contact[]>({
+  const { data: rawContacts, isLoading: isContactsLoading, refetch: refetchContacts } = useQuery<Contact[]>({
     queryKey: ['admin', 'contacts', 'list'],
     queryFn: async () => {
       const token = localStorage.getItem('dame_jwt_token');
@@ -86,12 +86,13 @@ export const useContactStore = defineStore('contacts', () => {
 
       return allContacts;
     },
-    enabled: computed(() => authStore.isAdmin),
-    initialData: []
+    enabled: computed(() => authStore.isAdmin)
   });
 
+  const contacts = computed(() => rawContacts.value || []);
+
   // 2. Types de contacts (Clé admin privée)
-  const { data: contactTypes, isLoading: isTypesLoading } = useQuery<ContactType[]>({
+  const { data: rawContactTypes, isLoading: isTypesLoading, refetch: refetchContactTypes } = useQuery<ContactType[]>({
     queryKey: ['admin', 'contactTypes', 'list'],
     queryFn: async () => {
       const token = localStorage.getItem('dame_jwt_token');
@@ -114,20 +115,23 @@ export const useContactStore = defineStore('contacts', () => {
       data.sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
       return data;
     },
-    enabled: computed(() => authStore.isAdmin),
-    initialData: []
+    enabled: computed(() => authStore.isAdmin)
   });
+
+  const contactTypes = computed(() => rawContactTypes.value || []);
 
   const isLoading = computed(() => isContactsLoading.value || isTypesLoading.value);
 
   const fetchContacts = async (force = false) => {
     if (force) {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'contacts'] });
+    } else {
+      await refetchContacts();
     }
   };
 
   const fetchContactTypes = async () => {
-    // Géré automatiquement par TanStack Query (enabled: isAdmin)
+    await refetchContactTypes();
   };
 
   const clearData = () => {

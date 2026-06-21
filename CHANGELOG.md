@@ -10,6 +10,11 @@
   - **iOS/Safari :** Infobulle d'aide étape par étape (Partage -> Sur l'écran d'accueil) avec cooldown de 7 jours (sauvegardé en `localStorage`).
   - **Service Worker :** Enregistrement automatique du Service Worker de la PWA sur le frontend WordPress.
 
+### Application Mobile (PWA)
+- **TanStack Query (Vue Query) :** Migration complète des requêtes et de la mise en cache réseau (news, agenda, bénévolat, dashboard, adhérents, contacts, messages, reference data) avec persistance locale pour un mode hors-ligne fluide.
+- **Sécurité (Connexion) :** Remplacement des requêtes par le SDK `simple-jwt-login`, déconnexion automatique en cas de token expiré ou invalide, et blocage d'accès immédiat (avec révocation du token) pour les comptes n'ayant pas validé leur e-mail (rôle `subscriber` unique).
+- **Correctifs :** Correction de l'affichage vide des onglets d'administration (adhérents, contacts, messages) et des actualités/bénévolats en mode déconnecté en supprimant les blocages liés à `initialData`. Résolution de l'erreur d'injection de contexte lors de l'appel du client de requête TanStack hors setup Vue.
+
 ## [4.6.0] - 2026-06-04
 
 ### Plugin WordPress (Backend)
