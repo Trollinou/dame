@@ -206,28 +206,43 @@ const filteredEvents = computed(() => {
 });
 
 onIonViewWillEnter(async () => {
-  if (events.value.length === 0) {
+  const hasPast = events.value.some(e => isPast(e));
+  
+  if (events.value.length === 0 || !hasPast) {
     isLoading.value = true;
     
-    // Chargement parallèle des événements passés (page 1) et futurs (page 1)
-    const [upcomingData, pastData] = await Promise.all([
-      agendaStore.fetchBatch('upcoming', todayStr, 1),
-      agendaStore.fetchBatch('past', todayStr, 1)
-    ]);
-    
-    let merged: AgendaEvent[] = [];
-    if (pastData && pastData.length > 0) {
-      // Inversion pour avoir l'ordre chronologique croissant
-      merged = [...pastData].reverse();
-      pastPage.value = 2; // La page 1 du passé est chargée
+    if (events.value.length === 0) {
+      // Chargement parallèle des événements passés (page 1) et futurs (page 1)
+      const [upcomingData, pastData] = await Promise.all([
+        agendaStore.fetchBatch('upcoming', todayStr, 1),
+        agendaStore.fetchBatch('past', todayStr, 1)
+      ]);
+      
+      let merged: AgendaEvent[] = [];
+      if (pastData && pastData.length > 0) {
+        // Inversion pour avoir l'ordre chronologique croissant
+        merged = [...pastData].reverse();
+        pastPage.value = 2; // La page 1 du passé est chargée
+      }
+      
+      if (upcomingData && upcomingData.length > 0) {
+        merged = [...merged, ...upcomingData];
+        upcomingPage.value = 2; // La page 1 du futur est chargée
+      }
+      
+      events.value = merged;
+    } else {
+      // Si on a déjà des événements futurs mais aucun passé, on ne charge que le passé (page 1)
+      const pastData = await agendaStore.fetchBatch('past', todayStr, 1);
+      if (pastData && pastData.length > 0) {
+        const merged = [...pastData].reverse();
+        // Filtrage anti-doublons
+        const newItems = merged.filter(newItem => !events.value.some(existing => existing.id === newItem.id));
+        events.value = [...newItems, ...events.value];
+        pastPage.value = 2;
+      }
     }
     
-    if (upcomingData && upcomingData.length > 0) {
-      merged = [...merged, ...upcomingData];
-      upcomingPage.value = 2; // La page 1 du futur est chargée
-    }
-    
-    events.value = merged;
     isLoading.value = false;
   }
   
