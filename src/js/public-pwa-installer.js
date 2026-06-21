@@ -41,8 +41,9 @@
         }
     }
 
-    // Detect device types
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    // Detect device types (including iPadOS 13+ which presents as Macintosh)
+    const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
     let deferredPrompt = null;
     let bannerElement = null;
