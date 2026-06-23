@@ -79,3 +79,15 @@ L'application est accessible à l'adresse : `https://votre-site.com/pwa`.
 -   **Espace de Jeu & Suivi :** Jouez contre l'IA (Stockfish) directement dans l'application avec système d'aide, analyse de partie et blocage de l'annulation en fin de partie. Vos parties terminées sont sauvegardées automatiquement sur votre profil adhérent (avec synchronisation hors-ligne intégrée si la connexion internet est coupée).
 -   **Mode Hors-Ligne :** L'application est installable (PWA) et fonctionne même sans connexion internet pour consulter l'agenda, jouer aux échecs ou mettre en attente la sauvegarde de vos parties.
 -   **Staff :** Mode administration permettant de consulter les fiches membres et les rapports de messages en mobilité.
+
+## 6. Blocs natifs WordPress 7.0 (Éditeur Gutenberg / FSE)
+
+Si votre site utilise **WordPress 7.0** ou supérieur, vous pouvez utiliser les nouveaux blocs natifs directement dans l'éditeur d'articles, de pages ou dans l'Éditeur de Site (FSE), à la place des shortcodes historiques.
+
+Ces blocs s'insèrent en cliquant sur le bouton **`+`** (Ajouter un bloc) et en recherchant la catégorie **Widgets** ou en tapant leur nom :
+
+*   **DAME Agenda** : Affiche le calendrier mensuel interactif (remplace le shortcode `[dame_agenda]`).
+*   **DAME Bénévolat** : Affiche l'appel à bénévoles sélectionné. Une option dans la barre latérale des réglages du bloc (Inspector) vous permet de renseigner le **slug** de l'appel désiré (remplace le shortcode `[dame_benevolat slug="..."]`).
+*   **DAME Inscription** : Affiche le formulaire de préinscription en ligne (remplace le shortcode `[dame_fiche_inscription]`).
+*   **DAME Contact** : Affiche le formulaire de contact public (remplace le shortcode `[dame_contact]`).
+

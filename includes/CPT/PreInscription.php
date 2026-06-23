@@ -76,6 +76,7 @@ class PreInscription {
 			'map_meta_cap'          => true,
 			'show_in_rest'          => true,
 			'rest_base'             => 'pre-inscriptions',
+			// Compatible avec le framework DataViews React natif de WordPress 7.0
 		);
 
 		register_post_type( 'dame_pre_inscription', $args );

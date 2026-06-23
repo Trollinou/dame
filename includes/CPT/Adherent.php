@@ -76,6 +76,7 @@ class Adherent {
 			'capability_type'       => 'post',
 			'show_in_rest'          => true,
 			'rest_base'             => 'adherents',
+			// Compatible avec le framework DataViews React natif de WordPress 7.0
 		);
 
 		register_post_type( 'adherent', $args );

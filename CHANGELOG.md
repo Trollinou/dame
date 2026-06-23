@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.7.0] - 2026-06-23
+
+### Plugin WordPress (Backend)
+- **Compatibilité WordPress 7.0 :**
+  - **PHP-Only Blocks :** Enregistrement de 4 blocs Gutenberg natifs en PHP (`dame/agenda`, `dame/benevolat`, `dame/registration`, `dame/contact`) pour intégrer facilement les shortcodes existants dans l'Éditeur de Site (FSE) sans build React/JSX.
+  - **DataViews :** Validation et configuration de la compatibilité REST API (`show_in_rest => true`) pour les CPT Adhérents et Préinscriptions.
+  - **Interactivity API :** Intégration du support d'interactivité natif et ajout des directives (`data-wp-interactive`, `data-wp-context`) pour les composants Agenda et Bénévolat.
+
 ## [4.6.1] - 2026-06-21
 
 ### Plugin WordPress (Backend)

@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 4.6.1
+**Version:** 4.7.0
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 

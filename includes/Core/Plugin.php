@@ -182,6 +182,15 @@ class Plugin {
 		$contact_shortcode = new ContactShortcode();
 		$contact_shortcode->init();
 
+		// Initialize PHP-Only Blocks.
+		$blocks_register = new \DAME\Blocks\Register(
+			$agenda_shortcode,
+			$benevolat_shortcode,
+			$registration_form,
+			$contact_shortcode
+		);
+		$blocks_register->init();
+
 		// Initialize Taxonomies (MUST BE GLOBAL, NOT INSIDE is_admin)
 		$season_taxonomy = new Season();
 		$season_taxonomy->init();

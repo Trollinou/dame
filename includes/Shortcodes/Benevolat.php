@@ -122,7 +122,7 @@ class Benevolat {
 			.benevolat-timeslot-label.is-past { color: #888; opacity: 0.7; cursor: not-allowed; }
 			.benevolat-date-row.is-past { background-color: #f9f9f9; }
 		</style>
-		<div class="dame-benevolat-wrapper">
+		<div class="dame-benevolat-wrapper" data-wp-interactive="dame" data-wp-context='{ "userHasVoted": <?php echo $user_has_voted ? "true" : "false"; ?> }'>
 			<h3><?php echo esc_html( (string) $benevolat->post_title ); ?></h3>
 			<?php if ( ! empty( $benevolat->post_content ) ) : ?>
 				<div class="benevolat-description">

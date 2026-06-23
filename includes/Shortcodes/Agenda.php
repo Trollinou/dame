@@ -101,7 +101,7 @@ class Agenda {
 
 		ob_start();
 		?>
-		<div id="dame-agenda-wrapper">
+		<div id="dame-agenda-wrapper" data-wp-interactive="dame" data-wp-context='{ "showFilters": false, "showMonthSelector": false }'>
 			<div class="dame-agenda-header">
 				<div class="dame-agenda-primary-controls">
 					<div class="dame-agenda-month-display">
