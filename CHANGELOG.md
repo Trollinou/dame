@@ -2,6 +2,9 @@
 
 ## [4.6.2] - 2026-06-24
 
+### Plugin WordPress (Backend)
+- **Barre d'outils d'administration (Toolbar) :** Correction de l'erreur de permissions (« droit insuffisant ») sur le raccourci « Envoyer un message » en rectifiant son URL (`admin.php?page=dame-mailing`). Transition des vérifications de rôles codés en dur vers l'utilisation de la capacité `edit_dame_messages`, et sécurisation du bouton de sauvegarde manuelle en le masquant si l'utilisateur n'a pas la capacité `manage_options`.
+
 ### Application Mobile (PWA)
 - **Authentification (Renouvellement de session) :** Implémentation du rafraîchissement silencieux du jeton JWT (`/auth/refresh`) lorsque l'application revient au premier plan ou est relancée. Cela permet d'éviter les déconnexions intempestives et répétitives après l'expiration de la session courte de base (ex: 60 minutes) tout en s'appuyant sur la fenêtre de rafraîchissement globale (ex: 2 semaines) configurée côté serveur.
 
