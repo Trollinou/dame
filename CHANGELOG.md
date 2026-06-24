@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.6.2] - 2026-06-24
+
+### Application Mobile (PWA)
+- **Authentification (Renouvellement de session) :** Implémentation du rafraîchissement silencieux du jeton JWT (`/auth/refresh`) lorsque l'application revient au premier plan ou est relancée. Cela permet d'éviter les déconnexions intempestives et répétitives après l'expiration de la session courte de base (ex: 60 minutes) tout en s'appuyant sur la fenêtre de rafraîchissement globale (ex: 2 semaines) configurée côté serveur.
+
 ## [4.6.1] - 2026-06-21
 
 ### Plugin WordPress (Backend)

@@ -85,7 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
     return url.replace(/\/wp-json\/?$/, '');
   };
 
-  const callSdk = async (method: 'authenticate' | 'validateToken' | 'revokeToken', params: any): Promise<any> => {
+  const callSdk = async (method: 'authenticate' | 'validateToken' | 'revokeToken' | 'refreshToken', params: any): Promise<any> => {
     return new Promise((resolve, reject) => {
       const client = new SimpleJwtLogin(getSiteRootUrl());
       client.withCallback((response: any, status: number) => {
@@ -99,19 +99,38 @@ export const useAuthStore = defineStore('auth', () => {
     });
   };
 
+  const tryRefreshToken = async () => {
+    if (!token.value) {
+      logout();
+      return;
+    }
+    try {
+      console.log("Attempting to refresh token...");
+      const response = await callSdk('refreshToken', { JWT: token.value });
+      const newJwtToken = response?.jwt || (response?.data && response?.data?.jwt);
+      if (newJwtToken) {
+        token.value = newJwtToken;
+        localStorage.setItem('dame_jwt_token', token.value);
+        console.log("Token refreshed successfully.");
+      } else {
+        logout();
+      }
+    } catch (refreshError) {
+      console.warn("Token refresh failed:", refreshError);
+      logout();
+    }
+  };
+
   const validateSession = async () => {
     if (!token.value) return;
     try {
       const response = await callSdk('validateToken', { JWT: token.value });
       if (response && response.success === false) {
-        logout();
+        await tryRefreshToken();
       }
     } catch (error) {
       console.warn("Session validation failed:", error);
-      // Si le serveur renvoie explicitement une erreur ou si la validation échoue
-      if (error && typeof error === 'object' && ('error' in error || 'message' in error)) {
-        logout();
-      }
+      await tryRefreshToken();
     }
   };
 

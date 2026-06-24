@@ -32,12 +32,8 @@ class Toolbar {
 	 * @param \WP_Admin_Bar $wp_admin_bar The WP_Admin_Bar instance.
 	 */
 	public function add_nodes( $wp_admin_bar ): void {
-		// Do not show for Subscribers or Members.
-		$user          = wp_get_current_user();
-		$allowed_roles = [ 'staff', 'entraineur', 'editor', 'administrator' ];
-		$user_roles    = (array) $user->roles;
-
-		if ( ! array_intersect( $allowed_roles, $user_roles ) ) {
+		// Do not show if the user cannot edit DAME messages.
+		if ( ! current_user_can( 'edit_dame_messages' ) ) {
 			return;
 		}
 
@@ -110,27 +106,29 @@ class Toolbar {
 			]
 		);
 
-		// Add the "Envoyer un article" sub-menu item.
+		// Add the "Envoyer un message" sub-menu item.
 		$wp_admin_bar->add_node(
 			[
 				'id'     => 'dame_send_article',
 				'parent' => 'dame_menu',
 				'title'  => __( "Envoyer un message", "dame" ),
-				'href'   => admin_url( 'edit.php?post_type=adherent&page=dame-mailing' ),
+				'href'   => admin_url( 'admin.php?page=dame-mailing' ),
 			]
 		);
 
-		// Add the "Faire une sauvegarde" sub-menu item.
-		$backup_url = wp_nonce_url( admin_url( 'admin.php?action=dame_manual_backup' ), 'dame_manual_backup_nonce' );
+		// Add the "Faire une sauvegarde" sub-menu item (Only for administrators).
+		if ( current_user_can( 'manage_options' ) ) {
+			$backup_url = wp_nonce_url( admin_url( 'admin.php?action=dame_manual_backup' ), 'dame_manual_backup_nonce' );
 
-		$wp_admin_bar->add_node(
-			[
-				'id'     => 'dame_manual_backup',
-				'parent' => 'dame_menu',
-				'title'  => __( "Faire une sauvegarde", "dame" ),
-				'href'   => $backup_url,
-			]
-		);
+			$wp_admin_bar->add_node(
+				[
+					'id'     => 'dame_manual_backup',
+					'parent' => 'dame_menu',
+					'title'  => __( "Faire une sauvegarde", "dame" ),
+					'href'   => $backup_url,
+				]
+			);
+		}
 	}
 
 	/**
