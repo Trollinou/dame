@@ -59,6 +59,8 @@ use DAME\API\REST\Data_Endpoints;
 use DAME\API\REST\Registration;
 use DAME\API\REST\Identities;
 use DAME\API\REST\Benevolat as Benevolat_REST;
+use DAME\API\REST\PreInscription as PreInscription_REST;
+
 
 /**
  * The core plugin class.
@@ -145,6 +147,10 @@ class Plugin {
 
 		$benevolat_rest = new Benevolat_REST();
 		$benevolat_rest->init();
+
+		$pre_inscription_rest = new PreInscription_REST();
+		$pre_inscription_rest->init();
+
 
 		// Initialize API.
 		$tracker = new Tracker();

@@ -4,6 +4,23 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.0] - 2026-06-29
+### Ajouté
+- **Formulaire de Préinscription Saison** : Recréation du formulaire complet WordPress au sein de la PWA (`PreInscriptionPage.vue`) avec gestion dynamique Majeurs/Mineurs.
+- **Autocomplétion des Adresses & Lieux de Naissance** : Intégration des APIs GéoPortail (IGN) et geo.api.gouv.fr.
+- **Sélection Unifiée des Cibles** : Menu de sélection unique au sommet du formulaire listant l'adhérent connecté (Moi-même) ainsi que l'ensemble des membres associés (Enfant/Associé).
+- **Indicateur de statut de session** : Ajout d'une coche `✅ Rempli` dans la liste de sélection pour suivre les préinscriptions terminées lors de la session.
+- **Téléchargement sécurisé et personnalisé des PDF** : Ajout de boutons de téléchargement d'attestation de santé et autorisation parentale avec intégration automatique du NOM et Prénom de l'adhérent dans le fichier téléchargé.
+
+### Modifié
+- **Filtrage Intelligent Saison Active** : Exclusion automatique des profils déjà inscrits pour la saison active de la liste déroulante de réinscription.
+- **Clignotement Carte Accueil** : Optimisation de l'état d'initialisation de `hasUnregisteredTargets` basé sur la connexion pour éliminer l'effet de clignotement de la carte d'action sur la page d'accueil au rafraîchissement.
+
+### Corrigé
+- **Gestion JWT / 401** : Déclenchement automatique d'une validation et d'un renouvellement du token JWT en cas d'erreur 401 sur le pré-remplissage des données.
+- **Visibilité Autocomplétion** : Correction du bug d'affichage de la liste de suggestions d'adresses (qui était masquée par l'overflow d'Ionic) en la sortant du composant `ion-item`.
+- **Règles de validation du règlement intérieur** : Inclusion de la valeur de la case à cocher dans le corps de la requête de soumission pour valider correctement l'étape côté WordPress.
+
 ## [4.6.1] - 2026-06-21
 ### Ajouté
 - **TanStack Query (Vue Query)** : Intégration globale du gestionnaire de cache et de requêtes pour la PWA.

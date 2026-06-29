@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.7.0] - 2026-06-29
+
+### Plugin WordPress (Backend)
+- **API REST (Préinscription) :** Création du contrôleur REST `PreInscription.php` gérant la soumission du formulaire, le chargement sécurisé des détails d'un adhérent et les téléchargements des PDF (attestations de santé et autorisations parentales).
+- **Vérification d'Adhésion en cours :** Ajout de la clé `already_registered` (basée sur la saison active) dans la réponse de l'API `/my-identities` pour filtrer les membres déjà à jour.
+
+### Application Mobile (PWA)
+- **Formulaire de Préinscription :** Recréation du formulaire WordPress au sein de la PWA (`PreInscriptionPage.vue`) avec gestion dynamique Majeurs/Mineurs et autocomplétion des adresses (GéoPortail/IGN) et des lieux de naissance (geo.api.gouv.fr).
+- **Gestion Unifiée des Cibles :** Proposition d'une liste unique fusionnant l'utilisateur connecté et l'ensemble de ses enfants associés avec indication d'état (`✅ Rempli`).
+- **Nommage des Documents :** Personnalisation automatique des noms des PDF téléchargés intégrant le NOM et le Prénom de l'adhérent.
+- **Optimisation Interface & Filtres :** Résolution des erreurs de sessions expirées (refresh automatique en cas de 401), suppression de l'effet de clignotement de la carte d'action sur la page d'accueil, et masquage automatique si tout le foyer est déjà inscrit pour la saison active.
+
 ## [4.6.2] - 2026-06-24
 
 ### Plugin WordPress (Backend)

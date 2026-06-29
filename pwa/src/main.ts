@@ -1,5 +1,5 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createApp } from 'vue';
+import App from './App.vue';
 import router from './router';
 
 import { IonicVue } from '@ionic/vue';
@@ -42,27 +42,27 @@ import './theme/variables.css';
 import { registerSW } from 'virtual:pwa-register';
 
 const pinia = createPinia();
-pinia.use(piniaPluginPersistedstate);
+pinia.use( piniaPluginPersistedstate );
 
 // Lier le focusManager de TanStack Query au cycle de vie natif de Capacitor
 try {
-  CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-    focusManager.setFocused(isActive);
-  });
-} catch (e) {
-  console.warn("Capacitor App listener non disponible :", e);
+	CapacitorApp.addListener( 'appStateChange', ( { isActive } ) => {
+		focusManager.setFocused( isActive );
+	} );
+} catch ( e ) {
+	console.warn( 'Capacitor App listener non disponible :', e );
 }
 
-const app = createApp(App)
-  .use(IonicVue)
-  .use(pinia)
-  .use(router)
-  .use(VueQueryPlugin, { queryClient });
+const app = createApp( App )
+	.use( IonicVue )
+	.use( pinia )
+	.use( router )
+	.use( VueQueryPlugin, { queryClient } );
 
-app.directive('safe-html', vSafeHtml);
+app.directive( 'safe-html', vSafeHtml );
 
-router.isReady().then(() => {
-  app.mount('#app');
-  // Enregistrement du Service Worker pour le support hors-ligne
-  registerSW({ immediate: true });
-});
+router.isReady().then( () => {
+	app.mount( '#app' );
+	// Enregistrement du Service Worker pour le support hors-ligne
+	registerSW( { immediate: true } );
+} );

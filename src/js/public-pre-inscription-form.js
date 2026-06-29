@@ -313,7 +313,7 @@ document.addEventListener( 'DOMContentLoaded', function () {
 						if ( data.data.payment_url ) {
 							successHtml += `
                             <a href="${ data.data.payment_url }" target="_blank" class="button dame-button" style="text-decoration: none; padding: 10px 15px; font-size: 1.1em; border-radius: 8px; display: inline-block;">
-                                &#x1F4B3; Aller sur PayAsso pour votre règlement &#x1F4B3;
+                                &#x1F4B3; Aller sur HelloAsso pour votre règlement &#x1F4B3;
                             </a>`;
 						}
 						successHtml += `</div>`;

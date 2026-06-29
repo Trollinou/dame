@@ -194,10 +194,12 @@ class Identities {
 				
 				// On ajoute cet enfant à la liste des membres associés de ce parent
 				$reps[ $rep_name ]['associated_members'][] = [
-					'firstname'    => $this->get_firstname( $adh->ID ),
-					'elo_standard' => get_post_meta( $adh->ID, '_dame_elo_standard', true ) ?: 'NC',
-					'elo_rapide'   => get_post_meta( $adh->ID, '_dame_elo_rapide', true ) ?: 'NC',
-					'elo_blitz'    => get_post_meta( $adh->ID, '_dame_elo_blitz', true ) ?: 'NC',
+					'firstname'          => $this->get_firstname( $adh->ID ),
+					'member_id'          => $adh->ID,
+					'elo_standard'       => get_post_meta( $adh->ID, '_dame_elo_standard', true ) ?: 'NC',
+					'elo_rapide'         => get_post_meta( $adh->ID, '_dame_elo_rapide', true ) ?: 'NC',
+					'elo_blitz'          => get_post_meta( $adh->ID, '_dame_elo_blitz', true ) ?: 'NC',
+					'already_registered' => has_term( (int) get_option( 'dame_current_season_tag_id' ), 'dame_saison_adhesion', $adh->ID ),
 				];
 			}
 		}
@@ -216,15 +218,16 @@ class Identities {
 	private function prepare_full_identity( \WP_Post $post, string $type, array $associated_adherents ): array {
 		$post_id = $post->ID;
 		return [
-			'id'                => 'member_' . $post_id,
-			'name'              => get_the_title( $post_id ),
-			'firstname'         => $this->get_firstname( $post_id ),
-			'type'              => $type,
-			'member_id'         => $post_id,
-			'elo_standard'      => get_post_meta( $post_id, '_dame_elo_standard', true ) ?: 'NC',
-			'elo_rapide'        => get_post_meta( $post_id, '_dame_elo_rapide', true ) ?: 'NC',
-			'elo_blitz'         => get_post_meta( $post_id, '_dame_elo_blitz', true ) ?: 'NC',
+			'id'                 => 'member_' . $post_id,
+			'name'               => get_the_title( $post_id ),
+			'firstname'          => $this->get_firstname( $post_id ),
+			'type'               => $type,
+			'member_id'          => $post_id,
+			'elo_standard'       => get_post_meta( $post_id, '_dame_elo_standard', true ) ?: 'NC',
+			'elo_rapide'         => get_post_meta( $post_id, '_dame_elo_rapide', true ) ?: 'NC',
+			'elo_blitz'          => get_post_meta( $post_id, '_dame_elo_blitz', true ) ?: 'NC',
 			'associated_members' => $this->prepare_associated_members( $associated_adherents ),
+			'already_registered' => has_term( (int) get_option( 'dame_current_season_tag_id' ), 'dame_saison_adhesion', $post_id ),
 		];
 	}
 
@@ -238,10 +241,12 @@ class Identities {
 		$list = [];
 		foreach ( $adherents as $adh ) {
 			$list[] = [
-				'firstname'    => $this->get_firstname( $adh->ID ),
-				'elo_standard' => get_post_meta( $adh->ID, '_dame_elo_standard', true ) ?: 'NC',
-				'elo_rapide'   => get_post_meta( $adh->ID, '_dame_elo_rapide', true ) ?: 'NC',
-				'elo_blitz'    => get_post_meta( $adh->ID, '_dame_elo_blitz', true ) ?: 'NC',
+				'firstname'          => $this->get_firstname( $adh->ID ),
+				'member_id'          => $adh->ID,
+				'elo_standard'       => get_post_meta( $adh->ID, '_dame_elo_standard', true ) ?: 'NC',
+				'elo_rapide'         => get_post_meta( $adh->ID, '_dame_elo_rapide', true ) ?: 'NC',
+				'elo_blitz'          => get_post_meta( $adh->ID, '_dame_elo_blitz', true ) ?: 'NC',
+				'already_registered' => has_term( (int) get_option( 'dame_current_season_tag_id' ), 'dame_saison_adhesion', $adh->ID ),
 			];
 		}
 		return $list;

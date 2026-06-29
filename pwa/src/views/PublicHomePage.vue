@@ -67,7 +67,37 @@
         </div>
         -->
 
+        <!-- Carte Préinscription Saison -->
+        <ion-card v-if="!authStore.isAuthenticated || hasUnregisteredTargets" class="pre-inscription-card ion-no-margin ion-margin-bottom" style="margin-top: 8px;">
+          <ion-card-header>
+            <ion-card-title style="display: flex; align-items: center; gap: 8px; font-size: 1.15em; font-weight: bold; color: var(--ion-color-primary);">
+              ✍️ Préinscription Saison
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <template v-if="!authStore.isAuthenticated">
+              <p>Remplissez votre dossier de préinscription en ligne pour la nouvelle saison.</p>
+              <ion-button expand="block" router-link="/tabs/pre-inscription" color="primary" class="ion-margin-top">
+                Commencer ma préinscription
+              </ion-button>
+            </template>
+            <template v-else-if="authStore.selectedIdentity?.type === 'representative'">
+              <p>Effectuez la préinscription de vos enfants associés ou créez une nouvelle fiche.</p>
+              <ion-button expand="block" router-link="/tabs/pre-inscription" color="primary" class="ion-margin-top">
+                Préinscrire / Réinscrire
+              </ion-button>
+            </template>
+            <template v-else>
+              <p>Réinscrivez-vous rapidement en confirmant ou mettant à jour vos coordonnées.</p>
+              <ion-button expand="block" router-link="/tabs/pre-inscription" color="primary" class="ion-margin-top">
+                Me réinscrire
+              </ion-button>
+            </template>
+          </ion-card-content>
+        </ion-card>
+
         <!-- Section Dernières Nouvelles -->
+
         <ion-list lines="full" style="margin: 0;">
           <ion-list-header>
             <ion-label color="primary">Dernières Nouvelles</ion-label>
@@ -206,6 +236,40 @@ const getTodayStr = () => {
 
 const todayStr = getTodayStr();
 
+const hasUnregisteredTargets = ref(!authStore.isAuthenticated);
+
+const checkUnregisteredTargets = async () => {
+  if (!authStore.isAuthenticated) {
+    hasUnregisteredTargets.value = true;
+    return;
+  }
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dame/v1/my-identities`, {
+      headers: { 'Authorization': `Bearer ${authStore.token}` }
+    });
+    if (response.ok) {
+      const identities = await response.json();
+      let hasAny = false;
+      identities.forEach((identity: any) => {
+        if (identity.type === 'member' && identity.member_id > 0 && !identity.already_registered) {
+          hasAny = true;
+        }
+        if (identity.type === 'representative' && identity.associated_members) {
+          identity.associated_members.forEach((child: any) => {
+            if (!child.already_registered) {
+              hasAny = true;
+            }
+          });
+        }
+      });
+      hasUnregisteredTargets.value = hasAny;
+    }
+  } catch (err) {
+    console.error("Erreur lors de la vérification des adhérents non-inscrits:", err);
+    hasUnregisteredTargets.value = true; // Par précaution, afficher la carte
+  }
+};
+
 const loadAllData = async () => {
   const tasks = [
     fetchLatestNews(),
@@ -215,9 +279,11 @@ const loadAllData = async () => {
 
   if (authStore.isAuthenticated) {
     tasks.push(benevolatStore.fetchBenevolatsData(true));
+    tasks.push(checkUnregisteredTargets());
   } else {
     // CRITIQUE : Purge des données de session pour éviter la persistance
     benevolatStore.clearData();
+    hasUnregisteredTargets.value = true;
   }
 
   await Promise.all(tasks);
@@ -234,7 +300,8 @@ const handleRefresh = async (event: any) => {
 /**
  * Surveille les changements de connexion pour rafraîchir les données
  */
-watch(() => authStore.isAuthenticated, () => {
+watch(() => authStore.isAuthenticated, (newVal) => {
+  hasUnregisteredTargets.value = !newVal;
   loadAllData();
 });
 
