@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/home"></ion-back-button>
         </ion-buttons>
-        <ion-title>Préinscription Saison</ion-title>
+        <ion-title>Préinscription {{ authStore.currentSeason ? authStore.currentSeason : 'Saison' }}</ion-title>
       </ion-toolbar>
     </ion-header>
 

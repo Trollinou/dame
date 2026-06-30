@@ -161,10 +161,15 @@ class Data_Endpoints {
 			$wasm_url = rest_url( 'roi/v1/stockfish-wasm' );
 		}
 
+		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
+		$current_season_term   = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
+		$current_season_name   = ( $current_season_term && ! is_wp_error( $current_season_term ) ) ? $current_season_term->name : '';
+
 		return rest_ensure_response( [
-			'roi_active'    => $roi_active,
-			'stockfish_url' => $stockfish_url,
-			'wasm_url'      => $wasm_url,
+			'roi_active'     => $roi_active,
+			'stockfish_url'  => $stockfish_url,
+			'wasm_url'       => $wasm_url,
+			'current_season' => $current_season_name,
 		] );
 	}
 

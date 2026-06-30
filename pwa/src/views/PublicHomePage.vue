@@ -71,7 +71,7 @@
         <ion-card v-if="!authStore.isAuthenticated || hasUnregisteredTargets" class="pre-inscription-card ion-no-margin ion-margin-bottom" style="margin-top: 8px;">
           <ion-card-header>
             <ion-card-title style="display: flex; align-items: center; gap: 8px; font-size: 1.15em; font-weight: bold; color: var(--ion-color-primary);">
-              ✍️ Préinscription Saison
+              ✍️ Préinscription {{ authStore.currentSeason ? authStore.currentSeason : 'Saison' }}
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>

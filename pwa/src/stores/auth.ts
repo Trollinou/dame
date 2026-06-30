@@ -447,6 +447,9 @@ export const useAuthStore = defineStore(
 			localStorage.getItem( 'dame_stockfish_url' ) || ''
 		);
 		const wasmUrl = ref( localStorage.getItem( 'dame_wasm_url' ) || '' );
+		const currentSeason = ref(
+			localStorage.getItem( 'dame_current_season' ) || ''
+		);
 
 		const fetchPwaConfig = async () => {
 			try {
@@ -458,6 +461,7 @@ export const useAuthStore = defineStore(
 					isRoiActive.value = !! data.roi_active;
 					stockfishUrl.value = data.stockfish_url || '';
 					wasmUrl.value = data.wasm_url || '';
+					currentSeason.value = data.current_season || '';
 					localStorage.setItem(
 						'dame_roi_active',
 						String( isRoiActive.value )
@@ -467,6 +471,7 @@ export const useAuthStore = defineStore(
 						stockfishUrl.value
 					);
 					localStorage.setItem( 'dame_wasm_url', wasmUrl.value );
+					localStorage.setItem( 'dame_current_season', currentSeason.value );
 				}
 			} catch ( error ) {
 				console.warn(
@@ -513,6 +518,7 @@ export const useAuthStore = defineStore(
 			isRoiActive,
 			stockfishUrl,
 			wasmUrl,
+			currentSeason,
 			fetchPwaConfig,
 			validateSession,
 		};
