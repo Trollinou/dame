@@ -95,7 +95,7 @@ class RegistrationForm {
 				<p style="margin-left: 20px; font-weight: normal; display: flex; align-items: flex-start; gap: 8px;">
 					<input type="checkbox" id="dame_refuses_comms" name="dame_refuses_comms" value="1" style="margin-top: 4px; width: auto; display: inline-block;">
 					<label for="dame_refuses_comms" style="font-weight: normal; display: inline; cursor: pointer;">
-						<?php _e( "Je m'oppose à la réception des e-mails d'information de l'association. (Nous utilisons un indicateur de lecture afin de nous assurer que nos messages importants vous parviennent bien).", 'dame' ); ?>
+						<?php _e( "Je m'oppose à la réception des e-mails d'information de l'association.", 'dame' ); ?>
 					</label>
 				</p>
 				<p>

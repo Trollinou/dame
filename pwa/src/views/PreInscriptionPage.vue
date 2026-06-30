@@ -190,7 +190,7 @@
                     style="--size: 18px; font-size: 0.85em; --border-radius: 4px;"
                   >
                     <span style="white-space: normal; line-height: 1.3; display: block; color: var(--ion-color-medium); font-size: 0.9em; margin-left: 8px;">
-                      Je m'oppose à la réception des e-mails d'information de l'association. (Nous utilisons un indicateur de lecture afin de nous assurer que nos messages importants vous parviennent bien).
+                      Je m'oppose à la réception des e-mails d'information de l'association.
                     </span>
                   </ion-checkbox>
                 </ion-item>
@@ -547,7 +547,7 @@
               
               <div class="health-info-box ion-padding-bottom">
                 <p>
-                  Veuillez répondre au questionnaire officiel. Si vous répondez "OUI" à au moins une question, vous devrez fournir un certificat médical.
+                  Veuillez consulter le questionnaire officiel. Si vous répondez "OUI" à au moins une question, vous devrez fournir un certificat médical.
                 </p>
                 <ion-button fill="clear" color="primary" size="small" :href="`${siteUrl}/wp-content/plugins/dame/assets/pdf/questionnaire_sante_majeur.pdf`" target="_blank">
                   🔗 Ouvrir le Questionnaire Majeurs

@@ -1,11 +1,9 @@
 # Changelog
 
-## [4.7.3] - 2026-06-30
+## [4.7.2] - 2026-06-30
 
 ### Plugin WordPress & PWA
 - **Mentions Légales :** Ajout de la mention de protection des données et des droits d'accès sous le bouton de validation de la préinscription (dans le shortcode WordPress et la PWA).
-
-## [4.7.2] - 2026-06-30
 
 ### Plugin WordPress (Backend)
 - **Gestion des Consentements :** Modification de l'opt-in de communication par e-mail en un opt-out (droit d'opposition) avec case décochée par défaut. Si cochée, la clé `dame_email_refuses_comms` (ainsi que les clés des représentants légaux) est définie à `1`.
