@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.7.2] - 2026-06-30
+
+### Plugin WordPress (Backend)
+- **Gestion des Consentements :** Modification de l'opt-in de communication par e-mail en un opt-out (droit d'opposition) avec case décochée par défaut. Si cochée, la clé `dame_email_refuses_comms` (ainsi que les clés des représentants légaux) est définie à `1`.
+
+### Application Mobile (PWA)
+- **Formulaire de Préinscription :** Remplacement de la case à cocher d'opt-in par une case d'opposition (opt-out) non cochée par défaut, avec envoi du paramètre `dame_refuses_comms` au serveur.
+
 ## [4.7.1] - 2026-06-30
 
 ### Plugin WordPress (Backend)

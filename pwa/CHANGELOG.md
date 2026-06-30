@@ -4,6 +4,10 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.2] - 2026-06-30
+### Modifié
+- **Opposition communications (opt-out)** : Remplacement de l'opt-in de communications par e-mail par un opt-out (case décochée par défaut) permettant de s'opposer à la réception des lettres d'informations du club.
+
 ## [4.7.1] - 2026-06-30
 ### Ajouté
 - **Saison active sur les en-têtes** : Affichage dynamique de la saison d'adhésion active dans le titre de la page de préinscription et dans la carte d'action de la page d'accueil (ex: `Saison 2026/2027`).

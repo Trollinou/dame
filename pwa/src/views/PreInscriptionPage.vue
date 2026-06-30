@@ -186,11 +186,11 @@
 
                 <ion-item lines="none" class="optin-item" style="--background: transparent; margin-top: -5px; margin-bottom: 5px;">
                   <ion-checkbox
-                    v-model="form.dame_accept_comms"
+                    v-model="form.dame_refuses_comms"
                     style="--size: 18px; font-size: 0.85em; --border-radius: 4px;"
                   >
                     <span style="white-space: normal; line-height: 1.3; display: block; color: var(--ion-color-medium); font-size: 0.9em; margin-left: 8px;">
-                      En cochant cette case, vous acceptez de recevoir nos e-mails d'information. Nous utilisons un indicateur de lecture (pixel invisible) afin de nous assurer que nos messages importants vous parviennent bien.
+                      Je m'oppose à la réception des e-mails d'information de l'association. (Nous utilisons un indicateur de lecture afin de nous assurer que nos messages importants vous parviennent bien).
                     </span>
                   </ion-checkbox>
                 </ion-item>
@@ -684,7 +684,7 @@ const form = reactive({
   dame_legal_rep_2_date_naissance: '',
   dame_legal_rep_2_commune_naissance: '',
   dame_health_questionnaire: '',
-  dame_accept_comms: true,
+  dame_refuses_comms: false,
 });
 
 const consentCheckbox = ref(false);
@@ -806,7 +806,7 @@ const resetForm = () => {
   form.dame_legal_rep_2_date_naissance = '';
   form.dame_legal_rep_2_commune_naissance = '';
   form.dame_health_questionnaire = '';
-  form.dame_accept_comms = true;
+  form.dame_refuses_comms = false;
   consentCheckbox.value = false;
   isMinor.value = false;
   isSubmitting.value = false;
