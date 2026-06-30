@@ -4,6 +4,13 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.1] - 2026-06-30
+### Ajouté
+- **Saison active sur les en-têtes** : Affichage dynamique de la saison d'adhésion active dans le titre de la page de préinscription et dans la carte d'action de la page d'accueil (ex: `Saison 2026/2027`).
+
+### Corrigé
+- **Correction des liens PDF** : Remplacement de l'adresse de base de l'API REST par celle de la racine du site WordPress (retrait du suffixe `/wp-json` en fin d'URL) pour charger correctement les PDF locaux des questionnaires de santé.
+
 ## [4.7.0] - 2026-06-29
 ### Ajouté
 - **Formulaire de Préinscription Saison** : Recréation du formulaire complet WordPress au sein de la PWA (`PreInscriptionPage.vue`) avec gestion dynamique Majeurs/Mineurs.

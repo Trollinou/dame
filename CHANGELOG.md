@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.7.1] - 2026-06-30
+
+### Plugin WordPress (Backend)
+- **Configuration REST PWA :** Ajout de la clé `current_season` (nom de la saison d'adhésion active) dans la réponse de l'API `/pwa-config`.
+
+### Application Mobile (PWA)
+- **Affichage Saison Active :** Intégration de la saison active sur les en-têtes de la page de préinscription et dans la carte d'action de la page d'accueil (ex: `Préinscription Saison 2026/2027`).
+- **Correction Liens PDF Questionnaire :** Résolution d'un bug d'URL 404 en éliminant le suffixe `/wp-json` pour pointer proprement vers les documents de questionnaire de santé physiques du plugin.
+
 ## [4.7.0] - 2026-06-29
 
 ### Plugin WordPress (Backend)

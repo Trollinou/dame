@@ -311,6 +311,12 @@ class PreInscription {
 			}
 		}
 
+		// Communication Preferences
+		$accept_comms = ( isset( $params['dame_accept_comms'] ) && (bool) $params['dame_accept_comms'] ) ? '0' : '1';
+		$sanitized_data['dame_email_refuses_comms'] = $accept_comms;
+		$sanitized_data['dame_legal_rep_1_email_refuses_comms'] = $accept_comms;
+		$sanitized_data['dame_legal_rep_2_email_refuses_comms'] = $accept_comms;
+
 		// Format names
 		if ( ! empty( $sanitized_data['dame_first_name'] ) ) {
 			$sanitized_data['dame_first_name'] = Utils::format_firstname( $sanitized_data['dame_first_name'] );

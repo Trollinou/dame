@@ -92,6 +92,12 @@ class RegistrationForm {
 					<label for="dame_email"><?php _e( 'Email', 'dame' ); ?> <span class="required">*</span></label>
 					<input type="email" id="dame_email" name="dame_email" required>
 				</p>
+				<p style="margin-left: 20px; font-weight: normal; display: flex; align-items: flex-start; gap: 8px;">
+					<input type="checkbox" id="dame_accept_comms" name="dame_accept_comms" value="1" checked style="margin-top: 4px; width: auto; display: inline-block;">
+					<label for="dame_accept_comms" style="font-weight: normal; display: inline; cursor: pointer;">
+						<?php _e( "En cochant cette case, vous acceptez de recevoir nos e-mails d'information. Nous utilisons un indicateur de lecture (pixel invisible) afin de nous assurer que nos messages importants vous parviennent bien.", 'dame' ); ?>
+					</label>
+				</p>
 				<p>
 					<label for="dame_profession"><?php _e( 'Profession', 'dame' ); ?></label>
 					<input type="text" id="dame_profession" name="dame_profession">
@@ -308,6 +314,11 @@ class RegistrationForm {
 				}
 			}
 		}
+
+		$accept_comms = isset( $_POST['dame_accept_comms'] ) ? '0' : '1';
+		$sanitized_data['dame_email_refuses_comms'] = $accept_comms;
+		$sanitized_data['dame_legal_rep_1_email_refuses_comms'] = $accept_comms;
+		$sanitized_data['dame_legal_rep_2_email_refuses_comms'] = $accept_comms;
 
 		// Format names after sanitization.
 		if ( ! empty( $sanitized_data['dame_first_name'] ) ) {
