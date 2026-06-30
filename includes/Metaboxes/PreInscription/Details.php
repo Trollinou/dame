@@ -58,6 +58,7 @@ class Details {
 				'Lieu de naissance'   => array( 'key' => 'dame_birth_city', 'type' => 'text_autocomplete' ),
 				'Numéro de téléphone' => array( 'key' => 'dame_phone_number', 'type' => 'tel' ),
 				'Email'               => array( 'key' => 'dame_email', 'type' => 'email' ),
+				'Refus e-mails d\'information' => array( 'key' => 'dame_email_refuses_comms', 'type' => 'checkbox' ),
 				'Profession'          => array( 'key' => 'dame_profession', 'type' => 'text' ),
 				'Adresse'             => array( 'key' => 'dame_address_1', 'type' => 'text_autocomplete' ),
 				'Complément'          => array( 'key' => 'dame_address_2', 'type' => 'text' ),
@@ -82,6 +83,7 @@ class Details {
 				'Contrôle d\'honorabilité' => array( 'key' => 'dame_legal_rep_1_honorabilite', 'type' => 'text' ),
 				'Numéro de téléphone'      => array( 'key' => 'dame_legal_rep_1_phone', 'type' => 'tel' ),
 				'Email'                    => array( 'key' => 'dame_legal_rep_1_email', 'type' => 'email' ),
+				'Refus e-mails d\'information' => array( 'key' => 'dame_legal_rep_1_email_refuses_comms', 'type' => 'checkbox' ),
 				'Profession'               => array( 'key' => 'dame_legal_rep_1_profession', 'type' => 'text' ),
 				'Adresse'                  => array( 'key' => 'dame_legal_rep_1_address_1', 'type' => 'text_autocomplete' ),
 				'Complément'               => array( 'key' => 'dame_legal_rep_1_address_2', 'type' => 'text' ),
@@ -96,6 +98,7 @@ class Details {
 				'Contrôle d\'honorabilité' => array( 'key' => 'dame_legal_rep_2_honorabilite', 'type' => 'text' ),
 				'Numéro de téléphone'      => array( 'key' => 'dame_legal_rep_2_phone', 'type' => 'tel' ),
 				'Email'                    => array( 'key' => 'dame_legal_rep_2_email', 'type' => 'email' ),
+				'Refus e-mails d\'information' => array( 'key' => 'dame_legal_rep_2_email_refuses_comms', 'type' => 'checkbox' ),
 				'Profession'               => array( 'key' => 'dame_legal_rep_2_profession', 'type' => 'text' ),
 				'Adresse'                  => array( 'key' => 'dame_legal_rep_2_address_1', 'type' => 'text_autocomplete' ),
 				'Complément'               => array( 'key' => 'dame_legal_rep_2_address_2', 'type' => 'text' ),
@@ -128,6 +131,8 @@ class Details {
 					foreach ( $config['options'] as $option ) {
 						echo '<label style="margin-right: 15px;"><input type="radio" name="' . esc_attr( $key ) . '" value="' . esc_attr( $option ) . '" ' . checked( $value, $option, false ) . ' /> ' . esc_html( $option ) . '</label>';
 					}
+				} elseif ( 'checkbox' === $config['type'] ) {
+					echo '<label><input type="checkbox" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" value="1" ' . checked( $value, '1', false ) . ' /> ' . esc_html__( 'Refusé', 'dame' ) . '</label>';
 				} else {
 					$type = ( 'text_autocomplete' === $config['type'] ) ? 'text' : $config['type'];
 					$is_autocomplete = ( 'text_autocomplete' === $config['type'] );
@@ -205,21 +210,23 @@ class Details {
 			}
 		}
 
-		// Save all fields
 		$all_field_keys = array(
 			'dame_first_name', 'dame_last_name', 'dame_birth_name', 'dame_birth_date', 'dame_license_type', 'dame_birth_city', 'dame_sexe', 'dame_profession',
-			'dame_email', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
+			'dame_email', 'dame_email_refuses_comms', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
 			'dame_health_document', 'dame_legal_rep_1_honorabilite', 'dame_legal_rep_2_honorabilite',
-			'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_phone',
+			'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_email_refuses_comms', 'dame_legal_rep_1_phone',
 			'dame_legal_rep_1_address_1', 'dame_legal_rep_1_address_2', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city', 'dame_legal_rep_1_profession',
 			'dame_legal_rep_1_date_naissance', 'dame_legal_rep_1_commune_naissance',
-			'dame_legal_rep_2_first_name', 'dame_legal_rep_2_last_name', 'dame_legal_rep_2_email', 'dame_legal_rep_2_phone',
+			'dame_legal_rep_2_first_name', 'dame_legal_rep_2_last_name', 'dame_legal_rep_2_email', 'dame_legal_rep_2_email_refuses_comms', 'dame_legal_rep_2_phone',
 			'dame_legal_rep_2_address_1', 'dame_legal_rep_2_address_2', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city', 'dame_legal_rep_2_profession',
 			'dame_legal_rep_2_date_naissance', 'dame_legal_rep_2_commune_naissance',
 		);
 
 		foreach ( $all_field_keys as $key ) {
-			if ( isset( $_POST[ $key ] ) ) {
+			if ( in_array( $key, array( 'dame_email_refuses_comms', 'dame_legal_rep_1_email_refuses_comms', 'dame_legal_rep_2_email_refuses_comms' ), true ) ) {
+				$value = isset( $_POST[ $key ] ) ? '1' : '0';
+				update_post_meta( $post_id, '_' . $key, $value );
+			} elseif ( isset( $_POST[ $key ] ) ) {
 				$value = strpos( $key, 'email' ) !== false ? sanitize_email( wp_unslash( $_POST[ $key ] ) ) : sanitize_text_field( wp_unslash( $_POST[ $key ] ) );
 
 				// Format names
