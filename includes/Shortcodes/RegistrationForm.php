@@ -155,6 +155,12 @@ class RegistrationForm {
 						<p><label for="dame_legal_rep_1_commune_naissance"><?php _e( 'Lieu de naissance', 'dame' ); ?></label><div class="dame-autocomplete-wrapper"><input type="text" id="dame_legal_rep_1_commune_naissance" name="dame_legal_rep_1_commune_naissance"></div></p>
 						<p><label for="dame_legal_rep_1_phone"><?php _e( 'Numéro de téléphone', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><input type="tel" id="dame_legal_rep_1_phone" name="dame_legal_rep_1_phone"></p>
 						<p><label for="dame_legal_rep_1_email"><?php _e( 'Email', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><input type="email" id="dame_legal_rep_1_email" name="dame_legal_rep_1_email"></p>
+						<p style="margin-left: 20px; font-weight: normal; display: flex; align-items: flex-start; gap: 8px;">
+							<input type="checkbox" id="dame_legal_rep_1_refuses_comms" name="dame_legal_rep_1_refuses_comms" value="1" style="margin-top: 4px; width: auto; display: inline-block;">
+							<label for="dame_legal_rep_1_refuses_comms" style="font-weight: normal; display: inline; cursor: pointer;">
+								<?php _e( "Je m'oppose à la réception des e-mails d'information de l'association. (Nous utilisons un indicateur de lecture afin de nous assurer que nos messages importants vous parviennent bien).", 'dame' ); ?>
+							</label>
+						</p>
 						<p><label for="dame_legal_rep_1_profession"><?php _e( 'Profession', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_profession" name="dame_legal_rep_1_profession"></p>
 						<p><label for="dame_legal_rep_1_address_1"><?php _e( 'Adresse', 'dame' ); ?> <span class="dame-rep1-required-indicator required" style="display: none;">*</span></label><div class="dame-autocomplete-wrapper"><input type="text" id="dame_legal_rep_1_address_1" name="dame_legal_rep_1_address_1"></div></p>
 						<p><label for="dame_legal_rep_1_address_2"><?php _e( 'Complément', 'dame' ); ?></label><input type="text" id="dame_legal_rep_1_address_2" name="dame_legal_rep_1_address_2"></p>
@@ -171,6 +177,12 @@ class RegistrationForm {
 						<p><label for="dame_legal_rep_2_commune_naissance"><?php _e( 'Lieu de naissance', 'dame' ); ?></label><div class="dame-autocomplete-wrapper"><input type="text" id="dame_legal_rep_2_commune_naissance" name="dame_legal_rep_2_commune_naissance"></div></p>
 						<p><label for="dame_legal_rep_2_phone"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label><input type="tel" id="dame_legal_rep_2_phone" name="dame_legal_rep_2_phone"></p>
 						<p><label for="dame_legal_rep_2_email"><?php _e( 'Email', 'dame' ); ?></label><input type="email" id="dame_legal_rep_2_email" name="dame_legal_rep_2_email"></p>
+						<p style="margin-left: 20px; font-weight: normal; display: flex; align-items: flex-start; gap: 8px;">
+							<input type="checkbox" id="dame_legal_rep_2_refuses_comms" name="dame_legal_rep_2_refuses_comms" value="1" style="margin-top: 4px; width: auto; display: inline-block;">
+							<label for="dame_legal_rep_2_refuses_comms" style="font-weight: normal; display: inline; cursor: pointer;">
+								<?php _e( "Je m'oppose à la réception des e-mails d'information de l'association. (Nous utilisons un indicateur de lecture afin de nous assurer que nos messages importants vous parviennent bien).", 'dame' ); ?>
+							</label>
+						</p>
 						<p><label for="dame_legal_rep_2_profession"><?php _e( 'Profession', 'dame' ); ?></label><input type="text" id="dame_legal_rep_2_profession" name="dame_legal_rep_2_profession"></p>
 						<p><label for="dame_legal_rep_2_address_1"><?php _e( 'Adresse', 'dame' ); ?></label><div class="dame-autocomplete-wrapper"><input type="text" id="dame_legal_rep_2_address_1" name="dame_legal_rep_2_address_1"></div></p>
 						<p><label for="dame_legal_rep_2_address_2"><?php _e( 'Complément', 'dame' ); ?></label><input type="text" id="dame_legal_rep_2_address_2" name="dame_legal_rep_2_address_2"></p>
@@ -318,10 +330,9 @@ class RegistrationForm {
 			}
 		}
 
-		$refuses_comms = isset( $_POST['dame_refuses_comms'] ) ? '1' : '0';
-		$sanitized_data['dame_email_refuses_comms'] = $refuses_comms;
-		$sanitized_data['dame_legal_rep_1_email_refuses_comms'] = $refuses_comms;
-		$sanitized_data['dame_legal_rep_2_email_refuses_comms'] = $refuses_comms;
+		$sanitized_data['dame_email_refuses_comms'] = isset( $_POST['dame_refuses_comms'] ) ? '1' : '0';
+		$sanitized_data['dame_legal_rep_1_email_refuses_comms'] = isset( $_POST['dame_legal_rep_1_refuses_comms'] ) ? '1' : '0';
+		$sanitized_data['dame_legal_rep_2_email_refuses_comms'] = isset( $_POST['dame_legal_rep_2_refuses_comms'] ) ? '1' : '0';
 
 		// Format names after sanitization.
 		if ( ! empty( $sanitized_data['dame_first_name'] ) ) {

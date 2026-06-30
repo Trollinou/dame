@@ -312,10 +312,9 @@ class PreInscription {
 		}
 
 		// Communication Preferences
-		$refuses_comms = ( isset( $params['dame_refuses_comms'] ) && (bool) $params['dame_refuses_comms'] ) ? '1' : '0';
-		$sanitized_data['dame_email_refuses_comms'] = $refuses_comms;
-		$sanitized_data['dame_legal_rep_1_email_refuses_comms'] = $refuses_comms;
-		$sanitized_data['dame_legal_rep_2_email_refuses_comms'] = $refuses_comms;
+		$sanitized_data['dame_email_refuses_comms'] = ( isset( $params['dame_refuses_comms'] ) && (bool) $params['dame_refuses_comms'] ) ? '1' : '0';
+		$sanitized_data['dame_legal_rep_1_email_refuses_comms'] = ( isset( $params['dame_legal_rep_1_refuses_comms'] ) && (bool) $params['dame_legal_rep_1_refuses_comms'] ) ? '1' : '0';
+		$sanitized_data['dame_legal_rep_2_email_refuses_comms'] = ( isset( $params['dame_legal_rep_2_refuses_comms'] ) && (bool) $params['dame_legal_rep_2_refuses_comms'] ) ? '1' : '0';
 
 		// Format names
 		if ( ! empty( $sanitized_data['dame_first_name'] ) ) {

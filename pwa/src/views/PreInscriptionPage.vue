@@ -359,6 +359,18 @@
                   ></ion-input>
                 </ion-item>
 
+                <ion-item lines="none" class="optin-item ion-text-wrap" style="--background: transparent; margin-top: -5px; margin-bottom: 5px;">
+                  <ion-checkbox
+                    class="ion-text-wrap"
+                    v-model="form.dame_legal_rep_1_refuses_comms"
+                    style="--size: 18px; font-size: 0.85em; --border-radius: 4px;"
+                  >
+                    <span style="white-space: normal; line-height: 1.3; display: block; color: var(--ion-color-medium); font-size: 0.9em; margin-left: 8px;">
+                      Je m'oppose à la réception des e-mails d'information de l'association. (Nous utilisons un indicateur de lecture afin de nous assurer que nos messages importants vous parviennent bien).
+                    </span>
+                  </ion-checkbox>
+                </ion-item>
+
                 <ion-item>
                   <ion-input
                     v-model="form.dame_legal_rep_1_profession"
@@ -486,6 +498,18 @@
                     label="Email"
                     label-placement="stacked"
                   ></ion-input>
+                </ion-item>
+
+                <ion-item lines="none" class="optin-item ion-text-wrap" style="--background: transparent; margin-top: -5px; margin-bottom: 5px;">
+                  <ion-checkbox
+                    class="ion-text-wrap"
+                    v-model="form.dame_legal_rep_2_refuses_comms"
+                    style="--size: 18px; font-size: 0.85em; --border-radius: 4px;"
+                  >
+                    <span style="white-space: normal; line-height: 1.3; display: block; color: var(--ion-color-medium); font-size: 0.9em; margin-left: 8px;">
+                      Je m'oppose à la réception des e-mails d'information de l'association. (Nous utilisons un indicateur de lecture afin de nous assurer que nos messages importants vous parviennent bien).
+                    </span>
+                  </ion-checkbox>
                 </ion-item>
 
                 <ion-item>
@@ -690,6 +714,8 @@ const form = reactive({
   dame_legal_rep_2_commune_naissance: '',
   dame_health_questionnaire: '',
   dame_refuses_comms: false,
+  dame_legal_rep_1_refuses_comms: false,
+  dame_legal_rep_2_refuses_comms: false,
 });
 
 const consentCheckbox = ref(false);
@@ -812,6 +838,8 @@ const resetForm = () => {
   form.dame_legal_rep_2_commune_naissance = '';
   form.dame_health_questionnaire = '';
   form.dame_refuses_comms = false;
+  form.dame_legal_rep_1_refuses_comms = false;
+  form.dame_legal_rep_2_refuses_comms = false;
   consentCheckbox.value = false;
   isMinor.value = false;
   isSubmitting.value = false;
