@@ -538,10 +538,10 @@
                 <p>
                   Veuillez répondre au questionnaire officiel. Si vous répondez "OUI" à au moins une question, vous devrez fournir un certificat médical.
                 </p>
-                <ion-button fill="clear" color="primary" size="small" :href="`${apiBaseUrl}/wp-content/plugins/dame/assets/pdf/questionnaire_sante_majeur.pdf`" target="_blank">
+                <ion-button fill="clear" color="primary" size="small" :href="`${siteUrl}/wp-content/plugins/dame/assets/pdf/questionnaire_sante_majeur.pdf`" target="_blank">
                   🔗 Ouvrir le Questionnaire Majeurs
                 </ion-button>
-                <ion-button fill="clear" color="primary" size="small" :href="`${apiBaseUrl}/wp-content/plugins/dame/assets/pdf/questionnaire_sante_mineur.pdf`" target="_blank">
+                <ion-button fill="clear" color="primary" size="small" :href="`${siteUrl}/wp-content/plugins/dame/assets/pdf/questionnaire_sante_mineur.pdf`" target="_blank">
                   🔗 Ouvrir le Questionnaire Mineurs
                 </ion-button>
               </div>
@@ -628,6 +628,7 @@ import { useRoute } from 'vue-router';
 const authStore = useAuthStore();
 const route = useRoute();
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const siteUrl = apiBaseUrl.replace(/\/wp-json\/?$/, '');
 
 // Options de taille
 const clothingSizes = ['Non renseigné', '8/10', '10/12', '12/14', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
