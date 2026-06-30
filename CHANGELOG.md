@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.7.3] - 2026-06-30
+
+### Plugin WordPress (Backend)
+- **Agenda (Synchronisation de date) :** Correction du bug de synchronisation entre la date de début et la date de fin lors de la saisie clavier en écoutant uniquement l'événement `blur` au lieu de `change` (évitant ainsi le format tronqué sur les années).
+- **Agenda (Saisie des heures) :** Remplacement des listes déroulantes de choix de l'heure par des champs de saisie natifs HTML5 `<input type="time" step="900">` pour une saisie plus moderne et ergonomique par pas de 15 minutes.
+- **Appel à bénévoles (Date par défaut) :** Pré-remplissage automatique lors de l'ajout d'une nouvelle date avec le lendemain de la date la plus récente déjà saisie.
+
 ## [4.7.2] - 2026-06-30
 
 ### Plugin WordPress & PWA

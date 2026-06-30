@@ -29,7 +29,7 @@ jQuery( document ).ready( function ( $ ) {
 	$( '#dame_all_day' ).on( 'change', toggleTimeFields );
 
 	// UX: Copy start date to end date on blur if end date is empty
-	$( '#dame_start_date' ).on( 'blur change', function () {
+	$( '#dame_start_date' ).on( 'blur', function () {
 		const startDate = $( this ).val();
 		const endDate = $( '#dame_end_date' ).val();
 		if ( startDate && ! endDate ) {

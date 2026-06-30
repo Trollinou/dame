@@ -290,16 +290,7 @@ class Manager {
 					<input type="date" id="dame_start_date" name="dame_start_date" value="<?php echo esc_attr( $start_date ); ?>" />
 					<span class="dame-time-fields <?php if ( $all_day ) echo 'hidden'; ?>">
 						<label for="dame_start_time" class="screen-reader-text"><?php _e( 'Heure de début', 'dame' ); ?></label>
-						<select id="dame_start_time" name="dame_start_time">
-							<?php
-							for ( $h = 0; $h < 24; $h++ ) {
-								for ( $m = 0; $m < 60; $m += 15 ) {
-									$time_val = sprintf( '%02d:%02d', $h, $m );
-									echo '<option value="' . esc_attr( $time_val ) . '" ' . selected( $start_time, $time_val, false ) . '>' . esc_html( $time_val ) . '</option>';
-								}
-							}
-							?>
-						</select>
+						<input type="time" id="dame_start_time" name="dame_start_time" value="<?php echo esc_attr( $start_time ); ?>" step="900" />
 					</span>
 				</td>
 			</tr>
@@ -309,16 +300,7 @@ class Manager {
 					<input type="date" id="dame_end_date" name="dame_end_date" value="<?php echo esc_attr( $end_date ); ?>" />
 					 <span class="dame-time-fields <?php if ( $all_day ) echo 'hidden'; ?>">
 						<label for="dame_end_time" class="screen-reader-text"><?php _e( 'Heure de fin', 'dame' ); ?></label>
-						<select id="dame_end_time" name="dame_end_time">
-							<?php
-							for ( $h = 0; $h < 24; $h++ ) {
-								for ( $m = 0; $m < 60; $m += 15 ) {
-									$time_val = sprintf( '%02d:%02d', $h, $m );
-									echo '<option value="' . esc_attr( $time_val ) . '" ' . selected( $end_time, $time_val, false ) . '>' . esc_html( $time_val ) . '</option>';
-								}
-							}
-							?>
-						</select>
+						<input type="time" id="dame_end_time" name="dame_end_time" value="<?php echo esc_attr( $end_time ); ?>" step="900" />
 					</span>
 				</td>
 			</tr>

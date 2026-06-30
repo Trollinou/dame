@@ -93,13 +93,43 @@ jQuery( document ).ready( function ( $ ) {
 		const dateIndex = $(
 			'#benevolat-dates-wrapper .benevolat-date-group'
 		).length;
+
+		let defaultDate = '';
+		const dateInputs = $( '#benevolat-dates-wrapper .benevolat-date-input' );
+		if ( dateInputs.length > 0 ) {
+			let maxDateVal = '';
+			dateInputs.each( function () {
+				const val = $( this ).val();
+				if ( val && ( ! maxDateVal || val > maxDateVal ) ) {
+					maxDateVal = val;
+				}
+			} );
+			if ( maxDateVal ) {
+				const parts = maxDateVal.split( '-' );
+				if ( parts.length === 3 ) {
+					const dateObj = new Date(
+						Date.UTC(
+							parseInt( parts[ 0 ], 10 ),
+							parseInt( parts[ 1 ], 10 ) - 1,
+							parseInt( parts[ 2 ], 10 )
+						)
+					);
+					dateObj.setUTCDate( dateObj.getUTCDate() + 1 );
+					const year = dateObj.getUTCFullYear();
+					const month = String( dateObj.getUTCMonth() + 1 ).padStart( 2, '0' );
+					const day = String( dateObj.getUTCDate() ).padStart( 2, '0' );
+					defaultDate = `${ year }-${ month }-${ day }`;
+				}
+			}
+		}
+
 		const newDateGroup = `
             <div class="benevolat-date-group">
                 <hr>
                 <h4>Date ${ dateIndex + 1 }</h4>
                 <p>
                     <label for="benevolat_date_${ dateIndex }">Date:</label>
-                    <input type="date" id="benevolat_date_${ dateIndex }" name="_dame_benevolat_data[${ dateIndex }][date]" value="" class="benevolat-date-input">
+                    <input type="date" id="benevolat_date_${ dateIndex }" name="_dame_benevolat_data[${ dateIndex }][date]" value="${ defaultDate }" class="benevolat-date-input">
                     <button type="button" class="button remove-benevolat-date">Supprimer cette date</button>
                 </p>
                 <div class="benevolat-time-slots-wrapper">
