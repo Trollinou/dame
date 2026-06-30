@@ -594,6 +594,10 @@
                 <ion-spinner v-if="isSubmitting" name="crescent"></ion-spinner>
                 <span v-else>Valider ma préinscription</span>
               </ion-button>
+              
+              <p class="privacy-disclaimer" style="font-size: 0.82em; color: var(--ion-color-medium); margin-top: 12px; line-height: 1.4; text-align: center;">
+                Les données collectées sur ce formulaire sont nécessaires à la gestion de votre adhésion. Pour en savoir plus sur l'utilisation de vos données, de nos outils de communication et pour exercer vos droits, consultez nos Mentions Légales.
+              </p>
             </div>
           </form>
 

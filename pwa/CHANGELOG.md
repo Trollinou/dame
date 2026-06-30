@@ -4,6 +4,10 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.3] - 2026-06-30
+### Ajouté
+- **Mentions Légales** : Ajout de la mention d'information sur la protection des données personnelles sous le bouton de validation du formulaire de préinscription.
+
 ## [4.7.2] - 2026-06-30
 ### Modifié
 - **Opposition communications (opt-out)** : Remplacement de l'opt-in de communications par e-mail par un opt-out (case décochée par défaut) permettant de s'opposer à la réception des lettres d'informations du club.

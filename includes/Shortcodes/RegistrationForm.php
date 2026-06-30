@@ -200,6 +200,9 @@ class RegistrationForm {
 				<p>
 					<button type="submit" id="dame_submit_button" disabled><?php _e( 'Valider ma préinscription', 'dame' ); ?></button>
 				</p>
+				<p style="font-size: 0.85em; color: #666; margin-top: 10px; line-height: 1.4;">
+					<?php _e( "Les données collectées sur ce formulaire sont nécessaires à la gestion de votre adhésion. Pour en savoir plus sur l'utilisation de vos données, de nos outils de communication et pour exercer vos droits, consultez nos Mentions Légales.", 'dame' ); ?>
+				</p>
 
 			</form>
 		</div>
