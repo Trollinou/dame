@@ -191,7 +191,7 @@
                     style="--size: 18px; font-size: 0.85em; --border-radius: 4px;"
                   >
                     <span style="white-space: normal; line-height: 1.3; display: block; color: var(--ion-color-medium); font-size: 0.9em; margin-left: 8px;">
-                      Je m'oppose à la réception des e-mails d'information de l'association. (Nous utilisons un indicateur de lecture afin de nous assurer que nos messages importants vous parviennent bien).
+                      Je m'oppose à la réception des e-mails d'information de l'association.
                     </span>
                   </ion-checkbox>
                 </ion-item>
@@ -366,7 +366,7 @@
                     style="--size: 18px; font-size: 0.85em; --border-radius: 4px;"
                   >
                     <span style="white-space: normal; line-height: 1.3; display: block; color: var(--ion-color-medium); font-size: 0.9em; margin-left: 8px;">
-                      Je m'oppose à la réception des e-mails d'information de l'association. (Nous utilisons un indicateur de lecture afin de nous assurer que nos messages importants vous parviennent bien).
+                      Je m'oppose à la réception des e-mails d'information de l'association.
                     </span>
                   </ion-checkbox>
                 </ion-item>
@@ -507,7 +507,7 @@
                     style="--size: 18px; font-size: 0.85em; --border-radius: 4px;"
                   >
                     <span style="white-space: normal; line-height: 1.3; display: block; color: var(--ion-color-medium); font-size: 0.9em; margin-left: 8px;">
-                      Je m'oppose à la réception des e-mails d'information de l'association. (Nous utilisons un indicateur de lecture afin de nous assurer que nos messages importants vous parviennent bien).
+                      Je m'oppose à la réception des e-mails d'information de l'association.
                     </span>
                   </ion-checkbox>
                 </ion-item>
