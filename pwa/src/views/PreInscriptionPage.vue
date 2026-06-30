@@ -184,13 +184,14 @@
                   ></ion-input>
                 </ion-item>
 
-                <ion-item lines="none" class="optin-item" style="--background: transparent; margin-top: -5px; margin-bottom: 5px;">
+                <ion-item lines="none" class="optin-item ion-text-wrap" style="--background: transparent; margin-top: -5px; margin-bottom: 5px;">
                   <ion-checkbox
+                    class="ion-text-wrap"
                     v-model="form.dame_refuses_comms"
                     style="--size: 18px; font-size: 0.85em; --border-radius: 4px;"
                   >
                     <span style="white-space: normal; line-height: 1.3; display: block; color: var(--ion-color-medium); font-size: 0.9em; margin-left: 8px;">
-                      Je m'oppose à la réception des e-mails d'information de l'association.
+                      Je m'oppose à la réception des e-mails d'information de l'association. (Nous utilisons un indicateur de lecture afin de nous assurer que nos messages importants vous parviennent bien).
                     </span>
                   </ion-checkbox>
                 </ion-item>
@@ -568,9 +569,9 @@
                   </div>
                 </ion-item>
 
-                <ion-item style="margin-top: 15px;">
-                  <ion-checkbox v-model="consentCheckbox" required justify="start" label-placement="end" style="--size: 20px;">
-                    <span class="consent-text">
+                <ion-item style="margin-top: 15px;" class="ion-text-wrap">
+                  <ion-checkbox class="ion-text-wrap" v-model="consentCheckbox" required justify="start" label-placement="end" style="--size: 20px;">
+                    <span class="consent-text" style="white-space: normal; display: block;">
                       En cochant cette case, je reconnais avoir pris connaissance du règlement intérieur de l’Association Échiquier Lédonien et m’engage à le respecter. *
                     </span>
                   </ion-checkbox>
