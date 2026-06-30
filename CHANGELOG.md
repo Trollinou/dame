@@ -3,13 +3,14 @@
 ## [4.7.2] - 2026-06-30
 
 ### Plugin WordPress & PWA
-- **Mentions Légales :** Ajout de la mention de protection des données et des droits d'accès sous le bouton de validation de la préinscription (dans le shortcode WordPress et la PWA).
+- **Mentions Légales :** Ajout de la mention de protection des données personnelles et de l'exercice des droits sous le bouton de validation du formulaire de préinscription (shortcode WordPress et PWA).
 
 ### Plugin WordPress (Backend)
-- **Gestion des Consentements :** Modification de l'opt-in de communication par e-mail en un opt-out (droit d'opposition) avec case décochée par défaut. Si cochée, la clé `dame_email_refuses_comms` (ainsi que les clés des représentants légaux) est définie à `1`.
+- **Gestion des Consentements (Opt-out) :** Remplacement de l'opt-in de communication par e-mail par des cases d'opposition individuelles décochées par défaut pour l'adhérent (`dame_email_refuses_comms`) et ses représentants légaux (`dame_legal_rep_1_email_refuses_comms` / `dame_legal_rep_2_email_refuses_comms`).
+- **Métabox PreInscription :** Ajout et prise en charge des cases à cocher d'opposition e-mail dans la métabox WordPress pour la visualisation et l'édition administrative.
 
 ### Application Mobile (PWA)
-- **Formulaire de Préinscription :** Remplacement de la case à cocher d'opt-in par une case d'opposition (opt-out) non cochée par défaut, avec envoi du paramètre `dame_refuses_comms` au serveur.
+- **Formulaire de Préinscription :** Intégration de cases à cocher d'opposition (opt-out) pour l'adhérent et les représentants légaux avec support du retour à la ligne automatique (`ion-text-wrap`) pour éviter la troncature du texte.
 
 ## [4.7.1] - 2026-06-30
 
