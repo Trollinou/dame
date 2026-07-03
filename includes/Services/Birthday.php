@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace DAME\Services;
 
@@ -19,14 +20,46 @@ class Birthday {
 	}
 
 	/**
+	 * Gets the season IDs to filter by.
+	 *
+	 * @return array<int>
+	 */
+	private function get_filtered_season_ids(): array {
+		$md = wp_date( 'm-d' );
+		if ( $md >= '07-01' && $md <= '10-30' ) {
+			$year = (int) wp_date( 'Y' );
+			$season_ids = [];
+
+			$season_1_name = sprintf( 'Saison %d/%d', $year - 1, $year );
+			$term_1 = get_term_by( 'name', $season_1_name, 'dame_saison_adhesion' );
+			if ( $term_1 ) {
+				$season_ids[] = (int) $term_1->term_id;
+			}
+
+			$season_2_name = sprintf( 'Saison %d/%d', $year, $year + 1 );
+			$term_2 = get_term_by( 'name', $season_2_name, 'dame_saison_adhesion' );
+			if ( $term_2 ) {
+				$season_ids[] = (int) $term_2->term_id;
+			}
+
+			if ( ! empty( $season_ids ) ) {
+				return $season_ids;
+			}
+		}
+
+		$season_id = (int) get_option( 'dame_current_season_tag_id' );
+		return $season_id ? [ $season_id ] : [];
+	}
+
+	/**
 	 * Retrieves members having their birthday today.
 	 *
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function get_today_birthdays(): array {
-		$season_id = (int) get_option( 'dame_current_season_tag_id' );
+		$season_ids = $this->get_filtered_season_ids();
 		$today_str = wp_date( 'Y-m-d' );
-		$cache_key = 'dame_today_birthdays_' . $today_str . '_' . $season_id;
+		$cache_key = 'dame_today_birthdays_' . $today_str . '_' . implode( '_', $season_ids );
 
 		$birthdays = get_transient( $cache_key );
 
@@ -43,20 +76,27 @@ class Birthday {
 				],
 			];
 
-			if ( $season_id ) {
+			if ( ! empty( $season_ids ) ) {
 				$args['tax_query'] = [
 					[
 						'taxonomy' => 'dame_saison_adhesion',
 						'field'    => 'term_id',
-						'terms'    => $season_id,
+						'terms'    => $season_ids,
+						'operator' => 'IN',
 					],
 				];
 			}
 
 			$query = new WP_Query( $args );
 			$birthdays = [];
+			$seen_ids  = [];
 
 			foreach ( $query->posts as $post ) {
+				if ( in_array( $post->ID, $seen_ids, true ) ) {
+					continue;
+				}
+				$seen_ids[] = $post->ID;
+
 				$birth_date = get_post_meta( $post->ID, '_dame_birth_date', true );
 				$age = 0;
 				if ( ! empty( $birth_date ) ) {
@@ -89,9 +129,9 @@ class Birthday {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function get_upcoming_birthdays( int $limit = 10 ): array {
-		$season_id = (int) get_option( 'dame_current_season_tag_id' );
+		$season_ids = $this->get_filtered_season_ids();
 		$today_str = wp_date( 'Y-m-d' );
-		$cache_key = 'dame_upcoming_birthdays_' . $today_str . '_' . $season_id;
+		$cache_key = 'dame_upcoming_birthdays_' . $today_str . '_' . implode( '_', $season_ids );
 
 		$upcoming = get_transient( $cache_key );
 
@@ -102,17 +142,23 @@ class Birthday {
 				'fields'         => 'ids',
 			];
 
-			if ( $season_id ) {
+			if ( ! empty( $season_ids ) ) {
 				$args['tax_query'] = [
 					[
 						'taxonomy' => 'dame_saison_adhesion',
 						'field'    => 'term_id',
-						'terms'    => $season_id,
+						'terms'    => $season_ids,
+						'operator' => 'IN',
 					],
 				];
 			}
 
 			$ids       = get_posts( $args );
+			if ( is_array( $ids ) ) {
+				$ids = array_unique( $ids );
+			} else {
+				$ids = [];
+			}
 			$today     = new DateTime( 'today', new \DateTimeZone( 'UTC' ) );
 			$upcoming  = [];
 
