@@ -15,6 +15,7 @@ import { useMessageStore } from './messages';
 import { useBenevolatStore } from './benevolat';
 import { useTournamentStore } from './tournament';
 import { useNewsStore } from './news';
+import { useApprentissageStore } from './apprentissage';
 
 export interface AssociatedMember {
 	firstname: string;
@@ -110,6 +111,13 @@ export const useAuthStore = defineStore(
 				}
 				return privilegedRoles.includes( role.toLowerCase() );
 			} );
+		} );
+
+		const isAdherent = computed( () => {
+			if ( ! isAuthenticated.value ) {
+				return false;
+			}
+			return selectedIdentity.value?.type === 'member';
 		} );
 
 		const selectIdentity = ( identity: Identity ) => {
@@ -437,6 +445,7 @@ export const useAuthStore = defineStore(
 			useBenevolatStore().clearData();
 			useTournamentStore().clearData();
 			useNewsStore().clearData();
+			useApprentissageStore().clearData();
 			router.push( '/tabs/home' );
 		};
 
@@ -510,6 +519,7 @@ export const useAuthStore = defineStore(
 			adminMode,
 			isAuthenticated,
 			isAdmin,
+			isAdherent,
 			isLoading,
 			login,
 			logout,

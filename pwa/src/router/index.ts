@@ -37,6 +37,11 @@ const routes: Array< RouteRecordRaw > = [
 				component: () => import( '../views/PublicHomePage.vue' ),
 			},
 			{
+				path: 'apprentissage',
+				component: () => import( '../views/ApprentissageHubPage.vue' ),
+				meta: { requiresAuth: true, requiresAdherent: true },
+			},
+			{
 				path: 'news',
 				component: () => import( '../views/NewsPage.vue' ),
 			},
@@ -147,6 +152,11 @@ const routes: Array< RouteRecordRaw > = [
 			},
 		],
 	},
+	{
+		path: '/exercice/:id',
+		component: () => import( '../views/ExercicePage.vue' ),
+		meta: { requiresAuth: true, requiresAdherent: true },
+	},
 ];
 
 const router = createRouter( {
@@ -173,6 +183,14 @@ router.beforeEach( ( to ) => {
 		return {
 			path: '/tabs/home',
 			query: { message: 'Accès refusé : Droits insuffisants.' },
+		};
+	}
+
+	// 2b. Vérification adhérent
+	if ( to.meta.requiresAdherent && ! authStore.isAdherent ) {
+		return {
+			path: '/tabs/home',
+			query: { message: 'Accès réservé aux adhérents.' },
 		};
 	}
 

@@ -26,6 +26,11 @@
             <ion-label>Bénévolat</ion-label>
           </ion-tab-button>
 
+          <ion-tab-button v-if="authStore.isAdherent" tab="apprentissage" href="/tabs/apprentissage">
+            <ion-icon :icon="schoolOutline" />
+            <ion-label>Apprentissage</ion-label>
+          </ion-tab-button>
+
           <ion-tab-button tab="tournoi" href="/tabs/tournoi">
             <ion-icon :icon="trophyOutline" />
             <ion-label>Tournois</ion-label>
@@ -94,7 +99,8 @@ import {
   handRightOutline,
   homeOutline,
   eyeOutline,
-  eyeOffOutline
+  eyeOffOutline,
+  schoolOutline
 } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
