@@ -26,7 +26,7 @@ class Birthday {
 	 */
 	private function get_filtered_season_ids(): array {
 		$md = wp_date( 'm-d' );
-		if ( $md >= '07-01' && $md <= '10-30' ) {
+		if ( $md >= '07-01' && $md <= '10-31' ) {
 			$year = (int) wp_date( 'Y' );
 			$season_ids = [];
 
@@ -237,18 +237,9 @@ class Birthday {
 		$article = $posts[0];
 
 		// Season Logic
-		$season_id = get_option( 'dame_current_season_tag_id' );
-		if ( ! $season_id ) return;
-		$season_ids = [ $season_id ];
-
-		// If Sept, add previous season
-		if ( (int) wp_date( 'n' ) === 9 ) {
-			$term = get_term( $season_id );
-			if ( $term && preg_match( '/(\d{4})\/(\d{4})/', $term->name, $matches ) ) {
-				$prev_name = sprintf( 'Saison %d/%d', $matches[1] - 1, $matches[1] );
-				$prev_term = get_term_by( 'name', $prev_name, 'dame_saison_adhesion' );
-				if ( $prev_term ) $season_ids[] = $prev_term->term_id;
-			}
+		$season_ids = $this->get_filtered_season_ids();
+		if ( empty( $season_ids ) ) {
+			return;
 		}
 
 		// Query Adherents

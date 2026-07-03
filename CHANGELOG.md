@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.7.5] - 2026-07-03
+
+### Plugin WordPress (Backend)
+- **E-mails d'anniversaire (Transition de saison) :** Alignement du moteur d'envoi d'e-mails (`send_wishes()`) sur la même logique de filtrage des saisons d'adhésion (`get_filtered_season_ids()`) lors de la période de transition (du 1er juillet au 31 octobre).
+
 ## [4.7.4] - 2026-07-03
 
 ### Plugin WordPress (Backend)
