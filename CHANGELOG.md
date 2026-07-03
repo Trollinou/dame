@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.7.4] - 2026-07-03
+
+### Plugin WordPress (Backend)
+- **Anniversaires (Transition de saison) :** Prise en compte de la période de transition de saison d'adhésion (du 1er juillet au 30 octobre inclus) afin de remonter et combiner les anniversaires des membres des saisons `Saison XXXX-1/XXXX` et `Saison XXXX/XXXX+1` tout en assurant leur déduplication s'ils sont inscrits dans les deux.
+
 ## [4.7.3] - 2026-06-30
 
 ### Plugin WordPress (Backend)
