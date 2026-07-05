@@ -74,7 +74,9 @@ const verifierCoup = async (coup: any) => {
   } else {
     // Si incorrect, on annule et affiche une erreur
     if (boardRef.value?.core) {
-      boardRef.value.core.undoLastMove();
+      setTimeout(() => {
+        boardRef.value.core.undoLastMove();
+      }, 0);
     }
     const toast = await toastController.create({
       message: 'Mauvais coup, essaie encore !',
