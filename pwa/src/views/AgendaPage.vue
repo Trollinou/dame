@@ -140,7 +140,7 @@
               </ion-card-content>
             </ion-card>
 
-            <div v-slot:none v-if="filteredTournaments.length === 0 && !tournamentStore.isLoading" class="ion-text-center ion-padding">
+            <div v-if="filteredTournaments.length === 0 && !tournamentStore.isLoading" class="ion-text-center ion-padding">
               <p v-if="searchQuery">Aucun tournoi ne correspond à "{{ searchQuery }}".</p>
               <p v-else>Aucun tournoi disponible pour le moment.</p>
             </div>
