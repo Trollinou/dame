@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useAuthStore } from './auth';
 import { safeFetch } from '@/utils/safeFetch';
 
@@ -14,12 +14,18 @@ export interface Exercice {
 	titre: string;
 	type: number;
 	config: ExerciceConfig;
+	niveau: number;
+	chapitre: string;
+	couleur: string;
 }
 
 export interface ExerciceResume {
 	id: number;
 	titre: string;
 	type: number;
+	niveau: number;
+	chapitre: string;
+	couleur: string;
 }
 
 export const useApprentissageStore = defineStore( 'apprentissage', () => {
@@ -27,6 +33,35 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 	const exerciceActuel = ref< Exercice | null >( null );
 	const listeExercices = ref< ExerciceResume[] >( [] );
 	const isLoadingListe = ref( false );
+
+	const exercicesGroupes = computed( () => {
+		return listeExercices.value.reduce<
+			Record<
+				number,
+				Record<
+					string,
+					{ couleur: string; exercices: ExerciceResume[] }
+				>
+			>
+		>( ( acc, exercice ) => {
+			const { niveau, chapitre, couleur } = exercice;
+			const numNiveau = niveau !== undefined && niveau !== null ? niveau : 1;
+			const nomChapitre = chapitre && chapitre.trim() !== '' ? chapitre.trim() : "Autres exercices";
+			const couleurChapitre = couleur || "medium";
+
+			if ( ! acc[ numNiveau ] ) {
+				acc[ numNiveau ] = {};
+			}
+			if ( ! acc[ numNiveau ][ nomChapitre ] ) {
+				acc[ numNiveau ][ nomChapitre ] = {
+					couleur: couleurChapitre,
+					exercices: [],
+				};
+			}
+			acc[ numNiveau ][ nomChapitre ].exercices.push( exercice );
+			return acc;
+		}, {} );
+	} );
 
 	const fetchExercice = async ( id: number ): Promise< void > => {
 		try {
@@ -61,7 +96,10 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 			const data = await response.json();
 			exerciceActuel.value = data;
 		} catch ( error ) {
-			console.error( "Erreur lors de la récupération de l'exercice :", error );
+			console.error(
+				"Erreur lors de la récupération de l'exercice :",
+				error
+			);
 		}
 	};
 
@@ -93,13 +131,18 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 			}
 
 			if ( ! response.ok ) {
-				throw new Error( 'Impossible de charger la liste des exercices.' );
+				throw new Error(
+					'Impossible de charger la liste des exercices.'
+				);
 			}
 
 			const data = await response.json();
 			listeExercices.value = data;
 		} catch ( error ) {
-			console.error( 'Erreur lors de la récupération de la liste des exercices :', error );
+			console.error(
+				'Erreur lors de la récupération de la liste des exercices :',
+				error
+			);
 		} finally {
 			isLoadingListe.value = false;
 		}
@@ -115,6 +158,7 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 		exerciceActuel,
 		listeExercices,
 		isLoadingListe,
+		exercicesGroupes,
 		fetchExercice,
 		fetchListeExercices,
 		clearData,

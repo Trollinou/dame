@@ -25,22 +25,39 @@
         </div>
 
         <div v-else class="list-container">
-          <ion-list lines="none">
-            <ion-item
-              v-for="exercice in apprentissageStore.listeExercices"
-              :key="exercice.id"
-              button
-              :detail="true"
-              :router-link="`/exercice/${exercice.id}`"
-              class="exercise-item"
-            >
-              <ion-icon slot="start" :icon="extensionPuzzleOutline" color="primary"></ion-icon>
-              <ion-label>
-                <h2>{{ exercice.titre || 'Exercice sans titre' }}</h2>
-                <p>{{ getNomTypeExercice(exercice.type) }}</p>
-              </ion-label>
-            </ion-item>
-          </ion-list>
+          <div v-for="(chapitres, niveau) in apprentissageStore.exercicesGroupes" :key="niveau" class="niveau-section">
+            <h2 class="niveau-title">Niveau {{ niveau }}</h2>
+            <ion-accordion-group>
+              <ion-accordion
+                v-for="(group, chapitreNom) in chapitres"
+                :key="chapitreNom"
+                :value="chapitreNom"
+                :toggle-icon="chevronDownOutline"
+              >
+                <ion-item slot="header" :color="group.couleur" class="chapitre-header">
+                  <ion-label class="chapitre-label">{{ chapitreNom }}</ion-label>
+                </ion-item>
+                <div slot="content" class="chapitre-content">
+                  <ion-list lines="none">
+                    <ion-item
+                      v-for="exercice in group.exercices"
+                      :key="exercice.id"
+                      button
+                      :detail="true"
+                      :router-link="`/exercice/${exercice.id}`"
+                      class="exercise-item"
+                    >
+                      <ion-icon slot="start" :icon="extensionPuzzleOutline" color="primary"></ion-icon>
+                      <ion-label>
+                        <h2>{{ exercice.titre || 'Exercice sans titre' }}</h2>
+                        <p>{{ getNomTypeExercice(exercice.type) }}</p>
+                      </ion-label>
+                    </ion-item>
+                  </ion-list>
+                </div>
+              </ion-accordion>
+            </ion-accordion-group>
+          </div>
         </div>
       </div>
     </ion-content>
@@ -58,11 +75,13 @@ import {
   IonList,
   IonItem,
   IonLabel,
-  IonIcon
+  IonIcon,
+  IonAccordion,
+  IonAccordionGroup
 } from '@ionic/vue';
 import { onMounted } from 'vue';
 import { useApprentissageStore } from '@/stores/apprentissage';
-import { extensionPuzzleOutline, chevronForwardOutline } from 'ionicons/icons';
+import { extensionPuzzleOutline, chevronForwardOutline, chevronDownOutline } from 'ionicons/icons';
 
 const apprentissageStore = useApprentissageStore();
 
@@ -80,7 +99,10 @@ const getNomTypeExercice = ( type: number ): string => {
 		10: "Echec'éval",
 		11: "Class'échecs",
 		12: "Qui-suis-je ?",
-		13: "Ouvre'boite / Cap / Jugement",
+		13: "Ouvre'boite",
+		14: "Cap ou pas cap ?",
+		15: "Jugement final",
+		16: "Destination finale",
 	};
 	return types[ type ] || "Exercice standard";
 };
@@ -108,6 +130,35 @@ onMounted(async () => {
   max-width: 600px;
   margin: 0 auto;
   padding-top: 10px;
+}
+
+.niveau-section {
+  margin-bottom: 24px;
+}
+
+.niveau-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-top: 20px;
+  margin-bottom: 12px;
+  color: var(--ion-color-dark);
+  padding-left: 4px;
+}
+
+.chapitre-header {
+  --font-weight: bold;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.chapitre-label {
+  font-weight: bold;
+}
+
+.chapitre-content {
+  padding: 8px;
+  background: var(--ion-background-color);
 }
 
 .exercise-item {

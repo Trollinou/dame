@@ -4,6 +4,15 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Non publié]
+### Ajouté
+- **Store Apprentissage** : Ajout du getter de regroupement `exercicesGroupes` qui structure les exercices par niveau et chapitre.
+- **Support des types d'exercices** : Ajout de la traduction pour les types d'exercices 13 à 16 ("Ouvre'boite", "Cap ou pas cap ?", "Jugement final", "Destination finale").
+
+### Modifié
+- **Store Apprentissage** : Mise à jour des interfaces `Exercice` et `ExerciceResume` pour supporter les propriétés `niveau`, `chapitre` et `couleur`.
+- **Hub d'apprentissage** : Refonte visuelle de `ApprentissageHubPage.vue` pour afficher les exercices regroupés par niveau et chapitre en utilisant des composants d'accordéon Ionic colorés.
+
 ## [4.7.2] - 2026-06-30
 ### Ajouté
 - **Mentions Légales** : Ajout de la mention d'information sur la protection des données personnelles et de l'exercice des droits sous le bouton de validation du formulaire de préinscription.
