@@ -2,10 +2,10 @@
   <div class="exercice-type-abcdaire">
     <div class="board-container">
       <TheChessboard 
-        ref="boardRef"
-        :board-config="boardConfig" 
-        :player-color="config.couleur_joueur"
-        :stockfish-config="stockfishConfig"
+        :boardConfig="{ fen: config.fen }"
+        :playerColor="config.couleur_joueur"
+        :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"
+        @board-created="onBoardCreated"
         @move="verifierCoup"
       />
     </div>
@@ -13,74 +13,57 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { toastController } from '@ionic/vue';
 import TheChessboard from 'eg-chessboard/vue';
 import 'eg-chessboard/style.css';
 import type { ExerciceConfig } from '@/stores/apprentissage';
-import type { StockfishConfig } from 'eg-chessboard';
+import type { BoardCore } from 'eg-chessboard';
 
 const props = defineProps<{
   config: ExerciceConfig;
 }>();
 
-const boardRef = ref<any>(null);
+const boardApi = ref<BoardCore | null>(null);
 const etapeActuelle = ref(0);
 
-// Disable stockfish for guided exercise
-const stockfishConfig: StockfishConfig = {
-  whiteMode: 'disabled',
-  blackMode: 'disabled'
+const onBoardCreated = (api: BoardCore) => {
+  boardApi.value = api;
 };
 
-const boardConfig = computed(() => {
-  return {
-    fen: props.config.fen,
-    orientation: props.config.couleur_joueur,
-    coordinates: true,
-    movable: {
-      color: props.config.couleur_joueur
-    }
-  };
-});
-
-const verifierCoup = async (coup: any) => {
+const verifierCoup = async (move: any) => {
   const solution = props.config.solution;
   const coupAttendu = solution[etapeActuelle.value];
 
-  // Si correct
-  if (coup.san === coupAttendu) {
+  if (move.san === coupAttendu) {
+    // Si le coup est correct
     etapeActuelle.value++;
 
-    // Si c'est le dernier coup
+    // Vérifie si l'exercice est terminé
     if (etapeActuelle.value === solution.length) {
       const toast = await toastController.create({
-        message: 'Félicitations, exercice réussi !',
+        message: 'Félicitations ! Exercice réussi.',
         duration: 3000,
         color: 'success',
         position: 'bottom'
       });
       await toast.present();
     } else {
-      // Sinon, coup de l'ordinateur après 500ms
+      // Si l'exercice continue, c'est à l'ordinateur de jouer sa réponse scriptée.
       setTimeout(() => {
-        if (boardRef.value?.core) {
-          const coupOrdi = solution[etapeActuelle.value];
-          boardRef.value.core.move(coupOrdi);
+        if (boardApi.value) {
+          boardApi.value.move(solution[etapeActuelle.value]);
           etapeActuelle.value++;
         }
-      }, 500);
+      }, 600);
     }
   } else {
-    // Si incorrect, on annule et affiche une erreur
-    if (boardRef.value?.core) {
-      setTimeout(() => {
-        boardRef.value.core.undoLastMove();
-      }, 0);
-    }
+    // Si le coup est incorrect
+    boardApi.value?.undoLastMove();
+
     const toast = await toastController.create({
-      message: 'Mauvais coup, essaie encore !',
-      duration: 2500,
+      message: 'Mauvais coup, cherche encore !',
+      duration: 2000,
       color: 'danger',
       position: 'bottom'
     });
