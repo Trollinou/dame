@@ -7,10 +7,8 @@ import ContactsPage from '../views/ContactsPage.vue';
 import AgendaPage from '../views/AgendaPage.vue';
 import BenevolatPage from '../views/BenevolatPage.vue';
 import MessagesPage from '../views/MessagesPage.vue';
+import AdminLayout from '../views/AdminLayout.vue';
 const TournamentPage = () => import( '../views/TournamentPage.vue' );
-// TEMP_DISABLED: Imports jeu
-// import PlayPage from '../views/PlayPage.vue';
-// const AnalysisPage = () => import('../views/AnalysisPage.vue');
 const GenericPage = () => import( '../views/GenericPage.vue' );
 import { useAuthStore } from '@/stores/auth';
 
@@ -21,8 +19,13 @@ const routes: Array< RouteRecordRaw > = [
 	},
 	{
 		path: '/login',
-		redirect: '/tabs/login',
+		component: LoginPage,
 	},
+	{
+		path: '/tabs/login',
+		redirect: '/login',
+	},
+	// Routes principales de la navigation PWA (Tabs)
 	{
 		path: '/tabs/',
 		component: TabsPage,
@@ -31,126 +34,122 @@ const routes: Array< RouteRecordRaw > = [
 				path: '',
 				redirect: '/tabs/home',
 			},
-			// Routes Publiques
 			{
 				path: 'home',
 				component: () => import( '../views/PublicHomePage.vue' ),
-			},
-			{
-				path: 'apprentissage',
-				component: () => import( '../views/ApprentissageHubPage.vue' ),
-				meta: { requiresAuth: true, requiresAdherent: true },
-			},
-			{
-				path: 'news',
-				component: () => import( '../views/NewsPage.vue' ),
-			},
-			{
-				path: 'news/:id',
-				name: 'NewsDetail',
-				component: () => import( '../views/NewsDetailPage.vue' ),
 			},
 			{
 				path: 'agenda',
 				component: AgendaPage,
 			},
 			{
-				path: 'agenda/:id',
-				name: 'AgendaDetail',
-				component: () => import( '@/views/AgendaDetailPage.vue' ),
+				path: 'apprentissage',
+				component: () => import( '../views/ApprentissageHubPage.vue' ),
 			},
 			{
-				path: 'tournoi',
-				component: TournamentPage,
+				path: 'profil',
+				component: () => import( '../views/ProfilePage.vue' ),
 			},
-			// TEMP_DISABLED: Routes jeu
-			// {
-			//   path: 'play',
-			//   component: PlayPage
-			// },
-			// {
-			//   path: 'analysis',
-			//   component: AnalysisPage
-			// },
+		],
+	},
+	// Nouveau groupe de routes d'administration protégé avec un layout dédié
+	{
+		path: '/admin',
+		component: AdminLayout,
+		meta: { requiresAuth: true, requiresAdmin: true },
+		children: [
+			{
+				path: '',
+				redirect: '/admin/dashboard',
+			},
+			{
+				path: 'dashboard',
+				component: () => import( '../views/HomePage.vue' ),
+			},
+			{
+				path: 'members',
+				component: MembersPage,
+			},
+			{
+				path: 'members/:id',
+				name: 'MemberDetail',
+				component: () => import( '@/views/MemberDetailPage.vue' ),
+			},
+			{
+				path: 'contact',
+				component: ContactsPage,
+			},
+			{
+				path: 'contact/:id',
+				name: 'ContactDetail',
+				component: () => import( '@/views/ContactDetailPage.vue' ),
+			},
+			{
+				path: 'message',
+				component: MessagesPage,
+			},
+			{
+				path: 'message/:id',
+				name: 'MessageDetail',
+				component: () => import( '@/views/MessageDetailPage.vue' ),
+			},
 			{
 				path: 'benevolat',
 				component: BenevolatPage,
 			},
 			{
-				path: 'benevolat/participation/:id',
-				name: 'BenevolatVote',
-				meta: { requiresAuth: true },
-				component: () => import( '@/views/BenevolatVotePage.vue' ),
-			},
-			{
-				path: 'admin/benevolat/:id',
+				path: 'benevolat/:id',
 				name: 'BenevolatDetail',
-				meta: { requiresAuth: true, requiresAdmin: true },
 				component: () => import( '@/views/BenevolatDetailPage.vue' ),
 			},
-			{
-				path: 'page/:id',
-				name: 'GenericPage',
-				component: GenericPage,
-			},
-			{
-				path: 'login',
-				component: LoginPage,
-			},
-			{
-				path: 'register',
-				component: () => import( '../views/RegisterPage.vue' ),
-			},
-			{
-				path: 'pre-inscription',
-				component: () => import( '../views/PreInscriptionPage.vue' ),
-			},
-
-			{
-				path: 'select-person',
-				component: () => import( '../views/SelectPersonPage.vue' ),
-				meta: { requiresAuth: true },
-			},
-			// Routes Privées (Admin)
-			{
-				path: 'admin/dashboard',
-				component: () => import( '../views/HomePage.vue' ),
-				meta: { requiresAuth: true, requiresAdmin: true },
-			},
-			{
-				path: 'admin/members',
-				component: MembersPage,
-				meta: { requiresAuth: true, requiresAdmin: true },
-			},
-			{
-				path: 'admin/members/:id',
-				name: 'MemberDetail',
-				component: () => import( '@/views/MemberDetailPage.vue' ),
-				meta: { requiresAuth: true, requiresAdmin: true },
-			},
-			{
-				path: 'admin/contact',
-				component: ContactsPage,
-				meta: { requiresAuth: true, requiresAdmin: true },
-			},
-			{
-				path: 'admin/contact/:id',
-				name: 'ContactDetail',
-				component: () => import( '@/views/ContactDetailPage.vue' ),
-				meta: { requiresAuth: true, requiresAdmin: true },
-			},
-			{
-				path: 'admin/message',
-				component: MessagesPage,
-				meta: { requiresAuth: true, requiresAdmin: true },
-			},
-			{
-				path: 'admin/message/:id',
-				name: 'MessageDetail',
-				component: () => import( '@/views/MessageDetailPage.vue' ),
-				meta: { requiresAuth: true, requiresAdmin: true },
-			},
 		],
+	},
+	// Routes publiques secondaires hors Tabs
+	{
+		path: '/news',
+		component: () => import( '../views/NewsPage.vue' ),
+	},
+	{
+		path: '/news/:id',
+		name: 'NewsDetail',
+		component: () => import( '../views/NewsDetailPage.vue' ),
+	},
+	{
+		path: '/agenda/:id',
+		name: 'AgendaDetail',
+		component: () => import( '@/views/AgendaDetailPage.vue' ),
+	},
+	{
+		path: '/tournoi',
+		component: TournamentPage,
+	},
+	{
+		path: '/benevolat',
+		component: BenevolatPage,
+	},
+	{
+		path: '/benevolat/participation/:id',
+		name: 'BenevolatVote',
+		meta: { requiresAuth: true },
+		component: () => import( '@/views/BenevolatVotePage.vue' ),
+	},
+	{
+		path: '/page/:id',
+		name: 'GenericPage',
+		component: GenericPage,
+	},
+	{
+		path: '/register',
+		component: () => import( '../views/RegisterPage.vue' ),
+	},
+	{
+		path: '/pre-inscription',
+		component: () => import( '../views/PreInscriptionPage.vue' ),
+	},
+	{
+		path: '/select-person',
+		component: () => import( '../views/SelectPersonPage.vue' ),
+		meta: { requiresAuth: true },
 	},
 	{
 		path: '/exercice/:id',
@@ -171,7 +170,7 @@ router.beforeEach( ( to ) => {
 	// 1. Vérification de l'authentification de base
 	if ( to.meta.requiresAuth && ! authStore.isAuthenticated ) {
 		return {
-			path: '/tabs/login',
+			path: '/login',
 			query: {
 				message: 'Vous devez être connecté pour accéder à cette page.',
 			},
