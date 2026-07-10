@@ -1,5 +1,21 @@
 # Changelog
 
+## [Non publié]
+
+### Application Mobile (PWA)
+- **Authentification & Redirection :** Correction du flux de connexion en restaurant l'écran de sélection de profil (`SelectPersonPage.vue`) en dehors de la structure des onglets (Tabs). L'API redirige maintenant vers `/select-person` si plusieurs identités sont détectées, ou directement vers `/tabs/profil` si un seul profil est rattaché au compte.
+- **Profil Utilisateur :** Optimisation de l'affichage de la page de profil pour économiser de l'espace vertical (avatar et marges réduits), permettant aux boutons d'actions d'être visibles sur mobile sans défilement. Intégration d'un bouton de changement de profil dynamique qui s'affiche si le compte dispose de plusieurs identités.
+- **Onglet Le Club (Navigation & Actualités) :**
+  - Ajout d'un nouvel onglet « Actualités » en première position.
+  - Renommage de la sous-section « Général » en « Agenda ».
+  - Titre de la page dynamique s'adaptant à l'onglet actif.
+  - Correction des redirections de détails et boutons de retour pour les actualités, l'agenda, les tournois et le bénévolat.
+  - Liaison automatique des boutons de la page d'accueil vers les onglets correspondants via paramètres de requête (`tab`).
+- **Espace Administration :**
+  - Intégration d'un bouton de menu latéral (`ion-menu-button`) sur mobile pour toutes les pages d'administration.
+  - Correction du surlignement de l'onglet actif pour les sous-pages et fiches de détails.
+  - Synchronisation et réinitialisation de la pile de navigation de l'outlet lors des transitions entre l'espace public et l'administration pour éviter les conflits d'affichage.
+
 ## [4.7.3] - 2026-06-30
 
 ### Plugin WordPress (Backend)

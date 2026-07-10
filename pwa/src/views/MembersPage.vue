@@ -2,6 +2,9 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
         <ion-title>Adhérents</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -107,6 +110,8 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonButtons,
+  IonMenuButton,
   onIonViewWillEnter
 } from '@ionic/vue';
 import { ref, computed } from 'vue';
@@ -131,7 +136,7 @@ const removeAccents = (str: string): string => {
 };
 
 const goToDetail = (id: number) => {
-  router.push('/tabs/admin/members/' + id);
+  router.push('/admin/members/' + id);
 };
 
 const filteredMembers = computed(() => {

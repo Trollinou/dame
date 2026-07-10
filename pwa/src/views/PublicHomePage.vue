@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-    <!-- Header Global avec Authentification -->
+    <!-- Header Global -->
     <ion-header :translucent="true">
       <ion-toolbar>
         <!-- Logo à gauche -->
@@ -9,36 +9,6 @@
             <img src="/assets/icon/logo.png" style="height: 20px; margin-right: 8px;" alt="Logo" />
             <span style="font-weight: 800; letter-spacing: 0.5px; color: var(--ion-color-dark);">Echiquier Lédonien</span>
           </div>
-        </ion-buttons>
-
-        <!-- Zone Identité et Actions à droite -->
-        <ion-buttons slot="end">
-          <!-- Identité sélectionnée (Cliquable seulement si ce n'est pas un compte virtuel) -->
-          <div 
-            v-if="authStore.selectedIdentity" 
-            @click="authStore.selectedIdentity.id !== 'wp_virtual' ? goToSelectPerson() : null" 
-            style="display: flex; align-items: center; padding: 0 8px; max-width: 250px;"
-            :style="{ cursor: authStore.selectedIdentity.id !== 'wp_virtual' ? 'pointer' : 'default' }"
-          >
-            <div style="display: flex; flex-direction: column; align-items: flex-end; margin-right: 8px; overflow: hidden;">
-              <span style="font-size: 0.85em; font-weight: bold; line-height: 1.1; color: var(--ion-color-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: right;">
-                {{ authStore.selectedIdentity.name }}
-              </span>
-              <span style="font-size: 0.7em; opacity: 0.7; line-height: 1.1; white-space: nowrap;">
-                {{ authStore.selectedIdentity.id === 'wp_virtual' ? 'Gestion' : (authStore.selectedIdentity.type === 'representative' ? 'Resp. Légal' : 'Adhérent') }}
-              </span>
-            </div>
-            <ion-icon :icon="peopleOutline" style="font-size: 24px; color: var(--ion-color-primary); flex-shrink: 0;"></ion-icon>
-          </div>
-
-          <!-- Bouton Connexion -->
-          <ion-button v-if="!authStore.isAuthenticated" router-link="/login" color="primary" fill="clear">
-            <ion-icon slot="icon-only" :icon="personCircleOutline"></ion-icon>
-          </ion-button>
-          
-          <ion-button v-else @click="handleLogout" color="medium" fill="clear">
-            <ion-icon slot="icon-only" :icon="logOutOutline"></ion-icon>
-          </ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
@@ -57,18 +27,8 @@
           </ion-toolbar>
         </ion-header>
 
-        <!-- TEMP_DISABLED: Bouton Jouer
-        <div v-if="authStore.isAuthenticated && authStore.isRoiActive">
-          <ion-card style="--background: var(--ion-color-step-50, #f4f5f8); margin-top: 8px; margin-bottom: 0;">
-              <ion-button expand="block" color="primary" style="margin: 0;" @click="goToPlay">
-               ♟️ Jouer une partie ♟️
-              </ion-button>
-          </ion-card>
-        </div>
-        -->
-
         <!-- Carte Préinscription Saison -->
-        <ion-card v-if="!authStore.isAuthenticated || hasUnregisteredTargets" class="pre-inscription-card ion-no-margin ion-margin-bottom" style="margin-top: 8px;">
+        <ion-card v-if="!authStore.isAuthenticated || hasUnregisteredTargets" class="pre-inscription-card ion-no-margin ion-margin-bottom">
           <ion-card-header>
             <ion-card-title style="display: flex; align-items: center; gap: 8px; font-size: 1.15em; font-weight: bold; color: var(--ion-color-primary);">
               ✍️ Préinscription {{ authStore.currentSeason ? authStore.currentSeason : 'Saison' }}
@@ -77,19 +37,19 @@
           <ion-card-content>
             <template v-if="!authStore.isAuthenticated">
               <p>Remplissez votre dossier de préinscription en ligne pour la nouvelle saison.</p>
-              <ion-button expand="block" router-link="/tabs/pre-inscription" color="primary" class="ion-margin-top">
+              <ion-button expand="block" router-link="/pre-inscription" color="primary" class="ion-margin-top">
                 Commencer ma préinscription
               </ion-button>
             </template>
             <template v-else-if="authStore.selectedIdentity?.type === 'representative'">
               <p>Effectuez la préinscription de vos enfants associés ou créez une nouvelle fiche.</p>
-              <ion-button expand="block" router-link="/tabs/pre-inscription" color="primary" class="ion-margin-top">
+              <ion-button expand="block" router-link="/pre-inscription" color="primary" class="ion-margin-top">
                 Préinscrire / Réinscrire
               </ion-button>
             </template>
             <template v-else>
               <p>Réinscrivez-vous rapidement en confirmant ou mettant à jour vos coordonnées.</p>
-              <ion-button expand="block" router-link="/tabs/pre-inscription" color="primary" class="ion-margin-top">
+              <ion-button expand="block" router-link="/pre-inscription" color="primary" class="ion-margin-top">
                 Me réinscrire
               </ion-button>
             </template>
@@ -97,11 +57,10 @@
         </ion-card>
 
         <!-- Section Dernières Nouvelles -->
-
         <ion-list lines="full" style="margin: 0;">
           <ion-list-header>
             <ion-label color="primary">Dernières Nouvelles</ion-label>
-            <ion-button fill="clear" router-link="/tabs/news">Actualités</ion-button>
+            <ion-button fill="clear" router-link="/tabs/agenda?tab=actualites">Actualités</ion-button>
           </ion-list-header>
 
           <div v-if="isLoadingNews" class="ion-text-center ion-padding">
@@ -128,7 +87,7 @@
         <ion-list lines="full" style="margin: 0;">
           <ion-list-header>
             <ion-label color="primary">Prochains Événements</ion-label>
-            <ion-button fill="clear" router-link="/tabs/agenda">Agenda</ion-button>
+            <ion-button fill="clear" router-link="/tabs/agenda?tab=agenda">Agenda</ion-button>
           </ion-list-header>
 
           <div v-if="agendaStore.isLoading" class="ion-text-center ion-padding">
@@ -153,7 +112,7 @@
         <ion-list lines="full" style="margin: 0;">
           <ion-list-header>
             <ion-label color="primary">Appel à bénévoles</ion-label>
-            <ion-button fill="clear" router-link="/tabs/benevolat">Bénévolat</ion-button>
+            <ion-button fill="clear" router-link="/tabs/agenda?tab=benevolat">Bénévolat</ion-button>
           </ion-list-header>
 
           <div v-if="benevolatStore.isLoading" class="ion-text-center ion-padding">
@@ -206,7 +165,11 @@ import {
   IonCardTitle,
   onIonViewWillEnter
 } from '@ionic/vue';
-import { calendarOutline, handRightOutline, newspaperOutline, personCircleOutline, logOutOutline, peopleOutline } from 'ionicons/icons';
+import {
+  calendarOutline,
+  handRightOutline,
+  newspaperOutline
+} from 'ionicons/icons';
 import { ref, computed, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
@@ -306,34 +269,12 @@ watch(() => authStore.isAuthenticated, (newVal) => {
 });
 
 /**
- * Redirige vers le choix de personne
- */
-const goToSelectPerson = () => {
-  router.push('/tabs/select-person');
-};
-
-/**
- * Redirige vers l'espace de jeu
- */
-const goToPlay = () => {
-  router.push('/tabs/play');
-};
-
-/**
- * Gère la déconnexion
- */
-const handleLogout = async () => {
-  await authStore.logout();
-};
-
-/**
  * Récupère les 3 dernières actualités (via le store)
  */
 const fetchLatestNews = async () => {
   try {
     await newsStore.fetchPosts();
   } catch (err) {
-    // L'erreur est déjà logguée par le store, on ignore ici pour garder le cache à l'écran
     console.warn("Échec refresh news home (serveur coupé ?), utilisation du cache.");
   }
 };
@@ -452,17 +393,17 @@ const isToday = (event: AgendaEvent): boolean => {
   return startDate === todayStr;
 };
 
-const goToNews = (id: number) => router.push(`/tabs/news/${id}`);
-const goToAgenda = (id: number) => router.push(`/tabs/agenda/${id}`);
+const goToNews = (id: number) => router.push(`/news/${id}`);
+const goToAgenda = (id: number) => router.push(`/agenda/${id}`);
 const goToBenevolat = (id: number) => {
   if (authStore.adminMode) {
-    router.push(`/tabs/admin/benevolat/${id}`);
+    router.push(`/admin/benevolat/${id}`);
   } else {
     if (authStore.isAuthenticated) {
-      router.push(`/tabs/benevolat/participation/${id}`);
+      router.push(`/benevolat/participation/${id}`);
     } else {
       router.push({ 
-        path: '/tabs/login', 
+        path: '/login', 
         query: { message: 'Identification requise pour proposer votre aide.' } 
       });
     }
@@ -498,5 +439,57 @@ p {
 
 ion-thumbnail {
   --size: 56px;
+}
+
+/* Styles Accès Rapide */
+.quick-access-section {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 12px 0 12px 12px;
+  color: var(--ion-color-dark);
+}
+
+.quick-card {
+  margin: 4px;
+  --background: var(--ion-card-background, var(--ion-item-background, #fff));
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.quick-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 8px;
+  text-align: center;
+}
+
+.quick-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.news-color {
+  color: var(--ion-color-primary, #3880ff);
+}
+
+.trophy-color {
+  color: var(--ion-color-warning, #f0b500);
+}
+
+.volunteer-color {
+  color: var(--ion-color-secondary, #3dc2ff);
+}
+
+.quick-label {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  white-space: nowrap;
 }
 </style>

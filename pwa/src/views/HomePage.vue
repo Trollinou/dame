@@ -2,6 +2,9 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
         <ion-title>
           <div style="display: flex; align-items: center;">
             <img src="/assets/icon/logo.png" style="height: 24px; margin-right: 10px;" alt="Logo Echiquier Lédonien" />
@@ -72,6 +75,7 @@ import {
   IonSpinner,
   IonButtons,
   IonButton,
+  IonMenuButton,
   onIonViewWillEnter
 } from '@ionic/vue';
 import { giftOutline, logOutOutline } from 'ionicons/icons';
