@@ -2,14 +2,17 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>Agenda</ion-title>
+        <ion-title>{{ pageTitle }}</ion-title>
       </ion-toolbar>
       
       <!-- Sous-navigation (Segment) -->
       <ion-toolbar>
         <ion-segment :value="selectedSegment" @ionChange="onSegmentChange($event.detail.value as string)">
+          <ion-segment-button value="actualites">
+            <ion-label>Actualités</ion-label>
+          </ion-segment-button>
           <ion-segment-button value="agenda">
-            <ion-label>Général</ion-label>
+            <ion-label>Agenda</ion-label>
           </ion-segment-button>
           <ion-segment-button value="tournois">
             <ion-label>Tournois</ion-label>
@@ -33,11 +36,49 @@
       <div class="safe-area-wrapper">
         <ion-header collapse="condense">
           <ion-toolbar>
-            <ion-title size="large">Agenda</ion-title>
+            <ion-title size="large">{{ pageTitle }}</ion-title>
           </ion-toolbar>
         </ion-header>
 
-        <!-- ================= ONGLET 1 : GENERAL (AGENDA) ================= -->
+        <!-- ================= ONGLET 0 : ACTUALITES ================= -->
+        <div v-if="selectedSegment === 'actualites'">
+          <div v-if="newsStore.isLoading && newsStore.posts.length === 0" class="ion-text-center ion-padding">
+            <ion-spinner name="crescent"></ion-spinner>
+            <p>Chargement des actualités...</p>
+          </div>
+          
+          <div v-else-if="filteredNews.length > 0">
+            <ion-card 
+              v-for="post in filteredNews" 
+              :key="post.id" 
+              class="news-card ion-no-margin ion-margin-bottom" 
+              button 
+              @click="goToNewsDetail(post.id)"
+            >
+              <img 
+                v-if="getFeaturedImage(post)" 
+                :src="getFeaturedImage(post) || undefined" 
+                :alt="post.title.rendered"
+                class="featured-image"
+                style="width: 100%; height: 200px; object-fit: cover;"
+              />
+              <ion-card-header>
+                <ion-card-subtitle>{{ formatDate(post.date) }}</ion-card-subtitle>
+                <ion-card-title v-safe-html="post.title.rendered"></ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <div v-safe-html="post.excerpt.rendered"></div>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <div v-else class="ion-text-center ion-padding">
+            <p v-if="searchQuery">Aucune actualité ne correspond à "{{ searchQuery }}".</p>
+            <p v-else>Aucune actualité trouvée.</p>
+          </div>
+        </div>
+
+        <!-- ================= ONGLET 1 : AGENDA ================= -->
         <div v-if="selectedSegment === 'agenda'">
           <!-- Infinite Scroll TOP (Historique) -->
           <ion-infinite-scroll 
@@ -260,31 +301,43 @@ import {
   handRightOutline 
 } from 'ionicons/icons';
 import { ref, computed, nextTick, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAgendaStore, type AgendaEvent } from '../stores/agenda';
 import { useTournamentStore } from '../stores/tournament';
 import { useBenevolatStore, type Benevolat } from '../stores/benevolat';
 import { useAuthStore } from '../stores/auth';
+import { useNewsStore, type Post } from '../stores/news';
 import { storeToRefs } from 'pinia';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 const agendaStore = useAgendaStore();
 const tournamentStore = useTournamentStore();
 const benevolatStore = useBenevolatStore();
+const newsStore = useNewsStore();
 
 const { events, isLoading, hasMoreUpcoming, hasMorePast, upcomingPage, pastPage } = storeToRefs(agendaStore);
 
 // Gestion de la sous-navigation
-const selectedSegment = ref('agenda');
+const selectedSegment = ref('actualites');
 const searchQuery = ref('');
 const todayStr = agendaStore.getTodayLocal();
 const isFirstLoad = ref(true);
 const tournamentError = ref<string | null>(null);
 
+const pageTitle = computed(() => {
+  if (selectedSegment.value === 'actualites') return 'Actualités';
+  if (selectedSegment.value === 'agenda') return 'Agenda';
+  if (selectedSegment.value === 'tournois') return 'Tournois';
+  if (selectedSegment.value === 'benevolat') return 'Bénévolat';
+  return 'Le Club';
+});
+
 const searchPlaceholder = computed(() => {
   if (selectedSegment.value === 'tournois') return 'Rechercher un tournoi...';
   if (selectedSegment.value === 'benevolat') return 'Rechercher un appel...';
+  if (selectedSegment.value === 'actualites') return 'Rechercher une actualité...';
   return 'Rechercher un événement...';
 });
 
@@ -300,11 +353,15 @@ const removeAccents = (str: string): string => {
 };
 
 const goToDetail = (id: number) => {
-  router.push('/tabs/agenda/' + id);
+  router.push('/agenda/' + id);
 };
 
 const goToTournamentDetail = (id: number) => {
-  router.push(`/tabs/page/${id}`);
+  router.push(`/page/${id}`);
+};
+
+const goToNewsDetail = (id: number) => {
+  router.push('/news/' + id);
 };
 
 const viewBenevolat = (benevolat: Benevolat) => {
@@ -364,6 +421,14 @@ const formatEventDate = (event: AgendaEvent): string => {
 };
 
 // Chargeur dynamique du contenu de l'onglet actif
+const fetchNews = async () => {
+  try {
+    await newsStore.fetchPosts();
+  } catch (err) {
+    console.warn("Erreur chargement posts:", err);
+  }
+};
+
 const fetchTournaments = async () => {
   tournamentError.value = null;
   try {
@@ -386,7 +451,9 @@ const fetchBenevolats = async () => {
 };
 
 const loadTabContent = () => {
-  if (selectedSegment.value === 'tournois') {
+  if (selectedSegment.value === 'actualites') {
+    fetchNews();
+  } else if (selectedSegment.value === 'tournois') {
     fetchTournaments();
   } else if (selectedSegment.value === 'benevolat') {
     fetchBenevolats();
@@ -394,6 +461,27 @@ const loadTabContent = () => {
 };
 
 // ================= CODE FILTRAGE DES ONGLETS =================
+
+// FILTRAGE ACTUALITES
+const filteredNews = computed(() => {
+  if (!searchQuery.value.trim()) return newsStore.posts;
+  const query = removeAccents(searchQuery.value.toLowerCase());
+  return newsStore.posts.filter((post: Post) => 
+    removeAccents((post.title?.rendered || "").toLowerCase()).includes(query)
+  );
+});
+
+const getFeaturedImage = (post: Post): string | null => {
+  return post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null;
+};
+
+const formatDate = (dateString: string): string => {
+  return new Date(dateString).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+};
 
 // FILTRAGE AGENDA
 const filteredEvents = computed(() => {
@@ -491,6 +579,9 @@ const loadMorePast = async (ev: any) => {
 };
 
 onIonViewWillEnter(async () => {
+  if (route.query.tab) {
+    selectedSegment.value = route.query.tab as string;
+  }
   loadTabContent();
 
   const hasPast = events.value.some(e => isPast(e));

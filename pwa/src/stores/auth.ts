@@ -394,21 +394,12 @@ export const useAuthStore = defineStore(
 
 				if ( identities.length === 1 ) {
 					selectIdentity( identities[ 0 ] );
-					router.push( '/tabs/home' );
-				} else if ( identities.length > 1 ) {
-					router.push( '/tabs/select-person' );
+					router.push( '/tabs/profil' );
 				} else {
-					const virtualIdentity: Identity = {
-						id: 'wp_virtual',
-						name: user.value?.name || 'Gestionnaire',
-						type: 'member',
-						member_id: 0,
-					};
-					selectIdentity( virtualIdentity );
-					router.push( '/tabs/home' );
+					router.push( '/select-person' );
 				}
 			} catch ( error ) {
-				router.push( '/tabs/home' );
+				router.push( '/select-person' );
 			}
 		};
 

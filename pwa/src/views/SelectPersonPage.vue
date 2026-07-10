@@ -113,7 +113,7 @@ const fetchIdentities = async () => {
 
 const handleSelect = (identity: Identity) => {
   authStore.selectIdentity(identity);
-  router.push('/tabs/home');
+  router.push('/tabs/profil');
 };
 
 onIonViewWillEnter(() => {

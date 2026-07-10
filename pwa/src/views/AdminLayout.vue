@@ -19,7 +19,7 @@
                 router-direction="root" 
                 :detail="false"
                 class="menu-item"
-                :class="{ active: currentPath === page.url }"
+                :class="{ active: currentPath.startsWith(page.url) }"
               >
                 <ion-icon slot="start" :icon="page.icon"></ion-icon>
                 <ion-label>{{ page.title }}</ion-label>
@@ -28,10 +28,12 @@
           </ion-list>
 
           <div class="menu-footer">
-            <ion-button expand="block" fill="outline" color="primary" @click="goToPublic">
-              <ion-icon slot="start" :icon="eyeOutline"></ion-icon>
-              Retour Espace Public
-            </ion-button>
+            <ion-menu-toggle :auto-hide="false">
+              <ion-button expand="block" fill="outline" color="primary" @click="goToPublic">
+                <ion-icon slot="start" :icon="eyeOutline"></ion-icon>
+                Retour Espace Public
+              </ion-button>
+            </ion-menu-toggle>
           </div>
         </ion-content>
       </ion-menu>
@@ -59,7 +61,8 @@ import {
   IonLabel,
   IonMenuToggle,
   IonButton,
-  IonRouterOutlet
+  IonRouterOutlet,
+  onIonViewWillEnter
 } from '@ionic/vue';
 import {
   homeOutline,
@@ -91,6 +94,12 @@ const goToPublic = () => {
   authStore.adminMode = false;
   router.push('/tabs/home');
 };
+
+onIonViewWillEnter(() => {
+  if (route.path) {
+    router.replace(route.path);
+  }
+});
 </script>
 
 <style scoped>

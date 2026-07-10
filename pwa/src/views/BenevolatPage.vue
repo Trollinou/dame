@@ -2,6 +2,9 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
         <ion-title>Appel à bénévoles</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -106,6 +109,8 @@ import {
   IonLabel,
   IonBadge,
   IonSpinner,
+  IonButtons,
+  IonMenuButton,
   onIonViewWillEnter
 } from '@ionic/vue';
 import { ref, computed } from 'vue';
@@ -220,7 +225,7 @@ const finishedBenevolats = computed(() => {
  */
 const viewBenevolat = (benevolat: Benevolat) => {
   if (authStore.adminMode) {
-    router.push('/tabs/admin/benevolat/' + benevolat.id);
+    router.push('/admin/benevolat/' + benevolat.id);
   } else {
     if (authStore.isAuthenticated) {
       router.push('/tabs/benevolat/participation/' + benevolat.id);

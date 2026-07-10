@@ -3,7 +3,7 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/news"></ion-back-button>
+          <ion-back-button default-href="/tabs/agenda"></ion-back-button>
         </ion-buttons>
         <ion-title v-if="post" v-safe-html="post.title.rendered"></ion-title>
         <ion-title v-else>Actualité</ion-title>

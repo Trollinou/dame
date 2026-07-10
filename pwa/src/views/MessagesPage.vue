@@ -2,6 +2,9 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
         <ion-title>Messages</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -58,6 +61,8 @@ import {
   IonItem,
   IonLabel,
   IonSpinner,
+  IonButtons,
+  IonMenuButton,
   onIonViewWillEnter
 } from '@ionic/vue';
 import { ref, computed } from 'vue';
@@ -103,7 +108,7 @@ const filteredMessages = computed(() => {
  * Action: Voir le message
  */
 const viewMessage = (message: Message) => {
-  router.push('/tabs/admin/message/' + message.id);
+  router.push('/admin/message/' + message.id);
 };
 
 // Chargement des données au montage/entrée

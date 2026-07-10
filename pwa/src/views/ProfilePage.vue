@@ -150,7 +150,8 @@ import {
   IonIcon,
   IonItem,
   IonLabel,
-  IonList
+  IonList,
+  onIonViewWillEnter
 } from '@ionic/vue';
 import {
   personCircleOutline,
@@ -165,12 +166,32 @@ import {
   logInOutline,
   personAddOutline
 } from 'ionicons/icons';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const identitiesCount = ref(0);
+
+const checkMultipleIdentities = async () => {
+  if (!authStore.isAuthenticated) return;
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dame/v1/my-identities`, {
+      headers: { 'Authorization': `Bearer ${authStore.token}` }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      identitiesCount.value = data.length;
+    }
+  } catch (error) {
+    console.warn("Erreur chargement identités dans profil:", error);
+  }
+};
+
+onIonViewWillEnter(() => {
+  checkMultipleIdentities();
+});
 
 const identityTypeText = computed(() => {
   const type = authStore.selectedIdentity?.type;
@@ -192,8 +213,7 @@ const hasAssociatedMembers = computed(() => {
 });
 
 const hasMultipleIdentities = computed(() => {
-  const identities = authStore.user?.associated_members || authStore.selectedIdentity?.associated_members;
-  return Array.isArray(identities) && identities.length > 0;
+  return identitiesCount.value > 1;
 });
 
 const changeIdentity = () => {
@@ -228,29 +248,29 @@ const handleLogout = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 20px 0 25px;
+  margin: 10px 0 12px;
   text-align: center;
 }
 
 .avatar-container {
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .avatar-icon {
-  font-size: 80px;
+  font-size: 60px;
   color: var(--ion-color-step-350, #8a8a8f);
 }
 
 .profile-header h2 {
   font-weight: 700;
-  margin: 0 0 4px 0;
-  font-size: 24px;
+  margin: 0 0 2px 0;
+  font-size: 20px;
 }
 
 .profile-header .email {
   color: var(--ion-color-step-600, #666);
-  margin: 0 0 12px 0;
-  font-size: 14px;
+  margin: 0 0 6px 0;
+  font-size: 13px;
 }
 
 .badge {
@@ -314,21 +334,21 @@ const handleLogout = () => {
   background: var(--ion-card-background, var(--ion-item-background, #fff));
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  padding: 16px;
+  padding: 12px;
 }
 
 .card-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   margin-top: 0;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .card-title ion-icon {
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .elo-grid {
@@ -362,7 +382,8 @@ const handleLogout = () => {
 .associated-member-item {
   --background: var(--ion-color-light, #f4f5f8);
   --border-radius: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  --min-height: 44px;
 }
 
 .member-icon {

@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-    <!-- Header Global avec Authentification -->
+    <!-- Header Global -->
     <ion-header :translucent="true">
       <ion-toolbar>
         <!-- Logo à gauche -->
@@ -9,36 +9,6 @@
             <img src="/assets/icon/logo.png" style="height: 20px; margin-right: 8px;" alt="Logo" />
             <span style="font-weight: 800; letter-spacing: 0.5px; color: var(--ion-color-dark);">Echiquier Lédonien</span>
           </div>
-        </ion-buttons>
-
-        <!-- Zone Identité et Actions à droite -->
-        <ion-buttons slot="end">
-          <!-- Identité sélectionnée (Cliquable seulement si ce n'est pas un compte virtuel) -->
-          <div 
-            v-if="authStore.selectedIdentity" 
-            @click="authStore.selectedIdentity.id !== 'wp_virtual' ? goToSelectPerson() : null" 
-            style="display: flex; align-items: center; padding: 0 8px; max-width: 250px;"
-            :style="{ cursor: authStore.selectedIdentity.id !== 'wp_virtual' ? 'pointer' : 'default' }"
-          >
-            <div style="display: flex; flex-direction: column; align-items: flex-end; margin-right: 8px; overflow: hidden;">
-              <span style="font-size: 0.85em; font-weight: bold; line-height: 1.1; color: var(--ion-color-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: right;">
-                {{ authStore.selectedIdentity.name }}
-              </span>
-              <span style="font-size: 0.7em; opacity: 0.7; line-height: 1.1; white-space: nowrap;">
-                {{ authStore.selectedIdentity.id === 'wp_virtual' ? 'Gestion' : (authStore.selectedIdentity.type === 'representative' ? 'Resp. Légal' : 'Adhérent') }}
-              </span>
-            </div>
-            <ion-icon :icon="peopleOutline" style="font-size: 24px; color: var(--ion-color-primary); flex-shrink: 0;"></ion-icon>
-          </div>
-
-          <!-- Bouton Connexion -->
-          <ion-button v-if="!authStore.isAuthenticated" router-link="/login" color="primary" fill="clear">
-            <ion-icon slot="icon-only" :icon="personCircleOutline"></ion-icon>
-          </ion-button>
-          
-          <ion-button v-else @click="handleLogout" color="medium" fill="clear">
-            <ion-icon slot="icon-only" :icon="logOutOutline"></ion-icon>
-          </ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
@@ -56,39 +26,6 @@
             <ion-title size="large">Echiquier Lédonien</ion-title>
           </ion-toolbar>
         </ion-header>
-
-        <!-- SECTION : ACCÈS RAPIDE -->
-        <div class="quick-access-section ion-margin-bottom" style="margin-top: 8px;">
-          <h2 class="section-title">Accès Rapide</h2>
-          <ion-grid class="ion-no-padding">
-            <ion-row>
-              <ion-col size="4">
-                <ion-card button router-link="/news" class="quick-card">
-                  <ion-card-content class="quick-card-content">
-                    <ion-icon :icon="newspaperOutline" class="quick-icon news-color"></ion-icon>
-                    <span class="quick-label">Actualités</span>
-                  </ion-card-content>
-                </ion-card>
-              </ion-col>
-              <ion-col size="4">
-                <ion-card button router-link="/tournoi" class="quick-card">
-                  <ion-card-content class="quick-card-content">
-                    <ion-icon :icon="trophyOutline" class="quick-icon trophy-color"></ion-icon>
-                    <span class="quick-label">Tournois</span>
-                  </ion-card-content>
-                </ion-card>
-              </ion-col>
-              <ion-col size="4">
-                <ion-card button router-link="/benevolat" class="quick-card">
-                  <ion-card-content class="quick-card-content">
-                    <ion-icon :icon="handRightOutline" class="quick-icon volunteer-color"></ion-icon>
-                    <span class="quick-label">Bénévolat</span>
-                  </ion-card-content>
-                </ion-card>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-        </div>
 
         <!-- Carte Préinscription Saison -->
         <ion-card v-if="!authStore.isAuthenticated || hasUnregisteredTargets" class="pre-inscription-card ion-no-margin ion-margin-bottom">
@@ -123,7 +60,7 @@
         <ion-list lines="full" style="margin: 0;">
           <ion-list-header>
             <ion-label color="primary">Dernières Nouvelles</ion-label>
-            <ion-button fill="clear" router-link="/news">Actualités</ion-button>
+            <ion-button fill="clear" router-link="/tabs/agenda?tab=actualites">Actualités</ion-button>
           </ion-list-header>
 
           <div v-if="isLoadingNews" class="ion-text-center ion-padding">
@@ -150,7 +87,7 @@
         <ion-list lines="full" style="margin: 0;">
           <ion-list-header>
             <ion-label color="primary">Prochains Événements</ion-label>
-            <ion-button fill="clear" router-link="/tabs/agenda">Agenda</ion-button>
+            <ion-button fill="clear" router-link="/tabs/agenda?tab=agenda">Agenda</ion-button>
           </ion-list-header>
 
           <div v-if="agendaStore.isLoading" class="ion-text-center ion-padding">
@@ -175,7 +112,7 @@
         <ion-list lines="full" style="margin: 0;">
           <ion-list-header>
             <ion-label color="primary">Appel à bénévoles</ion-label>
-            <ion-button fill="clear" router-link="/benevolat">Bénévolat</ion-button>
+            <ion-button fill="clear" router-link="/tabs/agenda?tab=benevolat">Bénévolat</ion-button>
           </ion-list-header>
 
           <div v-if="benevolatStore.isLoading" class="ion-text-center ion-padding">
@@ -226,19 +163,12 @@ import {
   IonCardContent,
   IonCardHeader,
   IonCardTitle,
-  IonGrid,
-  IonRow,
-  IonCol,
   onIonViewWillEnter
 } from '@ionic/vue';
 import {
   calendarOutline,
   handRightOutline,
-  newspaperOutline,
-  personCircleOutline,
-  logOutOutline,
-  peopleOutline,
-  trophyOutline
+  newspaperOutline
 } from 'ionicons/icons';
 import { ref, computed, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
@@ -337,27 +267,6 @@ watch(() => authStore.isAuthenticated, (newVal) => {
   hasUnregisteredTargets.value = !newVal;
   loadAllData();
 });
-
-/**
- * Redirige vers le choix de personne
- */
-const goToSelectPerson = () => {
-  router.push('/select-person');
-};
-
-/**
- * Redirige vers l'espace de jeu
- */
-const goToPlay = () => {
-  router.push('/tabs/play');
-};
-
-/**
- * Gère la déconnexion
- */
-const handleLogout = async () => {
-  await authStore.logout();
-};
 
 /**
  * Récupère les 3 dernières actualités (via le store)
