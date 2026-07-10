@@ -36,6 +36,7 @@ module.exports = [
 				dame_backup_agenda_data: 'readonly',
 				dame_pre_inscription_actions_data: 'readonly',
 				dame_settings_anniversaires: 'readonly',
+				damePwaInstaller: 'readonly',
 			},
 		},
 		rules: {

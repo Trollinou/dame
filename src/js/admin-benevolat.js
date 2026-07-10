@@ -95,7 +95,9 @@ jQuery( document ).ready( function ( $ ) {
 		).length;
 
 		let defaultDate = '';
-		const dateInputs = $( '#benevolat-dates-wrapper .benevolat-date-input' );
+		const dateInputs = $(
+			'#benevolat-dates-wrapper .benevolat-date-input'
+		);
 		if ( dateInputs.length > 0 ) {
 			let maxDateVal = '';
 			dateInputs.each( function () {
@@ -116,8 +118,14 @@ jQuery( document ).ready( function ( $ ) {
 					);
 					dateObj.setUTCDate( dateObj.getUTCDate() + 1 );
 					const year = dateObj.getUTCFullYear();
-					const month = String( dateObj.getUTCMonth() + 1 ).padStart( 2, '0' );
-					const day = String( dateObj.getUTCDate() ).padStart( 2, '0' );
+					const month = String( dateObj.getUTCMonth() + 1 ).padStart(
+						2,
+						'0'
+					);
+					const day = String( dateObj.getUTCDate() ).padStart(
+						2,
+						'0'
+					);
 					defaultDate = `${ year }-${ month }-${ day }`;
 				}
 			}
