@@ -57,18 +57,41 @@
           </ion-toolbar>
         </ion-header>
 
-        <!-- TEMP_DISABLED: Bouton Jouer
-        <div v-if="authStore.isAuthenticated && authStore.isRoiActive">
-          <ion-card style="--background: var(--ion-color-step-50, #f4f5f8); margin-top: 8px; margin-bottom: 0;">
-              <ion-button expand="block" color="primary" style="margin: 0;" @click="goToPlay">
-               ♟️ Jouer une partie ♟️
-              </ion-button>
-          </ion-card>
+        <!-- SECTION : ACCÈS RAPIDE -->
+        <div class="quick-access-section ion-margin-bottom" style="margin-top: 8px;">
+          <h2 class="section-title">Accès Rapide</h2>
+          <ion-grid class="ion-no-padding">
+            <ion-row>
+              <ion-col size="4">
+                <ion-card button router-link="/news" class="quick-card">
+                  <ion-card-content class="quick-card-content">
+                    <ion-icon :icon="newspaperOutline" class="quick-icon news-color"></ion-icon>
+                    <span class="quick-label">Actualités</span>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+              <ion-col size="4">
+                <ion-card button router-link="/tournoi" class="quick-card">
+                  <ion-card-content class="quick-card-content">
+                    <ion-icon :icon="trophyOutline" class="quick-icon trophy-color"></ion-icon>
+                    <span class="quick-label">Tournois</span>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+              <ion-col size="4">
+                <ion-card button router-link="/benevolat" class="quick-card">
+                  <ion-card-content class="quick-card-content">
+                    <ion-icon :icon="handRightOutline" class="quick-icon volunteer-color"></ion-icon>
+                    <span class="quick-label">Bénévolat</span>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
         </div>
-        -->
 
         <!-- Carte Préinscription Saison -->
-        <ion-card v-if="!authStore.isAuthenticated || hasUnregisteredTargets" class="pre-inscription-card ion-no-margin ion-margin-bottom" style="margin-top: 8px;">
+        <ion-card v-if="!authStore.isAuthenticated || hasUnregisteredTargets" class="pre-inscription-card ion-no-margin ion-margin-bottom">
           <ion-card-header>
             <ion-card-title style="display: flex; align-items: center; gap: 8px; font-size: 1.15em; font-weight: bold; color: var(--ion-color-primary);">
               ✍️ Préinscription {{ authStore.currentSeason ? authStore.currentSeason : 'Saison' }}
@@ -77,19 +100,19 @@
           <ion-card-content>
             <template v-if="!authStore.isAuthenticated">
               <p>Remplissez votre dossier de préinscription en ligne pour la nouvelle saison.</p>
-              <ion-button expand="block" router-link="/tabs/pre-inscription" color="primary" class="ion-margin-top">
+              <ion-button expand="block" router-link="/pre-inscription" color="primary" class="ion-margin-top">
                 Commencer ma préinscription
               </ion-button>
             </template>
             <template v-else-if="authStore.selectedIdentity?.type === 'representative'">
               <p>Effectuez la préinscription de vos enfants associés ou créez une nouvelle fiche.</p>
-              <ion-button expand="block" router-link="/tabs/pre-inscription" color="primary" class="ion-margin-top">
+              <ion-button expand="block" router-link="/pre-inscription" color="primary" class="ion-margin-top">
                 Préinscrire / Réinscrire
               </ion-button>
             </template>
             <template v-else>
               <p>Réinscrivez-vous rapidement en confirmant ou mettant à jour vos coordonnées.</p>
-              <ion-button expand="block" router-link="/tabs/pre-inscription" color="primary" class="ion-margin-top">
+              <ion-button expand="block" router-link="/pre-inscription" color="primary" class="ion-margin-top">
                 Me réinscrire
               </ion-button>
             </template>
@@ -97,11 +120,10 @@
         </ion-card>
 
         <!-- Section Dernières Nouvelles -->
-
         <ion-list lines="full" style="margin: 0;">
           <ion-list-header>
             <ion-label color="primary">Dernières Nouvelles</ion-label>
-            <ion-button fill="clear" router-link="/tabs/news">Actualités</ion-button>
+            <ion-button fill="clear" router-link="/news">Actualités</ion-button>
           </ion-list-header>
 
           <div v-if="isLoadingNews" class="ion-text-center ion-padding">
@@ -153,7 +175,7 @@
         <ion-list lines="full" style="margin: 0;">
           <ion-list-header>
             <ion-label color="primary">Appel à bénévoles</ion-label>
-            <ion-button fill="clear" router-link="/tabs/benevolat">Bénévolat</ion-button>
+            <ion-button fill="clear" router-link="/benevolat">Bénévolat</ion-button>
           </ion-list-header>
 
           <div v-if="benevolatStore.isLoading" class="ion-text-center ion-padding">
@@ -204,9 +226,20 @@ import {
   IonCardContent,
   IonCardHeader,
   IonCardTitle,
+  IonGrid,
+  IonRow,
+  IonCol,
   onIonViewWillEnter
 } from '@ionic/vue';
-import { calendarOutline, handRightOutline, newspaperOutline, personCircleOutline, logOutOutline, peopleOutline } from 'ionicons/icons';
+import {
+  calendarOutline,
+  handRightOutline,
+  newspaperOutline,
+  personCircleOutline,
+  logOutOutline,
+  peopleOutline,
+  trophyOutline
+} from 'ionicons/icons';
 import { ref, computed, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
@@ -309,7 +342,7 @@ watch(() => authStore.isAuthenticated, (newVal) => {
  * Redirige vers le choix de personne
  */
 const goToSelectPerson = () => {
-  router.push('/tabs/select-person');
+  router.push('/select-person');
 };
 
 /**
@@ -333,7 +366,6 @@ const fetchLatestNews = async () => {
   try {
     await newsStore.fetchPosts();
   } catch (err) {
-    // L'erreur est déjà logguée par le store, on ignore ici pour garder le cache à l'écran
     console.warn("Échec refresh news home (serveur coupé ?), utilisation du cache.");
   }
 };
@@ -452,17 +484,17 @@ const isToday = (event: AgendaEvent): boolean => {
   return startDate === todayStr;
 };
 
-const goToNews = (id: number) => router.push(`/tabs/news/${id}`);
-const goToAgenda = (id: number) => router.push(`/tabs/agenda/${id}`);
+const goToNews = (id: number) => router.push(`/news/${id}`);
+const goToAgenda = (id: number) => router.push(`/agenda/${id}`);
 const goToBenevolat = (id: number) => {
   if (authStore.adminMode) {
-    router.push(`/tabs/admin/benevolat/${id}`);
+    router.push(`/admin/benevolat/${id}`);
   } else {
     if (authStore.isAuthenticated) {
-      router.push(`/tabs/benevolat/participation/${id}`);
+      router.push(`/benevolat/participation/${id}`);
     } else {
       router.push({ 
-        path: '/tabs/login', 
+        path: '/login', 
         query: { message: 'Identification requise pour proposer votre aide.' } 
       });
     }
@@ -498,5 +530,57 @@ p {
 
 ion-thumbnail {
   --size: 56px;
+}
+
+/* Styles Accès Rapide */
+.quick-access-section {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 12px 0 12px 12px;
+  color: var(--ion-color-dark);
+}
+
+.quick-card {
+  margin: 4px;
+  --background: var(--ion-card-background, var(--ion-item-background, #fff));
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.quick-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 8px;
+  text-align: center;
+}
+
+.quick-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.news-color {
+  color: var(--ion-color-primary, #3880ff);
+}
+
+.trophy-color {
+  color: var(--ion-color-warning, #f0b500);
+}
+
+.volunteer-color {
+  color: var(--ion-color-secondary, #3dc2ff);
+}
+
+.quick-label {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  white-space: nowrap;
 }
 </style>
