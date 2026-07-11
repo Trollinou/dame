@@ -19,6 +19,9 @@ import TheChessboard from 'eg-chessboard/vue';
 import 'eg-chessboard/style.css';
 import type { ExerciceConfig } from '@/stores/apprentissage';
 import type { BoardCore } from 'eg-chessboard';
+import { useApprentissageStore } from '@/stores/apprentissage';
+
+const store = useApprentissageStore();
 
 const props = defineProps<{
   config: ExerciceConfig;
@@ -50,6 +53,9 @@ const verifierCoup = async (move: any) => {
 
     // Vérifie si l'exercice est terminé
     if (etapeActuelle.value === solution.length) {
+      if (props.config.id) {
+        store.validerExercice(props.config.id);
+      }
       const toast = await toastController.create({
         message: 'Félicitations ! Exercice réussi.',
         duration: 3000,

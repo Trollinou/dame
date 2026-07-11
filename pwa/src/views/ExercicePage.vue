@@ -26,7 +26,7 @@
           <component 
             v-if="getComposantExercice(exerciceActuel.type)"
             :is="getComposantExercice(exerciceActuel.type)" 
-            :config="exerciceActuel.config"
+            :config="{ ...exerciceActuel.config, id: exerciceActuel.id }"
             :key="exerciceActuel.id"
             @success="onSuccess"
           />
