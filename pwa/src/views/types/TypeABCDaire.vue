@@ -24,6 +24,10 @@ const props = defineProps<{
   config: ExerciceConfig;
 }>();
 
+const emit = defineEmits<{
+  (e: 'success'): void;
+}>();
+
 const boardApi = ref<BoardCore | null>(null);
 const etapeActuelle = ref(0);
 
@@ -32,6 +36,11 @@ const onBoardCreated = (api: BoardCore) => {
 };
 
 const verifierCoup = async (move: any) => {
+  const playerColorShort = props.config.couleur_joueur === 'white' ? 'w' : 'b';
+  if (move.color !== playerColorShort) {
+    return;
+  }
+
   const solution = props.config.solution;
   const coupAttendu = solution[etapeActuelle.value];
 
@@ -48,6 +57,7 @@ const verifierCoup = async (move: any) => {
         position: 'bottom'
       });
       await toast.present();
+      emit('success');
     } else {
       // Si l'exercice continue, c'est à l'ordinateur de jouer sa réponse scriptée.
       setTimeout(() => {

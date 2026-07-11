@@ -94,6 +94,9 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 			}
 
 			const data = await response.json();
+			if ( data && data.title && ! data.titre ) {
+				data.titre = data.title;
+			}
 			exerciceActuel.value = data;
 		} catch ( error ) {
 			console.error(
