@@ -27,6 +27,7 @@
             v-if="getComposantExercice(exerciceActuel.type)"
             :is="getComposantExercice(exerciceActuel.type)" 
             :config="{ ...exerciceActuel.config, id: exerciceActuel.id }"
+            :id="exerciceActuel.id"
             :key="exerciceActuel.id"
             @success="onSuccess"
           />
@@ -96,6 +97,7 @@ import { useApprentissageStore } from '@/stores/apprentissage';
 import TypeABCDaire from './types/TypeABCDaire.vue';
 import Type100Commandements from './types/Type100Commandements.vue';
 import TypePopEchecs from './types/TypePopEchecs.vue';
+import TypePartieHeros from './types/TypePartieHeros.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -125,6 +127,9 @@ const getComposantExercice = (type: number) => {
   }
   if (type === 3) {
     return TypeABCDaire;
+  }
+  if (type === 4) {
+    return TypePartieHeros;
   }
   return null;
 };

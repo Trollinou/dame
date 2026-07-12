@@ -3,6 +3,7 @@
 ## [Non publié]
 
 ### Application Mobile (PWA)
+- **Type d'exercice Partie Héros :** Création du composant `TypePartieHeros.vue` (Type 4) permettant de lire et de résoudre un scénario composé d'étapes de visualisation de parties (PGN) avec barre de contrôle de navigation (Début, Précédent, Suivant) et d'étapes de questions à choix multiples (QCM) sur des positions spécifiques avec validation par Toasts.
 - **Progression d'apprentissage :** Implémentation de l'envoi de la progression des exercices terminés avec succès au backend WordPress (requête POST vers `/roi/v1/progression`). Ajout d'un tableau réactif `exercicesValides` dans le store `apprentissage` pour suivre et mettre à jour localement les exercices réussis sans rechargement.
 - **Authentification & Redirection :** Correction du flux de connexion en restaurant l'écran de sélection de profil (`SelectPersonPage.vue`) en dehors de la structure des onglets (Tabs). L'API redirige maintenant vers `/select-person` si plusieurs identités sont détectées, ou directement vers `/tabs/profil` si un seul profil est rattaché au compte.
 - **Profil Utilisateur :** Optimisation de l'affichage de la page de profil pour économiser de l'espace vertical (avatar et marges réduits), permettant aux boutons d'actions d'être visibles sur mobile sans défilement. Intégration d'un bouton de changement de profil dynamique qui s'affiche si le compte dispose de plusieurs identités.

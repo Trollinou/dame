@@ -79,3 +79,14 @@ L'application est accessible à l'adresse : `https://votre-site.com/pwa`.
 -   **Espace de Jeu & Suivi :** Jouez contre l'IA (Stockfish) directement dans l'application avec système d'aide, analyse de partie et blocage de l'annulation en fin de partie. Vos parties terminées sont sauvegardées automatiquement sur votre profil adhérent (avec synchronisation hors-ligne intégrée si la connexion internet est coupée).
 -   **Mode Hors-Ligne :** L'application est installable (PWA) et fonctionne même sans connexion internet pour consulter l'agenda, jouer aux échecs ou mettre en attente la sauvegarde de vos parties.
 -   **Staff :** Mode administration permettant de consulter les fiches membres et les rapports de messages en mobilité.
+
+## 6. Espace Apprentissage & Tactique (Module ROI)
+
+Lorsque le module complémentaire d'apprentissage (ROI) est actif, l'application PWA propose un catalogue d'exercices d'entraînement et de tactique :
+-   **100 Commandements (Type 1) :** Questions à choix multiples portant sur les principes théoriques et stratégiques fondamentaux.
+-   **Pop'Echecs (Type 2) :** Exercices de repérage et de placement où vous devez positionner une pièce sur la case demandée.
+-   **ABCDaire Tactique (Type 3) :** Résolution de tactiques en jouant la bonne séquence de coups contre l'échiquier.
+-   **Partie Héros (Type 4) :** Lecture interactive de parties de maîtres sous forme de scénario composé d'étapes :
+    -   *Étapes PGN* : Lecture et navigation pas à pas (Début, Précédent, Suivant) dans le déroulement d'une partie.
+    -   *Étapes QCM* : Questions à choix multiples basées sur des positions clés pour tester vos choix tactiques ou stratégiques.
+
