@@ -94,6 +94,7 @@ import { ref, computed, watch, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useApprentissageStore } from '@/stores/apprentissage';
 import TypeABCDaire from './types/TypeABCDaire.vue';
+import Type100Commandements from './types/Type100Commandements.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -115,6 +116,9 @@ const prochainExercice = computed(() => {
 });
 
 const getComposantExercice = (type: number) => {
+  if (type === 1) {
+    return Type100Commandements;
+  }
   if (type === 3) {
     return TypeABCDaire;
   }

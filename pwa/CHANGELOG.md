@@ -6,6 +6,8 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Non publié]
 ### Ajouté
+- **Exercice Type 1 — 100 Commandements** : Création du composant `Type100Commandements.vue` (QCM à 3 réponses avec validation par Toast Ionic et enregistrement de la progression via le store Pinia).
+- **Câblage ExercicePage** : Le type `1` est désormais reconnu et routé vers le composant `Type100Commandements` dans la fonction `getComposantExercice()`.
 - **Store Apprentissage** : Ajout du getter de regroupement `exercicesGroupes` qui structure les exercices par niveau et chapitre.
 - **Support des types d'exercices** : Ajout de la traduction pour les types d'exercices 13 à 16 ("Ouvre'boite", "Cap ou pas cap ?", "Jugement final", "Destination finale").
 
