@@ -26,8 +26,10 @@
         </div>
 
         <!-- Comment Display -->
-        <div v-if="currentComment" class="comment-container">
-          <p class="comment-text">💬 {{ currentComment }}</p>
+        <div class="comment-container">
+          <p class="comment-text" :class="{ 'placeholder-text': !currentComment }">
+            {{ currentComment ? '💬 ' + currentComment : 'Aucun commentaire pour cette position.' }}
+          </p>
         </div>
 
         <div class="action-container">
@@ -355,12 +357,19 @@ const validerChoix = async (index: number) => {
   border-left: 4px solid var(--ion-color-primary, #3880ff);
   padding: 12px 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: 72px; /* Hauteur fixe d'environ 3 lignes */
+  overflow-y: auto;
 }
 
 .comment-text {
   margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 0.92rem;
+  line-height: 1.4;
   color: var(--ion-color-step-800, #444);
+}
+
+.placeholder-text {
+  color: var(--ion-color-step-400, #989aa2);
+  font-style: italic;
 }
 </style>
