@@ -27,7 +27,7 @@
 
         <div class="action-container">
           <ion-button expand="block" color="success" class="continue-btn" @click="passerALaSuite">
-            Passer à la suite
+            {{ estDerniereEtape ? 'Terminer le scénario' : 'Passer à la suite' }}
             <ion-icon slot="end" :icon="arrowForwardOutline"></ion-icon>
           </ion-button>
         </div>
@@ -127,6 +127,11 @@ const qcmBoardConfig = {
 };
 
 console.log('[TypePartieHeros] Props received:', { config: props.config, id: props.id });
+
+const estDerniereEtape = computed(() => {
+  if (!props.config || !props.config.etapes) return true;
+  return etapeCouranteIndex.value === props.config.etapes.length - 1;
+});
 
 const etapeActuelle = computed<EtapeBase>(() => {
   if (!props.config || !props.config.etapes) {
