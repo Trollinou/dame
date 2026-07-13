@@ -25,6 +25,11 @@
           </ion-button>
         </div>
 
+        <!-- Comment Display -->
+        <div v-if="currentComment" class="comment-container">
+          <p class="comment-text">💬 {{ currentComment }}</p>
+        </div>
+
         <div class="action-container">
           <ion-button expand="block" color="success" class="continue-btn" @click="passerALaSuite">
             {{ estDerniereEtape ? 'Terminer le scénario' : 'Passer à la suite' }}
@@ -117,6 +122,7 @@ const emit = defineEmits<{
 const store = useApprentissageStore();
 const boardApi = ref<BoardCore | null>(null);
 const etapeCouranteIndex = ref(0);
+const currentComment = ref('');
 
 const pgnBoardConfig = {
   viewOnly: true
@@ -146,6 +152,12 @@ const onBoardCreated = (api: BoardCore) => {
   initEtape(etapeActuelle.value);
 };
 
+const syncComment = () => {
+  if (boardApi.value) {
+    currentComment.value = (boardApi.value as any).state.currentComment || '';
+  }
+};
+
 const initEtape = (etape: EtapeBase) => {
   console.log('[TypePartieHeros] initEtape called with:', etape);
   if (!boardApi.value || !etape) {
@@ -162,9 +174,11 @@ const initEtape = (etape: EtapeBase) => {
     console.log('[TypePartieHeros] Loaded PGN history length:', history.length);
     boardApi.value.viewStart();
     console.log('[TypePartieHeros] Called viewStart()');
+    syncComment();
   } else if (etape.type === 'qcm' && etape.fen) {
     console.log('[TypePartieHeros] Loading QCM FEN:', etape.fen);
     boardApi.value.setPosition(etape.fen);
+    currentComment.value = '';
   }
 };
 
@@ -179,6 +193,7 @@ const viewStart = () => {
   if (boardApi.value) {
     boardApi.value.viewStart();
     console.log('[TypePartieHeros] current history state:', (boardApi.value as any).state.historyViewerState);
+    syncComment();
   }
 };
 
@@ -187,6 +202,7 @@ const viewPrevious = () => {
   if (boardApi.value) {
     boardApi.value.viewPrevious();
     console.log('[TypePartieHeros] current history state:', (boardApi.value as any).state.historyViewerState);
+    syncComment();
   }
 };
 
@@ -195,6 +211,7 @@ const viewNext = () => {
   if (boardApi.value) {
     boardApi.value.viewNext();
     console.log('[TypePartieHeros] current history state:', (boardApi.value as any).state.historyViewerState);
+    syncComment();
   }
 };
 
@@ -328,5 +345,22 @@ const validerChoix = async (index: number) => {
   font-weight: 500;
   --border-radius: 8px;
   min-height: 44px;
+}
+
+.comment-container {
+  width: 100%;
+  margin-top: 12px;
+  background: var(--ion-color-step-100, #f4f5f8);
+  border-radius: 8px;
+  border-left: 4px solid var(--ion-color-primary, #3880ff);
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.comment-text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--ion-color-step-800, #444);
 }
 </style>
