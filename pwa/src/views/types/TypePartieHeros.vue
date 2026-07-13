@@ -377,4 +377,8 @@ const validerChoix = async (index: number) => {
   color: var(--ion-color-step-400, #989aa2);
   font-style: italic;
 }
+
+:deep(.main-wrap.viewingHistory) {
+  filter: none !important;
+}
 </style>
