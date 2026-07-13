@@ -135,13 +135,22 @@ const onBoardCreated = (api: BoardCore) => {
 };
 
 const initEtape = (etape: EtapeBase) => {
-  if (!boardApi.value) return;
+  console.log('[TypePartieHeros] initEtape called with:', etape);
+  if (!boardApi.value) {
+    console.log('[TypePartieHeros] boardApi is not initialized yet');
+    return;
+  }
 
   if (etape.type === 'pgn' && etape.pgn) {
+    console.log('[TypePartieHeros] Loading PGN...');
     boardApi.value.setPosition('start');
     boardApi.value.loadPgn(etape.pgn);
+    const history = boardApi.value.getHistory(true);
+    console.log('[TypePartieHeros] Loaded PGN history length:', history.length);
     boardApi.value.viewStart();
+    console.log('[TypePartieHeros] Called viewStart()');
   } else if (etape.type === 'qcm' && etape.fen) {
+    console.log('[TypePartieHeros] Loading QCM FEN:', etape.fen);
     boardApi.value.setPosition(etape.fen);
   }
 };
@@ -153,15 +162,27 @@ watch(etapeActuelle, (newEtape) => {
 });
 
 const viewStart = () => {
-  boardApi.value?.viewStart();
+  console.log('[TypePartieHeros] viewStart clicked');
+  if (boardApi.value) {
+    boardApi.value.viewStart();
+    console.log('[TypePartieHeros] current history state:', (boardApi.value as any).state.historyViewerState);
+  }
 };
 
 const viewPrevious = () => {
-  boardApi.value?.viewPrevious();
+  console.log('[TypePartieHeros] viewPrevious clicked');
+  if (boardApi.value) {
+    boardApi.value.viewPrevious();
+    console.log('[TypePartieHeros] current history state:', (boardApi.value as any).state.historyViewerState);
+  }
 };
 
 const viewNext = () => {
-  boardApi.value?.viewNext();
+  console.log('[TypePartieHeros] viewNext clicked');
+  if (boardApi.value) {
+    boardApi.value.viewNext();
+    console.log('[TypePartieHeros] current history state:', (boardApi.value as any).state.historyViewerState);
+  }
 };
 
 const passerALaSuite = async () => {
