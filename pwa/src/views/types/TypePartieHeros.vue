@@ -31,13 +31,6 @@
             {{ currentComment ? '💬 ' + currentComment : 'Aucun commentaire pour cette position.' }}
           </p>
         </div>
-
-        <div class="action-container">
-          <ion-button expand="block" color="success" class="continue-btn" @click="passerALaSuite">
-            {{ estDerniereEtape ? 'Terminer le scénario' : 'Passer à la suite' }}
-            <ion-icon slot="end" :icon="arrowForwardOutline"></ion-icon>
-          </ion-button>
-        </div>
       </div>
 
       <!-- Rendu pour le type QCM -->
@@ -208,17 +201,7 @@ const viewPrevious = () => {
   }
 };
 
-const viewNext = () => {
-  console.log('[TypePartieHeros] viewNext clicked');
-  if (boardApi.value) {
-    boardApi.value.viewNext();
-    console.log('[TypePartieHeros] current history state:', (boardApi.value as any).state.historyViewerState);
-    syncComment();
-  }
-};
-
-const passerALaSuite = async () => {
-  if (!props.config || !props.config.etapes) return;
+const transitionToNextStage = async () => {
   if (etapeCouranteIndex.value === props.config.etapes.length - 1) {
     const victoryToast = await toastController.create({
       message: "Félicitations ! Vous avez terminé ce scénario !",
@@ -231,6 +214,37 @@ const passerALaSuite = async () => {
     emit('success');
   } else {
     etapeCouranteIndex.value++;
+  }
+};
+
+const viewNext = () => {
+  console.log('[TypePartieHeros] viewNext clicked');
+  if (boardApi.value) {
+    const historyState = (boardApi.value as any).state.historyViewerState;
+    const historyLength = boardApi.value.getHistory().length;
+
+    // If we are currently at the last move and click next, transition to the next step
+    if (historyState.isEnabled && historyState.plyViewing === historyLength - 1) {
+      console.log('[TypePartieHeros] Clicked next on the last move, transitioning...');
+      transitionToNextStage();
+      return;
+    }
+
+    boardApi.value.viewNext();
+    syncComment();
+
+    // After moving, check if we are now at the last move AND it is the last stage of the whole exercise
+    const newHistoryState = (boardApi.value as any).state.historyViewerState;
+    if (
+      estDerniereEtape.value &&
+      newHistoryState.isEnabled &&
+      newHistoryState.plyViewing === historyLength - 1
+    ) {
+      console.log('[TypePartieHeros] Reached final move of final PGN stage, auto-completing...');
+      setTimeout(() => {
+        transitionToNextStage();
+      }, 1000);
+    }
   }
 };
 
@@ -254,19 +268,10 @@ const validerChoix = async (index: number) => {
     });
     await toast.present();
 
-    if (etapeCouranteIndex.value === props.config.etapes.length - 1) {
-      const victoryToast = await toastController.create({
-        message: "Félicitations ! Vous avez résolu tout le scénario !",
-        duration: 3000,
-        color: 'success',
-        position: 'bottom'
-      });
-      await victoryToast.present();
-      store.validerExercice(props.id);
-      emit('success');
-    } else {
-      etapeCouranteIndex.value++;
-    }
+    // 1 second delay (tempo) to let the user read the success toast
+    setTimeout(() => {
+      transitionToNextStage();
+    }, 1000);
   }
 };
 </script>
