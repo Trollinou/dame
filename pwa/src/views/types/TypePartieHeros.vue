@@ -221,11 +221,10 @@ const viewNext = () => {
   console.log('[TypePartieHeros] viewNext clicked');
   if (boardApi.value) {
     const historyState = (boardApi.value as any).state.historyViewerState;
-    const historyLength = boardApi.value.getHistory().length;
 
-    // If we are currently at the last move and click next, transition to the next step
-    if (historyState.isEnabled && historyState.plyViewing === historyLength - 1) {
-      console.log('[TypePartieHeros] Clicked next on the last move, transitioning...');
+    // If history is disabled (meaning we are at the final live position), transition to next stage
+    if (!historyState.isEnabled) {
+      console.log('[TypePartieHeros] Clicked next on the final position, transitioning...');
       transitionToNextStage();
       return;
     }
@@ -233,17 +232,13 @@ const viewNext = () => {
     boardApi.value.viewNext();
     syncComment();
 
-    // After moving, check if we are now at the last move AND it is the last stage of the whole exercise
+    // After moving, check if we just reached the final live position AND it is the last stage
     const newHistoryState = (boardApi.value as any).state.historyViewerState;
-    if (
-      estDerniereEtape.value &&
-      newHistoryState.isEnabled &&
-      newHistoryState.plyViewing === historyLength - 1
-    ) {
-      console.log('[TypePartieHeros] Reached final move of final PGN stage, auto-completing...');
+    if (estDerniereEtape.value && !newHistoryState.isEnabled) {
+      console.log('[TypePartieHeros] Reached final live position of final PGN stage, auto-completing...');
       setTimeout(() => {
         transitionToNextStage();
-      }, 1000);
+      }, 1200); // 1.2s delay to appreciate the final position
     }
   }
 };
