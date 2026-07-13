@@ -94,6 +94,7 @@ import { useApprentissageStore } from '@/stores/apprentissage';
 interface EtapeBase {
   type: 'pgn' | 'qcm';
   pgn?: string;
+  pgn_data?: string;
   fen?: string;
   question?: string;
   choix?: string[];
@@ -125,8 +126,14 @@ const qcmBoardConfig = {
   viewOnly: true
 };
 
+console.log('[TypePartieHeros] Props received:', { config: props.config, id: props.id });
+
 const etapeActuelle = computed<EtapeBase>(() => {
-  return props.config.etapes[etapeCouranteIndex.value];
+  if (!props.config || !props.config.etapes) {
+    console.warn('[TypePartieHeros] Warning: props.config.etapes is undefined or null');
+    return { type: 'pgn' } as EtapeBase; // Fallback to avoid crash
+  }
+  return props.config.etapes[etapeCouranteIndex.value] || ({ type: 'pgn' } as EtapeBase);
 });
 
 const onBoardCreated = (api: BoardCore) => {
@@ -136,15 +143,16 @@ const onBoardCreated = (api: BoardCore) => {
 
 const initEtape = (etape: EtapeBase) => {
   console.log('[TypePartieHeros] initEtape called with:', etape);
-  if (!boardApi.value) {
-    console.log('[TypePartieHeros] boardApi is not initialized yet');
+  if (!boardApi.value || !etape) {
+    console.log('[TypePartieHeros] boardApi or etape is missing');
     return;
   }
 
-  if (etape.type === 'pgn' && etape.pgn) {
+  const pgnString = etape.pgn_data || etape.pgn;
+  if (etape.type === 'pgn' && pgnString) {
     console.log('[TypePartieHeros] Loading PGN...');
     boardApi.value.setPosition('start');
-    boardApi.value.loadPgn(etape.pgn);
+    boardApi.value.loadPgn(pgnString);
     const history = boardApi.value.getHistory(true);
     console.log('[TypePartieHeros] Loaded PGN history length:', history.length);
     boardApi.value.viewStart();
@@ -186,6 +194,7 @@ const viewNext = () => {
 };
 
 const passerALaSuite = async () => {
+  if (!props.config || !props.config.etapes) return;
   if (etapeCouranteIndex.value === props.config.etapes.length - 1) {
     const victoryToast = await toastController.create({
       message: "Félicitations ! Vous avez terminé ce scénario !",
@@ -202,6 +211,7 @@ const passerALaSuite = async () => {
 };
 
 const validerChoix = async (index: number) => {
+  if (!props.config || !props.config.etapes) return;
   const etape = etapeActuelle.value;
   if (index !== etape.bonne_reponse) {
     const toast = await toastController.create({
