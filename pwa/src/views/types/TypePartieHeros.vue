@@ -118,7 +118,6 @@ const boardApi = ref<BoardCore | null>(null);
 const etapeCouranteIndex = ref(0);
 
 const pgnBoardConfig = {
-  fen: 'start',
   viewOnly: true
 };
 
