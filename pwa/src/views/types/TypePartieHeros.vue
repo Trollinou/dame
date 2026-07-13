@@ -6,7 +6,7 @@
       <div v-if="etapeActuelle.type === 'pgn'" class="pgn-stage-layout">
         <div class="board-container">
           <eg-chessboard
-            :boardConfig="{ fen: 'start', viewOnly: true }"
+            :boardConfig="pgnBoardConfig"
             :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"
             @board-created="onBoardCreated"
           />
@@ -37,7 +37,7 @@
       <div v-else-if="etapeActuelle.type === 'qcm'" class="qcm-stage-layout">
         <div class="board-container">
           <eg-chessboard
-            :boardConfig="{ fen: etapeActuelle.fen, viewOnly: true }"
+            :boardConfig="qcmBoardConfig"
             :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"
             @board-created="onBoardCreated"
           />
@@ -117,6 +117,15 @@ const store = useApprentissageStore();
 const boardApi = ref<BoardCore | null>(null);
 const etapeCouranteIndex = ref(0);
 
+const pgnBoardConfig = {
+  fen: 'start',
+  viewOnly: true
+};
+
+const qcmBoardConfig = {
+  viewOnly: true
+};
+
 const etapeActuelle = computed<EtapeBase>(() => {
   return props.config.etapes[etapeCouranteIndex.value];
 });
@@ -132,6 +141,7 @@ const initEtape = (etape: EtapeBase) => {
   if (etape.type === 'pgn' && etape.pgn) {
     boardApi.value.setPosition('start');
     boardApi.value.loadPgn(etape.pgn);
+    boardApi.value.viewStart();
   } else if (etape.type === 'qcm' && etape.fen) {
     boardApi.value.setPosition(etape.fen);
   }
