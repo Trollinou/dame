@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { toastController, alertController } from '@ionic/vue';
+import { alertController } from '@ionic/vue';
 import { SimpleJwtLogin } from 'simple-jwt-login';
 import { App } from '@capacitor/app';
 import { queryClient } from '../queryClient';
@@ -398,7 +398,7 @@ export const useAuthStore = defineStore(
 				} else {
 					router.push( '/select-person' );
 				}
-			} catch ( error ) {
+			} catch {
 				router.push( '/select-person' );
 			}
 		};

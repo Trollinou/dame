@@ -101,7 +101,6 @@ import {
   IonCheckbox,
   IonButton,
   IonSpinner,
-  IonIcon,
   toastController,
   onIonViewWillEnter
 } from '@ionic/vue';
@@ -109,7 +108,7 @@ import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useBenevolatStore } from '@/stores/benevolat';
 import { useAuthStore } from '@/stores/auth';
-import { checkmarkCircle, alertCircle } from 'ionicons/icons';
+import { alertCircle } from 'ionicons/icons';
 
 const route = useRoute();
 const benevolatStore = useBenevolatStore();

@@ -13,7 +13,7 @@ describe( 'v-safe-html performance optimization', () => {
 		const start = performance.now();
 
 		for ( let i = 0; i < iterations; i++ ) {
-			// @ts-ignore - simulating Vue life cycle
+			// @ts-expect-error - simulating Vue life cycle
 			vSafeHtml.updated!( el, binding as any, null as any, null as any );
 		}
 
@@ -39,7 +39,7 @@ describe( 'v-safe-html performance optimization', () => {
 		const binding = { value: '<b>New</b>', oldValue: '<b>Old</b>' };
 		const sanitizeSpy = vi.spyOn( sanitizeModule, 'sanitizeHtml' );
 
-		// @ts-ignore
+		// @ts-expect-error - simulating Vue life cycle
 		vSafeHtml.updated!( el, binding as any, null as any, null as any );
 
 		expect( sanitizeSpy ).toHaveBeenCalledTimes( 1 );

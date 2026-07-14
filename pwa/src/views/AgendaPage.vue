@@ -300,7 +300,7 @@ import {
   cloudOfflineOutline, 
   handRightOutline 
 } from 'ionicons/icons';
-import { ref, computed, nextTick, watch } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAgendaStore, type AgendaEvent } from '../stores/agenda';
 import { useTournamentStore } from '../stores/tournament';
@@ -433,7 +433,7 @@ const fetchTournaments = async () => {
   tournamentError.value = null;
   try {
     await tournamentStore.fetchMenu();
-  } catch (err: any) {
+  } catch {
     if (!navigator.onLine) {
       tournamentError.value = "Vous êtes hors-ligne. Les informations sur les tournois nécessitent une connexion.";
     } else {

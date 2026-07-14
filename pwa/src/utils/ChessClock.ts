@@ -1,9 +1,3 @@
-declare global {
-	interface Window {
-		// support for custom typings if needed
-	}
-}
-
 export type ClockPreset = 'none' | '1+0' | '3+2' | '5+0' | '10+5' | '15+10';
 
 export class ChessClock {

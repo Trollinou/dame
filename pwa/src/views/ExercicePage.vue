@@ -98,6 +98,8 @@ import TypeABCDaire from './types/TypeABCDaire.vue';
 import Type100Commandements from './types/Type100Commandements.vue';
 import TypePopEchecs from './types/TypePopEchecs.vue';
 import TypePartieHeros from './types/TypePartieHeros.vue';
+import TypePosiPlan from './types/TypePosiPlan.vue';
+import TypeAssociPlan from './types/TypeAssociPlan.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -130,6 +132,12 @@ const getComposantExercice = (type: number) => {
   }
   if (type === 4) {
     return TypePartieHeros;
+  }
+  if (type === 5) {
+    return TypePosiPlan;
+  }
+  if (type === 6) {
+    return TypeAssociPlan;
   }
   return null;
 };

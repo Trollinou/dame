@@ -220,13 +220,9 @@ import {
   onIonViewWillLeave
 } from '@ionic/vue';
 import { 
-  handRightOutline, 
-  playBackOutline, 
-  chevronBackOutline, 
-  chevronForwardOutline, 
-  playForwardOutline 
+  handRightOutline 
 } from 'ionicons/icons';
-import { ref, onMounted, onUnmounted, reactive, computed, watch } from 'vue';
+import { ref, onMounted, onUnmounted, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import TheChessboard from 'eg-chessboard/vue';
 import 'eg-chessboard/style.css';
@@ -342,22 +338,7 @@ const gameSettings = reactive({
   level: 1320
 });
 
-const getEnginePositionCommand = (): string => {
-  if (!boardApi) return 'position startpos';
-  try {
-    const pgn = boardApi.getPgn();
-    if (!pgn) return 'position startpos';
-    const tempGame = new Chess();
-    tempGame.loadPgn(pgn);
-    const moves = tempGame.history({ verbose: true });
-    if (moves.length === 0) return 'position startpos';
-    const movesStr = moves.map(m => m.from + m.to + (m.promotion || '')).join(' ');
-    return `position startpos moves ${movesStr}`;
-  } catch (err) {
-    console.error("Erreur lors de la génération de la commande position UCI, repli sur le FEN :", err);
-    return `position fen ${boardApi.getFen()}`;
-  }
-};
+
 
 const boardConfig = reactive({
   coordinates: true,
@@ -641,7 +622,7 @@ const handleCheck = (color: string) => {
   gameStatus.color = 'warning';
 };
 
-const handleCheckmate = (color: string) => {
+const handleCheckmate = () => {
   if (boardConfig.viewOnly) return;
   gameStatus.message = `🏁 ${getGameOverReason(boardApi)}`;
   gameStatus.color = 'danger';

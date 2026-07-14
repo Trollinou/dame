@@ -274,7 +274,7 @@ watch(() => authStore.isAuthenticated, (newVal) => {
 const fetchLatestNews = async () => {
   try {
     await newsStore.fetchPosts();
-  } catch (err) {
+  } catch {
     console.warn("Échec refresh news home (serveur coupé ?), utilisation du cache.");
   }
 };
