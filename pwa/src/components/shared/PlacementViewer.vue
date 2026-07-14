@@ -27,7 +27,7 @@ import type { BoardCore } from 'eg-chessboard';
 const props = defineProps<{
   consigne?: string;
   fenDepart: string;
-  pieceType: 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | string;
+  pieceType: 'p' | 'r' | 'n' | 'b' | 'q' | 'k';
   pieceColor: 'white' | 'black' | 'w' | 'b' | string;
   caseCible: string;
 }>();
@@ -53,7 +53,10 @@ const verifierPlacement = async (square: string) => {
 
   // 1. Place visuellement la pièce sur la case cliquée
   boardApi.value?.putPiece(
-    { type: props.pieceType as any, color: colorShort as 'w' | 'b' },
+    { 
+      type: props.pieceType as 'p' | 'r' | 'n' | 'b' | 'q' | 'k', 
+      color: colorShort as 'w' | 'b' 
+    },
     square as any
   );
 
