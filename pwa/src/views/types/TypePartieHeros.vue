@@ -4,7 +4,7 @@
       
       <PgnViewer 
         v-if="etapeActuelle.type === 'pgn'"
-        :pgnString="etapeActuelle.pgn_data || etapeActuelle.pgn || ''"
+        :pgnString="etapeActuelle.pgn_data || ''"
         :autoCompleteDelay="estDerniereEtape ? 1200 : 0"
         @finished="transitionToNextStage"
       />
@@ -31,7 +31,6 @@ import QcmViewer from '@/components/shared/QcmViewer.vue';
 
 interface EtapeBase {
   type: 'pgn' | 'qcm';
-  pgn?: string;
   pgn_data?: string;
   fen?: string;
   question?: string;
