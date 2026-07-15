@@ -152,8 +152,13 @@ const routes: Array< RouteRecordRaw > = [
 		meta: { requiresAuth: true },
 	},
 	{
-		path: '/exercice/:id',
-		component: () => import( '../views/ExercicePage.vue' ),
+		path: '/contenu/:id',
+		component: () => import( '../views/ContenuPage.vue' ),
+		meta: { requiresAuth: true, requiresAdherent: true },
+	},
+	{
+		path: '/cours/:id',
+		component: () => import( '../views/CoursPage.vue' ),
 		meta: { requiresAuth: true, requiresAdherent: true },
 	},
 ];

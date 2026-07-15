@@ -16,50 +16,40 @@
 
         <!-- ÉTAT CONNECTÉ ET ADHÉRENT -->
         <div v-if="authStore.isAuthenticated && authStore.isAdherent">
-          <div v-if="apprentissageStore.isLoadingListe" class="ion-text-center ion-padding spinner-container">
+          <div v-if="apprentissageStore.isLoading" class="ion-text-center ion-padding spinner-container">
             <ion-spinner name="crescent"></ion-spinner>
-            <p>Chargement des exercices...</p>
+            <p>Chargement des parcours...</p>
           </div>
 
-          <div v-else-if="apprentissageStore.listeExercices.length === 0" class="ion-text-center ion-padding empty-container">
-            <ion-icon :icon="extensionPuzzleOutline" size="large" color="medium"></ion-icon>
-            <p class="ion-margin-top">Aucun exercice disponible pour le moment.</p>
+          <div v-else-if="apprentissageStore.parcours.length === 0" class="ion-text-center ion-padding empty-container">
+            <ion-icon :icon="schoolOutline" size="large" color="medium"></ion-icon>
+            <p class="ion-margin-top">Aucun cours disponible pour le moment.</p>
           </div>
 
           <div v-else class="list-container">
-            <div v-for="(chapitres, niveau) in apprentissageStore.exercicesGroupes" :key="niveau" class="niveau-section">
-              <h2 class="niveau-title">Niveau {{ niveau }}</h2>
-              <ion-accordion-group>
-                <ion-accordion
-                  v-for="(group, chapitreNom) in chapitres"
-                  :key="chapitreNom"
-                  :value="chapitreNom"
-                  :toggle-icon="chevronDownOutline"
-                >
-                  <ion-item slot="header" :color="group.couleur" class="chapitre-header">
-                    <ion-label class="chapitre-label">{{ chapitreNom }}</ion-label>
-                  </ion-item>
-                  <div slot="content" class="chapitre-content">
-                    <ion-list lines="none">
-                      <ion-item
-                        v-for="exercice in group.exercices"
-                        :key="exercice.id"
-                        button
-                        :detail="true"
-                        :router-link="`/exercice/${exercice.id}`"
-                        class="exercise-item"
-                      >
-                        <ion-icon slot="start" :icon="extensionPuzzleOutline" color="primary"></ion-icon>
-                        <ion-label>
-                          <h2>{{ exercice.titre || 'Exercice sans titre' }}</h2>
-                          <p>{{ getNomTypeExercice(exercice.type) }}</p>
-                        </ion-label>
-                      </ion-item>
-                    </ion-list>
+            <ion-card
+              v-for="(cours, index) in apprentissageStore.parcours"
+              :key="cours.id"
+              :color="cours.chapitre_couleur"
+              :class="{ 'locked': !apprentissageStore.isCoursUnlocked(index) }"
+              :button="apprentissageStore.isCoursUnlocked(index)"
+              :router-link="apprentissageStore.isCoursUnlocked(index) ? `/cours/${cours.id}` : undefined"
+              class="cours-card"
+            >
+              <ion-card-header>
+                <div class="cours-header-wrapper">
+                  <div>
+                    <ion-card-subtitle>Niveau {{ cours.niveau }} — {{ cours.chapitre_nom }}</ion-card-subtitle>
+                    <ion-card-title>{{ cours.titre }}</ion-card-title>
                   </div>
-                </ion-accordion>
-              </ion-accordion-group>
-            </div>
+                  <ion-icon
+                    v-if="!apprentissageStore.isCoursUnlocked(index)"
+                    :icon="lockClosedOutline"
+                    class="lock-icon"
+                  ></ion-icon>
+                </div>
+              </ion-card-header>
+            </ion-card>
           </div>
         </div>
 
@@ -124,55 +114,34 @@ import {
   IonTitle,
   IonContent,
   IonSpinner,
-  IonList,
-  IonItem,
-  IonLabel,
   IonIcon,
-  IonAccordion,
-  IonAccordionGroup,
-  IonButton
+  IonButton,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle
 } from '@ionic/vue';
 import { onMounted, watch } from 'vue';
 import { useApprentissageStore } from '@/stores/apprentissage';
 import { useAuthStore } from '@/stores/auth';
 import {
-  extensionPuzzleOutline,
-  chevronDownOutline,
   schoolOutline,
   checkmarkCircleOutline,
   logInOutline,
   shieldOutline,
-  personOutline
+  personOutline,
+  lockClosedOutline
 } from 'ionicons/icons';
 
 const authStore = useAuthStore();
 const apprentissageStore = useApprentissageStore();
 
-const getNomTypeExercice = ( type: number ): string => {
-	const types: Record< number, string > = {
-		1: "100 Commandements",
-		2: "Pop'Echecs",
-		3: "ABCDaire Tactique",
-		4: "La Partie dont tu es le Héros",
-		5: "Posi'Plan",
-		6: "Associ'Plan",
-		7: "Marche du Héros",
-		8: "Vision'checs",
-		9: "Parcours",
-		10: "Echec'éval",
-		11: "Class'échecs",
-		12: "Qui-suis-je ?",
-		13: "Ouvre'boite",
-		14: "Cap ou pas cap ?",
-		15: "Jugement final",
-		16: "Destination finale",
-	};
-	return types[ type ] || "Exercice standard";
-};
-
 const loadData = async () => {
   if (authStore.isAuthenticated && authStore.isAdherent) {
-    await apprentissageStore.fetchListeExercices();
+    await Promise.all([
+      apprentissageStore.fetchParcours(),
+      apprentissageStore.fetchProgression()
+    ]);
   }
 };
 
@@ -206,46 +175,25 @@ onMounted(async () => {
   padding-top: 10px;
 }
 
-.niveau-section {
-  margin-bottom: 24px;
+.cours-card {
+  margin-bottom: 16px;
 }
 
-.niveau-title {
-  font-size: 1.4rem;
-  font-weight: 800;
-  margin-top: 20px;
-  margin-bottom: 12px;
-  color: var(--ion-color-dark);
-  padding-left: 4px;
+.cours-card.locked {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
-.chapitre-header {
-  --font-weight: bold;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 4px;
+.cours-header-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.chapitre-label {
-  font-weight: bold;
-}
-
-.chapitre-content {
-  padding: 8px;
-  background: var(--ion-background-color);
-}
-
-.exercise-item {
-  --background: var(--ion-color-light);
-  --border-radius: 12px;
-  margin-bottom: 12px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --inner-padding-end: 0;
-}
-
-.exercise-item h2 {
-  font-weight: bold;
+.lock-icon {
+  font-size: 24px;
+  color: var(--ion-color-medium);
 }
 
 /* Styles Empty State */

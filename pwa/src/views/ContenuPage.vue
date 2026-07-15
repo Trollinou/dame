@@ -3,9 +3,9 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/apprentissage"></ion-back-button>
+          <ion-back-button :default-href="coursParentInfo ? `/cours/${coursParentInfo.cours.id}` : '/tabs/apprentissage'"></ion-back-button>
         </ion-buttons>
-        <ion-title>{{ exerciceActuel?.titre || 'Exercice' }}</ion-title>
+        <ion-title>{{ contenuActuel?.titre || 'Contenu' }}</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -13,53 +13,80 @@
       <div class="safe-area-wrapper">
         <ion-header collapse="condense">
           <ion-toolbar>
-            <ion-title size="large">{{ exerciceActuel?.titre || 'Exercice' }}</ion-title>
+            <ion-title size="large">{{ contenuActuel?.titre || 'Contenu' }}</ion-title>
           </ion-toolbar>
         </ion-header>
 
         <div v-if="isLoading" class="ion-text-center ion-padding spinner-container">
           <ion-spinner name="crescent"></ion-spinner>
-          <p>Chargement de l'exercice...</p>
+          <p>Chargement du contenu...</p>
         </div>
 
-        <div v-else-if="exerciceActuel" class="exercice-container">
-          <component 
-            v-if="getComposantExercice(exerciceActuel.type)"
-            :is="getComposantExercice(exerciceActuel.type)" 
-            :config="{ ...exerciceActuel.config, id: exerciceActuel.id }"
-            :id="exerciceActuel.id"
-            :key="exerciceActuel.id"
-            @success="onSuccess"
-          />
-          <div v-else class="ion-text-center ion-padding error-container">
-            <p>Type d'exercice non supporté (Type {{ exerciceActuel.type }}).</p>
+        <div v-else-if="contenuActuel" class="exercice-container">
+          <!-- Rendu d'une leçon -->
+          <div v-if="contenuActuel.post_type === 'roi_lecon'" class="lecon-wrapper">
+            <div class="lecon-content ion-padding" v-html="contenuActuel.contenu_html"></div>
+            
+            <div v-if="!estReussi" class="ion-padding ion-text-center">
+              <ion-button expand="block" size="large" color="success" @click="terminerLecon">
+                J'ai compris / Terminer la leçon
+              </ion-button>
+            </div>
+          </div>
+
+          <!-- Rendu d'un exercice -->
+          <div v-else-if="contenuActuel.post_type === 'roi_exercice'">
+            <component 
+              v-if="contenuActuel.type !== undefined && getComposantExercice(contenuActuel.type)"
+              :is="getComposantExercice(contenuActuel.type)" 
+              :config="{ ...contenuActuel.config, id: contenuActuel.id }"
+              :id="contenuActuel.id"
+              :key="contenuActuel.id"
+              @success="onSuccess"
+            />
+            <div v-else class="ion-text-center ion-padding error-container">
+              <p>Type d'exercice non supporté (Type {{ contenuActuel.type }}).</p>
+            </div>
           </div>
 
           <!-- Success Card -->
           <transition name="fade">
             <ion-card v-if="estReussi" class="success-card ion-margin-top">
               <ion-card-header>
-                <ion-card-title class="success-title">🎉 Exercice réussi !</ion-card-title>
+                <ion-card-title class="success-title">
+                  {{ contenuActuel.post_type === 'roi_lecon' ? '🎉 Leçon terminée !' : '🎉 Exercice réussi !' }}
+                </ion-card-title>
               </ion-card-header>
               <ion-card-content>
-                <p class="success-subtitle">Félicitations, vous avez trouvé la bonne séquence de coups.</p>
+                <p class="success-subtitle">
+                  {{ contenuActuel.post_type === 'roi_lecon' ? 'Vous avez validé cette leçon avec succès.' : 'Félicitations, vous avez trouvé la bonne séquence de coups.' }}
+                </p>
                 <div class="action-buttons ion-margin-top">
                   <ion-button 
-                    v-if="prochainExercice" 
+                    v-if="prochainElement" 
                     expand="block" 
                     color="success" 
                     class="next-btn"
                     @click="allerAuSuivant"
                   >
-                    Exercice suivant : {{ prochainExercice.titre }}
+                    {{ prochainElement.type === 'roi_lecon' ? 'Leçon suivante' : 'Exercice suivant' }}
                   </ion-button>
                   <ion-button 
+                    v-else
+                    expand="block" 
+                    color="success" 
+                    router-link="/tabs/apprentissage"
+                  >
+                    Terminer le cours
+                  </ion-button>
+                  <ion-button 
+                    v-if="coursParentInfo"
                     expand="block" 
                     fill="outline" 
                     color="medium" 
-                    router-link="/tabs/apprentissage"
+                    :router-link="`/cours/${coursParentInfo.cours.id}`"
                   >
-                    Retour aux exercices
+                    Retour au cours
                   </ion-button>
                 </div>
               </ion-card-content>
@@ -68,7 +95,7 @@
         </div>
 
         <div v-else class="ion-text-center ion-padding error-container">
-          <p>Impossible de charger cet exercice.</p>
+          <p>Impossible de charger ce contenu.</p>
         </div>
       </div>
     </ion-content>
@@ -107,15 +134,27 @@ const apprentissageStore = useApprentissageStore();
 const isLoading = ref(true);
 const estReussi = ref(false);
 
-const exerciceActuel = computed(() => apprentissageStore.exerciceActuel);
+const contenuActuel = computed(() => apprentissageStore.contenuActuel);
 
-const prochainExercice = computed(() => {
-  if (!exerciceActuel.value || apprentissageStore.listeExercices.length === 0) {
+const coursParentInfo = computed(() => {
+  if (!contenuActuel.value || apprentissageStore.parcours.length === 0) {
     return null;
   }
-  const currentIndex = apprentissageStore.listeExercices.findIndex(ex => ex.id === exerciceActuel.value?.id);
-  if (currentIndex !== -1 && currentIndex < apprentissageStore.listeExercices.length - 1) {
-    return apprentissageStore.listeExercices[currentIndex + 1];
+  for (const cours of apprentissageStore.parcours) {
+    const idx = cours.playlist.findIndex(item => item.id === contenuActuel.value?.id);
+    if (idx !== -1) {
+      return { cours, idx };
+    }
+  }
+  return null;
+});
+
+const prochainElement = computed(() => {
+  const info = coursParentInfo.value;
+  if (!info) return null;
+  const { cours, idx } = info;
+  if (idx < cours.playlist.length - 1) {
+    return cours.playlist[idx + 1];
   }
   return null;
 });
@@ -142,24 +181,40 @@ const getComposantExercice = (type: number) => {
   return null;
 };
 
-const onSuccess = () => {
+const onSuccess = async () => {
+  if (contenuActuel.value) {
+    await apprentissageStore.validerElement(contenuActuel.value.id);
+  }
+  estReussi.value = true;
+};
+
+const terminerLecon = async () => {
+  if (contenuActuel.value) {
+    await apprentissageStore.validerElement(contenuActuel.value.id);
+  }
   estReussi.value = true;
 };
 
 const allerAuSuivant = () => {
-  if (prochainExercice.value) {
-    router.push(`/exercice/${prochainExercice.value.id}`);
+  if (prochainElement.value) {
+    router.push(`/contenu/${prochainElement.value.id}`);
   }
 };
 
-const loadExercice = async (idVal: any) => {
+const loadContenu = async (idVal: any) => {
   isLoading.value = true;
   estReussi.value = false;
   const id = parseInt(Array.isArray(idVal) ? idVal[0] : idVal, 10);
   if (!isNaN(id)) {
-    await apprentissageStore.fetchExercice(id);
-    if (apprentissageStore.listeExercices.length === 0) {
-      await apprentissageStore.fetchListeExercices();
+    await apprentissageStore.fetchContenu(id);
+    if (apprentissageStore.parcours.length === 0) {
+      await apprentissageStore.fetchParcours();
+    }
+    if (apprentissageStore.elementsValides.length === 0) {
+      await apprentissageStore.fetchProgression();
+    }
+    if (apprentissageStore.elementsValides.includes(id)) {
+      estReussi.value = true;
     }
   }
   isLoading.value = false;
@@ -169,19 +224,19 @@ watch(
   () => route.params.id,
   async (newId) => {
     if (newId) {
-      await loadExercice(newId);
+      await loadContenu(newId);
     }
   },
   { immediate: true }
 );
 
 watch(
-  () => exerciceActuel.value,
-  (newEx) => {
-    if (newEx?.titre) {
-      document.title = newEx.titre;
+  () => contenuActuel.value,
+  (newContenu) => {
+    if (newContenu?.titre) {
+      document.title = newContenu.titre;
     } else {
-      document.title = 'Exercice';
+      document.title = 'Contenu';
     }
   },
   { immediate: true }
@@ -238,6 +293,13 @@ onUnmounted(() => {
 
 .next-btn {
   font-weight: 600;
+}
+
+.lecon-content {
+  background: var(--ion-card-background, var(--ion-item-background, #fff));
+  border-radius: 8px;
+  line-height: 1.6;
+  font-size: 1.1rem;
 }
 
 /* Transistions */
