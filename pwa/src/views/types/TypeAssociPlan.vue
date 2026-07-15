@@ -120,7 +120,7 @@ const resumeDescription = (desc: string): string => {
 };
 
 const terminerExercice = () => {
-  store.validerExercice(props.id);
+  store.validerElement(props.id);
   emit('success');
 };
 </script>

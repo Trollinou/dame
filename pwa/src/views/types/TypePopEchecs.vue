@@ -38,7 +38,7 @@ const store = useApprentissageStore();
 const gererSucces = () => {
   // Enregistrement de la progression
   if (props.id) {
-    store.validerExercice(props.id);
+    store.validerElement(props.id);
   }
   
   emit('success');

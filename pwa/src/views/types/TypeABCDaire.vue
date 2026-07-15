@@ -13,10 +13,15 @@
 <script setup lang="ts">
 import PuzzleViewer from '@/components/shared/PuzzleViewer.vue';
 import { useApprentissageStore } from '@/stores/apprentissage';
-import type { ExerciceConfig } from '@/stores/apprentissage';
+interface ConfigABCDaire {
+  fen: string;
+  solution: string[];
+  couleur_joueur: 'white' | 'black';
+  id?: number;
+}
 
 const props = defineProps<{
-  config: ExerciceConfig;
+  config: ConfigABCDaire;
 }>();
 
 const emit = defineEmits<{
@@ -28,7 +33,7 @@ const store = useApprentissageStore();
 const gererSucces = () => {
   // Enregistrer la progression globale de cet exercice
   if (props.config.id) {
-    store.validerExercice(props.config.id);
+    store.validerElement(props.config.id);
   }
   
   // Remonter l'événement au composant parent (ExercicePage)

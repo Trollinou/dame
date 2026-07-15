@@ -29,12 +29,6 @@ export interface Cours {
 	playlist: PlaylistItem[];
 }
 
-export interface ExerciceConfig {
-	fen: string;
-	solution: string[];
-	couleur_joueur: 'white' | 'black';
-	id?: number;
-}
 
 export const useApprentissageStore = defineStore( 'apprentissage', () => {
 	const authStore = useAuthStore();
@@ -260,7 +254,6 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 		elementsValides.value = [];
 		isLoading.value = false;
 	};
-	const validerExercice = validerElement;
 
 	return {
 		parcours,
@@ -273,7 +266,6 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 		fetchProgression,
 		fetchContenu,
 		validerElement,
-		validerExercice,
 		clearData,
 	};
 } );

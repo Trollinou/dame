@@ -44,7 +44,7 @@ const emit = defineEmits<{
 const store = useApprentissageStore();
 
 const onSuccess = () => {
-  store.validerExercice(props.id);
+  store.validerElement(props.id);
   emit('success');
 };
 </script>

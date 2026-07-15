@@ -75,7 +75,7 @@ const transitionToNextStage = async () => {
       position: 'bottom'
     });
     await victoryToast.present();
-    store.validerExercice(props.id);
+    store.validerElement(props.id);
     emit('success');
   } else {
     etapeCouranteIndex.value++;

@@ -33,7 +33,7 @@ const store = useApprentissageStore();
 const gererSucces = () => {
   // Enregistrer la progression via le store
   if (props.config.id) {
-    store.validerExercice(props.config.id);
+    store.validerElement(props.config.id);
   }
   
   emit('success');
