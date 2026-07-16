@@ -2,7 +2,7 @@
   <div class="puzzle-viewer-layout">
     <div class="board-container">
       <TheChessboard 
-        :boardConfig="{ fen: fen }"
+        :boardConfig="{ fen: fen, drawable: { shapes: shapes } }"
         :playerColor="couleurJoueur"
         :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"
         @board-created="onBoardCreated"
@@ -13,17 +13,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { toastController } from '@ionic/vue';
 import { default as TheChessboard } from 'eg-chessboard/vue';
 import 'eg-chessboard/style.css';
 import type { BoardCore } from 'eg-chessboard';
 
-const props = defineProps<{
-  fen: string;
-  couleurJoueur: 'white' | 'black';
-  solution: string[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    fen: string;
+    couleurJoueur: 'white' | 'black';
+    solution: string[];
+    shapes?: any[];
+  }>(),
+  {
+    shapes: () => []
+  }
+);
 
 const emit = defineEmits<{
   (e: 'success'): void;
@@ -35,6 +41,12 @@ const etapeActuelle = ref(0);
 const onBoardCreated = (api: BoardCore) => {
   boardApi.value = api;
 };
+
+watch(() => props.shapes, (newShapes) => {
+  if (boardApi.value && newShapes) {
+    boardApi.value.setShapes(newShapes);
+  }
+}, { deep: true });
 
 const verifierCoup = async (move: any) => {
   const playerColorShort = props.couleurJoueur === 'white' ? 'w' : 'b';

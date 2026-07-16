@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import {
   IonCard,
   IonCardHeader,
@@ -47,19 +47,28 @@ import {
 import EgChessboard from 'eg-chessboard/vue';
 import type { BoardCore } from 'eg-chessboard';
 
-const props = defineProps<{
-  fen?: string; // Rendue optionnelle
-  question: string;
-  choix: string[];
-  bonneReponse: number;
-}>();
+const props = withDefaults(
+  defineProps<{
+    fen?: string; // Rendue optionnelle
+    question: string;
+    choix: string[];
+    bonneReponse: number;
+    shapes?: any[];
+  }>(),
+  {
+    shapes: () => []
+  }
+);
 
 const emit = defineEmits<{
   (e: 'success'): void;
 }>();
 
 const boardApi = ref<BoardCore | null>(null);
-const qcmBoardConfig = { viewOnly: true };
+const qcmBoardConfig = computed(() => ({
+  viewOnly: true,
+  drawable: { shapes: props.shapes }
+}));
 
 const repondu = ref(false);
 const indexChoisi = ref<number | null>(null);
@@ -76,6 +85,12 @@ watch(() => props.fen, (newFen) => {
     boardApi.value.setPosition(newFen);
   }
 });
+
+watch(() => props.shapes, (newShapes) => {
+  if (boardApi.value && newShapes) {
+    boardApi.value.setShapes(newShapes);
+  }
+}, { deep: true });
 
 // Logique visuelle importée de l'ancien composant
 const couleurBouton = (index: number): string => {

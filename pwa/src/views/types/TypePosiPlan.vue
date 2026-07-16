@@ -4,6 +4,7 @@
       :fenDepart="config.fen_depart"
       :couleurJoueur="config.couleur_joueur"
       :etapes="config.etapes"
+      :shapes="config.shapes"
       @success="onSuccess"
     />
   </div>
@@ -30,6 +31,7 @@ interface ConfigPosiPlan {
   fen_depart: string;
   couleur_joueur: 'white' | 'black';
   etapes: Etape[];
+  shapes?: any[];
 }
 
 const props = defineProps<{

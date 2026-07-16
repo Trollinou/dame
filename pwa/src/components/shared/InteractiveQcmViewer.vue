@@ -64,11 +64,17 @@ interface Etape {
   reponse_ordinateur?: string;
 }
 
-const props = defineProps<{
-  fenDepart: string;
-  couleurJoueur: 'white' | 'black';
-  etapes: Etape[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    fenDepart: string;
+    couleurJoueur: 'white' | 'black';
+    etapes: Etape[];
+    shapes?: any[];
+  }>(),
+  {
+    shapes: () => []
+  }
+);
 
 const emit = defineEmits<{
   (e: 'success'): void;
@@ -81,7 +87,8 @@ const indexChoisi = ref<number | null>(null);
 
 const boardConfig = computed(() => ({
   fen: props.fenDepart,
-  viewOnly: true
+  viewOnly: true,
+  drawable: { shapes: props.shapes }
 }));
 
 const etapeActuelle = computed<Etape>(() => {
@@ -95,6 +102,12 @@ const etapeActuelle = computed<Etape>(() => {
 const onBoardCreated = (api: BoardCore) => {
   boardApi.value = api;
 };
+
+watch(() => props.shapes, (newShapes) => {
+  if (boardApi.value && newShapes) {
+    boardApi.value.setShapes(newShapes);
+  }
+}, { deep: true });
 
 // Réinitialiser en cas de changement de la FEN de départ
 watch(() => props.fenDepart, (newFen) => {

@@ -4,6 +4,7 @@
       :question="config.question"
       :choix="config.reponses"
       :bonneReponse="config.bonne_reponse"
+      :shapes="config.shapes"
       @success="gererSucces"
     />
   </div>
@@ -18,6 +19,7 @@ interface Config100Commandements {
   reponses: string[];
   bonne_reponse: number;
   id?: number;
+  shapes?: any[];
 }
 
 const props = defineProps<{

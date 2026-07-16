@@ -3,6 +3,11 @@ import { ref, computed } from 'vue';
 import { useAuthStore } from './auth';
 import { safeFetch } from '@/utils/safeFetch';
 
+export interface ExerciceConfig {
+	shapes?: any[];
+	[key: string]: any;
+}
+
 export interface Contenu {
 	id: number;
 	titre: string;
@@ -11,7 +16,7 @@ export interface Contenu {
 	chapitre_couleur: string;
 	niveau: number;
 	type?: number;
-	config?: any;
+	config?: ExerciceConfig;
 	contenu_html?: string;
 }
 

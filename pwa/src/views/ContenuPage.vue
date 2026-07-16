@@ -25,13 +25,10 @@
         <div v-else-if="contenuActuel" class="exercice-container">
           <!-- Rendu d'une leçon -->
           <div v-if="contenuActuel.post_type === 'roi_lecon'" class="lecon-wrapper">
-            <div class="lecon-content ion-padding" v-html="contenuActuel.contenu_html"></div>
-            
-            <div v-if="!estReussi" class="ion-padding ion-text-center">
-              <ion-button expand="block" size="large" color="success" @click="terminerLecon">
-                J'ai compris / Terminer la leçon
-              </ion-button>
-            </div>
+            <LeconReader :contenuHtml="contenuActuel.contenu_html || ''" class="lecon-content ion-padding" />
+            <ion-button v-if="!estReussi" expand="block" class="ion-margin-top" @click="validerLecon">
+              J'ai compris, terminer la leçon
+            </ion-button>
           </div>
 
           <!-- Rendu d'un exercice -->
@@ -39,7 +36,7 @@
             <component 
               v-if="contenuActuel.type !== undefined && getComposantExercice(contenuActuel.type)"
               :is="getComposantExercice(contenuActuel.type)" 
-              :config="{ ...contenuActuel.config, id: contenuActuel.id }"
+              :config="({ ...contenuActuel.config, id: contenuActuel.id } as any)"
               :id="contenuActuel.id"
               :key="contenuActuel.id"
               @success="onSuccess"
@@ -127,6 +124,7 @@ import TypePopEchecs from './types/TypePopEchecs.vue';
 import TypePartieHeros from './types/TypePartieHeros.vue';
 import TypePosiPlan from './types/TypePosiPlan.vue';
 import TypeAssociPlan from './types/TypeAssociPlan.vue';
+import LeconReader from '@/components/apprentissage/LeconReader.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -188,7 +186,7 @@ const onSuccess = async () => {
   estReussi.value = true;
 };
 
-const terminerLecon = async () => {
+const validerLecon = async () => {
   if (contenuActuel.value) {
     await apprentissageStore.validerElement(contenuActuel.value.id);
   }

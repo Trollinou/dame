@@ -5,6 +5,7 @@
       :fen="config.fen"
       :couleurJoueur="config.couleur_joueur || 'white'"
       :solution="config.solution"
+      :shapes="config.shapes"
       @success="gererSucces"
     />
   </div>
@@ -18,6 +19,7 @@ interface ConfigABCDaire {
   solution: string[];
   couleur_joueur: 'white' | 'black';
   id?: number;
+  shapes?: any[];
 }
 
 const props = defineProps<{

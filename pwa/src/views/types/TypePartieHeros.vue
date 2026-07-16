@@ -15,6 +15,7 @@
         :question="etapeActuelle.question || ''"
         :choix="etapeActuelle.choix || []"
         :bonneReponse="etapeActuelle.bonne_reponse || 0"
+        :shapes="etapeActuelle.shapes"
         @success="transitionToNextStage"
       />
 
@@ -36,6 +37,7 @@ interface EtapeBase {
   question?: string;
   choix?: string[];
   bonne_reponse?: number;
+  shapes?: any[];
 }
 
 interface ConfigPartieHeros {
