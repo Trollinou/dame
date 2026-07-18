@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { BoardCore, type BoardCoreState } from 'eg-chessboard';
 import 'eg-chessboard/style.css';
 
@@ -51,8 +51,18 @@ onMounted(() => {
         }
       }
     );
+
+    if (props.shapes && props.shapes.length > 0) {
+      boardCoreInstance.value.setShapes(props.shapes);
+    }
   }
 });
+
+watch(() => props.shapes, (newShapes) => {
+  if (boardCoreInstance.value && newShapes) {
+    boardCoreInstance.value.setShapes(newShapes);
+  }
+}, { deep: true });
 
 onBeforeUnmount(() => {
   if (boardCoreInstance.value) {
