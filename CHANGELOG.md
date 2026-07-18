@@ -23,6 +23,16 @@
   - Correction du surlignement de l'onglet actif pour les sous-pages et fiches de détails.
   - Synchronisation et réinitialisation de la pile de navigation de l'outlet lors des transitions entre l'espace public et l'administration pour éviter les conflits d'affichage.
 
+## [4.7.5] - 2026-07-03
+
+### Plugin WordPress (Backend)
+- **E-mails d'anniversaire (Transition de saison) :** Alignement du moteur d'envoi d'e-mails (`send_wishes()`) sur la même logique de filtrage des saisons d'adhésion (`get_filtered_season_ids()`) lors de la période de transition (du 1er juillet au 31 octobre).
+
+## [4.7.4] - 2026-07-03
+
+### Plugin WordPress (Backend)
+- **Anniversaires (Transition de saison) :** Prise en compte de la période de transition de saison d'adhésion (du 1er juillet au 30 octobre inclus) afin de remonter et combiner les anniversaires des membres des saisons `Saison XXXX-1/XXXX` et `Saison XXXX/XXXX+1` tout en assurant leur déduplication s'ils sont inscrits dans les deux.
+
 ## [4.7.3] - 2026-06-30
 
 ### Plugin WordPress (Backend)
