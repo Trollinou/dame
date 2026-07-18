@@ -18,10 +18,10 @@
 				.register( damePwaInstaller.swUrl, {
 					scope: damePwaInstaller.pwaScope,
 				} )
-				.then( function ( registration ) {
+				.then( function () {
 					// Registration successful
 				} )
-				.catch( function ( error ) {
+				.catch( function () {
 					// Registration failed
 				} );
 		} );
@@ -148,7 +148,7 @@
 			installBtn.addEventListener( 'click', async () => {
 				if ( deferredPrompt ) {
 					deferredPrompt.prompt();
-					const { outcome } = await deferredPrompt.userChoice;
+					await deferredPrompt.userChoice;
 					deferredPrompt = null;
 					dismissBanner();
 				}

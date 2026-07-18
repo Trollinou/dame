@@ -1,6 +1,6 @@
 # Changelog
 
-## [Non publié]
+## [4.8.0] - 2026-07-18
 
 ### Application Mobile (PWA)
 - **Apprentissage (Restriction & Isolation par Identité) :**
