@@ -92,7 +92,8 @@ const adminPages = [
 
 const goToPublic = () => {
   authStore.adminMode = false;
-  router.push('/tabs/home');
+  window.location.hash = '/tabs/home';
+  window.location.reload();
 };
 
 onIonViewWillEnter(() => {
