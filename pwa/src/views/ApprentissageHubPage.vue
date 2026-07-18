@@ -180,9 +180,13 @@ onMounted(async () => {
 }
 
 .cours-card.locked {
-  opacity: 0.5;
+  opacity: 0.75;
   pointer-events: none;
   cursor: not-allowed;
+}
+
+.cours-card.locked ion-card-header {
+  opacity: 0.6;
 }
 
 .cours-header-wrapper {
