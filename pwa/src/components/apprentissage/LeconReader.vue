@@ -76,5 +76,7 @@ onBeforeUnmount(() => {
 .roi-bloc-fen, .roi-bloc-pgn {
   margin: 16px auto;
   display: block;
+  max-width: 400px;
+  width: 100%;
 }
 </style>
