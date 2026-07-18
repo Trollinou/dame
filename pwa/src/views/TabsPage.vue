@@ -13,7 +13,7 @@
           <ion-label>Le Club</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="apprentissage" href="/tabs/apprentissage">
+        <ion-tab-button v-if="authStore.canAccessApprentissage" tab="apprentissage" href="/tabs/apprentissage">
           <ion-icon :icon="schoolOutline" />
           <ion-label>Apprentissage</ion-label>
         </ion-tab-button>
@@ -28,6 +28,8 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/auth';
+const authStore = useAuthStore();
 import {
   IonPage,
   IonTabs,

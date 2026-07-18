@@ -3,6 +3,11 @@
 ## [Non publié]
 
 ### Application Mobile (PWA)
+- **Apprentissage (Restriction & Isolation par Identité) :**
+  - Restructuration de l'accès au module Apprentissage basé sur le rôle de l'utilisateur connecté via un appel découplé à `/roi/v1/config` (Option A).
+  - Envoi automatique du header HTTP `X-Selected-Identity` dans toutes les requêtes d'Apprentissage (parcours, progression, contenu, validation) pour isoler les progressions de chaque membre ou parent au sein d'un même compte.
+  - Masquage dynamique de l'onglet et restriction d'accès aux URLs d'apprentissage dans le routeur via un garde de navigation (`beforeEach`).
+  - Correction de l'affichage du Hub d'apprentissage pour les testeurs / administrateurs autorisés (remplacement de la vérification stricte `isAdherent` par `canAccessApprentissage`).
 - **Type d'exercice Partie Héros :** Création du composant `TypePartieHeros.vue` (Type 4) permettant de lire et de résoudre un scénario composé d'étapes de visualisation de parties (PGN) avec barre de contrôle de navigation (Début, Précédent, Suivant) et d'étapes de questions à choix multiples (QCM) sur des positions spécifiques avec validation par Toasts.
 - **Progression d'apprentissage :** Implémentation de l'envoi de la progression des exercices terminés avec succès au backend WordPress (requête POST vers `/roi/v1/progression`). Ajout d'un tableau réactif `exercicesValides` dans le store `apprentissage` pour suivre et mettre à jour localement les exercices réussis sans rechargement.
 - **Authentification & Redirection :** Correction du flux de connexion en restaurant l'écran de sélection de profil (`SelectPersonPage.vue`) en dehors de la structure des onglets (Tabs). L'API redirige maintenant vers `/select-person` si plusieurs identités sont détectées, ou directement vers `/tabs/profil` si un seul profil est rattaché au compte.

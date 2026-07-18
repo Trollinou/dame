@@ -45,6 +45,7 @@ const routes: Array< RouteRecordRaw > = [
 			{
 				path: 'apprentissage',
 				component: () => import( '../views/ApprentissageHubPage.vue' ),
+				meta: { requiresAuth: true, requiresApprentissageAccess: true },
 			},
 			{
 				path: 'profil',
@@ -154,12 +155,12 @@ const routes: Array< RouteRecordRaw > = [
 	{
 		path: '/contenu/:id',
 		component: () => import( '../views/ContenuPage.vue' ),
-		meta: { requiresAuth: true, requiresAdherent: true },
+		meta: { requiresAuth: true, requiresApprentissageAccess: true },
 	},
 	{
 		path: '/cours/:id',
 		component: () => import( '../views/CoursPage.vue' ),
-		meta: { requiresAuth: true, requiresAdherent: true },
+		meta: { requiresAuth: true, requiresApprentissageAccess: true },
 	},
 ];
 
@@ -203,6 +204,14 @@ router.beforeEach( ( to ) => {
 	if ( chessRoutes.includes( to.path ) && ! authStore.isRoiActive ) {
 		return {
 			path: '/tabs/home',
+		};
+	}
+
+	// 4. Vérification de l'accès au module Apprentissage
+	if ( to.meta.requiresApprentissageAccess && ! authStore.canAccessApprentissage ) {
+		return {
+			path: '/tabs/home',
+			query: { message: "Vous n'avez pas l'autorisation d'accéder au module Apprentissage." },
 		};
 	}
 

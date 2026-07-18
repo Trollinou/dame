@@ -95,6 +95,10 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 				headers.Authorization = `Bearer ${ token }`;
 			}
 
+			if ( authStore.selectedIdentity?.id ) {
+				headers['X-Selected-Identity'] = authStore.selectedIdentity.id;
+			}
+
 			const response = await safeFetch(
 				`${ apiUrl }/roi/v1/parcours`,
 				{
@@ -135,6 +139,10 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 
 			if ( token ) {
 				headers.Authorization = `Bearer ${ token }`;
+			}
+
+			if ( authStore.selectedIdentity?.id ) {
+				headers['X-Selected-Identity'] = authStore.selectedIdentity.id;
 			}
 
 			const response = await safeFetch(
@@ -180,6 +188,10 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 				headers.Authorization = `Bearer ${ token }`;
 			}
 
+			if ( authStore.selectedIdentity?.id ) {
+				headers['X-Selected-Identity'] = authStore.selectedIdentity.id;
+			}
+
 			const response = await safeFetch(
 				`${ apiUrl }/roi/v1/contenu/${ id }`,
 				{
@@ -220,6 +232,10 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 
 			if ( token ) {
 				headers.Authorization = `Bearer ${ token }`;
+			}
+
+			if ( authStore.selectedIdentity?.id ) {
+				headers['X-Selected-Identity'] = authStore.selectedIdentity.id;
 			}
 
 			const response = await safeFetch(

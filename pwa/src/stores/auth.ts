@@ -120,6 +120,24 @@ export const useAuthStore = defineStore(
 			return selectedIdentity.value?.type === 'member';
 		} );
 
+		const canAccessApprentissage = computed( () => {
+			if ( ! isRoiActive.value ) {
+				return false;
+			}
+			if ( ! isAuthenticated.value ) {
+				return false;
+			}
+			const roles = userRoles.value;
+			const normalizedUserRoles = roles.map( ( r: any ) =>
+				typeof r === 'string' ? r.toLowerCase() : ''
+			);
+			return normalizedUserRoles.some( ( role ) =>
+				apprentissageAllowedRoles.value
+					.map( ( r ) => r.toLowerCase() )
+					.includes( role )
+			);
+		} );
+
 		const selectIdentity = ( identity: Identity ) => {
 			selectedIdentity.value = identity;
 			localStorage.setItem(
@@ -450,6 +468,12 @@ export const useAuthStore = defineStore(
 		const currentSeason = ref(
 			localStorage.getItem( 'dame_current_season' ) || ''
 		);
+		const apprentissageAllowedRoles = ref<string[]>(
+			JSON.parse(
+				localStorage.getItem( 'dame_apprentissage_allowed_roles' ) ||
+					'["administrator", "staff", "entraineur", "editor"]'
+			)
+		);
 
 		const fetchPwaConfig = async () => {
 			try {
@@ -472,6 +496,29 @@ export const useAuthStore = defineStore(
 					);
 					localStorage.setItem( 'dame_wasm_url', wasmUrl.value );
 					localStorage.setItem( 'dame_current_season', currentSeason.value );
+
+					if ( isRoiActive.value ) {
+						try {
+							const roiResponse = await fetch(
+								`${ import.meta.env.VITE_API_BASE_URL }/roi/v1/config`
+							);
+							if ( roiResponse.ok ) {
+								const roiData = await roiResponse.json();
+								if ( Array.isArray( roiData.apprentissage_allowed_roles ) ) {
+									apprentissageAllowedRoles.value = roiData.apprentissage_allowed_roles;
+									localStorage.setItem(
+										'dame_apprentissage_allowed_roles',
+										JSON.stringify( roiData.apprentissage_allowed_roles )
+									);
+								}
+							}
+						} catch ( roiError ) {
+							console.warn(
+								"Impossible de charger la configuration de ROI, utilisation de la configuration par défaut :",
+								roiError
+							);
+						}
+					}
 				}
 			} catch ( error ) {
 				console.warn(
@@ -522,6 +569,8 @@ export const useAuthStore = defineStore(
 			currentSeason,
 			fetchPwaConfig,
 			validateSession,
+			apprentissageAllowedRoles,
+			canAccessApprentissage,
 		};
 	},
 	{

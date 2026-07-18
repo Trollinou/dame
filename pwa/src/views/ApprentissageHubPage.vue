@@ -14,8 +14,8 @@
           </ion-toolbar>
         </ion-header>
 
-        <!-- ÉTAT CONNECTÉ ET ADHÉRENT -->
-        <div v-if="authStore.isAuthenticated && authStore.isAdherent">
+        <!-- ÉTAT CONNECTÉ ET AUTORISÉ -->
+        <div v-if="authStore.isAuthenticated && authStore.canAccessApprentissage">
           <div v-if="apprentissageStore.isLoading" class="ion-text-center ion-padding spinner-container">
             <ion-spinner name="crescent"></ion-spinner>
             <p>Chargement des parcours...</p>
@@ -137,7 +137,7 @@ const authStore = useAuthStore();
 const apprentissageStore = useApprentissageStore();
 
 const loadData = async () => {
-  if (authStore.isAuthenticated && authStore.isAdherent) {
+  if (authStore.isAuthenticated && authStore.canAccessApprentissage) {
     await Promise.all([
       apprentissageStore.fetchParcours(),
       apprentissageStore.fetchProgression()
@@ -145,8 +145,8 @@ const loadData = async () => {
   }
 };
 
-// Recharger les données si l'état de connexion ou le profil change
-watch(() => [authStore.isAuthenticated, authStore.isAdherent], () => {
+// Recharger les données si l'état de connexion ou les droits d'accès changent
+watch(() => [authStore.isAuthenticated, authStore.canAccessApprentissage], () => {
   loadData();
 });
 
