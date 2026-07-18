@@ -43,26 +43,30 @@ onMounted(() => {
       () => {},
       () => {},
       {
-        fen: props.fen,
         orientation: props.orientation,
         viewOnly: true,
-        drawable: {
-          shapes: props.shapes
-        }
+      },
+      {},
+      {
+        fen: props.fen,
+        shapes: props.shapes
       }
     );
-
-    if (props.shapes && props.shapes.length > 0) {
-      boardCoreInstance.value.setShapes(props.shapes);
-    }
   }
 });
 
-watch(() => props.shapes, (newShapes) => {
-  if (boardCoreInstance.value && newShapes) {
-    boardCoreInstance.value.setShapes(newShapes);
-  }
-}, { deep: true });
+watch(
+  () => [props.fen, props.shapes],
+  ([newFen, newShapes]) => {
+    if (boardCoreInstance.value) {
+      boardCoreInstance.value.setDiagram({
+        fen: newFen as string,
+        shapes: newShapes as any[]
+      });
+    }
+  },
+  { deep: true }
+);
 
 onBeforeUnmount(() => {
   if (boardCoreInstance.value) {
