@@ -494,15 +494,7 @@ class PreInscription {
 		$full_name_adherent_for_pdf = mb_convert_encoding( $full_name_adherent_for_pdf, 'ISO-8859-1', 'UTF-8' );
 		$city_for_pdf               = mb_convert_encoding( $city, 'ISO-8859-1', 'UTF-8' );
 
-		if ( ! class_exists( 'setasign\Fpdi\Fpdi' ) ) {
-			$lib_dir = DAME_PLUGIN_DIR . 'includes/lib/';
-			if ( file_exists( $lib_dir . 'fpdf/fpdf.php' ) ) {
-				require_once $lib_dir . 'fpdf/fpdf.php';
-			}
-			if ( file_exists( $lib_dir . 'fpdi/src/autoload.php' ) ) {
-				require_once $lib_dir . 'fpdi/src/autoload.php';
-			}
-		}
+
 
 		$pdf = new \setasign\Fpdi\Fpdi();
 		$pdf->AddPage();
@@ -583,15 +575,7 @@ class PreInscription {
 			$rl1_full_name = mb_convert_encoding( Utils::format_lastname( (string) $rl1_last_name ) . ' ' . Utils::format_firstname( (string) $rl1_first_name ), 'ISO-8859-1', 'UTF-8' );
 		}
 
-		if ( ! class_exists( 'setasign\Fpdi\Fpdi' ) ) {
-			$lib_dir = DAME_PLUGIN_DIR . 'includes/lib/';
-			if ( file_exists( $lib_dir . 'fpdf/fpdf.php' ) ) {
-				require_once $lib_dir . 'fpdf/fpdf.php';
-			}
-			if ( file_exists( $lib_dir . 'fpdi/src/autoload.php' ) ) {
-				require_once $lib_dir . 'fpdi/src/autoload.php';
-			}
-		}
+
 
 		$pdf = new \setasign\Fpdi\Fpdi();
 		$pdf->AddPage();

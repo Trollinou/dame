@@ -6,6 +6,6 @@
  */
 
 define( 'DAME_PLUGIN_URL', 'https://example.com/wp-content/plugins/dame/' );
-define( 'DAME_PLUGIN_DIR', __DIR__ . '/../../' );
+define( 'DAME_PLUGIN_DIR', dirname( __DIR__, 2 ) . '/' );
 define( 'DAME_VERSION', '4.8.0' );
 define( 'COOKIEPATH', '/' );
