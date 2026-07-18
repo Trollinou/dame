@@ -4,7 +4,7 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Non publié]
+## [4.8.0] - 2026-07-18
 ### Ajouté
 - **Exercice Type 1 — 100 Commandements** : Création du composant `Type100Commandements.vue` (QCM à 3 réponses avec validation par Toast Ionic et enregistrement de la progression via le store Pinia).
 - **Câblage ExercicePage** : Le type `1` est désormais reconnu et routé vers le composant `Type100Commandements` dans la fonction `getComposantExercice()`.
