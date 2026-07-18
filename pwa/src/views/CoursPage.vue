@@ -50,7 +50,7 @@
               ></ion-icon>
               
               <ion-label>
-                <h2>{{ item.type === 'roi_lecon' ? 'Leçon' : 'Exercice' }} #{{ i + 1 }}</h2>
+                <h2>{{ item.titre || (item.type === 'roi_lecon' ? 'Leçon' : 'Exercice') + ' #' + (i + 1) }}</h2>
                 <p v-if="!isUnlocked(i)">Verrouillé</p>
                 <p v-else-if="isValidated(item.id)" class="success-text">Complété</p>
                 <p v-else>Disponible</p>

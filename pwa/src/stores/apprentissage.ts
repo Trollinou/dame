@@ -23,6 +23,7 @@ export interface Contenu {
 export interface PlaylistItem {
 	type: string;
 	id: number;
+	titre?: string;
 }
 
 export interface Cours {
