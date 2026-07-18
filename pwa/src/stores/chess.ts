@@ -150,7 +150,7 @@ export const useChessStore = defineStore(
 					if ( ! response.ok ) {
 						remaining.push( game );
 					}
-				} catch ( error ) {
+				} catch {
 					remaining.push( game );
 				}
 			}

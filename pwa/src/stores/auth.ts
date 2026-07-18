@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { toastController, alertController } from '@ionic/vue';
+import { alertController } from '@ionic/vue';
 import { SimpleJwtLogin } from 'simple-jwt-login';
 import { App } from '@capacitor/app';
 import { queryClient } from '../queryClient';
@@ -15,6 +15,7 @@ import { useMessageStore } from './messages';
 import { useBenevolatStore } from './benevolat';
 import { useTournamentStore } from './tournament';
 import { useNewsStore } from './news';
+import { useApprentissageStore } from './apprentissage';
 
 export interface AssociatedMember {
 	firstname: string;
@@ -110,6 +111,31 @@ export const useAuthStore = defineStore(
 				}
 				return privilegedRoles.includes( role.toLowerCase() );
 			} );
+		} );
+
+		const isAdherent = computed( () => {
+			if ( ! isAuthenticated.value ) {
+				return false;
+			}
+			return selectedIdentity.value?.type === 'member';
+		} );
+
+		const canAccessApprentissage = computed( () => {
+			if ( ! isRoiActive.value ) {
+				return false;
+			}
+			if ( ! isAuthenticated.value ) {
+				return false;
+			}
+			const roles = userRoles.value;
+			const normalizedUserRoles = roles.map( ( r: any ) =>
+				typeof r === 'string' ? r.toLowerCase() : ''
+			);
+			return normalizedUserRoles.some( ( role ) =>
+				apprentissageAllowedRoles.value
+					.map( ( r ) => r.toLowerCase() )
+					.includes( role )
+			);
 		} );
 
 		const selectIdentity = ( identity: Identity ) => {
@@ -386,21 +412,12 @@ export const useAuthStore = defineStore(
 
 				if ( identities.length === 1 ) {
 					selectIdentity( identities[ 0 ] );
-					router.push( '/tabs/home' );
-				} else if ( identities.length > 1 ) {
-					router.push( '/tabs/select-person' );
+					router.push( '/tabs/profil' );
 				} else {
-					const virtualIdentity: Identity = {
-						id: 'wp_virtual',
-						name: user.value?.name || 'Gestionnaire',
-						type: 'member',
-						member_id: 0,
-					};
-					selectIdentity( virtualIdentity );
-					router.push( '/tabs/home' );
+					router.push( '/select-person' );
 				}
-			} catch ( error ) {
-				router.push( '/tabs/home' );
+			} catch {
+				router.push( '/select-person' );
 			}
 		};
 
@@ -437,6 +454,7 @@ export const useAuthStore = defineStore(
 			useBenevolatStore().clearData();
 			useTournamentStore().clearData();
 			useNewsStore().clearData();
+			useApprentissageStore().clearData();
 			router.push( '/tabs/home' );
 		};
 
@@ -449,6 +467,12 @@ export const useAuthStore = defineStore(
 		const wasmUrl = ref( localStorage.getItem( 'dame_wasm_url' ) || '' );
 		const currentSeason = ref(
 			localStorage.getItem( 'dame_current_season' ) || ''
+		);
+		const apprentissageAllowedRoles = ref<string[]>(
+			JSON.parse(
+				localStorage.getItem( 'dame_apprentissage_allowed_roles' ) ||
+					'["administrator", "staff", "entraineur", "editor"]'
+			)
 		);
 
 		const fetchPwaConfig = async () => {
@@ -472,6 +496,29 @@ export const useAuthStore = defineStore(
 					);
 					localStorage.setItem( 'dame_wasm_url', wasmUrl.value );
 					localStorage.setItem( 'dame_current_season', currentSeason.value );
+
+					if ( isRoiActive.value ) {
+						try {
+							const roiResponse = await fetch(
+								`${ import.meta.env.VITE_API_BASE_URL }/roi/v1/config`
+							);
+							if ( roiResponse.ok ) {
+								const roiData = await roiResponse.json();
+								if ( Array.isArray( roiData.apprentissage_allowed_roles ) ) {
+									apprentissageAllowedRoles.value = roiData.apprentissage_allowed_roles;
+									localStorage.setItem(
+										'dame_apprentissage_allowed_roles',
+										JSON.stringify( roiData.apprentissage_allowed_roles )
+									);
+								}
+							}
+						} catch ( roiError ) {
+							console.warn(
+								"Impossible de charger la configuration de ROI, utilisation de la configuration par défaut :",
+								roiError
+							);
+						}
+					}
 				}
 			} catch ( error ) {
 				console.warn(
@@ -510,6 +557,7 @@ export const useAuthStore = defineStore(
 			adminMode,
 			isAuthenticated,
 			isAdmin,
+			isAdherent,
 			isLoading,
 			login,
 			logout,
@@ -521,6 +569,8 @@ export const useAuthStore = defineStore(
 			currentSeason,
 			fetchPwaConfig,
 			validateSession,
+			apprentissageAllowedRoles,
+			canAccessApprentissage,
 		};
 	},
 	{

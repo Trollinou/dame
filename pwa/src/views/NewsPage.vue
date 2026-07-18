@@ -172,7 +172,7 @@ const fetchCategories = async () => {
     if (response.ok) {
       categories.value = await response.json();
     }
-  } catch (err) {
+  } catch {
     console.warn("Échec chargement catégories (serveur coupé ?)");
   }
 };

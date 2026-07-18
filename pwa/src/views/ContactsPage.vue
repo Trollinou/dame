@@ -2,6 +2,9 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
         <ion-title>Contacts</ion-title>
       </ion-toolbar>
       <ion-toolbar>
@@ -126,6 +129,8 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonButtons,
+  IonMenuButton,
   onIonViewWillEnter,
   onIonViewDidEnter
 } from '@ionic/vue';
@@ -185,7 +190,7 @@ const removeAccents = (str: string): string => {
 
 const goToDetail = (id: number) => {
   lastViewedContactId.value = id;
-  router.push('/tabs/admin/contact/' + id);
+  router.push('/admin/contact/' + id);
 };
 
 const scrollToTarget = () => {

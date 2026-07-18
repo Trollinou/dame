@@ -661,12 +661,10 @@ import {
   checkmarkCircleOutline, 
   documentTextOutline 
 } from 'ionicons/icons';
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { useRoute } from 'vue-router';
 
 const authStore = useAuthStore();
-const route = useRoute();
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const siteUrl = apiBaseUrl.replace(/\/wp-json\/?$/, '');
 

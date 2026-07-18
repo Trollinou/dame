@@ -103,7 +103,7 @@ const fetchMenu = async () => {
 
   try {
     await tournamentStore.fetchMenu();
-  } catch (err: any) {
+  } catch {
     if (!navigator.onLine) {
       error.value = "Vous êtes hors-ligne. Les informations sur les tournois nécessitent une connexion internet pour être mises à jour.";
     } else {

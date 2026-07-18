@@ -208,11 +208,6 @@ export const useAgendaStore = defineStore(
 		const fetchAgenda = async () => {
 			// Si on est déjà en cours de chargement ou hors ligne avec des données, on ignore
 			// Ajout d'une vérification de "fraîcheur" (5 min) pour éviter les erreurs console inutiles
-			const isRecent =
-				events.value.length > 0 &&
-				upcomingPage.value === 1 &&
-				! navigator.onLine; // On simplifie pour l'agenda
-
 			if (
 				isLoading.value ||
 				( ! navigator.onLine && events.value.length > 0 )

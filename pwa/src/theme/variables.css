@@ -4,6 +4,42 @@
   --ion-safe-area-right: env(safe-area-inset-right);
   --ion-safe-area-top: env(safe-area-inset-top);
   --ion-safe-area-bottom: env(safe-area-inset-bottom);
+
+  /* Theme Colors aligned with Chapters */
+  --ion-color-primary: #0073aa;
+  --ion-color-primary-rgb: 0, 115, 170;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #006596;
+  --ion-color-primary-tint: #1a81b3;
+
+  --ion-color-warning: #d94f00;
+  --ion-color-warning-rgb: 217, 79, 0;
+  --ion-color-warning-contrast: #ffffff;
+  --ion-color-warning-contrast-rgb: 255, 255, 255;
+  --ion-color-warning-shade: #bf4600;
+  --ion-color-warning-tint: #dd611a;
+
+  --ion-color-danger: #d63638;
+  --ion-color-danger-rgb: 214, 54, 56;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #bc3031;
+  --ion-color-danger-tint: #da4a4c;
+
+  --ion-color-success: #00a32a;
+  --ion-color-success-rgb: 0, 163, 42;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #008f25;
+  --ion-color-success-tint: #1aac3f;
+
+  --ion-color-tertiary: #8224e3;
+  --ion-color-tertiary-rgb: 130, 36, 227;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #7220c8;
+  --ion-color-tertiary-tint: #8f3ae6;
 }
 
 /* On laisse Ionic gérer .ion-padding normalement pour éviter les doubles marges */
