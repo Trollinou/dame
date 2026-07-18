@@ -1,5 +1,9 @@
 <template>
-  <div ref="boardEl" class="diagram-viewer-board"></div>
+  <div class="diagram-viewer-container">
+    <div class="main-board">
+      <div ref="boardEl"></div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -61,10 +65,9 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.diagram-viewer-board {
+.diagram-viewer-container {
   width: 100%;
   max-width: 400px;
-  aspect-ratio: 1;
-  margin: 0 auto;
+  margin: 16px auto;
 }
 </style>
