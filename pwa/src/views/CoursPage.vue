@@ -6,6 +6,11 @@
           <ion-back-button default-href="/tabs/apprentissage"></ion-back-button>
         </ion-buttons>
         <ion-title>{{ cours?.titre || 'Cours' }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button router-link="/tabs/apprentissage" router-direction="back">
+            <ion-icon slot="icon-only" :icon="homeOutline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
@@ -95,7 +100,8 @@ import {
   IonList,
   IonItem,
   IonLabel,
-  IonIcon
+  IonIcon,
+  IonButton
 } from '@ionic/vue';
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -105,7 +111,8 @@ import {
   checkmarkCircleOutline,
   chevronForwardOutline,
   bookOutline,
-  extensionPuzzleOutline
+  extensionPuzzleOutline,
+  homeOutline
 } from 'ionicons/icons';
 
 const route = useRoute();

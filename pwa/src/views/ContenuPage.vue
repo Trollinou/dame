@@ -6,6 +6,14 @@
           <ion-back-button :default-href="coursParentInfo ? `/cours/${coursParentInfo.cours.id}` : '/tabs/apprentissage'"></ion-back-button>
         </ion-buttons>
         <ion-title>{{ contenuActuel?.titre || 'Contenu' }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button v-if="coursParentInfo" :router-link="`/cours/${coursParentInfo.cours.id}`" router-direction="back">
+            <ion-icon slot="icon-only" :icon="listOutline"></ion-icon>
+          </ion-button>
+          <ion-button router-link="/tabs/apprentissage" router-direction="back">
+            <ion-icon slot="icon-only" :icon="homeOutline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
@@ -113,7 +121,8 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonButton
+  IonButton,
+  IonIcon
 } from '@ionic/vue';
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -125,6 +134,7 @@ import TypePartieHeros from './types/TypePartieHeros.vue';
 import TypePosiPlan from './types/TypePosiPlan.vue';
 import TypeAssociPlan from './types/TypeAssociPlan.vue';
 import LeconReader from '@/components/apprentissage/LeconReader.vue';
+import { listOutline, homeOutline } from 'ionicons/icons';
 
 const route = useRoute();
 const router = useRouter();
