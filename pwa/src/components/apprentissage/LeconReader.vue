@@ -79,4 +79,8 @@ onBeforeUnmount(() => {
   max-width: 400px;
   width: 100%;
 }
+.roi-bloc-pgn .board-container {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
 </style>
