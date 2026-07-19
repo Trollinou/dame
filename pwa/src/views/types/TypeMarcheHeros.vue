@@ -195,6 +195,11 @@ let touchStartX = 0;
 let touchStartY = 0;
 
 const handlePressStart = (event: Event, callbackTap: () => void, diagram: Diagramme | null) => {
+  // Empêche la simulation des clics souris sur mobile pour éviter les double taps parasites
+  if (event.type === 'touchstart') {
+    event.preventDefault();
+  }
+
   isLongPress = false;
   preventDefaultClick = false;
   activeTapCallback = callbackTap;
@@ -234,6 +239,10 @@ const handlePressMove = (event: TouchEvent) => {
 };
 
 const handlePressEnd = (event: Event) => {
+  if (event.type === 'touchend') {
+    event.preventDefault();
+  }
+
   if (pressTimer) {
     clearTimeout(pressTimer);
     pressTimer = null;
