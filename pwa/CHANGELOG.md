@@ -4,6 +4,14 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.1] - 2026-07-19
+### Ajouté
+- **Exercice Type 7 — La Marche du Héros** :
+  - Création du composant `TypeMarcheDuHeros.vue`.
+  - Implémentation de la logique métier du jeu : plateau 5x5, placement aléatoire du roi et des embûches, validation des mouvements et calcul du score (points gagnés/perdus).
+  - Intégration des animations graphiques pour le déplacement du roi et l'affichage des résultats.
+- **Câblage ExercicePage** : Le type `7` est désormais reconnu et routé vers le nouveau composant `TypeMarcheDuHeros`.
+
 ## [4.8.0] - 2026-07-18
 ### Ajouté
 - **Exercice Type 1 — 100 Commandements** : Création du composant `Type100Commandements.vue` (QCM à 3 réponses avec validation par Toast Ionic et enregistrement de la progression via le store Pinia).

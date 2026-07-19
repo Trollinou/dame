@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.8.1] - 2026-07-18
+
+### Application Mobile (PWA)
+- **Nouveau Types d'Exercices :** 
+  - Implénetation du type 7 : La Marche du Héros.
+
+
 ## [4.8.0] - 2026-07-18
 
 ### Application Mobile (PWA)
