@@ -133,6 +133,7 @@ import TypePopEchecs from './types/TypePopEchecs.vue';
 import TypePartieHeros from './types/TypePartieHeros.vue';
 import TypePosiPlan from './types/TypePosiPlan.vue';
 import TypeAssociPlan from './types/TypeAssociPlan.vue';
+import TypeMarcheHeros from './types/TypeMarcheHeros.vue';
 import LeconReader from '@/components/apprentissage/LeconReader.vue';
 import { listOutline, homeOutline } from 'ionicons/icons';
 
@@ -185,6 +186,9 @@ const getComposantExercice = (type: number) => {
   }
   if (type === 6) {
     return TypeAssociPlan;
+  }
+  if (type === 7) {
+    return TypeMarcheHeros;
   }
   return null;
 };

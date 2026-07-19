@@ -52,6 +52,10 @@ onMounted(() => {
         shapes: props.shapes
       }
     );
+    // Forcer l'orientation via setConfig dès la fin du montage
+    if (boardCoreInstance.value) {
+      boardCoreInstance.value.setConfig({ orientation: props.orientation });
+    }
   }
 });
 
@@ -66,6 +70,15 @@ watch(
     }
   },
   { deep: true }
+);
+
+watch(
+  () => props.orientation,
+  (newOrientation) => {
+    if (boardCoreInstance.value) {
+      boardCoreInstance.value.setConfig({ orientation: newOrientation });
+    }
+  }
 );
 
 onBeforeUnmount(() => {

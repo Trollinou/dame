@@ -2,7 +2,13 @@
   <div class="puzzle-viewer-layout">
     <div class="board-container">
       <TheChessboard 
-        :boardConfig="{ fen: fen, drawable: { shapes: shapes } }"
+        :boardConfig="{ 
+          fen: fen, 
+          orientation: couleurJoueur, 
+          drawable: { shapes: shapes },
+          highlight: { lastMove: true },
+          lastMove: (props as any).lastMoveHighlight || undefined
+        }"
         :playerColor="couleurJoueur"
         :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"
         @board-created="onBoardCreated"
@@ -25,6 +31,7 @@ const props = withDefaults(
     couleurJoueur: 'white' | 'black';
     solution: string[];
     shapes?: any[];
+    lastMoveHighlight?: string[];
   }>(),
   {
     shapes: () => []
