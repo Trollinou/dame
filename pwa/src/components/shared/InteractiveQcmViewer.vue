@@ -153,7 +153,7 @@ const validerChoix = async (index: number) => {
     // Si bonne réponse
     repondu.value = true;
     const toast = await toastController.create({
-      message: 'Bien joué !',
+      message: etapeActuelle.value.choix[index].explication || 'Bien joué !',
       duration: 2000,
       color: 'success',
       position: 'bottom'
