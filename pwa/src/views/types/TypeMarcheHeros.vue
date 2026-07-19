@@ -21,6 +21,7 @@
               :class="{ 'is-empty': !slot, 'is-selected': selectionGrille?.row === rowIndex && selectionGrille?.col === colIndex }"
               @mousedown="handlePressStart($event, () => selectGrilleSlot(rowIndex, colIndex), slot)"
               @touchstart="handlePressStart($event, () => selectGrilleSlot(rowIndex, colIndex), slot)"
+              @touchmove="handlePressMove"
               @mouseup="handlePressEnd"
               @touchend="handlePressEnd"
               @mouseleave="handlePressEnd"
@@ -51,6 +52,7 @@
             :class="{ 'is-selected': selectionBank === index }"
             @mousedown="handlePressStart($event, () => selectBankItem(index), item)"
             @touchstart="handlePressStart($event, () => selectBankItem(index), item)"
+            @touchmove="handlePressMove"
             @mouseup="handlePressEnd"
             @touchend="handlePressEnd"
             @mouseleave="handlePressEnd"
@@ -189,21 +191,46 @@ let pressTimer: any = null;
 let isLongPress = false;
 let preventDefaultClick = false;
 let activeTapCallback: (() => void) | null = null;
+let touchStartX = 0;
+let touchStartY = 0;
 
 const handlePressStart = (event: Event, callbackTap: () => void, diagram: Diagramme | null) => {
   isLongPress = false;
   preventDefaultClick = false;
   activeTapCallback = callbackTap;
 
+  if (event instanceof TouchEvent && event.touches.length > 0) {
+    touchStartX = event.touches[0].clientX;
+    touchStartY = event.touches[0].clientY;
+  }
+
+  // Si pas de diagramme sur la case (par ex. slot vide dans la grille), on effectue le tap immédiatement
+  if (!diagram) {
+    callbackTap();
+    activeTapCallback = null;
+    return;
+  }
+
   // Lance un timer de 500ms pour l'appui long
   pressTimer = setTimeout(() => {
-    if (diagram) {
-      isLongPress = true;
-      zoomedDiagram.value = diagram;
-      // Empêche le clic simple d'être exécuté
-      preventDefaultClick = true;
-    }
+    isLongPress = true;
+    zoomedDiagram.value = diagram;
+    preventDefaultClick = true;
   }, 500);
+};
+
+const handlePressMove = (event: TouchEvent) => {
+  // Si l'utilisateur bouge son doigt de plus de 10px, on considère qu'il souhaite faire défiler (scroll) la zone.
+  // Dans ce cas, on annule immédiatement le timer d'appui long pour laisser le scroll natif se faire.
+  if (pressTimer && event.touches.length > 0) {
+    const diffX = Math.abs(event.touches[0].clientX - touchStartX);
+    const diffY = Math.abs(event.touches[0].clientY - touchStartY);
+    if (diffX > 10 || diffY > 10) {
+      clearTimeout(pressTimer);
+      pressTimer = null;
+      activeTapCallback = null;
+    }
+  }
 };
 
 const handlePressEnd = (event: Event) => {
