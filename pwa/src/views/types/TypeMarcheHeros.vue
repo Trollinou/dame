@@ -21,6 +21,10 @@
               :class="{ 'is-empty': !slot, 'is-selected': selectionGrille?.row === rowIndex && selectionGrille?.col === colIndex }"
               @click="selectGrilleSlot(rowIndex, colIndex)"
               @contextmenu="handleLongPress($event, slot)"
+              @touchstart="startTouchTimer($event, slot)"
+              @touchmove="moveTouch"
+              @touchend="endTouchTimer"
+              @touchcancel="endTouchTimer"
             >
               <template v-if="slot">
                 <DiagramViewer 
@@ -48,6 +52,10 @@
             :class="{ 'is-selected': selectionBank === index }"
             @click="selectBankItem(index)"
             @contextmenu="handleLongPress($event, item)"
+            @touchstart="startTouchTimer($event, item)"
+            @touchmove="moveTouch"
+            @touchend="endTouchTimer"
+            @touchcancel="endTouchTimer"
           >
             <div class="miniature-wrapper">
               <DiagramViewer 
@@ -179,10 +187,55 @@ const handlePuzzleSuccess = () => {
 
 // Logique d'Appui Long (Long Press) et Zoom
 const zoomedDiagram = ref<Diagramme | null>(null);
+let pressTimer: any = null;
+let touchStartX = 0;
+let touchStartY = 0;
+let isScrolling = false;
+
+const startTouchTimer = (event: TouchEvent, diagram: Diagramme | null) => {
+  if (!diagram) return;
+  
+  isScrolling = false;
+  if (event.touches.length > 0) {
+    touchStartX = event.touches[0].clientX;
+    touchStartY = event.touches[0].clientY;
+  }
+
+  if (pressTimer) {
+    clearTimeout(pressTimer);
+  }
+
+  pressTimer = setTimeout(() => {
+    if (!isScrolling) {
+      zoomedDiagram.value = diagram;
+    }
+  }, 500);
+};
+
+const moveTouch = (event: TouchEvent) => {
+  if (event.touches.length > 0) {
+    const diffX = Math.abs(event.touches[0].clientX - touchStartX);
+    const diffY = Math.abs(event.touches[0].clientY - touchStartY);
+    if (diffX > 10 || diffY > 10) {
+      isScrolling = true;
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
+    }
+  }
+};
+
+const endTouchTimer = () => {
+  if (pressTimer) {
+    clearTimeout(pressTimer);
+    pressTimer = null;
+  }
+};
 
 const handleLongPress = (event: Event, diagram: Diagramme | null) => {
   if (diagram) {
-    event.preventDefault(); // Empêche le menu contextuel natif du navigateur
+    event.preventDefault(); // Empêche le menu contextuel natif
     zoomedDiagram.value = diagram;
   }
 };
