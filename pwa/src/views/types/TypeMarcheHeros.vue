@@ -236,6 +236,7 @@ const handlePressMove = (event: TouchEvent) => {
 const handlePressEnd = (event: Event) => {
   if (pressTimer) {
     clearTimeout(pressTimer);
+    pressTimer = null;
   }
 
   // Si ce n'est pas un appui long (c'est un tap normal), on exécute l'action de clic associée
@@ -243,6 +244,10 @@ const handlePressEnd = (event: Event) => {
     activeTapCallback();
   }
   activeTapCallback = null;
+  
+  // Important : réinitialiser les flags après la fin du contact pour autoriser les taps suivants
+  isLongPress = false;
+  preventDefaultClick = false;
 };
 
 const closeZoom = () => {
