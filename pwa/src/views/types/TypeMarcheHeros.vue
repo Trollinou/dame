@@ -19,12 +19,8 @@
               :key="colIndex"
               class="grid-slot"
               :class="{ 'is-empty': !slot, 'is-selected': selectionGrille?.row === rowIndex && selectionGrille?.col === colIndex }"
-              @mousedown="handlePressStart($event, () => selectGrilleSlot(rowIndex, colIndex), slot)"
-              @touchstart="handlePressStart($event, () => selectGrilleSlot(rowIndex, colIndex), slot)"
-              @touchmove="handlePressMove"
-              @mouseup="handlePressEnd"
-              @touchend="handlePressEnd"
-              @mouseleave="handlePressEnd"
+              @click="selectGrilleSlot(rowIndex, colIndex)"
+              @contextmenu="handleLongPress($event, slot)"
             >
               <template v-if="slot">
                 <DiagramViewer 
@@ -43,19 +39,15 @@
 
       <!-- Zone Banque -->
       <div class="bank-container">
-        <h3 class="bank-title">Banque de positions (Appui long pour zoomer)</h3>
+        <h3 class="bank-title">Banque de positions (Appui long ou clic droit pour zoomer)</h3>
         <div class="bank-scroll">
           <div 
             v-for="(item, index) in diagrammesBank" 
             :key="item.id"
             class="bank-item-wrapper"
             :class="{ 'is-selected': selectionBank === index }"
-            @mousedown="handlePressStart($event, () => selectBankItem(index), item)"
-            @touchstart="handlePressStart($event, () => selectBankItem(index), item)"
-            @touchmove="handlePressMove"
-            @mouseup="handlePressEnd"
-            @touchend="handlePressEnd"
-            @mouseleave="handlePressEnd"
+            @click="selectBankItem(index)"
+            @contextmenu="handleLongPress($event, item)"
           >
             <div class="miniature-wrapper">
               <DiagramViewer 
@@ -187,76 +179,12 @@ const handlePuzzleSuccess = () => {
 
 // Logique d'Appui Long (Long Press) et Zoom
 const zoomedDiagram = ref<Diagramme | null>(null);
-let pressTimer: any = null;
-let isLongPress = false;
-let preventDefaultClick = false;
-let activeTapCallback: (() => void) | null = null;
-let touchStartX = 0;
-let touchStartY = 0;
 
-const handlePressStart = (event: Event, callbackTap: () => void, diagram: Diagramme | null) => {
-  // Empêche la simulation des clics souris sur mobile pour éviter les double taps parasites
-  if (event.type === 'touchstart') {
-    event.preventDefault();
-  }
-
-  isLongPress = false;
-  preventDefaultClick = false;
-  activeTapCallback = callbackTap;
-
-  if (event instanceof TouchEvent && event.touches.length > 0) {
-    touchStartX = event.touches[0].clientX;
-    touchStartY = event.touches[0].clientY;
-  }
-
-  // Si pas de diagramme sur la case (par ex. slot vide dans la grille), on effectue le tap immédiatement
-  if (!diagram) {
-    callbackTap();
-    activeTapCallback = null;
-    return;
-  }
-
-  // Lance un timer de 500ms pour l'appui long
-  pressTimer = setTimeout(() => {
-    isLongPress = true;
+const handleLongPress = (event: Event, diagram: Diagramme | null) => {
+  if (diagram) {
+    event.preventDefault(); // Empêche le menu contextuel natif du navigateur
     zoomedDiagram.value = diagram;
-    preventDefaultClick = true;
-  }, 500);
-};
-
-const handlePressMove = (event: TouchEvent) => {
-  // Si l'utilisateur bouge son doigt de plus de 10px, on considère qu'il souhaite faire défiler (scroll) la zone.
-  // Dans ce cas, on annule immédiatement le timer d'appui long pour laisser le scroll natif se faire.
-  if (pressTimer && event.touches.length > 0) {
-    const diffX = Math.abs(event.touches[0].clientX - touchStartX);
-    const diffY = Math.abs(event.touches[0].clientY - touchStartY);
-    if (diffX > 10 || diffY > 10) {
-      clearTimeout(pressTimer);
-      pressTimer = null;
-      activeTapCallback = null;
-    }
   }
-};
-
-const handlePressEnd = (event: Event) => {
-  if (event.type === 'touchend') {
-    event.preventDefault();
-  }
-
-  if (pressTimer) {
-    clearTimeout(pressTimer);
-    pressTimer = null;
-  }
-
-  // Si ce n'est pas un appui long (c'est un tap normal), on exécute l'action de clic associée
-  if (!isLongPress && !preventDefaultClick && activeTapCallback) {
-    activeTapCallback();
-  }
-  activeTapCallback = null;
-  
-  // Important : réinitialiser les flags après la fin du contact pour autoriser les taps suivants
-  isLongPress = false;
-  preventDefaultClick = false;
 };
 
 const closeZoom = () => {
@@ -265,13 +193,11 @@ const closeZoom = () => {
 
 // Tâche 1 : Logique d'interaction Tap & Tap
 const selectBankItem = (index: number) => {
-  if (preventDefaultClick || isLongPress) return;
   selectionGrille.value = null; // Désélectionne la grille si on choisit la banque
   selectionBank.value = index;
 };
 
 const selectGrilleSlot = (row: number, col: number) => {
-  if (preventDefaultClick || isLongPress) return;
   const currentSlotContent = grillePositions.value[row][col];
 
   if (!currentSlotContent) {
