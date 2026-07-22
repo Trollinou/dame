@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useAuthStore } from './auth';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { safeFetch } from '@/utils/safeFetch';
 
 export interface Member {
 	id: number;
@@ -79,7 +80,7 @@ export const useMemberStore = defineStore( 'members', () => {
 				},
 			};
 
-			const response = await fetch( `${ baseUrl }&page=1`, fetchOptions );
+			const response = await safeFetch( `${ baseUrl }&page=1`, fetchOptions );
 
 			if ( response.status === 401 ) {
 				authStore.logout();
@@ -98,7 +99,7 @@ export const useMemberStore = defineStore( 'members', () => {
 				const pagePromises = [];
 				for ( let i = 2; i <= totalPages; i++ ) {
 					pagePromises.push(
-						fetch( `${ baseUrl }&page=${ i }`, fetchOptions ).then(
+						safeFetch( `${ baseUrl }&page=${ i }`, fetchOptions ).then(
 							( res ) => res.json()
 						)
 					);
@@ -124,7 +125,7 @@ export const useMemberStore = defineStore( 'members', () => {
 
 	const members = computed( () => rawMembers.value || [] );
 
-	// 2. Liste des saisons (Clé admin privée)
+	// 2. Query des Saisons (Admin uniquement)
 	const {
 		data: rawSeasons,
 		isLoading: isSeasonsLoading,
@@ -137,7 +138,7 @@ export const useMemberStore = defineStore( 'members', () => {
 				throw new Error( 'Non authentifié' );
 			}
 
-			const response = await fetch(
+			const response = await safeFetch(
 				`${
 					import.meta.env.VITE_API_BASE_URL
 				}/wp/v2/seasons?per_page=100`,

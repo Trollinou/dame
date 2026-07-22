@@ -23,6 +23,12 @@ Ce document définit les directives d'architecture, de charte graphique et de co
 - **Recherche & Filtres Facettés** :
   - La recherche globale doit être insensible aux accents (via la fonction utilitaire `removeAccents`).
   - Les filtres de vue doivent s'appuyer sur la configuration `DataTableFilterConfig` et utiliser des composants de choix Ionic ergonomiques (`action-sheet`).
+- **Gestion de la Visibilité des Colonnes (`columnVisibility`)** :
+  - Lorsqu'une colonne sert de critère de filtre (ex: filtre par Saison) mais n'a pas besoin d'être affichée sous forme de colonne dans le tableau HTML desktop, la colonne doit être déclarée dans `columns` puis masquée à l'affichage via la prop `:column-visibility="{ columnId: false }"`.
+  - Cela permet d'assurer le filtrage dynamique tout en gardant un affichage épuré.
+- **Tri & Accesseurs Typés (`CustomColumnDef`)** :
+  - Les définitions de colonnes doivent s'appuyer sur le type `CustomColumnDef<TData>`.
+  - Le tri (`enableSorting: true`) doit utiliser un `accessorFn` explicite ou une fonction de tri personnalisée (`sortingFn`) pour les critères non alphabétiques (ex: ordre logique des catégories d'âge).
 - **Exportation Universelle CSV / Excel** :
   - Toute grille de données gérée par `DataTable` doit intégrer une configuration d'exportation `DataTableExportConfig`.
   - L'exportation doit s'appuyer sur la fonction utilitaire `exportToCsv` (`src/utils/csvExport.ts`) avec encodage **UTF-8 BOM (`\uFEFF`)** pour garantir l'ouverture sans altération des caractères accentués sous Microsoft Excel.
@@ -75,6 +81,10 @@ Ce document définit les directives d'architecture, de charte graphique et de co
 ## 6. GESTION DE L'ÉTAT & REQUÊTES SERVEUR (TANSTACK QUERY & PINIA)
 
 - **Récupération des données API** : Toute interrogation ou récupération de données serveur (membres, actualités, tournois, cours, etc.) doit impérativement passer par **TanStack Query** (`useQuery`, `fetchQuery`) au sein des stores Pinia (`src/stores/`).
+- **Appels HTTP & Rafraîchissement Transparent JWT (`safeFetch`)** :
+  - Tous les appels HTTP vers les APIs du serveur (WordPress REST API, DAME, ROI) doivent **impérativement s'appuyer sur la fonction utilitaire `safeFetch`** (`src/utils/safeFetch.ts`) au lieu du `fetch` natif.
+  - **Gestion automatique du HTTP 401** : `safeFetch` intercepte automatiquement le statut HTTP 401, sollicite le rafraîchissement transparent du jeton JWT via `authStore.tryRefreshToken()`, et réessaie la requête initiale avec le nouveau jeton avant d'envisager toute déconnexion.
+  - **Interdiction de déconnexion directe** : Il est strictement interdit de faire un `authStore.logout()` immédiat sur un statut 401 sans être passé par la tentative de rafraîchissement de `safeFetch`.
 - **Caching & Persistance** : Le cache global géré par `queryClient` (instance définie dans `src/queryClient.ts`) assure le suivi des états de chargement (`isLoading`), la fraîcheur des données et la persistance hors-ligne via `persistQueryClient`.
 - **Invalidation & Mises à jour du Cache** : Après toute mutation ou modification de données côté serveur, utiliser systématiquement `queryClient.invalidateQueries({ queryKey: [...] })` ou `queryClient.setQueryData(...)` pour garder le cache synchronisé.
 - **Déconnexion** : Lors du logout de l'utilisateur, vider l'ensemble du cache mémoire et du stockage persistant avec `queryClient.clear()`.

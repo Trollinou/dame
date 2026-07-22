@@ -173,10 +173,10 @@ export const useAuthStore = defineStore(
 			} );
 		};
 
-		const tryRefreshToken = async () => {
+		const tryRefreshToken = async (): Promise< string | null > => {
 			if ( ! token.value ) {
 				logout();
-				return;
+				return null;
 			}
 			try {
 				console.log( 'Attempting to refresh token...' );
@@ -189,13 +189,16 @@ export const useAuthStore = defineStore(
 					token.value = newJwtToken;
 					localStorage.setItem( 'dame_jwt_token', token.value );
 					console.log( 'Token refreshed successfully.' );
+					return token.value;
 				}
+				return null;
 			} catch ( refreshError: any ) {
 				console.warn( 'Token refresh failed:', refreshError );
 				const msg = String( refreshError?.data?.message || refreshError?.message || '' ).toLowerCase();
 				if ( msg.includes( 'expired' ) || msg.includes( 'invalid' ) || msg.includes( 'revoked' ) ) {
 					logout();
 				}
+				return null;
 			}
 		};
 
@@ -594,6 +597,7 @@ export const useAuthStore = defineStore(
 			currentSeason,
 			fetchPwaConfig,
 			validateSession,
+			tryRefreshToken,
 			apprentissageAllowedRoles,
 			canAccessApprentissage,
 			myIdentities,

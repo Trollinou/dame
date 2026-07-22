@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import router from '../router';
 import { useAuthStore } from './auth';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { safeFetch } from '@/utils/safeFetch';
 
 export interface Birthday {
 	id: number;
@@ -25,7 +26,7 @@ export const useDashboardStore = defineStore( 'dashboard', () => {
 				throw new Error( 'Non authentifié' );
 			}
 
-			const response = await fetch(
+			const response = await safeFetch(
 				`${
 					import.meta.env.VITE_API_BASE_URL
 				}/dame/v1/birthdays/upcoming?limit=5`,

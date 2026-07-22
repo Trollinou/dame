@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useAuthStore } from './auth';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { safeFetch } from '@/utils/safeFetch';
 
 export interface Message {
 	id: number;
@@ -45,7 +46,7 @@ export const useMessageStore = defineStore( 'messages', () => {
 				throw new Error( 'Non authentifié' );
 			}
 
-			const response = await fetch(
+			const response = await safeFetch(
 				`${
 					import.meta.env.VITE_API_BASE_URL
 				}/wp/v2/messages?context=edit&per_page=100`,

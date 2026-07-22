@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useAuthStore } from './auth';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { safeFetch } from '@/utils/safeFetch';
 
 export interface Contact {
 	id: number;
@@ -59,7 +60,7 @@ export const useContactStore = defineStore( 'contacts', () => {
 				},
 			};
 
-			const response = await fetch( `${ baseUrl }&page=1`, fetchOptions );
+			const response = await safeFetch( `${ baseUrl }&page=1`, fetchOptions );
 
 			if ( response.status === 401 ) {
 				authStore.logout();
@@ -78,7 +79,7 @@ export const useContactStore = defineStore( 'contacts', () => {
 				const pagePromises = [];
 				for ( let i = 2; i <= totalPages; i++ ) {
 					pagePromises.push(
-						fetch( `${ baseUrl }&page=${ i }`, fetchOptions ).then(
+						safeFetch( `${ baseUrl }&page=${ i }`, fetchOptions ).then(
 							( res ) => {
 								if ( ! res.ok ) {
 									throw new Error( `Erreur page ${ i }` );
@@ -122,7 +123,7 @@ export const useContactStore = defineStore( 'contacts', () => {
 				throw new Error( 'Non authentifié' );
 			}
 
-			const response = await fetch(
+			const response = await safeFetch(
 				`${
 					import.meta.env.VITE_API_BASE_URL
 				}/wp/v2/contact-types?per_page=100`,
