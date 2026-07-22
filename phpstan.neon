@@ -4,6 +4,7 @@ parameters:
     level: 6
     phpVersion: 80400 # Force l'analyse pour PHP 8.4
     treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false
     paths:
         - dame.php
         - includes/
