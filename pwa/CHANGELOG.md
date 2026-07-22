@@ -14,6 +14,11 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Gestion des Adhérents (TanStack Table & DataTable)** :
   - Ajout de la prise en charge de `:column-visibility` sur le composant réutilisable `DataTable`.
   - Remplacement de la colonne visible "Saisons" par la colonne "Téléphone" dans la grille des adhérents, tout en conservant le filtre de sélection de saison actif.
+- **Authentification & Sécurité (JWT & safeFetch)** :
+  - Généralisation du rafraîchissement transparent des jetons JWT en cas de statut HTTP `401 Unauthorized` au sein de `safeFetch.ts`.
+  - Re-jeu automatique et invisible de la requête HTTP avec le nouveau jeton sans déconnexion intempestive de l'utilisateur.
+  - Migration des stores (`members`, `messages`, `contacts`, `dashboard`) vers l'utilitaire `safeFetch`.
+  - Consignation des directives de développement dans `AGENTS.md`.
 
 ## [4.8.1] - 2026-07-19
 ### Ajouté
