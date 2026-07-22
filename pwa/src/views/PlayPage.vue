@@ -759,14 +759,14 @@ onIonViewWillLeave(() => {
   position: relative;
 }
 
-/* Agrandissement spécifique pour tablettes en portrait (iPad) */
+/* Agrandissement adaptatif pour tablettes en portrait (iPad) */
 @media (min-width: 768px) and (orientation: portrait) {
   .board-container {
-    max-width: 750px; /* Utilise mieux la largeur de l'iPad */
+    max-width: min(720px, 60vh);
   }
   
   .board-section {
-    padding: 20px 0;
+    padding: 10px 0;
   }
 }
 
@@ -793,9 +793,10 @@ onIonViewWillLeave(() => {
 }
 
 .landscape-mode .board-container {
-  /* On définit une largeur stable qui sera aussi la hauteur de l'échiquier seul */
-  width: 68vh !important; 
+  /* Dimensions adaptatives en paysage pour éviter de tronquer l'échiquier ou les pendules */
+  width: min(65vh, 48vw) !important; 
   height: auto !important;
+  aspect-ratio: 1 / 1 !important;
   max-width: 100%;
   margin: 0 auto !important;
   padding: 0 !important;

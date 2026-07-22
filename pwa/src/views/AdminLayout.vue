@@ -62,6 +62,7 @@ import {
   IonMenuToggle,
   IonButton,
   IonRouterOutlet,
+  useIonRouter,
   onIonViewWillEnter
 } from '@ionic/vue';
 import {
@@ -78,6 +79,7 @@ import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
 const router = useRouter();
+const ionRouter = useIonRouter();
 const authStore = useAuthStore();
 
 const currentPath = computed(() => route.path);
@@ -92,8 +94,8 @@ const adminPages = [
 
 const goToPublic = () => {
   authStore.adminMode = false;
-  window.location.hash = '/tabs/home';
-  window.location.reload();
+  // Utilisation de la réinitialisation de pile racine Ionic sans rechargement web
+  ionRouter.navigate('/tabs/home', 'root', 'replace');
 };
 
 onIonViewWillEnter(() => {

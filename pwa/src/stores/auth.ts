@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { alertController } from '@ionic/vue';
 import { SimpleJwtLogin } from 'simple-jwt-login';
 import { App } from '@capacitor/app';
+import { useQuery } from '@tanstack/vue-query';
 import { queryClient } from '../queryClient';
 import router from '../router';
 
@@ -188,12 +189,13 @@ export const useAuthStore = defineStore(
 					token.value = newJwtToken;
 					localStorage.setItem( 'dame_jwt_token', token.value );
 					console.log( 'Token refreshed successfully.' );
-				} else {
+				}
+			} catch ( refreshError: any ) {
+				console.warn( 'Token refresh failed:', refreshError );
+				const msg = String( refreshError?.data?.message || refreshError?.message || '' ).toLowerCase();
+				if ( msg.includes( 'expired' ) || msg.includes( 'invalid' ) || msg.includes( 'revoked' ) ) {
 					logout();
 				}
-			} catch ( refreshError ) {
-				console.warn( 'Token refresh failed:', refreshError );
-				logout();
 			}
 		};
 
@@ -208,9 +210,12 @@ export const useAuthStore = defineStore(
 				if ( response && response.success === false ) {
 					await tryRefreshToken();
 				}
-			} catch ( error ) {
+			} catch ( error: any ) {
 				console.warn( 'Session validation failed:', error );
-				await tryRefreshToken();
+				const msg = String( error?.data?.message || error?.message || '' ).toLowerCase();
+				if ( msg.includes( 'expired' ) || msg.includes( 'invalid' ) || msg.includes( 'revoked' ) ) {
+					await tryRefreshToken();
+				}
 			}
 		};
 
@@ -393,22 +398,42 @@ export const useAuthStore = defineStore(
 			}
 		};
 
-		const checkIdentities = async ( jwtToken: string ) => {
-			try {
+		// Query TanStack pour les identités rattachées au compte
+		const {
+			data: queryIdentities,
+			refetch: refetchIdentities,
+			isLoading: isIdentitiesLoading,
+		} = useQuery< Identity[] >( {
+			queryKey: [ 'identities', token ],
+			enabled: computed( () => !! token.value ),
+			queryFn: async () => {
+				if ( ! token.value ) return [];
 				const response = await fetch(
-					`${
-						import.meta.env.VITE_API_BASE_URL
-					}/dame/v1/my-identities`,
+					`${ import.meta.env.VITE_API_BASE_URL }/dame/v1/my-identities`,
 					{
-						headers: { Authorization: `Bearer ${ jwtToken }` },
+						headers: { Authorization: `Bearer ${ token.value }` },
 					}
 				);
-
 				if ( ! response.ok ) {
-					throw new Error();
+					throw new Error( 'Impossible de charger les identités.' );
 				}
+				return response.json();
+			},
+		} );
 
-				const identities: Identity[] = await response.json();
+		const myIdentities = computed( () => queryIdentities.value || [] );
+
+		const fetchMyIdentities = async () => {
+			const res = await refetchIdentities();
+			return res.data || [];
+		};
+
+		const checkIdentities = async ( token?: string ) => {
+			try {
+				if ( token ) {
+					// Utilisation du jeton si nécessaire
+				}
+				const identities = await fetchMyIdentities();
 
 				if ( identities.length === 1 ) {
 					selectIdentity( identities[ 0 ] );
@@ -571,6 +596,9 @@ export const useAuthStore = defineStore(
 			validateSession,
 			apprentissageAllowedRoles,
 			canAccessApprentissage,
+			myIdentities,
+			fetchMyIdentities,
+			isIdentitiesLoading,
 		};
 	},
 	{

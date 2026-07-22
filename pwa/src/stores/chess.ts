@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useAuthStore } from './auth';
+import { useQueryClient } from '@tanstack/vue-query';
 
 export interface PendingGame {
 	member_id: number;
@@ -15,6 +16,7 @@ export interface PendingGame {
 export const useChessStore = defineStore(
 	'chess',
 	() => {
+		const queryClient = useQueryClient();
 		const currentPgn = ref( '' );
 		const orientation = ref< 'white' | 'black' >( 'white' );
 		const engineElo = ref( 1320 );
@@ -89,6 +91,8 @@ export const useChessStore = defineStore(
 				if ( ! response.ok ) {
 					throw new Error( 'Erreur de sauvegarde serveur' );
 				}
+
+				queryClient.invalidateQueries( { queryKey: [ 'saved-games' ] } );
 			} catch ( error ) {
 				console.warn(
 					"Échec de l'envoi immédiat, mise en file d'attente hors ligne:",

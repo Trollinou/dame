@@ -177,13 +177,8 @@ const identitiesCount = ref(0);
 const checkMultipleIdentities = async () => {
   if (!authStore.isAuthenticated) return;
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dame/v1/my-identities`, {
-      headers: { 'Authorization': `Bearer ${authStore.token}` }
-    });
-    if (response.ok) {
-      const data = await response.json();
-      identitiesCount.value = data.length;
-    }
+    const data = await authStore.fetchMyIdentities();
+    identitiesCount.value = data.length;
   } catch (error) {
     console.warn("Erreur chargement identités dans profil:", error);
   }

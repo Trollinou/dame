@@ -341,7 +341,9 @@ const initExercice = () => {
       try {
         const mv = helperChess.move(history[indexCoupATrouver - 1]);
         lastMoveHighlight = [mv.from, mv.to];
-      } catch (err) {}
+      } catch {
+        // Ignorer si le coup ne peut pas être joué
+      }
     }
 
     solutions.push({

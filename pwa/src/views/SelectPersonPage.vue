@@ -67,47 +67,32 @@ import {
   IonButtons,
   IonBackButton,
   onIonViewWillEnter,
-  onIonViewWillLeave,
-  onIonViewDidLeave
+  onIonViewWillLeave
 } from '@ionic/vue';
 import { 
   peopleOutline, 
   personOutline, 
   chevronForwardOutline 
 } from 'ionicons/icons';
-import { ref } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore, type Identity } from '@/stores/auth';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const identities = ref<Identity[]>([]);
-const isLoading = ref(true);
+const identities = computed( () => authStore.myIdentities );
+const isLoading = computed( () => authStore.isIdentitiesLoading );
 
 const fetchIdentities = async () => {
-  // Purge de sécurité avant le chargement
-  identities.value = [];
-  isLoading.value = true;
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dame/v1/my-identities`, {
-      headers: { 'Authorization': `Bearer ${authStore.token}` },
-      cache: 'no-store' // Force à ne pas utiliser le cache du navigateur
-    });
-    if (response.ok) {
-      identities.value = await response.json();
-      // Si par hasard on arrive ici alors qu'il n'y a plus qu'un profil
-      if (identities.value.length === 1) {
-        handleSelect(identities.value[0]);
-      }
-    } else {
-      router.push('/tabs/home');
+    const list = await authStore.fetchMyIdentities();
+    if (list.length === 1) {
+      handleSelect(list[0]);
     }
   } catch (error) {
     console.error("Erreur chargement identités:", error);
     router.push('/tabs/home');
-  } finally {
-    isLoading.value = false;
   }
 };
 
@@ -128,11 +113,6 @@ onIonViewWillLeave(() => {
   if (document.activeElement instanceof HTMLElement) {
     document.activeElement.blur();
   }
-});
-
-onIonViewDidLeave(() => {
-  // Purge garantie quand on quitte la vue (déconnexion ou sélection validée)
-  identities.value = [];
 });
 </script>
 

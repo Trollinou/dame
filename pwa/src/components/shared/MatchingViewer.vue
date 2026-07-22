@@ -396,7 +396,7 @@ const validerAssociations = async () => {
   width: 100%;
   aspect-ratio: 1;
   pointer-events: none;
-  border-radius: 6px;
+  border-radius: 0;
   overflow: hidden;
 }
 

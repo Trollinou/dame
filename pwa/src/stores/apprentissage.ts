@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useAuthStore } from './auth';
 import { safeFetch } from '@/utils/safeFetch';
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
 
 export interface ExerciceConfig {
 	shapes?: any[];
@@ -35,15 +36,138 @@ export interface Cours {
 	playlist: PlaylistItem[];
 }
 
-
 export const useApprentissageStore = defineStore( 'apprentissage', () => {
 	const authStore = useAuthStore();
+	const queryClient = useQueryClient();
 
-	// State
-	const parcours = ref< Cours[] >( [] );
-	const contenuActuel = ref< Contenu | null >( null );
-	const elementsValides = ref< number[] >( [] );
-	const isLoading = ref( false );
+	const contenuActuelId = ref< number | null >( null );
+	const isCustomLoading = ref( false );
+
+	// Headers de sécurité
+	const getAuthHeaders = (): Record< string, string > => {
+		const token = localStorage.getItem( 'dame_jwt_token' );
+		const headers: Record< string, string > = {
+			'Content-Type': 'application/json',
+		};
+		if ( token ) {
+			headers.Authorization = `Bearer ${ token }`;
+		}
+		if ( authStore.selectedIdentity?.id ) {
+			headers['X-Selected-Identity'] = authStore.selectedIdentity.id;
+		}
+		return headers;
+	};
+
+	// 1. Query des Parcours
+	const {
+		data: queryParcours,
+		isLoading: isParcoursLoading,
+		refetch: refetchParcours,
+	} = useQuery< Cours[] >( {
+		queryKey: [
+			'parcours',
+			computed( () => authStore.selectedIdentity?.id || 'default' ),
+		],
+		queryFn: async () => {
+			const apiUrl = import.meta.env.VITE_API_BASE_URL;
+			const response = await safeFetch(
+				`${ apiUrl }/roi/v1/parcours`,
+				{ method: 'GET', headers: getAuthHeaders() },
+				5000
+			);
+
+			if (
+				response.status === 401 &&
+				localStorage.getItem( 'dame_jwt_token' )
+			) {
+				authStore.logout();
+				throw new Error( 'Session expirée' );
+			}
+			if ( ! response.ok ) {
+				throw new Error( 'Impossible de charger les parcours.' );
+			}
+			return response.json();
+		},
+	} );
+
+	// 2. Query de Progression
+	const {
+		data: queryProgression,
+		refetch: refetchProgression,
+	} = useQuery< number[] >( {
+		queryKey: [
+			'progression',
+			computed( () => authStore.selectedIdentity?.id || 'default' ),
+		],
+		queryFn: async () => {
+			const apiUrl = import.meta.env.VITE_API_BASE_URL;
+			const response = await safeFetch(
+				`${ apiUrl }/roi/v1/progression`,
+				{ method: 'GET', headers: getAuthHeaders() },
+				5000
+			);
+
+			if (
+				response.status === 401 &&
+				localStorage.getItem( 'dame_jwt_token' )
+			) {
+				authStore.logout();
+				throw new Error( 'Session expirée' );
+			}
+			if ( ! response.ok ) {
+				throw new Error( 'Impossible de charger la progression.' );
+			}
+			const data = await response.json();
+			return Array.isArray( data ) ? data : data.elements_valides || [];
+		},
+	} );
+
+	// 3. Query du Contenu Actuel
+	const {
+		data: queryContenu,
+		isLoading: isContenuLoading,
+	} = useQuery< Contenu | null >( {
+		queryKey: [
+			'contenu',
+			contenuActuelId,
+			computed( () => authStore.selectedIdentity?.id || 'default' ),
+		],
+		enabled: computed( () => contenuActuelId.value !== null ),
+		queryFn: async () => {
+			if ( ! contenuActuelId.value ) return null;
+			const apiUrl = import.meta.env.VITE_API_BASE_URL;
+			const response = await safeFetch(
+				`${ apiUrl }/roi/v1/contenu/${ contenuActuelId.value }`,
+				{ method: 'GET', headers: getAuthHeaders() },
+				5000
+			);
+
+			if (
+				response.status === 401 &&
+				localStorage.getItem( 'dame_jwt_token' )
+			) {
+				authStore.logout();
+				throw new Error( 'Session expirée' );
+			}
+			if ( ! response.ok ) {
+				throw new Error(
+					`Impossible de charger le contenu ${ contenuActuelId.value }.`
+				);
+			}
+			return response.json();
+		},
+	} );
+
+	// Computed properties
+	const parcours = computed( () => queryParcours.value || [] );
+	const elementsValides = computed( () => queryProgression.value || [] );
+	const contenuActuel = computed( () => queryContenu.value || null );
+	const isLoading = computed(
+		() =>
+			isParcoursLoading.value ||
+			isContenuLoading.value ||
+			isCustomLoading.value
+	);
 
 	// Getters
 	const isCoursUnlocked = computed( () => {
@@ -55,7 +179,7 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 			if ( ! coursPrecedent ) {
 				return false;
 			}
-			return coursPrecedent.playlist.every( item =>
+			return coursPrecedent.playlist.every( ( item ) =>
 				elementsValides.value.includes( item.id )
 			);
 		};
@@ -83,185 +207,45 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 
 	// Actions
 	const fetchParcours = async (): Promise< void > => {
-		isLoading.value = true;
-		try {
-			const token = localStorage.getItem( 'dame_jwt_token' );
-			const apiUrl = import.meta.env.VITE_API_BASE_URL;
-			const headers: Record< string, string > = {
-				'Content-Type': 'application/json',
-			};
-
-			if ( token ) {
-				headers.Authorization = `Bearer ${ token }`;
-			}
-
-			if ( authStore.selectedIdentity?.id ) {
-				headers['X-Selected-Identity'] = authStore.selectedIdentity.id;
-			}
-
-			const response = await safeFetch(
-				`${ apiUrl }/roi/v1/parcours`,
-				{
-					method: 'GET',
-					headers,
-				},
-				5000
-			);
-
-			if ( response.status === 401 && token ) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
-
-			if ( ! response.ok ) {
-				throw new Error( 'Impossible de charger les parcours.' );
-			}
-
-			const data = await response.json();
-			parcours.value = data;
-		} catch ( error ) {
-			console.error(
-				'Erreur lors de la récupération des parcours :',
-				error
-			);
-		} finally {
-			isLoading.value = false;
-		}
+		await refetchParcours();
 	};
 
 	const fetchProgression = async (): Promise< void > => {
-		try {
-			const token = localStorage.getItem( 'dame_jwt_token' );
-			const apiUrl = import.meta.env.VITE_API_BASE_URL;
-			const headers: Record< string, string > = {
-				'Content-Type': 'application/json',
-			};
-
-			if ( token ) {
-				headers.Authorization = `Bearer ${ token }`;
-			}
-
-			if ( authStore.selectedIdentity?.id ) {
-				headers['X-Selected-Identity'] = authStore.selectedIdentity.id;
-			}
-
-			const response = await safeFetch(
-				`${ apiUrl }/roi/v1/progression`,
-				{
-					method: 'GET',
-					headers,
-				},
-				5000
-			);
-
-			if ( response.status === 401 && token ) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
-
-			if ( ! response.ok ) {
-				throw new Error( 'Impossible de charger la progression.' );
-			}
-
-			const data = await response.json();
-			elementsValides.value = Array.isArray( data )
-				? data
-				: ( data.elements_valides || [] );
-		} catch ( error ) {
-			console.error(
-				'Erreur lors de la récupération de la progression :',
-				error
-			);
-		}
+		await refetchProgression();
 	};
 
 	const fetchContenu = async ( id: number ): Promise< void > => {
-		isLoading.value = true;
-		try {
-			const token = localStorage.getItem( 'dame_jwt_token' );
-			const apiUrl = import.meta.env.VITE_API_BASE_URL;
-			const headers: Record< string, string > = {
-				'Content-Type': 'application/json',
-			};
-
-			if ( token ) {
-				headers.Authorization = `Bearer ${ token }`;
-			}
-
-			if ( authStore.selectedIdentity?.id ) {
-				headers['X-Selected-Identity'] = authStore.selectedIdentity.id;
-			}
-
-			const response = await safeFetch(
-				`${ apiUrl }/roi/v1/contenu/${ id }`,
-				{
-					method: 'GET',
-					headers,
-				},
-				5000
-			);
-
-			if ( response.status === 401 && token ) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
-
-			if ( ! response.ok ) {
-				throw new Error( `Impossible de charger le contenu ${ id }.` );
-			}
-
-			const data = await response.json();
-			contenuActuel.value = data;
-		} catch ( error ) {
-			console.error(
-				'Erreur lors de la récupération du contenu :',
-				error
-			);
-		} finally {
-			isLoading.value = false;
-		}
+		contenuActuelId.value = id;
 	};
 
 	const validerElement = async ( id: number ): Promise< void > => {
 		try {
-			const token = localStorage.getItem( 'dame_jwt_token' );
 			const apiUrl = import.meta.env.VITE_API_BASE_URL;
-			const headers: Record< string, string > = {
-				'Content-Type': 'application/json',
-			};
-
-			if ( token ) {
-				headers.Authorization = `Bearer ${ token }`;
-			}
-
-			if ( authStore.selectedIdentity?.id ) {
-				headers['X-Selected-Identity'] = authStore.selectedIdentity.id;
-			}
-
 			const response = await safeFetch(
 				`${ apiUrl }/roi/v1/progression`,
 				{
 					method: 'POST',
-					headers,
+					headers: getAuthHeaders(),
 					body: JSON.stringify( { element_id: id } ),
 				},
 				5000
 			);
 
-			if ( response.status === 401 && token ) {
+			if (
+				response.status === 401 &&
+				localStorage.getItem( 'dame_jwt_token' )
+			) {
 				authStore.logout();
 				throw new Error( 'Session expirée' );
 			}
-
 			if ( ! response.ok ) {
-				throw new Error(
-					`Impossible de valider l'élément ${ id }.`
-				);
+				throw new Error( `Impossible de valider l'élément ${ id }.` );
 			}
 
-			if ( ! elementsValides.value.includes( id ) ) {
-				elementsValides.value.push( id );
-			}
+			// Invalidation du cache de progression pour forcer la mise à jour réactive
+			await queryClient.invalidateQueries( {
+				queryKey: [ 'progression' ],
+			} );
 		} catch ( error ) {
 			console.error(
 				"Erreur lors de la validation de l'élément :",
@@ -271,10 +255,10 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 	};
 
 	const clearData = () => {
-		parcours.value = [];
-		contenuActuel.value = null;
-		elementsValides.value = [];
-		isLoading.value = false;
+		contenuActuelId.value = null;
+		queryClient.removeQueries( { queryKey: [ 'parcours' ] } );
+		queryClient.removeQueries( { queryKey: [ 'progression' ] } );
+		queryClient.removeQueries( { queryKey: [ 'contenu' ] } );
 	};
 
 	return {

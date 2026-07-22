@@ -207,12 +207,8 @@ const checkUnregisteredTargets = async () => {
     return;
   }
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dame/v1/my-identities`, {
-      headers: { 'Authorization': `Bearer ${authStore.token}` }
-    });
-    if (response.ok) {
-      const identities = await response.json();
-      let hasAny = false;
+    const identities = await authStore.fetchMyIdentities();
+    let hasAny = false;
       identities.forEach((identity: any) => {
         if (identity.type === 'member' && identity.member_id > 0 && !identity.already_registered) {
           hasAny = true;
@@ -226,7 +222,6 @@ const checkUnregisteredTargets = async () => {
         }
       });
       hasUnregisteredTargets.value = hasAny;
-    }
   } catch (err) {
     console.error("Erreur lors de la vérification des adhérents non-inscrits:", err);
     hasUnregisteredTargets.value = true; // Par précaution, afficher la carte

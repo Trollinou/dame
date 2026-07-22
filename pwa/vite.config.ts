@@ -74,14 +74,22 @@ export default defineConfig( {
 			output: {
 				manualChunks( id ) {
 					if ( id.includes( 'node_modules' ) ) {
-						if ( id.includes( 'vue' ) || id.includes( 'pinia' ) ) {
+						if (
+							id.includes( 'node_modules/vue/' ) ||
+							id.includes( 'node_modules/@vue/' ) ||
+							id.includes( 'node_modules/pinia/' ) ||
+							id.includes( 'node_modules/vue-router/' )
+						) {
 							return 'vue-vendor';
 						}
 						if (
-							id.includes( '@ionic' ) ||
-							id.includes( 'ionicons' )
+							id.includes( 'node_modules/@ionic/' ) ||
+							id.includes( 'node_modules/ionicons/' )
 						) {
 							return 'ionic-vendor';
+						}
+						if ( id.includes( 'node_modules/@tanstack/' ) ) {
+							return 'tanstack-vendor';
 						}
 					}
 				},

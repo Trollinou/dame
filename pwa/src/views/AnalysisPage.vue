@@ -334,10 +334,10 @@ onIonViewWillLeave(() => {
   position: relative;
 }
 
-/* Agrandissement tablettes Portrait */
+/* Agrandissement adaptatif tablettes Portrait (évite tout tronquage/débordement vertical) */
 @media (min-width: 768px) and (orientation: portrait) {
   .board-container {
-    max-width: 760px; /* Augmenté pour mieux remplir l'iPad */
+    max-width: min(720px, 60vh);
   }
 }
 
@@ -364,9 +364,10 @@ onIonViewWillLeave(() => {
 }
 
 .landscape-mode .board-container {
-  /* En paysage classique (iPad), on maximise la taille */
-  width: 80vh !important;
-  height: 80vh !important;
+  /* Adaptatif paysage tablette/desktop sans tronquage */
+  width: min(75vh, 50vw) !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
   max-width: 100%;
   margin: 0 auto !important;
   display: flex;

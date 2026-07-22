@@ -146,9 +146,9 @@ const validerChoix = async (index: number) => {
   aspect-ratio: 1;
   max-width: 500px;
   margin: 0 auto;
-  border-radius: 12px;
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: none;
   margin-bottom: 12px;
 }
 

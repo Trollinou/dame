@@ -3,165 +3,86 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
+          <ion-menu-button />
         </ion-buttons>
         <ion-title>Contacts</ion-title>
-      </ion-toolbar>
-      <ion-toolbar>
-        <ion-searchbar
-          v-model="searchQuery"
-          placeholder="Rechercher un contact..."
-          animated
-        ></ion-searchbar>
-      </ion-toolbar>
-      <ion-toolbar>
-        <ion-grid class="ion-no-padding">
-          <ion-row>
-            <ion-col size="4">
-              <ion-item lines="none" class="selector-item">
-                <ion-select
-                  v-model="selectedType"
-                  interface="action-sheet"
-                  label="Type"
-                  label-placement="stacked"
-                  class="custom-select"
-                >
-                  <ion-select-option value="all">Tous</ion-select-option>
-                  <ion-select-option
-                    v-for="type in contactTypes"
-                    :key="type.id"
-                    :value="type.id"
-                  >
-                    {{ type.name }}
-                  </ion-select-option>
-                </ion-select>
-              </ion-item>
-            </ion-col>
-            <ion-col size="4">
-              <ion-item lines="none" class="selector-item">
-                <ion-select
-                  v-model="selectedRegion"
-                  interface="action-sheet"
-                  label="Région"
-                  label-placement="stacked"
-                  class="custom-select"
-                >
-                  <ion-select-option value="all">Toutes</ion-select-option>
-                  <ion-select-option
-                    v-for="region in regions"
-                    :key="region.code"
-                    :value="region.code"
-                  >
-                    {{ region.name }}
-                  </ion-select-option>
-                </ion-select>
-              </ion-item>
-            </ion-col>
-            <ion-col size="4">
-              <ion-item lines="none" class="selector-item">
-                <ion-select
-                  v-model="selectedDepartment"
-                  interface="action-sheet"
-                  label="Dept."
-                  label-placement="stacked"
-                  class="custom-select"
-                >
-                  <ion-select-option value="all">Tous</ion-select-option>
-                  <ion-select-option
-                    v-for="dept in filteredDepartmentsList"
-                    :key="dept.code"
-                    :value="dept.code"
-                  >
-                    {{ dept.name }}
-                  </ion-select-option>
-                </ion-select>
-              </ion-item>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
       </ion-toolbar>
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
       <div class="safe-area-wrapper">
-        <div v-if="isLoading && contacts.length === 0" class="ion-text-center ion-padding">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Chargement des contacts...</p>
-        </div>
-
-        <ion-list v-else-if="filteredContacts.length > 0">
-          <ion-item 
-            v-for="contact in filteredContacts" 
-            :key="contact.id" 
-            :id="'contact-' + contact.id"
-            button 
-            @click="goToDetail(contact.id)"
-          >
+        <DataTable
+          :data="contacts"
+          :columns="columns"
+          :is-loading="isLoading"
+          search-placeholder="Rechercher un contact..."
+          :filters="filterConfigs"
+          :export-config="exportConfig"
+          empty-text="Aucun contact trouvé."
+          :on-row-click="goToDetail"
+        >
+          <!-- Slots personnalisés pour le rendu mobile -->
+          <template #mobile-item="{ row }">
             <ion-label>
-              <h2 v-safe-html="contact.title.rendered"></h2>
+              <h2 v-safe-html="row.title.rendered"></h2>
+              <p v-if="row.meta?._dame_contact_organization">
+                {{ row.meta._dame_contact_organization }}
+              </p>
             </ion-label>
-          </ion-item>
-        </ion-list>
-
-        <div v-else class="ion-text-center ion-padding">
-          <p v-if="searchQuery">Aucun contact ne correspond à "{{ searchQuery }}".</p>
-          <p v-else>Aucun contact trouvé.</p>
-        </div>
+          </template>
+        </DataTable>
       </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
+import { h, ref, computed, watch } from 'vue';
 import {
   IonPage,
   IonHeader,
   IonToolbar,
   IonTitle,
   IonContent,
-  IonSearchbar,
-  IonList,
-  IonItem,
   IonLabel,
-  IonSpinner,
-  IonSelect,
-  IonSelectOption,
-  IonGrid,
-  IonRow,
-  IonCol,
   IonButtons,
   IonMenuButton,
-  onIonViewWillEnter,
-  onIonViewDidEnter
+  onIonViewWillEnter
 } from '@ionic/vue';
-import { ref, computed, nextTick, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { useContactStore } from '../stores/contacts';
+import { useContactStore, type Contact } from '../stores/contacts';
 import { useReferenceDataStore } from '../stores/referenceData';
 import { storeToRefs } from 'pinia';
+import {
+  DataTable,
+  type CustomColumnDef,
+  type DataTableFilterConfig,
+  type DataTableExportConfig
+} from '../components/shared/DataTable';
 
 const router = useRouter();
 const contactStore = useContactStore();
 const referenceDataStore = useReferenceDataStore();
+
 const { contacts, contactTypes, isLoading } = storeToRefs(contactStore);
 const { regions, departments, deptRegionMap } = storeToRefs(referenceDataStore);
 
-const searchQuery = ref('');
 const selectedType = ref<number | 'all'>('all');
 const selectedRegion = ref<string | 'all'>('all');
 const selectedDepartment = ref<string | 'all'>('all');
-const lastViewedContactId = ref<number | null>(null);
 
 /**
  * Départements filtrés par la région sélectionnée
  */
 const filteredDepartmentsList = computed(() => {
   if (selectedRegion.value === 'all') return departments.value;
-  return departments.value.filter(dept => deptRegionMap.value[dept.code] === selectedRegion.value);
+  return departments.value.filter(
+    (dept) => deptRegionMap.value[dept.code] === selectedRegion.value
+  );
 });
 
 /**
- * Surveillance du changement de région : on réinitialise le département s'il n'est plus valide
+ * Surveillance du changement de région : réinitialise le département s'il n'est plus valide
  */
 watch(selectedRegion, (newRegion) => {
   if (newRegion !== 'all' && selectedDepartment.value !== 'all') {
@@ -173,7 +94,7 @@ watch(selectedRegion, (newRegion) => {
 });
 
 /**
- * Surveillance du changement de département : on sélectionne la région correspondante
+ * Surveillance du changement de département : ajuste la région correspondante
  */
 watch(selectedDepartment, (newDept) => {
   if (newDept !== 'all') {
@@ -184,59 +105,123 @@ watch(selectedDepartment, (newDept) => {
   }
 });
 
-const removeAccents = (str: string): string => {
-  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+const goToDetail = (row: Contact) => {
+  router.push('/admin/contact/' + row.id);
 };
 
-const goToDetail = (id: number) => {
-  lastViewedContactId.value = id;
-  router.push('/admin/contact/' + id);
+// Configuration des colonnes TanStack Table pour la vue Contacts
+const columns: CustomColumnDef<Contact>[] = [
+  {
+    id: 'name',
+    header: 'Nom',
+    accessorFn: (row) => row.title?.raw || row.title?.rendered || '',
+    cell: ({ row }) => h('span', { innerHTML: row.original.title.rendered }),
+    enableSorting: true
+  },
+  {
+    id: 'organization',
+    header: 'Organisme',
+    accessorFn: (row) => row.meta?._dame_contact_organization || '-',
+    enableSorting: true
+  },
+  {
+    id: 'contact-types',
+    header: 'Type',
+    accessorFn: (row) => row['contact-types'],
+    cell: ({ row }) => {
+      const typeIds = row.original['contact-types'] || [];
+      const names = typeIds
+        .map((id) => contactTypes.value.find((t) => t.id === id)?.name)
+        .filter(Boolean);
+      return names.length > 0 ? names.join(', ') : '-';
+    },
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue || filterValue === 'all') return true;
+      const typeIds = row.getValue(columnId) as number[];
+      return Array.isArray(typeIds) && typeIds.includes(Number(filterValue));
+    },
+    enableHiding: true
+  },
+  {
+    id: 'region',
+    header: 'Région',
+    accessorFn: (row) => row.meta?._dame_contact_region || '-',
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue || filterValue === 'all') return true;
+      return row.original.meta?._dame_contact_region === String(filterValue);
+    },
+    enableSorting: true
+  },
+  {
+    id: 'department',
+    header: 'Département',
+    accessorFn: (row) => row.meta?._dame_contact_department || '-',
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue || filterValue === 'all') return true;
+      return row.original.meta?._dame_contact_department === String(filterValue);
+    },
+    enableSorting: true
+  },
+  {
+    id: 'email',
+    header: 'E-mail',
+    accessorFn: (row) => row.meta?._dame_contact_email || '-',
+    enableSorting: true
+  },
+  {
+    id: 'phone',
+    header: 'Téléphone',
+    accessorFn: (row) => row.meta?._dame_contact_phone || '-',
+    enableSorting: true
+  }
+];
+
+// Configuration des filtres facettés pour Contacts
+const filterConfigs = computed<DataTableFilterConfig[]>(() => [
+  {
+    id: 'contact-types',
+    label: 'Type',
+    defaultValue: selectedType.value,
+    options: [
+      { label: 'Tous les types', value: 'all' },
+      ...contactTypes.value.map((t) => ({ label: t.name, value: t.id }))
+    ]
+  },
+  {
+    id: 'region',
+    label: 'Région',
+    defaultValue: selectedRegion.value,
+    options: [
+      { label: 'Toutes les régions', value: 'all' },
+      ...regions.value.map((r) => ({ label: r.name, value: r.code }))
+    ]
+  },
+  {
+    id: 'department',
+    label: 'Dept.',
+    defaultValue: selectedDepartment.value,
+    options: [
+      { label: 'Tous les départements', value: 'all' },
+      ...filteredDepartmentsList.value.map((d) => ({ label: d.name, value: d.code }))
+    ]
+  }
+]);
+
+// Configuration de l'export CSV pour Contacts
+const exportConfig: DataTableExportConfig<Contact> = {
+  filename: 'contacts',
+  columns: [
+    { header: 'ID', accessor: (c) => c.id },
+    { header: 'Nom', accessor: (c) => c.title?.raw || c.title?.rendered || '' },
+    { header: 'Organisme', accessor: (c) => c.meta?._dame_contact_organization || '' },
+    { header: 'Rôle', accessor: (c) => c.meta?._dame_contact_role || '' },
+    { header: 'Région', accessor: (c) => c.meta?._dame_contact_region || '' },
+    { header: 'Département', accessor: (c) => c.meta?._dame_contact_department || '' },
+    { header: 'Ville', accessor: (c) => c.meta?._dame_contact_city || '' },
+    { header: 'E-mail', accessor: (c) => c.meta?._dame_contact_email || '' },
+    { header: 'Téléphone', accessor: (c) => c.meta?._dame_contact_phone || '' }
+  ]
 };
-
-const scrollToTarget = () => {
-  if (lastViewedContactId.value) {
-    const el = document.getElementById('contact-' + lastViewedContactId.value);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }
-};
-
-const filteredContacts = computed(() => {
-  let result = contacts.value;
-
-  // Filtrage par type
-  if (selectedType.value !== 'all') {
-    result = result.filter(contact => 
-      contact['contact-types'] && contact['contact-types'].includes(selectedType.value as number)
-    );
-  }
-
-  // Filtrage par région
-  if (selectedRegion.value !== 'all') {
-    result = result.filter(contact => 
-      contact.meta?._dame_contact_region === selectedRegion.value
-    );
-  }
-
-  // Filtrage par département
-  if (selectedDepartment.value !== 'all') {
-    result = result.filter(contact => 
-      contact.meta?._dame_contact_department === selectedDepartment.value
-    );
-  }
-
-  // Filtrage par recherche
-  if (searchQuery.value.trim()) {
-    const query = removeAccents(searchQuery.value.toLowerCase());
-    result = result.filter(contact => {
-      const name = removeAccents((contact.title.rendered || "").toLowerCase());
-      return name.includes(query);
-    });
-  }
-
-  return result;
-});
 
 onIonViewWillEnter(async () => {
   contactStore.fetchContacts();
@@ -244,14 +229,6 @@ onIonViewWillEnter(async () => {
   referenceDataStore.fetchRegions();
   referenceDataStore.fetchDepartments();
   referenceDataStore.fetchMapping();
-  await nextTick();
-  setTimeout(scrollToTarget, 200);
-});
-
-onIonViewDidEnter(() => {
-  if (!isLoading.value && contacts.value.length > 0) {
-    setTimeout(scrollToTarget, 100);
-  }
 });
 </script>
 
@@ -260,17 +237,4 @@ onIonViewDidEnter(() => {
   padding-left: var(--ion-safe-area-left, 0);
   padding-right: var(--ion-safe-area-right, 0);
 }
-
-.selector-item {
-  --padding-start: 8px;
-  --padding-end: 8px;
-  --min-height: 54px;
-}
-
-.custom-select {
-  width: 100%;
-  font-size: 0.85rem;
-}
-
-ion-list { margin-top: 8px; }
 </style>

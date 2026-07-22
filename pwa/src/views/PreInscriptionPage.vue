@@ -745,12 +745,8 @@ onIonViewWillEnter(async () => {
   
   if (authStore.isAuthenticated) {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/dame/v1/my-identities`, {
-        headers: { 'Authorization': `Bearer ${authStore.token}` }
-      });
-      if (response.ok) {
-        const identities = await response.json();
-        const targets: any[] = [];
+      const identities = await authStore.fetchMyIdentities();
+      const targets: any[] = [];
         
         // 1. Chercher si l'utilisateur lui-même a des fiches adhérents directes
         identities.forEach((identity: any) => {
@@ -787,7 +783,6 @@ onIonViewWillEnter(async () => {
           selectedTargetId.value = authStore.selectedIdentity.member_id;
           prefillAdherent(authStore.selectedIdentity.member_id);
         }
-      }
     } catch (err) {
       console.error("Erreur lors du chargement des identités:", err);
     }

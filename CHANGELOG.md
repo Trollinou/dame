@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.8.2] - 2026-07-22
+
+### Application Mobile (PWA)
+- **Intégration TanStack Table (`@tanstack/vue-table`) :**
+  - Refonte complète des grilles d'administration (Adhérents `MembersPage`, Contacts `ContactsPage`, Messages `MessagesPage`, Bénévolat `BenevolatPage`) en composants réutilisables (`DataTable.vue`, `DataTableToolbar.vue`, `DataTablePagination.vue`).
+  - Implémentation du moteur d'exportation universel CSV/Excel avec support UTF-8 BOM (`csvExport.ts`).
+  - Intégration de la recherche multi-critères insensible aux accents et des filtres facettés dynamiques.
+  - Tri spécialisé des catégories d'âge FFE (U8 -> Vétéran) et des statistiques d'ouverture de messages.
+- **Navigation & Authentification :**
+  - Remplacement du rechargement web (`window.location.reload()`) par `ionRouter.navigate('/tabs/home', 'root', 'replace')` lors du retour à l'espace public dans `AdminLayout.vue` pour réinitialiser la pile d'onglets Ionic sans détruire la SPA.
+  - Sécurisation de `validateSession()` et `tryRefreshToken()` dans `auth.ts` pour empêcher les déconnexions automatiques intempestives lors d'interruptions réseau temporaires.
+- **Optimisation de Build :**
+  - Restructuration des paquets de vendeurs (`manualChunks` dans `vite.config.ts`) pour isoler `vue-vendor`, `ionic-vendor` et `tanstack-vendor`.
+
 ## [4.8.1] - 2026-07-18
 
 ### Application Mobile (PWA)
