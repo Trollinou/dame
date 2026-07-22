@@ -64,10 +64,10 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 		isLoading: isParcoursLoading,
 		refetch: refetchParcours,
 	} = useQuery< Cours[] >( {
-		queryKey: [
+		queryKey: computed( () => [
 			'parcours',
-			computed( () => authStore.selectedIdentity?.id || 'default' ),
-		],
+			authStore.selectedIdentity?.id || 'default',
+		] ),
 		queryFn: async () => {
 			const apiUrl = import.meta.env.VITE_API_BASE_URL;
 			const response = await safeFetch(
@@ -95,10 +95,10 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 		data: queryProgression,
 		refetch: refetchProgression,
 	} = useQuery< number[] >( {
-		queryKey: [
+		queryKey: computed( () => [
 			'progression',
-			computed( () => authStore.selectedIdentity?.id || 'default' ),
-		],
+			authStore.selectedIdentity?.id || 'default',
+		] ),
 		queryFn: async () => {
 			const apiUrl = import.meta.env.VITE_API_BASE_URL;
 			const response = await safeFetch(
@@ -127,11 +127,11 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 		data: queryContenu,
 		isLoading: isContenuLoading,
 	} = useQuery< Contenu | null >( {
-		queryKey: [
+		queryKey: computed( () => [
 			'contenu',
-			contenuActuelId,
-			computed( () => authStore.selectedIdentity?.id || 'default' ),
-		],
+			contenuActuelId.value,
+			authStore.selectedIdentity?.id || 'default',
+		] ),
 		enabled: computed( () => contenuActuelId.value !== null ),
 		queryFn: async () => {
 			if ( ! contenuActuelId.value ) return null;
@@ -163,10 +163,7 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 	const elementsValides = computed( () => queryProgression.value || [] );
 	const contenuActuel = computed( () => queryContenu.value || null );
 	const isLoading = computed(
-		() =>
-			isParcoursLoading.value ||
-			isContenuLoading.value ||
-			isCustomLoading.value
+		() => isParcoursLoading.value || isCustomLoading.value
 	);
 
 	// Getters
@@ -214,8 +211,34 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 		await refetchProgression();
 	};
 
-	const fetchContenu = async ( id: number ): Promise< void > => {
+	const fetchContenu = async ( id: number ): Promise< Contenu | null > => {
 		contenuActuelId.value = id;
+		const identityId = authStore.selectedIdentity?.id || 'default';
+		return await queryClient.ensureQueryData< Contenu | null >( {
+			queryKey: [ 'contenu', id, identityId ],
+			queryFn: async () => {
+				const apiUrl = import.meta.env.VITE_API_BASE_URL;
+				const response = await safeFetch(
+					`${ apiUrl }/roi/v1/contenu/${ id }`,
+					{ method: 'GET', headers: getAuthHeaders() },
+					5000
+				);
+
+				if (
+					response.status === 401 &&
+					localStorage.getItem( 'dame_jwt_token' )
+				) {
+					authStore.logout();
+					throw new Error( 'Session expirée' );
+				}
+				if ( ! response.ok ) {
+					throw new Error(
+						`Impossible de charger le contenu ${ id }.`
+					);
+				}
+				return response.json();
+			},
+		} );
 	};
 
 	const validerElement = async ( id: number ): Promise< void > => {
@@ -254,6 +277,30 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 		}
 	};
 
+	const prefetchCoursContenus = ( coursId: number ): void => {
+		const coursTarget = parcours.value.find( ( c ) => c.id === coursId );
+		if ( ! coursTarget || ! coursTarget.playlist ) return;
+
+		const identityId = authStore.selectedIdentity?.id || 'default';
+		const apiUrl = import.meta.env.VITE_API_BASE_URL;
+
+		coursTarget.playlist.forEach( ( item ) => {
+			queryClient.prefetchQuery( {
+				queryKey: [ 'contenu', item.id, identityId ],
+				queryFn: async () => {
+					const response = await safeFetch(
+						`${ apiUrl }/roi/v1/contenu/${ item.id }`,
+						{ method: 'GET', headers: getAuthHeaders() },
+						5000
+					);
+					if ( ! response.ok ) return null;
+					return response.json();
+				},
+				staleTime: 1000 * 60 * 60,
+			} );
+		} );
+	};
+
 	const clearData = () => {
 		contenuActuelId.value = null;
 		queryClient.removeQueries( { queryKey: [ 'parcours' ] } );
@@ -266,11 +313,13 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 		contenuActuel,
 		elementsValides,
 		isLoading,
+		isContenuLoading,
 		isCoursUnlocked,
 		isElementUnlocked,
 		fetchParcours,
 		fetchProgression,
 		fetchContenu,
+		prefetchCoursContenus,
 		validerElement,
 		clearData,
 	};

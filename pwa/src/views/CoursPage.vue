@@ -103,7 +103,7 @@ import {
   IonIcon,
   IonButton
 } from '@ionic/vue';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useApprentissageStore } from '@/stores/apprentissage';
 import {
@@ -134,6 +134,16 @@ const cours = computed(() => {
   return null;
 });
 
+watch(
+  () => cours.value,
+  (newCours) => {
+    if (newCours?.id) {
+      apprentissageStore.prefetchCoursContenus(newCours.id);
+    }
+  },
+  { immediate: true }
+);
+
 const isUnlocked = (playlistIndex: number): boolean => {
   if (coursIndex.value === -1) return false;
   return apprentissageStore.isElementUnlocked(coursIndex.value, playlistIndex);
@@ -149,6 +159,9 @@ onMounted(async () => {
   }
   if (apprentissageStore.elementsValides.length === 0) {
     await apprentissageStore.fetchProgression();
+  }
+  if (coursId.value) {
+    apprentissageStore.prefetchCoursContenus(coursId.value);
   }
 });
 </script>

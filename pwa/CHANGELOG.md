@@ -4,6 +4,17 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.2] - 2026-07-22
+### Modifié
+- **Apprentissage (TanStack Query)** :
+  - Correction des délais de chargement lors de l'accès aux cours et leçons.
+  - Découplage de `isContenuLoading` dans `apprentissageStore` pour supprimer le spinner bloquant sur la vue du cours.
+  - Correction des `queryKey` réactives pour TanStack Vue Query.
+  - Ajout du pré-chargement en arrière-plan (`prefetchCoursContenus`) des leçons d'un cours pour une ouverture instantanée dès la première fois.
+- **Gestion des Adhérents (TanStack Table & DataTable)** :
+  - Ajout de la prise en charge de `:column-visibility` sur le composant réutilisable `DataTable`.
+  - Remplacement de la colonne visible "Saisons" par la colonne "Téléphone" dans la grille des adhérents, tout en conservant le filtre de sélection de saison actif.
+
 ## [4.8.1] - 2026-07-19
 ### Ajouté
 - **Exercice Type 7 — La Marche du Héros** :

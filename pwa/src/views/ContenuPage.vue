@@ -25,7 +25,7 @@
           </ion-toolbar>
         </ion-header>
 
-        <div v-if="isLoading" class="ion-text-center ion-padding spinner-container">
+        <div v-if="isPageLoading" class="ion-text-center ion-padding spinner-container">
           <ion-spinner name="crescent"></ion-spinner>
           <p>Chargement du contenu...</p>
         </div>
@@ -143,6 +143,7 @@ const route = useRoute();
 const router = useRouter();
 const apprentissageStore = useApprentissageStore();
 const isLoading = ref(true);
+const isPageLoading = computed(() => isLoading.value || apprentissageStore.isContenuLoading);
 const estReussi = ref(false);
 
 const contenuActuel = computed(() => apprentissageStore.contenuActuel);

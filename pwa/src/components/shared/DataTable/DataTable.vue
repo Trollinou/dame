@@ -152,11 +152,13 @@ import {
   type ColumnDef,
   type SortingState,
   type ColumnFiltersState,
+  type VisibilityState,
   type FilterFn
 } from '@tanstack/vue-table';
 import DataTableToolbar from './DataTableToolbar.vue';
 import DataTablePagination from './DataTablePagination.vue';
 import type { DataTableFilterConfig, DataTableExportConfig } from './types';
+import { watch } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -168,6 +170,7 @@ const props = withDefaults(
     searchPlaceholder?: string;
     filters?: DataTableFilterConfig[];
     exportConfig?: DataTableExportConfig<TData>;
+    columnVisibility?: VisibilityState;
     enablePagination?: boolean;
     pageSize?: number;
     emptyText?: string;
@@ -180,6 +183,7 @@ const props = withDefaults(
     searchPlaceholder: 'Rechercher...',
     filters: () => [],
     exportConfig: undefined,
+    columnVisibility: () => ({}),
     enablePagination: true,
     pageSize: 25,
     emptyText: 'Aucune donnée trouvée.',
@@ -190,6 +194,17 @@ const props = withDefaults(
 const sorting = ref<SortingState>([]);
 const columnFilters = ref<ColumnFiltersState>([]);
 const globalFilter = ref<string>('');
+const columnVisibility = ref<VisibilityState>(props.columnVisibility || {});
+
+watch(
+  () => props.columnVisibility,
+  (newVal) => {
+    if (newVal) {
+      columnVisibility.value = { ...newVal };
+    }
+  },
+  { deep: true, immediate: true }
+);
 
 const removeAccents = (str: string): string => {
   return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -223,6 +238,9 @@ const table = useVueTable({
     },
     get globalFilter() {
       return globalFilter.value;
+    },
+    get columnVisibility() {
+      return columnVisibility.value;
     }
   },
   onSortingChange: (updaterOrValue) => {
@@ -233,6 +251,9 @@ const table = useVueTable({
   },
   onGlobalFilterChange: (updaterOrValue) => {
     globalFilter.value = typeof updaterOrValue === 'function' ? updaterOrValue(globalFilter.value) : updaterOrValue;
+  },
+  onColumnVisibilityChange: (updaterOrValue) => {
+    columnVisibility.value = typeof updaterOrValue === 'function' ? updaterOrValue(columnVisibility.value) : updaterOrValue;
   },
   globalFilterFn: customGlobalFilterFn,
   getCoreRowModel: getCoreRowModel(),

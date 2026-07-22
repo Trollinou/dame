@@ -18,6 +18,7 @@
           search-placeholder="Rechercher un adhérent..."
           :filters="filterConfigs"
           :export-config="exportConfig"
+          :column-visibility="{ seasons: false }"
           empty-text="Aucun adhérent trouvé."
           :on-row-click="goToDetail"
         >
@@ -27,6 +28,9 @@
               <h2 v-safe-html="row.title.rendered"></h2>
               <p v-if="row.meta?._dame_license_number">
                 Licence : {{ row.meta._dame_license_number }}
+              </p>
+              <p v-if="row.meta?._dame_phone_number">
+                Tél : {{ row.meta._dame_phone_number }}
               </p>
             </ion-label>
             <ion-badge v-if="row.dame_age_category" slot="end" color="light">
@@ -127,6 +131,12 @@ const columns: CustomColumnDef<Member>[] = [
     id: 'elo',
     header: 'Elo Standard',
     accessorFn: (row) => row.meta?._dame_elo_standard || '-',
+    enableSorting: true
+  },
+  {
+    id: 'phone',
+    header: 'Téléphone',
+    accessorFn: (row) => row.meta?._dame_phone_number || '-',
     enableSorting: true
   },
   {
