@@ -1,4 +1,4 @@
-# AGENTS — Directives de Développement PWA (Vue 3 / Ionic / eg-chessboard)
+# AGENTS — Directives de Développement PWA (Vue 3 / Ionic / eg-chessboard / TanStack Table)
 
 Ce document définit les directives d'architecture, de charte graphique et de conception pour l'application PWA. Tout agent travaillant sur ce projet doit se conformer à ces règles.
 
@@ -8,25 +8,42 @@ Ce document définit les directives d'architecture, de charte graphique et de co
 - **UI Framework** : Ionic Vue (`@ionic/vue`).
 - **Store & État** : Pinia (`src/stores/`).
 - **Gestion des Requêtes & Caching API** : TanStack Query (`@tanstack/vue-query` + `persistQueryClient`).
+- **Gestion des Grilles & Tableaux de Données** : TanStack Table (`@tanstack/vue-table` + `DataTable.vue`).
 - **Composants d'Échiquier** : Module `eg-chessboard` (`TheChessboard` / `BoardCore`).
 
 ---
 
-## 2. RÈGLES DE DESIGN & ENCAPSULATION DE L'ÉCHIQUIER (`eg-chessboard`)
+## 2. GESTION DES LISTES & GRILLES DE DONNÉES (TANSTACK TABLE & EXPORT CSV)
+
+- **Composant Maître Unifié (`src/components/shared/DataTable/`)** :
+  - Toute liste d'administration ou grille de données tabulaires (membres, contacts, messages, bénévolat, etc.) doit **impérativement s'appuyer sur TanStack Table** via le wrapper réutilisable `DataTable.vue`.
+- **Rendu Responsive Dual-Mode** :
+  - **Desktop / Tablette (`>768px`)** : Rendu HTML Data Grid réactif avec en-têtes fixes (sticky), tri interactif sur les colonnes (`enableSorting: true`) et redimensionnement dynamique.
+  - **Mobile (`<=768px`)** : Rendu automatique sous forme de liste Ionic (`ion-list`) via le slot `#mobile-item` pour une lisibilité optimale sur petits écrans.
+- **Recherche & Filtres Facettés** :
+  - La recherche globale doit être insensible aux accents (via la fonction utilitaire `removeAccents`).
+  - Les filtres de vue doivent s'appuyer sur la configuration `DataTableFilterConfig` et utiliser des composants de choix Ionic ergonomiques (`action-sheet`).
+- **Exportation Universelle CSV / Excel** :
+  - Toute grille de données gérée par `DataTable` doit intégrer une configuration d'exportation `DataTableExportConfig`.
+  - L'exportation doit s'appuyer sur la fonction utilitaire `exportToCsv` (`src/utils/csvExport.ts`) avec encodage **UTF-8 BOM (`\uFEFF`)** pour garantir l'ouverture sans altération des caractères accentués sous Microsoft Excel.
+
+---
+
+## 3. RÈGLES DE DESIGN & ENCAPSULATION DE L'ÉCHIQUIER (`eg-chessboard`)
 
 ### A. Échiquiers Standard (Jeu, Analyse, Visualiseurs d'exercices)
-- **Règle absolue** : Les échiquiers de lecture et de jeu ([PuzzleViewer](file:///c:/Users/egagnon/Personnel/Dev/dame/pwa/src/components/shared/PuzzleViewer.vue), [QcmViewer](file:///c:/Users/egagnon/Personnel/Dev/dame/pwa/src/components/shared/QcmViewer.vue), [InteractiveQcmViewer](file:///c:/Users/egagnon/Personnel/Dev/dame/pwa/src/components/shared/InteractiveQcmViewer.vue), [PgnViewer](file:///c:/Users/egagnon/Personnel/Dev/dame/pwa/src/components/shared/PgnViewer.vue), [PlacementViewer](file:///c:/Users/egagnon/Personnel/Dev/dame/pwa/src/components/shared/PlacementViewer.vue), [PlayPage](file:///c:/Users/egagnon/Personnel/Dev/dame/pwa/src/views/PlayPage.vue), [AnalysisPage](file:///c:/Users/egagnon/Personnel/Dev/dame/pwa/src/views/AnalysisPage.vue)) doivent **strictement adopter un aspect plat et net** :
+- **Règle absolue** : Les échiquiers de lecture et de jeu (`PuzzleViewer`, `QcmViewer`, `InteractiveQcmViewer`, `PgnViewer`, `PlacementViewer`, `PlayPage`, `AnalysisPage`) doivent **strictement adopter un aspect plat et net** :
   - **`border-radius: 0;`** (angles droits).
   - **`box-shadow: none;`** (aucune ombre portée sur l'échiquier).
 
 ### B. Objets Manipulables & Cartes à Déplacer / Trier (Exceptions)
-- Dans les contextes où l'échiquier représente un élément d'inventaire ou une carte à déplacer/ordonner ([OrderViewer](file:///c:/Users/egagnon/Personnel/Dev/dame/pwa/src/components/shared/OrderViewer.vue), [TypeMarcheHeros.vue](file:///c:/Users/egagnon/Personnel/Dev/dame/pwa/src/views/types/TypeMarcheHeros.vue) Phase 1a, [MatchingViewer](file:///c:/Users/egagnon/Personnel/Dev/dame/pwa/src/components/shared/MatchingViewer.vue)) :
+- Dans les contextes où l'échiquier représente un élément d'inventaire ou une carte à déplacer/ordonner (`OrderViewer`, `TypeMarcheHeros.vue` Phase 1a, `MatchingViewer`) :
   - L'échiquier **intérieur** conserve ses angles droits (`border-radius: 0;`).
   - Le **conteneur / enveloppe externe** (ex: `.board-wrapper-card`, `.item-wrapper`, `.bank-item-wrapper`) conserve son visuel de carte d'objet manipulable (bords arrondis de la carte, bordure de sélection, légère ombre d'élévation pour faire comprendre à l'utilisateur qu'il s'agit d'un objet interactif déplaçable).
 
 ---
 
-## 3. ADAPTATIVE & RESPONSIVE DESIGN (TABLETTE, MOBILE & DESKTOP)
+## 4. ADAPTATIVE & RESPONSIVE DESIGN (TABLETTE, MOBILE & DESKTOP)
 
 ### Non-Tronquage de l'Échiquier
 - **Règle d'or** : Un échiquier ne doit **JAMAIS** être tronqué ni rogné (pièces coupées ou coordonnées masquées).
@@ -37,10 +54,11 @@ Ce document définit les directives d'architecture, de charte graphique et de co
 
 ---
 
-## 4. COMPOSANTS PARTAGÉS & MODULARITÉ (`src/components/shared/`)
+## 5. COMPOSANTS PARTAGÉS & MODULARITÉ (`src/components/shared/`)
 
-- Toute logique d'affichage d'exercice ou de motif d'interaction réutilisable doit être extraite dans un composant dédié dans `src/components/shared/`.
+- Toute logique d'affichage d'exercice, de tableau de données ou de motif d'interaction réutilisable doit être extraite dans un composant dédié dans `src/components/shared/`.
 - **Catalogue des composants partagés** :
+  - `DataTable/` : Ensemble des composants génériques de grille de données TanStack Table (`DataTable.vue`, `DataTableToolbar.vue`, `DataTablePagination.vue`).
   - `DiagramViewer.vue` : Affichage d'un diagramme statique (lecture seule, FEN + flèches).
   - `PuzzleViewer.vue` : Résolution de tactique / puzzle interactif.
   - `QcmViewer.vue` : QCM simple avec FEN d'accompagnement.
@@ -54,7 +72,7 @@ Ce document définit les directives d'architecture, de charte graphique et de co
 
 ---
 
-## 5. GESTION DE L'ÉTAT & REQUÊTES SERVEUR (TANSTACK QUERY & PINIA)
+## 6. GESTION DE L'ÉTAT & REQUÊTES SERVEUR (TANSTACK QUERY & PINIA)
 
 - **Récupération des données API** : Toute interrogation ou récupération de données serveur (membres, actualités, tournois, cours, etc.) doit impérativement passer par **TanStack Query** (`useQuery`, `fetchQuery`) au sein des stores Pinia (`src/stores/`).
 - **Caching & Persistance** : Le cache global géré par `queryClient` (instance définie dans `src/queryClient.ts`) assure le suivi des états de chargement (`isLoading`), la fraîcheur des données et la persistance hors-ligne via `persistQueryClient`.
@@ -63,7 +81,7 @@ Ce document définit les directives d'architecture, de charte graphique et de co
 
 ---
 
-## 6. CONVENTIONS DE CODE & QUALITÉ
+## 7. CONVENTIONS DE CODE & QUALITÉ
 
 - **Typage TypeScript** : Tout composant Vue doit déclarer ses `defineProps` et `defineEmits` typés.
 - **Gestion des Événements** : Utiliser les événements réactifs d'échiquier (`@board-created`, `@move`, `@check`, etc.).
