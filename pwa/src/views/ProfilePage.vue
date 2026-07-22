@@ -151,6 +151,7 @@ import {
   IonItem,
   IonLabel,
   IonList,
+  useIonRouter,
   onIonViewWillEnter
 } from '@ionic/vue';
 import {
@@ -171,6 +172,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
+const ionRouter = useIonRouter();
 const authStore = useAuthStore();
 const identitiesCount = ref(0);
 
@@ -217,7 +219,7 @@ const changeIdentity = () => {
 
 const goToAdmin = () => {
   authStore.adminMode = true;
-  router.push('/admin/dashboard');
+  ionRouter.navigate('/admin/dashboard', 'root', 'replace');
 };
 
 const handleLogout = () => {

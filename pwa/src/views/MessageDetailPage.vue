@@ -3,7 +3,7 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/message"></ion-back-button>
+          <ion-back-button default-href="/admin/message"></ion-back-button>
         </ion-buttons>
         <ion-title v-if="message" v-safe-html="message.title.rendered"></ion-title>
         <ion-title v-else>Détails Message</ion-title>

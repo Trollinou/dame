@@ -21,6 +21,10 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Consignation des directives de développement dans `AGENTS.md`.
 - **Dépendances & Gestion d'État** :
   - Migration de **Pinia** vers la version **4.0.2** (support ESM-only, diagnostic d'erreurs Nostics et typage TypeScript optimisé pour les Setup Stores).
+- **Navigation & Layouts (Ionic Tabs & Administration)** :
+  - Correction de la désynchronisation et du blocage des onglets publics lors de la sortie de l'espace d'administration.
+  - Réinitialisation propre de la pile de navigation racine Ionic avec `ionRouter.navigate(..., 'root', 'replace')`.
+  - Nettoyage des liens de retour et `default-href` obsolètes dans les pages de détail (`members`, `contact`, `message`, `benevolat`).
 
 ## [4.8.1] - 2026-07-19
 ### Ajouté

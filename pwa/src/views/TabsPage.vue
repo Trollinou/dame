@@ -28,8 +28,9 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-const authStore = useAuthStore();
 import {
   IonPage,
   IonTabs,
@@ -37,7 +38,8 @@ import {
   IonTabBar,
   IonTabButton,
   IonIcon,
-  IonLabel
+  IonLabel,
+  onIonViewWillEnter
 } from '@ionic/vue';
 import {
   homeOutline,
@@ -45,6 +47,27 @@ import {
   schoolOutline,
   personOutline
 } from 'ionicons/icons';
+
+const route = useRoute();
+const authStore = useAuthStore();
+
+const syncState = () => {
+  if (route.path.startsWith('/tabs')) {
+    authStore.adminMode = false;
+  }
+};
+
+onIonViewWillEnter(() => {
+  syncState();
+});
+
+watch(
+  () => route.path,
+  () => {
+    syncState();
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped>

@@ -130,7 +130,7 @@ const viewBenevolat = (benevolat: Benevolat) => {
 
 const viewResults = (benevolat: Benevolat) => {
   if (authStore.adminMode) {
-    router.push('/tabs/admin/benevolat/' + benevolat.id);
+    router.push('/admin/benevolat/' + benevolat.id);
   } else {
     if (authStore.isAuthenticated) {
       router.push('/tabs/benevolat/participation/' + benevolat.id);
