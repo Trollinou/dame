@@ -19,6 +19,8 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Re-jeu automatique et invisible de la requête HTTP avec le nouveau jeton sans déconnexion intempestive de l'utilisateur.
   - Migration des stores (`members`, `messages`, `contacts`, `dashboard`) vers l'utilitaire `safeFetch`.
   - Consignation des directives de développement dans `AGENTS.md`.
+- **Dépendances & Gestion d'État** :
+  - Migration de **Pinia** vers la version **4.0.2** (support ESM-only, diagnostic d'erreurs Nostics et typage TypeScript optimisé pour les Setup Stores).
 
 ## [4.8.1] - 2026-07-19
 ### Ajouté
