@@ -6,6 +6,10 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Non publié]
 ### Ajouté
+- **Exercice Type 16 — Destination finale (PWA)** :
+  - Création du composant partagé `TextOrderViewer.vue` s'appuyant sur `<ion-reorder-group>` native Ionic pour le réordonnancement par glisser-déposer de séquences de texte.
+  - Création du composant d'aiguillage `TypeDestinationFinale.vue`.
+  - Prise en charge et routage du type 16 dans `ContenuPage.vue`.
 - **Exercice Type 14 — Cap ou pas cap ? (PWA)** :
   - Création du composant partagé `CapOuPasCapViewer.vue` supportant les modes QCM (lecture seule) et Move (interactif avec validation SAN et annulation du coup).
   - Création du composant d'aiguillage `TypeCapOuPasCap.vue`.

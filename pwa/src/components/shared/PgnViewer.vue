@@ -31,14 +31,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { IonButton, IonIcon } from '@ionic/vue';
 import { playBackOutline, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import EgChessboard from 'eg-chessboard/vue';
 import type { BoardCore } from 'eg-chessboard';
 
 const props = defineProps<{
-  pgnString: string;
+  pgnString?: string;
+  pgn?: string;
+  orientation?: 'white' | 'black' | string;
   autoCompleteDelay?: number;
 }>();
 
@@ -48,7 +50,12 @@ const emit = defineEmits<{
 
 const boardApi = ref<BoardCore | null>(null);
 const currentComment = ref('');
-const pgnBoardConfig = { viewOnly: true };
+
+const activePgn = computed(() => props.pgn || props.pgnString || '');
+const pgnBoardConfig = computed(() => ({
+  viewOnly: true,
+  orientation: (props.orientation === 'black' ? 'black' : 'white') as 'white' | 'black'
+}));
 
 const syncComment = () => {
   if (boardApi.value) {
@@ -57,9 +64,9 @@ const syncComment = () => {
 };
 
 const loadPgnData = () => {
-  if (boardApi.value && props.pgnString) {
+  if (boardApi.value && activePgn.value) {
     boardApi.value.setPosition('start');
-    boardApi.value.loadPgn(props.pgnString);
+    boardApi.value.loadPgn(activePgn.value);
     boardApi.value.viewStart();
     syncComment();
   }
@@ -70,7 +77,7 @@ const onBoardCreated = (api: BoardCore) => {
   loadPgnData();
 };
 
-watch(() => props.pgnString, () => {
+watch(activePgn, () => {
   loadPgnData();
 });
 

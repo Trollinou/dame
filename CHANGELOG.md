@@ -3,6 +3,10 @@
 ## [Non publié]
 
 ### Application Mobile (PWA)
+- **Nouveau Type d'Exercice (Destination finale - Type 16)** :
+  - Création du composant partagé `TextOrderViewer.vue` s'appuyant sur `<ion-reorder-group>` native Ionic pour le réordonnancement par glisser-déposer de séquences de texte.
+  - Création du composant d'aiguillage `TypeDestinationFinale.vue`.
+  - Prise en charge et routage du type 16 dans `ContenuPage.vue`.
 - **Nouveau Type d'Exercice (Jugement final - Type 15)** :
   - Création du composant partagé `JugementFinalViewer.vue` gérant la disposition adaptative (FLEX/GRID), l'animation en boucle de 3 plans PGN via `chess.js` (1 coup/1000ms avec pause de 2500ms et réinitialisation), la sélection interactive avec Toasts, et la bascule en phase d'explication via `PgnViewer`.
   - Création du composant d'aiguillage `TypeJugementFinal.vue`.
