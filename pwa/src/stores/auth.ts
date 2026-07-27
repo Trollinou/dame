@@ -6,6 +6,7 @@ import { App } from '@capacitor/app';
 import { useQuery } from '@tanstack/vue-query';
 import { queryClient } from '../queryClient';
 import router from '../router';
+import { safeFetch } from '@/utils/safeFetch';
 
 // Import des autres stores pour nettoyage
 import { useAgendaStore } from './agenda';
@@ -214,9 +215,30 @@ export const useAuthStore = defineStore(
 					await tryRefreshToken();
 				}
 			} catch ( error: any ) {
+				let rawResponse = '';
+				if ( typeof error?.response === 'string' ) {
+					rawResponse = error.response;
+				} else if ( typeof error === 'string' ) {
+					rawResponse = error;
+				}
+
+				// Si l'endpoint /auth/validate n'est pas activé dans le plugin WP Simple JWT Login (Code 82), on l'ignore silencieusement
+				if (
+					rawResponse.includes( 'not enabled' ) ||
+					rawResponse.includes( '82' )
+				) {
+					return;
+				}
+
 				console.warn( 'Session validation failed:', error );
-				const msg = String( error?.data?.message || error?.message || '' ).toLowerCase();
-				if ( msg.includes( 'expired' ) || msg.includes( 'invalid' ) || msg.includes( 'revoked' ) ) {
+				const msg = String(
+					error?.data?.message || error?.message || rawResponse
+				).toLowerCase();
+				if (
+					msg.includes( 'expired' ) ||
+					msg.includes( 'invalid' ) ||
+					msg.includes( 'revoked' )
+				) {
 					await tryRefreshToken();
 				}
 			}
@@ -411,7 +433,7 @@ export const useAuthStore = defineStore(
 			enabled: computed( () => !! token.value ),
 			queryFn: async () => {
 				if ( ! token.value ) return [];
-				const response = await fetch(
+				const response = await safeFetch(
 					`${ import.meta.env.VITE_API_BASE_URL }/dame/v1/my-identities`,
 					{
 						headers: { Authorization: `Bearer ${ token.value }` },
@@ -505,7 +527,7 @@ export const useAuthStore = defineStore(
 
 		const fetchPwaConfig = async () => {
 			try {
-				const response = await fetch(
+				const response = await safeFetch(
 					`${ import.meta.env.VITE_API_BASE_URL }/dame/v1/pwa-config`
 				);
 				if ( response.ok ) {
@@ -527,7 +549,7 @@ export const useAuthStore = defineStore(
 
 					if ( isRoiActive.value ) {
 						try {
-							const roiResponse = await fetch(
+							const roiResponse = await safeFetch(
 								`${ import.meta.env.VITE_API_BASE_URL }/roi/v1/config`
 							);
 							if ( roiResponse.ok ) {

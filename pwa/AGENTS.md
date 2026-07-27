@@ -2,6 +2,8 @@
 
 Ce document définit les directives d'architecture, de charte graphique et de conception pour l'application PWA. Tout agent travaillant sur ce projet doit se conformer à ces règles.
 
+> **ATTENTION AGENT** : L'agent n'est STRICTEMENT PAS HABILITÉ à effectuer des modifications de code directement dans le dépôt `eg-chessboard`. En cas de bug ou dysfonctionnement identifié sur ce module, l'agent doit obligatoirement produire un rapport de bug détaillé (bug report) afin d'en permettre la remontée et la correction.
+
 ## 1. STACK TECHNIQUE & ARCHITECTURE
 
 - **Framework** : Vue 3 (`<script setup lang="ts">`), TypeScript strict.
@@ -10,6 +12,7 @@ Ce document définit les directives d'architecture, de charte graphique et de co
 - **Gestion des Requêtes & Caching API** : TanStack Query (`@tanstack/vue-query` + `persistQueryClient`).
 - **Gestion des Grilles & Tableaux de Données** : TanStack Table (`@tanstack/vue-table` + `DataTable.vue`).
 - **Composants d'Échiquier** : Module `eg-chessboard` (`TheChessboard` / `BoardCore`).
+  - **Restriction Agent** : L'agent IA n'est pas habilité à modifier le code source du paquet `eg-chessboard`. En cas de problème ou régression sur `eg-chessboard`, l'agent doit produire un rapport de bug détaillé pour correction externe.
 
 ---
 
