@@ -7,7 +7,7 @@
           orientation: couleurJoueur, 
           drawable: { shapes: shapes },
           highlight: { lastMove: true },
-          lastMove: (props as any).lastMoveHighlight || undefined
+          lastMove: props.lastMoveHighlight || undefined
         }"
         :playerColor="couleurJoueur"
         :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"
@@ -23,15 +23,15 @@ import { ref, watch } from 'vue';
 import { toastController } from '@ionic/vue';
 import { default as TheChessboard } from 'eg-chessboard/vue';
 import 'eg-chessboard/style.css';
-import type { BoardCore } from 'eg-chessboard';
+import type { BoardCore, Key, DrawShape } from 'eg-chessboard';
 
 const props = withDefaults(
   defineProps<{
     fen: string;
     couleurJoueur: 'white' | 'black';
     solution: string[];
-    shapes?: any[];
-    lastMoveHighlight?: string[];
+    shapes?: DrawShape[];
+    lastMoveHighlight?: Key[];
   }>(),
   {
     shapes: () => []

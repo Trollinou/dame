@@ -50,6 +50,7 @@
                 <TheChessboard 
                   v-if="engineLoaded"
                   :key="`board-${isLandscape ? 'l' : 'p'}-${renderKey}`"
+                  fit-container
                   :board-config="boardConfig" 
                   :player-color="boardConfig.playerColor"
                   :stockfish-config="stockfishConfig"
@@ -228,7 +229,6 @@ import TheChessboard from 'eg-chessboard/vue';
 import 'eg-chessboard/style.css';
 import { useAuthStore } from '@/stores/auth';
 import { useChessStore } from '@/stores/chess';
-import { Chess } from 'chess.js';
 import { undoMove as apiUndoMove, getFormattedCapturedPieces, getMaterialDiffDisplay, getGameOverReason } from '@/utils/boardApiWrapper';
 import type { StockfishConfig } from 'eg-chessboard';
 import { ChessClock } from '@/utils/ChessClock';
@@ -354,9 +354,6 @@ const boardConfig = reactive({
 const getWorkerUrl = () => {
   const base = authStore.stockfishUrl;
   console.log('[PlayPage Debug] authStore.stockfishUrl base:', base);
-  if (authStore.wasmUrl) {
-    (window as any).dameWasmUrl = authStore.wasmUrl;
-  }
   if (base) {
     const url = `${base}stockfish.js`;
     console.log('[PlayPage Debug] Resolved worker URL from base:', url);
@@ -377,7 +374,8 @@ const stockfishConfig = computed<StockfishConfig>(() => {
     blackMode: playerCol === 'black' ? 'hint' : 'elo',
     blackElo: playerCol === 'white' ? gameSettings.level : undefined,
     stockfishMoveTime: 2000,
-    workerUrl: getWorkerUrl()
+    workerUrl: getWorkerUrl(),
+    wasmUrl: authStore.wasmUrl || undefined
   };
 });
 
@@ -391,7 +389,7 @@ const toggleHint = () => {
     if (boardApi && lastSuggestedMove.value) {
       const from = lastSuggestedMove.value.substring(0, 2);
       const to = lastSuggestedMove.value.substring(2, 4);
-      boardApi.drawMove(from as any, to as any, 'green');
+      boardApi.drawMove(from, to, 'green');
     }
   } else {
     if (boardApi) {
@@ -405,7 +403,7 @@ const handleStockfishHint = (bestMove: string) => {
   if (isHintEnabled.value && boardApi) {
     const from = bestMove.substring(0, 2);
     const to = bestMove.substring(2, 4);
-    boardApi.drawMove(from as any, to as any, 'green');
+    boardApi.drawMove(from, to, 'green');
   }
 };
 
@@ -673,9 +671,11 @@ const undoMove = () => {
 
   apiUndoMove(boardApi, true, boardConfig.orientation);
   boardConfig.viewOnly = false;
-  const game = new Chess(boardApi.getFen());
-  if (game.inCheck()) {
-    handleCheck(game.turn() === 'w' ? 'white' : 'black');
+  if (boardApi.getIsCheck()) {
+    const checkColor = boardApi.getInCheckColor();
+    if (checkColor) {
+      handleCheck(checkColor);
+    }
   } else {
     gameStatus.message = '';
     gameStatus.color = 'medium';
@@ -786,11 +786,6 @@ onIonViewWillLeave(() => {
   height: 100% !important;
 }
 
-.landscape-mode :deep(.cg-wrap) {
-  width: 100% !important;
-  height: 100% !important;
-  aspect-ratio: 1 / 1 !important;
-}
 
 .landscape-mode .board-container {
   /* Dimensions adaptatives en paysage pour éviter de tronquer l'échiquier ou les pendules */
@@ -973,9 +968,6 @@ onIonViewWillLeave(() => {
   width: 100%;
 }
 
-.board-wrapper-with-bar :deep(.cg-wrap) {
-  flex: 1;
-}
 
 .evaluation-bar {
   width: 12px;

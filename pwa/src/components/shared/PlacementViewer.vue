@@ -57,7 +57,7 @@ const verifierPlacement = async (square: string) => {
       type: props.pieceType as 'p' | 'r' | 'n' | 'b' | 'q' | 'k', 
       color: colorShort as 'w' | 'b' 
     },
-    square as any
+    square
   );
 
   // 2. Compare la case cliquée avec la case cible (en ignorant la casse)
@@ -89,7 +89,7 @@ const verifierPlacement = async (square: string) => {
     await toast.present();
 
     setTimeout(() => {
-      boardApi.value?.removePiece(square as any);
+      boardApi.value?.removePiece(square);
     }, 800);
   }
 };

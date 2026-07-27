@@ -1,4 +1,4 @@
-import { Chess } from 'chess.js';
+import type { BoardCore } from 'eg-chessboard';
 
 /**
  * Undo moves on the eg-chessboard api.
@@ -8,7 +8,7 @@ import { Chess } from 'chess.js';
  * @param playerColor
  */
 export function undoMove(
-	boardApi: any,
+	boardApi: BoardCore | null,
 	vsComputer = false,
 	playerColor: 'white' | 'black'
 ): void {
@@ -34,7 +34,7 @@ export function undoMove(
  * @param enabled
  */
 export function getFormattedCapturedPieces(
-	boardApi: any,
+	boardApi: BoardCore | null,
 	enabled = true
 ): { white: string[]; black: string[] } {
 	if ( ! boardApi || ! enabled ) {
@@ -42,8 +42,8 @@ export function getFormattedCapturedPieces(
 	}
 
 	const captured = boardApi.getCapturedPieces() || { white: [], black: [] };
-	const pieceToSymbol = ( p: any ) => {
-		const type = typeof p === 'string' ? p : p?.type;
+	const pieceToSymbol = ( p: unknown ) => {
+		const type = typeof p === 'string' ? p : ( p as { type?: string } )?.type;
 		if ( ! type ) {
 			return '';
 		}
@@ -71,7 +71,7 @@ export function getFormattedCapturedPieces(
  * @param enabled
  */
 export function getMaterialDiffDisplay(
-	boardApi: any,
+	boardApi: BoardCore | null,
 	playerColor: 'white' | 'black',
 	enabled = true
 ): { player: number | null; opponent: number | null } {
@@ -94,32 +94,10 @@ export function getMaterialDiffDisplay(
  * Returns a user-friendly explanation of the game over reason in French.
  * @param boardApi
  */
-export function getGameOverReason( boardApi: any ): string {
+export function getGameOverReason( boardApi: BoardCore | null ): string {
 	if ( ! boardApi ) {
 		return '';
 	}
 
-	// Use chess.js directly to evaluate the state based on the current FEN
-	const game = new Chess( boardApi.getFen() );
-	if ( ! game.isGameOver() ) {
-		return '';
-	}
-
-	if ( game.isCheckmate() ) {
-		const winner = game.turn() === 'w' ? 'Noirs' : 'Blancs';
-		return `Échec et mat ! Les ${ winner } ont gagné.`;
-	}
-	if ( game.isStalemate() ) {
-		return 'Match nul par Pat.';
-	}
-	if ( game.isThreefoldRepetition() ) {
-		return 'Match nul par triple répétition.';
-	}
-	if ( game.isInsufficientMaterial() ) {
-		return 'Match nul par matériel insuffisant.';
-	}
-	if ( game.isDraw() ) {
-		return 'Match nul (règle des 50 coups).';
-	}
-	return 'Match nul.';
+	return boardApi.getGameOverReason('fr');
 }

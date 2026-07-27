@@ -4,6 +4,17 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.3] - 2026-07-27
+### Modifié
+- **Composant Échiquier & API (`eg-chessboard` v1.2.0)** :
+  - Migration complète des composants d'échiquier vers `eg-chessboard` v1.2.0 et élimination de 100% des contournements TypeScript (`as any`, `@ts-ignore`).
+  - Utilisation des getters publics `getCurrentComment()` et `getHistoryViewerState()` dans `PgnViewer.vue`.
+  - Intégration de la méthode native `getGameOverReason('fr')` et `getInCheckColor()` dans `boardApiWrapper.ts` et `PlayPage.vue`.
+  - Persistance déclarative des obstacles et objectifs d'exercices via `:preserve-shapes-on-position-change="true"` dans `ParcoursViewer.vue`.
+  - Support responsive natif via la prop `fit-container` dans `PlayPage.vue` et `AnalysisPage.vue` (suppression de `:deep(.cg-wrap)`).
+  - Transmission explicite de `wasmUrl` dans `stockfishConfig`.
+  - Utilisation des types racine ré-exportés (`Key`, `DrawShape`) dans `PlacementViewer.vue`, `PuzzleViewer.vue` et `TypeMarcheHeros.vue`.
+
 ## [4.8.2] - 2026-07-22
 ### Modifié
 - **Apprentissage (TanStack Query)** :

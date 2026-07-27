@@ -98,7 +98,7 @@
         :couleur-joueur="solutionCourante.orientation"
         :solution="solutionCourante.solution"
         :shapes="solutionCourante.shapes"
-        :lastMoveHighlight="(solutionCourante as any).lastMoveHighlight"
+        :lastMoveHighlight="solutionCourante.lastMoveHighlight"
         @success="handlePuzzleSuccess"
       />
     </div>
@@ -127,13 +127,15 @@ import DiagramViewer from '@/components/shared/DiagramViewer.vue';
 import PuzzleViewer from '@/components/shared/PuzzleViewer.vue';
 import OrderViewer from '@/components/shared/OrderViewer.vue'; // <-- Import du nouveau composant partagé
 
-interface Serie { pgn_data: string; couleur_joueur: 'white' | 'black'; shapes?: any[]; }
+import type { Key } from 'eg-chessboard';
+
+interface Serie { pgn_data: string; couleur_joueur: 'white' | 'black'; orientation?: 'white' | 'black'; shapes?: any[]; }
 interface ConfigMarcheHeros { mode: '3x5' | '5x3'; series: Serie[]; }
 const props = defineProps<{ config: ConfigMarcheHeros; }>();
 const emit = defineEmits<{ (e: 'success'): void; }>();
 
 interface Diagramme { id: string; fen: string; orientation: 'white' | 'black'; serieIndex: number; ordre: number; }
-interface Solution { fenDepart: string; orientation: 'white' | 'black'; solution: string[]; shapes: any[]; }
+interface Solution { fenDepart: string; orientation: 'white' | 'black'; solution: string[]; shapes: any[]; lastMoveHighlight?: Key[]; }
 
 // État global
 const etapeJeu = ref<'regroupement' | 'ordonnancement' | 'resolution'>('regroupement');
@@ -300,7 +302,7 @@ const initExercice = () => {
     
     const tempChess = new Chess(fenInitiale);
     const tourInitial = tempChess.turn(); 
-    const orientation = (serie as any).orientation || serie.couleur_joueur || 'white'; 
+    const orientation = serie.orientation || serie.couleur_joueur || 'white'; 
 
     let startIndex = 0;
     const replayChess = new Chess(fenInitiale);
@@ -333,14 +335,14 @@ const initExercice = () => {
     const indexCoupATrouver = i;
     const dernierCoup = history[indexCoupATrouver] || (history.length > 0 ? history[history.length - 1] : '');
 
-    let lastMoveHighlight: string[] | undefined = undefined;
+    let lastMoveHighlight: Key[] | undefined = undefined;
     if (indexCoupATrouver - 1 >= 0 && indexCoupATrouver - 1 < history.length) {
       const helperChess = new Chess();
       if (headers.FEN) helperChess.load(headers.FEN);
       for (let k = 0; k < indexCoupATrouver - 1; k++) helperChess.move(history[k]);
       try {
         const mv = helperChess.move(history[indexCoupATrouver - 1]);
-        lastMoveHighlight = [mv.from, mv.to];
+        lastMoveHighlight = [mv.from as Key, mv.to as Key];
       } catch {
         // Ignorer si le coup ne peut pas être joué
       }
@@ -352,7 +354,7 @@ const initExercice = () => {
       solution: [dernierCoup],
       shapes: serie.shapes || [],
       ...(lastMoveHighlight ? { lastMoveHighlight } : {})
-    } as any);
+    });
   }
 
   // Mélange de la banque initiale pour le regroupement

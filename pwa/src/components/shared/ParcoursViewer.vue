@@ -4,10 +4,11 @@
       <eg-chessboard
         :diagram="{
           fen: props.fenDepart,
-          shapes: props.shapes as any
+          shapes: props.shapes as DrawShape[]
         }"
         :player-color="props.couleurJoueur"
         :solo-mode="true"
+        :preserve-shapes-on-position-change="true"
         :board-config="{
           drawable: { enabled: false }
         }"
@@ -22,7 +23,7 @@
 import { ref } from 'vue';
 import { default as EgChessboard } from 'eg-chessboard/vue';
 import 'eg-chessboard/style.css';
-import type { BoardCore } from 'eg-chessboard';
+import type { BoardCore, DrawShape } from 'eg-chessboard';
 import { toastController } from '@ionic/vue';
 
 const props = defineProps<{
@@ -31,7 +32,7 @@ const props = defineProps<{
   variante: string;
   caseDepart: string;
   caseArrivee: string;
-  shapes: Array<{ orig: string; dest?: string; brush: string; [key: string]: any }>;
+  shapes: Array<{ orig: string; dest?: string; brush: string; [key: string]: any }> | DrawShape[];
 }>();
 
 const emit = defineEmits<{
@@ -43,18 +44,14 @@ const boardApi = ref<BoardCore | null>(null);
 const onBoardCreated = (api: BoardCore) => {
   boardApi.value = api;
   api.setSoloMode(true);
+  api.setPreserveShapesOnPositionChange(true);
   if (props.shapes && props.shapes.length > 0) {
-    api.setShapes(props.shapes as any);
+    api.setShapes(props.shapes);
   }
 };
 
 const handleMove = async (move: any) => {
   if (!boardApi.value) return;
-
-  // Redessiner les formes pour éviter qu'elles ne disparaissent après le déplacement
-  if (props.shapes && props.shapes.length > 0) {
-    boardApi.value.setShapes(props.shapes as any);
-  }
 
   const oppColor = props.couleurJoueur === 'white' ? 'black' : 'white';
   const oppColorShort = oppColor === 'white' ? 'w' : 'b';
@@ -65,7 +62,6 @@ const handleMove = async (move: any) => {
     const toast = await toastController.create({ message: "Case interdite !", duration: 2000, color: 'danger', position: 'bottom' });
     await toast.present();
     boardApi.value.setPosition(props.fenDepart);
-    boardApi.value.setShapes(props.shapes as any);
     return;
   }
 
@@ -74,7 +70,6 @@ const handleMove = async (move: any) => {
     const toast = await toastController.create({ message: "Vous avez été repéré !", duration: 2000, color: 'danger', position: 'bottom' });
     await toast.present();
     boardApi.value.setPosition(props.fenDepart);
-    boardApi.value.setShapes(props.shapes as any);
     return;
   }
 
@@ -88,7 +83,6 @@ const handleMove = async (move: any) => {
         const toast = await toastController.create({ message: "Il reste des pièces à manger !", duration: 2000, color: 'danger', position: 'bottom' });
         await toast.present();
         boardApi.value.setPosition(props.fenDepart);
-        boardApi.value.setShapes(props.shapes as any);
         return;
       }
     }

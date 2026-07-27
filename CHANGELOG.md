@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.8.3] - 2026-07-27
+
+### Application Mobile (PWA)
+- **Intégration d'`eg-chessboard` v1.2.0 & Refonte de l'Encapsulation :**
+  - **PGN & Historique** : Remplacement des accès privés `(boardApi as any).state` dans `PgnViewer.vue` par les méthodes publiques réactives `getCurrentComment()` et `getHistoryViewerState()`.
+  - **Nettoyage & Lifecycle** : Utilisation de la méthode native `destroy()` de `BoardCore` lors du démontage de `DiagramViewer.vue` et appui sur l'auto-cleanup de `TheChessboard.vue`.
+  - **Diagnostic & Échéphile** : Utilisation directe de `boardApi.getGameOverReason('fr')` et `getInCheckColor()` dans `boardApiWrapper.ts` et `PlayPage.vue`, éliminant les ré-instanciations redondantes de `new Chess(fen)`.
+  - **Persistance des Formes & Exercices** : Activation déclarative de `:preserve-shapes-on-position-change="true"` sur `<eg-chessboard>` dans `ParcoursViewer.vue` pour maintenir les masques d'obstacles et objectifs pendant toute la séquence de coups.
+  - **Disposition Responsive Paysage** : Utilisation de la prop `fit-container` (`fitContainer`) sur `<TheChessboard>` dans `PlayPage.vue` et `AnalysisPage.vue`, permettant de supprimer toutes les règles CSS invasives `:deep(.cg-wrap)`.
+  - **Configuration Stockfish WASM** : Transmission propre de `wasmUrl` dans `StockfishConfig` (suppression de `(window as any).dameWasmUrl`).
+  - **Typage Strict** : Utilisation des types racine ré-exportés (`Key`, `DrawShape`) pour éliminer tous les casts `as any` dans `PlacementViewer.vue`, `PuzzleViewer.vue` et `TypeMarcheHeros.vue`.
+
 ## [4.8.2] - 2026-07-22
 
 ### Application Mobile (PWA)

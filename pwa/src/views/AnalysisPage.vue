@@ -19,6 +19,7 @@
               <TheChessboard 
                 v-if="isReady"
                 :key="`board-${isLandscape ? 'l' : 'p'}-${renderKey}`"
+                fit-container
                 :board-config="boardConfig" 
                 @board-created="handleBoardCreated"
                 @move="handleMove"
@@ -357,11 +358,6 @@ onIonViewWillLeave(() => {
   max-width: none !important;
 }
 
-.landscape-mode :deep(.cg-wrap) {
-  width: 100% !important;
-  height: 100% !important;
-  aspect-ratio: 1 / 1 !important;
-}
 
 .landscape-mode .board-container {
   /* Adaptatif paysage tablette/desktop sans tronquage */

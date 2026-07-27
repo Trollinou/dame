@@ -8,14 +8,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import { BoardCore, type BoardCoreState } from 'eg-chessboard';
+import { BoardCore, type BoardCoreState, type DrawShape } from 'eg-chessboard';
 import 'eg-chessboard/style.css';
 
 const props = withDefaults(
   defineProps<{
     fen: string;
     orientation?: 'white' | 'black';
-    shapes?: any[];
+    shapes?: DrawShape[];
   }>(),
   {
     orientation: 'white',
@@ -33,8 +33,7 @@ onMounted(() => {
       freeMode: false,
       soloMode: false,
       promotionDialogState: { isEnabled: false },
-      historyViewerState: { isEnabled: false },
-      currentComment: ''
+      historyViewerState: { isEnabled: false }
     };
 
     boardCoreInstance.value = new BoardCore(
@@ -43,8 +42,7 @@ onMounted(() => {
       () => {},
       () => {},
       {
-        orientation: props.orientation,
-        viewOnly: true,
+        orientation: props.orientation
       },
       {},
       {
@@ -65,7 +63,7 @@ watch(
     if (boardCoreInstance.value) {
       boardCoreInstance.value.setDiagram({
         fen: newFen as string,
-        shapes: newShapes as any[]
+        shapes: newShapes as DrawShape[]
       });
     }
   },
@@ -83,9 +81,7 @@ watch(
 
 onBeforeUnmount(() => {
   if (boardCoreInstance.value) {
-    if (boardCoreInstance.value.board) {
-      boardCoreInstance.value.board.destroy();
-    }
+    boardCoreInstance.value.destroy();
     boardCoreInstance.value = null;
   }
 });

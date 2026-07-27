@@ -52,7 +52,7 @@ const pgnBoardConfig = { viewOnly: true };
 
 const syncComment = () => {
   if (boardApi.value) {
-    currentComment.value = (boardApi.value as any).state.currentComment || '';
+    currentComment.value = boardApi.value.getCurrentComment() || '';
   }
 };
 
@@ -90,7 +90,7 @@ const viewPrevious = () => {
 
 const viewNext = () => {
   if (!boardApi.value) return;
-  const historyState = (boardApi.value as any).state.historyViewerState;
+  const historyState = boardApi.value.getHistoryViewerState();
 
   if (!historyState.isEnabled) {
     emit('finished');
@@ -100,7 +100,7 @@ const viewNext = () => {
   boardApi.value.viewNext();
   syncComment();
 
-  const newHistoryState = (boardApi.value as any).state.historyViewerState;
+  const newHistoryState = boardApi.value.getHistoryViewerState();
   if (!newHistoryState.isEnabled && props.autoCompleteDelay && props.autoCompleteDelay > 0) {
     setTimeout(() => {
       emit('finished');
