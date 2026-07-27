@@ -19,6 +19,10 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Création du composant d'aiguillage `TypeQuiSuisJe.vue`.
   - Prise en charge et routage du type 12 dans `ContenuPage.vue`.
 
+### Corrigé
+- **Affichage PGN dans les Leçons (`PgnViewer`)** : Correction du bug d'affichage tronqué sur ordinateur et tablette en mode paysage, permettant de restituer l'échiquier sur ses 8 rangées.
+- **Conformité Linter (`JugementFinalViewer.vue`)** : Correction des avertissements ESLint (variables non utilisées et déclarations `const`).
+
 ## [4.8.3] - 2026-07-27
 ### Modifié
 - **Composant Échiquier & API (`eg-chessboard` v1.2.0)** :

@@ -36,7 +36,7 @@
           </div>
           <div class="scenario-board-container">
             <eg-chessboard
-              :boardConfig="getScenarioBoardConfig(index)"
+              :boardConfig="getScenarioBoardConfig()"
               :playerColor="playerColorTyped"
               :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"
               @board-created="(api: any) => onScenarioBoardCreated(index, api)"
@@ -127,7 +127,7 @@ const mainBoardConfig = computed(() => ({
   viewOnly: true
 }));
 
-const getScenarioBoardConfig = (_index: number) => ({
+const getScenarioBoardConfig = () => ({
   fen: props.fenDepart || 'start',
   orientation: playerColorTyped.value,
   viewOnly: true
@@ -158,7 +158,7 @@ onBeforeUnmount(() => {
 
 const getMoveSequence = (fenDepart: string, pgnString: string) => {
   if (!pgnString) return [];
-  let cleaned = pgnString.trim().replace(/(\.\.\.|\.\.|\.)$/, '').trim();
+  const cleaned = pgnString.trim().replace(/(\.\.\.|\.\.|\.)$/, '').trim();
 
   // Primary parsing using chess.js
   try {
@@ -190,7 +190,7 @@ const getMoveSequence = (fenDepart: string, pgnString: string) => {
       }
     }
     return moves;
-  } catch (e) {
+  } catch {
     return [];
   }
 };
