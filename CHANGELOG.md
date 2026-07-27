@@ -3,6 +3,10 @@
 ## [Non publié]
 
 ### Application Mobile (PWA)
+- **Nouveau Type d'Exercice (Qui suis-je ? - Type 12)** :
+  - Création du composant partagé `QuiSuisJeViewer.vue` gérant la révélation progressive des indices et l'affichage adaptatif des 3 modes de réponse (Palette flex 2x6 avec rendu de pièces `chessground`, Échiquier vide interactif respectant le design plat strict `border-radius: 0; box-shadow: none;`, et QCM).
+  - Création du composant aiguilleur `TypeQuiSuisJe.vue`.
+  - Prise en charge du type 12 dans `ContenuPage.vue`.
 - **Nouveau Type d'Exercice (Class'échecs - Type 11)** :
   - Création du composant `TypeClassEchecs.vue` transmettant les positions FEN et la consigne au composant partagé `OrderViewer`.
   - Prise en charge du type 11 dans `ContenuPage.vue`.

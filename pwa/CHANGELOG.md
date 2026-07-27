@@ -4,6 +4,13 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Non publié]
+### Ajouté
+- **Exercice Type 12 — Qui suis-je ? (PWA)** :
+  - Création du composant partagé `QuiSuisJeViewer.vue` supportant la révélation progressive des indices et trois zones de réponse distinctes (`piece` via une palette 2x6 dynamiquement liée aux pièces `chessground`, `square` avec échiquier plat sans ombres ni coins arrondis, et `qcm`).
+  - Création du composant d'aiguillage `TypeQuiSuisJe.vue`.
+  - Prise en charge et routage du type 12 dans `ContenuPage.vue`.
+
 ## [4.8.3] - 2026-07-27
 ### Modifié
 - **Composant Échiquier & API (`eg-chessboard` v1.2.0)** :
