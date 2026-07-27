@@ -6,6 +6,10 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Non publié]
 ### Ajouté
+- **Exercice Type 14 — Cap ou pas cap ? (PWA)** :
+  - Création du composant partagé `CapOuPasCapViewer.vue` supportant les modes QCM (lecture seule) et Move (interactif avec validation SAN et annulation du coup).
+  - Création du composant d'aiguillage `TypeCapOuPasCap.vue`.
+  - Prise en charge et routage du type 14 dans `ContenuPage.vue`.
 - **Exercice Type 12 — Qui suis-je ? (PWA)** :
   - Création du composant partagé `QuiSuisJeViewer.vue` supportant la révélation progressive des indices et trois zones de réponse distinctes (`piece` via une palette 2x6 dynamiquement liée aux pièces `chessground`, `square` avec échiquier plat sans ombres ni coins arrondis, et `qcm`).
   - Création du composant d'aiguillage `TypeQuiSuisJe.vue`.

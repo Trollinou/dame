@@ -3,6 +3,10 @@
 ## [Non publié]
 
 ### Application Mobile (PWA)
+- **Nouveau Type d'Exercice (Cap ou pas cap ? - Type 14)** :
+  - Création du composant partagé `CapOuPasCapViewer.vue` supportant les modes QCM (lecture seule) et Move (interactif avec validation SAN et annulation du coup).
+  - Création du composant d'aiguillage `TypeCapOuPasCap.vue`.
+  - Prise en charge et routage du type 14 dans `ContenuPage.vue`.
 - **Nouveau Type d'Exercice (Ouvre'boîte - Type 13)** :
   - Création du composant `TypeOuvreBoite.vue` adaptant les données d'exercice à une question unique pour les injecter dans le composant partagé `InteractiveQcmViewer`.
   - Prise en charge du type 13 dans `ContenuPage.vue`.
