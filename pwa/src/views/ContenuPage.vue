@@ -138,6 +138,7 @@ import TypeVisionChecs from './types/TypeVisionChecs.vue';
 import TypeParcours from './types/TypeParcours.vue';
 import TypeClassEchecs from './types/TypeClassEchecs.vue';
 import TypeQuiSuisJe from './types/TypeQuiSuisJe.vue';
+import TypeOuvreBoite from './types/TypeOuvreBoite.vue';
 import LeconReader from '@/components/apprentissage/LeconReader.vue';
 import { listOutline, homeOutline } from 'ionicons/icons';
 
@@ -206,6 +207,9 @@ const getComposantExercice = (type: number) => {
   }
   if (type === 12) {
     return TypeQuiSuisJe;
+  }
+  if (type === 13) {
+    return TypeOuvreBoite;
   }
   return null;
 };

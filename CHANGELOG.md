@@ -3,6 +3,9 @@
 ## [Non publié]
 
 ### Application Mobile (PWA)
+- **Nouveau Type d'Exercice (Ouvre'boîte - Type 13)** :
+  - Création du composant `TypeOuvreBoite.vue` adaptant les données d'exercice à une question unique pour les injecter dans le composant partagé `InteractiveQcmViewer`.
+  - Prise en charge du type 13 dans `ContenuPage.vue`.
 - **Nouveau Type d'Exercice (Qui suis-je ? - Type 12)** :
   - Création du composant partagé `QuiSuisJeViewer.vue` gérant la révélation progressive des indices et l'affichage adaptatif des 3 modes de réponse (Palette flex 2x6 avec rendu de pièces `chessground`, Échiquier vide interactif respectant le design plat strict `border-radius: 0; box-shadow: none;`, et QCM).
   - Création du composant aiguilleur `TypeQuiSuisJe.vue`.
