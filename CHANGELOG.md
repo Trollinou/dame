@@ -3,6 +3,10 @@
 ## [Non publié]
 
 ### Application Mobile (PWA)
+- **Nouveau Type d'Exercice (Jugement final - Type 15)** :
+  - Création du composant partagé `JugementFinalViewer.vue` gérant la disposition adaptative (FLEX/GRID), l'animation en boucle de 3 plans PGN via `chess.js` (1 coup/1000ms avec pause de 2500ms et réinitialisation), la sélection interactive avec Toasts, et la bascule en phase d'explication via `PgnViewer`.
+  - Création du composant d'aiguillage `TypeJugementFinal.vue`.
+  - Prise en charge et routage du type 15 dans `ContenuPage.vue`.
 - **Nouveau Type d'Exercice (Cap ou pas cap ? - Type 14)** :
   - Création du composant partagé `CapOuPasCapViewer.vue` supportant les modes QCM (lecture seule) et Move (interactif avec validation SAN et annulation du coup).
   - Création du composant d'aiguillage `TypeCapOuPasCap.vue`.

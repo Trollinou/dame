@@ -140,6 +140,7 @@ import TypeClassEchecs from './types/TypeClassEchecs.vue';
 import TypeQuiSuisJe from './types/TypeQuiSuisJe.vue';
 import TypeOuvreBoite from './types/TypeOuvreBoite.vue';
 import TypeCapOuPasCap from './types/TypeCapOuPasCap.vue';
+import TypeJugementFinal from './types/TypeJugementFinal.vue';
 import LeconReader from '@/components/apprentissage/LeconReader.vue';
 import { listOutline, homeOutline } from 'ionicons/icons';
 
@@ -214,6 +215,9 @@ const getComposantExercice = (type: number) => {
   }
   if (type === 14) {
     return TypeCapOuPasCap;
+  }
+  if (type === 15) {
+    return TypeJugementFinal;
   }
   return null;
 };
