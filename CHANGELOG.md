@@ -1,5 +1,12 @@
 # Changelog
 
+## [Non publié]
+
+### Application Mobile (PWA)
+- **Nouveau Type d'Exercice (Class'échecs - Type 11)** :
+  - Création du composant `TypeClassEchecs.vue` transmettant les positions FEN et la consigne au composant partagé `OrderViewer`.
+  - Prise en charge du type 11 dans `ContenuPage.vue`.
+
 ## [4.8.3] - 2026-07-27
 
 ### Application Mobile (PWA)
