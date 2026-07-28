@@ -94,7 +94,7 @@ const props = withDefaults(
   }
 );
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'success'): void;
 }>();
 
