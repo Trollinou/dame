@@ -3,6 +3,10 @@
 ## [Non publié]
 
 ### Application Mobile (PWA)
+- **Nouveau Type d'Exercice (Echec'éval - Type 10)** :
+  - Création du composant partagé `EvalViewer.vue` orchestrant 3 phases (questions interactives `yesno`/`evaluation` sur échiquier statique, exercice tactique via `<PuzzleViewer>`, et correction annotée via `<PgnViewer>`).
+  - Création du composant d'aiguillage `TypeEchecEval.vue`.
+  - Prise en charge et routage du type 10 dans `ContenuPage.vue`.
 - **Nouveau Type d'Exercice (Destination finale - Type 16)** :
   - Création du composant partagé `TextOrderViewer.vue` s'appuyant sur `<ion-reorder-group>` native Ionic pour le réordonnancement par glisser-déposer de séquences de texte.
   - Création du composant d'aiguillage `TypeDestinationFinale.vue`.

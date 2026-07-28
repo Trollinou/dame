@@ -6,6 +6,10 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Non publié]
 ### Ajouté
+- **Exercice Type 10 — Echec'éval (PWA)** :
+  - Création du composant partagé `EvalViewer.vue` orchestrant 3 phases (questions interactives `yesno`/`evaluation` sur échiquier statique, exercice tactique via `PuzzleViewer`, et correction via `PgnViewer`).
+  - Création du composant d'aiguillage `TypeEchecEval.vue`.
+  - Prise en charge et routage du type 10 dans `ContenuPage.vue`.
 - **Exercice Type 16 — Destination finale (PWA)** :
   - Création du composant partagé `TextOrderViewer.vue` s'appuyant sur `<ion-reorder-group>` native Ionic pour le réordonnancement par glisser-déposer de séquences de texte.
   - Création du composant d'aiguillage `TypeDestinationFinale.vue`.

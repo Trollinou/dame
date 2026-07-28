@@ -136,6 +136,7 @@ import TypeAssociPlan from './types/TypeAssociPlan.vue';
 import TypeMarcheHeros from './types/TypeMarcheHeros.vue';
 import TypeVisionChecs from './types/TypeVisionChecs.vue';
 import TypeParcours from './types/TypeParcours.vue';
+import TypeEchecEval from './types/TypeEchecEval.vue';
 import TypeClassEchecs from './types/TypeClassEchecs.vue';
 import TypeQuiSuisJe from './types/TypeQuiSuisJe.vue';
 import TypeOuvreBoite from './types/TypeOuvreBoite.vue';
@@ -204,6 +205,9 @@ const getComposantExercice = (type: number) => {
   }
   if (type === 9) {
     return TypeParcours;
+  }
+  if (type === 10) {
+    return TypeEchecEval;
   }
   if (type === 11) {
     return TypeClassEchecs;
