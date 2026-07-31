@@ -1,6 +1,6 @@
 # Changelog
 
-## [Non publié]
+## [4.8.4] - 2026-07-31
 
 ### Back-office Admin
 - **Agenda / Évènements (`dame_agenda`)** :

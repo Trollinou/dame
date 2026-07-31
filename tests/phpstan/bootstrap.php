@@ -7,5 +7,7 @@
 
 define( 'DAME_PLUGIN_URL', 'https://example.com/wp-content/plugins/dame/' );
 define( 'DAME_PLUGIN_DIR', dirname( __DIR__, 2 ) . '/' );
-define( 'DAME_VERSION', '4.8.3' );
+if ( ! defined( 'DAME_VERSION' ) ) {
+	define( 'DAME_VERSION', '4.8.4' );
+}
 define( 'COOKIEPATH', '/' );
