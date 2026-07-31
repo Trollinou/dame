@@ -28,6 +28,21 @@ class Post_Meta {
 		add_action( 'rest_after_insert_dame_pre_inscription', [ $this, 'update_titles_after_rest' ] );
 		add_filter( 'rest_dame_agenda_query', [ $this, 'filter_agenda_query' ], 10, 2 );
 		add_filter( 'rest_dame_agenda_collection_params', [ $this, 'allow_meta_orderby' ] );
+		add_filter( 'rest_pre_serve_request', [ $this, 'expose_cors_headers' ], 10, 4 );
+	}
+
+	/**
+	 * Exposes pagination headers for REST API CORS requests.
+	 *
+	 * @param bool             $served  Whether the request has already been served.
+	 * @param mixed            $result  Result to send to the client.
+	 * @param WP_REST_Request  $request Request object.
+	 * @param \WP_REST_Server  $server  Server instance.
+	 * @return bool Unchanged served parameter.
+	 */
+	public function expose_cors_headers( bool $served, mixed $result, WP_REST_Request $request, $server ): bool {
+		header( 'Access-Control-Expose-Headers: X-WP-Total, X-WP-TotalPages' );
+		return $served;
 	}
 
 	/**

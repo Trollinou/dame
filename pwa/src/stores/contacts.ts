@@ -70,9 +70,10 @@ export const useContactStore = defineStore( 'contacts', () => {
 				throw new Error( 'Erreur serveur' );
 			}
 
-			const totalPages = parseInt(
-				response.headers.get( 'X-WP-TotalPages' ) || '1'
-			);
+			const totalPagesHeader =
+				response.headers.get( 'X-WP-TotalPages' ) ||
+				response.headers.get( 'x-wp-totalpages' );
+			const totalPages = parseInt( totalPagesHeader || '1', 10 );
 			let allContacts: Contact[] = await response.json();
 
 			if ( totalPages > 1 ) {

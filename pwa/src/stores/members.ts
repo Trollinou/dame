@@ -90,9 +90,10 @@ export const useMemberStore = defineStore( 'members', () => {
 				throw new Error( "Erreur lors de l'accès à l'API" );
 			}
 
-			const totalPages = parseInt(
-				response.headers.get( 'X-WP-TotalPages' ) || '1'
-			);
+			const totalPagesHeader =
+				response.headers.get( 'X-WP-TotalPages' ) ||
+				response.headers.get( 'x-wp-totalpages' );
+			const totalPages = parseInt( totalPagesHeader || '1', 10 );
 			let allMembers: Member[] = await response.json();
 
 			if ( totalPages > 1 ) {
