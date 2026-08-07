@@ -6,6 +6,10 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Non publié]
 ### Qualité & Code Health
+- **Standardisation des requêtes HTTP & Rafraîchissement JWT (`safeFetch`) dans les stores Pinia** :
+  - Remplacement des appels `fetch` natifs restants par `safeFetch` dans `referenceData.ts` et `chess.ts` pour garantir la gestion des timeouts, la tentative de rafraîchissement transparent des jetons JWT et la résilience hors-ligne.
+  - Élimination des vérifications manuelles `response.status === 401` et des déconnexions directes (`authStore.logout()`) dans `dashboard.ts`, `benevolat.ts`, `agenda.ts` et `apprentissage.ts` (5 emplacements), afin d'autoriser le rafraîchissement transparent des jetons conformément à la Règle 6 de `AGENTS.md`.
+  - Nettoyage des imports inutilisés (`useAuthStore`) dans `agenda.ts`.
 - **Centralisation de la Récupération et Pagination WP REST (`wpApi.ts`)** :
   - Création du module utilitaire `src/utils/wpApi.ts` fournissant la fonction generic `fetchWpCollection<T>(path)`.
   - Gestion automatique de l'injection du token JWT (`Authorization: Bearer`), détection et parcours multi-pages via `X-WP-TotalPages`, validation stricte du statut HTTP (`res.ok`) sur toutes les pages, et fusion transparentes des résultats.

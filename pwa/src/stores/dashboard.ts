@@ -39,10 +39,6 @@ export const useDashboardStore = defineStore( 'dashboard', () => {
 				}
 			);
 
-			if ( response.status === 401 ) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
 			if ( ! response.ok ) {
 				throw new Error( 'Erreur serveur' );
 			}

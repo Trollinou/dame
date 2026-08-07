@@ -82,10 +82,6 @@ export const useBenevolatStore = defineStore( 'benevolat', () => {
 				4000
 			);
 
-			if ( response.status === 401 && token ) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
 			if ( ! response.ok ) {
 				throw new Error( 'Erreur chargement réponses' );
 			}

@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { useAuthStore } from './auth';
 import { safeFetch } from '@/utils/safeFetch';
 import { useQueryClient } from '@tanstack/vue-query';
 
@@ -113,11 +112,6 @@ export const useAgendaStore = defineStore(
 						);
 
 						if ( ! response.ok ) {
-							if ( response.status === 401 ) {
-								useAuthStore().logout();
-								throw new Error( 'Unauthorized' );
-							}
-
 							if ( response.status === 400 ) {
 								if ( direction === 'upcoming' ) {
 									hasMoreUpcoming.value = false;

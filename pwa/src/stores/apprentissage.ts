@@ -76,13 +76,6 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 				5000
 			);
 
-			if (
-				response.status === 401 &&
-				localStorage.getItem( 'dame_jwt_token' )
-			) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
 			if ( ! response.ok ) {
 				throw new Error( 'Impossible de charger les parcours.' );
 			}
@@ -107,13 +100,6 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 				5000
 			);
 
-			if (
-				response.status === 401 &&
-				localStorage.getItem( 'dame_jwt_token' )
-			) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
 			if ( ! response.ok ) {
 				throw new Error( 'Impossible de charger la progression.' );
 			}
@@ -142,13 +128,6 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 				5000
 			);
 
-			if (
-				response.status === 401 &&
-				localStorage.getItem( 'dame_jwt_token' )
-			) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
 			if ( ! response.ok ) {
 				throw new Error(
 					`Impossible de charger le contenu ${ contenuActuelId.value }.`
@@ -224,13 +203,6 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 					5000
 				);
 
-				if (
-					response.status === 401 &&
-					localStorage.getItem( 'dame_jwt_token' )
-				) {
-					authStore.logout();
-					throw new Error( 'Session expirée' );
-				}
 				if ( ! response.ok ) {
 					throw new Error(
 						`Impossible de charger le contenu ${ id }.`
@@ -254,13 +226,6 @@ export const useApprentissageStore = defineStore( 'apprentissage', () => {
 				5000
 			);
 
-			if (
-				response.status === 401 &&
-				localStorage.getItem( 'dame_jwt_token' )
-			) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
 			if ( ! response.ok ) {
 				throw new Error( `Impossible de valider l'élément ${ id }.` );
 			}

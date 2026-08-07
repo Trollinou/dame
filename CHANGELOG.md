@@ -3,6 +3,10 @@
 ## [Non publié]
 
 ### Application Mobile (PWA)
+- **Standardisation des requêtes HTTP & Rafraîchissement JWT (`safeFetch`) dans les stores Pinia** :
+  - Remplacement des appels `fetch` natifs restants par `safeFetch` dans `referenceData.ts` et `chess.ts` pour appliquer systématiquement la gestion des timeouts, le rafraîchissement transparent des jetons JWT et la prise en charge hors-ligne.
+  - Suppression des vérifications manuelles `response.status === 401` et des déconnexions directes (`authStore.logout()`) dans `dashboard.ts`, `benevolat.ts`, `agenda.ts` et `apprentissage.ts` (5 blocs), afin d'autoriser la tentative de rafraîchissement automatique des jetons conformément à la Règle 6 de `AGENTS.md`.
+  - Nettoyage des imports inutilisés (`useAuthStore`) dans `agenda.ts`.
 - **Qualité du Code & Pagination WP REST (`wpApi.ts`)** :
   - Création du module utilitaire `src/utils/wpApi.ts` fournissant la fonction générique `fetchWpCollection<T>(path)`.
   - Gestion automatique des jetons JWT, détection et téléchargement multi-pages via `X-WP-TotalPages`, validation stricte du statut HTTP (`res.ok`), et suppression de ~120 lignes de code dupliqué dans les stores Pinia (`members.ts`, `contacts.ts`, `messages.ts`).
