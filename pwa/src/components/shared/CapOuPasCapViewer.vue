@@ -10,6 +10,10 @@
     <!-- Échiquier -->
     <div class="board-container">
       <eg-chessboard
+        :diagram="{
+          fen: diagrammeActuel?.fen || '',
+          shapes: diagrammeActuel?.shapes || []
+        }"
         :boardConfig="boardConfig"
         :playerColor="diagrammeActuel?.couleur_joueur || 'white'"
         :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"

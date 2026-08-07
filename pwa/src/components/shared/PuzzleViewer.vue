@@ -2,10 +2,12 @@
   <div class="puzzle-viewer-layout">
     <div class="board-container">
       <TheChessboard 
+        :diagram="{
+          fen: fen,
+          shapes: shapes
+        }"
         :boardConfig="{ 
-          fen: fen, 
           orientation: couleurJoueur, 
-          drawable: { shapes: shapes },
           highlight: { lastMove: true },
           lastMove: props.lastMoveHighlight || undefined
         }"

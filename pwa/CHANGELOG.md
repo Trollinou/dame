@@ -23,6 +23,13 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Création du composant d'aiguillage `TypeQuiSuisJe.vue`.
   - Prise en charge et routage du type 12 dans `ContenuPage.vue`.
 
+### Modifié
+- **Mise à jour des composants d'Échiquier PWA (`eg-chessboard` v1.3.1)** :
+  - Généralisation de la prop atomique `:diagram="{ fen, shapes }"` dans les composants partagés (`DiagramViewer`, `PuzzleViewer`, `QcmViewer`, `InteractiveQcmViewer`, `CapOuPasCapViewer`, `EvalViewer`, `VisionViewer`).
+  - Refactorisation de `DiagramViewer.vue` pour utiliser le composant déclaratif `<eg-chessboard>` en lieu et place d'une instanciation impérative brute `new BoardCore(...)`.
+  - Intégration de `:mode="'study'"` dans `PgnViewer.vue` pour tirer parti du moteur dédié d'analyse et de lecture PGN avec annotations graphiques (`[%cal]`/`[%cpl]`).
+  - Nettoyage des appels impératifs redondants dans `ParcoursViewer.vue` pour `soloMode` et `preserveShapesOnPositionChange`.
+
 ### Corrigé
 - **Affichage PGN dans les Leçons (`PgnViewer`)** : Correction du bug d'affichage tronqué sur ordinateur et tablette en mode paysage, permettant de restituer l'échiquier sur ses 8 rangées.
 - **Conformité Linter (`JugementFinalViewer.vue`)** : Correction des avertissements ESLint (variables non utilisées et déclarations `const`).
