@@ -6,6 +6,18 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Non publié]
 ### Qualité & Code Health
+- **Découpage des composants Vue.js monolithiques (`PreInscriptionPage`, `PlayPage`, `AgendaPage` ➔ `LeClubPage`)** :
+  - **`PreInscriptionPage.vue` (1261 ➔ ~150 lignes)** :
+    - Extraction des requêtes d'autocomplétion géographique (Communes & Adresses) dans l'utilitaire `src/utils/geoApi.ts`.
+    - Création des composables métier `usePreInscriptionForm.ts`, `useAddressAutocomplete.ts` et `usePreInscriptionApi.ts`.
+    - Scission du template en 5 sous-composants UI dédiés (`PreInscriptionSuccessCard.vue`, `PreInscriptionIdentitySelector.vue`, `PreInscriptionMemberSection.vue`, `PreInscriptionLegalRepSection.vue`, `PreInscriptionHealthSection.vue`).
+  - **`PlayPage.vue` (1013 ➔ ~200 lignes)** :
+    - Extraction des composables réutilisables `useBoardOrientation.ts` (responsive portrait/paysage), `usePlayClock.ts` (pendule d'échecs) et `usePlayGame.ts` (moteur, annulations, statuts).
+    - Scission en 4 sous-composants UI (`PlayInfoBar.vue`, `CapturedPiecesBar.vue`, `PlayActionsPanel.vue`, `PlaySettingsModal.vue`).
+  - **`AgendaPage.vue` ➔ Renommage `LeClubPage.vue` (715 ➔ ~100 lignes)** :
+    - Renommage de la vue en `LeClubPage.vue` et mise à jour des routes (`src/router/index.ts`).
+    - Extraction du composable `useAgendaSearch.ts` pour le filtrage et la recherche.
+    - Scission des 4 sous-onglets du hub en composants dédiés (`ActualitesSegmentView.vue`, `AgendaSegmentView.vue`, `TournoisSegmentView.vue`, `BenevolatSegmentView.vue`).
 - **Standardisation des requêtes HTTP & Rafraîchissement JWT (`safeFetch`) dans les stores Pinia** :
   - Remplacement des appels `fetch` natifs restants par `safeFetch` dans `referenceData.ts` et `chess.ts` pour garantir la gestion des timeouts, la tentative de rafraîchissement transparent des jetons JWT et la résilience hors-ligne.
   - Élimination des vérifications manuelles `response.status === 401` et des déconnexions directes (`authStore.logout()`) dans `dashboard.ts`, `benevolat.ts`, `agenda.ts` et `apprentissage.ts` (5 emplacements), afin d'autoriser le rafraîchissement transparent des jetons conformément à la Règle 6 de `AGENTS.md`.
