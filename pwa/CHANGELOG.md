@@ -6,6 +6,11 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Non publié]
 ### Qualité & Code Health
+- **Centralisation de la Récupération et Pagination WP REST (`wpApi.ts`)** :
+  - Création du module utilitaire `src/utils/wpApi.ts` fournissant la fonction generic `fetchWpCollection<T>(path)`.
+  - Gestion automatique de l'injection du token JWT (`Authorization: Bearer`), détection et parcours multi-pages via `X-WP-TotalPages`, validation stricte du statut HTTP (`res.ok`) sur toutes les pages, et fusion transparentes des résultats.
+  - Refactorisation des stores Pinia `members.ts`, `contacts.ts` et `messages.ts` pour éliminer ~120 lignes de code dupliqué et sécuriser la gestion des erreurs HTTP.
+  - Ajout d'une suite complète de tests unitaires Vitest dans `tests/unit/wpApi.spec.ts`.
 - **Centralisation utilitaire `stringUtils` & Tests Unitaires Vitest** :
   - Extraction de la fonction d'élimination des accents `removeAccents` et création du helper `includesNormalized` dans `src/utils/stringUtils.ts`.
   - Refactorisation de `DataTable.vue` et `AgendaPage.vue` pour utiliser la fonction utilitaire centralisée `removeAccents`.

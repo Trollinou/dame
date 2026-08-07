@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useAuthStore } from './auth';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import { safeFetch } from '@/utils/safeFetch';
+import { fetchWpCollection } from '@/utils/wpApi';
 
 export interface Message {
 	id: number;
@@ -41,32 +41,9 @@ export const useMessageStore = defineStore( 'messages', () => {
 	} = useQuery< Message[] >( {
 		queryKey: [ 'admin', 'messages', 'list' ],
 		queryFn: async () => {
-			const token = localStorage.getItem( 'dame_jwt_token' );
-			if ( ! token ) {
-				throw new Error( 'Non authentifié' );
-			}
-
-			const response = await safeFetch(
-				`${
-					import.meta.env.VITE_API_BASE_URL
-				}/wp/v2/messages?context=edit&per_page=100`,
-				{
-					headers: {
-						Authorization: `Bearer ${ token }`,
-						'Content-Type': 'application/json',
-					},
-				}
+			const data = await fetchWpCollection< Message >(
+				'/wp/v2/messages?context=edit&per_page=100'
 			);
-
-			if ( response.status === 401 ) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
-			if ( ! response.ok ) {
-				throw new Error( 'Erreur serveur' );
-			}
-
-			const data: Message[] = await response.json();
 			data.sort(
 				( a, b ) =>
 					new Date( b.date ).getTime() - new Date( a.date ).getTime()

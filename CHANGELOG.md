@@ -3,6 +3,10 @@
 ## [Non publié]
 
 ### Application Mobile (PWA)
+- **Qualité du Code & Pagination WP REST (`wpApi.ts`)** :
+  - Création du module utilitaire `src/utils/wpApi.ts` fournissant la fonction générique `fetchWpCollection<T>(path)`.
+  - Gestion automatique des jetons JWT, détection et téléchargement multi-pages via `X-WP-TotalPages`, validation stricte du statut HTTP (`res.ok`), et suppression de ~120 lignes de code dupliqué dans les stores Pinia (`members.ts`, `contacts.ts`, `messages.ts`).
+  - Implémentation d'une suite de tests unitaires Vitest dédiée dans `tests/unit/wpApi.spec.ts`.
 - **Qualité du Code & Suite de Tests (`stringUtils`)** :
   - Extraction de la fonction d'élimination des accents `removeAccents` et création de `includesNormalized` dans le module utilitaire centralisé `src/utils/stringUtils.ts`.
   - Élimination de la duplication dans `DataTable.vue` et `AgendaPage.vue`.
