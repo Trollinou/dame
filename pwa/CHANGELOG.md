@@ -5,6 +5,12 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Non publié]
+### Qualité & Code Health
+- **Centralisation utilitaire `stringUtils` & Tests Unitaires Vitest** :
+  - Extraction de la fonction d'élimination des accents `removeAccents` et création du helper `includesNormalized` dans `src/utils/stringUtils.ts`.
+  - Refactorisation de `DataTable.vue` et `AgendaPage.vue` pour utiliser la fonction utilitaire centralisée `removeAccents`.
+  - Restauration et mise à jour complète de la suite de tests unitaires `vitest` dans `tests/unit/example.spec.ts` pour valider la suppression des diacritiques et le filtrage normalisé.
+
 ### Ajouté
 - **Exercice Type 10 — Echec'éval (PWA)** :
   - Création du composant partagé `EvalViewer.vue` orchestrant 3 phases (questions interactives `yesno`/`evaluation` sur échiquier statique, exercice tactique via `PuzzleViewer`, et correction via `PgnViewer`).

@@ -3,6 +3,10 @@
 ## [Non publié]
 
 ### Application Mobile (PWA)
+- **Qualité du Code & Suite de Tests (`stringUtils`)** :
+  - Extraction de la fonction d'élimination des accents `removeAccents` et création de `includesNormalized` dans le module utilitaire centralisé `src/utils/stringUtils.ts`.
+  - Élimination de la duplication dans `DataTable.vue` et `AgendaPage.vue`.
+  - Réparation et mise à niveau de la suite de tests unitaires `vitest` (`tests/unit/example.spec.ts`) pour valider la gestion des diacritiques français (`é`, `è`, `ê`, `à`, `ù`, `ç`, `ô`) et la recherche normalisée.
 - **Nouveau Type d'Exercice (Echec'éval - Type 10)** :
   - Création du composant partagé `EvalViewer.vue` orchestrant 3 phases (questions interactives `yesno`/`evaluation` sur échiquier statique, exercice tactique via `<PuzzleViewer>`, et correction annotée via `<PgnViewer>`).
   - Création du composant d'aiguillage `TypeEchecEval.vue`.

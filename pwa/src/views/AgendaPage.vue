@@ -308,6 +308,7 @@ import { useBenevolatStore, type Benevolat } from '../stores/benevolat';
 import { useAuthStore } from '../stores/auth';
 import { useNewsStore, type Post } from '../stores/news';
 import { storeToRefs } from 'pinia';
+import { removeAccents } from '../utils/stringUtils';
 
 const router = useRouter();
 const route = useRoute();
@@ -346,10 +347,6 @@ const onSegmentChange = (val: string) => {
   selectedSegment.value = val;
   searchQuery.value = '';
   loadTabContent();
-};
-
-const removeAccents = (str: string): string => {
-  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 };
 
 const goToDetail = (id: number) => {

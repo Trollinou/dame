@@ -159,6 +159,7 @@ import DataTableToolbar from './DataTableToolbar.vue';
 import DataTablePagination from './DataTablePagination.vue';
 import type { DataTableFilterConfig, DataTableExportConfig } from './types';
 import { watch } from 'vue';
+import { removeAccents } from '../../../utils/stringUtils';
 
 const props = withDefaults(
   defineProps<{
@@ -205,10 +206,6 @@ watch(
   },
   { deep: true, immediate: true }
 );
-
-const removeAccents = (str: string): string => {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-};
 
 /**
  * Fonction de recherche globale personnalisée insensible aux accents.
