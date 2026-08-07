@@ -3,6 +3,11 @@
 ## [Non publié]
 
 ### Application Mobile (PWA)
+- **Santé du Code & Consolidation des Utilitaires PWA** :
+  - Centralisation et réutilisation du type `ExportColumn` entre `csvExport.ts` et `DataTable/types.ts`.
+  - Typage strict `unknown` avec détection `error instanceof Error` dans le bloc `catch` de `safeFetch.ts`.
+  - Suppression du fichier d'artéfact Windows obsolète `pwa/src/utils/desktop.ini`.
+  - Structuration et extension des suites de tests unitaires Vitest : renommage d'`example.spec.ts` en `stringUtils.spec.ts`, et ajout des suites de tests `csvExport.spec.ts` (génération BOM UTF-8 `\uFEFF`, échappement guillemets, déclenchement téléchargement) et `safeFetch.spec.ts` (fetch HTTP, timeout `AbortController`, rafraîchissement silencieux JWT 401).
 - **Standardisation des requêtes HTTP & Rafraîchissement JWT (`safeFetch`) dans les stores Pinia** :
   - Remplacement des appels `fetch` natifs restants par `safeFetch` dans `referenceData.ts` et `chess.ts` pour appliquer systématiquement la gestion des timeouts, le rafraîchissement transparent des jetons JWT et la prise en charge hors-ligne.
   - Suppression des vérifications manuelles `response.status === 401` et des déconnexions directes (`authStore.logout()`) dans `dashboard.ts`, `benevolat.ts`, `agenda.ts` et `apprentissage.ts` (5 blocs), afin d'autoriser la tentative de rafraîchissement automatique des jetons conformément à la Règle 6 de `AGENTS.md`.

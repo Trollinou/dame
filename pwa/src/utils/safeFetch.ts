@@ -63,9 +63,9 @@ export const safeFetch = async (
 		}
 
 		return response;
-	} catch ( error: any ) {
+	} catch ( error: unknown ) {
 		clearTimeout( id );
-		if ( error.name === 'AbortError' ) {
+		if ( error instanceof Error && error.name === 'AbortError' ) {
 			throw new Error( 'Le serveur met trop de temps à répondre.' );
 		}
 		throw error;
