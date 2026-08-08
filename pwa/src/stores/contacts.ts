@@ -43,6 +43,7 @@ export const useContactStore = defineStore( 'contacts', () => {
 		refetch: refetchContacts,
 	} = useQuery< Contact[] >( {
 		queryKey: [ 'admin', 'contacts', 'list' ],
+		queryFn: async () => {
 			const allContacts = await fetchWpCollection< Contact >(
 				'/wp/v2/contacts?per_page=100&context=edit'
 			);
