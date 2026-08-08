@@ -1,4 +1,7 @@
 import type { ColumnDef } from '@tanstack/vue-table';
+import type { ExportColumn } from '@/utils/csvExport';
+
+export type { ExportColumn };
 
 export interface SelectFilterOption {
   label: string;
@@ -14,10 +17,7 @@ export interface DataTableFilterConfig {
 
 export interface DataTableExportConfig<TData> {
   filename: string;
-  columns: Array<{
-    header: string;
-    accessor: (row: TData) => string | number | boolean | null | undefined;
-  }>;
+  columns: ExportColumn<TData>[];
 }
 
 export type CustomColumnDef<TData, TValue = unknown> = ColumnDef<TData, TValue> & {

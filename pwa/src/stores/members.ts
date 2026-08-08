@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useAuthStore } from './auth';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import { safeFetch } from '@/utils/safeFetch';
+import { fetchWpCollection } from '@/utils/wpApi';
 
 export interface Member {
 	id: number;
@@ -64,52 +64,9 @@ export const useMemberStore = defineStore( 'members', () => {
 	} = useQuery< Member[] >( {
 		queryKey: [ 'admin', 'members', 'list' ],
 		queryFn: async () => {
-			const token = localStorage.getItem( 'dame_jwt_token' );
-			if ( ! token ) {
-				throw new Error( 'Non authentifié' );
-			}
-
-			const baseUrl = `${
-				import.meta.env.VITE_API_BASE_URL
-			}/wp/v2/adherents?per_page=100&context=edit`;
-			const fetchOptions = {
-				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${ token }`,
-					'Content-Type': 'application/json',
-				},
-			};
-
-			const response = await safeFetch( `${ baseUrl }&page=1`, fetchOptions );
-
-			if ( response.status === 401 ) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
-			if ( ! response.ok ) {
-				throw new Error( "Erreur lors de l'accès à l'API" );
-			}
-
-			const totalPagesHeader =
-				response.headers.get( 'X-WP-TotalPages' ) ||
-				response.headers.get( 'x-wp-totalpages' );
-			const totalPages = parseInt( totalPagesHeader || '1', 10 );
-			let allMembers: Member[] = await response.json();
-
-			if ( totalPages > 1 ) {
-				const pagePromises = [];
-				for ( let i = 2; i <= totalPages; i++ ) {
-					pagePromises.push(
-						safeFetch( `${ baseUrl }&page=${ i }`, fetchOptions ).then(
-							( res ) => res.json()
-						)
-					);
-				}
-				const additionalResults = await Promise.all( pagePromises );
-				additionalResults.forEach( ( pageMembers: Member[] ) => {
-					allMembers = allMembers.concat( pageMembers );
-				} );
-			}
+			const allMembers = await fetchWpCollection< Member >(
+				'/wp/v2/adherents?per_page=100&context=edit'
+			);
 
 			allMembers.sort( ( a, b ) => {
 				const nameA = a.title?.raw || a.title?.rendered || '';
@@ -134,32 +91,9 @@ export const useMemberStore = defineStore( 'members', () => {
 	} = useQuery< Season[] >( {
 		queryKey: [ 'admin', 'seasons', 'list' ],
 		queryFn: async () => {
-			const token = localStorage.getItem( 'dame_jwt_token' );
-			if ( ! token ) {
-				throw new Error( 'Non authentifié' );
-			}
-
-			const response = await safeFetch(
-				`${
-					import.meta.env.VITE_API_BASE_URL
-				}/wp/v2/seasons?per_page=100`,
-				{
-					headers: {
-						Authorization: `Bearer ${ token }`,
-						'Content-Type': 'application/json',
-					},
-				}
+			const data = await fetchWpCollection< Season >(
+				'/wp/v2/seasons?per_page=100'
 			);
-
-			if ( response.status === 401 ) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
-			if ( ! response.ok ) {
-				throw new Error( 'Erreur saisons' );
-			}
-
-			const data: Season[] = await response.json();
 			data.sort( ( a, b ) => b.name.localeCompare( a.name ) );
 			return data;
 		},

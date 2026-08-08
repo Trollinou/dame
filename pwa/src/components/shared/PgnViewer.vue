@@ -2,6 +2,7 @@
   <div class="pgn-stage-layout">
     <div class="board-container">
       <eg-chessboard
+        mode="study"
         :boardConfig="pgnBoardConfig"
         :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"
         @board-created="onBoardCreated"

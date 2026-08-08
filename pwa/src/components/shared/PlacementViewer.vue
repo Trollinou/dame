@@ -48,7 +48,7 @@ const verifierPlacement = async (square: string) => {
     return;
   }
 
-  // Conversion de la couleur pour eg-chessboard/chess.js (w ou b)
+  // Conversion de la couleur pour eg-chessboard (w ou b)
   const colorShort = props.pieceColor === 'white' ? 'w' : (props.pieceColor === 'black' ? 'b' : props.pieceColor);
 
   // 1. Place visuellement la pièce sur la case cliquée

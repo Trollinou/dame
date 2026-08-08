@@ -4,6 +4,34 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Non publié]
+### Qualité & Code Health
+- **Découpage des composants Vue.js monolithiques (`PreInscriptionPage`, `PlayPage`, `AgendaPage` ➔ `LeClubPage`)** :
+  - **`PreInscriptionPage.vue` (1261 ➔ ~150 lignes)** :
+    - Extraction des requêtes d'autocomplétion géographique (Communes & Adresses) dans l'utilitaire `src/utils/geoApi.ts`.
+    - Création des composables métier `usePreInscriptionForm.ts`, `useAddressAutocomplete.ts` et `usePreInscriptionApi.ts`.
+    - Scission du template en 5 sous-composants UI dédiés (`PreInscriptionSuccessCard.vue`, `PreInscriptionIdentitySelector.vue`, `PreInscriptionMemberSection.vue`, `PreInscriptionLegalRepSection.vue`, `PreInscriptionHealthSection.vue`).
+  - **`PlayPage.vue` (1013 ➔ ~200 lignes)** :
+    - Extraction des composables réutilisables `useBoardOrientation.ts` (responsive portrait/paysage), `usePlayClock.ts` (pendule d'échecs) et `usePlayGame.ts` (moteur, annulations, statuts).
+    - Scission en 4 sous-composants UI (`PlayInfoBar.vue`, `CapturedPiecesBar.vue`, `PlayActionsPanel.vue`, `PlaySettingsModal.vue`).
+  - **`AgendaPage.vue` ➔ Renommage `LeClubPage.vue` (715 ➔ ~100 lignes)** :
+    - Renommage de la vue en `LeClubPage.vue` et mise à jour des routes (`src/router/index.ts`).
+    - Extraction du composable `useAgendaSearch.ts` pour le filtrage et la recherche.
+    - Scission des 4 sous-onglets du hub en composants dédiés (`ActualitesSegmentView.vue`, `AgendaSegmentView.vue`, `TournoisSegmentView.vue`, `BenevolatSegmentView.vue`).
+- **Standardisation des requêtes HTTP & Rafraîchissement JWT (`safeFetch`) dans les stores Pinia** :
+  - Remplacement des appels `fetch` natifs restants par `safeFetch` dans `referenceData.ts` et `chess.ts` pour garantir la gestion des timeouts, la tentative de rafraîchissement transparent des jetons JWT et la résilience hors-ligne.
+  - Élimination des vérifications manuelles `response.status === 401` et des déconnexions directes (`authStore.logout()`) dans `dashboard.ts`, `benevolat.ts`, `agenda.ts` et `apprentissage.ts` (5 emplacements), afin d'autoriser le rafraîchissement transparent des jetons conformément à la Règle 6 de `AGENTS.md`.
+  - Nettoyage des imports inutilisés (`useAuthStore`) dans `agenda.ts`.
+- **Centralisation de la Récupération et Pagination WP REST (`wpApi.ts`)** :
+  - Création du module utilitaire `src/utils/wpApi.ts` fournissant la fonction generic `fetchWpCollection<T>(path)`.
+  - Gestion automatique de l'injection du token JWT (`Authorization: Bearer`), détection et parcours multi-pages via `X-WP-TotalPages`, validation stricte du statut HTTP (`res.ok`) sur toutes les pages, et fusion transparentes des résultats.
+  - Refactorisation des stores Pinia `members.ts`, `contacts.ts` et `messages.ts` pour éliminer ~120 lignes de code dupliqué et sécuriser la gestion des erreurs HTTP.
+  - Ajout d'une suite complète de tests unitaires Vitest dans `tests/unit/wpApi.spec.ts`.
+- **Centralisation utilitaire `stringUtils` & Tests Unitaires Vitest** :
+  - Extraction de la fonction d'élimination des accents `removeAccents` et création du helper `includesNormalized` dans `src/utils/stringUtils.ts`.
+  - Refactorisation de `DataTable.vue` et `AgendaPage.vue` pour utiliser la fonction utilitaire centralisée `removeAccents`.
+  - Restauration et mise à jour complète de la suite de tests unitaires `vitest` dans `tests/unit/example.spec.ts` pour valider la suppression des diacritiques et le filtrage normalisé.
+
 ## [4.8.4] - 2026-07-31
 ### Ajouté
 - **Exercice Type 10 — Echec'éval (PWA)** :
@@ -22,6 +50,13 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Création du composant partagé `QuiSuisJeViewer.vue` supportant la révélation progressive des indices et trois zones de réponse distinctes (`piece` via une palette 2x6 dynamiquement liée aux pièces `chessground`, `square` avec échiquier plat sans ombres ni coins arrondis, et `qcm`).
   - Création du composant d'aiguillage `TypeQuiSuisJe.vue`.
   - Prise en charge et routage du type 12 dans `ContenuPage.vue`.
+
+### Modifié
+- **Mise à jour des composants d'Échiquier PWA (`eg-chessboard` v1.3.1)** :
+  - Généralisation de la prop atomique `:diagram="{ fen, shapes }"` dans les composants partagés (`DiagramViewer`, `PuzzleViewer`, `QcmViewer`, `InteractiveQcmViewer`, `CapOuPasCapViewer`, `EvalViewer`, `VisionViewer`).
+  - Refactorisation de `DiagramViewer.vue` pour utiliser le composant déclaratif `<eg-chessboard>` en lieu et place d'une instanciation impérative brute `new BoardCore(...)`.
+  - Intégration de `:mode="'study'"` dans `PgnViewer.vue` pour tirer parti du moteur dédié d'analyse et de lecture PGN avec annotations graphiques (`[%cal]`/`[%cpl]`).
+  - Nettoyage des appels impératifs redondants dans `ParcoursViewer.vue` pour `soloMode` et `preserveShapesOnPositionChange`.
 
 ### Corrigé
 - **Affichage PGN dans les Leçons (`PgnViewer`)** : Correction du bug d'affichage tronqué sur ordinateur et tablette en mode paysage, permettant de restituer l'échiquier sur ses 8 rangées.

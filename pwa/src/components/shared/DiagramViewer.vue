@@ -1,14 +1,24 @@
 <template>
   <div class="diagram-viewer-container">
     <div class="main-board">
-      <div ref="boardEl"></div>
+      <eg-chessboard
+        :diagram="{
+          fen: props.fen,
+          shapes: props.shapes
+        }"
+        :boardConfig="{
+          orientation: props.orientation,
+          viewOnly: true
+        }"
+        :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import { BoardCore, type BoardCoreState, type DrawShape } from 'eg-chessboard';
+import { default as EgChessboard } from 'eg-chessboard/vue';
+import type { DrawShape } from 'eg-chessboard';
 import 'eg-chessboard/style.css';
 
 const props = withDefaults(
@@ -22,69 +32,6 @@ const props = withDefaults(
     shapes: () => []
   }
 );
-
-const boardEl = ref<HTMLElement | null>(null);
-const boardCoreInstance = ref<BoardCore | null>(null);
-
-onMounted(() => {
-  if (boardEl.value) {
-    const state: BoardCoreState = {
-      showThreats: false,
-      freeMode: false,
-      soloMode: false,
-      promotionDialogState: { isEnabled: false },
-      historyViewerState: { isEnabled: false }
-    };
-
-    boardCoreInstance.value = new BoardCore(
-      boardEl.value,
-      state,
-      () => {},
-      () => {},
-      {
-        orientation: props.orientation
-      },
-      {},
-      {
-        fen: props.fen,
-        shapes: props.shapes
-      }
-    );
-    // Forcer l'orientation via setConfig dès la fin du montage
-    if (boardCoreInstance.value) {
-      boardCoreInstance.value.setConfig({ orientation: props.orientation });
-    }
-  }
-});
-
-watch(
-  () => [props.fen, props.shapes],
-  ([newFen, newShapes]) => {
-    if (boardCoreInstance.value) {
-      boardCoreInstance.value.setDiagram({
-        fen: newFen as string,
-        shapes: newShapes as DrawShape[]
-      });
-    }
-  },
-  { deep: true }
-);
-
-watch(
-  () => props.orientation,
-  (newOrientation) => {
-    if (boardCoreInstance.value) {
-      boardCoreInstance.value.setConfig({ orientation: newOrientation });
-    }
-  }
-);
-
-onBeforeUnmount(() => {
-  if (boardCoreInstance.value) {
-    boardCoreInstance.value.destroy();
-    boardCoreInstance.value = null;
-  }
-});
 </script>
 
 <style scoped>

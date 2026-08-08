@@ -3,7 +3,11 @@
     <!-- Échiquier en haut -->
     <div class="board-container">
       <eg-chessboard
-        :boardConfig="boardConfig"
+        :diagram="{
+          fen: props.fenDepart,
+          shapes: props.shapes
+        }"
+        :boardConfig="{ viewOnly: true }"
         :playerColor="couleurJoueur"
         :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"
         @board-created="onBoardCreated"
@@ -84,12 +88,6 @@ const etapeCouranteIndex = ref(0);
 const boardApi = ref<BoardCore | null>(null);
 const repondu = ref(false);
 const indexChoisi = ref<number | null>(null);
-
-const boardConfig = computed(() => ({
-  fen: props.fenDepart,
-  viewOnly: true,
-  drawable: { shapes: props.shapes }
-}));
 
 const etapeActuelle = computed<Etape>(() => {
   return props.etapes[etapeCouranteIndex.value] || {

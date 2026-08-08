@@ -4,7 +4,7 @@ import TabsPage from '../views/TabsPage.vue';
 import LoginPage from '../views/LoginPage.vue';
 import MembersPage from '../views/MembersPage.vue';
 import ContactsPage from '../views/ContactsPage.vue';
-import AgendaPage from '../views/AgendaPage.vue';
+import LeClubPage from '../views/LeClubPage.vue';
 import BenevolatPage from '../views/BenevolatPage.vue';
 import MessagesPage from '../views/MessagesPage.vue';
 import AdminLayout from '../views/AdminLayout.vue';
@@ -40,7 +40,7 @@ const routes: Array< RouteRecordRaw > = [
 			},
 			{
 				path: 'agenda',
-				component: AgendaPage,
+				component: LeClubPage,
 			},
 			{
 				path: 'apprentissage',

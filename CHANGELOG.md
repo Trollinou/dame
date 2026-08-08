@@ -21,6 +21,23 @@
   - Généralisation de la vérification insensible à la casse de l'en-tête `X-WP-TotalPages` dans `members.ts` et `contacts.ts`.
   - Migration de `fetch()` natif vers `safeFetch()` dans `NewsPage.vue` pour assurer le suivi transparent des sessions et jetons JWT.
 
+- **Santé du Code & Consolidation des Utilitaires PWA** :
+  - Centralisation et réutilisation du type `ExportColumn` entre `csvExport.ts` et `DataTable/types.ts`.
+  - Typage strict `unknown` avec détection `error instanceof Error` dans le bloc `catch` de `safeFetch.ts`.
+  - Suppression du fichier d'artéfact Windows obsolète `pwa/src/utils/desktop.ini`.
+  - Structuration et extension des suites de tests unitaires Vitest : renommage d'`example.spec.ts` en `stringUtils.spec.ts`, et ajout des suites de tests `csvExport.spec.ts` (génération BOM UTF-8 `\uFEFF`, échappement guillemets, déclenchement téléchargement) et `safeFetch.spec.ts` (fetch HTTP, timeout `AbortController`, rafraîchissement silencieux JWT 401).
+- **Standardisation des requêtes HTTP & Rafraîchissement JWT (`safeFetch`) dans les stores Pinia** :
+  - Remplacement des appels `fetch` natifs restants par `safeFetch` dans `referenceData.ts` et `chess.ts` pour appliquer systématiquement la gestion des timeouts, le rafraîchissement transparent des jetons JWT et la prise en charge hors-ligne.
+  - Suppression des vérifications manuelles `response.status === 401` et des déconnexions directes (`authStore.logout()`) dans `dashboard.ts`, `benevolat.ts`, `agenda.ts` et `apprentissage.ts` (5 blocs), afin d'autoriser la tentative de rafraîchissement automatique des jetons conformément à la Règle 6 de `AGENTS.md`.
+  - Nettoyage des imports inutilisés (`useAuthStore`) dans `agenda.ts`.
+- **Qualité du Code & Pagination WP REST (`wpApi.ts`)** :
+  - Création du module utilitaire `src/utils/wpApi.ts` fournissant la fonction générique `fetchWpCollection<T>(path)`.
+  - Gestion automatique des jetons JWT, détection et téléchargement multi-pages via `X-WP-TotalPages`, validation stricte du statut HTTP (`res.ok`), et suppression de ~120 lignes de code dupliqué dans les stores Pinia (`members.ts`, `contacts.ts`, `messages.ts`).
+  - Implémentation d'une suite de tests unitaires Vitest dédiée dans `tests/unit/wpApi.spec.ts`.
+- **Qualité du Code & Suite de Tests (`stringUtils`)** :
+  - Extraction de la fonction d'élimination des accents `removeAccents` et création de `includesNormalized` dans le module utilitaire centralisé `src/utils/stringUtils.ts`.
+  - Élimination de la duplication dans `DataTable.vue` et `AgendaPage.vue`.
+  - Réparation et mise à niveau de la suite de tests unitaires `vitest` (`tests/unit/example.spec.ts`) pour valider la gestion des diacritiques français (`é`, `è`, `ê`, `à`, `ù`, `ç`, `ô`) et la recherche normalisée.
 - **Nouveau Type d'Exercice (Echec'éval - Type 10)** :
   - Création du composant partagé `EvalViewer.vue` orchestrant 3 phases (questions interactives `yesno`/`evaluation` sur échiquier statique, exercice tactique via `<PuzzleViewer>`, et correction annotée via `<PgnViewer>`).
   - Création du composant d'aiguillage `TypeEchecEval.vue`.

@@ -115,17 +115,20 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { Chess } from 'chess.js';
+import { Chess, makeSquare } from 'chessops';
+import { parseFen, makeFen } from 'chessops/fen';
+import { parseSan } from 'chessops/san';
+import { parsePgn } from 'chessops/pgn';
+import { isNormal } from 'chessops/types';
 import { toastController, IonButton } from '@ionic/vue';
 import DiagramViewer from '@/components/shared/DiagramViewer.vue';
 import PuzzleViewer from '@/components/shared/PuzzleViewer.vue';
-import OrderViewer from '@/components/shared/OrderViewer.vue'; // <-- Import du nouveau composant partagé
+import OrderViewer from '@/components/shared/OrderViewer.vue';
 
 import type { Key } from 'eg-chessboard';
 
@@ -291,29 +294,48 @@ const initExercice = () => {
   const bank: Diagramme[] = [];
   const solutions: Solution[] = [];
 
+  const parseSanAndPlay = (pos: Chess, san: string) => {
+    try {
+      const parsed = parseSan(pos, san);
+      if (parsed) {
+        pos.play(parsed);
+      }
+    } catch {
+      // Ignorer si le coup est invalide
+    }
+  };
+
   for (let serieIndex = 0; serieIndex < Math.min(props.config.series.length, nbSeries.value); serieIndex++) {
     const serie = props.config.series[serieIndex];
-    const mainChess = new Chess();
-    mainChess.loadPgn(serie.pgn_data);
-    const history = mainChess.history();
+    const games = parsePgn(serie.pgn_data || '');
+    const game = games[0];
+    const fenInitiale = game?.headers.get('FEN') || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-    const headers = mainChess.header();
-    const fenInitiale = headers.FEN || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-    
-    const tempChess = new Chess(fenInitiale);
-    const tourInitial = tempChess.turn(); 
-    const orientation = serie.orientation || serie.couleur_joueur || 'white'; 
+    const history: string[] = [];
+    if (game) {
+      let node = game.moves;
+      while (node.children.length > 0) {
+        const child = node.children[0];
+        history.push(child.data.san);
+        node = child;
+      }
+    }
+
+    const initSetup = parseFen(fenInitiale);
+    const tempPos = initSetup.isOk ? Chess.fromSetup(initSetup.value).unwrap() : Chess.default();
+    const tourInitial = tempPos.turn;
+    const orientation = serie.orientation || serie.couleur_joueur || 'white';
 
     let startIndex = 0;
-    const replayChess = new Chess(fenInitiale);
+    const replayPos = tempPos.clone();
 
-    const joueurDoitJouer = (orientation === 'white' && tourInitial === 'w') || (orientation === 'black' && tourInitial === 'b');
+    const joueurDoitJouer = (orientation === 'white' && tourInitial === 'white') || (orientation === 'black' && tourInitial === 'black');
     if (!joueurDoitJouer && history.length > 0) {
-      replayChess.move(history[0]);
+      parseSanAndPlay(replayPos, history[0]);
       startIndex = 1;
     }
 
-    const diag0: Diagramme = { id: `${serieIndex}-0`, fen: replayChess.fen(), orientation, serieIndex, ordre: 0 };
+    const diag0: Diagramme = { id: `${serieIndex}-0`, fen: makeFen(replayPos.toSetup()), orientation, serieIndex, ordre: 0 };
     bank.push(diag0);
     diagrammesOriginalParSerie[serieIndex].push(diag0);
 
@@ -322,11 +344,11 @@ const initExercice = () => {
     let i = startIndex;
 
     while (ordre < nbDiagrammesPerSerie.value && i < maxIndexPourReconstitution) {
-      if (i < maxIndexPourReconstitution) replayChess.move(history[i]);
-      if (i + 1 < maxIndexPourReconstitution) replayChess.move(history[i + 1]);
+      if (i < maxIndexPourReconstitution) parseSanAndPlay(replayPos, history[i]);
+      if (i + 1 < maxIndexPourReconstitution) parseSanAndPlay(replayPos, history[i + 1]);
       i += 2;
 
-      const diagN: Diagramme = { id: `${serieIndex}-${ordre}`, fen: replayChess.fen(), orientation, serieIndex, ordre };
+      const diagN: Diagramme = { id: `${serieIndex}-${ordre}`, fen: makeFen(replayPos.toSetup()), orientation, serieIndex, ordre };
       bank.push(diagN);
       diagrammesOriginalParSerie[serieIndex].push(diagN);
       ordre++;
@@ -337,19 +359,22 @@ const initExercice = () => {
 
     let lastMoveHighlight: Key[] | undefined = undefined;
     if (indexCoupATrouver - 1 >= 0 && indexCoupATrouver - 1 < history.length) {
-      const helperChess = new Chess();
-      if (headers.FEN) helperChess.load(headers.FEN);
-      for (let k = 0; k < indexCoupATrouver - 1; k++) helperChess.move(history[k]);
+      const helperPos = initSetup.isOk ? Chess.fromSetup(initSetup.value).unwrap() : Chess.default();
+      for (let k = 0; k < indexCoupATrouver - 1; k++) {
+        parseSanAndPlay(helperPos, history[k]);
+      }
       try {
-        const mv = helperChess.move(history[indexCoupATrouver - 1]);
-        lastMoveHighlight = [mv.from as Key, mv.to as Key];
+        const parsedMove = parseSan(helperPos, history[indexCoupATrouver - 1]);
+        if (parsedMove && isNormal(parsedMove)) {
+          lastMoveHighlight = [makeSquare(parsedMove.from) as Key, makeSquare(parsedMove.to) as Key];
+        }
       } catch {
         // Ignorer si le coup ne peut pas être joué
       }
     }
 
     solutions.push({
-      fenDepart: replayChess.fen(),
+      fenDepart: makeFen(replayPos.toSetup()),
       orientation,
       solution: [dernierCoup],
       shapes: serie.shapes || [],

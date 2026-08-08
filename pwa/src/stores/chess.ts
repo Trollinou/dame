@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useAuthStore } from './auth';
 import { useQueryClient } from '@tanstack/vue-query';
+import { safeFetch } from '@/utils/safeFetch';
 
 export interface PendingGame {
 	member_id: number;
@@ -76,7 +77,7 @@ export const useChessStore = defineStore(
 			// Sinon tenter l'envoi direct
 			try {
 				const token = authStore.token;
-				const response = await fetch(
+				const response = await safeFetch(
 					`${ import.meta.env.VITE_API_BASE_URL }/roi/v1/games`,
 					{
 						method: 'POST',
@@ -139,7 +140,7 @@ export const useChessStore = defineStore(
 
 			for ( const game of pending ) {
 				try {
-					const response = await fetch(
+					const response = await safeFetch(
 						`${ import.meta.env.VITE_API_BASE_URL }/roi/v1/games`,
 						{
 							method: 'POST',

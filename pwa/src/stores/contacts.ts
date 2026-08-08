@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useAuthStore } from './auth';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import { safeFetch } from '@/utils/safeFetch';
+import { fetchWpCollection } from '@/utils/wpApi';
 
 export interface Contact {
 	id: number;
@@ -44,57 +44,9 @@ export const useContactStore = defineStore( 'contacts', () => {
 	} = useQuery< Contact[] >( {
 		queryKey: [ 'admin', 'contacts', 'list' ],
 		queryFn: async () => {
-			const token = localStorage.getItem( 'dame_jwt_token' );
-			if ( ! token ) {
-				throw new Error( 'Non authentifié' );
-			}
-
-			const baseUrl = `${
-				import.meta.env.VITE_API_BASE_URL
-			}/wp/v2/contacts?per_page=100&context=edit`;
-			const fetchOptions = {
-				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${ token }`,
-					'Content-Type': 'application/json',
-				},
-			};
-
-			const response = await safeFetch( `${ baseUrl }&page=1`, fetchOptions );
-
-			if ( response.status === 401 ) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
-			if ( ! response.ok ) {
-				throw new Error( 'Erreur serveur' );
-			}
-
-			const totalPagesHeader =
-				response.headers.get( 'X-WP-TotalPages' ) ||
-				response.headers.get( 'x-wp-totalpages' );
-			const totalPages = parseInt( totalPagesHeader || '1', 10 );
-			let allContacts: Contact[] = await response.json();
-
-			if ( totalPages > 1 ) {
-				const pagePromises = [];
-				for ( let i = 2; i <= totalPages; i++ ) {
-					pagePromises.push(
-						safeFetch( `${ baseUrl }&page=${ i }`, fetchOptions ).then(
-							( res ) => {
-								if ( ! res.ok ) {
-									throw new Error( `Erreur page ${ i }` );
-								}
-								return res.json();
-							}
-						)
-					);
-				}
-				const results = await Promise.all( pagePromises );
-				results.forEach( ( pageData: Contact[] ) => {
-					allContacts = allContacts.concat( pageData );
-				} );
-			}
+			const allContacts = await fetchWpCollection< Contact >(
+				'/wp/v2/contacts?per_page=100&context=edit'
+			);
 
 			allContacts.sort( ( a, b ) => {
 				const nameA = a.title?.raw || a.title?.rendered || '';
@@ -119,32 +71,9 @@ export const useContactStore = defineStore( 'contacts', () => {
 	} = useQuery< ContactType[] >( {
 		queryKey: [ 'admin', 'contactTypes', 'list' ],
 		queryFn: async () => {
-			const token = localStorage.getItem( 'dame_jwt_token' );
-			if ( ! token ) {
-				throw new Error( 'Non authentifié' );
-			}
-
-			const response = await safeFetch(
-				`${
-					import.meta.env.VITE_API_BASE_URL
-				}/wp/v2/contact-types?per_page=100`,
-				{
-					headers: {
-						Authorization: `Bearer ${ token }`,
-						'Content-Type': 'application/json',
-					},
-				}
+			const data = await fetchWpCollection< ContactType >(
+				'/wp/v2/contact-types?per_page=100'
 			);
-
-			if ( response.status === 401 ) {
-				authStore.logout();
-				throw new Error( 'Session expirée' );
-			}
-			if ( ! response.ok ) {
-				throw new Error( 'Erreur types contacts' );
-			}
-
-			const data: ContactType[] = await response.json();
 			data.sort( ( a, b ) =>
 				a.name.localeCompare( b.name, 'fr', { sensitivity: 'base' } )
 			);

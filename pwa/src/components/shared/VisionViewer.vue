@@ -2,9 +2,9 @@
   <div class="vision-viewer-layout">
     <div class="board-container">
       <eg-chessboard
-        :boardConfig="{
+        :diagram="{
           fen: fenActuelle,
-          drawable: { shapes }
+          shapes: shapes
         }"
         :playerColor="props.couleurJoueur"
         :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"

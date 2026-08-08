@@ -43,11 +43,6 @@ const boardApi = ref<BoardCore | null>(null);
 
 const onBoardCreated = (api: BoardCore) => {
   boardApi.value = api;
-  api.setSoloMode(true);
-  api.setPreserveShapesOnPositionChange(true);
-  if (props.shapes && props.shapes.length > 0) {
-    api.setShapes(props.shapes);
-  }
 };
 
 const handleMove = async (move: any) => {

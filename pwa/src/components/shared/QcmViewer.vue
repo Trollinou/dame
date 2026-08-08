@@ -3,7 +3,11 @@
     <!-- Échiquier affiché uniquement si une FEN est fournie -->
     <div v-if="fen" class="board-container">
       <eg-chessboard
-        :boardConfig="qcmBoardConfig"
+        :diagram="{
+          fen: fen || '',
+          shapes: props.shapes
+        }"
+        :boardConfig="{ viewOnly: true }"
         :stockfishConfig="{ whiteMode: 'disabled', blackMode: 'disabled' }"
         @board-created="onBoardCreated"
       />
@@ -35,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch } from 'vue';
 import {
   IonCard,
   IonCardHeader,
@@ -65,10 +69,6 @@ const emit = defineEmits<{
 }>();
 
 const boardApi = ref<BoardCore | null>(null);
-const qcmBoardConfig = computed(() => ({
-  viewOnly: true,
-  drawable: { shapes: props.shapes }
-}));
 
 const repondu = ref(false);
 const indexChoisi = ref<number | null>(null);

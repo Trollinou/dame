@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
+import { safeFetch } from '@/utils/safeFetch';
 
 export interface ReferenceItem {
 	code: string;
@@ -26,7 +27,7 @@ export const useReferenceDataStore = defineStore( 'referenceData', () => {
 		queryKey: [ 'reference', 'regions' ],
 		queryFn: async () => {
 			const apiUrl = import.meta.env.VITE_API_BASE_URL;
-			const response = await fetch( `${ apiUrl }/dame/v1/data/regions`, {
+			const response = await safeFetch( `${ apiUrl }/dame/v1/data/regions`, {
 				headers: getHeaders(),
 			} );
 			if ( ! response.ok ) {
@@ -68,7 +69,7 @@ export const useReferenceDataStore = defineStore( 'referenceData', () => {
 		queryKey: [ 'reference', 'departments' ],
 		queryFn: async () => {
 			const apiUrl = import.meta.env.VITE_API_BASE_URL;
-			const response = await fetch(
+			const response = await safeFetch(
 				`${ apiUrl }/dame/v1/data/departments`,
 				{
 					headers: getHeaders(),
@@ -111,7 +112,7 @@ export const useReferenceDataStore = defineStore( 'referenceData', () => {
 		queryKey: [ 'reference', 'mapping' ],
 		queryFn: async () => {
 			const apiUrl = import.meta.env.VITE_API_BASE_URL;
-			const response = await fetch(
+			const response = await safeFetch(
 				`${ apiUrl }/dame/v1/data/department-region-mapping`,
 				{
 					headers: getHeaders(),

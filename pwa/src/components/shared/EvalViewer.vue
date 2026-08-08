@@ -4,11 +4,13 @@
     <div v-if="phase === 'questions'" class="phase-questions">
       <div class="board-container">
         <eg-chessboard
-          :boardConfig="{
+          :diagram="{
             fen: fenDepart,
+            shapes: shapes
+          }"
+          :boardConfig="{
             viewOnly: true,
-            orientation: couleurJoueur,
-            drawable: { shapes: shapes }
+            orientation: couleurJoueur
           }"
           :playerColor="couleurJoueur"
         />
@@ -94,7 +96,7 @@ const props = withDefaults(
   }
 );
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'success'): void;
 }>();
 

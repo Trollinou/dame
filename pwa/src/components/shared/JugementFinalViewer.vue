@@ -83,7 +83,10 @@ import {
   toastController
 } from '@ionic/vue';
 import EgChessboard from 'eg-chessboard/vue';
-import { Chess } from 'chess.js';
+import { Chess } from 'chessops';
+import { parseFen } from 'chessops/fen';
+import { parseSan, makeSanAndPlay } from 'chessops/san';
+import { parsePgn } from 'chessops/pgn';
 import PgnViewer from '@/components/shared/PgnViewer.vue';
 
 export interface ScenarioJugementFinal {
@@ -160,31 +163,50 @@ const getMoveSequence = (fenDepart: string, pgnString: string) => {
   if (!pgnString) return [];
   const cleaned = pgnString.trim().replace(/(\.\.\.|\.\.|\.)$/, '').trim();
 
-  // Primary parsing using chess.js
+  // Primary parsing using chessops
   try {
-    const chess = new Chess(fenDepart && fenDepart !== 'start' ? fenDepart : undefined);
-    if (fenDepart && fenDepart !== 'start' && !cleaned.includes('[FEN ')) {
-      const pgnWithHeader = `[SetUp "1"]\n[FEN "${fenDepart}"]\n\n${cleaned}`;
-      chess.loadPgn(pgnWithHeader);
-    } else {
-      chess.loadPgn(cleaned);
+    const fullPgn = fenDepart && fenDepart !== 'start' && !cleaned.includes('[FEN ')
+      ? `[SetUp "1"]\n[FEN "${fenDepart}"]\n\n${cleaned}`
+      : cleaned;
+
+    const games = parsePgn(fullPgn);
+    if (games.length > 0) {
+      const game = games[0];
+      const setupFen = game.headers.get('FEN') || fenDepart;
+      const setupRes = setupFen && setupFen !== 'start' ? parseFen(setupFen) : null;
+      const pos = setupRes && setupRes.isOk ? Chess.fromSetup(setupRes.value).unwrap() : Chess.default();
+
+      const moves: { san: string }[] = [];
+      let currentNode = game.moves;
+      while (currentNode.children.length > 0) {
+        const child = currentNode.children[0];
+        const parsedMove = parseSan(pos, child.data.san);
+        if (parsedMove) {
+          const san = makeSanAndPlay(pos, parsedMove);
+          moves.push({ san: san || child.data.san });
+        } else {
+          moves.push({ san: child.data.san });
+        }
+        currentNode = child;
+      }
+      if (moves.length > 0) return moves;
     }
-    const moves = chess.history({ verbose: true });
-    if (moves.length > 0) return moves;
   } catch (e) {
-    console.warn('loadPgn standard parse failed, fallback to token parsing', e);
+    console.warn('parsePgn standard parse failed, fallback to token parsing', e);
   }
 
   // Token fallback parsing for partial or custom SAN streams
   try {
-    const chess = new Chess(fenDepart && fenDepart !== 'start' ? fenDepart : undefined);
+    const setupRes = fenDepart && fenDepart !== 'start' ? parseFen(fenDepart) : null;
+    const pos = setupRes && setupRes.isOk ? Chess.fromSetup(setupRes.value).unwrap() : Chess.default();
     const textWithoutComments = cleaned.replace(/\{[^}]*\}/g, '').replace(/\d+\.\.\.|\d+\./g, '').trim();
     const tokens = textWithoutComments.split(/\s+/).filter(t => t && t !== '...');
-    const moves = [];
+    const moves: { san: string }[] = [];
     for (const token of tokens) {
-      const m = chess.move(token);
-      if (m) {
-        moves.push(m);
+      const parsed = parseSan(pos, token);
+      if (parsed) {
+        const san = makeSanAndPlay(pos, parsed);
+        moves.push({ san: san || token });
       } else {
         break;
       }
