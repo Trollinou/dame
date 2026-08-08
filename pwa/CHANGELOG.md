@@ -4,7 +4,7 @@ Tous les changements notables apportés à ce projet seront documentés dans ce 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Non publié]
+## [4.8.5] - 2026-08-08
 ### Qualité & Code Health
 - **Découpage des composants Vue.js monolithiques (`PreInscriptionPage`, `PlayPage`, `AgendaPage` ➔ `LeClubPage`)** :
   - **`PreInscriptionPage.vue` (1261 ➔ ~150 lignes)** :

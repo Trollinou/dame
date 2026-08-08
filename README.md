@@ -1,6 +1,6 @@
 # DAME - Dossier Administratif des Membres Échiquéens
 
-**Version:** 4.8.2
+**Version:** 4.8.5
 **Auteur:** Etienne Gagnon
 **Licence:** GPL v2 or later
 
@@ -11,7 +11,7 @@ Le plugin est structuré autour d'une architecture moderne (POO) garantissant pe
 
 ## Prérequis
 
-*   **WordPress :** 6.9 ou supérieur
+*   **WordPress :** 7.0 ou supérieur
 *   **PHP :** 8.4 ou supérieur
 
 ## Développement & Architecture
