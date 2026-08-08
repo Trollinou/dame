@@ -221,7 +221,7 @@ const fetchPosts = async (reset = false) => {
       url += `&categories=${selectedCategory.value}`;
     }
 
-    const response = await fetch(url);
+    const response = await safeFetch(url, {}, 4000);
 
     if (!response.ok) {
       if (response.status === 400) {

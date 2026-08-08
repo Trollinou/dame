@@ -126,31 +126,29 @@ export const useAgendaStore = defineStore(
 							);
 						}
 
-						const totalPagesStr =
-							response.headers.get( 'X-WP-TotalPages' );
-						const totalPages = totalPagesStr
-							? parseInt( totalPagesStr, 10 )
-							: 1;
-
-						if ( page >= totalPages ) {
-							if ( direction === 'upcoming' ) {
-								hasMoreUpcoming.value = false;
-							}
-							if ( direction === 'past' ) {
-								hasMorePast.value = false;
-							}
-						}
+						const totalPagesHeader =
+							response.headers.get( 'X-WP-TotalPages' ) ||
+							response.headers.get( 'x-wp-totalpages' );
+						const totalPages = totalPagesHeader
+							? parseInt( totalPagesHeader, 10 )
+							: null;
 
 						const data: AgendaEvent[] = await response.json();
 
-						if (
-							direction === 'upcoming' &&
-							data.length < perPage
-						) {
-							hasMoreUpcoming.value = false;
+						if ( direction === 'upcoming' ) {
+							if ( totalPages !== null ) {
+								hasMoreUpcoming.value = page < totalPages;
+							} else {
+								hasMoreUpcoming.value = data.length >= perPage;
+							}
 						}
-						if ( direction === 'past' && data.length < perPage ) {
-							hasMorePast.value = false;
+
+						if ( direction === 'past' ) {
+							if ( totalPages !== null ) {
+								hasMorePast.value = page < totalPages;
+							} else {
+								hasMorePast.value = data.length >= perPage;
+							}
 						}
 
 						return data;

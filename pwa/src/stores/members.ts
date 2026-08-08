@@ -63,7 +63,6 @@ export const useMemberStore = defineStore( 'members', () => {
 		refetch: refetchMembers,
 	} = useQuery< Member[] >( {
 		queryKey: [ 'admin', 'members', 'list' ],
-		queryFn: async () => {
 			const allMembers = await fetchWpCollection< Member >(
 				'/wp/v2/adherents?per_page=100&context=edit'
 			);

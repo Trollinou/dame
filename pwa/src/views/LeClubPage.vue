@@ -191,11 +191,11 @@ const loadTabContent = () => {
 };
 
 const loadMoreUpcoming = async (ev: any) => {
-  upcomingPage.value++;
   const data = await agendaStore.fetchBatch('upcoming', todayStr, upcomingPage.value);
   if (data && data.length > 0) {
     const newItems = data.filter((newItem) => !events.value.some((existing) => existing.id === newItem.id));
     events.value = [...events.value, ...newItems];
+    upcomingPage.value++;
   }
   ev.target.complete();
 };
@@ -211,62 +211,70 @@ const loadMorePast = async (ev: any) => {
   ev.target.complete();
 };
 
+const scrollToCurrentEvent = async () => {
+  await nextTick();
+  setTimeout(() => {
+    const targetEvent = events.value.find((e) => {
+      const refDate = e.meta?._dame_end_date || e.meta?._dame_start_date || '';
+      return refDate >= todayStr;
+    });
+    if (targetEvent) {
+      const el = document.getElementById('event-' + targetEvent.id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'auto', block: 'center' });
+      }
+    }
+  }, 150);
+};
+
 onIonViewWillEnter(async () => {
   if (route.query.tab) {
     selectedSegment.value = route.query.tab as string;
   }
   loadTabContent();
 
-  const hasPast = events.value.some(
-    (e) => (e.meta?._dame_end_date || e.meta?._dame_start_date || '') < todayStr
-  );
+  const isPastEvent = (e: AgendaEvent): boolean => {
+    const refDate = e.meta?._dame_end_date || e.meta?._dame_start_date || '';
+    return refDate !== '' && refDate < todayStr;
+  };
 
-  if (events.value.length === 0 || !hasPast) {
+  const hasPast = events.value.some(isPastEvent);
+
+  if (events.value.length === 0) {
     isLoading.value = true;
-
-    if (events.value.length === 0) {
-      const [upcomingData, pastData] = await Promise.all([
-        agendaStore.fetchBatch('upcoming', todayStr, 1),
-        agendaStore.fetchBatch('past', todayStr, 1),
-      ]);
-
-      let merged: AgendaEvent[] = [];
-      if (pastData && pastData.length > 0) {
-        merged = [...pastData].reverse();
-        pastPage.value = 2;
-      }
-
-      if (upcomingData && upcomingData.length > 0) {
-        merged = [...merged, ...upcomingData];
-        upcomingPage.value = 2;
-      }
-
-      events.value = merged;
-    } else {
-      const pastData = await agendaStore.fetchBatch('past', todayStr, 1);
-      if (pastData && pastData.length > 0) {
-        const merged = [...pastData].reverse();
-        const newItems = merged.filter((newItem) => !events.value.some((existing) => existing.id === newItem.id));
-        events.value = [...newItems, ...events.value];
-        pastPage.value = 2;
-      }
-    }
-
-    isLoading.value = false;
+  } else {
+    scrollToCurrentEvent();
   }
 
-  if (isFirstLoad.value) {
-    await nextTick();
-    setTimeout(() => {
-      const targetEvent = events.value.find((e) => (e.meta?._dame_start_date || '') >= todayStr);
-      if (targetEvent) {
-        const el = document.getElementById('event-' + targetEvent.id);
-        if (el) {
-          el.scrollIntoView({ behavior: 'auto', block: 'center' });
-        }
-      }
-      isFirstLoad.value = false;
-    }, 200);
+  try {
+    const pastPromise = hasPast
+      ? Promise.resolve(null)
+      : agendaStore.fetchBatch('past', todayStr, 1);
+
+    const [upcomingData, pastData] = await Promise.all([
+      agendaStore.fetchBatch('upcoming', todayStr, 1),
+      pastPromise,
+    ]);
+
+    let merged = [...events.value];
+
+    if (pastData && pastData.length > 0) {
+      const pastAsc = [...pastData].reverse();
+      const newPast = pastAsc.filter((newItem) => !merged.some((existing) => existing.id === newItem.id));
+      merged = [...newPast, ...merged];
+      pastPage.value = 2;
+    }
+
+    if (upcomingData && upcomingData.length > 0) {
+      const pastOnly = merged.filter(isPastEvent);
+      merged = [...pastOnly, ...upcomingData];
+      upcomingPage.value = 2;
+    }
+
+    events.value = merged.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i);
+  } finally {
+    isLoading.value = false;
+    scrollToCurrentEvent();
   }
 });
 </script>

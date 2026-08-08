@@ -32,6 +32,7 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Refactorisation de `DataTable.vue` et `AgendaPage.vue` pour utiliser la fonction utilitaire centralisée `removeAccents`.
   - Restauration et mise à jour complète de la suite de tests unitaires `vitest` dans `tests/unit/example.spec.ts` pour valider la suppression des diacritiques et le filtrage normalisé.
 
+## [4.8.4] - 2026-07-31
 ### Ajouté
 - **Exercice Type 10 — Echec'éval (PWA)** :
   - Création du composant partagé `EvalViewer.vue` orchestrant 3 phases (questions interactives `yesno`/`evaluation` sur échiquier statique, exercice tactique via `PuzzleViewer`, et correction via `PgnViewer`).

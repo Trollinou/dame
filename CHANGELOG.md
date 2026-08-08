@@ -1,8 +1,26 @@
 # Changelog
 
-## [Non publié]
+## [4.8.4] - 2026-07-31
 
-### Application Mobile (PWA)
+### Back-office Admin
+- **Agenda / Évènements (`dame_agenda`)** :
+  - Tri par défaut systématiquement défini en ordre chronologique croissant (`ASC`) selon la date de début de l'évènement (`_dame_start_date`).
+  - Pré-sélection automatique des filtres de dates :
+    - **Mois et année de début** : positionnés sur le mois et l'année en cours (`wp_date('m')`, `wp_date('Y')`).
+    - **Mois et année de fin** : positionnés sur le mois et l'année de l'évènement qui se déroulera le plus loin dans le futur.
+
+### Application Mobile (PWA) & API REST Agenda
+- **Agenda / Évènements** :
+  - **Correction du chargement et de la pagination** :
+    - Découplage de la gestion de l'en-tête HTTP `X-WP-TotalPages` (support majuscule/minuscule et fallback dynamique sur `data.length >= perPage`) afin de prévenir les blocages prématurés du défilement infini en mode authentifié.
+    - Repositionnement de l'incrémentation de `upcomingPage` dans `AgendaPage.vue` après la récupération des données pour éviter de sauter les pages d'événements futurs.
+    - Retrait de la restriction `status=publish` pour restituer l'intégralité des événements accessibles à l'utilisateur.
+    - Exposition des en-têtes `X-WP-Total` et `X-WP-TotalPages` via le filtre `rest_pre_serve_request` dans `Post_Meta.php` pour le CORS REST API.
+    - Amélioration de l'ancrage et du recentrage automatique (`scrollToCurrentEvent`) à l'ouverture de l'onglet sur l'événement le plus proche de la date du jour.
+- **Audits Stores & En-têtes REST** :
+  - Généralisation de la vérification insensible à la casse de l'en-tête `X-WP-TotalPages` dans `members.ts` et `contacts.ts`.
+  - Migration de `fetch()` natif vers `safeFetch()` dans `NewsPage.vue` pour assurer le suivi transparent des sessions et jetons JWT.
+
 - **Santé du Code & Consolidation des Utilitaires PWA** :
   - Centralisation et réutilisation du type `ExportColumn` entre `csvExport.ts` et `DataTable/types.ts`.
   - Typage strict `unknown` avec détection `error instanceof Error` dans le bloc `catch` de `safeFetch.ts`.
