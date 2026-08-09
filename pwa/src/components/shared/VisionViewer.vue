@@ -1,16 +1,13 @@
 <template>
   <div class="vision-viewer-wrapper">
-    <!-- Header: Consigne & Progression (Compact) -->
-    <ion-card class="consigne-card ion-no-margin ion-margin-bottom">
-      <ion-card-content class="consigne-content">
-        <div class="header-top-row">
-          <ion-badge color="primary" class="diagram-badge">
-            Diagramme {{ indexCourant + 1 }} / {{ diagrammesListe.length }}
-          </ion-badge>
-          <span class="consigne-text">{{ consigneTexte }}</span>
-        </div>
-      </ion-card-content>
-    </ion-card>
+    <!-- En-tête Unifié 2 Panels -->
+    <ExerciseHeader
+      :title="headerMeta.title"
+      :typeLabel="headerMeta.typeLabel"
+      :chapitreNiveauLabel="headerMeta.chapitreNiveauLabel"
+      :consigne="consigneTexte"
+      :stepBadgeText="`Diagramme ${indexCourant + 1} / ${diagrammesListe.length}`"
+    />
 
     <!-- Main Dual Panel Layout -->
     <div class="vision-main-layout">
@@ -65,15 +62,12 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import {
-  IonCard,
-  IonCardContent,
-  IonBadge
-} from '@ionic/vue';
+import { IonCard, IonCardContent } from '@ionic/vue';
 import { default as EgChessboard } from 'eg-chessboard/vue';
 import 'eg-chessboard/style.css';
 import type { BoardCore, DrawShape, Key } from 'eg-chessboard';
 import { parseFenPieces, getActiveColorFromFen } from '@/utils/fenUtils';
+import ExerciseHeader from '@/components/shared/ExerciseHeader.vue';
 
 export interface DiagrammeConfig {
   fen: string;
@@ -84,6 +78,9 @@ export interface DiagrammeConfig {
 const props = defineProps<{
   consigne?: string;
   diagrammes?: DiagrammeConfig[];
+  metaTitre?: string;
+  metaTypeLabel?: string;
+  metaChapitreNiveauLabel?: string;
   // Props de rétrocompatibilité pour ancien format
   fenDepart?: string;
   legacyCouleurJoueur?: 'white' | 'black';
@@ -97,12 +94,23 @@ const props = defineProps<{
     case_depart?: string;
     case_arrivee?: string;
     solution_san?: string;
+    metaTitre?: string;
+    metaTypeLabel?: string;
+    metaChapitreNiveauLabel?: string;
   };
 }>();
 
 const emit = defineEmits<{
   (e: 'success'): void;
 }>();
+
+const headerMeta = computed(() => {
+  return {
+    title: props.metaTitre || props.legacyConfig?.metaTitre || "T8 - Vision'checs",
+    typeLabel: props.metaTypeLabel || props.legacyConfig?.metaTypeLabel || "Vision'checs",
+    chapitreNiveauLabel: props.metaChapitreNiveauLabel || props.legacyConfig?.metaChapitreNiveauLabel || '',
+  };
+});
 
 const indexCourant = ref<number>(0);
 const etapeJeu = ref<'reflexion' | 'revelation'>('reflexion');
@@ -263,35 +271,6 @@ const gererClicCase = async (square: string) => {
 <style scoped>
 .vision-viewer-wrapper {
   width: 100%;
-}
-
-.consigne-card {
-  border-radius: 8px;
-}
-
-.consigne-content {
-  padding: 8px 12px;
-}
-
-.header-top-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.diagram-badge {
-  font-size: 0.85rem;
-  padding: 5px 9px;
-  border-radius: 12px;
-  flex-shrink: 0;
-}
-
-.consigne-text {
-  font-size: 0.95rem;
-  font-weight: 500;
-  line-height: 1.3;
-  margin: 0;
-  color: var(--ion-color-dark, #222222);
 }
 
 /* Dual Panel Layout */

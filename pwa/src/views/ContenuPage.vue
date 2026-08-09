@@ -44,7 +44,13 @@
             <component 
               v-if="contenuActuel.type !== undefined && getComposantExercice(contenuActuel.type)"
               :is="getComposantExercice(contenuActuel.type)" 
-              :config="({ ...contenuActuel.config, id: contenuActuel.id } as any)"
+              :config="({
+                ...contenuActuel.config,
+                id: contenuActuel.id,
+                metaTitre: decodeHtmlEntities(contenuActuel.titre),
+                metaTypeLabel: getContenuTypeLabel(contenuActuel),
+                metaChapitreNiveauLabel: formatChapitreNiveauLabel(contenuActuel.chapitre_nom, contenuActuel.niveau)
+              } as any)"
               :id="contenuActuel.id"
               :key="contenuActuel.id"
               @success="onSuccess"
@@ -145,7 +151,7 @@ import TypeJugementFinal from './types/TypeJugementFinal.vue';
 import TypeDestinationFinale from './types/TypeDestinationFinale.vue';
 import LeconReader from '@/components/apprentissage/LeconReader.vue';
 import { listOutline, homeOutline } from 'ionicons/icons';
-import { decodeHtmlEntities } from '@/utils/stringUtils';
+import { decodeHtmlEntities, getContenuTypeLabel, formatChapitreNiveauLabel } from '@/utils/stringUtils';
 
 const route = useRoute();
 const router = useRouter();

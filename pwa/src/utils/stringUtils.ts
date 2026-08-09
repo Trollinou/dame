@@ -102,16 +102,20 @@ export const EXERCICE_TYPES_MAP: Record<number, string> = {
 /**
  * Returns the human-readable type label for a playlist item or content (e.g. "Leçon", "100 Commandements", "Cap ou pas Cap ?").
  *
- * @param item Playlist item or content object
+ * @param item Playlist item or content object or type number
  * @returns Human-readable type label string
  */
 export function getContenuTypeLabel(item: {
-  type?: string;
+  type?: string | number;
   exercice_type?: number;
   type_exercice?: number;
   titre?: string;
-} | null | undefined): string {
+} | number | null | undefined): string {
   if (!item) return '';
+
+  if (typeof item === 'number') {
+    return EXERCICE_TYPES_MAP[item] || `Type ${item}`;
+  }
 
   // 1. Check if it's a lesson
   if (item.type === 'roi_lecon') {
@@ -119,7 +123,7 @@ export function getContenuTypeLabel(item: {
   }
 
   // 2. Check if explicit exercise type number is available
-  const typeNum = item.exercice_type ?? item.type_exercice;
+  const typeNum = typeof item.type === 'number' ? item.type : (item.exercice_type ?? item.type_exercice);
   if (typeNum && EXERCICE_TYPES_MAP[typeNum]) {
     return EXERCICE_TYPES_MAP[typeNum];
   }
@@ -138,4 +142,30 @@ export function getContenuTypeLabel(item: {
   }
 
   return 'Exercice';
+}
+
+/**
+ * Formats the Chapter and Level label (e.g. "Matérialité // Niveau 1", "Activité", or "Niveau 2").
+ *
+ * @param chapitreNom Name of the chapter (e.g., "Matérialité", "Activité", "Sécurité", "Structure", "Combinaison")
+ * @param niveau Level number (1 to 4)
+ * @returns Formatted label string
+ */
+export function formatChapitreNiveauLabel(
+  chapitreNom?: string | null,
+  niveau?: number | null
+): string {
+  const cleanChapitre = decodeHtmlEntities(chapitreNom?.trim());
+  const cleanNiveau = niveau ? `Niveau ${niveau}` : '';
+
+  if (cleanChapitre && cleanNiveau) {
+    return `${cleanChapitre} // ${cleanNiveau}`;
+  }
+  if (cleanChapitre) {
+    return cleanChapitre;
+  }
+  if (cleanNiveau) {
+    return cleanNiveau;
+  }
+  return '';
 }

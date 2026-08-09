@@ -1,15 +1,18 @@
 <template>
   <div class="exercice-type-100commandements">
-    <div v-if="qcmsList.length > 1" class="step-indicator ion-margin-bottom">
-      <ion-badge color="primary" class="qcm-badge">
-        Question {{ qcmIndex + 1 }} / {{ qcmsList.length }}
-      </ion-badge>
-    </div>
+    <ExerciseHeader
+      :title="headerMeta.title"
+      :typeLabel="headerMeta.typeLabel"
+      :chapitreNiveauLabel="headerMeta.chapitreNiveauLabel"
+      :consigne="qcmActuel?.question"
+      :stepBadgeText="`Question ${qcmIndex + 1} / ${qcmsList.length}`"
+    />
 
     <QcmViewer
       v-if="qcmActuel"
       :key="qcmIndex"
       :question="qcmActuel.question"
+      :hideQuestion="true"
       :choix="qcmActuel.reponses || qcmActuel.choix || []"
       :bonneReponse="qcmActuel.bonne_reponse ?? qcmActuel.bonneReponse ?? 0"
       :shapes="qcmActuel.shapes || props.config?.shapes"
@@ -21,8 +24,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { IonBadge } from '@ionic/vue';
 import QcmViewer from '@/components/shared/QcmViewer.vue';
+import ExerciseHeader from '@/components/shared/ExerciseHeader.vue';
 import { useApprentissageStore } from '@/stores/apprentissage';
 
 export interface QcmItem {
@@ -46,6 +49,9 @@ export interface Config100Commandements {
   shapes?: any[];
   fen?: string;
   id?: number;
+  metaTitre?: string;
+  metaTypeLabel?: string;
+  metaChapitreNiveauLabel?: string;
 }
 
 const props = defineProps<{
@@ -56,6 +62,14 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'success'): void;
 }>();
+
+const headerMeta = computed(() => {
+  return {
+    title: props.config?.metaTitre || 'T1 - 100 Commandements',
+    typeLabel: props.config?.metaTypeLabel || '100 Commandements',
+    chapitreNiveauLabel: props.config?.metaChapitreNiveauLabel || '',
+  };
+});
 
 const store = useApprentissageStore();
 const qcmIndex = ref(0);
@@ -113,18 +127,5 @@ const gererSucces = () => {
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
-}
-
-.step-indicator {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.qcm-badge {
-  font-size: 0.9rem;
-  padding: 6px 12px;
-  border-radius: 12px;
-  letter-spacing: 0.5px;
 }
 </style>

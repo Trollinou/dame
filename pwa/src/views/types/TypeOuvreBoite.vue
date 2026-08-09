@@ -1,5 +1,13 @@
 <template>
   <div class="exercice-type-ouvre-boite">
+    <ExerciseHeader
+      :title="headerMeta.title"
+      :typeLabel="headerMeta.typeLabel"
+      :chapitreNiveauLabel="headerMeta.chapitreNiveauLabel"
+      :consigne="config.question || 'Trouvez la faille dans la position.'"
+      stepBadgeText="1 / 1"
+    />
+
     <InteractiveQcmViewer
       :fenDepart="config.fen_depart"
       :couleurJoueur="config.couleur_joueur"
@@ -14,6 +22,7 @@
 import { computed } from 'vue';
 import { useApprentissageStore } from '@/stores/apprentissage';
 import InteractiveQcmViewer from '@/components/shared/InteractiveQcmViewer.vue';
+import ExerciseHeader from '@/components/shared/ExerciseHeader.vue';
 
 interface Choix {
   texte: string;
@@ -28,6 +37,9 @@ interface ConfigOuvreBoite {
   choix: Choix[];
   bonne_reponse: number;
   shapes?: any[];
+  metaTitre?: string;
+  metaTypeLabel?: string;
+  metaChapitreNiveauLabel?: string;
 }
 
 const props = defineProps<{
@@ -38,6 +50,14 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'success'): void;
 }>();
+
+const headerMeta = computed(() => {
+  return {
+    title: props.config?.metaTitre || 'T13 - Ouvre-Boîte',
+    typeLabel: props.config?.metaTypeLabel || 'Ouvre-Boîte',
+    chapitreNiveauLabel: props.config?.metaChapitreNiveauLabel || '',
+  };
+});
 
 const store = useApprentissageStore();
 

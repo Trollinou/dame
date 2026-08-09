@@ -1,10 +1,12 @@
 <template>
   <div class="exercice-type-qui-suis-je">
-    <ion-card v-if="config.consigne" class="ion-margin-bottom consigne-card">
-      <ion-card-header>
-        <ion-card-title class="consigne-title">{{ config.consigne }}</ion-card-title>
-      </ion-card-header>
-    </ion-card>
+    <ExerciseHeader
+      :title="headerMeta.title"
+      :typeLabel="headerMeta.typeLabel"
+      :chapitreNiveauLabel="headerMeta.chapitreNiveauLabel"
+      :consigne="config.consigne || 'Devinez la pièce ou la case mystère d\'après les indices.'"
+      stepBadgeText="1 / 1"
+    />
 
     <QuiSuisJeViewer
       :indices="config.indices"
@@ -18,12 +20,9 @@
 </template>
 
 <script setup lang="ts">
-import {
-  IonCard,
-  IonCardHeader,
-  IonCardTitle
-} from '@ionic/vue';
+import { computed } from 'vue';
 import QuiSuisJeViewer, { type QcmConfig } from '@/components/shared/QuiSuisJeViewer.vue';
+import ExerciseHeader from '@/components/shared/ExerciseHeader.vue';
 
 interface ConfigQuiSuisJe {
   consigne?: string;
@@ -32,9 +31,12 @@ interface ConfigQuiSuisJe {
   reponse_piece?: string;
   reponse_case?: string;
   reponse_qcm?: QcmConfig;
+  metaTitre?: string;
+  metaTypeLabel?: string;
+  metaChapitreNiveauLabel?: string;
 }
 
-defineProps<{
+const props = defineProps<{
   config: ConfigQuiSuisJe;
   id?: number;
 }>();
@@ -42,20 +44,18 @@ defineProps<{
 defineEmits<{
   (e: 'success'): void;
 }>();
+
+const headerMeta = computed(() => {
+  return {
+    title: props.config?.metaTitre || 'T12 - Qui suis-je ?',
+    typeLabel: props.config?.metaTypeLabel || 'Qui suis-je ?',
+    chapitreNiveauLabel: props.config?.metaChapitreNiveauLabel || '',
+  };
+});
 </script>
 
 <style scoped>
 .exercice-type-qui-suis-je {
   width: 100%;
-}
-
-.consigne-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-.consigne-title {
-  font-size: 1.1rem;
-  font-weight: 600;
 }
 </style>

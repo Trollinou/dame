@@ -14,7 +14,7 @@
     </div>
 
     <ion-card class="question-card">
-      <ion-card-header>
+      <ion-card-header v-if="!hideQuestion">
         <ion-card-title class="question-title">{{ question }}</ion-card-title>
       </ion-card-header>
 
@@ -55,6 +55,7 @@ const props = withDefaults(
   defineProps<{
     fen?: string; // Rendue optionnelle
     question: string;
+    hideQuestion?: boolean;
     choix: string[];
     bonneReponse: number;
     shapes?: any[];

@@ -1,5 +1,13 @@
 <template>
   <div class="exercice-type-echec-eval">
+    <ExerciseHeader
+      :title="headerMeta.title"
+      :typeLabel="headerMeta.typeLabel"
+      :chapitreNiveauLabel="headerMeta.chapitreNiveauLabel"
+      :consigne="config.questions?.[0]?.texte || `Évaluez la position (${config.theme || 'Échec & Éval'})`"
+      :stepBadgeText="`Question 1 / ${config.questions?.length || 1}`"
+    />
+
     <EvalViewer
       :couleurJoueur="config.couleur_joueur"
       :fenDepart="config.fen_depart"
@@ -14,8 +22,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useApprentissageStore } from '@/stores/apprentissage';
 import EvalViewer, { type QuestionEval } from '@/components/shared/EvalViewer.vue';
+import ExerciseHeader from '@/components/shared/ExerciseHeader.vue';
 
 export interface ConfigEchecEval {
   fen_depart: string;
@@ -25,6 +35,9 @@ export interface ConfigEchecEval {
   questions: QuestionEval[];
   solution_moves: string[];
   pgn_explication: string;
+  metaTitre?: string;
+  metaTypeLabel?: string;
+  metaChapitreNiveauLabel?: string;
 }
 
 const props = defineProps<{
@@ -35,6 +48,14 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'success'): void;
 }>();
+
+const headerMeta = computed(() => {
+  return {
+    title: props.config?.metaTitre || 'T10 - Échec & Éval',
+    typeLabel: props.config?.metaTypeLabel || 'Échec & Éval',
+    chapitreNiveauLabel: props.config?.metaChapitreNiveauLabel || '',
+  };
+});
 
 const store = useApprentissageStore();
 

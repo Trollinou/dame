@@ -1,5 +1,13 @@
 <template>
   <div class="exercice-type-posi-plan">
+    <ExerciseHeader
+      :title="headerMeta.title"
+      :typeLabel="headerMeta.typeLabel"
+      :chapitreNiveauLabel="headerMeta.chapitreNiveauLabel"
+      :consigne="config.etapes?.[0]?.question || 'Évaluez la position et choisissez le meilleur plan.'"
+      :stepBadgeText="`Étape 1 / ${config.etapes?.length || 1}`"
+    />
+
     <InteractiveQcmViewer
       :fenDepart="config.fen_depart"
       :couleurJoueur="config.couleur_joueur"
@@ -11,8 +19,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useApprentissageStore } from '@/stores/apprentissage';
 import InteractiveQcmViewer from '@/components/shared/InteractiveQcmViewer.vue';
+import ExerciseHeader from '@/components/shared/ExerciseHeader.vue';
 
 interface Choix {
   texte: string;
@@ -32,6 +42,9 @@ interface ConfigPosiPlan {
   couleur_joueur: 'white' | 'black';
   etapes: Etape[];
   shapes?: any[];
+  metaTitre?: string;
+  metaTypeLabel?: string;
+  metaChapitreNiveauLabel?: string;
 }
 
 const props = defineProps<{
@@ -42,6 +55,14 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'success'): void;
 }>();
+
+const headerMeta = computed(() => {
+  return {
+    title: props.config?.metaTitre || 'T5 - Posi-Plan',
+    typeLabel: props.config?.metaTypeLabel || 'Posi-Plan',
+    chapitreNiveauLabel: props.config?.metaChapitreNiveauLabel || '',
+  };
+});
 
 const store = useApprentissageStore();
 

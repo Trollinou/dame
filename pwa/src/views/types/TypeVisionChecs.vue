@@ -2,6 +2,9 @@
   <VisionViewer
     :consigne="config.consigne"
     :diagrammes="config.diagrammes"
+    :metaTitre="config.metaTitre"
+    :metaTypeLabel="config.metaTypeLabel"
+    :metaChapitreNiveauLabel="config.metaChapitreNiveauLabel"
     :legacy-config="config"
     @success="$emit('success')"
   />
@@ -14,6 +17,9 @@ defineProps<{
   config: {
     consigne?: string;
     diagrammes?: DiagrammeConfig[];
+    metaTitre?: string;
+    metaTypeLabel?: string;
+    metaChapitreNiveauLabel?: string;
     // Propriétés legacy pour rétrocompatibilité
     fen_depart?: string;
     couleur_joueur?: 'white' | 'black';
