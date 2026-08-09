@@ -1,14 +1,20 @@
 import vue from '@vitejs/plugin-vue';
-import path from 'path';
+import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vitejs.dev/config/
-export default defineConfig( {
+export default defineConfig({
 	base: './', // Chemins relatifs pour les assets (indispensable pour WordPress)
 	plugins: [
-		vue(),
-		VitePWA( {
+		vue({
+			template: {
+				compilerOptions: {
+					isCustomElement: (tag) => tag.startsWith('cg-'),
+				},
+			},
+		}),
+		VitePWA({
 			registerType: 'autoUpdate',
 			includeAssets: [
 				'favicon.ico',
@@ -37,7 +43,7 @@ export default defineConfig( {
 			},
 			workbox: {
 				// On s'assure que tous les assets nécessaires sont mis en cache
-				globPatterns: [ '**/*.{js,css,html,ico,png,svg}' ],
+				globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
 				// On augmente la limite de taille pour le fichier WASM de Stockfish (environ 7Mo)
 				maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
 				runtimeCaching: [
@@ -52,17 +58,17 @@ export default defineConfig( {
 								maxAgeSeconds: 30 * 24 * 60 * 60, // 30 jours
 							},
 							cacheableResponse: {
-								statuses: [ 0, 200 ],
+								statuses: [0, 200],
 							},
 						},
 					},
 				],
 			},
-		} ),
+		}),
 	],
 	resolve: {
 		alias: {
-			'@': path.resolve( __dirname, './src' ),
+			'@': fileURLToPath(new URL('./src', import.meta.url)),
 		},
 	},
 	// --- NOUVELLE SECTION D'OPTIMISATION ---
@@ -72,23 +78,23 @@ export default defineConfig( {
 		modulePreload: false, // Désactive le préchargement automatique (résout les warnings "unused preload" dans WordPress)
 		rollupOptions: {
 			output: {
-				manualChunks( id ) {
-					if ( id.includes( 'node_modules' ) ) {
+				manualChunks(id) {
+					if (id.includes('node_modules')) {
 						if (
-							id.includes( 'node_modules/vue/' ) ||
-							id.includes( 'node_modules/@vue/' ) ||
-							id.includes( 'node_modules/pinia/' ) ||
-							id.includes( 'node_modules/vue-router/' )
+							id.includes('node_modules/vue/') ||
+							id.includes('node_modules/@vue/') ||
+							id.includes('node_modules/pinia/') ||
+							id.includes('node_modules/vue-router/')
 						) {
 							return 'vue-vendor';
 						}
 						if (
-							id.includes( 'node_modules/@ionic/' ) ||
-							id.includes( 'node_modules/ionicons/' )
+							id.includes('node_modules/@ionic/') ||
+							id.includes('node_modules/ionicons/')
 						) {
 							return 'ionic-vendor';
 						}
-						if ( id.includes( 'node_modules/@tanstack/' ) ) {
+						if (id.includes('node_modules/@tanstack/')) {
 							return 'tanstack-vendor';
 						}
 					}
@@ -101,4 +107,4 @@ export default defineConfig( {
 		globals: true,
 		environment: 'jsdom',
 	},
-} );
+});

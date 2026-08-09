@@ -2,7 +2,7 @@
   <div>
     <!-- Infinite Scroll TOP (Historique) -->
     <ion-infinite-scroll
-      v-if="!searchQuery"
+      v-if="!searchQuery && hasMorePast"
       position="top"
       @ionInfinite="$emit('load-more-past', $event)"
       :disabled="!hasMorePast || isLoading"
@@ -46,7 +46,7 @@
 
     <!-- Infinite Scroll BOTTOM (Futur) -->
     <ion-infinite-scroll
-      v-if="!searchQuery"
+      v-if="!searchQuery && hasMoreUpcoming"
       @ionInfinite="$emit('load-more-upcoming', $event)"
       :disabled="!hasMoreUpcoming || isLoading"
     >
@@ -67,6 +67,8 @@ import {
   IonItem,
   IonLabel,
   IonBadge,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
 } from '@ionic/vue';
 import type { AgendaEvent } from '@/stores/agenda';
 import { removeAccents } from '@/utils/stringUtils';

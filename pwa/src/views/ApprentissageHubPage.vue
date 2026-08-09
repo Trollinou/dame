@@ -39,8 +39,8 @@
               <ion-card-header>
                 <div class="cours-header-wrapper">
                   <div>
-                    <ion-card-subtitle>Niveau {{ cours.niveau }} — {{ cours.chapitre_nom }}</ion-card-subtitle>
-                    <ion-card-title>{{ cours.titre }}</ion-card-title>
+                    <ion-card-subtitle>Niveau {{ cours.niveau }} — {{ decodeHtmlEntities(cours.chapitre_nom) }}</ion-card-subtitle>
+                    <ion-card-title>{{ decodeHtmlEntities(cours.titre) }}</ion-card-title>
                   </div>
                   <ion-icon
                     v-if="!apprentissageStore.isCoursUnlocked(index)"
@@ -124,6 +124,7 @@ import {
 import { onMounted, watch } from 'vue';
 import { useApprentissageStore } from '@/stores/apprentissage';
 import { useAuthStore } from '@/stores/auth';
+import { decodeHtmlEntities } from '@/utils/stringUtils';
 import {
   schoolOutline,
   checkmarkCircleOutline,

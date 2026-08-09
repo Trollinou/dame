@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button :default-href="coursParentInfo ? `/cours/${coursParentInfo.cours.id}` : '/tabs/apprentissage'"></ion-back-button>
         </ion-buttons>
-        <ion-title>{{ contenuActuel?.titre || 'Contenu' }}</ion-title>
+        <ion-title>{{ decodeHtmlEntities(contenuActuel?.titre) || 'Contenu' }}</ion-title>
         <ion-buttons slot="end">
           <ion-button v-if="coursParentInfo" :router-link="`/cours/${coursParentInfo.cours.id}`" router-direction="back">
             <ion-icon slot="icon-only" :icon="listOutline"></ion-icon>
@@ -21,7 +21,7 @@
       <div class="safe-area-wrapper">
         <ion-header collapse="condense">
           <ion-toolbar>
-            <ion-title size="large">{{ contenuActuel?.titre || 'Contenu' }}</ion-title>
+            <ion-title size="large">{{ decodeHtmlEntities(contenuActuel?.titre) || 'Contenu' }}</ion-title>
           </ion-toolbar>
         </ion-header>
 
@@ -145,6 +145,7 @@ import TypeJugementFinal from './types/TypeJugementFinal.vue';
 import TypeDestinationFinale from './types/TypeDestinationFinale.vue';
 import LeconReader from '@/components/apprentissage/LeconReader.vue';
 import { listOutline, homeOutline } from 'ionicons/icons';
+import { decodeHtmlEntities } from '@/utils/stringUtils';
 
 const route = useRoute();
 const router = useRouter();
@@ -262,7 +263,10 @@ const loadContenu = async (idVal: any) => {
     if (apprentissageStore.elementsValides.length === 0) {
       await apprentissageStore.fetchProgression();
     }
-    if (apprentissageStore.elementsValides.includes(id)) {
+    if (
+      contenuActuel.value?.post_type === 'roi_lecon' &&
+      apprentissageStore.elementsValides.includes(id)
+    ) {
       estReussi.value = true;
     }
   }
@@ -283,7 +287,7 @@ watch(
   () => contenuActuel.value,
   (newContenu) => {
     if (newContenu?.titre) {
-      document.title = newContenu.titre;
+      document.title = decodeHtmlEntities(newContenu.titre);
     } else {
       document.title = 'Contenu';
     }

@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, watch } from 'vue';
 import {
   IonPage,
   IonHeader,
@@ -120,8 +120,8 @@ const newsStore = useNewsStore();
 const { events, isLoading, hasMoreUpcoming, hasMorePast, upcomingPage, pastPage } = storeToRefs(agendaStore);
 const { selectedSegment, searchQuery, pageTitle, searchPlaceholder, onSegmentChange } = useAgendaSearch();
 
+const contentRef = ref();
 const todayStr = agendaStore.getTodayLocal();
-const isFirstLoad = ref(true);
 const tournamentError = ref<string | null>(null);
 
 const goToDetail = (id: number) => {
@@ -183,6 +183,8 @@ const fetchBenevolats = async () => {
 const loadTabContent = () => {
   if (selectedSegment.value === 'actualites') {
     fetchNews();
+  } else if (selectedSegment.value === 'agenda') {
+    scrollToCurrentEvent();
   } else if (selectedSegment.value === 'tournois') {
     fetchTournaments();
   } else if (selectedSegment.value === 'benevolat') {
@@ -190,30 +192,93 @@ const loadTabContent = () => {
   }
 };
 
-const loadMoreUpcoming = async (ev: any) => {
-  const data = await agendaStore.fetchBatch('upcoming', todayStr, upcomingPage.value);
-  if (data && data.length > 0) {
-    const newItems = data.filter((newItem) => !events.value.some((existing) => existing.id === newItem.id));
-    events.value = [...events.value, ...newItems];
-    upcomingPage.value++;
+watch(selectedSegment, (newSeg) => {
+  if (newSeg === 'agenda') {
+    scrollToCurrentEvent();
   }
-  ev.target.complete();
+});
+
+const loadMoreUpcoming = async (ev: any) => {
+  const target = ev?.target;
+  if (!hasMoreUpcoming.value || isLoading.value) {
+    if (target) {
+      try {
+        await target.complete();
+      } catch {
+        // Ignorer si déjà complété
+      }
+      target.disabled = true;
+    }
+    return;
+  }
+  try {
+    const data = await agendaStore.fetchBatch('upcoming', todayStr, upcomingPage.value);
+    if (data && data.length > 0) {
+      const newItems = data.filter((newItem) => !events.value.some((existing) => existing.id === newItem.id));
+      events.value = [...events.value, ...newItems];
+      upcomingPage.value++;
+    } else if (data !== null) {
+      hasMoreUpcoming.value = false;
+    }
+  } catch (err) {
+    console.error('Erreur chargement événements futurs:', err);
+  } finally {
+    if (target) {
+      try {
+        await target.complete();
+      } catch {
+        // Ignorer si déjà complété
+      }
+      if (!hasMoreUpcoming.value) {
+        target.disabled = true;
+      }
+    }
+  }
 };
 
 const loadMorePast = async (ev: any) => {
-  const data = await agendaStore.fetchBatch('past', todayStr, pastPage.value);
-  if (data && data.length > 0) {
-    const dataAsc = [...data].reverse();
-    const newItems = dataAsc.filter((newItem) => !events.value.some((existing) => existing.id === newItem.id));
-    events.value = [...newItems, ...events.value];
-    pastPage.value++;
+  const target = ev?.target;
+  if (!hasMorePast.value || isLoading.value) {
+    if (target) {
+      try {
+        await target.complete();
+      } catch {
+        // Ignorer si déjà complété
+      }
+      target.disabled = true;
+    }
+    return;
   }
-  ev.target.complete();
+  try {
+    const data = await agendaStore.fetchBatch('past', todayStr, pastPage.value);
+    if (data && data.length > 0) {
+      const dataAsc = [...data].reverse();
+      const newItems = dataAsc.filter((newItem) => !events.value.some((existing) => existing.id === newItem.id));
+      events.value = [...newItems, ...events.value];
+      pastPage.value++;
+    } else if (data !== null) {
+      hasMorePast.value = false;
+    }
+  } catch (err) {
+    console.error('Erreur chargement historique:', err);
+  } finally {
+    if (target) {
+      try {
+        await target.complete();
+      } catch {
+        // Ignorer si déjà complété
+      }
+      if (!hasMorePast.value) {
+        target.disabled = true;
+      }
+    }
+  }
 };
 
 const scrollToCurrentEvent = async () => {
   await nextTick();
-  setTimeout(() => {
+  const attemptScroll = (retries = 3) => {
+    if (selectedSegment.value !== 'agenda') return;
     const targetEvent = events.value.find((e) => {
       const refDate = e.meta?._dame_end_date || e.meta?._dame_start_date || '';
       return refDate >= todayStr;
@@ -222,9 +287,12 @@ const scrollToCurrentEvent = async () => {
       const el = document.getElementById('event-' + targetEvent.id);
       if (el) {
         el.scrollIntoView({ behavior: 'auto', block: 'center' });
+      } else if (retries > 0) {
+        setTimeout(() => attemptScroll(retries - 1), 100);
       }
     }
-  }, 150);
+  };
+  setTimeout(() => attemptScroll(), 150);
 };
 
 onIonViewWillEnter(async () => {

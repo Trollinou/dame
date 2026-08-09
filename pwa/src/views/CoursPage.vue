@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/tabs/apprentissage"></ion-back-button>
         </ion-buttons>
-        <ion-title>{{ cours?.titre || 'Cours' }}</ion-title>
+        <ion-title>{{ decodeHtmlEntities(cours?.titre) || 'Cours' }}</ion-title>
         <ion-buttons slot="end">
           <ion-button router-link="/tabs/apprentissage" router-direction="back">
             <ion-icon slot="icon-only" :icon="homeOutline"></ion-icon>
@@ -18,7 +18,7 @@
       <div class="safe-area-wrapper">
         <ion-header collapse="condense">
           <ion-toolbar>
-            <ion-title size="large">{{ cours?.titre || 'Cours' }}</ion-title>
+            <ion-title size="large">{{ decodeHtmlEntities(cours?.titre) || 'Cours' }}</ion-title>
           </ion-toolbar>
         </ion-header>
 
@@ -33,9 +33,9 @@
 
         <div v-else class="playlist-container">
           <div class="cours-meta-card ion-padding">
-            <h2>{{ cours.titre }}</h2>
+            <h2>{{ decodeHtmlEntities(cours.titre) }}</h2>
             <p class="chapitre-badge" :style="{ backgroundColor: 'var(--ion-color-' + cours.chapitre_couleur + ')' }">
-              Niveau {{ cours.niveau }} — {{ cours.chapitre_nom }}
+              Niveau {{ cours.niveau }} — {{ decodeHtmlEntities(cours.chapitre_nom) }}
             </p>
           </div>
 
@@ -55,10 +55,8 @@
               ></ion-icon>
               
               <ion-label>
-                <h2>{{ item.titre || (item.type === 'roi_lecon' ? 'Leçon' : 'Exercice') + ' #' + (i + 1) }}</h2>
-                <p v-if="!isUnlocked(i)">Verrouillé</p>
-                <p v-else-if="isValidated(item.id)" class="success-text">Complété</p>
-                <p v-else>Disponible</p>
+                <h2>{{ decodeHtmlEntities(item.titre) || (item.type === 'roi_lecon' ? 'Leçon' : 'Exercice') + ' #' + (i + 1) }}</h2>
+                <p class="type-subtitle">{{ getContenuTypeLabel(item) }}</p>
               </ion-label>
 
               <ion-icon
@@ -106,6 +104,7 @@ import {
 import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useApprentissageStore } from '@/stores/apprentissage';
+import { decodeHtmlEntities, getContenuTypeLabel } from '@/utils/stringUtils';
 import {
   lockClosedOutline,
   checkmarkCircleOutline,
@@ -215,7 +214,9 @@ onMounted(async () => {
   margin-bottom: 8px;
 }
 
-.success-text {
-  color: var(--ion-color-success);
+.type-subtitle {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+  margin: 2px 0 0 0;
 }
 </style>
