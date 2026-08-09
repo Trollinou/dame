@@ -1,5 +1,25 @@
 # Changelog
 
+## [4.8.6] - 2026-08-09
+
+### Application Mobile (PWA)
+- **Composant d'En-tête Unifié d'Exercice (`ExerciseHeader.vue`)** :
+  - Harmonisation de l'affichage supérieur des exercices (Types 1 à 16) avec métadonnées compactes (titre, type humain, chapitre/niveau) et panneau consigne/question avec badge de progression `x / N`.
+  - Intégration du helper `formatChapitreNiveauLabel()` dans `stringUtils.ts` et tests unitaires Vitest associés.
+- **Exercice Type 8 (Vision'checs) — Refonte Multi-Diagrammes & Rendu Responsive** :
+  - Support de la structure API `config.diagrammes` (série de 4 diagrammes par exercice) avec rétrocompatibilité automatique.
+  - Déduction dynamique du coup attendu depuis la flèche bleue FEN, orientation dynamique de l'échiquier selon le trait, et extraction des pièces via `fenUtils.ts`.
+  - Grille compacte 4 colonnes sur mobile (`<=768px`) sous forme de badges de pièces horizontaux avec fond neutre uniforme et icônes SVG natives.
+  - Dimensionnement dynamique de l'échiquier (`max-width: min(100%, calc(100vh - 230px))`) garantissant l'affichage sans défilement vertical sur mobile.
+  - Tests unitaires Vitest dans `TypeVisionChecs.spec.ts`.
+- **Exercice Type 1 (100 Commandements) — Support Séries QCM** :
+  - Gestion des séries `config.qcms` avec rétrocompatibilité et validation de fin de série.
+- **Affichage du type d'exercice dans la playlist des cours (`CoursPage.vue`)** :
+  - Remplacement des labels de statut par le type de contenu (ex: "100 Commandements", "Vision'checs", "Cap ou pas Cap ?", "Leçon") via `getContenuTypeLabel()`.
+- **Correctifs PWA** :
+  - Élimination des entités HTML brutes (`decodeHtmlEntities()`) dans les titres.
+  - Réinitialisation de l'état de réussite lors de la relecture d'un exercice dans `ContenuPage.vue`.
+
 ## [4.8.4] - 2026-07-31
 
 ### Back-office Admin
