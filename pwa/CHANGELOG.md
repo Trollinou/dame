@@ -11,9 +11,9 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Exercice Type 8 (Vision'checs) — Refonte Multi-Diagrammes & Panneau Responsive** :
   - Refonte complète de `VisionViewer.vue` et `TypeVisionChecs.vue` pour gérer la nouvelle structure API `config.diagrammes` (série de 4 diagrammes par exercice) avec rétrocompatibilité automatique pour l'ancien format monodiagramme (`config.fen_depart`).
   - Déduction dynamique du coup attendu depuis la flèche bleue (`brush: "blue"`) dans les `shapes` de chaque diagramme et orientation de l'échiquier selon le trait FEN (`w` ➔ blanc, `b` ➔ noir).
-  - Création de la fonction utilitaire `fenUtils.ts` pour extraire automatiquement les pièces et leurs coordonnées depuis la FEN (layout 1 colonne si ≤ 4 pièces, 2 colonnes Blancs/Noirs si > 4 pièces).
-  - Rendu responsive dual-panel : panneau de description au-dessus de l'échiquier sur mobile (`<=768px`) et à gauche sur ordinateur/tablette (`>768px`).
-  - Rendu visuel des icônes de pièces SVG via le conteneur natif `<cg-board>` devant leurs coordonnées (`c6`, `d7`, `b8`, etc.).
+  - Création de la fonction utilitaire `fenUtils.ts` pour extraire automatiquement les pièces et leurs coordonnées depuis la FEN.
+  - Rendu responsive dual-panel avec grille compacte à **4 colonnes sur mobile** (`<=768px`) sous forme de badges de pièces horizontaux avec fond neutre uniforme et icônes SVG natives (`<cg-board>`) devant leurs coordonnées (`c6`, `d7`, `b8`, etc.).
+  - Dimensionnement dynamique de l'échiquier contraint par la hauteur de la vue (`max-width: min(100%, calc(100vh - 230px))`) garantissant l'affichage à 100% de l'échiquier (rangées 1 à 8 et colonnes a à h) sans aucun défilement vertical sur écran de téléphone.
   - Révélation de la position complète et animation du déplacement de la pièce (`boardApi.move(...)`) en maintenant les annotations visuelles (`:preserve-shapes-on-position-change="true"`).
   - Ajout de la suite de tests unitaires Vitest dans `tests/unit/TypeVisionChecs.spec.ts`.
 - **Exercice Type 1 (100 Commandements) — Support des séries de QCM** :
@@ -50,7 +50,7 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     - Création des composables métier `usePreInscriptionForm.ts`, `useAddressAutocomplete.ts` et `usePreInscriptionApi.ts`.
     - Scission du template en 5 sous-composants UI dédiés (`PreInscriptionSuccessCard.vue`, `PreInscriptionIdentitySelector.vue`, `PreInscriptionMemberSection.vue`, `PreInscriptionLegalRepSection.vue`, `PreInscriptionHealthSection.vue`).
   - **`PlayPage.vue` (1013 ➔ ~200 lignes)** :
-    - Extraction des composables réutilisables `useBoardOrientation.ts` (responsive portrait/paysage), `usePlayClock.ts` (pendule d'échecs) et `usePlayGame.ts` (moteur, annulations, statuts).
+    - Extraction des composables réutilisables `usePlayBoardOrientation.ts` (responsive portrait/paysage), `usePlayClock.ts` (pendule d'échecs) et `usePlayGame.ts` (moteur, annulations, statuts).
     - Scission en 4 sous-composants UI (`PlayInfoBar.vue`, `CapturedPiecesBar.vue`, `PlayActionsPanel.vue`, `PlaySettingsModal.vue`).
   - **`AgendaPage.vue` ➔ Renommage `LeClubPage.vue` (715 ➔ ~100 lignes)** :
     - Renommage de la vue en `LeClubPage.vue` et mise à jour des routes (`src/router/index.ts`).

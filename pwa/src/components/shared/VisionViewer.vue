@@ -1,63 +1,35 @@
 <template>
   <div class="vision-viewer-wrapper">
-    <!-- Header: Consigne & Progression -->
+    <!-- Header: Consigne & Progression (Compact) -->
     <ion-card class="consigne-card ion-no-margin ion-margin-bottom">
-      <ion-card-header>
+      <ion-card-content class="consigne-content">
         <div class="header-top-row">
-          <ion-card-title class="exercise-title">Vision'checs</ion-card-title>
           <ion-badge color="primary" class="diagram-badge">
             Diagramme {{ indexCourant + 1 }} / {{ diagrammesListe.length }}
           </ion-badge>
+          <span class="consigne-text">{{ consigneTexte }}</span>
         </div>
-      </ion-card-header>
-      <ion-card-content>
-        <p class="consigne-text">
-          {{ consigneTexte }}
-        </p>
       </ion-card-content>
     </ion-card>
 
     <!-- Main Dual Panel Layout -->
     <div class="vision-main-layout">
-      <!-- Description Panel: Pièces & Positions -->
+      <!-- Description Panel: Pièces & Positions (4 colonnes sur mobile) -->
       <div class="description-panel">
         <div class="panel-header">
           <span class="panel-title">Pièces sur l'échiquier</span>
         </div>
 
-        <div
-          class="pieces-container"
-          :class="{ 'two-columns': pieceColumns.isTwoColumns }"
-        >
-          <!-- Colonne 1 -->
-          <div class="pieces-column">
-            <div
-              v-for="(item, idx) in pieceColumns.col1"
-              :key="`c1-${idx}-${item.square}`"
-              class="piece-row"
-            >
-              <cg-board class="piece-icon-box">
-                <div :class="['piece', item.role, item.color]"></div>
-              </cg-board>
-              <span class="piece-square">{{ item.square }}</span>
-            </div>
-          </div>
-
-          <!-- Colonne 2 (si > 4 pièces) -->
+        <div class="pieces-container">
           <div
-            v-if="pieceColumns.isTwoColumns"
-            class="pieces-column"
+            v-for="(item, idx) in piecesExtraites"
+            :key="`${idx}-${item.square}`"
+            class="piece-row"
           >
-            <div
-              v-for="(item, idx) in pieceColumns.col2"
-              :key="`c2-${idx}-${item.square}`"
-              class="piece-row"
-            >
-              <cg-board class="piece-icon-box">
-                <div :class="['piece', item.role, item.color]"></div>
-              </cg-board>
-              <span class="piece-square">{{ item.square }}</span>
-            </div>
+            <cg-board class="piece-icon-box">
+              <div :class="['piece', item.role, item.color]"></div>
+            </cg-board>
+            <span class="piece-square">{{ item.square }}</span>
           </div>
         </div>
       </div>
@@ -95,15 +67,13 @@
 import { ref, computed, watch } from 'vue';
 import {
   IonCard,
-  IonCardHeader,
-  IonCardTitle,
   IonCardContent,
   IonBadge
 } from '@ionic/vue';
 import { default as EgChessboard } from 'eg-chessboard/vue';
 import 'eg-chessboard/style.css';
 import type { BoardCore, DrawShape, Key } from 'eg-chessboard';
-import { parseFenPieces, getPieceColumns, getActiveColorFromFen } from '@/utils/fenUtils';
+import { parseFenPieces, getActiveColorFromFen } from '@/utils/fenUtils';
 
 export interface DiagrammeConfig {
   fen: string;
@@ -209,10 +179,6 @@ const piecesExtraites = computed(() => {
   return parseFenPieces(diagrammeCourant.value.fen);
 });
 
-const pieceColumns = computed(() => {
-  return getPieceColumns(piecesExtraites.value);
-});
-
 const fenActuelle = computed<string>(() => {
   if (etapeJeu.value === 'revelation') {
     return diagrammeCourant.value.fen;
@@ -303,34 +269,35 @@ const gererClicCase = async (square: string) => {
   border-radius: 8px;
 }
 
-.header-top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.consigne-content {
+  padding: 8px 12px;
 }
 
-.exercise-title {
-  font-size: 1.25rem;
-  font-weight: 700;
+.header-top-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .diagram-badge {
-  font-size: 0.9rem;
-  padding: 6px 10px;
+  font-size: 0.85rem;
+  padding: 5px 9px;
   border-radius: 12px;
+  flex-shrink: 0;
 }
 
 .consigne-text {
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.3;
   margin: 0;
-  white-space: pre-line;
+  color: var(--ion-color-dark, #222222);
 }
 
 /* Dual Panel Layout */
 .vision-main-layout {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
 }
 
@@ -351,15 +318,15 @@ const gererClicCase = async (square: string) => {
 .description-panel {
   border: 1px solid var(--ion-color-light-shade, #e0e0e0);
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px;
   background: var(--ion-card-background, #ffffff);
   box-sizing: border-box;
 }
 
 @media (min-width: 769px) {
   .description-panel {
-    flex: 0 0 40%;
-    max-width: 440px;
+    flex: 0 0 38%;
+    max-width: 400px;
   }
 }
 
@@ -370,13 +337,13 @@ const gererClicCase = async (square: string) => {
 }
 
 .panel-header {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   border-bottom: 1px solid var(--ion-color-light-shade, #eeeeee);
-  padding-bottom: 6px;
+  padding-bottom: 4px;
 }
 
 .panel-title {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--ion-color-medium-shade, #666666);
   text-transform: uppercase;
@@ -384,36 +351,46 @@ const gererClicCase = async (square: string) => {
 }
 
 .pieces-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.pieces-container.two-columns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 6px;
 }
 
-.pieces-column {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+/* Mobile layout: 4 colonnes compactes */
+@media (max-width: 768px) {
+  .pieces-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 360px) {
+  .pieces-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Desktop layout: 2 colonnes */
+@media (min-width: 769px) {
+  .pieces-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .piece-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  height: 36px;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
   padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--ion-color-light-tint, #f9f9f9);
+  border-radius: 6px;
+  background: var(--ion-color-light-tint, #f4f5f8);
+  border: 1px solid var(--ion-color-light-shade, #e0e0e0);
+  box-sizing: border-box;
 }
 
 cg-board.piece-icon-box {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   position: relative;
   display: block;
   flex-shrink: 0;
@@ -431,7 +408,7 @@ cg-board.piece-icon-box .piece {
 }
 
 .piece-square {
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   font-weight: 700;
   font-family: monospace, Courier, monospace;
   color: var(--ion-color-dark, #222222);
@@ -455,6 +432,12 @@ cg-board.piece-icon-box .piece {
   box-shadow: none;
 }
 
+@media (max-width: 768px) {
+  .board-container {
+    max-width: min(100%, calc(100vh - 230px));
+  }
+}
+
 .feedback-banner {
   border-radius: 8px;
 }
@@ -462,6 +445,6 @@ cg-board.piece-icon-box .piece {
 .feedback-text {
   font-size: 1.05rem;
   font-weight: 600;
-  padding: 12px;
+  padding: 10px;
 }
 </style>
