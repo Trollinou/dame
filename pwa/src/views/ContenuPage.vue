@@ -19,7 +19,7 @@
 
     <ion-content :fullscreen="true" class="ion-padding">
       <div class="safe-area-wrapper">
-        <ion-header collapse="condense">
+        <ion-header v-if="contenuActuel?.post_type === 'roi_lecon'" collapse="condense">
           <ion-toolbar>
             <ion-title size="large">{{ decodeHtmlEntities(contenuActuel?.titre) || 'Contenu' }}</ion-title>
           </ion-toolbar>
