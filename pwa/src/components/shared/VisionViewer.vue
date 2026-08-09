@@ -6,7 +6,6 @@
       :typeLabel="headerMeta.typeLabel"
       :chapitreNiveauLabel="headerMeta.chapitreNiveauLabel"
       :consigne="consigneTexte"
-      :stepBadgeText="`Diagramme ${indexCourant + 1} / ${diagrammesListe.length}`"
     />
 
     <!-- Main Dual Panel Layout -->
@@ -49,25 +48,25 @@
       </div>
     </div>
 
-    <!-- Feedback Message Banner -->
-    <div v-if="feedback" class="feedback-banner ion-margin-top">
-      <ion-card :color="feedback.type" class="ion-no-margin">
-        <ion-card-content class="ion-text-center feedback-text">
-          {{ feedback.message }}
-        </ion-card-content>
-      </ion-card>
-    </div>
+    <!-- Footer de Navigation par Carte avec Feedback Fixe -->
+    <SeriesCardFooter
+      :currentCard="indexCourant + 1"
+      :totalCards="diagrammesListe.length"
+      :isSolved="etapeJeu === 'revelation'"
+      :feedback="feedback"
+      @next="passerCarteSuivante"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { IonCard, IonCardContent } from '@ionic/vue';
 import { default as EgChessboard } from 'eg-chessboard/vue';
 import 'eg-chessboard/style.css';
 import type { BoardCore, DrawShape, Key } from 'eg-chessboard';
 import { parseFenPieces, getActiveColorFromFen } from '@/utils/fenUtils';
 import ExerciseHeader from '@/components/shared/ExerciseHeader.vue';
+import SeriesCardFooter from '@/components/shared/SeriesCardFooter.vue';
 
 export interface DiagrammeConfig {
   fen: string;
@@ -240,16 +239,6 @@ const gererClicCase = async (square: string) => {
         boardApi.value.move({ from: dep, to: arr });
       }
     }, 400);
-
-    // Passage au diagramme suivant ou fin de l'exercice après 1800ms
-    setTimeout(() => {
-      feedback.value = null;
-      if (indexCourant.value < diagrammesListe.value.length - 1) {
-        indexCourant.value += 1;
-      } else {
-        emit('success');
-      }
-    }, 1800);
   } else {
     // Erreur !
     feedback.value = {
@@ -264,6 +253,15 @@ const gererClicCase = async (square: string) => {
         feedback.value = null;
       }
     }, 2000);
+  }
+};
+
+const passerCarteSuivante = () => {
+  feedback.value = null;
+  if (indexCourant.value < diagrammesListe.value.length - 1) {
+    indexCourant.value += 1;
+  } else {
+    emit('success');
   }
 };
 </script>

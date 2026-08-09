@@ -35,6 +35,16 @@
         </div>
       </ion-card-content>
     </ion-card>
+
+    <!-- Footer de Navigation par Carte -->
+    <SeriesCardFooter
+      v-if="props.totalCards && props.totalCards > 1 && props.currentCard"
+      :currentCard="props.currentCard"
+      :totalCards="props.totalCards"
+      :isSolved="repondu"
+      :feedback="feedback"
+      @next="passerCarteSuivante"
+    />
   </div>
 </template>
 
@@ -45,11 +55,11 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonButton,
-  toastController
+  IonButton
 } from '@ionic/vue';
 import EgChessboard from 'eg-chessboard/vue';
 import type { BoardCore } from 'eg-chessboard';
+import SeriesCardFooter, { type CardFeedback } from '@/components/shared/SeriesCardFooter.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -59,6 +69,8 @@ const props = withDefaults(
     choix: string[];
     bonneReponse: number;
     shapes?: any[];
+    currentCard?: number;
+    totalCards?: number;
   }>(),
   {
     shapes: () => []
@@ -73,6 +85,7 @@ const boardApi = ref<BoardCore | null>(null);
 
 const repondu = ref(false);
 const indexChoisi = ref<number | null>(null);
+const feedback = ref<CardFeedback | null>(null);
 
 const onBoardCreated = (api: BoardCore) => {
   boardApi.value = api;
@@ -93,7 +106,7 @@ watch(() => props.shapes, (newShapes) => {
   }
 }, { deep: true });
 
-// Logique visuelle importée de l'ancien composant
+// Logique visuelle
 const couleurBouton = (index: number): string => {
   if (!repondu.value) {
     return 'primary';
@@ -107,7 +120,7 @@ const couleurBouton = (index: number): string => {
   return 'medium';
 };
 
-const validerChoix = async (index: number) => {
+const validerChoix = (index: number) => {
   if (repondu.value) {
     return;
   }
@@ -116,28 +129,27 @@ const validerChoix = async (index: number) => {
 
   if (index === props.bonneReponse) {
     repondu.value = true;
-    const toast = await toastController.create({
-      message: 'Bien joué !',
-      duration: 2000,
-      color: 'success',
-      position: 'bottom'
-    });
-    await toast.present();
+    feedback.value = {
+      type: 'success',
+      message: 'Bien joué ! Bonne réponse.'
+    };
 
-    setTimeout(() => {
-      emit('success');
-    }, 1000);
+    // Si pas de série de cartes, émettre la réussite après 800ms
+    if (!props.totalCards || props.totalCards <= 1) {
+      setTimeout(() => {
+        emit('success');
+      }, 800);
+    }
   } else {
-    // Ne verrouille pas 'repondu' en cas d'erreur pour permettre de réessayer
-    const toast = await toastController.create({
-      message: 'Mauvaise réponse, essaie encore !',
-      duration: 2000,
-      color: 'danger',
-      position: 'bottom'
-    });
-    await toast.present();
-    indexChoisi.value = null; // Réinitialise l'erreur visuelle si on veut laisser réessayer
+    feedback.value = {
+      type: 'danger',
+      message: 'Mauvaise réponse, essaie encore !'
+    };
   }
+};
+
+const passerCarteSuivante = () => {
+  emit('success');
 };
 </script>
 

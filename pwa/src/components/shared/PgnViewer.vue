@@ -28,6 +28,16 @@
         {{ currentComment ? '💬 ' + currentComment : 'Aucun commentaire pour cette position.' }}
       </p>
     </div>
+
+    <!-- Footer de Navigation par Carte (optionnel si en série) -->
+    <SeriesCardFooter
+      v-if="props.totalCards && props.totalCards > 1 && props.currentCard"
+      :currentCard="props.currentCard"
+      :totalCards="props.totalCards"
+      :isSolved="isCompleted"
+      pendingHint="Visionnez tous les coups du PGN pour continuer"
+      @next="emit('finished')"
+    />
   </div>
 </template>
 
@@ -37,12 +47,15 @@ import { IonButton, IonIcon } from '@ionic/vue';
 import { playBackOutline, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import EgChessboard from 'eg-chessboard/vue';
 import type { BoardCore } from 'eg-chessboard';
+import SeriesCardFooter from '@/components/shared/SeriesCardFooter.vue';
 
 const props = defineProps<{
   pgnString?: string;
   pgn?: string;
   orientation?: 'white' | 'black' | string;
   autoCompleteDelay?: number;
+  currentCard?: number;
+  totalCards?: number;
 }>();
 
 const emit = defineEmits<{
@@ -51,6 +64,7 @@ const emit = defineEmits<{
 
 const boardApi = ref<BoardCore | null>(null);
 const currentComment = ref('');
+const isCompleted = ref(false);
 
 const activePgn = computed(() => props.pgn || props.pgnString || '');
 const pgnBoardConfig = computed(() => ({
@@ -70,6 +84,14 @@ const loadPgnData = () => {
     boardApi.value.loadPgn(activePgn.value);
     boardApi.value.viewStart();
     syncComment();
+
+    const historyState = boardApi.value.getHistoryViewerState();
+    // Si le PGN n'a pas de coups ou 1 seul coup déjà atteint
+    if (!historyState.isEnabled) {
+      isCompleted.value = true;
+    } else {
+      isCompleted.value = false;
+    }
   }
 };
 
@@ -101,7 +123,10 @@ const viewNext = () => {
   const historyState = boardApi.value.getHistoryViewerState();
 
   if (!historyState.isEnabled) {
-    emit('finished');
+    isCompleted.value = true;
+    if (!props.totalCards) {
+      emit('finished');
+    }
     return;
   }
 
@@ -109,10 +134,15 @@ const viewNext = () => {
   syncComment();
 
   const newHistoryState = boardApi.value.getHistoryViewerState();
-  if (!newHistoryState.isEnabled && props.autoCompleteDelay && props.autoCompleteDelay > 0) {
-    setTimeout(() => {
+  if (!newHistoryState.isEnabled) {
+    isCompleted.value = true;
+    if (!props.totalCards && props.autoCompleteDelay && props.autoCompleteDelay > 0) {
+      setTimeout(() => {
+        emit('finished');
+      }, props.autoCompleteDelay);
+    } else if (!props.totalCards) {
       emit('finished');
-    }, props.autoCompleteDelay);
+    }
   }
 };
 </script>

@@ -5,7 +5,6 @@
       :typeLabel="headerMeta.typeLabel"
       :chapitreNiveauLabel="headerMeta.chapitreNiveauLabel"
       :consigne="qcmActuel?.question"
-      :stepBadgeText="`Question ${qcmIndex + 1} / ${qcmsList.length}`"
     />
 
     <QcmViewer
@@ -17,6 +16,8 @@
       :bonneReponse="qcmActuel.bonne_reponse ?? qcmActuel.bonneReponse ?? 0"
       :shapes="qcmActuel.shapes || props.config?.shapes"
       :fen="qcmActuel.fen || props.config?.fen"
+      :currentCard="qcmIndex + 1"
+      :totalCards="qcmsList.length"
       @success="gererSucces"
     />
   </div>

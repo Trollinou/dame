@@ -39,6 +39,15 @@
         </div>
       </ion-card-content>
     </ion-card>
+
+    <!-- Footer de Navigation par Carte -->
+    <SeriesCardFooter
+      v-if="props.etapes && props.etapes.length > 1"
+      :currentCard="etapeCouranteIndex + 1"
+      :totalCards="props.etapes.length"
+      :isSolved="repondu"
+      @next="passerEtapeSuivante"
+    />
   </div>
 </template>
 
@@ -54,6 +63,7 @@ import {
 } from '@ionic/vue';
 import EgChessboard from 'eg-chessboard/vue';
 import type { BoardCore } from 'eg-chessboard';
+import SeriesCardFooter from '@/components/shared/SeriesCardFooter.vue';
 
 interface Choix {
   texte: string;
@@ -171,17 +181,21 @@ const validerChoix = async (index: number) => {
       boardApi.value.move(etapeActuelle.value.reponse_ordinateur);
     }
 
-    // Attendre 800ms
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    // Vérifier si dernière étape
-    if (etapeCouranteIndex.value === props.etapes.length - 1) {
+    // Si une seule étape (pas de série), émettre success après la lecture
+    if (!props.etapes || props.etapes.length <= 1) {
+      await new Promise((resolve) => setTimeout(resolve, 800));
       emit('success');
-    } else {
-      etapeCouranteIndex.value++;
-      repondu.value = false;
-      indexChoisi.value = null;
     }
+  }
+};
+
+const passerEtapeSuivante = () => {
+  if (etapeCouranteIndex.value < props.etapes.length - 1) {
+    etapeCouranteIndex.value++;
+    repondu.value = false;
+    indexChoisi.value = null;
+  } else {
+    emit('success');
   }
 };
 </script>
