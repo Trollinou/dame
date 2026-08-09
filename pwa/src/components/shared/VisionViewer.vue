@@ -388,12 +388,15 @@ const gererClicCase = async (square: string) => {
   box-sizing: border-box;
 }
 
+/* Suppression du fond damier échiquier derrière les petites icônes SVG */
 cg-board.piece-icon-box {
   width: 24px;
   height: 24px;
   position: relative;
   display: block;
   flex-shrink: 0;
+  background-image: none !important;
+  background: transparent !important;
 }
 
 cg-board.piece-icon-box .piece {
