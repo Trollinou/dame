@@ -205,10 +205,6 @@ class Plugin {
 		$toolbar = new Toolbar();
 		$toolbar->init();
 
-		// Setup PWA Redirect and Manifest.
-		add_action( 'template_redirect', [ $this, 'handle_pwa_redirect' ] );
-		add_action( 'wp_head', [ $this, 'inject_pwa_manifest_link' ] );
-
 		// Initialize Frontend Assets.
 		$frontend_assets = new \DAME\Frontend\Assets();
 		$frontend_assets->init();
@@ -297,70 +293,4 @@ class Plugin {
 		}
 	}
 
-	public function handle_pwa_redirect(): void {
-		if ( isset( $_GET['dame-manifest'] ) ) {
-			$this->serve_dynamic_manifest();
-		}
-
-		$home_path = trim( (string) parse_url( home_url(), PHP_URL_PATH ), '/' );
-		$request_uri = trim( (string) parse_url( (string) $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' );
-
-		if ( ! empty( $home_path ) && 0 === strpos( $request_uri, $home_path ) ) {
-			$request_uri = trim( substr( $request_uri, strlen( $home_path ) ), '/' );
-		}
-		
-		if ( 'pwa' === $request_uri ) {
-			$pwa_url = \DAME_PLUGIN_URL . 'pwa/dist/index.html';
-			wp_safe_redirect( $pwa_url, 301 );
-			exit;
-		}
-
-		if ( 'dame-manifest.json' === $request_uri || 'dame-manifest' === $request_uri ) {
-			$this->serve_dynamic_manifest();
-		}
-	}
-
-	/**
-	 * Outputs the dynamic manifest JSON and exits.
-	 */
-	private function serve_dynamic_manifest(): void {
-		if ( ob_get_length() ) {
-			ob_clean();
-		}
-		header( 'Content-Type: application/manifest+json; charset=utf-8' );
-		echo wp_json_encode( [
-			'name'             => get_bloginfo( 'name' ),
-			'short_name'       => get_bloginfo( 'name' ),
-			'start_url'        => home_url( '/pwa' ),
-			'display'          => 'standalone',
-			'background_color' => '#ffffff',
-			'theme_color'      => '#ffffff',
-			'icons'            => [
-				[
-					'src'     => get_site_icon_url( 192 ) ?: \DAME_PLUGIN_URL . 'pwa/dist/assets/icon/icon-192.png',
-					'sizes'   => '192x192',
-					'type'    => 'image/png',
-					'purpose' => 'any maskable',
-				],
-				[
-					'src'     => get_site_icon_url( 512 ) ?: \DAME_PLUGIN_URL . 'pwa/dist/assets/icon/icon-512.png',
-					'sizes'   => '512x512',
-					'type'    => 'image/png',
-					'purpose' => 'any maskable',
-				]
-			]
-		] );
-		exit;
-	}
-
-	/**
-	 * Injects the PWA manifest link in the head of public pages.
-	 */
-	public function inject_pwa_manifest_link(): void {
-		if ( ! is_admin() ) {
-			// Using the query parameter is the most robust way to bypass Nginx static file rules.
-			$manifest_url = add_query_arg( 'dame-manifest', '1', home_url( '/' ) );
-			echo '<link rel="manifest" href="' . esc_url( $manifest_url ) . '">' . "\n";
-		}
-	}
 }

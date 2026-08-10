@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.0] - 2026-08-10
+
+### Packaging & Architecture
+- **Suppression du module Application Mobile (PWA)** :
+  - Retrait des tâches de compilation et de bundling PWA du script de packaging (`script/package.cjs`).
+  - Nettoyage des motifs et règles PWA obsolètes dans `.distignore` et `.gitignore`.
+
 ## [4.8.6] - 2026-08-09
 
 ### Application Mobile (PWA)

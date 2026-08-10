@@ -195,19 +195,24 @@ class Registration {
 			update_user_meta( $user->ID, '_dame_adherent_id', $adherent_id );
 		}
 
-		// Redirige proprement l'utilisateur vers la PWA.
-		$pwa_url = add_query_arg( 'verified', 'true', $this->get_pwa_url() );
-		wp_redirect( $pwa_url );
+		// Redirige proprement l'utilisateur vers la PWA ou l'accueil si indisponible.
+		$base_pwa_url = $this->get_pwa_url();
+		if ( ! empty( $base_pwa_url ) ) {
+			$pwa_url = add_query_arg( 'verified', 'true', $base_pwa_url );
+			wp_redirect( $pwa_url );
+		} else {
+			wp_redirect( home_url( '/' ) );
+		}
 		exit;
 	}
 
 	/**
-	 * Gets the PWA URL.
+	 * Gets the PWA URL via filter, allowing dame-pwa to provide it.
 	 *
 	 * @return string
 	 */
 	private function get_pwa_url(): string {
-		return \DAME_PLUGIN_URL . 'pwa/dist/index.html';
+		return (string) apply_filters( 'dame_pwa_url', '' );
 	}
 
 	/**
