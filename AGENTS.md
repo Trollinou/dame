@@ -1,3 +1,12 @@
+# Instructions d'Optimisation de Contexte
+
+## Règles de manipulation PHP / JS / TS / VUE / CSS / TSX / JSX / HTML
+- Interdiction de lire ou charger des fichiers entiers si la tâche cible une fonction précise. Utilise des requêtes ciblées par blocs de lignes.
+- Ne réécris JAMAIS un fichier complet pour une modification de logique. Produis uniquement des blocs de "diff" de code ou des fonctions isolées.
+- Supprime tous les commentaires verbeux ou disclaimers lors des réponses.
+
+---
+
 # AGENTS — Directives de Développement WordPress (Standardisé)
 
 ## 1. CONFIGURATION DU PROJET (À COMPLÉTER)
