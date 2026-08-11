@@ -2,9 +2,9 @@
 .gemini/
 .github/
 /.sync.ffs_db
+/pwa/
 /vendor/
 gha-creds-*.json
 node_modules/
 /.antigravitycli
 *.zip
-
