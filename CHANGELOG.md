@@ -3,6 +3,9 @@
 ## [5.0.0] - 2026-08-10
 
 ### Packaging & Architecture
+- **Transfert de l'installeur PWA vers `dame-pwa`** :
+  - Suppression de l'enfilement des scripts/styles `public-pwa-installer` dans `includes/Frontend/Assets.php`.
+  - Nettoyage des fichiers d'assets d'installation PWA devenus obsolètes dans `assets/` et `src/`.
 - **Suppression du module Application Mobile (PWA)** :
   - Retrait des tâches de compilation et de bundling PWA du script de packaging (`script/package.cjs`).
   - Nettoyage des motifs et règles PWA obsolètes dans `.distignore` et `.gitignore`.
