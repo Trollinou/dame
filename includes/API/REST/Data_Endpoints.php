@@ -156,8 +156,12 @@ class Data_Endpoints {
 		$current_season_term   = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
 		$current_season_name   = ( $current_season_term && ! is_wp_error( $current_season_term ) ) ? $current_season_term->name : '';
 
+		// Détecte si le plugin ROI est actif (classe principale chargée).
+		$roi_active = class_exists( 'ROI\\Core\\Plugin' );
+
 		return rest_ensure_response( [
 			'current_season' => $current_season_name,
+			'roi_active'     => $roi_active,
 		] );
 	}
 
