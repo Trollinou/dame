@@ -20,9 +20,9 @@ class Manager {
 	 * Initialize the metaboxes and scripts.
 	 */
 	public function init(): void {
-		add_action( 'add_meta_boxes', [ $this, 'register_meta_boxes' ] );
-		add_action( 'save_post_dame_agenda', [ $this, 'save' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'add_meta_boxes', array( $this, 'register_meta_boxes' ) );
+		add_action( 'save_post_dame_agenda', array( $this, 'save' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 	}
 
 	/**
@@ -59,19 +59,19 @@ class Manager {
 		);
 
 		// Localize script with necessary data for distance calculation.
-		$options = get_option( 'dame_options', [] );
+		$options         = get_option( 'dame_options', array() );
 		$assoc_latitude  = isset( $options['assoc_latitude'] ) ? $options['assoc_latitude'] : '';
 		$assoc_longitude = isset( $options['assoc_longitude'] ) ? $options['assoc_longitude'] : '';
 
 		wp_localize_script(
 			'dame-admin-common',
 			'dame_admin_data',
-			[
+			array(
 				'assoc_latitude'  => $assoc_latitude,
 				'assoc_longitude' => $assoc_longitude,
 				// Include dept map if needed by other parts of the script, though lat/long is critical here.
 				'dept_region_map' => Data_Provider::get_department_region_mapping(),
-			]
+			)
 		);
 
 		wp_enqueue_script( 'dame-admin-common' );
@@ -80,15 +80,19 @@ class Manager {
 		wp_enqueue_style(
 			'dame-admin-common-css',
 			$plugin_url . 'assets/css/admin-common.css',
-			[],
+			array(),
 			\DAME_VERSION
 		);
 
 		// Specific Agenda Manager Script
 		wp_enqueue_script( 'dame-admin-agenda-manager', \DAME_PLUGIN_URL . 'assets/js/admin-agenda-manager.js', array( 'jquery' ), \DAME_VERSION, true );
-		wp_localize_script( 'dame-admin-agenda-manager', 'dame_agenda_manager_data', array(
-			'alert_category' => __( 'Veuillez sélectionner au moins une catégorie.', 'dame' )
-		) );
+		wp_localize_script(
+			'dame-admin-agenda-manager',
+			'dame_agenda_manager_data',
+			array(
+				'alert_category' => __( 'Veuillez sélectionner au moins une catégorie.', 'dame' ),
+			)
+		);
 	}
 
 	/**
@@ -98,7 +102,7 @@ class Manager {
 		add_meta_box(
 			'dame_agenda_description_metabox',
 			__( 'Description', 'dame' ),
-			[ $this, 'render_description' ],
+			array( $this, 'render_description' ),
 			'dame_agenda',
 			'normal',
 			'high'
@@ -106,7 +110,7 @@ class Manager {
 		add_meta_box(
 			'dame_agenda_details_metabox',
 			__( 'Détails de l\'événement', 'dame' ),
-			[ $this, 'render_details' ],
+			array( $this, 'render_details' ),
 			'dame_agenda',
 			'normal',
 			'core'
@@ -114,7 +118,7 @@ class Manager {
 		add_meta_box(
 			'dame_agenda_participants_metabox',
 			__( 'Participants', 'dame' ),
-			[ $this, 'render_participants' ],
+			array( $this, 'render_participants' ),
 			'dame_agenda',
 			'side',
 			'high'
@@ -131,16 +135,16 @@ class Manager {
 		$transient_data = get_transient( 'dame_agenda_post_data_' . $post->ID );
 
 		// Helper function to get value from transient first, then from post meta.
-		$get_value = function( $field_name, $default = '' ) use ( $post, $transient_data ) {
+		$get_value = function ( $field_name, $default = '' ) use ( $post, $transient_data ) {
 			$meta_key = 'dame_' . $field_name;
 			return isset( $transient_data[ $meta_key ] )
 				? esc_attr( $transient_data[ $meta_key ] )
 				: get_post_meta( $post->ID, '_' . $meta_key, true );
 		};
 
-		$competition_type    = $get_value( 'competition_type', 'non' );
-		$competition_level   = $get_value( 'competition_level', 'departementale' );
-		$description         = $get_value( 'agenda_description' );
+		$competition_type  = $get_value( 'competition_type', 'non' );
+		$competition_level = $get_value( 'competition_level', 'departementale' );
+		$description       = $get_value( 'agenda_description' );
 
 		$user_id  = get_current_user_id();
 		$list_url = $user_id ? (string) get_user_meta( $user_id, 'dame_last_agenda_list_url', true ) : '';
@@ -257,7 +261,7 @@ class Manager {
 		}
 
 		// Helper function to get value from transient first, then from post meta.
-		$get_value = function( $field_name, $default = '' ) use ( $post, $transient_data ) {
+		$get_value = function ( $field_name, $default = '' ) use ( $post, $transient_data ) {
 			// For fields like 'dame_start_date', the key in $_POST is 'dame_start_date'.
 			// In post meta, it's '_dame_start_date'. The transient stores it without the underscore.
 			return isset( $transient_data[ $field_name ] )
@@ -288,7 +292,12 @@ class Manager {
 				<th><label for="dame_start_date"><?php _e( 'Date de début', 'dame' ); ?></label></th>
 				<td>
 					<input type="date" id="dame_start_date" name="dame_start_date" value="<?php echo esc_attr( $start_date ); ?>" />
-					<span class="dame-time-fields <?php if ( $all_day ) echo 'hidden'; ?>">
+					<span class="dame-time-fields 
+					<?php
+					if ( $all_day ) {
+						echo 'hidden';}
+					?>
+					">
 						<label for="dame_start_time" class="screen-reader-text"><?php _e( 'Heure de début', 'dame' ); ?></label>
 						<input type="time" id="dame_start_time" name="dame_start_time" value="<?php echo esc_attr( $start_time ); ?>" step="900" />
 					</span>
@@ -298,7 +307,12 @@ class Manager {
 				<th><label for="dame_end_date"><?php _e( 'Date de fin', 'dame' ); ?></label></th>
 				<td>
 					<input type="date" id="dame_end_date" name="dame_end_date" value="<?php echo esc_attr( $end_date ); ?>" />
-					 <span class="dame-time-fields <?php if ( $all_day ) echo 'hidden'; ?>">
+					<span class="dame-time-fields 
+					<?php
+					if ( $all_day ) {
+						echo 'hidden';}
+					?>
+					">
 						<label for="dame_end_time" class="screen-reader-text"><?php _e( 'Heure de fin', 'dame' ); ?></label>
 						<input type="time" id="dame_end_time" name="dame_end_time" value="<?php echo esc_attr( $end_time ); ?>" step="900" />
 					</span>
@@ -389,7 +403,7 @@ class Manager {
 			),
 		);
 
-		$adherents = get_posts( $args );
+		$adherents             = get_posts( $args );
 		$selected_participants = get_post_meta( $post->ID, '_dame_event_participants', true );
 		if ( ! is_array( $selected_participants ) ) {
 			$selected_participants = array();
@@ -401,7 +415,7 @@ class Manager {
 		}
 
 		// 3. Sort adherents to show selected ones first.
-		$selected_list = array();
+		$selected_list   = array();
 		$unselected_list = array();
 		foreach ( $adherents as $adherent ) {
 			if ( in_array( $adherent->ID, $selected_participants, true ) ) {
@@ -452,7 +466,7 @@ class Manager {
 		}
 
 		// --- Validation ---
-		$errors = [];
+		$errors = array();
 
 		// Check for at least one category checked.
 		// tax_input for hierarchical taxonomies is an array of term IDs.
@@ -488,12 +502,16 @@ class Manager {
 			}
 			set_transient( 'dame_agenda_post_data_' . $post_id, $post_data_to_save, 60 );
 
-
 			// Unhook this function to prevent infinite loops
-			remove_action( 'save_post_dame_agenda', [ $this, 'save' ] );
+			remove_action( 'save_post_dame_agenda', array( $this, 'save' ) );
 
 			// Update the post to be a draft
-			wp_update_post( array( 'ID' => $post_id, 'post_status' => 'draft' ) );
+			wp_update_post(
+				array(
+					'ID'          => $post_id,
+					'post_status' => 'draft',
+				)
+			);
 
 			// Re-hook the function add_action( 'save_post_dame_agenda', [ $this, 'save' ] ): void;
 			return;
@@ -503,34 +521,32 @@ class Manager {
 		delete_transient( 'dame_agenda_post_data_' . $post_id );
 
 		// --- Sanitize and Save Data ---
-		$fields = [
-			'dame_start_date'    => 'sanitize_text_field',
-			'dame_start_time'    => 'sanitize_text_field',
-			'dame_end_date'      => 'sanitize_text_field',
-			'dame_end_time'      => 'sanitize_text_field',
-			'dame_all_day'       => 'absint',
-			'dame_competition_type' => 'sanitize_key',
-			'dame_competition_level' => 'sanitize_key',
-			'dame_location_name' => 'sanitize_text_field',
-			'dame_address_1'     => 'sanitize_text_field',
-			'dame_address_2'     => 'sanitize_text_field',
-			'dame_postal_code'   => 'sanitize_text_field',
-			'dame_city'          => 'sanitize_text_field',
-			'dame_latitude'      => 'sanitize_text_field',
-			'dame_longitude'     => 'sanitize_text_field',
-			'dame_distance'      => 'sanitize_text_field',
-			'dame_travel_time'   => 'sanitize_text_field',
+		$fields = array(
+			'dame_start_date'         => 'sanitize_text_field',
+			'dame_start_time'         => 'sanitize_text_field',
+			'dame_end_date'           => 'sanitize_text_field',
+			'dame_end_time'           => 'sanitize_text_field',
+			'dame_all_day'            => 'absint',
+			'dame_competition_type'   => 'sanitize_key',
+			'dame_competition_level'  => 'sanitize_key',
+			'dame_location_name'      => 'sanitize_text_field',
+			'dame_address_1'          => 'sanitize_text_field',
+			'dame_address_2'          => 'sanitize_text_field',
+			'dame_postal_code'        => 'sanitize_text_field',
+			'dame_city'               => 'sanitize_text_field',
+			'dame_latitude'           => 'sanitize_text_field',
+			'dame_longitude'          => 'sanitize_text_field',
+			'dame_distance'           => 'sanitize_text_field',
+			'dame_travel_time'        => 'sanitize_text_field',
 			'dame_agenda_description' => 'wp_kses_post',
-		];
+		);
 
 		foreach ( $fields as $field_name => $sanitize_callback ) {
 			if ( isset( $_POST[ $field_name ] ) ) {
 				$value = call_user_func( $sanitize_callback, wp_unslash( $_POST[ $field_name ] ) );
 				update_post_meta( $post_id, '_' . $field_name, $value );
-			} else {
-				if ( 'absint' === $sanitize_callback ) {
+			} elseif ( 'absint' === $sanitize_callback ) {
 					update_post_meta( $post_id, '_' . $field_name, 0 );
-				}
 			}
 		}
 

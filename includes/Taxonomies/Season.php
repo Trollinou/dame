@@ -16,7 +16,7 @@ class Season {
 	 * Initialize the taxonomy.
 	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register' ], 0 );
+		add_action( 'init', array( $this, 'register' ), 0 );
 	}
 
 	/**
@@ -56,6 +56,6 @@ class Season {
 			'rest_base'         => 'seasons',
 		);
 
-		register_taxonomy( 'dame_saison_adhesion', [ 'adherent' ], $args );
+		register_taxonomy( 'dame_saison_adhesion', array( 'adherent' ), $args );
 	}
 }

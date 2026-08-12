@@ -20,16 +20,16 @@ class Contact {
 	 * Registers the CPT and hooks.
 	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register_post_type' ], 0 );
+		add_action( 'init', array( $this, 'register_post_type' ), 0 );
 
 		// Hooks pour la liste d'administration (Colonnes et Filtres)
 		if ( is_admin() ) {
-			add_filter( 'manage_dame_contact_posts_columns', [ $this, 'add_custom_columns' ] );
-			add_action( 'manage_dame_contact_posts_custom_column', [ $this, 'render_custom_columns' ], 10, 2 );
-			add_action( 'restrict_manage_posts', [ $this, 'add_custom_filters' ] );
-			add_action( 'pre_get_posts', [ $this, 'filter_posts_by_meta' ] );
-			add_action( 'admin_init', [ $this, 'save_last_list_url' ] );
-			add_action( 'load-edit.php', [ $this, 'remove_date_filter' ] );
+			add_filter( 'manage_dame_contact_posts_columns', array( $this, 'add_custom_columns' ) );
+			add_action( 'manage_dame_contact_posts_custom_column', array( $this, 'render_custom_columns' ), 10, 2 );
+			add_action( 'restrict_manage_posts', array( $this, 'add_custom_filters' ) );
+			add_action( 'pre_get_posts', array( $this, 'filter_posts_by_meta' ) );
+			add_action( 'admin_init', array( $this, 'save_last_list_url' ) );
+			add_action( 'load-edit.php', array( $this, 'remove_date_filter' ) );
 		}
 	}
 
@@ -37,7 +37,7 @@ class Contact {
 	 * Register the custom post type.
 	 */
 	public function register_post_type(): void {
-		$labels = [
+		$labels = array(
 			'name'                  => _x( 'Contacts', 'Post Type General Name', 'dame' ),
 			'singular_name'         => _x( 'Contact', 'Post Type Singular Name', 'dame' ),
 			'menu_name'             => __( 'Contacts', 'dame' ),
@@ -65,29 +65,29 @@ class Contact {
 			'items_list'            => __( 'Liste des contacts', 'dame' ),
 			'items_list_navigation' => __( 'Navigation de la liste des contacts', 'dame' ),
 			'filter_items_list'     => __( 'Filtrer la liste des contacts', 'dame' ),
-		];
+		);
 
-		$args = [
-			'label'                 => __( 'Contact', 'dame' ),
-			'description'           => __( 'Contacts externes (Presse, Élus, Clubs voisins)', 'dame' ),
-			'labels'                => $labels,
-			'supports'              => [ 'title', 'custom-fields' ],
-			'hierarchical'          => false,
-			'public'                => false,
-			'show_ui'               => true,
-			'show_in_menu'          => 'dame-admin',
-			'menu_position'         => 27,
-			'menu_icon'             => 'dashicons-networking',
-			'show_in_admin_bar'     => true,
-			'show_in_nav_menus'     => false,
-			'can_export'            => true,
-			'has_archive'           => false,
-			'exclude_from_search'   => true,
-			'publicly_queryable'    => false,
-			'capability_type'       => 'post',
-			'show_in_rest'          => true,
-			'rest_base'             => 'contacts',
-		];
+		$args = array(
+			'label'               => __( 'Contact', 'dame' ),
+			'description'         => __( 'Contacts externes (Presse, Élus, Clubs voisins)', 'dame' ),
+			'labels'              => $labels,
+			'supports'            => array( 'title', 'custom-fields' ),
+			'hierarchical'        => false,
+			'public'              => false,
+			'show_ui'             => true,
+			'show_in_menu'        => 'dame-admin',
+			'menu_position'       => 27,
+			'menu_icon'           => 'dashicons-networking',
+			'show_in_admin_bar'   => true,
+			'show_in_nav_menus'   => false,
+			'can_export'          => true,
+			'has_archive'         => false,
+			'exclude_from_search' => true,
+			'publicly_queryable'  => false,
+			'capability_type'     => 'post',
+			'show_in_rest'        => true,
+			'rest_base'           => 'contacts',
+		);
 
 		register_post_type( 'dame_contact', $args );
 	}
@@ -99,7 +99,7 @@ class Contact {
 	 * @return array<string, string> Les colonnes modifiées.
 	 */
 	public function add_custom_columns( array $columns ): array {
-		$new_columns = [];
+		$new_columns = array();
 		foreach ( $columns as $key => $label ) {
 			if ( 'date' === $key ) {
 				$new_columns['dame_contact_sexe']   = __( 'Civ.', 'dame' );
@@ -168,22 +168,24 @@ class Contact {
 		}
 
 		// Filtre par Type de contact (Taxonomie)
-		$selected_type = isset( $_GET['dame_contact_type'] ) ? sanitize_key( (string) $_GET['dame_contact_type'] ) : '';
-		wp_dropdown_categories( [
-			'show_option_all' => __( 'Tous les types', 'dame' ),
-			'taxonomy'        => 'dame_contact_type',
-			'name'            => 'dame_contact_type',
-			'orderby'         => 'name',
-			'selected'        => $selected_type,
-			'hierarchical'    => true,
-			'depth'           => 3,
-			'show_count'      => false,
-			'hide_empty'      => false,
-			'value_field'     => 'slug',
-		] );
+		$selected_type = isset( $_GET['dame_contact_type'] ) ? sanitize_key( wp_unslash( $_GET['dame_contact_type'] ) ) : '';
+		wp_dropdown_categories(
+			array(
+				'show_option_all' => __( 'Tous les types', 'dame' ),
+				'taxonomy'        => 'dame_contact_type',
+				'name'            => 'dame_contact_type',
+				'orderby'         => 'name',
+				'selected'        => $selected_type,
+				'hierarchical'    => true,
+				'depth'           => 3,
+				'show_count'      => false,
+				'hide_empty'      => false,
+				'value_field'     => 'slug',
+			)
+		);
 
 		// Filtre par Civilité (Meta)
-		$selected_gender = isset( $_GET['dame_filter_gender'] ) ? sanitize_text_field( (string) $_GET['dame_filter_gender'] ) : '';
+		$selected_gender = isset( $_GET['dame_filter_gender'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_filter_gender'] ) ) : '';
 		echo '<select name="dame_filter_gender">';
 		echo '<option value="">' . esc_html__( 'Toutes les civilités', 'dame' ) . '</option>';
 		echo '<option value="Masculin" ' . selected( $selected_gender, 'Masculin', false ) . '>' . esc_html__( 'Monsieur', 'dame' ) . '</option>';
@@ -193,7 +195,7 @@ class Contact {
 
 		// Filtre par Département (Meta)
 		$departments   = Data_Provider::get_departments();
-		$selected_dept = isset( $_GET['dame_filter_dept'] ) ? sanitize_text_field( (string) $_GET['dame_filter_dept'] ) : '';
+		$selected_dept = isset( $_GET['dame_filter_dept'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_filter_dept'] ) ) : '';
 		echo '<select name="dame_filter_dept">';
 		echo '<option value="">' . esc_html__( 'Tous les départements', 'dame' ) . '</option>';
 		foreach ( $departments as $code => $name ) {
@@ -208,7 +210,7 @@ class Contact {
 
 		// Filtre par Région (Meta)
 		$regions         = Data_Provider::get_regions();
-		$selected_region = isset( $_GET['dame_filter_region'] ) ? sanitize_text_field( (string) $_GET['dame_filter_region'] ) : '';
+		$selected_region = isset( $_GET['dame_filter_region'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_filter_region'] ) ) : '';
 		echo '<select name="dame_filter_region">';
 		echo '<option value="">' . esc_html__( 'Toutes les régions', 'dame' ) . '</option>';
 		foreach ( $regions as $code => $name ) {
@@ -236,49 +238,49 @@ class Contact {
 
 		// Filtrage Département
 		if ( ! empty( $_GET['dame_filter_dept'] ) ) {
-			$meta_query[] = [
+			$meta_query[] = array(
 				'key'     => '_dame_contact_department',
-				'value'   => sanitize_text_field( (string) $_GET['dame_filter_dept'] ),
+				'value'   => sanitize_text_field( wp_unslash( $_GET['dame_filter_dept'] ) ),
 				'compare' => 'LIKE',
-			];
+			);
 		}
 
 		// Filtrage Région
 		if ( ! empty( $_GET['dame_filter_region'] ) ) {
-			$meta_query[] = [
+			$meta_query[] = array(
 				'key'     => '_dame_contact_region',
-				'value'   => sanitize_text_field( (string) $_GET['dame_filter_region'] ),
+				'value'   => sanitize_text_field( wp_unslash( $_GET['dame_filter_region'] ) ),
 				'compare' => '=',
-			];
+			);
 		}
 
 		// Filtrage Civilité
 		if ( ! empty( $_GET['dame_filter_gender'] ) ) {
-			$gender_filter = sanitize_text_field( (string) $_GET['dame_filter_gender'] );
+			$gender_filter = sanitize_text_field( wp_unslash( $_GET['dame_filter_gender'] ) );
 			if ( 'Non précisé' === $gender_filter ) {
-				$meta_query[] = [
+				$meta_query[] = array(
 					'relation' => 'OR',
-					[
+					array(
 						'key'     => '_dame_contact_sexe',
 						'value'   => 'Non précisé',
 						'compare' => '=',
-					],
-					[
+					),
+					array(
 						'key'     => '_dame_contact_sexe',
 						'compare' => 'NOT EXISTS',
-					],
-					[
+					),
+					array(
 						'key'     => '_dame_contact_sexe',
 						'value'   => '',
 						'compare' => '=',
-					],
-				];
+					),
+				);
 			} else {
-				$meta_query[] = [
+				$meta_query[] = array(
 					'key'     => '_dame_contact_sexe',
 					'value'   => $gender_filter,
 					'compare' => '=',
-				];
+				);
 			}
 		}
 
@@ -292,12 +294,13 @@ class Contact {
 	 */
 	public function save_last_list_url(): void {
 		global $pagenow;
-		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'dame_contact' === $_GET['post_type'] ) {
+		$post_type = isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '';
+		if ( 'edit.php' === $pagenow && 'dame_contact' === $post_type ) {
 			$user_id = get_current_user_id();
 			if ( $user_id ) {
-				$url = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+				$url = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 				if ( $url ) {
-					$parsed = parse_url( $url );
+					$parsed     = wp_parse_url( $url );
 					$path_query = ( $parsed['path'] ?? '' ) . ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' );
 					update_user_meta( $user_id, 'dame_last_contact_list_url', $path_query );
 				}

@@ -16,8 +16,8 @@ class Message {
 	 * Initialize columns.
 	 */
 	public function init(): void {
-		add_filter( 'manage_dame_message_posts_columns', [ $this, 'manage_columns' ] );
-		add_action( 'manage_dame_message_posts_custom_column', [ $this, 'render_columns' ], 10, 2 );
+		add_filter( 'manage_dame_message_posts_columns', array( $this, 'manage_columns' ) );
+		add_action( 'manage_dame_message_posts_custom_column', array( $this, 'render_columns' ), 10, 2 );
 	}
 
 	/**
@@ -65,7 +65,7 @@ class Message {
 					} else {
 						$processed = (int) get_post_meta( $post_id, '_dame_scheduled_batches_processed', true );
 						$total     = (int) get_post_meta( $post_id, '_dame_scheduled_batches_total', true );
-						
+
 						if ( 'scheduled' === $status ) {
 							echo esc_html__( 'Planifié', 'dame' );
 						} else {
@@ -118,7 +118,7 @@ class Message {
 
 				if ( $total > 0 ) {
 					$percentage = round( ( $opens / $total ) * 100 );
-					echo sprintf(
+					printf(
 						'<a href="%s">%d / %d (%d%%)</a>',
 						esc_url( admin_url( 'admin.php?page=dame-message-report&message_id=' . $post_id ) ),
 						$opens,

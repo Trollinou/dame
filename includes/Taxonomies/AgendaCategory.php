@@ -19,14 +19,14 @@ class AgendaCategory {
 	 * Initialize the taxonomy.
 	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register' ], 0 );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_color_picker' ] );
-		add_action( 'dame_agenda_category_add_form_fields', [ $this, 'add_form_fields' ], 10, 1 );
-		add_action( 'dame_agenda_category_edit_form_fields', [ $this, 'edit_form_fields' ], 10, 1 );
-		add_action( 'edited_dame_agenda_category', [ $this, 'save_color' ], 10, 1 );
-		add_action( 'create_dame_agenda_category', [ $this, 'save_color' ], 10, 1 );
-		add_filter( 'manage_edit-dame_agenda_category_columns', [ $this, 'add_color_column' ] );
-		add_filter( 'manage_dame_agenda_category_custom_column', [ $this, 'render_color_column' ], 10, 3 );
+		add_action( 'init', array( $this, 'register' ), 0 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_color_picker' ) );
+		add_action( 'dame_agenda_category_add_form_fields', array( $this, 'add_form_fields' ), 10, 1 );
+		add_action( 'dame_agenda_category_edit_form_fields', array( $this, 'edit_form_fields' ), 10, 1 );
+		add_action( 'edited_dame_agenda_category', array( $this, 'save_color' ), 10, 1 );
+		add_action( 'create_dame_agenda_category', array( $this, 'save_color' ), 10, 1 );
+		add_filter( 'manage_edit-dame_agenda_category_columns', array( $this, 'add_color_column' ) );
+		add_filter( 'manage_dame_agenda_category_custom_column', array( $this, 'render_color_column' ), 10, 3 );
 	}
 
 	/**
@@ -89,9 +89,9 @@ class AgendaCategory {
 	public function add_form_fields( $taxonomy ): void {
 		?>
 		<div class="form-field">
-			<label for="term_meta[color]"><?php _e( 'Couleur de la catégorie', 'dame' ); ?></label>
+			<label for="term_meta[color]"><?php esc_html_e( 'Couleur de la catégorie', 'dame' ); ?></label>
 			<input type="text" name="term_meta[color]" id="term_meta[color]" value="" class="dame-color-picker">
-			<p class="description"><?php _e( 'Choisissez une couleur pour cette catégorie.', 'dame' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Choisissez une couleur pour cette catégorie.', 'dame' ); ?></p>
 		</div>
 		<?php
 	}
@@ -102,15 +102,15 @@ class AgendaCategory {
 	 * @param WP_Term $term Current term object.
 	 */
 	public function edit_form_fields( WP_Term $term ): void {
-		$term_id = $term->term_id;
+		$term_id   = $term->term_id;
 		$term_meta = get_option( "taxonomy_$term_id" );
-		$color = isset( $term_meta['color'] ) ? $term_meta['color'] : '';
+		$color     = isset( $term_meta['color'] ) ? $term_meta['color'] : '';
 		?>
 		<tr class="form-field">
-			<th scope="row" valign="top"><label for="term_meta[color]"><?php _e( 'Couleur de la catégorie', 'dame' ); ?></label></th>
+			<th scope="row" valign="top"><label for="term_meta[color]"><?php esc_html_e( 'Couleur de la catégorie', 'dame' ); ?></label></th>
 			<td>
 				<input type="text" name="term_meta[color]" id="term_meta[color]" value="<?php echo esc_attr( $color ); ?>" class="dame-color-picker">
-				<p class="description"><?php _e( 'Choisissez une couleur pour cette catégorie.', 'dame' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Choisissez une couleur pour cette catégorie.', 'dame' ); ?></p>
 			</td>
 		</tr>
 		<?php
@@ -122,15 +122,16 @@ class AgendaCategory {
 	 * @param int $term_id Term ID.
 	 */
 	public function save_color( $term_id ): void {
-		if ( isset( $_POST['term_meta'] ) ) {
+		if ( isset( $_POST['term_meta'] ) && is_array( $_POST['term_meta'] ) ) {
 			$term_meta = get_option( "taxonomy_$term_id" );
 			if ( ! is_array( $term_meta ) ) {
 				$term_meta = array();
 			}
-			$cat_keys = array_keys( $_POST['term_meta'] );
+			$raw_term_meta = wp_unslash( $_POST['term_meta'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$cat_keys      = array_keys( $raw_term_meta );
 			foreach ( $cat_keys as $key ) {
-				if ( isset( $_POST['term_meta'][ $key ] ) ) {
-					$term_meta[ $key ] = sanitize_hex_color( $_POST['term_meta'][ $key ] );
+				if ( isset( $raw_term_meta[ $key ] ) ) {
+					$term_meta[ $key ] = sanitize_hex_color( $raw_term_meta[ $key ] );
 				}
 			}
 			update_option( "taxonomy_$term_id", $term_meta );

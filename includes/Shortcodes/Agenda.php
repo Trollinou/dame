@@ -20,10 +20,10 @@ class Agenda {
 	 * Initialize the shortcodes and AJAX handlers.
 	 */
 	public function init(): void {
-		add_shortcode( 'dame_agenda', [ $this, 'render_agenda' ] );
-		add_shortcode( 'dame_liste_agenda', [ $this, 'render_list' ] );
-		add_action( 'wp_ajax_dame_get_agenda_events', [ $this, 'get_events_ajax' ] );
-		add_action( 'wp_ajax_nopriv_dame_get_agenda_events', [ $this, 'get_events_ajax' ] );
+		add_shortcode( 'dame_agenda', array( $this, 'render_agenda' ) );
+		add_shortcode( 'dame_liste_agenda', array( $this, 'render_list' ) );
+		add_action( 'wp_ajax_dame_get_agenda_events', array( $this, 'get_events_ajax' ) );
+		add_action( 'wp_ajax_nopriv_dame_get_agenda_events', array( $this, 'get_events_ajax' ) );
 	}
 
 	/**
@@ -274,17 +274,17 @@ class Agenda {
 
 		if ( ! empty( $search_term ) ) {
 			$args['dame_search'] = $search_term;
-			add_filter( 'posts_join', [ $this, 'filter_search_join' ], 10, 2 );
-			add_filter( 'posts_where', [ $this, 'filter_search_where' ], 10, 2 );
-			add_filter( 'posts_distinct', [ $this, 'filter_search_distinct' ], 10, 2 );
+			add_filter( 'posts_join', array( $this, 'filter_search_join' ), 10, 2 );
+			add_filter( 'posts_where', array( $this, 'filter_search_where' ), 10, 2 );
+			add_filter( 'posts_distinct', array( $this, 'filter_search_distinct' ), 10, 2 );
 		}
 
 		$query = new WP_Query( $args );
 
 		if ( ! empty( $search_term ) ) {
-			remove_filter( 'posts_join', [ $this, 'filter_search_join' ], 10 );
-			remove_filter( 'posts_where', [ $this, 'filter_search_where' ], 10 );
-			remove_filter( 'posts_distinct', [ $this, 'filter_search_distinct' ], 10 );
+			remove_filter( 'posts_join', array( $this, 'filter_search_join' ), 10 );
+			remove_filter( 'posts_where', array( $this, 'filter_search_where' ), 10 );
+			remove_filter( 'posts_distinct', array( $this, 'filter_search_distinct' ), 10 );
 		}
 
 		$events = array();
@@ -326,7 +326,7 @@ class Agenda {
 				$event_data['background_color'] = $bg_color;
 
 				// Determine text color based on background.
-				$text_color = \DAME\Core\Utils::get_text_color_based_on_bg( $bg_color );
+				$text_color               = \DAME\Core\Utils::get_text_color_based_on_bg( $bg_color );
 				$event_data['text_color'] = $text_color;
 
 				$events[] = $event_data;
@@ -380,7 +380,7 @@ class Agenda {
 				$search_term_like,
 				$search_term_like
 			);
-			$where           .= " AND ( " . $search_where . " )";
+			$where           .= ' AND ( ' . $search_where . ' )';
 		}
 		return $where;
 	}

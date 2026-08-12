@@ -17,7 +17,7 @@ class ICalFeed {
 	 * Initialize the CPT.
 	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register' ] );
+		add_action( 'init', array( $this, 'register' ) );
 	}
 
 	/**

@@ -35,7 +35,7 @@ class Desinstallation {
 		add_settings_field(
 			'dame_delete_on_uninstall',
 			__( 'Suppression des données', 'dame' ),
-			[ $this, 'render_delete_field' ],
+			array( $this, 'render_delete_field' ),
 			'dame_uninstall_section_group',
 			'dame_uninstall_section'
 		);

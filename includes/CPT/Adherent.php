@@ -16,9 +16,9 @@ class Adherent {
 	 * Registers the CPT.
 	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register_post_type' ], 0 );
+		add_action( 'init', array( $this, 'register_post_type' ), 0 );
 		if ( is_admin() ) {
-			add_action( 'admin_init', [ $this, 'save_last_list_url' ] );
+			add_action( 'admin_init', array( $this, 'save_last_list_url' ) );
 		}
 	}
 
@@ -57,25 +57,25 @@ class Adherent {
 		);
 
 		$args = array(
-			'label'                 => __( 'Adhérent', 'dame' ),
-			'description'           => __( 'Les adhérents du club', 'dame' ),
-			'labels'                => $labels,
-			'supports'              => array( 'title', 'custom-fields' ),
-			'hierarchical'          => false,
-			'public'                => false,
-			'show_ui'               => true,
-			'show_in_menu'          => 'dame-admin',
-			'menu_position'         => 20,
-			'menu_icon'             => 'dashicons-groups',
-			'show_in_admin_bar'     => true,
-			'show_in_nav_menus'     => false,
-			'can_export'            => true,
-			'has_archive'           => false,
-			'exclude_from_search'   => true,
-			'publicly_queryable'    => false,
-			'capability_type'       => 'post',
-			'show_in_rest'          => true,
-			'rest_base'             => 'adherents',
+			'label'               => __( 'Adhérent', 'dame' ),
+			'description'         => __( 'Les adhérents du club', 'dame' ),
+			'labels'              => $labels,
+			'supports'            => array( 'title', 'custom-fields' ),
+			'hierarchical'        => false,
+			'public'              => false,
+			'show_ui'             => true,
+			'show_in_menu'        => 'dame-admin',
+			'menu_position'       => 20,
+			'menu_icon'           => 'dashicons-groups',
+			'show_in_admin_bar'   => true,
+			'show_in_nav_menus'   => false,
+			'can_export'          => true,
+			'has_archive'         => false,
+			'exclude_from_search' => true,
+			'publicly_queryable'  => false,
+			'capability_type'     => 'post',
+			'show_in_rest'        => true,
+			'rest_base'           => 'adherents',
 		);
 
 		register_post_type( 'adherent', $args );
@@ -86,12 +86,13 @@ class Adherent {
 	 */
 	public function save_last_list_url(): void {
 		global $pagenow;
-		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'adherent' === $_GET['post_type'] ) {
+		$post_type = isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '';
+		if ( 'edit.php' === $pagenow && 'adherent' === $post_type ) {
 			$user_id = get_current_user_id();
 			if ( $user_id ) {
-				$url = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+				$url = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 				if ( $url ) {
-					$parsed = parse_url( $url );
+					$parsed     = wp_parse_url( $url );
 					$path_query = ( $parsed['path'] ?? '' ) . ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' );
 					update_user_meta( $user_id, 'dame_last_adherent_list_url', $path_query );
 				}

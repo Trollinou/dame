@@ -19,7 +19,7 @@ class Legal {
 		add_meta_box(
 			'dame_legal_rep_metabox',
 			__( 'Représentants Légaux (si mineur)', 'dame' ),
-			[ $this, 'render' ],
+			array( $this, 'render' ),
 			'adherent',
 			'normal',
 			'default'
@@ -34,35 +34,35 @@ class Legal {
 	public function render( $post ): void {
 		$transient_data = get_transient( 'dame_post_data_' . $post->ID );
 
-		$get_value = function( $field_name, $default = '' ) use ( $post, $transient_data ) {
+		$get_value = function ( $field_name, $default = '' ) use ( $post, $transient_data ) {
 			return isset( $transient_data[ $field_name ] )
 				? $transient_data[ $field_name ]
 				: get_post_meta( $post->ID, '_' . $field_name, true );
 		};
 
 		// Rep 1
-		$rep1_first_name = $get_value( 'dame_legal_rep_1_first_name' );
-		$rep1_last_name = $get_value( 'dame_legal_rep_1_last_name' );
-		$rep1_email = $get_value( 'dame_legal_rep_1_email' );
+		$rep1_first_name          = $get_value( 'dame_legal_rep_1_first_name' );
+		$rep1_last_name           = $get_value( 'dame_legal_rep_1_last_name' );
+		$rep1_email               = $get_value( 'dame_legal_rep_1_email' );
 		$rep1_email_refuses_comms = $get_value( 'dame_legal_rep_1_email_refuses_comms' );
-		$rep1_phone = $get_value( 'dame_legal_rep_1_phone' );
-		$rep1_profession = $get_value( 'dame_legal_rep_1_profession' );
-		$rep1_address_1 = $get_value( 'dame_legal_rep_1_address_1' );
-		$rep1_address_2 = $get_value( 'dame_legal_rep_1_address_2' );
-		$rep1_postal_code = $get_value( 'dame_legal_rep_1_postal_code' );
-		$rep1_city = $get_value( 'dame_legal_rep_1_city' );
+		$rep1_phone               = $get_value( 'dame_legal_rep_1_phone' );
+		$rep1_profession          = $get_value( 'dame_legal_rep_1_profession' );
+		$rep1_address_1           = $get_value( 'dame_legal_rep_1_address_1' );
+		$rep1_address_2           = $get_value( 'dame_legal_rep_1_address_2' );
+		$rep1_postal_code         = $get_value( 'dame_legal_rep_1_postal_code' );
+		$rep1_city                = $get_value( 'dame_legal_rep_1_city' );
 
 		// Rep 2
-		$rep2_first_name = $get_value( 'dame_legal_rep_2_first_name' );
-		$rep2_last_name = $get_value( 'dame_legal_rep_2_last_name' );
-		$rep2_email = $get_value( 'dame_legal_rep_2_email' );
+		$rep2_first_name          = $get_value( 'dame_legal_rep_2_first_name' );
+		$rep2_last_name           = $get_value( 'dame_legal_rep_2_last_name' );
+		$rep2_email               = $get_value( 'dame_legal_rep_2_email' );
 		$rep2_email_refuses_comms = $get_value( 'dame_legal_rep_2_email_refuses_comms' );
-		$rep2_phone = $get_value( 'dame_legal_rep_2_phone' );
-		$rep2_profession = $get_value( 'dame_legal_rep_2_profession' );
-		$rep2_address_1 = $get_value( 'dame_legal_rep_2_address_1' );
-		$rep2_address_2 = $get_value( 'dame_legal_rep_2_address_2' );
-		$rep2_postal_code = $get_value( 'dame_legal_rep_2_postal_code' );
-		$rep2_city = $get_value( 'dame_legal_rep_2_city' );
+		$rep2_phone               = $get_value( 'dame_legal_rep_2_phone' );
+		$rep2_profession          = $get_value( 'dame_legal_rep_2_profession' );
+		$rep2_address_1           = $get_value( 'dame_legal_rep_2_address_1' );
+		$rep2_address_2           = $get_value( 'dame_legal_rep_2_address_2' );
+		$rep2_postal_code         = $get_value( 'dame_legal_rep_2_postal_code' );
+		$rep2_city                = $get_value( 'dame_legal_rep_2_city' );
 		?>
 		<p><?php _e( 'Remplir ces informations si l\'adhérent est mineur. Au moins un représentant est requis.', 'dame' ); ?></p>
 
@@ -93,7 +93,7 @@ class Legal {
 				<td>
 					<select id="dame_legal_rep_1_honorabilite" name="dame_legal_rep_1_honorabilite">
 						<?php
-						$honorabilite1_options = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
+						$honorabilite1_options  = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
 						$selected_honorabilite1 = get_post_meta( $post->ID, '_dame_legal_rep_1_honorabilite', true ) ?: 'Non requis';
 						foreach ( $honorabilite1_options as $option ) :
 							?>
@@ -172,7 +172,7 @@ class Legal {
 				<td>
 					<select id="dame_legal_rep_2_honorabilite" name="dame_legal_rep_2_honorabilite">
 						<?php
-						$honorabilite2_options = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
+						$honorabilite2_options  = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
 						$selected_honorabilite2 = get_post_meta( $post->ID, '_dame_legal_rep_2_honorabilite', true ) ?: 'Non requis';
 						foreach ( $honorabilite2_options as $option ) :
 							?>
@@ -234,7 +234,7 @@ class Legal {
 			return;
 		}
 
-		$errors = [];
+		$errors = array();
 		if ( ! empty( $_POST['dame_legal_rep_1_email'] ) && ! is_email( $_POST['dame_legal_rep_1_email'] ) ) {
 			$errors[] = __( "Le format de l'email du représentant légal 1 est invalide.", 'dame' );
 		}
@@ -264,24 +264,36 @@ class Legal {
 			return;
 		}
 
-		$fields = [
-			'dame_legal_rep_1_first_name' => 'sanitize_text_field', 'dame_legal_rep_1_last_name' => 'sanitize_text_field',
-			'dame_legal_rep_1_profession' => 'sanitize_text_field', 'dame_legal_rep_1_honorabilite' => 'sanitize_text_field',
-			'dame_legal_rep_1_date_naissance' => 'sanitize_text_field', 'dame_legal_rep_1_commune_naissance' => 'sanitize_text_field',
-			'dame_legal_rep_1_email' => 'sanitize_email', 'dame_legal_rep_1_phone' => 'sanitize_text_field',
-			'dame_legal_rep_1_address_1' => 'sanitize_text_field', 'dame_legal_rep_1_address_2' => 'sanitize_text_field',
-			'dame_legal_rep_1_postal_code' => 'sanitize_text_field', 'dame_legal_rep_1_city' => 'sanitize_text_field',
+		$fields = array(
+			'dame_legal_rep_1_first_name'          => 'sanitize_text_field',
+			'dame_legal_rep_1_last_name'           => 'sanitize_text_field',
+			'dame_legal_rep_1_profession'          => 'sanitize_text_field',
+			'dame_legal_rep_1_honorabilite'        => 'sanitize_text_field',
+			'dame_legal_rep_1_date_naissance'      => 'sanitize_text_field',
+			'dame_legal_rep_1_commune_naissance'   => 'sanitize_text_field',
+			'dame_legal_rep_1_email'               => 'sanitize_email',
+			'dame_legal_rep_1_phone'               => 'sanitize_text_field',
+			'dame_legal_rep_1_address_1'           => 'sanitize_text_field',
+			'dame_legal_rep_1_address_2'           => 'sanitize_text_field',
+			'dame_legal_rep_1_postal_code'         => 'sanitize_text_field',
+			'dame_legal_rep_1_city'                => 'sanitize_text_field',
 
-			'dame_legal_rep_2_first_name' => 'sanitize_text_field', 'dame_legal_rep_2_last_name' => 'sanitize_text_field',
-			'dame_legal_rep_2_profession' => 'sanitize_text_field', 'dame_legal_rep_2_honorabilite' => 'sanitize_text_field',
-			'dame_legal_rep_2_date_naissance' => 'sanitize_text_field', 'dame_legal_rep_2_commune_naissance' => 'sanitize_text_field',
-			'dame_legal_rep_2_email' => 'sanitize_email', 'dame_legal_rep_2_phone' => 'sanitize_text_field',
-			'dame_legal_rep_2_address_1' => 'sanitize_text_field', 'dame_legal_rep_2_address_2' => 'sanitize_text_field',
-			'dame_legal_rep_2_postal_code' => 'sanitize_text_field', 'dame_legal_rep_2_city' => 'sanitize_text_field',
+			'dame_legal_rep_2_first_name'          => 'sanitize_text_field',
+			'dame_legal_rep_2_last_name'           => 'sanitize_text_field',
+			'dame_legal_rep_2_profession'          => 'sanitize_text_field',
+			'dame_legal_rep_2_honorabilite'        => 'sanitize_text_field',
+			'dame_legal_rep_2_date_naissance'      => 'sanitize_text_field',
+			'dame_legal_rep_2_commune_naissance'   => 'sanitize_text_field',
+			'dame_legal_rep_2_email'               => 'sanitize_email',
+			'dame_legal_rep_2_phone'               => 'sanitize_text_field',
+			'dame_legal_rep_2_address_1'           => 'sanitize_text_field',
+			'dame_legal_rep_2_address_2'           => 'sanitize_text_field',
+			'dame_legal_rep_2_postal_code'         => 'sanitize_text_field',
+			'dame_legal_rep_2_city'                => 'sanitize_text_field',
 
 			'dame_legal_rep_1_email_refuses_comms' => 'absint',
 			'dame_legal_rep_2_email_refuses_comms' => 'absint',
-		];
+		);
 
 		foreach ( $fields as $field_name => $sanitize_callback ) {
 			if ( isset( $_POST[ $field_name ] ) ) {
@@ -295,10 +307,8 @@ class Legal {
 				}
 
 				update_post_meta( $post_id, '_' . $field_name, $value );
-			} else {
-				if ( 'absint' === $sanitize_callback ) {
+			} elseif ( 'absint' === $sanitize_callback ) {
 					update_post_meta( $post_id, '_' . $field_name, 0 );
-				}
 			}
 		}
 	}

@@ -1,28 +1,20 @@
-document.addEventListener( 'DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
 	// We call the autocomplete initializers here, as this script is loaded
 	// after dame-public-geo-autocomplete.js, ensuring the function is available.
-	if ( typeof window.initBirthCityAutocomplete === 'function' ) {
-		window.initBirthCityAutocomplete( 'dame_birth_city' );
-		window.initBirthCityAutocomplete(
-			'dame_legal_rep_1_commune_naissance'
-		);
-		window.initBirthCityAutocomplete(
-			'dame_legal_rep_2_commune_naissance'
-		);
+	if (typeof window.initBirthCityAutocomplete === 'function') {
+		window.initBirthCityAutocomplete('dame_birth_city');
+		window.initBirthCityAutocomplete('dame_legal_rep_1_commune_naissance');
+		window.initBirthCityAutocomplete('dame_legal_rep_2_commune_naissance');
 	}
 
-	const birthDateInput = document.getElementById( 'dame_birth_date' );
-	if ( ! birthDateInput ) {
+	const birthDateInput = document.getElementById('dame_birth_date');
+	if (!birthDateInput) {
 		return;
 	}
 
-	const dynamicFields = document.getElementById( 'dame-dynamic-fields' );
-	const majeurFields = document.getElementById(
-		'dame-adherent-majeur-fields'
-	);
-	const mineurFields = document.getElementById(
-		'dame-adherent-mineur-fields'
-	);
+	const dynamicFields = document.getElementById('dame-dynamic-fields');
+	const majeurFields = document.getElementById('dame-adherent-majeur-fields');
+	const mineurFields = document.getElementById('dame-adherent-mineur-fields');
 
 	const healthQuestionnaireLinkContainer = document.getElementById(
 		'health-questionnaire-link-container'
@@ -36,11 +28,11 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	const majeurPDF = pdfBaseUrl + 'questionnaire_sante_majeur.pdf';
 
 	// Adherent fields
-	const birthCityInput = document.getElementById( 'dame_birth_city' );
+	const birthCityInput = document.getElementById('dame_birth_city');
 	const birthCityRequiredIndicator = document.getElementById(
 		'dame_birth_city_required_indicator'
 	);
-	const lastNameInput = document.getElementById( 'dame_last_name' );
+	const lastNameInput = document.getElementById('dame_last_name');
 
 	// Rep 1 fields
 	const rep1RequiredIndicators = document.querySelectorAll(
@@ -52,12 +44,12 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	const rep1LastNameInput = document.getElementById(
 		'dame_legal_rep_1_last_name'
 	);
-	const rep1EmailInput = document.getElementById( 'dame_legal_rep_1_email' );
-	const rep1PhoneInput = document.getElementById( 'dame_legal_rep_1_phone' );
+	const rep1EmailInput = document.getElementById('dame_legal_rep_1_email');
+	const rep1PhoneInput = document.getElementById('dame_legal_rep_1_phone');
 	const rep1Address1Input = document.getElementById(
 		'dame_legal_rep_1_address_1'
 	);
-	const rep1CityInput = document.getElementById( 'dame_legal_rep_1_city' );
+	const rep1CityInput = document.getElementById('dame_legal_rep_1_city');
 	const rep1RequiredInputs = [
 		rep1FirstNameInput,
 		rep1LastNameInput,
@@ -67,11 +59,11 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		rep1CityInput,
 	];
 
-	birthDateInput.addEventListener( 'change', function () {
-		const birthDate = new Date( this.value );
-		if ( isNaN( birthDate.getTime() ) ) {
+	birthDateInput.addEventListener('change', function () {
+		const birthDate = new Date(this.value);
+		if (isNaN(birthDate.getTime())) {
 			dynamicFields.style.display = 'none';
-			if ( healthQuestionnaireLinkContainer ) {
+			if (healthQuestionnaireLinkContainer) {
 				healthQuestionnaireLinkContainer.style.display = 'none';
 			}
 			return;
@@ -80,38 +72,36 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		const today = new Date();
 		let age = today.getFullYear() - birthDate.getFullYear();
 		const m = today.getMonth() - birthDate.getMonth();
-		if ( m < 0 || ( m === 0 && today.getDate() < birthDate.getDate() ) ) {
+		if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
 			age--;
 		}
 
 		dynamicFields.style.display = 'block';
 
-		if ( age >= 18 ) {
+		if (age >= 18) {
 			majeurFields.style.display = 'block';
 			mineurFields.style.display = 'none';
 
 			// For adults, birth city is required.
-			if ( birthCityInput ) {
+			if (birthCityInput) {
 				birthCityInput.required = true;
 			}
-			if ( birthCityRequiredIndicator ) {
+			if (birthCityRequiredIndicator) {
 				birthCityRequiredIndicator.style.display = 'inline';
 			}
 
 			// Clear all inputs within the minor fields container to prevent submission of hidden data
-			const minorInputs = mineurFields.querySelectorAll( 'input' );
-			minorInputs.forEach( ( input ) => {
+			const minorInputs = mineurFields.querySelectorAll('input');
+			minorInputs.forEach((input) => {
 				input.value = '';
-			} );
+			});
 			// Make rep 1 fields not required and hide indicators
-			rep1RequiredInputs.forEach(
-				( input ) => ( input.required = false )
-			);
+			rep1RequiredInputs.forEach((input) => (input.required = false));
 			rep1RequiredIndicators.forEach(
-				( indicator ) => ( indicator.style.display = 'none' )
+				(indicator) => (indicator.style.display = 'none')
 			);
 
-			if ( healthQuestionnaireLink ) {
+			if (healthQuestionnaireLink) {
 				healthQuestionnaireLink.href = majeurPDF;
 				healthQuestionnaireLink.textContent =
 					'Consulter le questionnaire pour Majeur';
@@ -122,35 +112,33 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			mineurFields.style.display = 'block';
 
 			// For minors, birth city is not required.
-			if ( birthCityInput ) {
+			if (birthCityInput) {
 				birthCityInput.required = false;
 			}
-			if ( birthCityRequiredIndicator ) {
+			if (birthCityRequiredIndicator) {
 				birthCityRequiredIndicator.style.display = 'none';
 			}
 
 			// Make rep 1 fields required and show indicators
-			rep1RequiredInputs.forEach(
-				( input ) => ( input.required = true )
-			);
+			rep1RequiredInputs.forEach((input) => (input.required = true));
 			rep1RequiredIndicators.forEach(
-				( indicator ) => ( indicator.style.display = 'inline' )
+				(indicator) => (indicator.style.display = 'inline')
 			);
 
-			if ( healthQuestionnaireLink ) {
+			if (healthQuestionnaireLink) {
 				healthQuestionnaireLink.href = mineurPDF;
 				healthQuestionnaireLink.textContent =
 					'Consulter le questionnaire pour Mineur';
 				healthQuestionnaireLinkContainer.style.display = 'inline';
 			}
 		}
-	} );
+	});
 
 	// The keyup listeners are removed in favor of a direct call from the autocomplete script.
 
 	// Add live formatting for name fields
-	const firstNameInput = document.getElementById( 'dame_first_name' );
-	const birthNameInput = document.getElementById( 'dame_birth_name' );
+	const firstNameInput = document.getElementById('dame_first_name');
+	const birthNameInput = document.getElementById('dame_birth_name');
 	const rep2FirstNameInput = document.getElementById(
 		'dame_legal_rep_2_first_name'
 	);
@@ -158,46 +146,46 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		'dame_legal_rep_2_last_name'
 	);
 
-	if ( firstNameInput ) {
-		firstNameInput.addEventListener( 'input', formatFirstNameInput );
+	if (firstNameInput) {
+		firstNameInput.addEventListener('input', formatFirstNameInput);
 	}
-	if ( birthNameInput ) {
-		birthNameInput.addEventListener( 'input', formatLastNameInput );
+	if (birthNameInput) {
+		birthNameInput.addEventListener('input', formatLastNameInput);
 	}
-	if ( lastNameInput ) {
-		lastNameInput.addEventListener( 'input', formatLastNameInput );
+	if (lastNameInput) {
+		lastNameInput.addEventListener('input', formatLastNameInput);
 	}
-	if ( rep1FirstNameInput ) {
-		rep1FirstNameInput.addEventListener( 'input', formatFirstNameInput );
+	if (rep1FirstNameInput) {
+		rep1FirstNameInput.addEventListener('input', formatFirstNameInput);
 	}
-	if ( rep1LastNameInput ) {
-		rep1LastNameInput.addEventListener( 'input', formatLastNameInput );
+	if (rep1LastNameInput) {
+		rep1LastNameInput.addEventListener('input', formatLastNameInput);
 	}
-	if ( rep2FirstNameInput ) {
-		rep2FirstNameInput.addEventListener( 'input', formatFirstNameInput );
+	if (rep2FirstNameInput) {
+		rep2FirstNameInput.addEventListener('input', formatFirstNameInput);
 	}
-	if ( rep2LastNameInput ) {
-		rep2LastNameInput.addEventListener( 'input', formatLastNameInput );
+	if (rep2LastNameInput) {
+		rep2LastNameInput.addEventListener('input', formatLastNameInput);
 	}
 
 	// Handle Form Submission
-	const form = document.getElementById( 'dame-pre-inscription-form' );
+	const form = document.getElementById('dame-pre-inscription-form');
 
 	// Handle consent checkbox
-	const consentCheckbox = document.getElementById( 'dame_consent_checkbox' );
+	const consentCheckbox = document.getElementById('dame_consent_checkbox');
 	const submitButtonInForm = form
-		? form.querySelector( 'button[type="submit"]' )
+		? form.querySelector('button[type="submit"]')
 		: null;
 
-	if ( consentCheckbox && submitButtonInForm ) {
-		consentCheckbox.addEventListener( 'change', function () {
-			submitButtonInForm.disabled = ! this.checked;
-		} );
+	if (consentCheckbox && submitButtonInForm) {
+		consentCheckbox.addEventListener('change', function () {
+			submitButtonInForm.disabled = !this.checked;
+		});
 	}
-	const messagesDiv = document.getElementById( 'dame-form-messages' );
+	const messagesDiv = document.getElementById('dame-form-messages');
 
-	if ( form ) {
-		form.addEventListener( 'submit', function ( e ) {
+	if (form) {
+		form.addEventListener('submit', function (e) {
 			e.preventDefault();
 
 			messagesDiv.style.display = 'none';
@@ -206,66 +194,66 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 			// Custom client-side validation
 			let firstInvalidField = null;
-			const requiredFields = form.querySelectorAll( '[required]' );
+			const requiredFields = form.querySelectorAll('[required]');
 
-			requiredFields.forEach( ( field ) => {
+			requiredFields.forEach((field) => {
 				// Check if the field is visible
-				if ( field.offsetParent !== null ) {
-					if ( field.type === 'radio' || field.type === 'checkbox' ) {
+				if (field.offsetParent !== null) {
+					if (field.type === 'radio' || field.type === 'checkbox') {
 						const fieldName = field.name;
 						if (
-							! form.querySelector(
-								`input[name="${ fieldName }"]:checked`
+							!form.querySelector(
+								`input[name="${fieldName}"]:checked`
 							)
 						) {
-							if ( ! firstInvalidField ) {
+							if (!firstInvalidField) {
 								firstInvalidField = field;
 							}
 						}
-					} else if ( ! field.value.trim() ) {
-						if ( ! firstInvalidField ) {
+					} else if (!field.value.trim()) {
+						if (!firstInvalidField) {
 							firstInvalidField = field;
 						}
 					}
 				}
-			} );
+			});
 
-			if ( firstInvalidField ) {
+			if (firstInvalidField) {
 				messagesDiv.innerHTML =
 					"Veuillez remplir tous les champs obligatoires. Ils sont marqués d'un astérisque (*).";
 				messagesDiv.style.display = 'block';
 				firstInvalidField.focus();
 				// Scroll to the message to make sure it's visible
-				messagesDiv.scrollIntoView( {
+				messagesDiv.scrollIntoView({
 					behavior: 'smooth',
 					block: 'center',
-				} );
+				});
 				return; // Stop form submission
 			}
 
-			const formData = new FormData( form );
-			formData.append( 'action', 'dame_submit_pre_inscription' );
+			const formData = new FormData(form);
+			formData.append('action', 'dame_submit_pre_inscription');
 
-			const submitButton = form.querySelector( 'button[type="submit"]' );
+			const submitButton = form.querySelector('button[type="submit"]');
 			submitButton.disabled = true;
 			submitButton.textContent = 'Envoi en cours...';
 
 			// Assumes `dame_pre_inscription_ajax.ajax_url` is localized
-			fetch( dame_pre_inscription_ajax.ajax_url, {
+			fetch(dame_pre_inscription_ajax.ajax_url, {
 				method: 'POST',
-				body: new URLSearchParams( formData ),
-			} )
-				.then( ( response ) => response.json() )
-				.then( ( data ) => {
-					if ( data.success ) {
+				body: new URLSearchParams(formData),
+			})
+				.then((response) => response.json())
+				.then((data) => {
+					if (data.success) {
 						messagesDiv.style.color = 'green';
-						let successHtml = `<p>${ data.data.message }</p>`;
+						let successHtml = `<p>${data.data.message}</p>`;
 
 						// 1. Handle health-related message
-						if ( data.data.health_questionnaire === 'oui' ) {
+						if (data.data.health_questionnaire === 'oui') {
 							successHtml += `
                             <p style="font-weight: bold; color: red; margin-top: 1em;">
-                                Afin de valider votre inscription auprès de la FFE, vous devez nous remettre un certificat médical, daté de moins de 6 mois, déclarant <strong>${ data.data.full_name }</strong> apte à la pratique des échecs en et hors compétition.
+                                Afin de valider votre inscription auprès de la FFE, vous devez nous remettre un certificat médical, daté de moins de 6 mois, déclarant <strong>${data.data.full_name}</strong> apte à la pratique des échecs en et hors compétition.
                             </p>`;
 						}
 
@@ -277,27 +265,27 @@ document.addEventListener( 'DOMContentLoaded', function () {
 							needsHealthAttestation || needsParentalAuth;
 
 						// 3. Add the informational message if there are any download links
-						if ( hasDownloadLinks ) {
+						if (hasDownloadLinks) {
 							const senderEmail = data.data.sender_email;
 							const emailLink = senderEmail
-								? `<a href="mailto:${ senderEmail }">${ senderEmail }</a>`
+								? `<a href="mailto:${senderEmail}">${senderEmail}</a>`
 								: "l'email du club";
-							const messageText = `Vous trouverez ci-après le(s) document(s) à signer, puis à nous remettre en main propre ou à nous renvoyer à l’adresse ${ emailLink }`;
-							successHtml += `<p style="margin-top: 1.5em;">${ messageText }</p>`;
+							const messageText = `Vous trouverez ci-après le(s) document(s) à signer, puis à nous remettre en main propre ou à nous renvoyer à l’adresse ${emailLink}`;
+							successHtml += `<p style="margin-top: 1.5em;">${messageText}</p>`;
 						}
 
 						// 4. Add the actual download links
-						if ( hasDownloadLinks ) {
+						if (hasDownloadLinks) {
 							successHtml += `<div style="margin-bottom: 1.5em;">`;
-							if ( needsHealthAttestation ) {
+							if (needsHealthAttestation) {
 								successHtml += `
-                                <a href="${ dame_pre_inscription_ajax.ajax_url }?action=dame_generate_health_form&post_id=${ data.data.post_id }&_wpnonce=${ data.data.nonce }" style="display: block; color: blue; text-decoration: underline; margin-bottom: 0.5em; margin-left: 1.5em;">
+                                <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" style="display: block; color: blue; text-decoration: underline; margin-bottom: 0.5em; margin-left: 1.5em;">
                                     &#x1F4E5; Télécharger mon attestation de santé à remettre signé
                                 </a>`;
 							}
-							if ( needsParentalAuth ) {
+							if (needsParentalAuth) {
 								successHtml += `
-                                <a href="${ dame_pre_inscription_ajax.ajax_url }?action=dame_generate_parental_auth&post_id=${ data.data.post_id }&_wpnonce=${ data.data.parental_auth_nonce }" style="display: block; color: blue; text-decoration: underline; margin-left: 1.5em;">
+                                <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}" style="display: block; color: blue; text-decoration: underline; margin-left: 1.5em;">
                                     &#x1F4E5; Télécharger l'autorisation parentale a remettre signé
                                 </a>`;
 							}
@@ -310,9 +298,9 @@ document.addEventListener( 'DOMContentLoaded', function () {
                         <button id="dame-new-adhesion-button" type="button" class="button dame-button" style="background-color: #fe0007; color: white; border: none; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; display: block;">
                             &#x1F501; Saisir une nouvelle adhésion
                         </button>`;
-						if ( data.data.payment_url ) {
+						if (data.data.payment_url) {
 							successHtml += `
-                            <a href="${ data.data.payment_url }" target="_blank" class="button dame-button" style="text-decoration: none; padding: 10px 15px; font-size: 1.1em; border-radius: 8px; display: inline-block;">
+                            <a href="${data.data.payment_url}" target="_blank" class="button dame-button" style="text-decoration: none; padding: 10px 15px; font-size: 1.1em; border-radius: 8px; display: inline-block;">
                                 &#x1F4B3; Aller sur HelloAsso pour votre règlement &#x1F4B3;
                             </a>`;
 						}
@@ -330,45 +318,45 @@ document.addEventListener( 'DOMContentLoaded', function () {
 					}
 					messagesDiv.style.display = 'block';
 					// Scroll to top of the page to make the message visible
-					window.scrollTo( { top: 0, behavior: 'smooth' } );
-				} )
-				.catch( ( error ) => {
-					console.error( 'Error:', error );
+					window.scrollTo({ top: 0, behavior: 'smooth' });
+				})
+				.catch((error) => {
+					console.error('Error:', error);
 					messagesDiv.innerHTML =
 						'Une erreur inattendue est survenue.';
 					messagesDiv.style.display = 'block';
-				} )
-				.finally( () => {
+				})
+				.finally(() => {
 					submitButton.disabled = false;
 					submitButton.textContent = 'Valider ma préinscription';
-				} );
-		} );
+				});
+		});
 
 		// Event delegation for the "Saisir une nouvelle adhésion" button
-		messagesDiv.addEventListener( 'click', function ( e ) {
-			if ( e.target && e.target.id === 'dame-new-adhesion-button' ) {
+		messagesDiv.addEventListener('click', function (e) {
+			if (e.target && e.target.id === 'dame-new-adhesion-button') {
 				e.preventDefault();
 
 				// Fields to clear for the new adhesion
-				document.getElementById( 'dame_first_name' ).value = '';
-				document.getElementById( 'dame_last_name' ).value = '';
-				document.getElementById( 'dame_birth_name' ).value = '';
-				document.getElementById( 'dame_birth_date' ).value = '';
-				document.getElementById( 'dame_birth_city' ).value = '';
+				document.getElementById('dame_first_name').value = '';
+				document.getElementById('dame_last_name').value = '';
+				document.getElementById('dame_birth_name').value = '';
+				document.getElementById('dame_birth_date').value = '';
+				document.getElementById('dame_birth_city').value = '';
 
 				// Also clear radio buttons for health questionnaire
 				const healthRadios = form.querySelectorAll(
 					'input[name="dame_health_questionnaire"]'
 				);
-				healthRadios.forEach( ( radio ) => ( radio.checked = false ) );
+				healthRadios.forEach((radio) => (radio.checked = false));
 
 				// Hide the dynamic fields section until a new birth date is entered
-				if ( dynamicFields ) {
+				if (dynamicFields) {
 					dynamicFields.style.display = 'none';
 					// Clear all inputs within the dynamic sections as well
 					const dynamicInputs =
-						dynamicFields.querySelectorAll( 'input' );
-					dynamicInputs.forEach( ( input ) => ( input.value = '' ) );
+						dynamicFields.querySelectorAll('input');
+					dynamicInputs.forEach((input) => (input.value = ''));
 				}
 
 				// Hide the success message area
@@ -379,30 +367,30 @@ document.addEventListener( 'DOMContentLoaded', function () {
 				form.style.display = 'block';
 
 				// Scroll back to the top of the form
-				form.scrollIntoView( { behavior: 'smooth' } );
+				form.scrollIntoView({ behavior: 'smooth' });
 			}
-		} );
+		});
 	}
 
 	// Add event listeners for copy buttons
-	const copyButtons = document.querySelectorAll( '.dame-copy-button' );
-	copyButtons.forEach( ( button ) => {
-		button.addEventListener( 'click', function () {
-			const repId = this.getAttribute( 'data-rep-id' );
-			copyAdherentData( repId );
-		} );
-	} );
-} );
+	const copyButtons = document.querySelectorAll('.dame-copy-button');
+	copyButtons.forEach((button) => {
+		button.addEventListener('click', function () {
+			const repId = this.getAttribute('data-rep-id');
+			copyAdherentData(repId);
+		});
+	});
+});
 
-function copyAdherentData( repId ) {
+function copyAdherentData(repId) {
 	// Adherent fields
-	const birthNameInput = document.getElementById( 'dame_birth_name' );
-	const emailInput = document.getElementById( 'dame_email' );
-	const phoneInput = document.getElementById( 'dame_phone_number' );
-	const address1Input = document.getElementById( 'dame_address_1' );
-	const address2Input = document.getElementById( 'dame_address_2' );
-	const postalCodeInput = document.getElementById( 'dame_postal_code' );
-	const cityInput = document.getElementById( 'dame_city' );
+	const birthNameInput = document.getElementById('dame_birth_name');
+	const emailInput = document.getElementById('dame_email');
+	const phoneInput = document.getElementById('dame_phone_number');
+	const address1Input = document.getElementById('dame_address_1');
+	const address2Input = document.getElementById('dame_address_2');
+	const postalCodeInput = document.getElementById('dame_postal_code');
+	const cityInput = document.getElementById('dame_city');
 
 	// Rep fields
 	const repLastNameInput = document.getElementById(
@@ -457,16 +445,16 @@ function copyAdherentData( repId ) {
  * @param {string} str The string to format.
  * @return {string} The formatted string.
  */
-function formatToMixedCase( str ) {
-	if ( ! str ) {
+function formatToMixedCase(str) {
+	if (!str) {
 		return '';
 	}
 	// This will capitalize the first letter of each word, where words are separated by spaces or hyphens.
 	const formattedStr = str
 		.toLowerCase()
-		.replace( /(^|[\s-])\S/g, function ( match ) {
+		.replace(/(^|[\s-])\S/g, function (match) {
 			return match.toUpperCase();
-		} );
+		});
 	return formattedStr;
 }
 
@@ -474,22 +462,22 @@ function formatToMixedCase( str ) {
  * Formats the input value of a first name field to Mixed Case.
  * @param {Event} event The input event.
  */
-function formatFirstNameInput( event ) {
+function formatFirstNameInput(event) {
 	const input = event.target;
 	const value = input.value;
-	const formattedValue = formatToMixedCase( value );
+	const formattedValue = formatToMixedCase(value);
 	const cursorPosition = input.selectionStart;
 
 	input.value = formattedValue;
 	// Restore cursor position
-	input.setSelectionRange( cursorPosition, cursorPosition );
+	input.setSelectionRange(cursorPosition, cursorPosition);
 }
 
 /**
  * Formats the input value of a last name field to uppercase.
  * @param {Event} event The input event.
  */
-function formatLastNameInput( event ) {
+function formatLastNameInput(event) {
 	const input = event.target;
 	const value = input.value;
 	const formattedValue = value.toUpperCase();
@@ -497,5 +485,5 @@ function formatLastNameInput( event ) {
 
 	input.value = formattedValue;
 	// Restore cursor position
-	input.setSelectionRange( cursorPosition, cursorPosition );
+	input.setSelectionRange(cursorPosition, cursorPosition);
 }

@@ -22,5 +22,5 @@
 - **Shortcodes** : Capturer `wp_editor()` via `ob_start()` / `ob_get_clean()`.
 
 ## 5. QA & Conformité
-- Config PHPStan Level 6 (`phpstan.neon`) + ESLint WP (`.eslintrc.json`).
+- Config PHPStan Level 6 (`phpstan.neon`), PHPCS (détection des écarts de standards) et PHPCBF (correction automatique du style) + ESLint WP (`eslint.config.js`).
 - Versionning sémantique synchronisé : `dame.php`, constante `DAME_VERSION`, `package.json`, `CHANGELOG.md`, `RELEASE.md`.

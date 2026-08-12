@@ -18,14 +18,14 @@ class Contact_Type {
 	 * Initialize the taxonomy.
 	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register' ], 0 );
+		add_action( 'init', array( $this, 'register' ), 0 );
 	}
 
 	/**
 	 * Register the taxonomy.
 	 */
 	public function register(): void {
-		$labels = [
+		$labels = array(
 			'name'                       => _x( 'Types de Contact', 'taxonomy general name', 'dame' ),
 			'singular_name'              => _x( 'Type de Contact', 'taxonomy singular name', 'dame' ),
 			'search_items'               => __( 'Rechercher les types', 'dame' ),
@@ -42,20 +42,20 @@ class Contact_Type {
 			'choose_from_most_used'      => __( 'Choisir parmi les types les plus utilisés', 'dame' ),
 			'not_found'                  => __( 'Aucun type trouvé.', 'dame' ),
 			'menu_name'                  => __( 'Types de Contact', 'dame' ),
-		];
+		);
 
-		$args = [
+		$args = array(
 			'hierarchical'      => true,
 			'labels'            => $labels,
 			'show_ui'           => true,
 			'show_admin_column' => true,
 			'query_var'         => true,
-			'rewrite'           => [ 'slug' => 'type-contact' ],
+			'rewrite'           => array( 'slug' => 'type-contact' ),
 			'show_in_rest'      => true,
 			'rest_base'         => 'contact-types',
 			'public'            => true,
-		];
+		);
 
-		register_taxonomy( 'dame_contact_type', [ 'dame_contact' ], $args );
+		register_taxonomy( 'dame_contact_type', array( 'dame_contact' ), $args );
 	}
 }

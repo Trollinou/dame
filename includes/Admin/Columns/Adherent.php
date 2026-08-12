@@ -22,19 +22,19 @@ class Adherent {
 	 */
 	public function init(): void {
 		// Columns
-		add_filter( 'manage_adherent_posts_columns', [ $this, 'set_columns' ] );
-		add_action( 'manage_adherent_posts_custom_column', [ $this, 'render_columns' ], 10, 2 );
-		add_filter( 'manage_edit-adherent_sortable_columns', [ $this, 'set_sortable_columns' ] );
+		add_filter( 'manage_adherent_posts_columns', array( $this, 'set_columns' ) );
+		add_action( 'manage_adherent_posts_custom_column', array( $this, 'render_columns' ), 10, 2 );
+		add_filter( 'manage_edit-adherent_sortable_columns', array( $this, 'set_sortable_columns' ) );
 
 		// Query & Filters
-		add_action( 'pre_get_posts', [ $this, 'sort_columns' ] );
-		add_action( 'load-edit.php', [ $this, 'remove_date_filter' ] );
-		add_action( 'restrict_manage_posts', [ $this, 'add_filters' ] );
-		add_action( 'pre_get_posts', [ $this, 'filter_query' ] );
+		add_action( 'pre_get_posts', array( $this, 'sort_columns' ) );
+		add_action( 'load-edit.php', array( $this, 'remove_date_filter' ) );
+		add_action( 'restrict_manage_posts', array( $this, 'add_filters' ) );
+		add_action( 'pre_get_posts', array( $this, 'filter_query' ) );
 
 		// Search & Actions
-		add_filter( 'posts_search', [ $this, 'extend_search' ], 10, 2 );
-		add_filter( 'post_row_actions', [ $this, 'add_row_actions' ], 10, 2 );
+		add_filter( 'posts_search', array( $this, 'extend_search' ), 10, 2 );
+		add_filter( 'post_row_actions', array( $this, 'add_row_actions' ), 10, 2 );
 	}
 
 	/**
@@ -234,7 +234,6 @@ class Adherent {
 				<?php
 			}
 
-
 			// Season filter
 			$saisons = get_terms(
 				array(
@@ -319,7 +318,6 @@ class Adherent {
 					);
 				}
 			}
-
 
 			// Season filter
 			if ( isset( $_GET['dame_saison_filter'] ) && ! empty( $_GET['dame_saison_filter'] ) ) {
@@ -483,7 +481,7 @@ class Adherent {
 			$search_term = $query->get( 's' );
 			if ( ! empty( $search_term ) ) {
 				$search_term_like = '%' . $wpdb->esc_like( $search_term ) . '%';
-				$search = " AND (
+				$search           = " AND (
 					({$wpdb->posts}.post_title LIKE %s)
 					OR EXISTS (
 						SELECT 1 FROM {$wpdb->postmeta}
@@ -503,7 +501,7 @@ class Adherent {
 	 * Adds a 'Consulter' action link to the adherent list table.
 	 *
 	 * @param array<string, mixed> $actions The existing row actions.
-	 * @param WP_Post $post    The post object.
+	 * @param WP_Post              $post    The post object.
 	 * @return array<string, mixed> The modified row actions.
 	 */
 	public function add_row_actions( $actions, $post ): array {

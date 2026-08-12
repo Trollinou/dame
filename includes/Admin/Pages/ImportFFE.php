@@ -21,7 +21,7 @@ class ImportFFE {
 	 * Initialize the class.
 	 */
 	public function init(): void {
-		add_action( 'admin_init', [ $this, 'handle_import' ] );
+		add_action( 'admin_init', array( $this, 'handle_import' ) );
 	}
 
 	/**
@@ -97,30 +97,30 @@ class ImportFFE {
 		}
 
 		// 1. PRÉPARATION DES DONNÉES (Avant la boucle)
-		$active_adherents = $this->get_active_adherents();
-		$members_by_license = [];
-		$members_by_name    = [];
-		$members_info       = []; // For final report
+		$active_adherents   = $this->get_active_adherents();
+		$members_by_license = array();
+		$members_by_name    = array();
+		$members_info       = array(); // For final report
 
 		foreach ( $active_adherents as $adherent ) {
-			$license = get_post_meta( $adherent->ID, '_dame_license_number', true );
+			$license       = get_post_meta( $adherent->ID, '_dame_license_number', true );
 			$license_clean = strtoupper( str_replace( ' ', '', (string) $license ) );
-			
+
 			if ( ! empty( $license_clean ) ) {
 				$members_by_license[ $license_clean ] = $adherent->ID;
 			}
 
-			$normalized_name = $this->normalize_name( $adherent->post_title );
+			$normalized_name                     = $this->normalize_name( $adherent->post_title );
 			$members_by_name[ $normalized_name ] = $adherent->ID;
 
-			$members_info[ $adherent->ID ] = [
+			$members_info[ $adherent->ID ] = array(
 				'name'    => $adherent->post_title,
-				'license' => $license ?: __( 'Non renseignée', 'dame' )
-			];
+				'license' => $license ?: __( 'Non renseignée', 'dame' ),
+			);
 		}
 
 		$updated_count = 0;
-		$updated_ids   = [];
+		$updated_ids   = array();
 
 		// 2. LOGIQUE DE CORRESPONDANCE (Dans la boucle)
 		// Skip header if it exists
@@ -140,7 +140,7 @@ class ImportFFE {
 		fclose( $handle );
 
 		// 3. GESTION DES ABSENTS ET RAPPORTS
-		$missing_adherents = [];
+		$missing_adherents = array();
 		foreach ( $members_info as $id => $info ) {
 			if ( ! in_array( $id, $updated_ids, true ) ) {
 				$missing_adherents[] = sprintf( '%s (%s)', $info['name'], $info['license'] );
@@ -148,35 +148,39 @@ class ImportFFE {
 		}
 
 		// Save results to transient
-		set_transient( 'dame_ffe_import_results', [
-			'updated_count'     => $updated_count,
-			'missing_adherents' => $missing_adherents
-		], 30 );
+		set_transient(
+			'dame_ffe_import_results',
+			array(
+				'updated_count'     => $updated_count,
+				'missing_adherents' => $missing_adherents,
+			),
+			30
+		);
 	}
 
 	/**
 	 * Process a single CSV row using pre-built lookup tables.
 	 *
-	 * @param string[]             $row                 CSV row.
-	 * @param array<string, int>   $members_by_license  Lookup table by license.
-	 * @param array<string, int>   $members_by_name     Lookup table by name.
-	 * @param int[]                $updated_ids         Array of updated post IDs.
-	 * @param int                  $updated_count       Counter for updated records.
+	 * @param string[]           $row                 CSV row.
+	 * @param array<string, int> $members_by_license  Lookup table by license.
+	 * @param array<string, int> $members_by_name     Lookup table by name.
+	 * @param int[]              $updated_ids         Array of updated post IDs.
+	 * @param int                $updated_count       Counter for updated records.
 	 */
 	private function process_import_row( array $row, array $members_by_license, array $members_by_name, array &$updated_ids, int &$updated_count ): void {
 		if ( count( $row ) < 3 ) {
 			return;
 		}
 
-		$id_ffe       = trim( (string) ($row[0] ?? '') );
-		$nom_complet  = trim( (string) ($row[1] ?? '') );
-		$licence_num  = trim( (string) ($row[2] ?? '') );
-		$elo_standard = trim( (string) ($row[5] ?? '0') );
-		$elo_rapide   = trim( (string) ($row[6] ?? '0') );
-		$elo_blitz    = trim( (string) ($row[7] ?? '0') );
-		$fide_id      = trim( (string) ($row[12] ?? '') );
+		$id_ffe       = trim( (string) ( $row[0] ?? '' ) );
+		$nom_complet  = trim( (string) ( $row[1] ?? '' ) );
+		$licence_num  = trim( (string) ( $row[2] ?? '' ) );
+		$elo_standard = trim( (string) ( $row[5] ?? '0' ) );
+		$elo_rapide   = trim( (string) ( $row[6] ?? '0' ) );
+		$elo_blitz    = trim( (string) ( $row[7] ?? '0' ) );
+		$fide_id      = trim( (string) ( $row[12] ?? '' ) );
 
-		$licence_clean = strtoupper( str_replace( ' ', '', $licence_num ) );
+		$licence_clean  = strtoupper( str_replace( ' ', '', $licence_num ) );
 		$nom_normalized = $this->normalize_name( $nom_complet );
 
 		$post_id = 0;
@@ -184,7 +188,7 @@ class ImportFFE {
 		// ÉTAPE A : Recherche par Licence
 		if ( ! empty( $licence_clean ) && isset( $members_by_license[ $licence_clean ] ) ) {
 			$post_id = $members_by_license[ $licence_clean ];
-		} 
+		}
 		// ÉTAPE B : Recherche par Nom
 		elseif ( ! empty( $nom_normalized ) && isset( $members_by_name[ $nom_normalized ] ) ) {
 			$post_id = $members_by_name[ $nom_normalized ];
@@ -200,7 +204,7 @@ class ImportFFE {
 			update_post_meta( $post_id, '_dame_elo_blitz', $elo_blitz );
 
 			$updated_ids[] = $post_id;
-			$updated_count++;
+			++$updated_count;
 		}
 	}
 
@@ -212,20 +216,20 @@ class ImportFFE {
 	private function get_active_adherents(): array {
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
 
-		$args = [
+		$args = array(
 			'post_type'      => 'adherent',
 			'posts_per_page' => -1,
 			'post_status'    => 'publish',
-		];
+		);
 
 		if ( $current_season_tag_id ) {
-			$args['tax_query'] = [
-				[
+			$args['tax_query'] = array(
+				array(
 					'taxonomy' => 'dame_saison_adhesion',
 					'field'    => 'term_id',
 					'terms'    => (int) $current_season_tag_id,
-				],
-			];
+				),
+			);
 		}
 
 		return get_posts( $args );
@@ -256,7 +260,7 @@ class ImportFFE {
 			return;
 		}
 
-		$updated_count = $results['updated_count'];
+		$updated_count     = $results['updated_count'];
 		$missing_adherents = $results['missing_adherents'];
 		delete_transient( 'dame_ffe_import_results' );
 

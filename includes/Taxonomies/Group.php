@@ -18,22 +18,22 @@ class Group {
 	 * Initialize the taxonomy.
 	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register' ], 0 );
+		add_action( 'init', array( $this, 'register' ), 0 );
 
 		// Fields
-		add_action( 'dame_group_add_form_fields', [ $this, 'add_form_fields' ], 10, 1 );
-		add_action( 'dame_group_edit_form_fields', [ $this, 'edit_form_fields' ], 10, 2 );
-		add_action( 'edited_dame_group', [ $this, 'save_group_type' ], 10, 1 );
-		add_action( 'create_dame_group', [ $this, 'save_group_type' ], 10, 1 );
+		add_action( 'dame_group_add_form_fields', array( $this, 'add_form_fields' ), 10, 1 );
+		add_action( 'dame_group_edit_form_fields', array( $this, 'edit_form_fields' ), 10, 2 );
+		add_action( 'edited_dame_group', array( $this, 'save_group_type' ), 10, 1 );
+		add_action( 'create_dame_group', array( $this, 'save_group_type' ), 10, 1 );
 
 		// Columns
-		add_filter( 'manage_edit-dame_group_columns', [ $this, 'add_type_column' ] );
-		add_filter( 'manage_dame_group_custom_column', [ $this, 'render_type_column' ], 10, 3 );
+		add_filter( 'manage_edit-dame_group_columns', array( $this, 'add_type_column' ) );
+		add_filter( 'manage_dame_group_custom_column', array( $this, 'render_type_column' ), 10, 3 );
 
 		// Actions
-		add_filter( 'tag_row_actions', [ $this, 'add_reset_link' ], 10, 2 );
-		add_action( 'admin_post_dame_reset_group', [ $this, 'handle_reset_action' ] );
-		add_action( 'admin_notices', [ $this, 'show_reset_notice' ] );
+		add_filter( 'tag_row_actions', array( $this, 'add_reset_link' ), 10, 2 );
+		add_action( 'admin_post_dame_reset_group', array( $this, 'handle_reset_action' ) );
+		add_action( 'admin_notices', array( $this, 'show_reset_notice' ) );
 	}
 
 	/**
@@ -71,7 +71,7 @@ class Group {
 			'rest_base'         => 'groups',
 		);
 
-		register_taxonomy( 'dame_group', [ 'adherent' ], $args );
+		register_taxonomy( 'dame_group', array( 'adherent' ), $args );
 	}
 
 	/**
@@ -82,12 +82,12 @@ class Group {
 	public function add_form_fields( $taxonomy ): void {
 		?>
 		<div class="form-field">
-			<label for="term_meta[group_type]"><?php _e( 'Type de groupe', 'dame' ); ?></label>
+			<label for="term_meta[group_type]"><?php esc_html_e( 'Type de groupe', 'dame' ); ?></label>
 			<select name="term_meta[group_type]" id="term_meta[group_type]">
-				<option value="saisonnier" selected><?php _e( 'Saisonnier', 'dame' ); ?></option>
-				<option value="permanent"><?php _e( 'Permanent', 'dame' ); ?></option>
+				<option value="saisonnier" selected><?php esc_html_e( 'Saisonnier', 'dame' ); ?></option>
+				<option value="permanent"><?php esc_html_e( 'Permanent', 'dame' ); ?></option>
 			</select>
-			<p class="description"><?php _e( 'Saisonnier : membres actifs. Permanent : contacts extérieurs (bénévoles, élus, presse).', 'dame' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Saisonnier : membres actifs. Permanent : contacts extérieurs (bénévoles, élus, presse).', 'dame' ); ?></p>
 		</div>
 		<?php
 	}
@@ -105,13 +105,13 @@ class Group {
 		}
 		?>
 		<tr class="form-field">
-			<th scope="row" valign="top"><label for="term_meta[group_type]"><?php _e( 'Type de groupe', 'dame' ); ?></label></th>
+			<th scope="row" valign="top"><label for="term_meta[group_type]"><?php esc_html_e( 'Type de groupe', 'dame' ); ?></label></th>
 			<td>
 				<select name="term_meta[group_type]" id="term_meta[group_type]">
-					<option value="saisonnier" <?php selected( $group_type, 'saisonnier' ); ?>><?php _e( 'Saisonnier', 'dame' ); ?></option>
-					<option value="permanent" <?php selected( $group_type, 'permanent' ); ?>><?php _e( 'Permanent', 'dame' ); ?></option>
+					<option value="saisonnier" <?php selected( $group_type, 'saisonnier' ); ?>><?php esc_html_e( 'Saisonnier', 'dame' ); ?></option>
+					<option value="permanent" <?php selected( $group_type, 'permanent' ); ?>><?php esc_html_e( 'Permanent', 'dame' ); ?></option>
 				</select>
-				<p class="description"><?php _e( 'Saisonnier : membres actifs. Permanent : contacts extérieurs (bénévoles, élus, presse).', 'dame' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Saisonnier : membres actifs. Permanent : contacts extérieurs (bénévoles, élus, presse).', 'dame' ); ?></p>
 			</td>
 		</tr>
 		<?php
@@ -164,7 +164,7 @@ class Group {
 	 * Add a "Reset" action to the group taxonomy list table.
 	 *
 	 * @param array<string, string> $actions An array of action links.
-	 * @param WP_Term $term    The term object.
+	 * @param WP_Term               $term    The term object.
 	 * @return array<string, string> The modified array of action links.
 	 */
 	public function add_reset_link( $actions, $term ): array {
@@ -266,7 +266,7 @@ class Group {
 		) {
 			?>
 			<div class="notice notice-success is-dismissible">
-				<p><?php _e( 'Le groupe a été réinitialisé avec succès. Tous les adhérents ont été retirés.', 'dame' ); ?></p>
+				<p><?php esc_html_e( 'Le groupe a été réinitialisé avec succès. Tous les adhérents ont été retirés.', 'dame' ); ?></p>
 			</div>
 			<?php
 		}

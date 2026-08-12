@@ -54,7 +54,7 @@ class Data_Endpoints {
 	 * Initialize the class and register hooks.
 	 */
 	public function init(): void {
-		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
+		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
 	/**
@@ -64,75 +64,75 @@ class Data_Endpoints {
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<type>[a-zA-Z0-9_-]+)',
-			[
-				[
+			array(
+				array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_data' ],
-					'permission_callback' => [ $this, 'get_permissions_check' ],
-					'args'                => [
-						'type' => [
-							'validate_callback' => function( $param ) {
+					'callback'            => array( $this, 'get_data' ),
+					'permission_callback' => array( $this, 'get_permissions_check' ),
+					'args'                => array(
+						'type' => array(
+							'validate_callback' => function ( $param ) {
 								return is_string( $param );
 							},
 							'required'          => true,
-						],
-					],
-				],
-			]
+						),
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/birthdays/today',
-			[
-				[
+			array(
+				array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_today_birthdays' ],
-					'permission_callback' => [ $this, 'get_permissions_check' ],
-				],
-			]
+					'callback'            => array( $this, 'get_today_birthdays' ),
+					'permission_callback' => array( $this, 'get_permissions_check' ),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/birthdays/upcoming',
-			[
-				[
+			array(
+				array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_upcoming_birthdays' ],
-					'permission_callback' => [ $this, 'get_permissions_check' ],
-					'args'                => [
-						'limit' => [
+					'callback'            => array( $this, 'get_upcoming_birthdays' ),
+					'permission_callback' => array( $this, 'get_permissions_check' ),
+					'args'                => array(
+						'limit' => array(
 							'default'           => 10,
 							'sanitize_callback' => 'absint',
-						],
-					],
-				],
-			]
+						),
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/pwa-menu',
-			[
-				[
+			array(
+				array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_pwa_menu' ],
+					'callback'            => array( $this, 'get_pwa_menu' ),
 					'permission_callback' => '__return_true',
-				],
-			]
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/pwa-config',
-			[
-				[
+			array(
+				array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_pwa_config' ],
+					'callback'            => array( $this, 'get_pwa_config' ),
 					'permission_callback' => '__return_true',
-				],
-			]
+				),
+			)
 		);
 	}
 
@@ -159,10 +159,12 @@ class Data_Endpoints {
 		// Détecte si le plugin ROI est actif (classe principale chargée).
 		$roi_active = class_exists( 'ROI\\Core\\Plugin' );
 
-		return rest_ensure_response( [
-			'current_season' => $current_season_name,
-			'roi_active'     => $roi_active,
-		] );
+		return rest_ensure_response(
+			array(
+				'current_season' => $current_season_name,
+				'roi_active'     => $roi_active,
+			)
+		);
 	}
 
 	/**
@@ -174,18 +176,18 @@ class Data_Endpoints {
 		$menu_items = wp_get_nav_menu_items( 'Menu_PWA' );
 
 		if ( ! $menu_items || is_wp_error( $menu_items ) ) {
-			return rest_ensure_response( [] );
+			return rest_ensure_response( array() );
 		}
 
 		$data = array_map(
 			function ( $item ) {
-				return [
+				return array(
 					'id'         => (int) $item->ID,
 					'object_id'  => (int) $item->object_id,
 					'parent'     => (int) $item->menu_item_parent,
 					'title'      => (string) $item->title,
 					'menu_order' => (int) $item->menu_order,
-				];
+				);
 			},
 			$menu_items
 		);
@@ -251,7 +253,7 @@ class Data_Endpoints {
 				return new \WP_Error(
 					'rest_invalid_type',
 					__( 'Type de données invalide.', 'dame' ),
-					[ 'status' => 404 ]
+					array( 'status' => 404 )
 				);
 		}
 

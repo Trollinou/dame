@@ -21,9 +21,9 @@ class Toolbar {
 	 * Initializes the toolbar hooks.
 	 */
 	public function init(): void {
-		add_action( 'admin_bar_menu', [ $this, 'add_nodes' ], 999 );
-		add_action( 'admin_action_dame_manual_backup', [ $this, 'handle_manual_backup' ] );
-		add_action( 'admin_notices', [ $this, 'show_backup_notice' ] );
+		add_action( 'admin_bar_menu', array( $this, 'add_nodes' ), 999 );
+		add_action( 'admin_action_dame_manual_backup', array( $this, 'handle_manual_backup' ) );
+		add_action( 'admin_notices', array( $this, 'show_backup_notice' ) );
 	}
 
 	/**
@@ -39,81 +39,81 @@ class Toolbar {
 
 		// Add the main DAME menu item.
 		$wp_admin_bar->add_node(
-			[
+			array(
 				'id'    => 'dame_menu',
-				'title' => '<span class="ab-icon">&#x265F;</span>' . __( "DAME", "dame" ),
+				'title' => '<span class="ab-icon">&#x265F;</span>' . __( 'DAME', 'dame' ),
 				'href'  => admin_url( 'edit.php?post_type=adherent' ),
-			]
+			)
 		);
 
 		// Add the "Voir les préinscriptions" sub-menu item.
 		$wp_admin_bar->add_node(
-			[
+			array(
 				'id'     => 'dame_view_preinscriptions',
 				'parent' => 'dame_menu',
-				'title'  => __( "Voir les préinscriptions", "dame" ),
+				'title'  => __( 'Voir les préinscriptions', 'dame' ),
 				'href'   => admin_url( 'edit.php?post_type=dame_pre_inscription' ),
-			]
+			)
 		);
 
 		// Add the "Voir les adhérents" sub-menu item.
 		$wp_admin_bar->add_node(
-			[
+			array(
 				'id'     => 'dame_view_adherents',
 				'parent' => 'dame_menu',
-				'title'  => __( "Voir les adhérents", "dame" ),
+				'title'  => __( 'Voir les adhérents', 'dame' ),
 				'href'   => admin_url( 'edit.php?post_type=adherent' ),
-			]
+			)
 		);
 
 		// Add the "Voir les contacts" sub-menu item.
 		$wp_admin_bar->add_node(
-			[
+			array(
 				'id'     => 'dame_view_contacts',
 				'parent' => 'dame_menu',
-				'title'  => __( "Voir les contacts", "dame" ),
+				'title'  => __( 'Voir les contacts', 'dame' ),
 				'href'   => admin_url( 'edit.php?post_type=dame_contact' ),
-			]
+			)
 		);
 
 		// Add the "Voir les événements" sub-menu item.
 		$wp_admin_bar->add_node(
-			[
+			array(
 				'id'     => 'dame_view_events',
 				'parent' => 'dame_menu',
-				'title'  => __( "Voir les événements", "dame" ),
+				'title'  => __( 'Voir les événements', 'dame' ),
 				'href'   => admin_url( 'edit.php?post_type=dame_agenda' ),
-			]
+			)
 		);
 
 		// Add the "Voir les bénévolats" sub-menu item.
 		$wp_admin_bar->add_node(
-			[
+			array(
 				'id'     => 'dame_view_polls',
 				'parent' => 'dame_menu',
-				'title'  => __( "Appels à bénévoles", "dame" ),
+				'title'  => __( 'Appels à bénévoles', 'dame' ),
 				'href'   => admin_url( 'edit.php?post_type=benevolat' ),
-			]
+			)
 		);
 
 		// Add the "Voir les messages" sub-menu item.
 		$wp_admin_bar->add_node(
-			[
+			array(
 				'id'     => 'dame_view_messages',
 				'parent' => 'dame_menu',
-				'title'  => __( "Voir les messages", "dame" ),
+				'title'  => __( 'Voir les messages', 'dame' ),
 				'href'   => admin_url( 'edit.php?post_type=dame_message' ),
-			]
+			)
 		);
 
 		// Add the "Envoyer un message" sub-menu item.
 		$wp_admin_bar->add_node(
-			[
+			array(
 				'id'     => 'dame_send_article',
 				'parent' => 'dame_menu',
-				'title'  => __( "Envoyer un message", "dame" ),
+				'title'  => __( 'Envoyer un message', 'dame' ),
 				'href'   => admin_url( 'admin.php?page=dame-mailing' ),
-			]
+			)
 		);
 
 		// Add the "Faire une sauvegarde" sub-menu item (Only for administrators).
@@ -121,12 +121,12 @@ class Toolbar {
 			$backup_url = wp_nonce_url( admin_url( 'admin.php?action=dame_manual_backup' ), 'dame_manual_backup_nonce' );
 
 			$wp_admin_bar->add_node(
-				[
+				array(
 					'id'     => 'dame_manual_backup',
 					'parent' => 'dame_menu',
-					'title'  => __( "Faire une sauvegarde", "dame" ),
+					'title'  => __( 'Faire une sauvegarde', 'dame' ),
 					'href'   => $backup_url,
-				]
+				)
 			);
 		}
 	}
@@ -135,12 +135,13 @@ class Toolbar {
 	 * Handles the manual backup trigger from the admin bar.
 	 */
 	public function handle_manual_backup(): void {
-		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'dame_manual_backup_nonce' ) ) {
-			wp_die( __( "Invalid nonce.", "dame" ) );
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'dame_manual_backup_nonce' ) ) {
+			wp_die( esc_html__( 'Invalid nonce.', 'dame' ) );
 		}
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( __( "You do not have sufficient permissions to perform this action.", "dame" ) );
+			wp_die( esc_html__( 'You do not have sufficient permissions to perform this action.', 'dame' ) );
 		}
 
 		// Trigger the backup.
@@ -158,7 +159,7 @@ class Toolbar {
 		if ( isset( $_GET['dame_backup_triggered'] ) && '1' === $_GET['dame_backup_triggered'] ) {
 			?>
 			<div class="notice notice-success is-dismissible">
-				<p><?php esc_html_e( "La sauvegarde a été déclenchée avec succès.", "dame" ); ?></p>
+				<p><?php esc_html_e( 'La sauvegarde a été déclenchée avec succès.', 'dame' ); ?></p>
 			</div>
 			<?php
 		}

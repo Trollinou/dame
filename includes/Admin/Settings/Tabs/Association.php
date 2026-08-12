@@ -28,28 +28,28 @@ class Association {
 		add_settings_section(
 			'dame_association_section',
 			__( "Informations de l'association", 'dame' ),
-			[ $this, 'section_callback' ],
+			array( $this, 'section_callback' ),
 			'dame_association_section_group'
 		);
 
-		$fields = [
-			'assoc_ffe_id' => __( 'Id de référence du club (FFE)', 'dame' ),
-			'assoc_address_1' => __( 'Adresse', 'dame' ),
-			'assoc_address_2' => __( 'Complément', 'dame' ),
+		$fields = array(
+			'assoc_ffe_id'      => __( 'Id de référence du club (FFE)', 'dame' ),
+			'assoc_address_1'   => __( 'Adresse', 'dame' ),
+			'assoc_address_2'   => __( 'Complément', 'dame' ),
 			'assoc_postal_code' => __( 'Code Postal', 'dame' ),
-			'assoc_city' => __( 'Ville', 'dame' ),
-			'assoc_latitude' => __( 'Latitude', 'dame' ),
-			'assoc_longitude' => __( 'Longitude', 'dame' ),
-		];
+			'assoc_city'        => __( 'Ville', 'dame' ),
+			'assoc_latitude'    => __( 'Latitude', 'dame' ),
+			'assoc_longitude'   => __( 'Longitude', 'dame' ),
+		);
 
 		foreach ( $fields as $key => $label ) {
 			add_settings_field(
 				'dame_' . $key,
 				$label,
-				[ $this, 'render_field' ],
+				array( $this, 'render_field' ),
 				'dame_association_section_group',
 				'dame_association_section',
-				[ 'key' => $key ]
+				array( 'key' => $key )
 			);
 		}
 	}
@@ -67,36 +67,36 @@ class Association {
 	 * @param array<string, mixed> $args Arguments.
 	 */
 	public function render_field( $args ): void {
-		$key = $args['key'];
+		$key     = $args['key'];
 		$options = get_option( 'dame_options' );
-		$value = isset( $options[ $key ] ) ? $options[ $key ] : '';
+		$value   = isset( $options[ $key ] ) ? $options[ $key ] : '';
 
 		$wrapper_start = '';
-		$wrapper_end = '';
-		$readonly = '';
-		$class = 'regular-text';
-		$type = 'text';
-		$extra_attr = '';
-		$data_group = 'data-group="settings"';
+		$wrapper_end   = '';
+		$readonly      = '';
+		$class         = 'regular-text';
+		$type          = 'text';
+		$extra_attr    = '';
+		$data_group    = 'data-group="settings"';
 
 		if ( 'assoc_ffe_id' === $key ) {
-			$type = 'number';
+			$type  = 'number';
 			$class = 'small-text';
 		} elseif ( 'assoc_address_1' === $key ) {
 			$wrapper_start = '<div class="dame-autocomplete-wrapper" style="position: relative;">';
-			$wrapper_end = '</div>';
-			$extra_attr = 'autocomplete="off"';
-			$class .= ' dame-js-address';
+			$wrapper_end   = '</div>';
+			$extra_attr    = 'autocomplete="off"';
+			$class        .= ' dame-js-address';
 		} elseif ( 'assoc_postal_code' === $key ) {
 			$class .= ' dame-js-zip';
 		} elseif ( 'assoc_city' === $key ) {
 			$class .= ' dame-js-city';
 		} elseif ( 'assoc_latitude' === $key ) {
 			$readonly = 'readonly="readonly"';
-			$class .= ' dame-js-lat';
+			$class   .= ' dame-js-lat';
 		} elseif ( 'assoc_longitude' === $key ) {
 			$readonly = 'readonly="readonly"';
-			$class .= ' dame-js-long';
+			$class   .= ' dame-js-long';
 		}
 
 		echo $wrapper_start; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -119,7 +119,7 @@ class Association {
 	 * @return array<string, mixed> Sanitized options.
 	 */
 	public function sanitize( $input, $existing_options ) {
-		$fields = [ 'assoc_ffe_id', 'assoc_address_1', 'assoc_address_2', 'assoc_postal_code', 'assoc_city', 'assoc_latitude', 'assoc_longitude' ];
+		$fields = array( 'assoc_ffe_id', 'assoc_address_1', 'assoc_address_2', 'assoc_postal_code', 'assoc_city', 'assoc_latitude', 'assoc_longitude' );
 		foreach ( $fields as $field ) {
 			if ( isset( $input[ $field ] ) ) {
 				if ( 'assoc_ffe_id' === $field ) {

@@ -4,11 +4,13 @@
  * Plugin URI:        https://github.com/trollinou/dame
  * Description:       Gère une base de données d'adhérents pour un club.
  * Version:           5.0.0
- * Requires at least: 6.9.1
+ * Requires at least: 7.0.1
  * Requires PHP:      8.4
  * Author:            Antigravity
  * Text Domain:       dame
  * Domain Path:       /languages
+ *
+ * @package DAME
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -34,22 +36,24 @@ if ( file_exists( plugin_dir_path( __FILE__ ) . 'vendor/autoload.php' ) ) {
 }
 
 // 3. Autoloader SPL (Conforme AGENTS.md)
-spl_autoload_register( function ( $class ) {
-	$prefix = 'DAME\\';
-	$base_dir = plugin_dir_path( __FILE__ ) . 'includes/';
+spl_autoload_register(
+	function ( $class_name ) {
+		$prefix   = 'DAME\\';
+		$base_dir = plugin_dir_path( __FILE__ ) . 'includes/';
 
-	$len = strlen( $prefix );
-	if ( strncmp( $prefix, $class, $len ) !== 0 ) {
-		return;
+		$len = strlen( $prefix );
+		if ( strncmp( $prefix, $class_name, $len ) !== 0 ) {
+				return;
+		}
+
+		$relative_class = substr( $class_name, $len );
+		$file           = $base_dir . str_replace( '\\', '/', $relative_class ) . '.php';
+
+		if ( file_exists( $file ) ) {
+			require $file;
+		}
 	}
-
-	$relative_class = substr( $class, $len );
-	$file = $base_dir . str_replace( '\\', '/', $relative_class ) . '.php';
-
-	if ( file_exists( $file ) ) {
-		require $file;
-	}
-} );
+);
 
 // 3. Initialisation du Plugin
 if ( class_exists( 'DAME\Core\Plugin' ) ) {
@@ -61,11 +65,11 @@ if ( class_exists( 'DAME\Core\Plugin' ) ) {
  * Fonction d'activation (pour les règles de réécriture)
  */
 function dame_activate_plugin(): void {
-    // Déclenche l'écriture des règles iCal / Benevolat
-    if ( class_exists( 'DAME\Services\ICalFeed' ) ) {
-        $ical = new DAME\Services\ICalFeed();
-        $ical->register_feed();
-    }
-    flush_rewrite_rules();
+	// Déclenche l'écriture des règles iCal / Benevolat
+	if ( class_exists( 'DAME\Services\ICalFeed' ) ) {
+		$ical = new DAME\Services\ICalFeed();
+		$ical->register_feed();
+	}
+	flush_rewrite_rules();
 }
 register_activation_hook( __FILE__, 'dame_activate_plugin' );

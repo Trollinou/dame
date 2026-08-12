@@ -38,7 +38,7 @@ class Benevolat {
 	 * Initialize the class and register hooks.
 	 */
 	public function init(): void {
-		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
+		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
 	/**
@@ -48,47 +48,47 @@ class Benevolat {
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<id>\d+)/vote',
-			[
-				[
+			array(
+				array(
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ $this, 'handle_vote' ],
-					'permission_callback' => [ $this, 'check_vote_permissions' ],
-					'args'                => [
-						'id'      => [
-							'validate_callback' => function( $param ) {
+					'callback'            => array( $this, 'handle_vote' ),
+					'permission_callback' => array( $this, 'check_vote_permissions' ),
+					'args'                => array(
+						'id'      => array(
+							'validate_callback' => function ( $param ) {
 								return is_numeric( $param );
 							},
 							'required'          => true,
-						],
-						'choices' => [
-							'validate_callback' => function( $param ) {
+						),
+						'choices' => array(
+							'validate_callback' => function ( $param ) {
 								return is_array( $param );
 							},
 							'required'          => true,
-						],
-					],
-				],
-			]
+						),
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<id>\d+)/my-vote',
-			[
-				[
+			array(
+				array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_my_vote' ],
-					'permission_callback' => [ $this, 'check_vote_permissions' ],
-					'args'                => [
-						'id' => [
-							'validate_callback' => function( $param ) {
+					'callback'            => array( $this, 'get_my_vote' ),
+					'permission_callback' => array( $this, 'check_vote_permissions' ),
+					'args'                => array(
+						'id' => array(
+							'validate_callback' => function ( $param ) {
 								return is_numeric( $param );
 							},
 							'required'          => true,
-						],
-					],
-				],
-			]
+						),
+					),
+				),
+			)
 		);
 	}
 
@@ -111,17 +111,19 @@ class Benevolat {
 		$benevolat_id = (int) $request['id'];
 		$current_user = wp_get_current_user();
 
-		$existing_vote = get_posts( [
-			'post_type'      => 'benevolat_reponse',
-			'post_parent'    => $benevolat_id,
-			'author'         => $current_user->ID,
-			'post_status'    => 'publish',
-			'posts_per_page' => 1,
-			'fields'         => 'ids',
-		] );
+		$existing_vote = get_posts(
+			array(
+				'post_type'      => 'benevolat_reponse',
+				'post_parent'    => $benevolat_id,
+				'author'         => $current_user->ID,
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+			)
+		);
 
 		if ( empty( $existing_vote ) ) {
-			return rest_ensure_response( [ 'choices' => [] ] );
+			return rest_ensure_response( array( 'choices' => array() ) );
 		}
 
 		$response_id = (int) $existing_vote[0];
@@ -129,13 +131,16 @@ class Benevolat {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'dame_benevolat_votes';
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$choices = $wpdb->get_col( $wpdb->prepare(
-			"SELECT choice_key FROM {$table_name} WHERE recipient_id = %d",
-			$response_id
-		) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$choices = $wpdb->get_col(
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->prepare(
+				"SELECT choice_key FROM {$table_name} WHERE recipient_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$response_id
+			)
+		);
 
-		return rest_ensure_response( [ 'choices' => $choices ?: [] ] );
+		return rest_ensure_response( array( 'choices' => ! empty( $choices ) ? $choices : array() ) );
 	}
 
 	/**
@@ -151,13 +156,13 @@ class Benevolat {
 		// 1. Verify benevolat existence and type.
 		$benevolat = get_post( $benevolat_id );
 		if ( ! $benevolat || 'benevolat' !== $benevolat->post_type ) {
-			return new WP_Error( 'invalid_benevolat', 'L\'appel à bénévoles n\'existe pas.', [ 'status' => 404 ] );
+			return new WP_Error( 'invalid_benevolat', 'L\'appel à bénévoles n\'existe pas.', array( 'status' => 404 ) );
 		}
 
 		// 1b. Get configuration and today's date.
 		$benevolat_data = get_post_meta( $benevolat_id, '_dame_benevolat_data', true );
 		if ( ! is_array( $benevolat_data ) ) {
-			return new WP_Error( 'invalid_config', 'Configuration invalide.', [ 'status' => 500 ] );
+			return new WP_Error( 'invalid_config', 'Configuration invalide.', array( 'status' => 500 ) );
 		}
 		$today = current_time( 'Y-m-d' );
 
@@ -170,7 +175,7 @@ class Benevolat {
 			}
 		}
 		if ( $all_passed ) {
-			return new WP_Error( 'benevolat_closed', 'Cet appel est entièrement clôturé.', [ 'status' => 400 ] );
+			return new WP_Error( 'benevolat_closed', 'Cet appel est entièrement clôturé.', array( 'status' => 400 ) );
 		}
 
 		$current_user = wp_get_current_user();
@@ -178,29 +183,33 @@ class Benevolat {
 		$table_name = $wpdb->prefix . 'dame_benevolat_votes';
 
 		// 2. Check for existing vote.
-		$existing_vote = get_posts( [
-			'post_type'      => 'benevolat_reponse',
-			'post_parent'    => $benevolat_id,
-			'author'         => $current_user->ID,
-			'post_status'    => 'publish',
-			'posts_per_page' => 1,
-			'fields'         => 'ids',
-		] );
+		$existing_vote = get_posts(
+			array(
+				'post_type'      => 'benevolat_reponse',
+				'post_parent'    => $benevolat_id,
+				'author'         => $current_user->ID,
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+			)
+		);
 
-		$past_choices = [];
+		$past_choices = array();
 		if ( ! empty( $existing_vote ) ) {
 			// UPDATE MODE.
 			$response_id = (int) $existing_vote[0];
 
 			// Get existing choices to preserve historical data.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$old_choices = $wpdb->get_col( $wpdb->prepare(
-				"SELECT choice_key FROM {$table_name} WHERE recipient_id = %d",
-				$response_id
-			) );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$old_choices = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT choice_key FROM {$table_name} WHERE recipient_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$response_id
+				)
+			);
 
 			foreach ( $old_choices as $old_key ) {
-				$parts = explode( '_', (string) $old_key );
+				$parts      = explode( '_', (string) $old_key );
 				$date_index = (int) $parts[0];
 				if ( isset( $benevolat_data[ $date_index ]['date'] ) && $benevolat_data[ $date_index ]['date'] < $today ) {
 					$past_choices[] = $old_key;
@@ -209,26 +218,28 @@ class Benevolat {
 
 			// Delete existing choices for this response.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->delete( $table_name, [ 'recipient_id' => $response_id ], [ '%d' ] );
+			$wpdb->delete( $table_name, array( 'recipient_id' => $response_id ), array( '%d' ) );
 		} else {
 			// CREATE MODE.
-			$response_id = wp_insert_post( [
-				'post_type'   => 'benevolat_reponse',
-				'post_parent' => $benevolat_id,
-				'post_status' => 'publish',
-				'post_author' => $current_user->ID,
-				'post_title'  => $current_user->display_name,
-			] );
+			$response_id = wp_insert_post(
+				array(
+					'post_type'   => 'benevolat_reponse',
+					'post_parent' => $benevolat_id,
+					'post_status' => 'publish',
+					'post_author' => $current_user->ID,
+					'post_title'  => $current_user->display_name,
+				)
+			);
 
 			if ( is_wp_error( $response_id ) || 0 === $response_id ) {
-				return new WP_Error( 'db_error', 'Erreur lors de l\'enregistrement.', [ 'status' => 500 ] );
+				return new WP_Error( 'db_error', 'Erreur lors de l\'enregistrement.', array( 'status' => 500 ) );
 			}
 		}
 
 		// 3. Filter and merge choices.
 		$final_choices = $past_choices;
 		foreach ( $choices as $choice_key ) {
-			$parts = explode( '_', (string) $choice_key );
+			$parts      = explode( '_', (string) $choice_key );
 			$date_index = (int) $parts[0];
 
 			// Only accept choices for today or future dates.
@@ -241,14 +252,14 @@ class Benevolat {
 		$final_choices = array_unique( $final_choices );
 
 		// 4. Update Post Meta for shortcode synchronization.
-		$meta_responses = [];
+		$meta_responses = array();
 		foreach ( $final_choices as $choice_key ) {
 			$parts = explode( '_', (string) $choice_key );
 			if ( count( $parts ) === 2 ) {
 				$date_idx = (int) $parts[0];
 				$time_idx = (int) $parts[1];
 				if ( ! isset( $meta_responses[ $date_idx ] ) ) {
-					$meta_responses[ $date_idx ] = [];
+					$meta_responses[ $date_idx ] = array();
 				}
 				$meta_responses[ $date_idx ][ $time_idx ] = '1';
 			}
@@ -259,18 +270,20 @@ class Benevolat {
 		foreach ( $final_choices as $choice_key ) {
 			$wpdb->insert(
 				$table_name,
-				[
+				array(
 					'poll_id'      => $benevolat_id,
 					'recipient_id' => $response_id,
 					'choice_key'   => sanitize_text_field( (string) $choice_key ),
-				],
-				[ '%d', '%d', '%s' ]
+				),
+				array( '%d', '%d', '%s' )
 			);
 		}
 
-		return rest_ensure_response( [
-			'success' => true,
-			'message' => 'Enregistré.',
-		] );
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'Enregistré.',
+			)
+		);
 	}
 }

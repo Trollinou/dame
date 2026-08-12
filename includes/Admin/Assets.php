@@ -6,6 +6,7 @@
  */
 
 namespace DAME\Admin;
+
 use DAME\Services\Data_Provider;
 
 /**
@@ -17,7 +18,7 @@ class Assets {
 	 * Initialize the class.
 	 */
 	public function init(): void {
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 	}
 
 	/**
@@ -49,7 +50,7 @@ class Assets {
 		wp_register_script(
 			'dame-admin-common',
 			\DAME_PLUGIN_URL . 'assets/js/admin-common.js',
-			[],
+			array(),
 			\DAME_VERSION,
 			true
 		);
@@ -58,27 +59,26 @@ class Assets {
 		wp_enqueue_style(
 			'dame-admin-common-css',
 			\DAME_PLUGIN_URL . 'assets/css/admin-common.css', // Using existing file as common CSS
-			[],
+			array(),
 			\DAME_VERSION
 		);
 
 		// Localize Common Data
-		$options = get_option( 'dame_options', [] );
+		$options         = get_option( 'dame_options', array() );
 		$assoc_latitude  = isset( $options['assoc_latitude'] ) ? $options['assoc_latitude'] : '';
 		$assoc_longitude = isset( $options['assoc_longitude'] ) ? $options['assoc_longitude'] : '';
 
 		wp_localize_script(
 			'dame-admin-common',
 			'dame_admin_data',
-			[
+			array(
 				'assoc_latitude'  => $assoc_latitude,
 				'assoc_longitude' => $assoc_longitude,
 				'dept_region_map' => Data_Provider::get_department_region_mapping(),
-			]
+			)
 		);
 
 		wp_enqueue_script( 'dame-admin-common' );
-
 
 		// --- Adherent CPT Specific ---
 
@@ -86,7 +86,7 @@ class Assets {
 			wp_enqueue_script(
 				'dame-admin-adherent',
 				\DAME_PLUGIN_URL . 'assets/js/admin-adherent.js',
-				[ 'dame-admin-common' ], // Depends on common
+				array( 'dame-admin-common' ), // Depends on common
 				\DAME_VERSION,
 				true
 			);
@@ -96,7 +96,7 @@ class Assets {
 			wp_enqueue_style(
 				'dame-admin-styles',
 				\DAME_PLUGIN_URL . 'assets/css/admin-styles.css',
-				[],
+				array(),
 				\DAME_VERSION
 			);
 		}

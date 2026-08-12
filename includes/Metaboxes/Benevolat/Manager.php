@@ -16,12 +16,12 @@ class Manager {
 	 * Initialize the metabox hooks.
 	 */
 	public function init(): void {
-		add_action( 'add_meta_boxes', [ $this, 'add_meta_boxes' ] );
-		add_action( 'save_post_benevolat', [ $this, 'save' ] );
-		add_action( 'admin_post_dame_delete_benevolat_response', [ $this, 'delete_response' ] );
-		add_filter( 'post_updated_messages', [ $this, 'admin_notices' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
-		add_action( 'edit_form_before_permalink', [ $this, 'display_shortcode_helper' ] );
+		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
+		add_action( 'save_post_benevolat', array( $this, 'save' ) );
+		add_action( 'admin_post_dame_delete_benevolat_response', array( $this, 'delete_response' ) );
+		add_filter( 'post_updated_messages', array( $this, 'admin_notices' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'edit_form_before_permalink', array( $this, 'display_shortcode_helper' ) );
 	}
 
 	/**
@@ -50,7 +50,7 @@ class Manager {
 		add_meta_box(
 			'dame_benevolat_config',
 			__( 'Configuration de l\'appel à bénévoles', 'dame' ),
-			[ $this, 'render_config' ],
+			array( $this, 'render_config' ),
 			'benevolat',
 			'normal',
 			'high'
@@ -58,7 +58,7 @@ class Manager {
 		add_meta_box(
 			'dame_benevolat_results',
 			__( 'Résultats', 'dame' ),
-			[ $this, 'render_results' ],
+			array( $this, 'render_results' ),
 			'benevolat',
 			'normal',
 			'high'
@@ -95,15 +95,17 @@ class Manager {
 
 		$benevolat_data = get_post_meta( $post->ID, '_dame_benevolat_data', true );
 		if ( empty( $benevolat_data ) ) {
-			$benevolat_data = [];
+			$benevolat_data = array();
 		}
 
-		$responses_exist = (bool) get_posts( [
-			'post_type'      => 'benevolat_reponse',
-			'post_parent'    => $post->ID,
-			'posts_per_page' => 1,
-			'fields'         => 'ids',
-		] );
+		$responses_exist = (bool) get_posts(
+			array(
+				'post_type'      => 'benevolat_reponse',
+				'post_parent'    => $post->ID,
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+			)
+		);
 
 		$is_locked = $responses_exist;
 
@@ -229,14 +231,16 @@ class Manager {
 			return;
 		}
 
-		$responses = get_posts( [
-			'post_type'      => 'benevolat_reponse',
-			'post_status'    => 'publish',
-			'post_parent'    => $post->ID,
-			'posts_per_page' => -1,
-			'orderby'        => 'post_title',
-			'order'          => 'ASC',
-		] );
+		$responses = get_posts(
+			array(
+				'post_type'      => 'benevolat_reponse',
+				'post_status'    => 'publish',
+				'post_parent'    => $post->ID,
+				'posts_per_page' => -1,
+				'orderby'        => 'post_title',
+				'order'          => 'ASC',
+			)
+		);
 
 		if ( empty( $responses ) ) {
 			echo '<p>' . __( 'Aucune réponse pour le moment.', 'dame' ) . '</p>';
@@ -244,19 +248,19 @@ class Manager {
 		}
 
 		// Prepare data for the results table
-		$results = [];
+		$results = array();
 
 		foreach ( $benevolat_data as $date_index => $date_info ) {
 			$date_str = $date_info['date'];
 			if ( ! empty( $date_info['time_slots'] ) ) {
 				foreach ( $date_info['time_slots'] as $time_index => $time_slot ) {
-					$slot_key = $date_index . '_' . $time_index;
-					$results[ $slot_key ] = [
+					$slot_key             = $date_index . '_' . $time_index;
+					$results[ $slot_key ] = array(
 						'date'  => $date_str,
 						'start' => $time_slot['start'],
 						'end'   => $time_slot['end'],
-						'names' => [],
-					];
+						'names' => array(),
+					);
 				}
 			}
 		}
@@ -264,15 +268,17 @@ class Manager {
 		global $wpdb;
 		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$vote_records = $wpdb->get_results( $wpdb->prepare(
-			"SELECT DISTINCT v.recipient_id, v.choice_key 
+		$vote_records = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT DISTINCT v.recipient_id, v.choice_key 
 			 FROM {$table_votes} v
 			 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
 			 WHERE v.poll_id = %d AND p.post_status = 'publish'",
-			$post->ID
-		) );
+				$post->ID
+			)
+		);
 
-		$response_titles = [];
+		$response_titles = array();
 		foreach ( $responses as $resp ) {
 			$response_titles[ $resp->ID ] = $resp->post_title;
 		}
@@ -284,9 +290,9 @@ class Manager {
 			}
 		}
 
-		$grouped_results = [];
+		$grouped_results = array();
 		foreach ( $results as $slot_key => $details ) {
-			$date_obj = new \DateTime( $details['date'] );
+			$date_obj       = new \DateTime( $details['date'] );
 			$formatted_date = date_i18n( 'l j F Y', $date_obj->getTimestamp() );
 			$grouped_results[ $formatted_date ][ $details['start'] . ' - ' . $details['end'] ] = $details['names'];
 		}
@@ -310,7 +316,7 @@ class Manager {
 				</thead>
 				<tbody>
 					<?php
-					$all_time_slots = [];
+					$all_time_slots = array();
 					foreach ( $grouped_results as $date => $slots ) {
 						foreach ( $slots as $slot_time => $names ) {
 							$all_time_slots[ $slot_time ] = true;
@@ -318,7 +324,8 @@ class Manager {
 					}
 					ksort( $all_time_slots );
 
-					foreach ( array_keys( $all_time_slots ) as $slot_time ) : ?>
+					foreach ( array_keys( $all_time_slots ) as $slot_time ) :
+						?>
 						<tr>
 							<td><?php echo esc_html( $slot_time ); ?></td>
 							<?php foreach ( $grouped_results as $date => $slots ) : ?>
@@ -351,12 +358,15 @@ class Manager {
 					<?php foreach ( $responses as $response ) : ?>
 						<?php
 							$delete_url = admin_url( 'admin-post.php' );
-							$delete_url = add_query_arg( [
-								'action'      => 'dame_delete_benevolat_response',
-								'response_id' => $response->ID,
-								'benevolat_id' => $post->ID,
-								'_wpnonce'    => wp_create_nonce( 'dame_delete_response_' . $response->ID ),
-							], $delete_url );
+							$delete_url = add_query_arg(
+								array(
+									'action'       => 'dame_delete_benevolat_response',
+									'response_id'  => $response->ID,
+									'benevolat_id' => $post->ID,
+									'_wpnonce'     => wp_create_nonce( 'dame_delete_response_' . $response->ID ),
+								),
+								$delete_url
+							);
 						?>
 						<tr>
 							<td><?php echo esc_html( $response->post_title ); ?></td>
@@ -379,15 +389,17 @@ class Manager {
 	 * @param int $post_id The ID of the post being saved.
 	 */
 	public function save( $post_id ): void {
-		$responses_exist = (bool) get_posts( [
-			'post_type'      => 'benevolat_reponse',
-			'post_parent'    => $post_id,
-			'posts_per_page' => 1,
-			'fields'         => 'ids',
-		] );
+		$responses_exist = (bool) get_posts(
+			array(
+				'post_type'      => 'benevolat_reponse',
+				'post_parent'    => $post_id,
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+			)
+		);
 
 		if ( $responses_exist ) {
-			return; 
+			return;
 		}
 
 		if ( ! isset( $_POST['dame_benevolat_metabox_nonce'] ) ) {
@@ -408,34 +420,40 @@ class Manager {
 			return;
 		}
 
-		$benevolat_data = [];
+		$benevolat_data = array();
 		foreach ( $_POST['_dame_benevolat_data'] as $date_group ) {
 			if ( ! empty( $date_group['date'] ) ) {
-				$new_date_group = [
+				$new_date_group = array(
 					'date'       => sanitize_text_field( $date_group['date'] ),
-					'time_slots' => [],
-				];
+					'time_slots' => array(),
+				);
 				if ( ! empty( $date_group['time_slots'] ) ) {
 					foreach ( $date_group['time_slots'] as $time_slot ) {
 						if ( ! empty( $time_slot['start'] ) && ! empty( $time_slot['end'] ) ) {
-							$new_date_group['time_slots'][] = [
+							$new_date_group['time_slots'][] = array(
 								'start' => sanitize_text_field( $time_slot['start'] ),
 								'end'   => sanitize_text_field( $time_slot['end'] ),
-							];
+							);
 						}
 					}
 				}
-				usort( $new_date_group['time_slots'], function( $a, $b ) {
-					return strcmp( $a['start'], $b['start'] );
-				} );
+				usort(
+					$new_date_group['time_slots'],
+					function ( $a, $b ) {
+						return strcmp( $a['start'], $b['start'] );
+					}
+				);
 
 				$benevolat_data[] = $new_date_group;
 			}
 		}
 
-		usort( $benevolat_data, function( $a, $b ) {
-			return strcmp( $a['date'], $b['date'] );
-		} );
+		usort(
+			$benevolat_data,
+			function ( $a, $b ) {
+				return strcmp( $a['date'], $b['date'] );
+			}
+		);
 
 		if ( ! empty( $benevolat_data ) ) {
 			update_post_meta( $post_id, '_dame_benevolat_data', $benevolat_data );
@@ -470,7 +488,7 @@ class Manager {
 			$redirect_url = get_edit_post_link( $benevolat_id, 'raw' );
 			$redirect_url = add_query_arg( 'message', '101', $redirect_url );
 		} else {
-			$redirect_url = remove_query_arg( [ 'action', 'response_id', '_wpnonce', 'benevolat_id' ], wp_get_referer() );
+			$redirect_url = remove_query_arg( array( 'action', 'response_id', '_wpnonce', 'benevolat_id' ), wp_get_referer() );
 			$redirect_url = add_query_arg( 'message', '101', $redirect_url );
 		}
 
@@ -484,7 +502,7 @@ class Manager {
 	 * @param array<string, mixed> $messages Post updated messages.
 	 * @return array<string, mixed>
 	 */
-	 public function admin_notices( array $messages ): array {
+	public function admin_notices( array $messages ): array {
 
 		if ( isset( $_GET['message'] ) && '101' === $_GET['message'] ) {
 			$messages['post'][101] = __( 'Réponse supprimée.', 'dame' );

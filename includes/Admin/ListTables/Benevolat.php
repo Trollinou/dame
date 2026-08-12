@@ -12,8 +12,8 @@ class Benevolat {
 	 * Initialize.
 	 */
 	public function init(): void {
-		add_filter( 'manage_benevolat_posts_columns', [ $this, 'add_columns' ] );
-		add_action( 'manage_benevolat_posts_custom_column', [ $this, 'display_columns' ], 10, 2 );
+		add_filter( 'manage_benevolat_posts_columns', array( $this, 'add_columns' ) );
+		add_action( 'manage_benevolat_posts_custom_column', array( $this, 'display_columns' ), 10, 2 );
 	}
 
 	/**
@@ -23,12 +23,12 @@ class Benevolat {
 	 * @return array<string, mixed> New columns.
 	 */
 	public function add_columns( $columns ): array {
-		$new_columns = [];
+		$new_columns = array();
 		foreach ( $columns as $key => $title ) {
 			$new_columns[ $key ] = $title;
 			if ( 'title' === $key ) {
-				$new_columns['poll_votes']    = __( 'Inscrits', 'dame' );
-				$new_columns['poll_shortcode']= __( 'Shortcode', 'dame' );
+				$new_columns['poll_votes']     = __( 'Inscrits', 'dame' );
+				$new_columns['poll_shortcode'] = __( 'Shortcode', 'dame' );
 			}
 		}
 		return $new_columns;
@@ -46,13 +46,15 @@ class Benevolat {
 				global $wpdb;
 				$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-				$total = $wpdb->get_var( $wpdb->prepare( 
-					"SELECT COUNT(DISTINCT v.recipient_id) 
+				$total = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT COUNT(DISTINCT v.recipient_id) 
 					 FROM {$table_votes} v
 					 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
-					 WHERE v.poll_id = %d AND p.post_status = 'publish'", 
-					$post_id 
-				) );
+					 WHERE v.poll_id = %d AND p.post_status = 'publish'",
+						$post_id
+					)
+				);
 				echo intval( $total );
 				break;
 

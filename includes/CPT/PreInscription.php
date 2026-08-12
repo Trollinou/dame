@@ -16,7 +16,7 @@ class PreInscription {
 	 * Initialize the CPT.
 	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register' ], 0 );
+		add_action( 'init', array( $this, 'register' ), 0 );
 	}
 
 	/**
@@ -54,28 +54,28 @@ class PreInscription {
 		);
 
 		$args = array(
-			'label'                 => __( 'Préinscription', 'dame' ),
-			'description'           => __( 'Les préinscriptions des futurs adhérents', 'dame' ),
-			'labels'                => $labels,
-			'supports'              => array( 'title' ),
-			'hierarchical'          => false,
-			'public'                => false,
-			'show_ui'               => true,
-			'show_in_menu'          => 'dame-admin',
-			'menu_icon'             => 'dashicons-id-alt',
-			'show_in_admin_bar'     => false,
-			'show_in_nav_menus'     => false,
-			'can_export'            => true,
-			'has_archive'           => false,
-			'exclude_from_search'   => true,
-			'publicly_queryable'    => false,
-			'capability_type'       => 'post',
-			'capabilities'          => array(
+			'label'               => __( 'Préinscription', 'dame' ),
+			'description'         => __( 'Les préinscriptions des futurs adhérents', 'dame' ),
+			'labels'              => $labels,
+			'supports'            => array( 'title' ),
+			'hierarchical'        => false,
+			'public'              => false,
+			'show_ui'             => true,
+			'show_in_menu'        => 'dame-admin',
+			'menu_icon'           => 'dashicons-id-alt',
+			'show_in_admin_bar'   => false,
+			'show_in_nav_menus'   => false,
+			'can_export'          => true,
+			'has_archive'         => false,
+			'exclude_from_search' => true,
+			'publicly_queryable'  => false,
+			'capability_type'     => 'post',
+			'capabilities'        => array(
 				'create_posts' => 'do_not_allow',
 			),
-			'map_meta_cap'          => true,
-			'show_in_rest'          => true,
-			'rest_base'             => 'pre-inscriptions',
+			'map_meta_cap'        => true,
+			'show_in_rest'        => true,
+			'rest_base'           => 'pre-inscriptions',
 		);
 
 		register_post_type( 'dame_pre_inscription', $args );

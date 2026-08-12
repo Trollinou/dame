@@ -20,7 +20,7 @@ class Assignation {
 	 * @return string
 	 */
 	public function get_label() {
-		return __( "Assignation des comptes", "dame" );
+		return __( 'Assignation des comptes', 'dame' );
 	}
 
 	/**
@@ -78,8 +78,8 @@ class Assignation {
 		$roles = $wp_roles->get_names();
 
 		?>
-		<h2><?php esc_html_e( "Assignation des comptes WordPress", "dame" ); ?></h2>
-		<p><?php esc_html_e( "Cette page vous permet d'assigner rapidement un compte WordPress et un rôle à un adhérent.", "dame" ); ?></p>
+		<h2><?php esc_html_e( 'Assignation des comptes WordPress', 'dame' ); ?></h2>
+		<p><?php esc_html_e( "Cette page vous permet d'assigner rapidement un compte WordPress et un rôle à un adhérent.", 'dame' ); ?></p>
 
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<input type="hidden" name="action" value="dame_assign_user">
@@ -88,10 +88,10 @@ class Assignation {
 			<table class="wp-list-table widefat fixed striped">
 				<thead>
 					<tr>
-						<th scope="col" id="member" class="manage-column"><?php esc_html_e( "Adhérent", "dame" ); ?></th>
-						<th scope="col" id="user" class="manage-column"><?php esc_html_e( "Compte WordPress", "dame" ); ?></th>
-						<th scope="col" id="role" class="manage-column"><?php esc_html_e( "Rôle", "dame" ); ?></th>
-						<th scope="col" id="action" class="manage-column"><?php esc_html_e( "Action", "dame" ); ?></th>
+						<th scope="col" id="member" class="manage-column"><?php esc_html_e( 'Adhérent', 'dame' ); ?></th>
+						<th scope="col" id="user" class="manage-column"><?php esc_html_e( 'Compte WordPress', 'dame' ); ?></th>
+						<th scope="col" id="role" class="manage-column"><?php esc_html_e( 'Rôle', 'dame' ); ?></th>
+						<th scope="col" id="action" class="manage-column"><?php esc_html_e( 'Action', 'dame' ); ?></th>
 					</tr>
 				</thead>
 				<tbody id="the-list">
@@ -103,7 +103,7 @@ class Assignation {
 								<td>
 									<?php if ( ! empty( $unlinked_users ) ) : ?>
 										<select name="user_id[<?php echo esc_attr( (string) get_the_ID() ); ?>]">
-											<option value=""><?php esc_html_e( "Sélectionner un utilisateur", "dame" ); ?></option>
+											<option value=""><?php esc_html_e( 'Sélectionner un utilisateur', 'dame' ); ?></option>
 											<?php foreach ( $unlinked_users as $user ) : ?>
 												<option value="<?php echo esc_attr( (string) $user->ID ); ?>">
 													<?php echo esc_html( $user->display_name ); ?>
@@ -111,7 +111,7 @@ class Assignation {
 											<?php endforeach; ?>
 										</select>
 									<?php else : ?>
-										<?php esc_html_e( "Aucun utilisateur non assigné disponible", "dame" ); ?>
+										<?php esc_html_e( 'Aucun utilisateur non assigné disponible', 'dame' ); ?>
 									<?php endif; ?>
 								</td>
 								<td>
@@ -125,7 +125,7 @@ class Assignation {
 								</td>
 								<td>
 									<button type="submit" name="assign_user" value="<?php echo esc_attr( (string) get_the_ID() ); ?>" class="button button-primary">
-										<?php esc_html_e( "Assigner", "dame" ); ?>
+										<?php esc_html_e( 'Assigner', 'dame' ); ?>
 									</button>
 								</td>
 							</tr>
@@ -133,7 +133,7 @@ class Assignation {
 						<?php wp_reset_postdata(); ?>
 					<?php else : ?>
 						<tr>
-							<td colspan="4"><?php esc_html_e( "Tous les adhérents ont déjà un compte WordPress assigné.", "dame" ); ?></td>
+							<td colspan="4"><?php esc_html_e( 'Tous les adhérents ont déjà un compte WordPress assigné.', 'dame' ); ?></td>
 						</tr>
 					<?php endif; ?>
 				</tbody>
@@ -151,11 +151,11 @@ class Assignation {
 		}
 
 		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dame_user_assignment_nonce'] ) ), 'dame_user_assignment_action' ) ) {
-			wp_die( esc_html__( "La vérification de sécurité a échoué.", "dame" ) );
+			wp_die( esc_html__( 'La vérification de sécurité a échoué.', 'dame' ) );
 		}
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", "dame" ) );
+			wp_die( esc_html__( "Vous n'avez pas la permission d'effectuer cette action.", 'dame' ) );
 		}
 
 		if ( ! isset( $_POST['assign_user'] ) ) {
@@ -164,7 +164,7 @@ class Assignation {
 
 		$member_id = absint( $_POST['assign_user'] );
 		$user_id   = isset( $_POST['user_id'][ $member_id ] ) ? absint( $_POST['user_id'][ $member_id ] ) : 0;
-		$role      = isset( $_POST['role'][ $member_id ] ) ? sanitize_text_field( $_POST['role'][ $member_id ] ) : '';
+		$role      = isset( $_POST['role'][ $member_id ] ) ? sanitize_text_field( wp_unslash( $_POST['role'][ $member_id ] ) ) : '';
 
 		if ( ! $member_id || ! get_post( $member_id ) ) {
 			return;
@@ -214,25 +214,25 @@ class Assignation {
 			if ( 'success' === $_GET['message'] ) {
 				?>
 				<div class="notice notice-success is-dismissible">
-					<p><?php esc_html_e( "Compte assigné avec succès.", "dame" ); ?></p>
+					<p><?php esc_html_e( 'Compte assigné avec succès.', 'dame' ); ?></p>
 				</div>
 				<?php
 			} elseif ( 'missing_user' === $_GET['message'] ) {
 				?>
 				<div class="notice notice-warning is-dismissible">
-					<p><?php esc_html_e( "Veuillez sélectionner un compte WordPress à assigner.", "dame" ); ?></p>
+					<p><?php esc_html_e( 'Veuillez sélectionner un compte WordPress à assigner.', 'dame' ); ?></p>
 				</div>
 				<?php
 			} elseif ( 'invalid_user' === $_GET['message'] ) {
 				?>
 				<div class="notice notice-error is-dismissible">
-					<p><?php esc_html_e( "Le compte WordPress sélectionné n'existe pas.", "dame" ); ?></p>
+					<p><?php esc_html_e( "Le compte WordPress sélectionné n'existe pas.", 'dame' ); ?></p>
 				</div>
 				<?php
 			} elseif ( 'invalid_role' === $_GET['message'] ) {
 				?>
 				<div class="notice notice-error is-dismissible">
-					<p><?php esc_html_e( "Le rôle sélectionné est invalide.", "dame" ); ?></p>
+					<p><?php esc_html_e( 'Le rôle sélectionné est invalide.', 'dame' ); ?></p>
 				</div>
 				<?php
 			}

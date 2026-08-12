@@ -269,8 +269,8 @@ try {
 console.log('🧹 Nettoyage des fichiers inutiles dans vendor (FPDF)...');
 const fpdfDir = path.join(tempDestDir, 'vendor/setasign/fpdf');
 if (fs.existsSync(fpdfDir)) {
-    fs.rmSync(path.join(fpdfDir, 'doc'), { recursive: true, force: true });
-    fs.rmSync(path.join(fpdfDir, 'tutorial'), { recursive: true, force: true });
+    fs.rmSync(path.join(fpdfDir, 'doc'), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    fs.rmSync(path.join(fpdfDir, 'tutorial'), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     ['FAQ.htm', 'changelog.htm', 'install.txt'].forEach(file => {
         const filePath = path.join(fpdfDir, file);
         if (fs.existsSync(filePath)) {

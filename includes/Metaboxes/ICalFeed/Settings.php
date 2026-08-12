@@ -19,8 +19,8 @@ class Settings {
 	 * Initialize the metabox.
 	 */
 	public function init(): void {
-		add_action( 'add_meta_boxes', [ $this, 'add_meta_box' ] );
-		add_action( 'save_post_dame_ical_feed', [ $this, 'save' ] );
+		add_action( 'add_meta_boxes', array( $this, 'add_meta_box' ) );
+		add_action( 'save_post_dame_ical_feed', array( $this, 'save' ) );
 	}
 
 	/**
@@ -30,7 +30,7 @@ class Settings {
 		add_meta_box(
 			'dame_ical_feed_settings',
 			__( 'Configuration du flux', 'dame' ),
-			[ $this, 'render' ],
+			array( $this, 'render' ),
 			'dame_ical_feed',
 			'normal',
 			'high'
@@ -50,23 +50,25 @@ class Settings {
 			$selected_categories = array();
 		}
 
-		$categories = get_terms( array(
-			'taxonomy'   => 'dame_agenda_category',
-			'hide_empty' => false,
-		) );
+		$categories = get_terms(
+			array(
+				'taxonomy'   => 'dame_agenda_category',
+				'hide_empty' => false,
+			)
+		);
 
-		echo '<p>' . __( 'Sélectionnez les catégories d\'événements à inclure dans ce flux. Seuls les événements publics seront inclus.', 'dame' ) . '</p>';
+		echo '<p>' . esc_html__( 'Sélectionnez les catégories d\'événements à inclure dans ce flux. Seuls les événements publics seront inclus.', 'dame' ) . '</p>';
 
 		if ( empty( $categories ) || is_wp_error( $categories ) ) {
-			echo '<p>' . __( 'Aucune catégorie d\'événement n\'a été trouvée.', 'dame' ) . '</p>';
+			echo '<p>' . esc_html__( 'Aucune catégorie d\'événement n\'a été trouvée.', 'dame' ) . '</p>';
 			return;
 		}
 
 		echo '<div class="category-checklist-container" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 6px;">';
 		foreach ( $categories as $category ) {
-			$checked = in_array( $category->term_id, $selected_categories ) ? 'checked' : '';
+			$checked = in_array( (int) $category->term_id, array_map( 'intval', $selected_categories ), true );
 			echo '<label style="display: block;">';
-			echo '<input type="checkbox" name="dame_ical_feed_categories[]" value="' . esc_attr( (string) $category->term_id ) . '" ' . $checked . '> ';
+			echo '<input type="checkbox" name="dame_ical_feed_categories[]" value="' . esc_attr( (string) $category->term_id ) . '" ' . checked( $checked, true, false ) . '> ';
 			echo esc_html( $category->name );
 			echo '</label>';
 		}
@@ -79,7 +81,8 @@ class Settings {
 	 * @param int $post_id The post ID.
 	 */
 	public function save( $post_id ): void {
-		if ( ! isset( $_POST['dame_ical_feed_nonce'] ) || ! wp_verify_nonce( $_POST['dame_ical_feed_nonce'], 'dame_save_ical_feed_meta' ) ) {
+		$nonce = isset( $_POST['dame_ical_feed_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_ical_feed_nonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'dame_save_ical_feed_meta' ) ) {
 			return;
 		}
 
@@ -91,8 +94,8 @@ class Settings {
 			return;
 		}
 
-		if ( isset( $_POST['dame_ical_feed_categories'] ) ) {
-			$categories = array_map( 'intval', $_POST['dame_ical_feed_categories'] );
+		if ( isset( $_POST['dame_ical_feed_categories'] ) && is_array( $_POST['dame_ical_feed_categories'] ) ) {
+			$categories = array_map( 'intval', wp_unslash( $_POST['dame_ical_feed_categories'] ) );
 			update_post_meta( $post_id, '_dame_ical_feed_categories', $categories );
 		} else {
 			delete_post_meta( $post_id, '_dame_ical_feed_categories' );

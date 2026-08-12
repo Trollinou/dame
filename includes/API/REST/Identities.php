@@ -39,7 +39,7 @@ class Identities {
 	 * Initialize the class and register hooks.
 	 */
 	public function init(): void {
-		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
+		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
 	/**
@@ -49,13 +49,13 @@ class Identities {
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base,
-			[
-				[
+			array(
+				array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_my_identities' ],
-					'permission_callback' => [ $this, 'get_permissions_check' ],
-				],
-			]
+					'callback'            => array( $this, 'get_my_identities' ),
+					'permission_callback' => array( $this, 'get_permissions_check' ),
+				),
+			)
 		);
 	}
 
@@ -69,7 +69,7 @@ class Identities {
 			return new WP_Error(
 				'rest_forbidden',
 				__( 'Vous devez être connecté.', 'dame' ),
-				[ 'status' => 401 ]
+				array( 'status' => 401 )
 			);
 		}
 
@@ -87,41 +87,65 @@ class Identities {
 		$email        = $current_user->user_email;
 
 		if ( empty( $email ) ) {
-			return new WP_Error( 'no_email', __( 'Utilisateur sans email', 'dame' ), [ 'status' => 400 ] );
+			return new WP_Error( 'no_email', __( 'Utilisateur sans email', 'dame' ), array( 'status' => 400 ) );
 		}
 
 		// 1. REQUÊTES DE BASE (Uniquement les membres actifs)
-		$args_base = [
+		$args_base = array(
 			'post_type'      => 'adherent',
 			'post_status'    => 'publish',
 			'posts_per_page' => -1,
-		];
+		);
 
 		// Requête A (Directe : l'utilisateur est le joueur)
-		$query_a = new WP_Query( array_merge( $args_base, [
-			'meta_query' => [ [ 'key' => '_dame_email', 'value' => $email, 'compare' => '=' ] ],
-		] ) );
+		$query_a = new WP_Query(
+			array_merge(
+				$args_base,
+				array(
+					'meta_query' => array(
+						array(
+							'key'     => '_dame_email',
+							'value'   => $email,
+							'compare' => '=',
+						),
+					),
+				)
+			)
+		);
 
 		// Requête B (Responsable Légal : l'utilisateur est le parent)
-		$query_b = new WP_Query( array_merge( $args_base, [
-			'meta_query' => [
-				'relation' => 'OR',
-				[ 'key' => '_dame_legal_rep_1_email', 'value' => $email, 'compare' => '=' ],
-				[ 'key' => '_dame_legal_rep_2_email', 'value' => $email, 'compare' => '=' ],
-			],
-		] ) );
+		$query_b = new WP_Query(
+			array_merge(
+				$args_base,
+				array(
+					'meta_query' => array(
+						'relation' => 'OR',
+						array(
+							'key'     => '_dame_legal_rep_1_email',
+							'value'   => $email,
+							'compare' => '=',
+						),
+						array(
+							'key'     => '_dame_legal_rep_2_email',
+							'value'   => $email,
+							'compare' => '=',
+						),
+					),
+				)
+			)
+		);
 
 		$adherents_a = $query_a->posts;
 		$adherents_b = $query_b->posts;
 
-		$identities = [];
-		$seen_ids   = []; // Pour éviter les doublons techniques
+		$identities = array();
+		$seen_ids   = array(); // Pour éviter les doublons techniques
 
 		// 2. CONSTRUCTION DES IDENTITÉS
-		
+
 		// AJOUT DES PROFILS JOUEURS (Adhérents directs)
 		foreach ( $adherents_a as $adh ) {
-			$identities[] = $this->prepare_full_identity( $adh, 'member', [] );
+			$identities[] = $this->prepare_full_identity( $adh, 'member', array() );
 			$seen_ids[]   = 'member_' . $adh->ID;
 		}
 
@@ -134,19 +158,22 @@ class Identities {
 		}
 
 		// 3. CAS PARTICULIER : Identité Admin
-		$allowed_roles = [ 'staff', 'entraineur', 'editor', 'administrator' ];
+		$allowed_roles = array( 'staff', 'entraineur', 'editor', 'administrator' );
 		if ( array_intersect( $allowed_roles, (array) $current_user->roles ) ) {
-			array_unshift( $identities, [
-				'id'                => 'wp_virtual',
-				'name'              => $current_user->display_name,
-				'firstname'         => $current_user->first_name ?: $current_user->display_name,
-				'type'              => 'admin',
-				'member_id'         => 0,
-				'elo_standard'      => 'NC',
-				'elo_rapide'        => 'NC',
-				'elo_blitz'         => 'NC',
-				'associated_members' => [],
-			] );
+			array_unshift(
+				$identities,
+				array(
+					'id'                 => 'wp_virtual',
+					'name'               => $current_user->display_name,
+					'firstname'          => ! empty( $current_user->first_name ) ? $current_user->first_name : $current_user->display_name,
+					'type'               => 'admin',
+					'member_id'          => 0,
+					'elo_standard'       => 'NC',
+					'elo_rapide'         => 'NC',
+					'elo_blitz'          => 'NC',
+					'associated_members' => array(),
+				)
+			);
 		}
 
 		return rest_ensure_response( $identities );
@@ -160,12 +187,12 @@ class Identities {
 	 * @return array<int, array<string, mixed>>
 	 */
 	private function extract_representative_identities( array $adherents, string $email ): array {
-		$reps = [];
-		$seen_names = [];
+		$reps       = array();
+		$seen_names = array();
 
 		foreach ( $adherents as $adh ) {
-			$rep_names_to_check = [];
-			
+			$rep_names_to_check = array();
+
 			// On vérifie RL1
 			if ( get_post_meta( $adh->ID, '_dame_legal_rep_1_email', true ) === $email ) {
 				$rep_names_to_check[] = trim( get_post_meta( $adh->ID, '_dame_legal_rep_1_first_name', true ) . ' ' . get_post_meta( $adh->ID, '_dame_legal_rep_1_last_name', true ) );
@@ -176,31 +203,36 @@ class Identities {
 			}
 
 			foreach ( array_unique( $rep_names_to_check ) as $rep_name ) {
-				if ( empty( $rep_name ) ) continue;
+				if ( empty( $rep_name ) ) {
+					continue;
+				}
 
 				if ( ! isset( $seen_names[ $rep_name ] ) ) {
-					$reps[ $rep_name ] = [
-						'id'                => 'rep_' . md5( $rep_name ),
-						'name'              => $rep_name,
-						'firstname'         => explode( ' ', $rep_name )[0],
-						'type'              => 'representative',
-						'elo_standard'      => 'NC',
-						'elo_rapide'        => 'NC',
-						'elo_blitz'         => 'NC',
-						'associated_members' => [], // On remplira après
-					];
+					$reps[ $rep_name ]       = array(
+						'id'                 => 'rep_' . md5( $rep_name ),
+						'name'               => $rep_name,
+						'firstname'          => explode( ' ', $rep_name )[0],
+						'type'               => 'representative',
+						'elo_standard'       => 'NC',
+						'elo_rapide'         => 'NC',
+						'elo_blitz'          => 'NC',
+						'associated_members' => array(), // On remplira après
+					);
 					$seen_names[ $rep_name ] = $rep_name;
 				}
-				
+
 				// On ajoute cet enfant à la liste des membres associés de ce parent
-				$reps[ $rep_name ]['associated_members'][] = [
+				$elo_std                                   = get_post_meta( $adh->ID, '_dame_elo_standard', true );
+				$elo_rap                                   = get_post_meta( $adh->ID, '_dame_elo_rapide', true );
+				$elo_blz                                   = get_post_meta( $adh->ID, '_dame_elo_blitz', true );
+				$reps[ $rep_name ]['associated_members'][] = array(
 					'firstname'          => $this->get_firstname( $adh->ID ),
 					'member_id'          => $adh->ID,
-					'elo_standard'       => get_post_meta( $adh->ID, '_dame_elo_standard', true ) ?: 'NC',
-					'elo_rapide'         => get_post_meta( $adh->ID, '_dame_elo_rapide', true ) ?: 'NC',
-					'elo_blitz'          => get_post_meta( $adh->ID, '_dame_elo_blitz', true ) ?: 'NC',
+					'elo_standard'       => ! empty( $elo_std ) ? $elo_std : 'NC',
+					'elo_rapide'         => ! empty( $elo_rap ) ? $elo_rap : 'NC',
+					'elo_blitz'          => ! empty( $elo_blz ) ? $elo_blz : 'NC',
 					'already_registered' => has_term( (int) get_option( 'dame_current_season_tag_id' ), 'dame_saison_adhesion', $adh->ID ),
-				];
+				);
 			}
 		}
 
@@ -217,18 +249,21 @@ class Identities {
 	 */
 	private function prepare_full_identity( \WP_Post $post, string $type, array $associated_adherents ): array {
 		$post_id = $post->ID;
-		return [
+		$elo_std = get_post_meta( $post_id, '_dame_elo_standard', true );
+		$elo_rap = get_post_meta( $post_id, '_dame_elo_rapide', true );
+		$elo_blz = get_post_meta( $post_id, '_dame_elo_blitz', true );
+		return array(
 			'id'                 => 'member_' . $post_id,
 			'name'               => get_the_title( $post_id ),
 			'firstname'          => $this->get_firstname( $post_id ),
 			'type'               => $type,
 			'member_id'          => $post_id,
-			'elo_standard'       => get_post_meta( $post_id, '_dame_elo_standard', true ) ?: 'NC',
-			'elo_rapide'         => get_post_meta( $post_id, '_dame_elo_rapide', true ) ?: 'NC',
-			'elo_blitz'          => get_post_meta( $post_id, '_dame_elo_blitz', true ) ?: 'NC',
+			'elo_standard'       => ! empty( $elo_std ) ? $elo_std : 'NC',
+			'elo_rapide'         => ! empty( $elo_rap ) ? $elo_rap : 'NC',
+			'elo_blitz'          => ! empty( $elo_blz ) ? $elo_blz : 'NC',
 			'associated_members' => $this->prepare_associated_members( $associated_adherents ),
 			'already_registered' => has_term( (int) get_option( 'dame_current_season_tag_id' ), 'dame_saison_adhesion', $post_id ),
-		];
+		);
 	}
 
 	/**
@@ -238,27 +273,33 @@ class Identities {
 	 * @return array<int, array<string, mixed>>
 	 */
 	private function prepare_associated_members( array $adherents ): array {
-		$list = [];
+		$list = array();
 		foreach ( $adherents as $adh ) {
-			$list[] = [
+			$elo_std = get_post_meta( $adh->ID, '_dame_elo_standard', true );
+			$elo_rap = get_post_meta( $adh->ID, '_dame_elo_rapide', true );
+			$elo_blz = get_post_meta( $adh->ID, '_dame_elo_blitz', true );
+			$list[]  = array(
 				'firstname'          => $this->get_firstname( $adh->ID ),
 				'member_id'          => $adh->ID,
-				'elo_standard'       => get_post_meta( $adh->ID, '_dame_elo_standard', true ) ?: 'NC',
-				'elo_rapide'         => get_post_meta( $adh->ID, '_dame_elo_rapide', true ) ?: 'NC',
-				'elo_blitz'          => get_post_meta( $adh->ID, '_dame_elo_blitz', true ) ?: 'NC',
+				'elo_standard'       => ! empty( $elo_std ) ? $elo_std : 'NC',
+				'elo_rapide'         => ! empty( $elo_rap ) ? $elo_rap : 'NC',
+				'elo_blitz'          => ! empty( $elo_blz ) ? $elo_blz : 'NC',
 				'already_registered' => has_term( (int) get_option( 'dame_current_season_tag_id' ), 'dame_saison_adhesion', $adh->ID ),
-			];
+			);
 		}
 		return $list;
 	}
 
 	/**
 	 * Gets the first name of an adherent.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return string
 	 */
 	private function get_firstname( int $post_id ): string {
 		$firstname = get_post_meta( $post_id, '_dame_first_name', true );
 		if ( empty( $firstname ) ) {
-			$parts = explode( ' ', get_the_title( $post_id ) );
+			$parts     = explode( ' ', get_the_title( $post_id ) );
 			$firstname = ( count( $parts ) > 1 ) ? implode( ' ', array_slice( $parts, 1 ) ) : $parts[0];
 		}
 		return (string) $firstname;

@@ -17,7 +17,7 @@ class Agenda {
 	 * Initialize the actions.
 	 */
 	public function init(): void {
-		add_action( 'admin_action_dame_duplicate_event', [ $this, 'duplicate_event' ] );
+		add_action( 'admin_action_dame_duplicate_event', array( $this, 'duplicate_event' ) );
 	}
 
 	/**
@@ -47,11 +47,11 @@ class Agenda {
 		$new_post_author = wp_get_current_user();
 
 		$new_post_args = array(
-			'post_author'    => $new_post_author->ID,
-			'post_content'   => $post->post_content,
-			'post_status'    => 'draft', // Set new post to draft
-			'post_title'     => $post->post_title . ' (Copie)',
-			'post_type'      => $post->post_type,
+			'post_author'  => $new_post_author->ID,
+			'post_content' => $post->post_content,
+			'post_status'  => 'draft', // Set new post to draft
+			'post_title'   => $post->post_title . ' (Copie)',
+			'post_type'    => $post->post_type,
 		);
 
 		// Temporarily remove the save hook to prevent it from firing with empty $_POST data.
@@ -73,13 +73,13 @@ class Agenda {
 		}
 
 		// Duplicate post meta (Bulk Insert for N+1 optimization).
-		$all_meta = get_post_meta( $post_id );
+		$all_meta     = get_post_meta( $post_id );
 		$keys_to_skip = array( '_dame_start_date', '_dame_end_date' );
 
 		if ( ! empty( $all_meta ) ) {
 			global $wpdb;
-			$meta_insert_values = [];
-			$meta_insert_placeholders = [];
+			$meta_insert_values       = array();
+			$meta_insert_placeholders = array();
 
 			foreach ( $all_meta as $meta_key => $meta_values ) {
 				// Skip protected meta, but allow our own '_dame_' meta.
@@ -94,9 +94,9 @@ class Agenda {
 				foreach ( $meta_values as $meta_value ) {
 					// get_post_meta returns an array of string values (even for serialized arrays).
 					// To correctly bulk insert, we insert them exactly as they are without re-serializing.
-					$meta_insert_values[] = $new_post_id;
-					$meta_insert_values[] = $meta_key;
-					$meta_insert_values[] = maybe_unserialize($meta_value) !== $meta_value ? $meta_value : maybe_serialize($meta_value);
+					$meta_insert_values[]       = $new_post_id;
+					$meta_insert_values[]       = $meta_key;
+					$meta_insert_values[]       = maybe_unserialize( $meta_value ) !== $meta_value ? $meta_value : maybe_serialize( $meta_value );
 					$meta_insert_placeholders[] = '(%d, %s, %s)';
 				}
 			}

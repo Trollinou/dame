@@ -17,7 +17,7 @@ class MessageReport {
 	 */
 	public function init(): void {
 
-		add_action( 'admin_head', [ $this, 'hide_menu_link' ] );
+		add_action( 'admin_head', array( $this, 'hide_menu_link' ) );
 	}
 
 
@@ -49,25 +49,29 @@ class MessageReport {
 
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'dame_message_opens';
-		
+
 		// 1. Get all recipients for this message
 		$recipients = $this->get_formatted_recipients( $message_id );
-		
+
 		// 2. Get unique opens count (by email hash)
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$unique_opens = (int) $wpdb->get_var( $wpdb->prepare(
-			"SELECT COUNT(DISTINCT email_hash) FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL",
-			$message_id
-		) );
+		$unique_opens = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(DISTINCT email_hash) FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL",
+				$message_id
+			)
+		);
 
 		// 3. Get all open data to mark individual recipients
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$opens_data = $wpdb->get_results( $wpdb->prepare(
-			"SELECT recipient_id, opened_at FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL",
-			$message_id
-		) );
+		$opens_data = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT recipient_id, opened_at FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL",
+				$message_id
+			)
+		);
 
-		$opened_recipients = [];
+		$opened_recipients = array();
 		foreach ( $opens_data as $open ) {
 			$opened_recipients[ (int) $open->recipient_id ] = $open->opened_at;
 		}
@@ -83,8 +87,10 @@ class MessageReport {
 				$total_targets = count( $recipients );
 				// Count how many have been sent (sent_at is NOT NULL)
 				$sent_count = 0;
-				foreach($recipients as $r) {
-					if (!empty($r['sent_at'])) $sent_count++;
+				foreach ( $recipients as $r ) {
+					if ( ! empty( $r['sent_at'] ) ) {
+						++$sent_count;
+					}
 				}
 				$rate = $total_targets > 0 ? round( ( $unique_opens / $total_targets ) * 100, 2 ) : 0;
 				?>
@@ -121,7 +127,7 @@ class MessageReport {
 								<td><?php echo esc_html( $name ); ?></td>
 								<td><?php echo esc_html( (string) $email ); ?></td>
 								<td>
-									<?php 
+									<?php
 									if ( ! empty( $sent_at ) ) {
 										echo esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $sent_at . ' UTC' ) ) );
 									} else {
@@ -132,9 +138,9 @@ class MessageReport {
 								<td>
 									<?php if ( ! empty( $opened_at ) ) : ?>
 										<span style="color: green; font-weight: bold;">
-											<?php 
+											<?php
 											$timestamp = strtotime( $opened_at . ' UTC' );
-											printf( esc_html__( 'Ouvert le %s', 'dame' ), wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp ) ); 
+											printf( esc_html__( 'Ouvert le %s', 'dame' ), wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp ) );
 											?>
 										</span>
 									<?php elseif ( ! empty( $sent_at ) ) : ?>
@@ -158,8 +164,8 @@ class MessageReport {
 
 	/**
 	 * Retrieves the list of recipients with strictly formatted names and sorted.
-	 * 
-	 * This method is cumulative: it looks for all posts (Adherents and Contacts) 
+	 *
+	 * This method is cumulative: it looks for all posts (Adherents and Contacts)
 	 * that have received this specific message.
 	 *
 	 * @param int $message_id The message ID.
@@ -175,12 +181,15 @@ class MessageReport {
 		$table_name = $wpdb->prefix . 'dame_message_opens';
 
 		// 1. Récupération des données brutes
-		$results = $wpdb->get_results( $wpdb->prepare(
-			"SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at 
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at 
 			FROM {$table_name} 
 			WHERE message_id = %d",
-			$message_id
-		), ARRAY_A );
+				$message_id
+			),
+			ARRAY_A
+		);
 
 		if ( empty( $results ) ) {
 			return array();
@@ -200,7 +209,7 @@ class MessageReport {
 					$results[ $key ]['name'] = \DAME\Core\Utils::generate_contact_title( $post_id );
 				}
 			}
-			
+
 			// Sécurité : si toujours vide, on met l'email pour éviter une ligne vide
 			if ( empty( $results[ $key ]['name'] ) ) {
 				$results[ $key ]['name'] = $row['email'];

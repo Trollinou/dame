@@ -12,12 +12,15 @@ namespace DAME\CPT;
  */
 class Message {
 
+	/**
+	 * Initialize hooks.
+	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register' ], 0 );
-		add_action( 'before_delete_post', [ $this, 'cleanup_open_data' ] );
-		add_action( 'admin_notices', [ $this, 'display_reset_notice' ] );
+		add_action( 'init', array( $this, 'register' ), 0 );
+		add_action( 'before_delete_post', array( $this, 'cleanup_open_data' ) );
+		add_action( 'admin_notices', array( $this, 'display_reset_notice' ) );
 		if ( is_admin() ) {
-			add_action( 'admin_init', [ $this, 'save_last_list_url' ] );
+			add_action( 'admin_init', array( $this, 'save_last_list_url' ) );
 		}
 	}
 
@@ -25,7 +28,8 @@ class Message {
 	 * Displays a success notice after a message send reset.
 	 */
 	public function display_reset_notice(): void {
-		if ( isset( $_GET['reset_done'] ) && '1' === $_GET['reset_done'] ) {
+		$reset_done = isset( $_GET['reset_done'] ) ? sanitize_text_field( wp_unslash( $_GET['reset_done'] ) ) : '';
+		if ( '1' === $reset_done ) {
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'L\'historique d\'envoi du message a été réinitialisé avec succès.', 'dame' ) . '</p></div>';
 		}
 	}
@@ -125,12 +129,13 @@ class Message {
 	 */
 	public function save_last_list_url(): void {
 		global $pagenow;
-		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'dame_message' === $_GET['post_type'] ) {
+		$post_type = isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '';
+		if ( 'edit.php' === $pagenow && 'dame_message' === $post_type ) {
 			$user_id = get_current_user_id();
 			if ( $user_id ) {
-				$url = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+				$url = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 				if ( $url ) {
-					$parsed = parse_url( $url );
+					$parsed     = wp_parse_url( $url );
 					$path_query = ( $parsed['path'] ?? '' ) . ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' );
 					update_user_meta( $user_id, 'dame_last_message_list_url', $path_query );
 				}

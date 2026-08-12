@@ -12,11 +12,11 @@ class Birthday {
 	 * Initialize hooks.
 	 */
 	public function init(): void {
-		add_action( 'save_post_adherent', [ self::class, 'clear_birthday_cache' ] );
-		add_action( 'trashed_post', [ self::class, 'clear_birthday_cache' ] );
-		add_action( 'untrashed_post', [ self::class, 'clear_birthday_cache' ] );
-		add_action( 'deleted_post', [ self::class, 'clear_birthday_cache' ] );
-		add_action( 'update_option_dame_current_season_tag_id', [ self::class, 'clear_birthday_cache' ] );
+		add_action( 'save_post_adherent', array( self::class, 'clear_birthday_cache' ) );
+		add_action( 'trashed_post', array( self::class, 'clear_birthday_cache' ) );
+		add_action( 'untrashed_post', array( self::class, 'clear_birthday_cache' ) );
+		add_action( 'deleted_post', array( self::class, 'clear_birthday_cache' ) );
+		add_action( 'update_option_dame_current_season_tag_id', array( self::class, 'clear_birthday_cache' ) );
 	}
 
 	/**
@@ -27,17 +27,17 @@ class Birthday {
 	private function get_filtered_season_ids(): array {
 		$md = wp_date( 'm-d' );
 		if ( $md >= '07-01' && $md <= '10-31' ) {
-			$year = (int) wp_date( 'Y' );
-			$season_ids = [];
+			$year       = (int) wp_date( 'Y' );
+			$season_ids = array();
 
 			$season_1_name = sprintf( 'Saison %d/%d', $year - 1, $year );
-			$term_1 = get_term_by( 'name', $season_1_name, 'dame_saison_adhesion' );
+			$term_1        = get_term_by( 'name', $season_1_name, 'dame_saison_adhesion' );
 			if ( $term_1 ) {
 				$season_ids[] = (int) $term_1->term_id;
 			}
 
 			$season_2_name = sprintf( 'Saison %d/%d', $year, $year + 1 );
-			$term_2 = get_term_by( 'name', $season_2_name, 'dame_saison_adhesion' );
+			$term_2        = get_term_by( 'name', $season_2_name, 'dame_saison_adhesion' );
 			if ( $term_2 ) {
 				$season_ids[] = (int) $term_2->term_id;
 			}
@@ -48,7 +48,7 @@ class Birthday {
 		}
 
 		$season_id = (int) get_option( 'dame_current_season_tag_id' );
-		return $season_id ? [ $season_id ] : [];
+		return $season_id ? array( $season_id ) : array();
 	}
 
 	/**
@@ -58,38 +58,38 @@ class Birthday {
 	 */
 	public function get_today_birthdays(): array {
 		$season_ids = $this->get_filtered_season_ids();
-		$today_str = wp_date( 'Y-m-d' );
-		$cache_key = 'dame_today_birthdays_' . $today_str . '_' . implode( '_', $season_ids );
+		$today_str  = wp_date( 'Y-m-d' );
+		$cache_key  = 'dame_today_birthdays_' . $today_str . '_' . implode( '_', $season_ids );
 
 		$birthdays = get_transient( $cache_key );
 
 		if ( false === $birthdays ) {
-			$args = [
+			$args = array(
 				'post_type'      => 'adherent',
 				'posts_per_page' => -1,
-				'meta_query'     => [
-					[
+				'meta_query'     => array(
+					array(
 						'key'     => '_dame_birth_date',
 						'value'   => '-' . wp_date( 'm-d' ) . '$',
 						'compare' => 'REGEXP',
-					],
-				],
-			];
+					),
+				),
+			);
 
 			if ( ! empty( $season_ids ) ) {
-				$args['tax_query'] = [
-					[
+				$args['tax_query'] = array(
+					array(
 						'taxonomy' => 'dame_saison_adhesion',
 						'field'    => 'term_id',
 						'terms'    => $season_ids,
 						'operator' => 'IN',
-					],
-				];
+					),
+				);
 			}
 
-			$query = new WP_Query( $args );
-			$birthdays = [];
-			$seen_ids  = [];
+			$query     = new WP_Query( $args );
+			$birthdays = array();
+			$seen_ids  = array();
 
 			foreach ( $query->posts as $post ) {
 				if ( in_array( $post->ID, $seen_ids, true ) ) {
@@ -98,7 +98,7 @@ class Birthday {
 				$seen_ids[] = $post->ID;
 
 				$birth_date = get_post_meta( $post->ID, '_dame_birth_date', true );
-				$age = 0;
+				$age        = 0;
 				if ( ! empty( $birth_date ) ) {
 					try {
 						$date = new DateTime( (string) $birth_date );
@@ -109,17 +109,17 @@ class Birthday {
 					}
 				}
 
-				$birthdays[] = [
+				$birthdays[] = array(
 					'id'   => $post->ID,
 					'name' => $post->post_title,
 					'age'  => $age,
-				];
+				);
 			}
 
 			set_transient( $cache_key, $birthdays, DAY_IN_SECONDS );
 		}
 
-		return is_array( $birthdays ) ? $birthdays : [];
+		return is_array( $birthdays ) ? $birthdays : array();
 	}
 
 	/**
@@ -130,37 +130,37 @@ class Birthday {
 	 */
 	public function get_upcoming_birthdays( int $limit = 10 ): array {
 		$season_ids = $this->get_filtered_season_ids();
-		$today_str = wp_date( 'Y-m-d' );
-		$cache_key = 'dame_upcoming_birthdays_' . $today_str . '_' . implode( '_', $season_ids );
+		$today_str  = wp_date( 'Y-m-d' );
+		$cache_key  = 'dame_upcoming_birthdays_' . $today_str . '_' . implode( '_', $season_ids );
 
 		$upcoming = get_transient( $cache_key );
 
 		if ( false === $upcoming ) {
-			$args = [
+			$args = array(
 				'post_type'      => 'adherent',
 				'posts_per_page' => -1,
 				'fields'         => 'ids',
-			];
+			);
 
 			if ( ! empty( $season_ids ) ) {
-				$args['tax_query'] = [
-					[
+				$args['tax_query'] = array(
+					array(
 						'taxonomy' => 'dame_saison_adhesion',
 						'field'    => 'term_id',
 						'terms'    => $season_ids,
 						'operator' => 'IN',
-					],
-				];
+					),
+				);
 			}
 
-			$ids       = get_posts( $args );
+			$ids = get_posts( $args );
 			if ( is_array( $ids ) ) {
 				$ids = array_unique( $ids );
 			} else {
-				$ids = [];
+				$ids = array();
 			}
-			$today     = new DateTime( 'today', new \DateTimeZone( 'UTC' ) );
-			$upcoming  = [];
+			$today    = new DateTime( 'today', new \DateTimeZone( 'UTC' ) );
+			$upcoming = array();
 
 			foreach ( $ids as $id ) {
 				$birth_date_str = get_post_meta( $id, '_dame_birth_date', true );
@@ -169,7 +169,7 @@ class Birthday {
 				}
 
 				try {
-					$birth_date = new DateTime( (string) $birth_date_str, new \DateTimeZone( 'UTC' ) );
+					$birth_date         = new DateTime( (string) $birth_date_str, new \DateTimeZone( 'UTC' ) );
 					$this_year_birthday = new DateTime( $today->format( 'Y' ) . '-' . $birth_date->format( 'm-d' ), new \DateTimeZone( 'UTC' ) );
 
 					if ( $this_year_birthday < $today ) {
@@ -182,30 +182,33 @@ class Birthday {
 					$days_until = $today->diff( $next_birthday )->days;
 					$age        = (int) $next_birthday->format( 'Y' ) - (int) $birth_date->format( 'Y' );
 
-					$upcoming[] = [
+					$upcoming[] = array(
 						'id'            => $id,
 						'name'          => get_the_title( $id ),
 						'date'          => $next_birthday->format( 'Y-m-d' ),
 						'days_until'    => $days_until,
 						'next_age'      => $age,
 						'original_date' => $birth_date->format( 'm-d' ),
-					];
+					);
 				} catch ( \Exception $e ) {
 					continue;
 				}
 			}
 
-			usort( $upcoming, function( $a, $b ) {
-				if ( $a['days_until'] === $b['days_until'] ) {
-					return strcmp( $a['original_date'], $b['original_date'] );
+			usort(
+				$upcoming,
+				function ( $a, $b ) {
+					if ( $a['days_until'] === $b['days_until'] ) {
+						return strcmp( $a['original_date'], $b['original_date'] );
+					}
+					return $a['days_until'] <=> $b['days_until'];
 				}
-				return $a['days_until'] <=> $b['days_until'];
-			} );
+			);
 
 			set_transient( $cache_key, $upcoming, DAY_IN_SECONDS );
 		}
 
-		return array_slice( is_array( $upcoming ) ? $upcoming : [], 0, $limit );
+		return array_slice( is_array( $upcoming ) ? $upcoming : array(), 0, $limit );
 	}
 
 	/**
@@ -227,13 +230,26 @@ class Birthday {
 
 	public function send_wishes(): void {
 		$options = get_option( 'dame_options' );
-		if ( empty( $options['birthday_emails_enabled'] ) ) return;
+		if ( empty( $options['birthday_emails_enabled'] ) ) {
+			return;
+		}
 
 		$article_slug = $options['birthday_article_slug'] ?? '';
-		if ( empty( $article_slug ) ) return;
+		if ( empty( $article_slug ) ) {
+			return;
+		}
 
-		$posts = get_posts( [ 'name' => $article_slug, 'post_type' => 'post', 'post_status' => [ 'publish', 'private' ], 'posts_per_page' => 1 ] );
-		if ( ! $posts ) return;
+		$posts = get_posts(
+			array(
+				'name'           => $article_slug,
+				'post_type'      => 'post',
+				'post_status'    => array( 'publish', 'private' ),
+				'posts_per_page' => 1,
+			)
+		);
+		if ( ! $posts ) {
+			return;
+		}
 		$article = $posts[0];
 
 		// Season Logic
@@ -243,15 +259,31 @@ class Birthday {
 		}
 
 		// Query Adherents
-		$query = new WP_Query( [
-			'post_type' => 'adherent', 'posts_per_page' => -1,
-			'meta_query' => [ [ 'key' => '_dame_birth_date', 'value' => '-' . wp_date( 'm-d' ) . '$', 'compare' => 'REGEXP' ] ],
-			'tax_query' => [ [ 'taxonomy' => 'dame_saison_adhesion', 'field' => 'term_id', 'terms' => $season_ids, 'operator' => 'IN' ] ]
-		] );
+		$query = new WP_Query(
+			array(
+				'post_type'      => 'adherent',
+				'posts_per_page' => -1,
+				'meta_query'     => array(
+					array(
+						'key'     => '_dame_birth_date',
+						'value'   => '-' . wp_date( 'm-d' ) . '$',
+						'compare' => 'REGEXP',
+					),
+				),
+				'tax_query'      => array(
+					array(
+						'taxonomy' => 'dame_saison_adhesion',
+						'field'    => 'term_id',
+						'terms'    => $season_ids,
+						'operator' => 'IN',
+					),
+				),
+			)
+		);
 
-		$sent_list = [];
+		$sent_list    = array();
 		$sender_email = $options['sender_email'] ?? get_option( 'admin_email' );
-		$headers = [ 'Content-Type: text/html; charset=UTF-8', 'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>' ];
+		$headers      = array( 'Content-Type: text/html; charset=UTF-8', 'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>' );
 
 		while ( $query->have_posts() ) {
 			$query->the_post();
@@ -261,26 +293,31 @@ class Birthday {
 				$nom = get_post_meta( $pid, '_dame_birth_name', true );
 			}
 			$prenom = get_post_meta( $pid, '_dame_first_name', true );
-			$birth = get_post_meta( $pid, '_dame_birth_date', true );
-			$sexe  = get_post_meta( $pid, '_dame_sexe', true );
+			$birth  = get_post_meta( $pid, '_dame_birth_date', true );
+			$sexe   = get_post_meta( $pid, '_dame_sexe', true );
 
-			if ( empty( $prenom ) || empty( $birth ) ) continue;
+			if ( empty( $prenom ) || empty( $birth ) ) {
+				continue;
+			}
 
 			try {
 				$age = ( new DateTime( $birth ) )->diff( new DateTime() )->y;
-			} catch ( \Exception $e ) { continue; }
+			} catch ( \Exception $e ) {
+				continue; }
 
 			$civilite = 'Monsieur';
 			if ( 'Féminin' === $sexe ) {
 				$civilite = 'Madame';
 			}
 
-			$subject = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ], [ (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age, (string) $civilite ], $article->post_title );
-			$content = str_replace( [ '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ], [ (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age, (string) $civilite ], apply_filters( 'the_content', $article->post_content ) );
+			$subject = str_replace( array( '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ), array( (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age, (string) $civilite ), $article->post_title );
+			$content = str_replace( array( '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ), array( (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age, (string) $civilite ), apply_filters( 'the_content', $article->post_content ) );
 
 			$emails = \DAME\Core\Utils::get_emails_for_adherent( $pid );
 			if ( $emails ) {
-				foreach ( $emails as $email ) wp_mail( $email, $subject, $content, $headers );
+				foreach ( $emails as $email ) {
+					wp_mail( $email, $subject, $content, $headers );
+				}
 				$sent_list[] = "$prenom $nom ($age ans)";
 			}
 		}
@@ -288,7 +325,7 @@ class Birthday {
 
 		// Report to Admin
 		if ( ! empty( $sent_list ) ) {
-			wp_mail( $sender_email, "Rapport Anniversaires", "Joyeux anniversaire envoyé à :\n" . implode( "\n", $sent_list ), $headers );
+			wp_mail( $sender_email, 'Rapport Anniversaires', "Joyeux anniversaire envoyé à :\n" . implode( "\n", $sent_list ), $headers );
 		}
 	}
 }

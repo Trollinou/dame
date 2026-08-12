@@ -15,7 +15,7 @@ use DAME\CPT\Agenda;
 use DAME\CPT\ICalFeed;
 use DAME\CPT\Benevolat;
 use DAME\Core\Roles;
-use DAME\Core\Upgrader; 
+use DAME\Core\Upgrader;
 use DAME\API\Tracker;
 use DAME\Services\Mailer;
 use DAME\Services\BatchSender;
@@ -105,7 +105,7 @@ class Plugin {
 		// Gestion des montées de version et migrations
 		$upgrader = new Upgrader();
 		$upgrader->init();
-		
+
 		// Initialize CPTs.
 		$adherent_cpt = new Adherent();
 		$adherent_cpt->init();
@@ -150,7 +150,6 @@ class Plugin {
 
 		$pre_inscription_rest = new PreInscription_REST();
 		$pre_inscription_rest->init();
-
 
 		// Initialize API.
 		$tracker = new Tracker();
@@ -252,7 +251,6 @@ class Plugin {
 			$ffe_import_page = new ImportFFE();
 			$ffe_import_page->init();
 
-
 			$message_columns = new MessageColumns();
 			$message_columns->init();
 
@@ -287,10 +285,8 @@ class Plugin {
 			$agenda_actions = new AgendaActions();
 			$agenda_actions->init();
 
-
 			// Initialisation des pages de sauvegardes manuelles
 
 		}
 	}
-
 }
