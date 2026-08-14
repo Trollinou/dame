@@ -15,6 +15,9 @@ use DAME\Admin\Pages\MessageReport;
 
 class Menu {
 
+	/**
+	 * Initialize admin menu hooks.
+	 */
 	public function init(): void {
 		add_action( 'admin_menu', array( $this, 'add_menus' ), 10 );
 		add_action( 'admin_menu', array( $this, 'reorder_dame_submenu' ), 999 );
@@ -25,6 +28,9 @@ class Menu {
 		( new Mailing() )->init();
 	}
 
+	/**
+	 * Add admin menu pages.
+	 */
 	public function add_menus(): void {
 		// 1. Menu Parent & Tableau de bord (slug: dame-admin)
 		add_menu_page(
@@ -88,6 +94,9 @@ class Menu {
 		);
 	}
 
+	/**
+	 * Reorder submenus under the main DAME menu.
+	 */
 	public function reorder_dame_submenu(): void {
 		global $submenu;
 
@@ -149,9 +158,13 @@ class Menu {
 			$reordered[] = $item;
 		}
 
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		$submenu['dame-admin'] = $reordered;
 	}
 
+	/**
+	 * Render the main DAME admin dashboard page.
+	 */
 	public function render_dashboard(): void {
 		// 1. Saison en cours
 		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
@@ -464,14 +477,21 @@ class Menu {
 		<?php
 	}
 
+	/**
+	 * Highlight the parent menu for custom taxonomies and subpages.
+	 *
+	 * @param string $parent_file The parent file slug.
+	 * @return string The modified parent file.
+	 */
 	public function highlight_parent_menu( string $parent_file ): string {
 		global $current_screen;
 		$dame_taxonomies = array( 'dame_saison_adhesion', 'dame_group', 'dame_agenda_category', 'dame_contact_type' );
 
-		if ( isset( $current_screen->taxonomy ) && in_array( $current_screen->taxonomy, $dame_taxonomies ) ) {
+		if ( isset( $current_screen->taxonomy ) && in_array( $current_screen->taxonomy, $dame_taxonomies, true ) ) {
 			return 'dame-admin';
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['page'] ) && $_GET['page'] === 'dame-message-report' ) {
 			return 'dame-admin';
 		}
@@ -479,6 +499,12 @@ class Menu {
 		return $parent_file;
 	}
 
+	/**
+	 * Highlight the active submenu item for custom taxonomies and subpages.
+	 *
+	 * @param string|null $submenu_file The active submenu file.
+	 * @return string|null The modified submenu file.
+	 */
 	public function highlight_submenu( ?string $submenu_file ): ?string {
 		global $current_screen;
 
@@ -497,6 +523,7 @@ class Menu {
 			}
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['page'] ) && $_GET['page'] === 'dame-message-report' ) {
 			return 'edit.php?post_type=dame_message';
 		}

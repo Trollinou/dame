@@ -150,7 +150,7 @@ class Agenda {
 
 		// --- Category Filter (existing) ---
 		$taxonomy          = 'dame_agenda_category';
-		$selected_category = $_GET[ $taxonomy ] ?? '';
+		$selected_category = isset( $_GET[ $taxonomy ] ) ? sanitize_text_field( wp_unslash( $_GET[ $taxonomy ] ) ) : '';
 		$category_terms    = get_terms(
 			array(
 				'taxonomy'   => $taxonomy,
@@ -193,6 +193,7 @@ class Agenda {
 			: $defaults['end_year'];
 
 		// Get all distinct years from event start and end dates
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$raw_years = $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT DISTINCT YEAR(meta_value) FROM {$wpdb->postmeta} WHERE meta_key IN (%s, %s) AND meta_value != '' AND meta_value IS NOT NULL",
@@ -224,25 +225,25 @@ class Agenda {
 
 		// Render the dropdowns.
 		?>
-		<label for="dame_start_month" class="screen-reader-text"><?php _e( 'Mois de début', 'dame' ); ?></label>
+		<label for="dame_start_month" class="screen-reader-text"><?php esc_html_e( 'Mois de début', 'dame' ); ?></label>
 		<select name="dame_start_month" id="dame_start_month">
 			<?php foreach ( $months as $month_val => $month_name ) : ?>
 				<option value="<?php echo esc_attr( $month_val ); ?>" <?php selected( $start_month, $month_val ); ?>><?php echo esc_html( $month_name ); ?></option>
 			<?php endforeach; ?>
 		</select>
-		<label for="dame_start_year" class="screen-reader-text"><?php _e( 'Année de début', 'dame' ); ?></label>
+		<label for="dame_start_year" class="screen-reader-text"><?php esc_html_e( 'Année de début', 'dame' ); ?></label>
 		<select name="dame_start_year" id="dame_start_year">
 			<?php foreach ( $years as $year ) : ?>
 				<option value="<?php echo esc_attr( (string) $year ); ?>" <?php selected( (int) $start_year, (int) $year ); ?>><?php echo esc_html( (string) $year ); ?></option>
 			<?php endforeach; ?>
 		</select>
-		<label for="dame_end_month" class="screen-reader-text"><?php _e( 'Mois de fin', 'dame' ); ?></label>
+		<label for="dame_end_month" class="screen-reader-text"><?php esc_html_e( 'Mois de fin', 'dame' ); ?></label>
 		<select name="dame_end_month" id="dame_end_month">
 			<?php foreach ( $months as $month_val => $month_name ) : ?>
 				<option value="<?php echo esc_attr( $month_val ); ?>" <?php selected( $end_month, $month_val ); ?>><?php echo esc_html( $month_name ); ?></option>
 			<?php endforeach; ?>
 		</select>
-		<label for="dame_end_year" class="screen-reader-text"><?php _e( 'Année de fin', 'dame' ); ?></label>
+		<label for="dame_end_year" class="screen-reader-text"><?php esc_html_e( 'Année de fin', 'dame' ); ?></label>
 		<select name="dame_end_year" id="dame_end_year">
 			<?php foreach ( $years as $year ) : ?>
 				<option value="<?php echo esc_attr( (string) $year ); ?>" <?php selected( (int) $end_year, (int) $year ); ?>><?php echo esc_html( (string) $year ); ?></option>
@@ -354,6 +355,7 @@ class Agenda {
 		$default_start_month = wp_date( 'm' );
 		$default_start_year  = wp_date( 'Y' );
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$max_date = $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT MAX(pm.meta_value)

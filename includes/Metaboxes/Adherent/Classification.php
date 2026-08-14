@@ -68,26 +68,26 @@ class Classification {
 		?>
 		<div style="display: flex; gap: 10px; margin-bottom: 12px;">
 			<div style="flex: 1.5;">
-				<label for="dame_license_number"><strong><?php _e( 'Numéro de licence', 'dame' ); ?></strong></label>
+				<label for="dame_license_number"><strong><?php esc_html_e( 'Numéro de licence', 'dame' ); ?></strong></label>
 				<input type="text" id="dame_license_number" name="dame_license_number" value="<?php echo esc_attr( $license_number ); ?>" style="width:100%;" placeholder="A12345" pattern="[A-Z][0-9]{5}" />
 			</div>
 			<div style="flex: 1;">
-				<label for="dame_fide_id"><strong><?php _e( 'ID FIDE', 'dame' ); ?></strong></label>
+				<label for="dame_fide_id"><strong><?php esc_html_e( 'ID FIDE', 'dame' ); ?></strong></label>
 				<input type="text" id="dame_fide_id" value="<?php echo esc_attr( $fide_id ?: '' ); ?>" style="width:100%;" readonly />
 			</div>
 		</div>
 
 		<div style="display: flex; gap: 10px; margin-bottom: 12px;">
 			<div style="flex: 1;">
-				<label for="dame_elo_standard"><strong><?php _e( 'ELO Std', 'dame' ); ?></strong></label>
+				<label for="dame_elo_standard"><strong><?php esc_html_e( 'ELO Std', 'dame' ); ?></strong></label>
 				<input type="text" id="dame_elo_standard" value="<?php echo esc_attr( $elo_standard ); ?>" style="width:100%;" readonly />
 			</div>
 			<div style="flex: 1;">
-				<label for="dame_elo_rapide"><strong><?php _e( 'ELO Rap', 'dame' ); ?></strong></label>
+				<label for="dame_elo_rapide"><strong><?php esc_html_e( 'ELO Rap', 'dame' ); ?></strong></label>
 				<input type="text" id="dame_elo_rapide" value="<?php echo esc_attr( $elo_rapide ); ?>" style="width:100%;" readonly />
 			</div>
 			<div style="flex: 1;">
-				<label for="dame_elo_blitz"><strong><?php _e( 'ELO Blz', 'dame' ); ?></strong></label>
+				<label for="dame_elo_blitz"><strong><?php esc_html_e( 'ELO Blz', 'dame' ); ?></strong></label>
 				<input type="text" id="dame_elo_blitz" value="<?php echo esc_attr( $elo_blitz ); ?>" style="width:100%;" readonly />
 			</div>
 		</div>
@@ -110,15 +110,15 @@ class Classification {
 		echo '</p>';
 		?>
 		<p>
-			<label><strong><?php _e( 'Type de licence', 'dame' ); ?></strong></label><br>
-			<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="A" <?php checked( $license_type, 'A' ); ?> /> <?php _e( 'Licence A (Cours + Compétition)', 'dame' ); ?></label>
+			<label><strong><?php esc_html_e( 'Type de licence', 'dame' ); ?></strong></label><br>
+			<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="A" <?php checked( $license_type, 'A' ); ?> /> <?php esc_html_e( 'Licence A (Cours + Compétition)', 'dame' ); ?></label>
 			<br>
-			<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="B" <?php checked( $license_type, 'B' ); ?> /> <?php _e( 'Licence B (Jeu libre)', 'dame' ); ?></label>
+			<label style="margin-right: 15px;"><input type="radio" name="dame_license_type" value="B" <?php checked( $license_type, 'B' ); ?> /> <?php esc_html_e( 'Licence B (Jeu libre)', 'dame' ); ?></label>
 			<br>
-			<label><input type="radio" name="dame_license_type" value="Non précisé" <?php checked( $license_type, 'Non précisé' ); ?> /> <?php _e( 'Non précisé', 'dame' ); ?></label>
+			<label><input type="radio" name="dame_license_type" value="Non précisé" <?php checked( $license_type, 'Non précisé' ); ?> /> <?php esc_html_e( 'Non précisé', 'dame' ); ?></label>
 		</p>
 		<p>
-			<label for="dame_health_document"><strong><?php _e( 'Document de santé', 'dame' ); ?></strong></label>
+			<label for="dame_health_document"><strong><?php esc_html_e( 'Document de santé', 'dame' ); ?></strong></label>
 			<select id="dame_health_document" name="dame_health_document" style="width:100%;">
 				<?php
 				$health_doc_options = \DAME\Services\Data_Provider::get_health_document_options();
@@ -130,7 +130,7 @@ class Classification {
 			</select>
 		</p>
 		<p>
-			<label for="dame_adherent_honorabilite"><strong><?php _e( 'Contrôle d\'honorabilité', 'dame' ); ?></strong></label>
+			<label for="dame_adherent_honorabilite"><strong><?php esc_html_e( 'Contrôle d\'honorabilité', 'dame' ); ?></strong></label>
 			<select id="dame_adherent_honorabilite" name="dame_adherent_honorabilite" style="width:100%;">
 				<?php
 				$honorabilite_options  = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
@@ -143,7 +143,7 @@ class Classification {
 		</p>
 		<hr>
 		<p>
-			<label for="dame_arbitre_level"><strong><?php _e( 'Niveau d\'arbitre', 'dame' ); ?></strong></label>
+			<label for="dame_arbitre_level"><strong><?php esc_html_e( 'Niveau d\'arbitre', 'dame' ); ?></strong></label>
 			<select id="dame_arbitre_level" name="dame_arbitre_level" style="width:100%;">
 				<?php foreach ( $arbitre_options as $option ) : ?>
 					<option value="<?php echo esc_attr( $option ); ?>" <?php selected( $arbitre_level, $option ); ?>><?php echo esc_html( $option ); ?></option>
@@ -151,7 +151,7 @@ class Classification {
 			</select>
 		</p>
 		<hr>
-		<p><strong><?php _e( 'Lier à un compte WordPress', 'dame' ); ?></strong></p>
+		<p><strong><?php esc_html_e( 'Lier à un compte WordPress', 'dame' ); ?></strong></p>
 		<?php
 		// Exclude users who are already linked to another adherent.
 		$exclude_users = function_exists( 'dame_get_assigned_user_ids' ) ? dame_get_assigned_user_ids( $post->ID ) : array();
@@ -187,15 +187,18 @@ class Classification {
 	 * @param int $post_id Post ID.
 	 */
 	public function save( $post_id ): void {
-		if ( ! isset( $_POST['dame_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_metabox_nonce'], 'dame_save_adherent_meta' ) ) {
+		$nonce = isset( $_POST['dame_metabox_nonce'] ) ? sanitize_key( wp_unslash( $_POST['dame_metabox_nonce'] ) ) : '';
+		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'dame_save_adherent_meta' ) ) {
 			return;
 		}
 
-		$errors = array();
-		if ( empty( $_POST['dame_license_type'] ) ) {
+		$errors       = array();
+		$license_type = isset( $_POST['dame_license_type'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_license_type'] ) ) : '';
+		if ( empty( $license_type ) ) {
 			$errors[] = __( 'Le type de licence est obligatoire.', 'dame' );
 		}
-		if ( ! empty( $_POST['dame_license_number'] ) && ! preg_match( '/^[A-Z][0-9]{5}$/', $_POST['dame_license_number'] ) ) {
+		$license_number = isset( $_POST['dame_license_number'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_license_number'] ) ) : '';
+		if ( ! empty( $license_number ) && ! preg_match( '/^[A-Z][0-9]{5}$/', $license_number ) ) {
 			$errors[] = __( 'Le format du numéro de licence est invalide. Il doit être une lettre majuscule suivie de 5 chiffres (ex: A12345).', 'dame' );
 		}
 
@@ -212,7 +215,7 @@ class Classification {
 			$post_data_to_save = get_transient( 'dame_post_data_' . $post_id ) ?: array();
 			foreach ( $_POST as $key => $value ) {
 				if ( strpos( $key, 'dame_' ) === 0 ) {
-					$post_data_to_save[ $key ] = wp_unslash( $value );
+					$post_data_to_save[ $key ] = sanitize_text_field( wp_unslash( $value ) );
 				}
 			}
 			set_transient( 'dame_post_data_' . $post_id, $post_data_to_save, 60 );
@@ -230,7 +233,9 @@ class Classification {
 
 		foreach ( $fields as $field_name => $sanitize_callback ) {
 			if ( isset( $_POST[ $field_name ] ) ) {
-				$value = call_user_func( $sanitize_callback, wp_unslash( $_POST[ $field_name ] ) );
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized dynamically below via $sanitize_callback.
+				$raw_input = wp_unslash( $_POST[ $field_name ] );
+				$value     = call_user_func( $sanitize_callback, $raw_input );
 				update_post_meta( $post_id, '_' . $field_name, $value );
 			}
 		}

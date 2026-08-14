@@ -134,11 +134,11 @@ class Message {
 		$new_post_id = wp_insert_post( $new_post_args );
 
 		if ( is_wp_error( $new_post_id ) ) {
-			wp_die( __( 'Erreur lors de la création du nouveau message : ', 'dame' ) . esc_html( $new_post_id->get_error_message() ) );
+			wp_die( esc_html__( 'Erreur lors de la création du nouveau message : ', 'dame' ) . esc_html( $new_post_id->get_error_message() ) );
 		}
 
 		// Redirect to the edit screen of the new post.
-		wp_redirect( admin_url( 'post.php?action=edit&post=' . $new_post_id ) );
+		wp_safe_redirect( admin_url( 'post.php?action=edit&post=' . $new_post_id ) );
 		exit;
 	}
 
@@ -173,7 +173,7 @@ class Message {
 		$new_post_id = wp_insert_post( $new_post_args );
 
 		if ( is_wp_error( $new_post_id ) ) {
-			wp_die( __( 'Erreur lors de la création de l\'article : ', 'dame' ) . esc_html( $new_post_id->get_error_message() ) );
+			wp_die( esc_html__( 'Erreur lors de la création de l\'article : ', 'dame' ) . esc_html( $new_post_id->get_error_message() ) );
 		}
 
 		// Suppression des catégories par défaut si nécessaire pour respecter "aucune catégorie n'est positionné"
@@ -181,7 +181,7 @@ class Message {
 		wp_set_post_categories( $new_post_id, array() );
 
 		// Redirect to the edit screen of the new article.
-		wp_redirect( admin_url( 'post.php?action=edit&post=' . $new_post_id ) );
+		wp_safe_redirect( admin_url( 'post.php?action=edit&post=' . $new_post_id ) );
 		exit;
 	}
 
@@ -214,7 +214,7 @@ class Message {
 
 		// 2. Purge global recipients history for this message (on adherents and contacts)
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->delete(
 			$wpdb->postmeta,
 			array(
@@ -225,7 +225,7 @@ class Message {
 		);
 
 		// Also purge the individual send dates
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->delete(
 			$wpdb->postmeta,
 			array( 'meta_key' => "_dame_message_{$post_id}_sent_at" ),
@@ -234,7 +234,7 @@ class Message {
 
 		// 3. Purge tracking data (opens)
 		$table_opens = $wpdb->prefix . 'dame_message_opens';
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->delete(
 			$table_opens,
 			array( 'message_id' => $post_id ),
@@ -242,7 +242,7 @@ class Message {
 		);
 
 		// Redirect back with success message.
-		wp_redirect( admin_url( 'edit.php?post_type=dame_message&reset_done=1' ) );
+		wp_safe_redirect( admin_url( 'edit.php?post_type=dame_message&reset_done=1' ) );
 		exit;
 	}
 
@@ -288,7 +288,7 @@ class Message {
 		update_post_meta( $post_id, '_dame_message_status', 'sent' );
 		update_post_meta( $post_id, '_dame_scheduled_batches_processed', $total );
 
-		wp_redirect( admin_url( 'edit.php?post_type=dame_message' ) );
+		wp_safe_redirect( admin_url( 'edit.php?post_type=dame_message' ) );
 		exit;
 	}
 
@@ -300,13 +300,18 @@ class Message {
 	 * @return WP_Post The validated message post.
 	 */
 	private function get_verified_post( string $nonce_action, $capabilities = 'edit_dame_messages' ): WP_Post {
-		if ( ! ( isset( $_GET['post'] ) || isset( $_POST['post'] ) ) || ( ! isset( $_GET['_wpnonce'] ) ) ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
+		if ( ! ( isset( $_GET['post'] ) || isset( $_POST['post'] ) ) || empty( $nonce ) ) {
 			wp_die( esc_html__( 'Données manquantes.', 'dame' ) );
 		}
 
-		$post_id = ( isset( $_GET['post'] ) ? absint( $_GET['post'] ) : absint( $_POST['post'] ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$raw_post = isset( $_GET['post'] ) ? wp_unslash( $_GET['post'] ) : ( isset( $_POST['post'] ) ? wp_unslash( $_POST['post'] ) : 0 ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$post_id  = absint( $raw_post );
 
-		if ( ! wp_verify_nonce( (string) $_REQUEST['_wpnonce'], $nonce_action . '_' . $post_id ) ) {
+		if ( ! wp_verify_nonce( $nonce, $nonce_action . '_' . $post_id ) ) {
 			wp_die( esc_html__( 'Vérification de sécurité échouée.', 'dame' ) );
 		}
 

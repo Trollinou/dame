@@ -194,10 +194,7 @@ class PDF_Generator {
 		$adherent_birth_date_formatted = mb_convert_encoding( wp_date( 'd/m/Y', strtotime( $birth_date_str ), new \DateTimeZone( 'UTC' ) ), 'ISO-8859-1', 'UTF-8' );
 		$adherent_city                 = mb_convert_encoding( $city, 'ISO-8859-1', 'UTF-8' );
 		$current_date                  = wp_date( 'd/m/Y' );
-		$rl1_full_name                 = '';
-		if ( ! empty( $rl1_first_name ) && ! empty( $rl1_last_name ) ) {
-			$rl1_full_name = mb_convert_encoding( \DAME\Core\Utils::format_lastname( (string) $rl1_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $rl1_first_name ), 'ISO-8859-1', 'UTF-8' );
-		}
+		$rl1_full_name                 = mb_convert_encoding( \DAME\Core\Utils::format_lastname( (string) $rl1_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $rl1_first_name ), 'ISO-8859-1', 'UTF-8' );
 
 		// 5. Generate PDF
 		$pdf = new Fpdi();
@@ -220,10 +217,8 @@ class PDF_Generator {
 		$pdf->SetFont( 'Helvetica', '', 12 );
 		$pdf->SetTextColor( 0, 0, 0 );
 
-		if ( ! empty( $rl1_full_name ) ) {
-			$pdf->SetXY( 50, 72 );
-			$pdf->Write( 0, $rl1_full_name );
-		}
+		$pdf->SetXY( 50, 72 );
+		$pdf->Write( 0, $rl1_full_name );
 
 		$pdf->SetXY( 88, 88 );
 		$pdf->Write( 0, $adherent_full_name );
@@ -238,14 +233,11 @@ class PDF_Generator {
 		$pdf->Write( 0, $current_date );
 
 		// --- Legal Rep 1 Data ---
-		if ( ! empty( $rl1_last_name ) ) {
-			$pdf->SetXY( 25, 248 );
-			$pdf->Write( 0, mb_convert_encoding( mb_strtoupper( $rl1_last_name, 'UTF-8' ), 'ISO-8859-1', 'UTF-8' ) );
-		}
-		if ( ! empty( $rl1_first_name ) ) {
-			$pdf->SetXY( 30, 255 );
-			$pdf->Write( 0, mb_convert_encoding( $rl1_first_name, 'ISO-8859-1', 'UTF-8' ) );
-		}
+		$pdf->SetXY( 25, 248 );
+		$pdf->Write( 0, mb_convert_encoding( mb_strtoupper( $rl1_last_name, 'UTF-8' ), 'ISO-8859-1', 'UTF-8' ) );
+
+		$pdf->SetXY( 30, 255 );
+		$pdf->Write( 0, mb_convert_encoding( $rl1_first_name, 'ISO-8859-1', 'UTF-8' ) );
 		if ( ! empty( $rl1_birth_place ) ) {
 			$pdf->SetXY( 48, 264 );
 			$pdf->Write( 0, mb_convert_encoding( $rl1_birth_place, 'ISO-8859-1', 'UTF-8' ) );

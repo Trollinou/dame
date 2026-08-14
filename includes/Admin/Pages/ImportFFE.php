@@ -71,7 +71,8 @@ class ImportFFE {
 			return;
 		}
 
-		if ( ! isset( $_POST['dame_import_ffe_nonce'] ) || ! wp_verify_nonce( $_POST['dame_import_ffe_nonce'], 'dame_import_ffe_nonce_action' ) ) {
+		$nonce = isset( $_POST['dame_import_ffe_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_import_ffe_nonce'] ) ) : '';
+		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'dame_import_ffe_nonce_action' ) ) {
 			add_settings_error( 'dame_import_ffe', 'security_check', __( 'Vérification de sécurité échouée.', 'dame' ), 'error' );
 			return;
 		}
@@ -81,6 +82,7 @@ class ImportFFE {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$file = $_FILES['dame_ffe_csv'];
 
 		// Check file type
@@ -90,6 +92,7 @@ class ImportFFE {
 			return;
 		}
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 		$handle = fopen( $file['tmp_name'], 'r' );
 		if ( ! $handle ) {
 			add_settings_error( 'dame_import_ffe', 'open_error', __( 'Impossible d\'ouvrir le fichier.', 'dame' ), 'error' );
@@ -126,17 +129,18 @@ class ImportFFE {
 		// Skip header if it exists
 		$first_row = fgetcsv( $handle, 0, ';', '"', '\\' );
 		if ( $first_row ) {
-			if ( ! is_numeric( $first_row[0] ) && ! preg_match( '/^[A-Z][0-9]{5}$/', $first_row[2] ?? '' ) ) {
-				// Likely header, skip
-			} else {
+			$is_data_row = is_numeric( $first_row[0] ) || preg_match( '/^[A-Z][0-9]{5}$/', $first_row[2] ?? '' );
+			if ( $is_data_row ) {
 				$this->process_import_row( $first_row, $members_by_license, $members_by_name, $updated_ids, $updated_count );
 			}
 		}
 
-		while ( ( $row = fgetcsv( $handle, 0, ';', '"', '\\' ) ) !== false ) {
+		// phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
+		while ( false !== ( $row = fgetcsv( $handle, 0, ';', '"', '\\' ) ) ) {
 			$this->process_import_row( $row, $members_by_license, $members_by_name, $updated_ids, $updated_count );
 		}
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 		fclose( $handle );
 
 		// 3. GESTION DES ABSENTS ET RAPPORTS
@@ -188,9 +192,8 @@ class ImportFFE {
 		// ÉTAPE A : Recherche par Licence
 		if ( ! empty( $licence_clean ) && isset( $members_by_license[ $licence_clean ] ) ) {
 			$post_id = $members_by_license[ $licence_clean ];
-		}
-		// ÉTAPE B : Recherche par Nom
-		elseif ( ! empty( $nom_normalized ) && isset( $members_by_name[ $nom_normalized ] ) ) {
+		} elseif ( ! empty( $nom_normalized ) && isset( $members_by_name[ $nom_normalized ] ) ) {
+			// ÉTAPE B : Recherche par Nom
 			$post_id = $members_by_name[ $nom_normalized ];
 		}
 
@@ -237,6 +240,8 @@ class ImportFFE {
 
 	/**
 	 * Normalize a name for matching.
+	 *
+	 * @param string $name Name to normalize.
 	 */
 	private function normalize_name( string $name ): string {
 		// Convert to ASCII
@@ -266,7 +271,12 @@ class ImportFFE {
 
 		?>
 		<div class="notice notice-success is-dismissible">
-			<p><strong><?php printf( esc_html__( 'Importation FFE terminée : %d adhérents mis à jour.', 'dame' ), $updated_count ); ?></strong></p>
+			<p><strong>
+			<?php
+			// translators: %d is the number of updated members.
+			echo esc_html( sprintf( __( 'Importation FFE terminée : %d adhérents mis à jour.', 'dame' ), (int) $updated_count ) );
+			?>
+			</strong></p>
 		</div>
 
 		<?php if ( ! empty( $missing_adherents ) ) : ?>

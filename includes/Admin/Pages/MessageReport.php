@@ -54,19 +54,19 @@ class MessageReport {
 		$recipients = $this->get_formatted_recipients( $message_id );
 
 		// 2. Get unique opens count (by email hash)
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$unique_opens = (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(DISTINCT email_hash) FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL",
+				"SELECT COUNT(DISTINCT email_hash) FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$message_id
 			)
 		);
 
 		// 3. Get all open data to mark individual recipients
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$opens_data = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT recipient_id, opened_at FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL",
+				"SELECT recipient_id, opened_at FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$message_id
 			)
 		);
@@ -79,7 +79,12 @@ class MessageReport {
 		$message = get_post( $message_id );
 		?>
 		<div class="wrap">
-			<h1><?php printf( esc_html__( 'Rapport d\'ouverture : %s', 'dame' ), esc_html( $message->post_title ) ); ?></h1>
+			<h1>
+			<?php
+			// translators: %s is the message post title.
+			echo esc_html( sprintf( __( 'Rapport d\'ouverture : %s', 'dame' ), $message->post_title ) );
+			?>
+			</h1>
 
 			<div class="card">
 				<h2><?php esc_html_e( 'Statistiques', 'dame' ); ?></h2>
@@ -140,7 +145,9 @@ class MessageReport {
 										<span style="color: green; font-weight: bold;">
 											<?php
 											$timestamp = strtotime( $opened_at . ' UTC' );
-											printf( esc_html__( 'Ouvert le %s', 'dame' ), wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp ) );
+											$date_fmt  = wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp );
+											// translators: %s is the formatted date.
+											echo esc_html( sprintf( __( 'Ouvert le %s', 'dame' ), $date_fmt ) );
 											?>
 										</span>
 									<?php elseif ( ! empty( $sent_at ) ) : ?>
@@ -181,11 +188,12 @@ class MessageReport {
 		$table_name = $wpdb->prefix . 'dame_message_opens';
 
 		// 1. Récupération des données brutes
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at 
 			FROM {$table_name} 
-			WHERE message_id = %d",
+			WHERE message_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$message_id
 			),
 			ARRAY_A

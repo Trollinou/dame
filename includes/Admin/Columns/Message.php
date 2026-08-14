@@ -73,7 +73,7 @@ class Message {
 						}
 
 						if ( $total > 0 ) {
-							printf( ' (%d/%d)', $processed, $total );
+							echo esc_html( sprintf( ' (%d/%d)', (int) $processed, (int) $total ) );
 						}
 					}
 				} else {
@@ -107,8 +107,8 @@ class Message {
 			case 'open_rate':
 				global $wpdb;
 				$table_name = $wpdb->prefix . 'dame_message_opens';
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-				$opens = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT email_hash) FROM $table_name WHERE message_id = %d AND opened_at IS NOT NULL", $post_id ) );
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$opens = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT email_hash) FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL", $post_id ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 				$total = get_post_meta( $post_id, '_dame_message_recipients_count', true );
 				if ( '' === $total ) {
@@ -117,13 +117,15 @@ class Message {
 				$total = (int) $total;
 
 				if ( $total > 0 ) {
-					$percentage = round( ( $opens / $total ) * 100 );
-					printf(
-						'<a href="%s">%d / %d (%d%%)</a>',
-						esc_url( admin_url( 'admin.php?page=dame-message-report&message_id=' . $post_id ) ),
-						$opens,
-						$total,
-						$percentage
+					$percentage = (int) round( ( $opens / $total ) * 100 );
+					echo wp_kses_post(
+						sprintf(
+							'<a href="%s">%d / %d (%d%%)</a>',
+							esc_url( admin_url( 'admin.php?page=dame-message-report&message_id=' . $post_id ) ),
+							$opens,
+							$total,
+							$percentage
+						)
 					);
 				} else {
 					echo '—';

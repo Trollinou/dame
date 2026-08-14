@@ -123,8 +123,9 @@ class Group {
 	 * @param int $term_id Term ID.
 	 */
 	public function save_group_type( $term_id ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( isset( $_POST['term_meta']['group_type'] ) ) {
-			$group_type = sanitize_key( $_POST['term_meta']['group_type'] );
+			$group_type = sanitize_key( wp_unslash( $_POST['term_meta']['group_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			update_term_meta( $term_id, '_dame_group_type', $group_type );
 		}
 	}
@@ -186,12 +187,15 @@ class Group {
 				admin_url( 'admin-post.php' )
 			);
 
+			// translators: %s is the group name.
+			$confirm_msg = sprintf( __( 'Êtes-vous sûr de vouloir supprimer tous les adhérents du groupe "%s" ? Cette action est irréversible.', 'dame' ), $term->name );
+
 			// Add a confirmation dialog.
 			$actions['reset'] = sprintf(
 				'<a href="%s" onclick="return confirm(\'%s\')">%s</a>',
 				esc_url( $reset_url ),
-				esc_js( sprintf( __( 'Êtes-vous sûr de vouloir supprimer tous les adhérents du groupe "%s" ? Cette action est irréversible.', 'dame' ), $term->name ) ),
-				__( 'Réinitialiser', 'dame' )
+				esc_js( $confirm_msg ),
+				esc_html__( 'Réinitialiser', 'dame' )
 			);
 		}
 		return $actions;
@@ -208,13 +212,14 @@ class Group {
 
 		// Check user capabilities first.
 		if ( ! current_user_can( 'manage_categories' ) ) {
-			wp_die( __( 'Vous n\'avez pas les permissions suffisantes pour effectuer cette action.', 'dame' ) );
+			wp_die( esc_html__( 'Vous n\'avez pas les permissions suffisantes pour effectuer cette action.', 'dame' ) );
 		}
 
 		// Get the term ID and verify the nonce.
 		$term_id = isset( $_GET['tag_ID'] ) ? intval( $_GET['tag_ID'] ) : 0;
-		if ( ! $term_id || ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'dame_reset_group_' . $term_id ) ) {
-			wp_die( __( 'Échec de la vérification de sécurité.', 'dame' ) );
+		$nonce   = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ! $term_id || ! $nonce || ! wp_verify_nonce( $nonce, 'dame_reset_group_' . $term_id ) ) {
+			wp_die( esc_html__( 'Échec de la vérification de sécurité.', 'dame' ) );
 		}
 
 		// Get all adherents in the group.
@@ -249,7 +254,7 @@ class Group {
 			),
 			admin_url( 'edit-tags.php' )
 		);
-		wp_redirect( $redirect_url );
+		wp_safe_redirect( $redirect_url );
 		exit;
 	}
 
@@ -258,12 +263,13 @@ class Group {
 	 */
 	public function show_reset_notice(): void {
 		global $pagenow;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$taxonomy = isset( $_GET['taxonomy'] ) ? sanitize_key( wp_unslash( $_GET['taxonomy'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$message = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : '';
+
 		// Check if we are on the correct page and the message is set.
-		if (
-			'edit-tags.php' === $pagenow &&
-			isset( $_GET['taxonomy'] ) && 'dame_group' === $_GET['taxonomy'] &&
-			isset( $_GET['message'] ) && 'group_reset' === $_GET['message']
-		) {
+		if ( 'edit-tags.php' === $pagenow && 'dame_group' === $taxonomy && 'group_reset' === $message ) {
 			?>
 			<div class="notice notice-success is-dismissible">
 				<p><?php esc_html_e( 'Le groupe a été réinitialisé avec succès. Tous les adhérents ont été retirés.', 'dame' ); ?></p>

@@ -83,7 +83,8 @@ class Main {
 	 * Render the options page.
 	 */
 	public function render_page(): void {
-		$active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'association';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'association';
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
@@ -127,8 +128,9 @@ class Main {
 	 * @return array<string, mixed> The sanitized array.
 	 */
 	public function sanitize_options( $input ) {
-		$options    = get_option( 'dame_options', array() );
-		$active_tab = isset( $_POST['dame_active_tab'] ) ? sanitize_key( $_POST['dame_active_tab'] ) : '';
+		$options = get_option( 'dame_options', array() );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$active_tab = isset( $_POST['dame_active_tab'] ) ? sanitize_key( wp_unslash( $_POST['dame_active_tab'] ) ) : '';
 
 		if ( isset( $this->tabs[ $active_tab ] ) && method_exists( $this->tabs[ $active_tab ], 'sanitize' ) ) {
 			$options = $this->tabs[ $active_tab ]->sanitize( $input, $options );

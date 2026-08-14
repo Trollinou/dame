@@ -5,11 +5,13 @@ parameters:
     phpVersion: 80400 # Force l'analyse pour PHP 8.4
     treatPhpDocTypesAsCertain: false
     reportUnmatchedIgnoredErrors: false
+    parallel:
+        maximumNumberOfProcesses: 1
     paths:
         - dame.php
         - includes/
     excludePaths:
-        - includes/lib/ (?)
+        - includes/lib/*
     bootstrapFiles:
         - tests/phpstan/bootstrap.php
     scanFiles:

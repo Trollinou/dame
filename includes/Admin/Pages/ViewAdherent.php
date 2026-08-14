@@ -52,7 +52,8 @@ class ViewAdherent {
 		}
 
 		// Get adherent ID from URL
-		$adherent_id = isset( $_GET['adherent_id'] ) ? intval( $_GET['adherent_id'] ) : 0;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$adherent_id = isset( $_GET['adherent_id'] ) ? intval( wp_unslash( $_GET['adherent_id'] ) ) : 0;
 		if ( ! $adherent_id ) {
 			wp_die( esc_html__( 'ID de l\'adhérent non valide.', 'dame' ) );
 		}
@@ -68,7 +69,7 @@ class ViewAdherent {
 		<div class="wrap">
 			<h1>
 				<?php echo esc_html( __( 'Fiche de l\'adhérent : ', 'dame' ) . get_the_title( $post_id ) ); ?>
-				<a href="edit.php?post_type=adherent" class="page-title-action"><?php _e( 'Retour à la liste', 'dame' ); ?></a>
+				<a href="edit.php?post_type=adherent" class="page-title-action"><?php esc_html_e( 'Retour à la liste', 'dame' ); ?></a>
 			</h1>
 
 			<style>
@@ -79,14 +80,14 @@ class ViewAdherent {
 			</style>
 
 			<?php if ( current_user_can( 'edit_post', $post_id ) ) : ?>
-				<a href="<?php echo esc_url( get_edit_post_link( $post_id ) ); ?>" class="button button-primary" style="margin-bottom:20px;"><?php _e( 'Modifier cet adhérent', 'dame' ); ?></a>
+				<a href="<?php echo esc_url( get_edit_post_link( $post_id ) ); ?>" class="button button-primary" style="margin-bottom:20px;"><?php esc_html_e( 'Modifier cet adhérent', 'dame' ); ?></a>
 			<?php endif; ?>
 
 			<div id="poststuff" style="margin-top: 20px;">
 				<div id="post-body" class="metabox-holder columns-2">
 					<div id="post-body-content">
 						<div class="postbox">
-							<h2 class="hndle"><span><?php _e( "Informations sur l'adhérent", 'dame' ); ?></span></h2>
+							<h2 class="hndle"><span><?php esc_html_e( "Informations sur l'adhérent", 'dame' ); ?></span></h2>
 							<div class="inside">
 								<table class="form-table">
 									<?php
@@ -116,7 +117,7 @@ class ViewAdherent {
 							</div>
 						</div>
 						<div class="postbox">
-							<h2 class="hndle"><span><?php _e( 'Informations Scolaires', 'dame' ); ?></span></h2>
+							<h2 class="hndle"><span><?php esc_html_e( 'Informations Scolaires', 'dame' ); ?></span></h2>
 							<div class="inside">
 								<table class="form-table">
 									<?php
@@ -132,9 +133,9 @@ class ViewAdherent {
 							</div>
 						</div>
 						<div class="postbox">
-							<h2 class="hndle"><span><?php _e( 'Représentants Légaux (si mineur)', 'dame' ); ?></span></h2>
+							<h2 class="hndle"><span><?php esc_html_e( 'Représentants Légaux (si mineur)', 'dame' ); ?></span></h2>
 							<div class="inside">
-								<h3><?php _e( 'Représentant Légal 1', 'dame' ); ?></h3>
+								<h3><?php esc_html_e( 'Représentant Légal 1', 'dame' ); ?></h3>
 								<table class="form-table">
 									<?php
 									$rep1_fields = array(
@@ -157,7 +158,7 @@ class ViewAdherent {
 									?>
 								</table>
 								<hr>
-								<h3><?php _e( 'Représentant Légal 2', 'dame' ); ?></h3>
+								<h3><?php esc_html_e( 'Représentant Légal 2', 'dame' ); ?></h3>
 								<table class="form-table">
 									<?php
 									$rep2_fields = array(
@@ -182,7 +183,7 @@ class ViewAdherent {
 							</div>
 						</div>
 						<div class="postbox">
-							<h2 class="hndle"><span><?php _e( 'Informations diverses', 'dame' ); ?></span></h2>
+							<h2 class="hndle"><span><?php esc_html_e( 'Informations diverses', 'dame' ); ?></span></h2>
 							<div class="inside">
 								<table class="form-table">
 									<?php
@@ -203,7 +204,7 @@ class ViewAdherent {
 					</div>
 					<div id="postbox-container-1" class="postbox-container">
 						<div class="postbox">
-							<h2 class="hndle"><span><?php _e( 'Classification et Adhésion', 'dame' ); ?></span></h2>
+							<h2 class="hndle"><span><?php esc_html_e( 'Classification et Adhésion', 'dame' ); ?></span></h2>
 							<div class="inside">
 								<?php
 								$classification_fields = array(
@@ -220,7 +221,7 @@ class ViewAdherent {
 							</div>
 						</div>
 						<div class="postbox">
-							<h2 class="hndle"><span><?php _e( 'Groupes', 'dame' ); ?></span></h2>
+							<h2 class="hndle"><span><?php esc_html_e( 'Groupes', 'dame' ); ?></span></h2>
 							<div class="inside">
 								<?php
 								$group_terms = wp_get_post_terms( $post_id, 'dame_group', array( 'fields' => 'names' ) );

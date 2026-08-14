@@ -45,17 +45,14 @@ class Benevolat {
 			case 'poll_votes':
 				global $wpdb;
 				$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$total = $wpdb->get_var(
 					$wpdb->prepare(
-						"SELECT COUNT(DISTINCT v.recipient_id) 
-					 FROM {$table_votes} v
-					 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
-					 WHERE v.poll_id = %d AND p.post_status = 'publish'",
+						"SELECT COUNT(DISTINCT v.recipient_id) FROM {$table_votes} v INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID WHERE v.poll_id = %d AND p.post_status = 'publish'", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 						$post_id
 					)
 				);
-				echo intval( $total );
+				echo (int) $total;
 				break;
 
 			case 'poll_shortcode':

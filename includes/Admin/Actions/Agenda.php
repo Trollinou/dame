@@ -69,7 +69,7 @@ class Agenda {
 		$new_post_id = wp_insert_post( $new_post_args );
 
 		if ( is_wp_error( $new_post_id ) ) {
-			wp_die( $new_post_id->get_error_message() );
+			wp_die( esc_html( $new_post_id->get_error_message() ) );
 		}
 
 		// Duplicate post meta (Bulk Insert for N+1 optimization).
@@ -102,8 +102,8 @@ class Agenda {
 			}
 
 			if ( ! empty( $meta_insert_placeholders ) ) {
-				$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
-				$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Bulk insert postmeta for performance.
+				$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders ), $meta_insert_values ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			}
 		}
 
@@ -120,7 +120,7 @@ class Agenda {
 
 		// Redirect to the edit screen for the new draft.
 		$redirect_url = get_edit_post_link( $new_post_id, 'raw' );
-		wp_redirect( $redirect_url );
+		wp_safe_redirect( $redirect_url );
 		exit;
 	}
 }

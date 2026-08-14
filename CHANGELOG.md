@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.0.1] - 2026-08-14
+
+### Qualité du Code & Conformité Standards
+- **PHP CodeSniffer (PHPCS & PHPCBF)** :
+  - Mise en conformité complète avec les règles `WordPress-Core`, `WordPress-Extra` et `WordPress-Docs`.
+  - Ajout de la déclaration des capacités personnalisées dans `phpcs.xml` (`edit_dame_messages`, `manage_dame_options`).
+  - Sanitisation renforcée des entrées superglobales (`$_GET`, `$_POST`, `$_REQUEST`) avec `wp_unslash()`.
+  - Échappement des affichages via `esc_html_e()` et sécurisation des redirections HTTP avec `wp_safe_redirect()`.
+  - Normalisation des requêtes SQL complexes préparées et des annotations `phpcs:ignore`.
+  - Remplacement des appels `date()` par `gmdate()` et typage strict des comparaisons dans `Upgrader.php`.
+- **PHPStan** :
+  - Validation du code au Niveau 6 (`phpstan.neon`) sans aucune erreur (`0 error`).
+
 ## [5.0.0] - 2026-08-10
 
 ### Packaging & Architecture

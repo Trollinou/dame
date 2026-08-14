@@ -71,7 +71,7 @@ class AgendaCategory {
 		if ( 'term.php' !== $hook && 'edit-tags.php' !== $hook ) {
 			return;
 		}
-		// Ensure we are on the correct taxonomy page
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['taxonomy'] ) && 'dame_agenda_category' === $_GET['taxonomy'] ) {
 			wp_enqueue_style( 'wp-color-picker' );
 			// Note: Assuming 'assets/js/admin-main.js' or similar exists for the JS logic of initialization.
@@ -122,12 +122,13 @@ class AgendaCategory {
 	 * @param int $term_id Term ID.
 	 */
 	public function save_color( $term_id ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( isset( $_POST['term_meta'] ) && is_array( $_POST['term_meta'] ) ) {
 			$term_meta = get_option( "taxonomy_$term_id" );
 			if ( ! is_array( $term_meta ) ) {
 				$term_meta = array();
 			}
-			$raw_term_meta = wp_unslash( $_POST['term_meta'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$raw_term_meta = wp_unslash( $_POST['term_meta'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$cat_keys      = array_keys( $raw_term_meta );
 			foreach ( $cat_keys as $key ) {
 				if ( isset( $raw_term_meta[ $key ] ) ) {

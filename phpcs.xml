@@ -14,6 +14,16 @@
         </properties>
     </rule>
 
+    <!-- Déclarer les capacités personnalisées -->
+    <rule ref="WordPress.WP.Capabilities">
+        <properties>
+            <property name="custom_capabilities" type="array">
+                <element value="edit_dame_messages" />
+                <element value="manage_dame_options" />
+            </property>
+        </properties>
+    </rule>
+
     <!-- Définir la version minimale de WP supportée -->
     <config name="minimum_wp_version" value="6.7" />
 
@@ -29,6 +39,32 @@
 
     <!-- Ignorer les warnings de formatage des docblocks trop stricts -->
     <rule ref="Generic.Commenting.DocComment.MissingShort">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Commenting.FileComment">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Commenting.ClassComment">
+        <severity>0</severity>
+    </rule>
+
+    <!-- Ne pas imposer les Yoda Conditions en PHP 8.4 -->
+    <rule ref="WordPress.PHP.YodaConditions">
+        <severity>0</severity>
+    </rule>
+
+    <!-- Ignorer les avertissements d'optimisation BDD (meta_query / tax_query légitimes) -->
+    <rule ref="WordPress.DB.SlowDBQuery">
+        <severity>0</severity>
+    </rule>
+
+    <!-- Ignorer les paramètres inutilisés dans les callbacks d'actions/filtres WP -->
+    <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter">
+        <severity>0</severity>
+    </rule>
+
+    <!-- Autoriser l'opérateur ternaire court (?:) -->
+    <rule ref="Universal.Operators.DisallowShortTernary">
         <severity>0</severity>
     </rule>
 

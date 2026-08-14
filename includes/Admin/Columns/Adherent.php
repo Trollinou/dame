@@ -222,11 +222,13 @@ class Adherent {
 					'order'      => 'ASC',
 				)
 			);
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( ! is_wp_error( $group_terms ) && ! empty( $group_terms ) ) {
-				$current_group = $_GET['dame_group_filter'] ?? '';
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$current_group = isset( $_GET['dame_group_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_group_filter'] ) ) : '';
 				?>
 				<select name="dame_group_filter">
-					<option value=""><?php _e( 'Tous les groupes', 'dame' ); ?></option>
+					<option value=""><?php esc_html_e( 'Tous les groupes', 'dame' ); ?></option>
 					<?php foreach ( $group_terms as $term ) : ?>
 						<option value="<?php echo esc_attr( (string) $term->term_id ); ?>" <?php selected( $term->term_id, $current_group ); ?>><?php echo esc_html( $term->name ); ?></option>
 					<?php endforeach; ?>
@@ -243,11 +245,13 @@ class Adherent {
 					'order'      => 'DESC',
 				)
 			);
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( ! is_wp_error( $saisons ) && ! empty( $saisons ) ) {
-				$current_saison = $_GET['dame_saison_filter'] ?? '';
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$current_saison = isset( $_GET['dame_saison_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_saison_filter'] ) ) : '';
 				?>
 				<select name="dame_saison_filter">
-					<option value=""><?php _e( 'Toutes les saisons', 'dame' ); ?></option>
+					<option value=""><?php esc_html_e( 'Toutes les saisons', 'dame' ); ?></option>
 					<?php foreach ( $saisons as $saison ) : ?>
 						<option value="<?php echo esc_attr( (string) $saison->term_id ); ?>" <?php selected( $saison->term_id, $current_saison ); ?>><?php echo esc_html( $saison->name ); ?></option>
 					<?php endforeach; ?>
@@ -256,34 +260,37 @@ class Adherent {
 			}
 
 			// License Type filter
-			$current_license = $_GET['dame_license_type_filter'] ?? '';
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$current_license = isset( $_GET['dame_license_type_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_license_type_filter'] ) ) : '';
 			?>
 			<select name="dame_license_type_filter">
-				<option value=""><?php _e( 'Tous les types de licence', 'dame' ); ?></option>
-				<option value="A" <?php selected( 'A', $current_license ); ?>><?php _e( 'Licence A', 'dame' ); ?></option>
-				<option value="B" <?php selected( 'B', $current_license ); ?>><?php _e( 'Licence B', 'dame' ); ?></option>
-				<option value="Autres" <?php selected( 'Autres', $current_license ); ?>><?php _e( 'Autres / Non précisé', 'dame' ); ?></option>
+				<option value=""><?php esc_html_e( 'Tous les types de licence', 'dame' ); ?></option>
+				<option value="A" <?php selected( 'A', $current_license ); ?>><?php esc_html_e( 'Licence A', 'dame' ); ?></option>
+				<option value="B" <?php selected( 'B', $current_license ); ?>><?php esc_html_e( 'Licence B', 'dame' ); ?></option>
+				<option value="Autres" <?php selected( 'Autres', $current_license ); ?>><?php esc_html_e( 'Autres / Non précisé', 'dame' ); ?></option>
 			</select>
 			<?php
 
 			// Gender filter
-			$current_gender = $_GET['dame_gender_filter'] ?? '';
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$current_gender = isset( $_GET['dame_gender_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_gender_filter'] ) ) : '';
 			?>
 			<select name="dame_gender_filter">
-				<option value=""><?php _e( 'Toutes les civilités', 'dame' ); ?></option>
-				<option value="Masculin" <?php selected( 'Masculin', $current_gender ); ?>><?php _e( 'Monsieur', 'dame' ); ?></option>
-				<option value="Féminin" <?php selected( 'Féminin', $current_gender ); ?>><?php _e( 'Madame', 'dame' ); ?></option>
-				<option value="Non précisé" <?php selected( 'Non précisé', $current_gender ); ?>><?php _e( 'Non précisé', 'dame' ); ?></option>
+				<option value=""><?php esc_html_e( 'Toutes les civilités', 'dame' ); ?></option>
+				<option value="Masculin" <?php selected( 'Masculin', $current_gender ); ?>><?php esc_html_e( 'Monsieur', 'dame' ); ?></option>
+				<option value="Féminin" <?php selected( 'Féminin', $current_gender ); ?>><?php esc_html_e( 'Madame', 'dame' ); ?></option>
+				<option value="Non précisé" <?php selected( 'Non précisé', $current_gender ); ?>><?php esc_html_e( 'Non précisé', 'dame' ); ?></option>
 			</select>
 			<?php
 
 			// Age Category filter
 			$age_categories = \DAME\Core\Utils::get_all_age_categories();
 			if ( ! empty( $age_categories ) ) {
-				$current_age_category = $_GET['dame_age_category_filter'] ?? '';
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$current_age_category = isset( $_GET['dame_age_category_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_age_category_filter'] ) ) : '';
 				?>
 				<select name="dame_age_category_filter">
-					<option value=""><?php _e( 'Toutes les catégories d\'âge', 'dame' ); ?></option>
+					<option value=""><?php esc_html_e( 'Toutes les catégories d\'âge', 'dame' ); ?></option>
 					<?php foreach ( $age_categories as $key => $label ) : ?>
 						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $current_age_category ); ?>><?php echo esc_html( $label ); ?></option>
 					<?php endforeach; ?>
@@ -300,7 +307,8 @@ class Adherent {
 	 */
 	public function filter_query( $query ): void {
 		global $pagenow;
-		$post_type = $_GET['post_type'] ?? '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$post_type = isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '';
 
 		// Correct CPT slug
 		if ( is_admin() && 'edit.php' === $pagenow && 'adherent' === $post_type && $query->is_main_query() ) {
@@ -308,7 +316,9 @@ class Adherent {
 			$tax_query  = $query->get( 'tax_query' ) ?: array();
 
 			// Group filter
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( isset( $_GET['dame_group_filter'] ) && ! empty( $_GET['dame_group_filter'] ) ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$group_id = absint( $_GET['dame_group_filter'] );
 				if ( $group_id > 0 ) {
 					$tax_query[] = array(
@@ -320,7 +330,9 @@ class Adherent {
 			}
 
 			// Season filter
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( isset( $_GET['dame_saison_filter'] ) && ! empty( $_GET['dame_saison_filter'] ) ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$saison_id = absint( $_GET['dame_saison_filter'] );
 				if ( $saison_id > 0 ) {
 					$tax_query[] = array(
@@ -332,8 +344,10 @@ class Adherent {
 			}
 
 			// License Type filter
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( isset( $_GET['dame_license_type_filter'] ) && ! empty( $_GET['dame_license_type_filter'] ) ) {
-				$license_filter = sanitize_text_field( $_GET['dame_license_type_filter'] );
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$license_filter = sanitize_text_field( wp_unslash( $_GET['dame_license_type_filter'] ) );
 
 				if ( 'A' === $license_filter ) {
 					$meta_query[] = array(
@@ -398,7 +412,9 @@ class Adherent {
 			}
 
 			// Age Category filter
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( isset( $_GET['dame_age_category_filter'] ) && ! empty( $_GET['dame_age_category_filter'] ) ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$age_category_filter = sanitize_key( $_GET['dame_age_category_filter'] );
 
 				$date_range = \DAME\Core\Utils::get_birth_date_range_for_category( $age_category_filter );
@@ -421,8 +437,10 @@ class Adherent {
 			}
 
 			// Gender filter
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( isset( $_GET['dame_gender_filter'] ) && ! empty( $_GET['dame_gender_filter'] ) ) {
-				$gender_filter = sanitize_text_field( $_GET['dame_gender_filter'] );
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$gender_filter = sanitize_text_field( wp_unslash( $_GET['dame_gender_filter'] ) );
 				if ( 'Non précisé' === $gender_filter ) {
 					$meta_query[] = array(
 						'relation' => 'OR',
@@ -481,16 +499,19 @@ class Adherent {
 			$search_term = $query->get( 's' );
 			if ( ! empty( $search_term ) ) {
 				$search_term_like = '%' . $wpdb->esc_like( $search_term ) . '%';
-				$search           = " AND (
-					({$wpdb->posts}.post_title LIKE %s)
-					OR EXISTS (
-						SELECT 1 FROM {$wpdb->postmeta}
-						WHERE post_id = {$wpdb->posts}.ID
-						AND meta_key IN ('_dame_email', '_dame_legal_rep_1_email', '_dame_legal_rep_2_email')
-						AND meta_value LIKE %s
-					)
-				)";
-				return $wpdb->prepare( $search, $search_term_like, $search_term_like );
+				return $wpdb->prepare(
+					" AND (
+						({$wpdb->posts}.post_title LIKE %s)
+						OR EXISTS (
+							SELECT 1 FROM {$wpdb->postmeta}
+							WHERE post_id = {$wpdb->posts}.ID
+							AND meta_key IN ('_dame_email', '_dame_legal_rep_1_email', '_dame_legal_rep_2_email')
+							AND meta_value LIKE %s
+						)
+					)",
+					$search_term_like,
+					$search_term_like
+				);
 			}
 		}
 
@@ -518,7 +539,7 @@ class Adherent {
 				admin_url( 'admin.php' )
 			);
 
-			$view_link = sprintf( '<a href="%s">%s</a>', esc_url( $url ), __( 'Consulter', 'dame' ) );
+			$view_link = sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html__( 'Consulter', 'dame' ) );
 
 			// Add the 'Consulter' link before the 'Edit' link.
 			return array_merge( array( 'dame_view' => $view_link ), $actions );

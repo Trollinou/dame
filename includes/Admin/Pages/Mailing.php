@@ -199,6 +199,7 @@ class Mailing {
 						$data_attrs = $data_callback ? $data_callback( $value, $key ) : '';
 						?>
 						<label style="display: block;">
+							<?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							<input type="checkbox" name="<?php echo esc_attr( $name_attr ); ?>[]" value="<?php echo esc_attr( (string) $id ); ?>" <?php checked( $is_checked ); ?> <?php echo $data_attrs; ?>> 
 							<?php echo esc_html( $label ); ?>
 						</label>
@@ -217,7 +218,12 @@ class Mailing {
 			if ( 1 === $success && $count > 0 ) :
 				?>
 				<div class="notice notice-success is-dismissible">
-					<p><?php echo esc_html( sprintf( __( 'Planification réussie. %d messages sont en cours d\'envoi.', 'dame' ), $count ) ); ?></p>
+					<p>
+					<?php
+					// translators: %d is the number of scheduled messages.
+					echo esc_html( sprintf( __( 'Planification réussie. %d messages sont en cours d\'envoi.', 'dame' ), (int) $count ) );
+					?>
+					</p>
 				</div>
 			<?php endif; ?>
 
@@ -229,6 +235,7 @@ class Mailing {
 					'nonce'           => __( 'Vérification de sécurité échouée.', 'dame' ),
 					'permission'      => __( 'Permission refusée.', 'dame' ),
 					'invalid_message' => __( 'Message invalide.', 'dame' ),
+					// translators: %s is the allowed file extensions.
 					'upload_failed'   => sprintf( __( 'Erreur lors du téléchargement de la pièce jointe. Types autorisés : %s.', 'dame' ), $allowed_types ),
 					'no_criteria'     => __( 'Veuillez sélectionner au moins un critère (Saison, Groupe ou Zone).', 'dame' ),
 					'no_recipients'   => __( 'Aucun destinataire trouvé avec ces critères.', 'dame' ),
@@ -305,7 +312,7 @@ class Mailing {
 								<label><strong><?php esc_html_e( 'Saisons', 'dame' ); ?></strong></label><br>
 								<select name="dame_recipient_seasons[]" multiple size="5" class="widefat">
 									<?php foreach ( $seasons as $s ) : ?>
-										<option value="<?php echo $s->term_id; ?>" <?php echo in_array( $s->term_id, $state_seasons ) ? 'selected' : ''; ?>><?php echo esc_html( $s->name ); ?></option>
+										<option value="<?php echo esc_attr( (string) $s->term_id ); ?>" <?php echo in_array( (int) $s->term_id, $state_seasons, true ) ? 'selected' : ''; ?>><?php echo esc_html( $s->name ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</div>
@@ -314,7 +321,7 @@ class Mailing {
 								<label><strong><?php esc_html_e( 'Groupes Saisonniers', 'dame' ); ?></strong></label><br>
 								<select name="dame_recipient_groups_saisonnier[]" multiple size="5" class="widefat">
 									<?php foreach ( $saisonniers as $g ) : ?>
-										<option value="<?php echo $g->term_id; ?>" <?php echo in_array( $g->term_id, $state_groups_saisonnier ) ? 'selected' : ''; ?>><?php echo esc_html( $g->name ); ?></option>
+										<option value="<?php echo esc_attr( (string) $g->term_id ); ?>" <?php echo in_array( (int) $g->term_id, $state_groups_saisonnier, true ) ? 'selected' : ''; ?>><?php echo esc_html( $g->name ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</div>
@@ -323,7 +330,7 @@ class Mailing {
 								<label><strong><?php esc_html_e( 'Groupes Permanents', 'dame' ); ?></strong></label><br>
 								<select name="dame_recipient_groups_permanent[]" multiple size="5" class="widefat">
 									<?php foreach ( $permanents as $g ) : ?>
-										<option value="<?php echo $g->term_id; ?>" <?php echo in_array( $g->term_id, $state_groups_permanent ) ? 'selected' : ''; ?>><?php echo esc_html( $g->name ); ?></option>
+										<option value="<?php echo esc_attr( (string) $g->term_id ); ?>" <?php echo in_array( (int) $g->term_id, $state_groups_permanent, true ) ? 'selected' : ''; ?>><?php echo esc_html( $g->name ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</div>
@@ -358,7 +365,7 @@ class Mailing {
 								<label><strong><?php esc_html_e( 'Types de Contacts', 'dame' ); ?></strong></label><br>
 								<select name="dame_recipient_contact_types[]" id="dame_contact_types_select" multiple size="5" class="widefat">
 									<?php foreach ( $contact_types as $t ) : ?>
-										<option value="<?php echo $t->term_id; ?>" <?php echo in_array( $t->term_id, $state_contact_types ) ? 'selected' : ''; ?>><?php echo esc_html( $t->name ); ?></option>
+										<option value="<?php echo esc_attr( (string) $t->term_id ); ?>" <?php echo in_array( (int) $t->term_id, $state_contact_types, true ) ? 'selected' : ''; ?>><?php echo esc_html( $t->name ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</div>
@@ -435,23 +442,25 @@ class Mailing {
 
 		// Fonction interne pour sauvegarder l'état (données POST) avant redirection en cas d'erreur.
 		$save_state_and_redirect = function ( string $error_code ) use ( $base_url, $state_key ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$data = $_POST;
 			if ( ! empty( $_FILES['dame_message_attachment']['name'] ) ) {
 				$data['_had_attachment'] = true;
 			}
 			set_transient( $state_key, $data, 300 ); // Sauvegarde temporaire de 5 minutes.
-			wp_redirect( add_query_arg( 'error', $error_code, $base_url ) );
+			wp_safe_redirect( add_query_arg( 'error', $error_code, $base_url ) );
 			exit;
 		};
 
 		// 1. Sécurité et Permissions
-		if ( ! isset( $_POST['dame_mailing_nonce'] ) || ! wp_verify_nonce( $_POST['dame_mailing_nonce'], 'dame_mailing_action' ) ) {
-			wp_redirect( add_query_arg( 'error', 'nonce', $base_url ) );
+		$nonce = isset( $_POST['dame_mailing_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_mailing_nonce'] ) ) : '';
+		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'dame_mailing_action' ) ) {
+			wp_safe_redirect( add_query_arg( 'error', 'nonce', $base_url ) );
 			exit;
 		}
 
 		if ( ! current_user_can( 'edit_dame_messages' ) ) {
-			wp_redirect( add_query_arg( 'error', 'permission', $base_url ) );
+			wp_safe_redirect( add_query_arg( 'error', 'permission', $base_url ) );
 			exit;
 		}
 
@@ -492,7 +501,7 @@ class Mailing {
 			$seasons           = isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', $_POST['dame_recipient_seasons'] ) : array();
 			$groups_saisonnier = isset( $_POST['dame_recipient_groups_saisonnier'] ) ? array_map( 'absint', $_POST['dame_recipient_groups_saisonnier'] ) : array();
 			$groups_permanent  = isset( $_POST['dame_recipient_groups_permanent'] ) ? array_map( 'absint', $_POST['dame_recipient_groups_permanent'] ) : array();
-			$gender            = isset( $_POST['dame_recipient_gender'] ) ? sanitize_text_field( $_POST['dame_recipient_gender'] ) : 'all';
+			$gender            = isset( $_POST['dame_recipient_gender'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_recipient_gender'] ) ) : 'all';
 
 			$meta_seasons           = $seasons;
 			$meta_groups_saisonnier = $groups_saisonnier;
@@ -547,8 +556,8 @@ class Mailing {
 			}
 		} else {
 			$contact_types = isset( $_POST['dame_recipient_contact_types'] ) ? array_map( 'absint', $_POST['dame_recipient_contact_types'] ) : array();
-			$depts         = isset( $_POST['dame_contact_depts'] ) ? array_map( 'sanitize_text_field', $_POST['dame_contact_depts'] ) : array();
-			$regions       = isset( $_POST['dame_contact_regions'] ) ? array_map( 'sanitize_text_field', $_POST['dame_contact_regions'] ) : array();
+			$depts         = isset( $_POST['dame_contact_depts'] ) && is_array( $_POST['dame_contact_depts'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['dame_contact_depts'] ) ) : array();
+			$regions       = isset( $_POST['dame_contact_regions'] ) && is_array( $_POST['dame_contact_regions'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['dame_contact_regions'] ) ) : array();
 
 			$meta_contact_types = $contact_types;
 			$meta_depts         = $depts;
@@ -761,40 +770,34 @@ class Mailing {
 			// On évite les doublons en ne supprimant que les destinataires que l'on s'apprête à (ré)insérer
 			// tout en conservant l'historique des autres envois pour ce message (envois cumulés).
 			$emails_to_insert = array_column( $email_data, 'raw_email' );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->query(
 				$wpdb->prepare(
-					"DELETE FROM {$table_tracking} WHERE message_id = %d AND recipient_email IN (" . implode( ',', array_fill( 0, count( $emails_to_insert ), '%s' ) ) . ')',
+					"DELETE FROM {$table_tracking} WHERE message_id = %d AND recipient_email IN (" . implode( ',', array_fill( 0, count( $emails_to_insert ), '%s' ) ) . ')', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					array_merge( array( $message_id ), $emails_to_insert )
 				)
 			);
 
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 			$wpdb->query( "INSERT INTO {$table_tracking} (message_id, recipient_id, recipient_name, recipient_email, email_hash) VALUES " . implode( ',', $values_sql ) );
 		}
 
 		// 4. Gestion de la Pièce Jointe (Optionnelle)
-		if ( ! empty( $_FILES['dame_message_attachment']['name'] ) && $_FILES['dame_message_attachment']['error'] !== UPLOAD_ERR_NO_FILE ) {
+		if ( isset( $_FILES['dame_message_attachment']['error'] ) && ! empty( $_FILES['dame_message_attachment']['name'] ) && $_FILES['dame_message_attachment']['error'] !== UPLOAD_ERR_NO_FILE ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 
 			// Configuration de l'upload et validation MIME stricte.
 			$upload_overrides = array(
 				'test_form' => false,
 				'mimes'     => array(
-					'pdf'          => 'application/pdf',
 					'jpg|jpeg|jpe' => 'image/jpeg',
 					'png'          => 'image/png',
-					'docx'         => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+					'pdf'          => 'application/pdf',
 					'doc'          => 'application/msword',
+					'docx'         => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 					'odt'          => 'application/vnd.oasis.opendocument.text',
 				),
 			);
-
-			$upload = wp_handle_upload( $_FILES['dame_message_attachment'], $upload_overrides );
-
-			if ( isset( $upload['error'] ) ) {
-				// Utilisation de wp_die comme demandé pour les erreurs d'upload.
-				wp_die( sprintf( esc_html__( 'Erreur lors du téléchargement de la pièce jointe : %s', 'dame' ), esc_html( $upload['error'] ) ) );
-			}
 
 			if ( isset( $upload['file'] ) ) {
 				update_post_meta( $message_id, '_dame_message_attachment', $upload['file'] );

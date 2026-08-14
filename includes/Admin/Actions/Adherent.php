@@ -35,7 +35,8 @@ class Adherent {
 		}
 
 		// Verify nonce.
-		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'dame_transform_contact_' . $post_id ) ) {
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'dame_transform_contact_' . $post_id ) ) {
 			wp_die( esc_html__( 'Vérification de sécurité échouée.', 'dame' ) );
 		}
 
@@ -103,7 +104,7 @@ class Adherent {
 		wp_trash_post( $post_id );
 
 		// 6. Redirection vers la fiche contact
-		wp_redirect( get_edit_post_link( $contact_id, 'raw' ) );
+		wp_safe_redirect( get_edit_post_link( $contact_id, 'raw' ) );
 		exit;
 	}
 }
