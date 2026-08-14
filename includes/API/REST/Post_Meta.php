@@ -103,10 +103,11 @@ class Post_Meta {
 			$args['meta_query'][] = array(
 				'key'     => '_dame_start_date',
 				'value'   => $before_date,
-				'compare' => '<',
+				'compare' => '<=',
 				'type'    => 'DATE',
 			);
 		}
+
 
 		return $args;
 	}
