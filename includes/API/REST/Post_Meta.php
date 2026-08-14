@@ -208,6 +208,47 @@ class Post_Meta {
 				),
 			)
 		);
+
+		// Données structurées des catégories d'agenda (avec couleur)
+		register_rest_field(
+			'dame_agenda',
+			'categories_data',
+			array(
+				'get_callback' => function ( $post_arr ) {
+					$terms = get_the_terms( $post_arr['id'], 'dame_agenda_category' );
+					$categories_data = array();
+
+					if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+						foreach ( $terms as $term ) {
+							$term_meta = get_option( "taxonomy_{$term->term_id}" );
+							$color     = ! empty( $term_meta['color'] ) ? (string) $term_meta['color'] : '#3880ff';
+
+							$categories_data[] = array(
+								'id'    => (int) $term->term_id,
+								'name'  => (string) $term->name,
+								'slug'  => (string) $term->slug,
+								'color' => $color,
+							);
+						}
+					}
+
+					return $categories_data;
+				},
+				'schema'       => array(
+					'description' => __( 'Catégories d\'agenda associées avec leur couleur.', 'dame' ),
+					'type'        => 'array',
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'id'    => array( 'type' => 'integer' ),
+							'name'  => array( 'type' => 'string' ),
+							'slug'  => array( 'type' => 'string' ),
+							'color' => array( 'type' => 'string' ),
+						),
+					),
+				),
+			)
+		);
 		// Rapport d'envoi et d'ouverture pour les Messages
 		register_rest_field(
 			'dame_message',
