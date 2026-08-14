@@ -44,7 +44,7 @@ class PreInscription {
 	 * Initialize the class and register hooks.
 	 */
 	public function init(): void {
-		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
+		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
 	/**
@@ -55,51 +55,51 @@ class PreInscription {
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base,
-			[
-				[
+			array(
+				array(
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ $this, 'handle_submission' ],
+					'callback'            => array( $this, 'handle_submission' ),
 					'permission_callback' => '__return_true',
-				],
-			]
+				),
+			)
 		);
 
 		// Get details of a member for pre-filling
 		register_rest_route(
 			$this->namespace,
 			'/adherent-details',
-			[
-				[
+			array(
+				array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_adherent_details' ],
-					'permission_callback' => [ $this, 'check_user_logged_in' ],
-				],
-			]
+					'callback'            => array( $this, 'get_adherent_details' ),
+					'permission_callback' => array( $this, 'check_user_logged_in' ),
+				),
+			)
 		);
 
 		// Secure PDF download endpoints
 		register_rest_route(
 			$this->namespace,
 			'/pre-inscriptions/(?P<id>\d+)/pdf/health',
-			[
-				[
+			array(
+				array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'generate_health_pdf' ],
-					'permission_callback' => [ $this, 'check_pdf_access' ],
-				],
-			]
+					'callback'            => array( $this, 'generate_health_pdf' ),
+					'permission_callback' => array( $this, 'check_pdf_access' ),
+				),
+			)
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/pre-inscriptions/(?P<id>\d+)/pdf/parental',
-			[
-				[
+			array(
+				array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'generate_parental_pdf' ],
-					'permission_callback' => [ $this, 'check_pdf_access' ],
-				],
-			]
+					'callback'            => array( $this, 'generate_parental_pdf' ),
+					'permission_callback' => array( $this, 'check_pdf_access' ),
+				),
+			)
 		);
 	}
 
@@ -111,7 +111,7 @@ class PreInscription {
 			return new WP_Error(
 				'rest_forbidden',
 				__( 'Vous devez être connecté.', 'dame' ),
-				[ 'status' => 401 ]
+				array( 'status' => 401 )
 			);
 		}
 		return true;
@@ -122,6 +122,8 @@ class PreInscription {
 	 * Access is granted if:
 	 * 1. The request provides the correct download token matching the post meta.
 	 * 2. OR the user is logged in and is the owner/parent or an administrator.
+	 *
+	 * @param WP_REST_Request $request REST request.
 	 */
 	public function check_pdf_access( WP_REST_Request $request ): bool|WP_Error {
 		$post_id = (int) $request['id'];
@@ -141,13 +143,13 @@ class PreInscription {
 			$email        = $current_user->user_email;
 
 			// Admins / staff can access
-			$allowed_roles = [ 'staff', 'entraineur', 'editor', 'administrator' ];
+			$allowed_roles = array( 'staff', 'entraineur', 'editor', 'administrator' );
 			if ( array_intersect( $allowed_roles, (array) $current_user->roles ) ) {
 				return true;
 			}
 
 			// Adherent or legal reps matching the pre-inscription email can access
-			$adh_email = get_post_meta( $post_id, '_dame_email', true );
+			$adh_email  = get_post_meta( $post_id, '_dame_email', true );
 			$rep1_email = get_post_meta( $post_id, '_dame_legal_rep_1_email', true );
 			$rep2_email = get_post_meta( $post_id, '_dame_legal_rep_2_email', true );
 
@@ -159,22 +161,24 @@ class PreInscription {
 		return new WP_Error(
 			'rest_forbidden',
 			__( 'Accès non autorisé à ce document.', 'dame' ),
-			[ 'status' => 403 ]
+			array( 'status' => 403 )
 		);
 	}
 
 	/**
 	 * Get details of an adherent to prefill registration.
+	 *
+	 * @param WP_REST_Request $request REST request.
 	 */
 	public function get_adherent_details( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$adherent_id = (int) $request->get_param( 'adherent_id' );
 		if ( ! $adherent_id ) {
-			return new WP_Error( 'missing_param', __( 'ID adhérent manquant.', 'dame' ), [ 'status' => 400 ] );
+			return new WP_Error( 'missing_param', __( 'ID adhérent manquant.', 'dame' ), array( 'status' => 400 ) );
 		}
 
 		$current_user = wp_get_current_user();
 		$email        = $current_user->user_email;
-		$is_admin     = array_intersect( [ 'staff', 'entraineur', 'editor', 'administrator' ], (array) $current_user->roles );
+		$is_admin     = array_intersect( array( 'staff', 'entraineur', 'editor', 'administrator' ), (array) $current_user->roles );
 
 		if ( ! $is_admin ) {
 			// Verify access
@@ -183,24 +187,52 @@ class PreInscription {
 			$adh_email = get_post_meta( $adherent_id, '_dame_email', true );
 
 			if ( empty( $email ) || ( $email !== $rep_1 && $email !== $rep_2 && $email !== $adh_email ) ) {
-				return new WP_Error( 'forbidden', __( 'Vous n\'avez pas accès à cet adhérent.', 'dame' ), [ 'status' => 403 ] );
+				return new WP_Error( 'forbidden', __( 'Vous n\'avez pas accès à cet adhérent.', 'dame' ), array( 'status' => 403 ) );
 			}
 		}
 
 		// Retrieve all metadata
-		$meta_keys = [
-			'first_name', 'last_name', 'birth_name', 'birth_date', 'birth_city', 'sexe', 'profession',
-			'email', 'phone_number', 'address_1', 'address_2', 'postal_code', 'city', 'taille_vetements',
+		$meta_keys = array(
+			'first_name',
+			'last_name',
+			'birth_name',
+			'birth_date',
+			'birth_city',
+			'sexe',
+			'profession',
+			'email',
+			'phone_number',
+			'address_1',
+			'address_2',
+			'postal_code',
+			'city',
+			'taille_vetements',
 			'license_type',
-			'legal_rep_1_first_name', 'legal_rep_1_last_name', 'legal_rep_1_email', 'legal_rep_1_phone',
-			'legal_rep_1_address_1', 'legal_rep_1_address_2', 'legal_rep_1_postal_code', 'legal_rep_1_city', 'legal_rep_1_profession',
-			'legal_rep_1_date_naissance', 'legal_rep_1_commune_naissance',
-			'legal_rep_2_first_name', 'legal_rep_2_last_name', 'legal_rep_2_email', 'legal_rep_2_phone',
-			'legal_rep_2_address_1', 'legal_rep_2_address_2', 'legal_rep_2_postal_code', 'legal_rep_2_city', 'legal_rep_2_profession',
-			'legal_rep_2_date_naissance', 'legal_rep_2_commune_naissance',
-		];
+			'legal_rep_1_first_name',
+			'legal_rep_1_last_name',
+			'legal_rep_1_email',
+			'legal_rep_1_phone',
+			'legal_rep_1_address_1',
+			'legal_rep_1_address_2',
+			'legal_rep_1_postal_code',
+			'legal_rep_1_city',
+			'legal_rep_1_profession',
+			'legal_rep_1_date_naissance',
+			'legal_rep_1_commune_naissance',
+			'legal_rep_2_first_name',
+			'legal_rep_2_last_name',
+			'legal_rep_2_email',
+			'legal_rep_2_phone',
+			'legal_rep_2_address_1',
+			'legal_rep_2_address_2',
+			'legal_rep_2_postal_code',
+			'legal_rep_2_city',
+			'legal_rep_2_profession',
+			'legal_rep_2_date_naissance',
+			'legal_rep_2_commune_naissance',
+		);
 
-		$details = [];
+		$details = array();
 		foreach ( $meta_keys as $key ) {
 			$details[ $key ] = get_post_meta( $adherent_id, '_dame_' . $key, true );
 		}
@@ -210,6 +242,8 @@ class PreInscription {
 
 	/**
 	 * Handle pre-inscription submission.
+	 *
+	 * @param WP_REST_Request $request REST request.
 	 */
 	public function handle_submission( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 		$params = $request->get_params();
@@ -220,8 +254,8 @@ class PreInscription {
 		}
 
 		// Validation
-		$errors = [];
-		$required_fields = [
+		$errors          = array();
+		$required_fields = array(
 			'dame_first_name'           => __( 'Le prénom est obligatoire.', 'dame' ),
 			'dame_birth_name'           => __( 'Le nom de naissance est obligatoire.', 'dame' ),
 			'dame_birth_date'           => __( 'La date de naissance est obligatoire.', 'dame' ),
@@ -233,7 +267,7 @@ class PreInscription {
 			'dame_city'                 => __( 'La ville est obligatoire.', 'dame' ),
 			'dame_health_questionnaire' => __( 'La réponse au questionnaire de santé est obligatoire.', 'dame' ),
 			'dame_consent_checkbox'     => __( 'Vous devez accepter le règlement intérieur.', 'dame' ),
-		];
+		);
 
 		foreach ( $required_fields as $field_key => $error_message ) {
 			if ( empty( $params[ $field_key ] ) ) {
@@ -249,25 +283,23 @@ class PreInscription {
 				$age   = $today->diff( $birth_date )->y;
 
 				if ( $age < 18 ) {
-					$rep1_required_fields = [
+					$rep1_required_fields = array(
 						'dame_legal_rep_1_first_name' => __( 'Le prénom du représentant légal 1 est obligatoire.', 'dame' ),
 						'dame_legal_rep_1_last_name'  => __( 'Le nom de naissance du représentant légal 1 est obligatoire.', 'dame' ),
 						'dame_legal_rep_1_email'      => __( 'L\'email du représentant légal 1 est obligatoire.', 'dame' ),
 						'dame_legal_rep_1_phone'      => __( 'Le téléphone du représentant légal 1 est obligatoire.', 'dame' ),
 						'dame_legal_rep_1_address_1'  => __( 'L\'adresse du représentant légal 1 est obligatoire.', 'dame' ),
 						'dame_legal_rep_1_city'       => __( 'La ville du représentant légal 1 est obligatoire.', 'dame' ),
-					];
+					);
 
 					foreach ( $rep1_required_fields as $field_key => $error_message ) {
 						if ( empty( $params[ $field_key ] ) ) {
 							$errors[] = $error_message;
 						}
 					}
-				} else {
+				} elseif ( empty( $params['dame_birth_city'] ) ) {
 					// For adults, birth city is required for the honorability check.
-					if ( empty( $params['dame_birth_city'] ) ) {
-						$errors[] = __( 'La commune de naissance est obligatoire pour les personnes majeures.', 'dame' );
-					}
+					$errors[] = __( 'La commune de naissance est obligatoire pour les personnes majeures.', 'dame' );
 				}
 			}
 		}
@@ -284,22 +316,51 @@ class PreInscription {
 		}
 
 		if ( ! empty( $errors ) ) {
-			return new WP_Error( 'validation_failed', implode( '<br>', $errors ), [ 'status' => 400 ] );
+			return new WP_Error( 'validation_failed', implode( '<br>', $errors ), array( 'status' => 400 ) );
 		}
 
 		// Sanitize Data
-		$sanitized_data     = [];
-		$fields_to_sanitize = [
-			'dame_first_name', 'dame_last_name', 'dame_birth_name', 'dame_birth_date', 'dame_license_type', 'dame_birth_city', 'dame_sexe', 'dame_profession',
-			'dame_email', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
-			'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_phone',
-			'dame_legal_rep_1_address_1', 'dame_legal_rep_1_address_2', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city', 'dame_legal_rep_1_profession',
-			'dame_legal_rep_1_date_naissance', 'dame_legal_rep_1_commune_naissance',
-			'dame_legal_rep_2_first_name', 'dame_legal_rep_2_last_name', 'dame_legal_rep_2_email', 'dame_legal_rep_2_phone',
-			'dame_legal_rep_2_address_1', 'dame_legal_rep_2_address_2', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city', 'dame_legal_rep_2_profession',
-			'dame_legal_rep_2_date_naissance', 'dame_legal_rep_2_commune_naissance',
+		$sanitized_data     = array();
+		$fields_to_sanitize = array(
+			'dame_first_name',
+			'dame_last_name',
+			'dame_birth_name',
+			'dame_birth_date',
+			'dame_license_type',
+			'dame_birth_city',
+			'dame_sexe',
+			'dame_profession',
+			'dame_email',
+			'dame_phone_number',
+			'dame_address_1',
+			'dame_address_2',
+			'dame_postal_code',
+			'dame_city',
+			'dame_taille_vetements',
+			'dame_legal_rep_1_first_name',
+			'dame_legal_rep_1_last_name',
+			'dame_legal_rep_1_email',
+			'dame_legal_rep_1_phone',
+			'dame_legal_rep_1_address_1',
+			'dame_legal_rep_1_address_2',
+			'dame_legal_rep_1_postal_code',
+			'dame_legal_rep_1_city',
+			'dame_legal_rep_1_profession',
+			'dame_legal_rep_1_date_naissance',
+			'dame_legal_rep_1_commune_naissance',
+			'dame_legal_rep_2_first_name',
+			'dame_legal_rep_2_last_name',
+			'dame_legal_rep_2_email',
+			'dame_legal_rep_2_phone',
+			'dame_legal_rep_2_address_1',
+			'dame_legal_rep_2_address_2',
+			'dame_legal_rep_2_postal_code',
+			'dame_legal_rep_2_city',
+			'dame_legal_rep_2_profession',
+			'dame_legal_rep_2_date_naissance',
+			'dame_legal_rep_2_commune_naissance',
 			'dame_health_questionnaire',
-		];
+		);
 
 		foreach ( $fields_to_sanitize as $field ) {
 			if ( isset( $params[ $field ] ) ) {
@@ -312,7 +373,7 @@ class PreInscription {
 		}
 
 		// Communication Preferences
-		$sanitized_data['dame_email_refuses_comms'] = ( isset( $params['dame_refuses_comms'] ) && (bool) $params['dame_refuses_comms'] ) ? '1' : '0';
+		$sanitized_data['dame_email_refuses_comms']             = ( isset( $params['dame_refuses_comms'] ) && (bool) $params['dame_refuses_comms'] ) ? '1' : '0';
 		$sanitized_data['dame_legal_rep_1_email_refuses_comms'] = ( isset( $params['dame_legal_rep_1_refuses_comms'] ) && (bool) $params['dame_legal_rep_1_refuses_comms'] ) ? '1' : '0';
 		$sanitized_data['dame_legal_rep_2_email_refuses_comms'] = ( isset( $params['dame_legal_rep_2_refuses_comms'] ) && (bool) $params['dame_legal_rep_2_refuses_comms'] ) ? '1' : '0';
 
@@ -361,15 +422,15 @@ class PreInscription {
 		$effective_last_name = ! empty( $sanitized_data['dame_last_name'] ) ? $sanitized_data['dame_last_name'] : $sanitized_data['dame_birth_name'];
 		$post_title          = Utils::format_lastname( (string) $effective_last_name ) . ' ' . Utils::format_firstname( (string) $sanitized_data['dame_first_name'] );
 
-		$post_data = [
+		$post_data = array(
 			'post_title'  => $post_title,
 			'post_type'   => 'dame_pre_inscription',
 			'post_status' => 'pending',
-		];
+		);
 		$post_id   = wp_insert_post( $post_data, true );
 
 		if ( is_wp_error( $post_id ) ) {
-			return new WP_Error( 'post_creation_failed', __( 'Erreur lors de la création de la préinscription.', 'dame' ), [ 'status' => 500 ] );
+			return new WP_Error( 'post_creation_failed', __( 'Erreur lors de la création de la préinscription.', 'dame' ), array( 'status' => 500 ) );
 		}
 
 		// Generate secure download token
@@ -378,8 +439,8 @@ class PreInscription {
 
 		// Save Meta Data
 		global $wpdb;
-		$meta_insert_values       = [];
-		$meta_insert_placeholders = [];
+		$meta_insert_values       = array();
+		$meta_insert_placeholders = array();
 
 		foreach ( $sanitized_data as $key => $value ) {
 			if ( 'dame_health_questionnaire' === $key ) {
@@ -406,33 +467,35 @@ class PreInscription {
 		$meta_insert_placeholders[] = '(%d, %s, %s)';
 
 		$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
 
 		// Send Email Notification
 		$options         = get_option( 'dame_options' );
 		$recipient_email = isset( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
 
-		$subject  = 'Nouvelle préinscription de ' . $sanitized_data['dame_first_name'] . ' ' . $sanitized_data['dame_last_name'];
-		$body     = "Une nouvelle demande de préinscription a été soumise depuis la PWA.\n\n";
-		$body    .= "Voici les détails :\n";
+		$subject = 'Nouvelle préinscription de ' . $sanitized_data['dame_first_name'] . ' ' . $sanitized_data['dame_last_name'];
+		$body    = "Une nouvelle demande de préinscription a été soumise depuis la PWA.\n\n";
+		$body   .= "Voici les détails :\n";
 		foreach ( $sanitized_data as $key => $value ) {
 			if ( ! empty( $value ) ) {
-				$label  = str_replace( [ 'dame_', '_' ], [ '', ' ' ], $key );
-				$label  = mb_convert_case( $label, MB_CASE_TITLE, 'UTF-8' );
-				$body  .= '- ' . $label . ': ' . $value . "\n";
+				$label = str_replace( array( 'dame_', '_' ), array( '', ' ' ), $key );
+				$label = mb_convert_case( $label, MB_CASE_TITLE, 'UTF-8' );
+				$body .= '- ' . $label . ': ' . $value . "\n";
 			}
 		}
-		$headers = [ 'From: ' . $recipient_email ];
+		$headers = array( 'From: ' . $recipient_email );
 		wp_mail( $recipient_email, $subject, $body, $headers );
 
 		$payment_url  = isset( $options['payment_url'] ) ? $options['payment_url'] : '';
 		$sender_email = isset( $options['sender_email'] ) && ! empty( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
 
 		return rest_ensure_response(
-			[
+			array(
 				'success'              => true,
 				'message'              => sprintf(
-					__( 'La préinscription pour %s %s a bien été enregistrée.', 'dame' ),
+					/* translators: 1: Prénom de l'adhérent, 2: Nom de famille */
+					__( 'La préinscription pour %1$s %2$s a bien été enregistrée.', 'dame' ),
 					$sanitized_data['dame_first_name'],
 					$sanitized_data['dame_last_name']
 				),
@@ -442,12 +505,14 @@ class PreInscription {
 				'is_minor'             => $is_minor,
 				'payment_url'          => $payment_url,
 				'sender_email'         => $sender_email,
-			]
+			)
 		);
 	}
 
 	/**
 	 * Generate Health PDF.
+	 *
+	 * @param WP_REST_Request $request REST request.
 	 */
 	public function generate_health_pdf( WP_REST_Request $request ): void {
 		$post_id = (int) $request['id'];
@@ -461,6 +526,8 @@ class PreInscription {
 
 	/**
 	 * Generate Parental PDF.
+	 *
+	 * @param WP_REST_Request $request REST request.
 	 */
 	public function generate_parental_pdf( WP_REST_Request $request ): void {
 		$post_id = (int) $request['id'];
@@ -469,6 +536,8 @@ class PreInscription {
 
 	/**
 	 * Fpdi logic for Health Form.
+	 *
+	 * @param int $post_id Post ID.
 	 */
 	private function output_health_form( int $post_id ): void {
 		$first_name     = get_post_meta( $post_id, '_dame_first_name', true );
@@ -481,7 +550,7 @@ class PreInscription {
 		$legal_rep_1_city       = get_post_meta( $post_id, '_dame_legal_rep_1_city', true );
 
 		if ( empty( $first_name ) || empty( $last_name ) || empty( $birth_date_str ) || empty( $city ) ) {
-			wp_die( __( 'Données de préinscription manquantes ou invalides.', 'dame' ), 404 );
+			wp_die( esc_html__( 'Données de préinscription manquantes ou invalides.', 'dame' ), 404 );
 		}
 
 		$birth_date = DateTime::createFromFormat( 'Y-m-d', $birth_date_str );
@@ -494,18 +563,17 @@ class PreInscription {
 		$full_name_adherent_for_pdf = mb_convert_encoding( $full_name_adherent_for_pdf, 'ISO-8859-1', 'UTF-8' );
 		$city_for_pdf               = mb_convert_encoding( $city, 'ISO-8859-1', 'UTF-8' );
 
-
-
 		$pdf = new \setasign\Fpdi\Fpdi();
 		$pdf->AddPage();
 
 		try {
 			$template_path = DAME_PLUGIN_DIR . 'assets/pdf/ffe_attestation_sante.pdf';
 			$pdf->setSourceFile( $template_path );
-			$tplId = $pdf->importPage( 1 );
-			$pdf->useTemplate( $tplId, 0, 0, 210, 297 );
+			$tpl_id = $pdf->importPage( 1 );
+			$pdf->useTemplate( $tpl_id, 0, 0, 210, 297 );
 		} catch ( Exception $e ) {
-			wp_die( sprintf( __( 'Erreur lors du chargement du template PDF : %s', 'dame' ), $e->getMessage() ), 500 );
+			/* translators: %s: Message d'erreur */
+			wp_die( esc_html( sprintf( __( 'Erreur lors du chargement du template PDF : %s', 'dame' ), $e->getMessage() ) ), 500 );
 		}
 
 		$pdf->SetFont( 'Helvetica' );
@@ -520,7 +588,7 @@ class PreInscription {
 			$pdf->Write( 0, $city_for_pdf );
 		} else {
 			if ( empty( $legal_rep_1_first_name ) || empty( $legal_rep_1_last_name ) || empty( $legal_rep_1_city ) ) {
-				wp_die( __( 'Données du représentant légal manquantes pour un adhérent mineur.', 'dame' ), 400 );
+				wp_die( esc_html__( 'Données du représentant légal manquantes pour un adhérent mineur.', 'dame' ), 400 );
 			}
 			$full_name_rep1_for_pdf   = Utils::format_lastname( (string) $legal_rep_1_last_name ) . ' ' . Utils::format_firstname( (string) $legal_rep_1_first_name );
 			$full_name_rep1_for_pdf   = mb_convert_encoding( $full_name_rep1_for_pdf, 'ISO-8859-1', 'UTF-8' );
@@ -543,6 +611,8 @@ class PreInscription {
 
 	/**
 	 * Fpdi logic for Parental Auth.
+	 *
+	 * @param int $post_id Post ID.
 	 */
 	private function output_parental_auth( int $post_id ): void {
 		$first_name     = get_post_meta( $post_id, '_dame_first_name', true );
@@ -563,7 +633,7 @@ class PreInscription {
 		$rl2_profession  = get_post_meta( $post_id, '_dame_legal_rep_2_profession', true );
 
 		if ( empty( $first_name ) || empty( $last_name ) || empty( $birth_date_str ) ) {
-			wp_die( __( 'Données de préinscription de l\'adhérent manquantes ou invalides.', 'dame' ), 404 );
+			wp_die( esc_html__( 'Données de préinscription de l\'adhérent manquantes ou invalides.', 'dame' ), 404 );
 		}
 
 		$adherent_full_name            = mb_convert_encoding( Utils::generate_adherent_title( $post_id ), 'ISO-8859-1', 'UTF-8' );
@@ -575,8 +645,6 @@ class PreInscription {
 			$rl1_full_name = mb_convert_encoding( Utils::format_lastname( (string) $rl1_last_name ) . ' ' . Utils::format_firstname( (string) $rl1_first_name ), 'ISO-8859-1', 'UTF-8' );
 		}
 
-
-
 		$pdf = new \setasign\Fpdi\Fpdi();
 		$pdf->AddPage();
 		$pdf->SetAutoPageBreak( true, 0 );
@@ -584,10 +652,11 @@ class PreInscription {
 		try {
 			$template_path = DAME_PLUGIN_DIR . 'assets/pdf/el_autorisation_parentale.pdf';
 			$pdf->setSourceFile( $template_path );
-			$tplId = $pdf->importPage( 1 );
-			$pdf->useTemplate( $tplId, 0, 0, 210, 297 );
+			$tpl_id = $pdf->importPage( 1 );
+			$pdf->useTemplate( $tpl_id, 0, 0, 210, 297 );
 		} catch ( Exception $e ) {
-			wp_die( sprintf( __( 'Erreur lors du chargement du template PDF : %s', 'dame' ), $e->getMessage() ), 500 );
+			/* translators: %s: Message d'erreur */
+			wp_die( esc_html( sprintf( __( 'Erreur lors du chargement du template PDF : %s', 'dame' ), $e->getMessage() ) ), 500 );
 		}
 
 		$pdf->SetFont( 'Helvetica', '', 12 );

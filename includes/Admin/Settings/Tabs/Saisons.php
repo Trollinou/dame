@@ -25,14 +25,14 @@ class Saisons {
 	 * Register settings.
 	 */
 	public function register(): void {
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
 		// Registers actions/hooks logic
 		// If called during admin_init (via Main::register_settings), execute directly.
 		if ( doing_action( 'admin_init' ) ) {
 			$this->handle_actions();
 		} else {
-			add_action( 'admin_init', [ $this, 'handle_actions' ] );
+			add_action( 'admin_init', array( $this, 'handle_actions' ) );
 		}
 	}
 
@@ -42,14 +42,19 @@ class Saisons {
 	 * @param string $hook The current admin page hook.
 	 */
 	public function enqueue_scripts( $hook ): void {
-		if ( strpos( $hook, 'dame-settings' ) === false || ( isset( $_GET['tab'] ) && $_GET['tab'] !== 'saisons' ) ) {
+		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
+		if ( false === strpos( $hook, 'dame-settings' ) || 'saisons' !== $tab ) {
 			return;
 		}
 
 		wp_enqueue_script( 'dame-admin-saisons', \DAME_PLUGIN_URL . 'assets/js/admin-saisons.js', array(), \DAME_VERSION, true );
-		wp_localize_script( 'dame-admin-saisons', 'dame_saisons_data', array(
-			'confirm_reset' => __( "Êtes-vous sûr de vouloir initialiser la nouvelle saison ? Cela créera un nouveau tag et le définira comme saison active.", 'dame' )
-		) );
+		wp_localize_script(
+			'dame-admin-saisons',
+			'dame_saisons_data',
+			array(
+				'confirm_reset' => __( 'Êtes-vous sûr de vouloir initialiser la nouvelle saison ? Cela créera un nouveau tag et le définira comme saison active.', 'dame' ),
+			)
+		);
 	}
 
 	/**
@@ -84,7 +89,7 @@ class Saisons {
 			$current_season_term = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
 			if ( $current_season_term && ! is_wp_error( $current_season_term ) ) {
 				if ( preg_match( '/(\d{4})\/(\d{4})/', $current_season_term->name, $matches ) ) {
-					$end_year = (int) $matches[2];
+					$end_year               = (int) $matches[2];
 					$next_season_start_year = $end_year;
 					$next_season_end_year   = $next_season_start_year + 1;
 					return sprintf( 'Saison %d/%d', $next_season_start_year, $next_season_end_year );
@@ -104,42 +109,72 @@ class Saisons {
 	 * Handle actions.
 	 */
 	public function handle_actions(): void {
-		if ( isset( $_POST['dame_season_management_nonce_field'] ) && wp_verify_nonce( $_POST['dame_season_management_nonce_field'], 'dame_season_management_nonce' ) ) {
-			if ( isset( $_POST['dame_action'] ) && 'annual_reset' === $_POST['dame_action'] ) {
+		$nonce = isset( $_POST['dame_season_management_nonce_field'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_season_management_nonce_field'] ) ) : '';
+		if ( wp_verify_nonce( $nonce, 'dame_season_management_nonce' ) ) {
+			$action = isset( $_POST['dame_action'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_action'] ) ) : '';
+			if ( 'annual_reset' === $action ) {
 				$new_season_name = $this->get_next_season_name();
 
 				if ( term_exists( $new_season_name, 'dame_saison_adhesion' ) ) {
-					add_action( 'admin_notices', function() use ( $new_season_name ) {
-						echo '<div class="error"><p>' . sprintf( esc_html__( 'L\'opération ne peut être effectuée car la saison "%s" a déjà été créée.', 'dame' ), esc_html( $new_season_name ) ) . '</p></div>';
-					} );
+					add_action(
+						'admin_notices',
+						function () use ( $new_season_name ) {
+							echo '<div class="error"><p>' . sprintf(
+								/* translators: %s: Nom de la saison */
+								esc_html__( 'L\'opération ne peut être effectuée car la saison "%s" a déjà été créée.', 'dame' ),
+								esc_html( $new_season_name )
+							) . '</p></div>';
+						}
+					);
 					return;
 				}
 
 				$new_season_term = wp_insert_term( $new_season_name, 'dame_saison_adhesion' );
 
 				if ( is_wp_error( $new_season_term ) ) {
-					add_action( 'admin_notices', function() use ( $new_season_term ) {
-						echo '<div class="error"><p>' . sprintf( esc_html__( 'Erreur lors de la création de la saison : %s', 'dame' ), $new_season_term->get_error_message() ) . '</p></div>';
-					} );
+					add_action(
+						'admin_notices',
+						function () use ( $new_season_term ) {
+							echo '<div class="error"><p>' . sprintf(
+								/* translators: %s: Message d'erreur */
+								esc_html__( 'Erreur lors de la création de la saison : %s', 'dame' ),
+								esc_html( $new_season_term->get_error_message() )
+							) . '</p></div>';
+						}
+					);
 					return;
 				}
 
 				update_option( 'dame_current_season_tag_id', $new_season_term['term_id'] );
-				add_action( 'admin_notices', function() use ( $new_season_name ) {
-					echo '<div class="updated"><p>' . sprintf( esc_html__( 'Nouvelle saison initialisée avec succès. La saison active est maintenant : %s', 'dame' ), '<strong>' . esc_html( $new_season_name ) . '</strong>' ) . '</p></div>';
-				} );
+				add_action(
+					'admin_notices',
+					function () use ( $new_season_name ) {
+						echo '<div class="updated"><p>' . sprintf(
+							/* translators: %s: Nom de la saison */
+							esc_html__( 'Nouvelle saison initialisée avec succès. La saison active est maintenant : %s', 'dame' ),
+							'<strong>' . esc_html( $new_season_name ) . '</strong>'
+						) . '</p></div>';
+					}
+				);
 			}
 
-			if ( isset( $_POST['dame_action'] ) && 'update_current_season' === $_POST['dame_action'] ) {
+			if ( 'update_current_season' === $action ) {
 				if ( isset( $_POST['dame_current_season_selector'] ) ) {
 					$selected_season_id = (int) $_POST['dame_current_season_selector'];
-					$term = get_term( $selected_season_id, 'dame_saison_adhesion' );
+					$term               = get_term( $selected_season_id, 'dame_saison_adhesion' );
 
 					if ( $term && ! is_wp_error( $term ) ) {
 						update_option( 'dame_current_season_tag_id', $selected_season_id );
-						add_action( 'admin_notices', function() use ( $term ) {
-							echo '<div class="updated"><p>' . sprintf( esc_html__( 'La saison active a été mise à jour : %s', 'dame' ), '<strong>' . esc_html( $term->name ) . '</strong>' ) . '</p></div>';
-						} );
+						add_action(
+							'admin_notices',
+							function () use ( $term ) {
+								echo '<div class="updated"><p>' . sprintf(
+									/* translators: %s: Nom de la saison */
+									esc_html__( 'La saison active a été mise à jour : %s', 'dame' ),
+									'<strong>' . esc_html( $term->name ) . '</strong>'
+								) . '</p></div>';
+							}
+						);
 					}
 				}
 			}
@@ -150,18 +185,20 @@ class Saisons {
 	 * Render UI.
 	 */
 	public function render_ui(): void {
-		$seasons = get_terms( array(
-			'taxonomy'   => 'dame_saison_adhesion',
-			'hide_empty' => false,
-			'orderby'    => 'name',
-			'order'      => 'DESC',
-		) );
+		$seasons = get_terms(
+			array(
+				'taxonomy'   => 'dame_saison_adhesion',
+				'hide_empty' => false,
+				'orderby'    => 'name',
+				'order'      => 'DESC',
+			)
+		);
 
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
 		?>
 		<div>
 			<div>
-				<h3><?php esc_html_e( "Saison Active", 'dame' ); ?></h3>
+				<h3><?php esc_html_e( 'Saison Active', 'dame' ); ?></h3>
 				<p><?php esc_html_e( "Sélectionnez la saison d'adhésion à utiliser comme saison active sur l'ensemble du site.", 'dame' ); ?></p>
 				<form method="post">
 					<input type="hidden" name="dame_action" value="update_current_season">
@@ -186,11 +223,11 @@ class Saisons {
 			<hr style="margin: 20px 0;">
 
 			<div>
-				<h3><?php esc_html_e( "Nouvelle Saison", 'dame' ); ?></h3>
+				<h3><?php esc_html_e( 'Nouvelle Saison', 'dame' ); ?></h3>
 				<p><?php esc_html_e( 'Cette action prépare le système pour la prochaine saison d\'adhésion en créant le nouveau tag.', 'dame' ); ?></p>
 				<?php
 				$next_season_name = $this->get_next_season_name();
-				$disabled = term_exists( $next_season_name, 'dame_saison_adhesion' ) ? 'disabled' : '';
+				$disabled         = term_exists( $next_season_name, 'dame_saison_adhesion' ) ? 'disabled' : '';
 				?>
 				<form method="post">
 					<input type="hidden" name="dame_action" value="annual_reset" />
@@ -199,9 +236,17 @@ class Saisons {
 					<p class="description">
 						<?php
 						if ( $disabled ) {
-							echo esc_html( sprintf( __( 'La saison "%s" a déjà été créée.', 'dame' ), $next_season_name ) );
+							printf(
+								/* translators: %s: Nom de la saison */
+								esc_html__( 'La saison "%s" a déjà été créée.', 'dame' ),
+								esc_html( $next_season_name )
+							);
 						} else {
-							echo esc_html( sprintf( __( 'Cette action créera et activera la saison "%s".', 'dame' ), $next_season_name ) );
+							printf(
+								/* translators: %s: Nom de la saison */
+								esc_html__( 'Cette action créera et activera la saison "%s".', 'dame' ),
+								esc_html( $next_season_name )
+							);
 						}
 						?>
 					</p>

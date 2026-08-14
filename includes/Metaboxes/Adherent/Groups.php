@@ -22,14 +22,14 @@ class Groups {
 		add_meta_box(
 			'dame_group_checklist_metabox',
 			__( 'Groupes', 'dame' ),
-			[ $this, 'render' ],
+			array( $this, 'render' ),
 			'adherent',
 			'side',
 			'high'
 		);
 
 		// Add filter to open it by default
-		add_filter( 'postbox_classes_adherent_dame_group_checklist_metabox', [ $this, 'open_metabox_by_default' ] );
+		add_filter( 'postbox_classes_adherent_dame_group_checklist_metabox', array( $this, 'open_metabox_by_default' ) );
 	}
 
 	/**
@@ -65,7 +65,7 @@ class Groups {
 						$post->ID,
 						array(
 							'taxonomy'      => $taxonomy,
-							'popular_cats'  => [],
+							'popular_cats'  => array(),
 							'checked_ontop' => false, // Keep alphabetical order.
 						)
 					);

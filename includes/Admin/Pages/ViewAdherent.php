@@ -16,7 +16,7 @@ class ViewAdherent {
 	 * Initialize the page.
 	 */
 	public function init(): void {
-		add_action( 'admin_menu', [ $this, 'register' ] );
+		add_action( 'admin_menu', array( $this, 'register' ) );
 	}
 
 	/**
@@ -29,10 +29,10 @@ class ViewAdherent {
 			__( 'Consulter Adhérent', 'dame' ),
 			'read_private_pages', // Capability
 			'dame-view-adherent',
-			[ $this, 'render' ]
+			array( $this, 'render' )
 		);
 
-		add_action( 'admin_head', [ $this, 'hide_menu_link' ] );
+		add_action( 'admin_head', array( $this, 'hide_menu_link' ) );
 	}
 
 	/**
@@ -91,22 +91,22 @@ class ViewAdherent {
 								<table class="form-table">
 									<?php
 									$fields = array(
-										'Nom de naissance'    => '_dame_birth_name',
-										'Nom d\'usage'        => '_dame_last_name',
-										'Prénom'              => '_dame_first_name',
-										'Sexe'                => '_dame_sexe',
-										'Date de naissance'   => '_dame_birth_date',
-										'Lieu de naissance'   => '_dame_birth_city',
+										'Nom de naissance' => '_dame_birth_name',
+										'Nom d\'usage'     => '_dame_last_name',
+										'Prénom'           => '_dame_first_name',
+										'Sexe'             => '_dame_sexe',
+										'Date de naissance' => '_dame_birth_date',
+										'Lieu de naissance' => '_dame_birth_city',
 										'Numéro de téléphone' => '_dame_phone_number',
-										'Email'               => '_dame_email',
-										'Profession'          => '_dame_profession',
-										'Adresse'             => '_dame_address_1',
-										'Complément'          => '_dame_address_2',
-										'Code Postal'         => '_dame_postal_code',
-										'Ville'               => '_dame_city',
-										'Pays'                => '_dame_country',
-										'Département'         => '_dame_department',
-										'Région'              => '_dame_region',
+										'Email'            => '_dame_email',
+										'Profession'       => '_dame_profession',
+										'Adresse'          => '_dame_address_1',
+										'Complément'       => '_dame_address_2',
+										'Code Postal'      => '_dame_postal_code',
+										'Ville'            => '_dame_city',
+										'Pays'             => '_dame_country',
+										'Département'      => '_dame_department',
+										'Région'           => '_dame_region',
 									);
 									foreach ( $fields as $label => $key ) {
 										$this->render_field( $label, get_post_meta( $post_id, $key, true ) );
@@ -122,7 +122,7 @@ class ViewAdherent {
 									<?php
 									$school_fields = array(
 										'Établissement scolaire' => '_dame_school_name',
-										'Académie'               => '_dame_school_academy',
+										'Académie' => '_dame_school_academy',
 									);
 									foreach ( $school_fields as $label => $key ) {
 										$this->render_field( $label, get_post_meta( $post_id, $key, true ) );
@@ -138,18 +138,18 @@ class ViewAdherent {
 								<table class="form-table">
 									<?php
 									$rep1_fields = array(
-										'Nom de naissance'         => '_dame_legal_rep_1_last_name',
-										'Prénom'                   => '_dame_legal_rep_1_first_name',
-										'Date de naissance'        => '_dame_legal_rep_1_date_naissance',
-										'Lieu de naissance'        => '_dame_legal_rep_1_commune_naissance',
+										'Nom de naissance' => '_dame_legal_rep_1_last_name',
+										'Prénom'           => '_dame_legal_rep_1_first_name',
+										'Date de naissance' => '_dame_legal_rep_1_date_naissance',
+										'Lieu de naissance' => '_dame_legal_rep_1_commune_naissance',
 										'Contrôle d\'honorabilité' => '_dame_legal_rep_1_honorabilite',
-										'Numéro de téléphone'      => '_dame_legal_rep_1_phone',
-										'Email'                    => '_dame_legal_rep_1_email',
-										'Profession'               => '_dame_legal_rep_1_profession',
-										'Adresse'                  => '_dame_legal_rep_1_address_1',
-										'Complément'               => '_dame_legal_rep_1_address_2',
-										'Code Postal'              => '_dame_legal_rep_1_postal_code',
-										'Ville'                    => '_dame_legal_rep_1_city',
+										'Numéro de téléphone' => '_dame_legal_rep_1_phone',
+										'Email'            => '_dame_legal_rep_1_email',
+										'Profession'       => '_dame_legal_rep_1_profession',
+										'Adresse'          => '_dame_legal_rep_1_address_1',
+										'Complément'       => '_dame_legal_rep_1_address_2',
+										'Code Postal'      => '_dame_legal_rep_1_postal_code',
+										'Ville'            => '_dame_legal_rep_1_city',
 									);
 									foreach ( $rep1_fields as $label => $key ) {
 										$this->render_field( $label, get_post_meta( $post_id, $key, true ) );
@@ -161,18 +161,18 @@ class ViewAdherent {
 								<table class="form-table">
 									<?php
 									$rep2_fields = array(
-										'Nom de naissance'         => '_dame_legal_rep_2_last_name',
-										'Prénom'                   => '_dame_legal_rep_2_first_name',
-										'Date de naissance'        => '_dame_legal_rep_2_date_naissance',
-										'Lieu de naissance'        => '_dame_legal_rep_2_commune_naissance',
+										'Nom de naissance' => '_dame_legal_rep_2_last_name',
+										'Prénom'           => '_dame_legal_rep_2_first_name',
+										'Date de naissance' => '_dame_legal_rep_2_date_naissance',
+										'Lieu de naissance' => '_dame_legal_rep_2_commune_naissance',
 										'Contrôle d\'honorabilité' => '_dame_legal_rep_2_honorabilite',
-										'Numéro de téléphone'      => '_dame_legal_rep_2_phone',
-										'Email'                    => '_dame_legal_rep_2_email',
-										'Profession'               => '_dame_legal_rep_2_profession',
-										'Adresse'                  => '_dame_legal_rep_2_address_1',
-										'Complément'               => '_dame_legal_rep_2_address_2',
-										'Code Postal'              => '_dame_legal_rep_2_postal_code',
-										'Ville'                    => '_dame_legal_rep_2_city',
+										'Numéro de téléphone' => '_dame_legal_rep_2_phone',
+										'Email'            => '_dame_legal_rep_2_email',
+										'Profession'       => '_dame_legal_rep_2_profession',
+										'Adresse'          => '_dame_legal_rep_2_address_1',
+										'Complément'       => '_dame_legal_rep_2_address_2',
+										'Code Postal'      => '_dame_legal_rep_2_postal_code',
+										'Ville'            => '_dame_legal_rep_2_city',
 									);
 									foreach ( $rep2_fields as $label => $key ) {
 										$this->render_field( $label, get_post_meta( $post_id, $key, true ) );
@@ -187,10 +187,10 @@ class ViewAdherent {
 								<table class="form-table">
 									<?php
 									$diverse_fields = array(
-										'Autre téléphone'     => '_dame_autre_telephone',
-										'Taille vêtements'    => '_dame_taille_vetements',
-										'Allergies connues'   => '_dame_allergies',
-										'Régime alimentaire'  => '_dame_diet',
+										'Autre téléphone'  => '_dame_autre_telephone',
+										'Taille vêtements' => '_dame_taille_vetements',
+										'Allergies connues' => '_dame_allergies',
+										'Régime alimentaire' => '_dame_diet',
 										'Moyen de locomotion' => '_dame_transport',
 									);
 									foreach ( $diverse_fields as $label => $key ) {
@@ -207,10 +207,10 @@ class ViewAdherent {
 							<div class="inside">
 								<?php
 								$classification_fields = array(
-									'Numéro de licence'        => '_dame_license_number',
-									'Type de licence'          => '_dame_license_type',
-									'Document de santé'        => '_dame_health_document',
-									'Niveau d\'arbitre'        => '_dame_arbitre_level',
+									'Numéro de licence' => '_dame_license_number',
+									'Type de licence'   => '_dame_license_type',
+									'Document de santé' => '_dame_health_document',
+									'Niveau d\'arbitre' => '_dame_arbitre_level',
 									'Contrôle d\'honorabilité' => '_dame_adherent_honorabilite',
 								);
 								foreach ( $classification_fields as $label => $key ) {

@@ -1,26 +1,22 @@
 {
   "name": "dame",
-  "version": "4.8.6",
+  "version": "5.0.0",
   "description": "Dossier Administratif des Membres Échiquéens",
   "scripts": {
     "build:css": "sass src/scss/:assets/css/ --style=compressed --no-source-map",
     "build:js": "node minify-js.js",
     "build": "npm run build:css && npm run build:js",
-    "lint:js": "wp-scripts lint-js src/js/",
+    "lint:js": "eslint src/js/",
     "package": "node script/package.cjs",
     "watch": "sass --watch src/scss/:assets/css/"
   },
   "devDependencies": {
-    "@types/react": "^18.3.3",
-    "@playwright/test": "^1.62.1",
-    "@wordpress/scripts": "^34.0.0",
+    "@wordpress/eslint-plugin": "^25.9.0",
     "adm-zip": "^0.6.0",
+    "eslint": "^9.39.5",
     "minimatch": "^10.2.6",
     "sass": "^1.102.0",
     "terser": "^5.49.2"
-  },
-  "dependencies": {
-    "pinia": "^4.0.2"
   },
   "allowScripts": {
     "fsevents@2.3.3": true,
@@ -31,6 +27,7 @@
     "@parcel/watcher@2.6.0": true
   },
   "overrides": {
-    "react": "^18.3.1"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }

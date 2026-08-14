@@ -20,21 +20,21 @@ class Message {
 	 * Initialize the actions.
 	 */
 	public function init(): void {
-		add_filter( 'post_row_actions', [ $this, 'add_duplicate_link' ], 10, 2 );
-		add_filter( 'post_row_actions', [ $this, 'add_to_post_link' ], 10, 2 );
-		add_filter( 'post_row_actions', [ $this, 'add_reset_link' ], 10, 2 );
-		add_filter( 'post_row_actions', [ $this, 'add_force_sent_link' ], 10, 2 );
-		add_action( 'admin_action_dame_duplicate', [ $this, 'handle_duplicate' ] );
-		add_action( 'admin_action_dame_to_post', [ $this, 'handle_to_post' ] );
-		add_action( 'admin_action_dame_reset_send', [ $this, 'handle_reset' ] );
-		add_action( 'admin_action_dame_force_sent', [ $this, 'handle_force_sent' ] );
+		add_filter( 'post_row_actions', array( $this, 'add_duplicate_link' ), 10, 2 );
+		add_filter( 'post_row_actions', array( $this, 'add_to_post_link' ), 10, 2 );
+		add_filter( 'post_row_actions', array( $this, 'add_reset_link' ), 10, 2 );
+		add_filter( 'post_row_actions', array( $this, 'add_force_sent_link' ), 10, 2 );
+		add_action( 'admin_action_dame_duplicate', array( $this, 'handle_duplicate' ) );
+		add_action( 'admin_action_dame_to_post', array( $this, 'handle_to_post' ) );
+		add_action( 'admin_action_dame_reset_send', array( $this, 'handle_reset' ) );
+		add_action( 'admin_action_dame_force_sent', array( $this, 'handle_force_sent' ) );
 	}
 
 	/**
 	 * Add "Duplicate" link to row actions.
 	 *
 	 * @param array<string, mixed> $actions Existing actions.
-	 * @param \WP_Post $post    Current post.
+	 * @param \WP_Post             $post    Current post.
 	 * @return array<string, mixed> Modified actions.
 	 */
 	public function add_duplicate_link( $actions, $post ): array {
@@ -60,7 +60,7 @@ class Message {
 	 * Add "Dupliquer en tant qu'article" link to row actions.
 	 *
 	 * @param array<string, mixed> $actions Existing actions.
-	 * @param \WP_Post $post    Current post.
+	 * @param \WP_Post             $post    Current post.
 	 * @return array<string, mixed> Modified actions.
 	 */
 	public function add_to_post_link( array $actions, WP_Post $post ): array {
@@ -87,11 +87,11 @@ class Message {
 	/**
 	 * Add "Reset envoi" link to row actions.
 	 *
-	 * @param array<string, mixed>    $actions Existing actions.
-	 * @param \WP_Post $post    Current post.
+	 * @param array<string, mixed> $actions Existing actions.
+	 * @param \WP_Post             $post    Current post.
 	 * @return array<string, mixed> Modified actions.
 	 */
-	 public function add_reset_link( $actions, $post ): array {
+	public function add_reset_link( $actions, $post ): array {
 
 		if ( 'dame_message' !== $post->post_type || ! current_user_can( 'edit_dame_messages' ) ) {
 			return $actions;
@@ -146,7 +146,7 @@ class Message {
 	 * Handle duplication to post.
 	 */
 	public function handle_to_post(): void {
-		$post = $this->get_verified_post( 'dame_to_post', [ 'edit_dame_messages', 'edit_posts' ] );
+		$post = $this->get_verified_post( 'dame_to_post', array( 'edit_dame_messages', 'edit_posts' ) );
 
 		$new_post_args = array(
 			'post_title'   => $post->post_title,
@@ -189,7 +189,7 @@ class Message {
 	 * Handle reset of message send data.
 	 */
 	public function handle_reset(): void {
-		$post = $this->get_verified_post( 'dame_reset_send' );
+		$post    = $this->get_verified_post( 'dame_reset_send' );
 		$post_id = $post->ID;
 
 		// 1. Reset message metadata
@@ -197,7 +197,7 @@ class Message {
 		update_post_meta( $post_id, '_dame_message_recipients_count', 0 );
 		update_post_meta( $post_id, '_dame_scheduled_batches_processed', 0 );
 		update_post_meta( $post_id, '_dame_scheduled_batches_total', 0 );
-		
+
 		// Clear selection criteria
 		delete_post_meta( $post_id, '_dame_recipient_method' );
 		delete_post_meta( $post_id, '_dame_recipient_seasons' );
@@ -217,19 +217,19 @@ class Message {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$wpdb->delete(
 			$wpdb->postmeta,
-			[
+			array(
 				'meta_key'   => '_dame_message_received',
 				'meta_value' => (string) $post_id,
-			],
-			[ '%s', '%s' ]
+			),
+			array( '%s', '%s' )
 		);
 
 		// Also purge the individual send dates
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$wpdb->delete(
 			$wpdb->postmeta,
-			[ 'meta_key' => "_dame_message_{$post_id}_sent_at" ],
-			[ '%s' ]
+			array( 'meta_key' => "_dame_message_{$post_id}_sent_at" ),
+			array( '%s' )
 		);
 
 		// 3. Purge tracking data (opens)
@@ -237,8 +237,8 @@ class Message {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$wpdb->delete(
 			$table_opens,
-			[ 'message_id' => $post_id ],
-			[ '%d' ]
+			array( 'message_id' => $post_id ),
+			array( '%d' )
 		);
 
 		// Redirect back with success message.
@@ -248,9 +248,9 @@ class Message {
 
 	/**
 	 * Add "Forcer Envoyé" link.
-	 * 
+	 *
 	 * @param array<string, mixed> $actions Existing actions.
-	 * @param \WP_Post $post Current post.
+	 * @param \WP_Post             $post Current post.
 	 * @return array<string, mixed> Modified actions.
 	 */
 	public function add_force_sent_link( $actions, $post ): array {
@@ -281,7 +281,7 @@ class Message {
 	 * Handle manual completion.
 	 */
 	public function handle_force_sent(): void {
-		$post = $this->get_verified_post( 'dame_force_sent' );
+		$post    = $this->get_verified_post( 'dame_force_sent' );
 		$post_id = $post->ID;
 
 		$total = (int) get_post_meta( $post_id, '_dame_scheduled_batches_total', true );

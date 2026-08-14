@@ -21,23 +21,23 @@ class Post_Meta {
 	 * Initialize the meta registration.
 	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register_all_meta' ] );
-		add_action( 'rest_api_init', [ $this, 'register_custom_rest_fields' ] );
-		add_action( 'rest_after_insert_adherent', [ $this, 'update_titles_after_rest' ] );
-		add_action( 'rest_after_insert_dame_contact', [ $this, 'update_titles_after_rest' ] );
-		add_action( 'rest_after_insert_dame_pre_inscription', [ $this, 'update_titles_after_rest' ] );
-		add_filter( 'rest_dame_agenda_query', [ $this, 'filter_agenda_query' ], 10, 2 );
-		add_filter( 'rest_dame_agenda_collection_params', [ $this, 'allow_meta_orderby' ] );
-		add_filter( 'rest_pre_serve_request', [ $this, 'expose_cors_headers' ], 10, 4 );
+		add_action( 'init', array( $this, 'register_all_meta' ) );
+		add_action( 'rest_api_init', array( $this, 'register_custom_rest_fields' ) );
+		add_action( 'rest_after_insert_adherent', array( $this, 'update_titles_after_rest' ) );
+		add_action( 'rest_after_insert_dame_contact', array( $this, 'update_titles_after_rest' ) );
+		add_action( 'rest_after_insert_dame_pre_inscription', array( $this, 'update_titles_after_rest' ) );
+		add_filter( 'rest_dame_agenda_query', array( $this, 'filter_agenda_query' ), 10, 2 );
+		add_filter( 'rest_dame_agenda_collection_params', array( $this, 'allow_meta_orderby' ) );
+		add_filter( 'rest_pre_serve_request', array( $this, 'expose_cors_headers' ), 10, 4 );
 	}
 
 	/**
 	 * Exposes pagination headers for REST API CORS requests.
 	 *
-	 * @param bool             $served  Whether the request has already been served.
-	 * @param mixed            $result  Result to send to the client.
-	 * @param WP_REST_Request  $request Request object.
-	 * @param \WP_REST_Server  $server  Server instance.
+	 * @param bool            $served  Whether the request has already been served.
+	 * @param mixed           $result  Result to send to the client.
+	 * @param WP_REST_Request $request Request object.
+	 * @param \WP_REST_Server $server  Server instance.
 	 * @return bool Unchanged served parameter.
 	 */
 	public function expose_cors_headers( bool $served, mixed $result, WP_REST_Request $request, $server ): bool {
@@ -78,34 +78,34 @@ class Post_Meta {
 		$before_date = $request->get_param( 'before_date' );
 
 		if ( ! isset( $args['meta_query'] ) ) {
-			$args['meta_query'] = [];
+			$args['meta_query'] = array();
 		}
 
 		if ( $after_date ) {
-			$args['meta_query'][] = [
+			$args['meta_query'][] = array(
 				'relation' => 'OR',
-				[
+				array(
 					'key'     => '_dame_start_date',
 					'value'   => $after_date,
 					'compare' => '>=',
 					'type'    => 'DATE',
-				],
-				[
+				),
+				array(
 					'key'     => '_dame_end_date',
 					'value'   => $after_date,
 					'compare' => '>=',
 					'type'    => 'DATE',
-				],
-			];
+				),
+			);
 		}
 
 		if ( $before_date ) {
-			$args['meta_query'][] = [
+			$args['meta_query'][] = array(
 				'key'     => '_dame_start_date',
 				'value'   => $before_date,
 				'compare' => '<',
 				'type'    => 'DATE',
-			];
+			);
 		}
 
 		return $args;
@@ -119,122 +119,134 @@ class Post_Meta {
 		register_rest_field(
 			'adherent',
 			'dame_age_category',
-			[
-				'get_callback' => function( $post_arr ) {
+			array(
+				'get_callback' => function ( $post_arr ) {
 					$birth_date = get_post_meta( $post_arr['id'], '_dame_birth_date', true );
 					$gender     = get_post_meta( $post_arr['id'], '_dame_sexe', true );
 					return \DAME\Core\Utils::get_adherent_age_category( $birth_date, $gender );
 				},
-				'schema' => [
+				'schema'       => array(
 					'description' => __( 'Catégorie d\'âge calculée.', 'dame' ),
 					'type'        => 'string',
-				],
-			]
+				),
+			)
 		);
 
 		// Benevolat Data
 		register_rest_field(
 			'benevolat',
 			'dame_benevolat_data',
-			[
-				'get_callback' => function( $post_arr ) {
+			array(
+				'get_callback'    => function ( $post_arr ) {
 					return get_post_meta( $post_arr['id'], '_dame_benevolat_data', true );
 				},
-				'update_callback' => function( $value, $post_obj ) {
+				'update_callback' => function ( $value, $post_obj ) {
 					return update_post_meta( $post_obj->ID, '_dame_benevolat_data', $value );
 				},
-				'schema' => [
+				'schema'          => array(
 					'description' => __( 'Structured data (dates and time slots).', 'dame' ),
 					'type'        => 'array',
-				],
-			]
+				),
+			)
 		);
 
 		// Benevolat Response Parent ID
 		register_rest_field(
 			'benevolat_reponse',
 			'benevolat_id',
-			[
-				'get_callback' => function( $post_arr ) {
+			array(
+				'get_callback' => function ( $post_arr ) {
 					return wp_get_post_parent_id( $post_arr['id'] );
 				},
-				'schema' => [
+				'schema'       => array(
 					'description' => __( 'ID of the parent benevolat.', 'dame' ),
 					'type'        => 'integer',
-				],
-			]
+				),
+			)
 		);
 
 		// Choix sélectionnés pour une réponse
 		register_rest_field(
 			'benevolat_reponse',
 			'choices',
-			[
-				'get_callback' => function( $post_arr ) {
+			array(
+				'get_callback' => function ( $post_arr ) {
 					global $wpdb;
 					$table = $wpdb->prefix . 'dame_benevolat_votes';
 					// Récupère toutes les clés de choix (ex: "0_1", "1_0") pour cette réponse
-					$choices = $wpdb->get_col( $wpdb->prepare( 
-						"SELECT choice_key FROM {$table} WHERE recipient_id = %d", 
-						$post_arr['id'] 
-					) );
-					return $choices ? $choices : [];
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+					$choices = $wpdb->get_col(
+						$wpdb->prepare(
+							"SELECT choice_key FROM {$table} WHERE recipient_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+							$post_arr['id']
+						)
+					);
+					return $choices ? $choices : array();
 				},
-				'schema' => [
+				'schema'       => array(
 					'description' => __( 'Les clés des plages horaires choisies.', 'dame' ),
 					'type'        => 'array',
-					'items'       => [ 'type' => 'string' ],
-				],
-			]
+					'items'       => array( 'type' => 'string' ),
+				),
+			)
 		);
-		
+
 		// Formatage HTML de la description de l'agenda
 		register_rest_field(
 			'dame_agenda',
 			'_dame_agenda_description_html',
-			[
-				'get_callback' => function( $post_arr ) {
+			array(
+				'get_callback' => function ( $post_arr ) {
 					$desc = get_post_meta( $post_arr['id'], '_dame_agenda_description', true );
 					// Applique les <p> et <br> comme le ferait the_content()
-					return wpautop( $desc ); 
+					return wpautop( $desc );
 				},
-				'schema' => [
+				'schema'       => array(
 					'description' => __( 'Description formatée en HTML.', 'dame' ),
 					'type'        => 'string',
-				],
-			]
+				),
+			)
 		);
 		// Rapport d'envoi et d'ouverture pour les Messages
 		register_rest_field(
 			'dame_message',
 			'report',
-			[
-				'get_callback' => function( $post_arr ) {
+			array(
+				'get_callback' => function ( $post_arr ) {
 					global $wpdb;
 					$message_id = $post_arr['id'];
 					$table_name = $wpdb->prefix . 'dame_message_opens';
 
 					// 1. Récupération de tous les destinataires
-					$recipients = $wpdb->get_results( $wpdb->prepare(
-						"SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at, opened_at 
-						FROM {$table_name} 
-						WHERE message_id = %d
-						ORDER BY recipient_name ASC",
-						$message_id
-					), ARRAY_A );
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+					$recipients = $wpdb->get_results(
+						$wpdb->prepare(
+							"SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at, opened_at FROM {$table_name} WHERE message_id = %d ORDER BY recipient_name ASC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+							$message_id
+						),
+						ARRAY_A
+					);
 
 					if ( empty( $recipients ) ) {
-						return [
-							'stats'      => [ 'total' => 0, 'sent' => 0, 'opened' => 0, 'rate' => 0 ],
-							'recipients' => []
-						];
+						return array(
+							'stats'      => array(
+								'total'  => 0,
+								'sent'   => 0,
+								'opened' => 0,
+								'rate'   => 0,
+							),
+							'recipients' => array(),
+						);
 					}
 
 					// 2. Calcul des ouvertures uniques
-					$unique_opens = (int) $wpdb->get_var( $wpdb->prepare(
-						"SELECT COUNT(DISTINCT email_hash) FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL",
-						$message_id
-					) );
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+					$unique_opens = (int) $wpdb->get_var(
+						$wpdb->prepare(
+							"SELECT COUNT(DISTINCT email_hash) FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+							$message_id
+						)
+					);
 
 					// 3. Calcul du nombre d'envois
 					$total = count( $recipients );
@@ -247,21 +259,21 @@ class Post_Meta {
 
 					$rate = $total > 0 ? round( ( $unique_opens / $total ) * 100, 2 ) : 0;
 
-					return [
-						'stats'      => [
+					return array(
+						'stats'      => array(
 							'total'  => $total,
 							'sent'   => $sent,
 							'opened' => $unique_opens,
-							'rate'   => $rate
-						],
-						'recipients' => $recipients
-					];
+							'rate'   => $rate,
+						),
+						'recipients' => $recipients,
+					);
 				},
-				'schema' => [
+				'schema'       => array(
 					'description' => __( 'Statistiques et liste des destinataires du message.', 'dame' ),
 					'type'        => 'object',
-				],
-			]
+				),
+			)
 		);
 	}
 
@@ -283,16 +295,16 @@ class Post_Meta {
 
 		if ( $new_title && get_the_title( $post_id ) !== $new_title ) {
 			// Avoid infinite loop if somehow triggered again.
-			remove_action( 'rest_after_insert_adherent', [ $this, 'update_titles_after_rest' ] );
-			remove_action( 'rest_after_insert_dame_contact', [ $this, 'update_titles_after_rest' ] );
-			remove_action( 'rest_after_insert_dame_pre_inscription', [ $this, 'update_titles_after_rest' ] );
+			remove_action( 'rest_after_insert_adherent', array( $this, 'update_titles_after_rest' ) );
+			remove_action( 'rest_after_insert_dame_contact', array( $this, 'update_titles_after_rest' ) );
+			remove_action( 'rest_after_insert_dame_pre_inscription', array( $this, 'update_titles_after_rest' ) );
 
 			wp_update_post(
-				[
+				array(
 					'ID'         => $post_id,
 					'post_title' => $new_title,
 					'post_name'  => sanitize_title( $new_title ),
-				]
+				)
 			);
 		}
 	}
@@ -312,7 +324,7 @@ class Post_Meta {
 	/**
 	 * Helper to register a list of meta keys for a specific post type.
 	 *
-	 * @param string $post_type The custom post type.
+	 * @param string                $post_type The custom post type.
 	 * @param array<string, string> $fields Array of field_name => type.
 	 */
 	private function register_fields( string $post_type, array $fields ): void {
@@ -320,13 +332,13 @@ class Post_Meta {
 			register_meta(
 				'post',
 				$field_name,
-				[
-					'object_subtype'    => $post_type,
-					'show_in_rest'      => true,
-					'single'            => true,
-					'type'              => $type,
-					'auth_callback'     => [ $this, 'auth_callback' ],
-				]
+				array(
+					'object_subtype' => $post_type,
+					'show_in_rest'   => true,
+					'single'         => true,
+					'type'           => $type,
+					'auth_callback'  => array( $this, 'auth_callback' ),
+				)
 			);
 		}
 	}
@@ -344,72 +356,72 @@ class Post_Meta {
 	 * Register meta for Adherent CPT.
 	 */
 	private function register_adherent_meta(): void {
-		$fields = [
-			'_dame_birth_name'                     => 'string',
-			'_dame_last_name'                      => 'string',
-			'_dame_first_name'                     => 'string',
-			'_dame_sexe'                           => 'string',
-			'_dame_birth_date'                     => 'string',
-			'_dame_birth_city'                     => 'string',
-			'_dame_phone_number'                   => 'string',
-			'_dame_email'                          => 'string',
-			'_dame_email_refuses_comms'            => 'integer',
-			'_dame_profession'                     => 'string',
-			'_dame_address_1'                      => 'string',
-			'_dame_address_2'                      => 'string',
-			'_dame_postal_code'                    => 'string',
-			'_dame_city'                           => 'string',
-			'_dame_country'                        => 'string',
-			'_dame_region'                         => 'string',
-			'_dame_department'                     => 'string',
-			'_dame_latitude'                       => 'string',
-			'_dame_longitude'                      => 'string',
-			'_dame_distance'                       => 'string',
-			'_dame_travel_time'                    => 'string',
-			'_dame_license_type'                   => 'string',
-			'_dame_license_number'                 => 'string',
-			'_dame_linked_wp_user'                 => 'integer',
-			'_dame_arbitre_level'                  => 'string',
-			'_dame_health_document'                => 'string',
-			'_dame_adherent_honorabilite'          => 'string',
-			'_dame_autre_telephone'                => 'string',
-			'_dame_taille_vetements'               => 'string',
-			'_dame_allergies'                      => 'string',
-			'_dame_diet'                           => 'string',
-			'_dame_transport'                      => 'string',
-			'_dame_legal_rep_1_first_name'         => 'string',
-			'_dame_legal_rep_1_last_name'          => 'string',
-			'_dame_legal_rep_1_email'              => 'string',
+		$fields = array(
+			'_dame_birth_name'                      => 'string',
+			'_dame_last_name'                       => 'string',
+			'_dame_first_name'                      => 'string',
+			'_dame_sexe'                            => 'string',
+			'_dame_birth_date'                      => 'string',
+			'_dame_birth_city'                      => 'string',
+			'_dame_phone_number'                    => 'string',
+			'_dame_email'                           => 'string',
+			'_dame_email_refuses_comms'             => 'integer',
+			'_dame_profession'                      => 'string',
+			'_dame_address_1'                       => 'string',
+			'_dame_address_2'                       => 'string',
+			'_dame_postal_code'                     => 'string',
+			'_dame_city'                            => 'string',
+			'_dame_country'                         => 'string',
+			'_dame_region'                          => 'string',
+			'_dame_department'                      => 'string',
+			'_dame_latitude'                        => 'string',
+			'_dame_longitude'                       => 'string',
+			'_dame_distance'                        => 'string',
+			'_dame_travel_time'                     => 'string',
+			'_dame_license_type'                    => 'string',
+			'_dame_license_number'                  => 'string',
+			'_dame_linked_wp_user'                  => 'integer',
+			'_dame_arbitre_level'                   => 'string',
+			'_dame_health_document'                 => 'string',
+			'_dame_adherent_honorabilite'           => 'string',
+			'_dame_autre_telephone'                 => 'string',
+			'_dame_taille_vetements'                => 'string',
+			'_dame_allergies'                       => 'string',
+			'_dame_diet'                            => 'string',
+			'_dame_transport'                       => 'string',
+			'_dame_legal_rep_1_first_name'          => 'string',
+			'_dame_legal_rep_1_last_name'           => 'string',
+			'_dame_legal_rep_1_email'               => 'string',
 			'_dame_legal_rep_1_email_refuses_comms' => 'integer',
-			'_dame_legal_rep_1_phone'              => 'string',
-			'_dame_legal_rep_1_profession'         => 'string',
-			'_dame_legal_rep_1_address_1'          => 'string',
-			'_dame_legal_rep_1_address_2'          => 'string',
-			'_dame_legal_rep_1_postal_code'        => 'string',
-			'_dame_legal_rep_1_city'               => 'string',
-			'_dame_legal_rep_1_date_naissance'     => 'string',
-			'_dame_legal_rep_1_commune_naissance'  => 'string',
-			'_dame_legal_rep_1_honorabilite'       => 'string',
-			'_dame_legal_rep_2_first_name'         => 'string',
-			'_dame_legal_rep_2_last_name'          => 'string',
-			'_dame_legal_rep_2_email'              => 'string',
+			'_dame_legal_rep_1_phone'               => 'string',
+			'_dame_legal_rep_1_profession'          => 'string',
+			'_dame_legal_rep_1_address_1'           => 'string',
+			'_dame_legal_rep_1_address_2'           => 'string',
+			'_dame_legal_rep_1_postal_code'         => 'string',
+			'_dame_legal_rep_1_city'                => 'string',
+			'_dame_legal_rep_1_date_naissance'      => 'string',
+			'_dame_legal_rep_1_commune_naissance'   => 'string',
+			'_dame_legal_rep_1_honorabilite'        => 'string',
+			'_dame_legal_rep_2_first_name'          => 'string',
+			'_dame_legal_rep_2_last_name'           => 'string',
+			'_dame_legal_rep_2_email'               => 'string',
 			'_dame_legal_rep_2_email_refuses_comms' => 'integer',
-			'_dame_legal_rep_2_phone'              => 'string',
-			'_dame_legal_rep_2_profession'         => 'string',
-			'_dame_legal_rep_2_address_1'          => 'string',
-			'_dame_legal_rep_2_address_2'          => 'string',
-			'_dame_legal_rep_2_postal_code'        => 'string',
-			'_dame_legal_rep_2_city'               => 'string',
-			'_dame_legal_rep_2_date_naissance'     => 'string',
-			'_dame_legal_rep_2_commune_naissance'  => 'string',
-			'_dame_legal_rep_2_honorabilite'       => 'string',
-			'_dame_school_name'                    => 'string',
-			'_dame_school_academy'                 => 'string',
-			'_dame_fide_id'                        => 'string',
-			'_dame_elo_standard'                   => 'string',
-			'_dame_elo_rapide'                     => 'string',
-			'_dame_elo_blitz'                      => 'string',
-		];
+			'_dame_legal_rep_2_phone'               => 'string',
+			'_dame_legal_rep_2_profession'          => 'string',
+			'_dame_legal_rep_2_address_1'           => 'string',
+			'_dame_legal_rep_2_address_2'           => 'string',
+			'_dame_legal_rep_2_postal_code'         => 'string',
+			'_dame_legal_rep_2_city'                => 'string',
+			'_dame_legal_rep_2_date_naissance'      => 'string',
+			'_dame_legal_rep_2_commune_naissance'   => 'string',
+			'_dame_legal_rep_2_honorabilite'        => 'string',
+			'_dame_school_name'                     => 'string',
+			'_dame_school_academy'                  => 'string',
+			'_dame_fide_id'                         => 'string',
+			'_dame_elo_standard'                    => 'string',
+			'_dame_elo_rapide'                      => 'string',
+			'_dame_elo_blitz'                       => 'string',
+		);
 
 		$this->register_fields( 'adherent', $fields );
 	}
@@ -418,25 +430,25 @@ class Post_Meta {
 	 * Register meta for Agenda CPT.
 	 */
 	private function register_agenda_meta(): void {
-		$fields = [
-			'_dame_start_date'        => 'string',
-			'_dame_start_time'        => 'string',
-			'_dame_end_date'          => 'string',
-			'_dame_end_time'          => 'string',
-			'_dame_all_day'           => 'integer',
-			'_dame_competition_type'  => 'string',
-			'_dame_competition_level' => 'string',
-			'_dame_location_name'     => 'string',
-			'_dame_address_1'         => 'string',
-			'_dame_address_2'         => 'string',
-			'_dame_postal_code'       => 'string',
-			'_dame_city'              => 'string',
-			'_dame_latitude'          => 'string',
-			'_dame_longitude'         => 'string',
-			'_dame_distance'          => 'string',
-			'_dame_travel_time'       => 'string',
+		$fields = array(
+			'_dame_start_date'         => 'string',
+			'_dame_start_time'         => 'string',
+			'_dame_end_date'           => 'string',
+			'_dame_end_time'           => 'string',
+			'_dame_all_day'            => 'integer',
+			'_dame_competition_type'   => 'string',
+			'_dame_competition_level'  => 'string',
+			'_dame_location_name'      => 'string',
+			'_dame_address_1'          => 'string',
+			'_dame_address_2'          => 'string',
+			'_dame_postal_code'        => 'string',
+			'_dame_city'               => 'string',
+			'_dame_latitude'           => 'string',
+			'_dame_longitude'          => 'string',
+			'_dame_distance'           => 'string',
+			'_dame_travel_time'        => 'string',
 			'_dame_agenda_description' => 'string',
-		];
+		);
 
 		$this->register_fields( 'dame_agenda', $fields );
 
@@ -446,18 +458,18 @@ class Post_Meta {
 		register_meta(
 			'post',
 			'_dame_event_participants',
-			[
-				'object_subtype'    => 'dame_agenda',
-				'show_in_rest'      => [
-					'schema' => [
+			array(
+				'object_subtype' => 'dame_agenda',
+				'show_in_rest'   => array(
+					'schema' => array(
 						'type'  => 'array',
-						'items' => [ 'type' => 'integer' ],
-					],
-				],
-				'single'            => true,
-				'type'              => 'array',
-				'auth_callback'     => [ $this, 'auth_callback' ],
-			]
+						'items' => array( 'type' => 'integer' ),
+					),
+				),
+				'single'         => true,
+				'type'           => 'array',
+				'auth_callback'  => array( $this, 'auth_callback' ),
+			)
 		);
 	}
 
@@ -465,7 +477,7 @@ class Post_Meta {
 	 * Register meta for Contact CPT.
 	 */
 	private function register_contact_meta(): void {
-		$fields = [
+		$fields = array(
 			'_dame_contact_organization' => 'string',
 			'_dame_contact_last_name'    => 'string',
 			'_dame_contact_first_name'   => 'string',
@@ -480,7 +492,7 @@ class Post_Meta {
 			'_dame_contact_city'         => 'string',
 			'_dame_contact_department'   => 'string',
 			'_dame_contact_region'       => 'string',
-		];
+		);
 
 		$this->register_fields( 'dame_contact', $fields );
 	}
@@ -493,50 +505,50 @@ class Post_Meta {
 		register_meta(
 			'post',
 			'_dame_benevolat_data',
-			[
-				'object_subtype'    => 'benevolat',
-				'show_in_rest'      => [
-					'schema' => [
+			array(
+				'object_subtype' => 'benevolat',
+				'show_in_rest'   => array(
+					'schema' => array(
 						'type'  => 'array',
-						'items' => [
+						'items' => array(
 							'type'       => 'object',
-							'properties' => [
-								'date'       => [ 'type' => 'string' ],
-								'time_slots' => [
+							'properties' => array(
+								'date'       => array( 'type' => 'string' ),
+								'time_slots' => array(
 									'type'  => 'array',
-									'items' => [
+									'items' => array(
 										'type'       => 'object',
-										'properties' => [
-											'start' => [ 'type' => 'string' ],
-											'end'   => [ 'type' => 'string' ],
-										],
-									],
-								],
-							],
-						],
-					],
-				],
-				'single'            => true,
-				'type'              => 'array',
-				'auth_callback'     => [ $this, 'auth_callback' ],
-			]
+										'properties' => array(
+											'start' => array( 'type' => 'string' ),
+											'end'   => array( 'type' => 'string' ),
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+				'single'         => true,
+				'type'           => 'array',
+				'auth_callback'  => array( $this, 'auth_callback' ),
+			)
 		);
 
 		register_meta(
 			'post',
 			'_dame_benevolat_responses',
-			[
-				'object_subtype'    => 'benevolat_reponse',
-				'show_in_rest'      => [
-					'schema' => [
+			array(
+				'object_subtype' => 'benevolat_reponse',
+				'show_in_rest'   => array(
+					'schema' => array(
 						'type'  => 'array',
-						'items' => [ 'type' => 'integer' ],
-					],
-				],
-				'single'            => true,
-				'type'              => 'array',
-				'auth_callback'     => [ $this, 'auth_callback' ],
-			]
+						'items' => array( 'type' => 'integer' ),
+					),
+				),
+				'single'         => true,
+				'type'           => 'array',
+				'auth_callback'  => array( $this, 'auth_callback' ),
+			)
 		);
 	}
 
@@ -547,18 +559,18 @@ class Post_Meta {
 		register_meta(
 			'post',
 			'_dame_ical_feed_categories',
-			[
-				'object_subtype'    => 'dame_ical_feed',
-				'show_in_rest'      => [
-					'schema' => [
+			array(
+				'object_subtype' => 'dame_ical_feed',
+				'show_in_rest'   => array(
+					'schema' => array(
 						'type'  => 'array',
-						'items' => [ 'type' => 'integer' ],
-					],
-				],
-				'single'            => true,
-				'type'              => 'array',
-				'auth_callback'     => [ $this, 'auth_callback' ],
-			]
+						'items' => array( 'type' => 'integer' ),
+					),
+				),
+				'single'         => true,
+				'type'           => 'array',
+				'auth_callback'  => array( $this, 'auth_callback' ),
+			)
 		);
 	}
 
@@ -566,48 +578,48 @@ class Post_Meta {
 	 * Register meta for Pre-Inscription CPT.
 	 */
 	private function register_pre_inscription_meta(): void {
-		$fields = [
-			'_dame_first_name'                     => 'string',
-			'_dame_last_name'                      => 'string',
-			'_dame_birth_name'                     => 'string',
-			'_dame_birth_date'                     => 'string',
-			'_dame_license_type'                   => 'string',
-			'_dame_birth_city'                     => 'string',
-			'_dame_sexe'                           => 'string',
-			'_dame_profession'                     => 'string',
-			'_dame_email'                          => 'string',
-			'_dame_phone_number'                   => 'string',
-			'_dame_address_1'                      => 'string',
-			'_dame_address_2'                      => 'string',
-			'_dame_postal_code'                    => 'string',
-			'_dame_city'                           => 'string',
-			'_dame_taille_vetements'               => 'string',
-			'_dame_health_document'                => 'string',
-			'_dame_legal_rep_1_honorabilite'       => 'string',
-			'_dame_legal_rep_2_honorabilite'       => 'string',
-			'_dame_legal_rep_1_first_name'         => 'string',
-			'_dame_legal_rep_1_last_name'          => 'string',
-			'_dame_legal_rep_1_email'              => 'string',
-			'_dame_legal_rep_1_phone'              => 'string',
-			'_dame_legal_rep_1_address_1'          => 'string',
-			'_dame_legal_rep_1_address_2'          => 'string',
-			'_dame_legal_rep_1_postal_code'        => 'string',
-			'_dame_legal_rep_1_city'               => 'string',
-			'_dame_legal_rep_1_profession'         => 'string',
-			'_dame_legal_rep_1_date_naissance'     => 'string',
-			'_dame_legal_rep_1_commune_naissance'  => 'string',
-			'_dame_legal_rep_2_first_name'         => 'string',
-			'_dame_legal_rep_2_last_name'          => 'string',
-			'_dame_legal_rep_2_email'              => 'string',
-			'_dame_legal_rep_2_phone'              => 'string',
-			'_dame_legal_rep_2_address_1'          => 'string',
-			'_dame_legal_rep_2_address_2'          => 'string',
-			'_dame_legal_rep_2_postal_code'        => 'string',
-			'_dame_legal_rep_2_city'               => 'string',
-			'_dame_legal_rep_2_profession'         => 'string',
-			'_dame_legal_rep_2_date_naissance'     => 'string',
-			'_dame_legal_rep_2_commune_naissance'  => 'string',
-		];
+		$fields = array(
+			'_dame_first_name'                    => 'string',
+			'_dame_last_name'                     => 'string',
+			'_dame_birth_name'                    => 'string',
+			'_dame_birth_date'                    => 'string',
+			'_dame_license_type'                  => 'string',
+			'_dame_birth_city'                    => 'string',
+			'_dame_sexe'                          => 'string',
+			'_dame_profession'                    => 'string',
+			'_dame_email'                         => 'string',
+			'_dame_phone_number'                  => 'string',
+			'_dame_address_1'                     => 'string',
+			'_dame_address_2'                     => 'string',
+			'_dame_postal_code'                   => 'string',
+			'_dame_city'                          => 'string',
+			'_dame_taille_vetements'              => 'string',
+			'_dame_health_document'               => 'string',
+			'_dame_legal_rep_1_honorabilite'      => 'string',
+			'_dame_legal_rep_2_honorabilite'      => 'string',
+			'_dame_legal_rep_1_first_name'        => 'string',
+			'_dame_legal_rep_1_last_name'         => 'string',
+			'_dame_legal_rep_1_email'             => 'string',
+			'_dame_legal_rep_1_phone'             => 'string',
+			'_dame_legal_rep_1_address_1'         => 'string',
+			'_dame_legal_rep_1_address_2'         => 'string',
+			'_dame_legal_rep_1_postal_code'       => 'string',
+			'_dame_legal_rep_1_city'              => 'string',
+			'_dame_legal_rep_1_profession'        => 'string',
+			'_dame_legal_rep_1_date_naissance'    => 'string',
+			'_dame_legal_rep_1_commune_naissance' => 'string',
+			'_dame_legal_rep_2_first_name'        => 'string',
+			'_dame_legal_rep_2_last_name'         => 'string',
+			'_dame_legal_rep_2_email'             => 'string',
+			'_dame_legal_rep_2_phone'             => 'string',
+			'_dame_legal_rep_2_address_1'         => 'string',
+			'_dame_legal_rep_2_address_2'         => 'string',
+			'_dame_legal_rep_2_postal_code'       => 'string',
+			'_dame_legal_rep_2_city'              => 'string',
+			'_dame_legal_rep_2_profession'        => 'string',
+			'_dame_legal_rep_2_date_naissance'    => 'string',
+			'_dame_legal_rep_2_commune_naissance' => 'string',
+		);
 
 		$this->register_fields( 'dame_pre_inscription', $fields );
 	}

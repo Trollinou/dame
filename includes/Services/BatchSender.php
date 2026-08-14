@@ -21,20 +21,20 @@ class BatchSender {
 	 * Initialize the BatchSender.
 	 */
 	public function init(): void {
-		add_action( 'dame_cron_send_batch', [ $this, 'process_batch' ], 10, 3 );
-		add_action( 'dame_cron_process_queue', [ $this, 'process_queue' ] );
+		add_action( 'dame_cron_send_batch', array( $this, 'process_batch' ), 10, 3 );
+		add_action( 'dame_cron_process_queue', array( $this, 'process_queue' ) );
 	}
 
 	/**
 	 * Processes the global FIFO queue for email sending.
-	 * 
+	 *
 	 * Fetches the oldest 20 unsent records across all messages to respect
 	 * the global limit of 20 emails per minute.
 	 */
 	public function process_queue(): void {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'dame_message_opens';
-		
+
 		// Get batch size from settings, default to 20
 		$options    = get_option( 'dame_options' );
 		$batch_size = ! empty( $options['smtp_batch_size'] ) ? absint( $options['smtp_batch_size'] ) : 20;
@@ -42,25 +42,28 @@ class BatchSender {
 		// 1. Fetch the oldest unsent rows (First-In, First-Out)
 		// ONLY for messages that are currently 'scheduled' or 'sending'
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$pending = $wpdb->get_results( $wpdb->prepare(
-			"SELECT t.* FROM {$table_name} t
+		$pending = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT t.* FROM {$table_name} t
 			INNER JOIN {$wpdb->postmeta} m ON t.message_id = m.post_id
 			WHERE t.sent_at IS NULL 
 			AND m.meta_key = %s
 			AND m.meta_value IN (%s, %s)
 			ORDER BY t.id ASC LIMIT %d",
-			'_dame_message_status',
-			'scheduled',
-			'sending',
-			$batch_size
-		), ARRAY_A );
+				'_dame_message_status',
+				'scheduled',
+				'sending',
+				$batch_size
+			),
+			ARRAY_A
+		);
 
 		if ( empty( $pending ) ) {
 			return; // Queue empty or no active message to send
 		}
 
 		$sent_at_now = current_time( 'mysql', true );
-		$by_message  = [];
+		$by_message  = array();
 
 		// Group by message_id for efficient processing
 		foreach ( $pending as $row ) {
@@ -72,7 +75,14 @@ class BatchSender {
 			if ( ! $message_post ) {
 				// Message deleted, mark all rows for this message as "sent" (or delete them) to clear queue
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-				$wpdb->update( $table_name, [ 'sent_at' => $sent_at_now ], [ 'message_id' => $mid, 'sent_at' => null ] );
+				$wpdb->update(
+					$table_name,
+					array( 'sent_at' => $sent_at_now ),
+					array(
+						'message_id' => $mid,
+						'sent_at'    => null,
+					)
+				);
 				continue;
 			}
 
@@ -87,17 +97,17 @@ class BatchSender {
 			$options     = get_option( 'dame_options' );
 			$from_name   = $options['sender_name'] ?? get_bloginfo( 'name' );
 			$from_email  = $options['sender_email'] ?? get_option( 'admin_email' );
-			$headers     = [
+			$headers     = array(
 				'Content-Type: text/html; charset=UTF-8',
-				"From: {$from_name} <{$from_email}>"
-			];
+				"From: {$from_name} <{$from_email}>",
+			);
 			$attachment  = get_post_meta( $mid, '_dame_message_attachment', true );
-			$attachments = ! empty( $attachment ) ? [ $attachment ] : [];
+			$attachments = ! empty( $attachment ) ? array( $attachment ) : array();
 
 			foreach ( $rows as $row ) {
 				$email = $row['recipient_email'];
 				$label = $row['recipient_name'];
-				
+
 				// Personalization (Extracted from recipient_id)
 				$rid    = (int) $row['recipient_id'];
 				$nom    = '';
@@ -110,7 +120,7 @@ class BatchSender {
 					// Check if email matches adherent or one of their reps
 					$adherent_email = get_post_meta( $rid, '_dame_email', true );
 					if ( strtolower( trim( (string) $adherent_email ) ) === strtolower( trim( (string) $email ) ) ) {
-						$nom    = (string) get_post_meta( $rid, '_dame_last_name', true );
+						$nom = (string) get_post_meta( $rid, '_dame_last_name', true );
 						if ( empty( $nom ) ) {
 							$nom = (string) get_post_meta( $rid, '_dame_birth_name', true );
 						}
@@ -147,18 +157,18 @@ class BatchSender {
 				}
 
 				if ( empty( $nom ) && empty( $prenom ) ) {
-					$search  = [ '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ];
-					$replace = [ $label, '', '', $civilite ];
+					$search  = array( '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' );
+					$replace = array( $label, '', '', $civilite );
 				} else {
-					$search  = [ '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ];
-					$replace = [
+					$search  = array( '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' );
+					$replace = array(
 						esc_html( \DAME\Core\Utils::format_lastname( (string) $nom ) ),
 						esc_html( \DAME\Core\Utils::format_firstname( (string) $prenom ) ),
 						esc_html( (string) $age ),
-						esc_html( $civilite )
-					];
+						esc_html( $civilite ),
+					);
 				}
-				
+
 				$p_subject = str_replace( $search, $replace, $subject );
 				$p_content = str_replace( $search, $replace, $content );
 
@@ -171,7 +181,7 @@ class BatchSender {
 				if ( $sent ) {
 					// Mark individual row as sent
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-					$wpdb->update( $table_name, [ 'sent_at' => $sent_at_now ], [ 'id' => $row['id'] ] );
+					$wpdb->update( $table_name, array( 'sent_at' => $sent_at_now ), array( 'id' => $row['id'] ) );
 				}
 			}
 
@@ -185,7 +195,7 @@ class BatchSender {
 				update_post_meta( $mid, '_dame_scheduled_batches_processed', $total );
 			} else {
 				// Update progression for legacy UI
-				$total = (int) get_post_meta( $mid, '_dame_scheduled_batches_total', true );
+				$total      = (int) get_post_meta( $mid, '_dame_scheduled_batches_total', true );
 				$sent_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table_name} WHERE message_id = %d AND sent_at IS NOT NULL", $mid ) );
 				// Map sent_count to approximate batch progress
 				$processed = $total > 0 ? floor( ( $sent_count / ( $sent_count + $remaining_for_msg ) ) * $total ) : 0;
@@ -204,9 +214,9 @@ class BatchSender {
 	/**
 	 * Sends a batch of emails via WP-Cron.
 	 *
-	 * @param int   $message_id  The ID of the message post.
+	 * @param int                  $message_id  The ID of the message post.
 	 * @param array<string, mixed> $emails      An array of email addresses to send to.
-	 * @param int   $retry_count The number of times this batch has been retried.
+	 * @param int                  $retry_count The number of times this batch has been retried.
 	 */
 	public function process_batch( int $message_id, array $emails, int $retry_count = 0 ): void {
 		$message_post = get_post( $message_id );
@@ -214,10 +224,10 @@ class BatchSender {
 			return; // Stop if message post is deleted.
 		}
 
-		$all_sent_data   = [];
-		$legacy_post_ids = [];
- // To store [post_id => sent_at] for batch update
-		$sent_at_now   = current_time( 'mysql', true );
+		$all_sent_data   = array();
+		$legacy_post_ids = array();
+		// To store [post_id => sent_at] for batch update
+		$sent_at_now = current_time( 'mysql', true );
 
 		// Mark as 'sending' on the first batch.
 		$status = get_post_meta( $message_id, '_dame_message_status', true );
@@ -228,7 +238,7 @@ class BatchSender {
 		$subject = $message_post->post_title;
 		$content = apply_filters( 'the_content', $message_post->post_content );
 
-		$options      = get_option( 'dame_options', [] );
+		$options      = get_option( 'dame_options', array() );
 		$sender_email = isset( $options['sender_email'] ) && is_email( (string) $options['sender_email'] ) ? (string) $options['sender_email'] : (string) get_option( 'admin_email' );
 		$headers      = array(
 			'Content-Type: text/html; charset=UTF-8',
@@ -236,7 +246,7 @@ class BatchSender {
 		);
 
 		// Gestion de la pièce jointe (Préparée une seule fois hors de la boucle)
-		$attachments = array();
+		$attachments     = array();
 		$attachment_path = get_post_meta( $message_id, '_dame_message_attachment', true );
 		if ( ! empty( $attachment_path ) && is_string( $attachment_path ) && file_exists( $attachment_path ) ) {
 			$attachments[] = $attachment_path;
@@ -247,25 +257,30 @@ class BatchSender {
 		foreach ( $emails as $email ) {
 			$personalized_subject = $subject;
 			$personalized_content = $content;
-			$target_post_ids      = [];
+			$target_post_ids      = array();
 
 			global $wpdb;
-			$results = $wpdb->get_results( $wpdb->prepare( "
+			$results = $wpdb->get_results(
+				$wpdb->prepare(
+					"
 				SELECT post_id, meta_key
 				FROM {$wpdb->postmeta}
 				WHERE meta_key IN ('_dame_email', '_dame_legal_rep_1_email', '_dame_legal_rep_2_email', '_dame_contact_email')
 				AND LOWER(meta_value) = LOWER(%s)
-			", $email ) );
+			",
+					$email
+				)
+			);
 
 			if ( ! empty( $results ) ) {
-				$target_post_ids = [];
+				$target_post_ids = array();
 				$primary_post_id = 0;
 				$target_type     = '';
 
 				// On collecte tous les IDs pour le marquage cumulatif
 				foreach ( $results as $row ) {
 					$target_post_ids[] = (int) $row->post_id;
-					
+
 					// Logique de priorité pour la PERSONNALISATION ([NOM] [PRENOM])
 					if ( '_dame_email' === $row->meta_key ) {
 						$primary_post_id = (int) $row->post_id;
@@ -287,7 +302,7 @@ class BatchSender {
 				$birth  = '';
 
 				if ( 'adherent' === $target_type ) {
-					$nom    = (string) get_post_meta( $primary_post_id, '_dame_last_name', true );
+					$nom = (string) get_post_meta( $primary_post_id, '_dame_last_name', true );
 					if ( empty( $nom ) ) {
 						$nom = (string) get_post_meta( $primary_post_id, '_dame_birth_name', true );
 					}
@@ -300,8 +315,8 @@ class BatchSender {
 					$sexe   = (string) get_post_meta( $primary_post_id, '_dame_contact_sexe', true );
 				} elseif ( strpos( $target_type, 'rep' ) === 0 ) {
 					$rep_num = str_replace( 'rep', '', $target_type );
-					$nom    = (string) get_post_meta( $primary_post_id, "_dame_legal_rep_{$rep_num}_last_name", true );
-					$prenom = (string) get_post_meta( $primary_post_id, "_dame_legal_rep_{$rep_num}_first_name", true );
+					$nom     = (string) get_post_meta( $primary_post_id, "_dame_legal_rep_{$rep_num}_last_name", true );
+					$prenom  = (string) get_post_meta( $primary_post_id, "_dame_legal_rep_{$rep_num}_first_name", true );
 				}
 
 				$civilite = 'Monsieur';
@@ -318,13 +333,13 @@ class BatchSender {
 					}
 				}
 
-				$search  = [ '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ];
-				$replace = [
+				$search  = array( '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' );
+				$replace = array(
 					esc_html( \DAME\Core\Utils::format_lastname( (string) $nom ) ),
 					esc_html( \DAME\Core\Utils::format_firstname( (string) $prenom ) ),
 					esc_html( (string) $age ),
-					esc_html( $civilite )
-				];
+					esc_html( $civilite ),
+				);
 
 				$personalized_subject = str_replace( $search, $replace, $subject );
 				$personalized_content = str_replace( $search, $replace, (string) $content );
@@ -339,11 +354,11 @@ class BatchSender {
 				$failed_emails[] = $email;
 			} else {
 				// Success: Collect unique email for batch marking in SQL table
-				$all_sent_data[] = [
-					'email'   => (string) $email,
-					'time'    => $sent_at_now
-				];
-				
+				$all_sent_data[] = array(
+					'email' => (string) $email,
+					'time'  => $sent_at_now,
+				);
+
 				// Collect ALL IDs associated with this email for legacy marking (batch count)
 				foreach ( $target_post_ids as $tpid ) {
 					// Mark as received to allow incremental filtering
@@ -364,12 +379,15 @@ class BatchSender {
 
 				// Update SQL Tracking (Match only by Message and Email)
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-				$wpdb->update( 
-					$table_tracking, 
-					[ 'sent_at' => $time ], 
-					[ 'message_id' => $message_id, 'recipient_email' => $mail ],
-					[ '%s' ],
-					[ '%d', '%s' ]
+				$wpdb->update(
+					$table_tracking,
+					array( 'sent_at' => $time ),
+					array(
+						'message_id'      => $message_id,
+						'recipient_email' => $mail,
+					),
+					array( '%s' ),
+					array( '%d', '%s' )
 				);
 			}
 
@@ -399,7 +417,7 @@ class BatchSender {
 			$processed_batches = (int) get_post_meta( $message_id, '_dame_scheduled_batches_processed', true );
 			$total_batches     = (int) get_post_meta( $message_id, '_dame_scheduled_batches_total', true );
 
-			$processed_batches++;
+			++$processed_batches;
 			update_post_meta( $message_id, '_dame_scheduled_batches_processed', $processed_batches );
 
 			// If all batches are done, mark as sent.

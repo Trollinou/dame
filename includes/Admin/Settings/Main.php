@@ -26,20 +26,20 @@ class Main {
 	 *
 	 * @var array<string, object>
 	 */
-	private $tabs = [];
+	private $tabs = array();
 
 	/**
 	 * Constructor.
 	 */
 	public function __construct() {
 		// Instantiate Tabs
-		$this->tabs['association']    = new Association();
-		$this->tabs['assignation']    = new Assignation();
-		$this->tabs['saisons']        = new Saisons();
-		$this->tabs['anniversaires']  = new Anniversaires();
-		$this->tabs['paiements']      = new Paiements();
-		$this->tabs['sauvegarde']     = new Sauvegarde();
-		$this->tabs['emails']         = new Emails();
+		$this->tabs['association']     = new Association();
+		$this->tabs['assignation']     = new Assignation();
+		$this->tabs['saisons']         = new Saisons();
+		$this->tabs['anniversaires']   = new Anniversaires();
+		$this->tabs['paiements']       = new Paiements();
+		$this->tabs['sauvegarde']      = new Sauvegarde();
+		$this->tabs['emails']          = new Emails();
 		$this->tabs['desinstallation'] = new Desinstallation();
 	}
 
@@ -48,7 +48,7 @@ class Main {
 	 */
 	public function init(): void {
 
-		add_action( 'admin_init', [ $this, 'register_settings' ] );
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
 	}
 
 	/**
@@ -56,7 +56,7 @@ class Main {
 	 */
 	public function register_settings(): void {
 		// Register the main option group once.
-		register_setting( 'dame_options_group', 'dame_options', [ $this, 'sanitize_options' ] );
+		register_setting( 'dame_options_group', 'dame_options', array( $this, 'sanitize_options' ) );
 
 		// Let each tab register its sections and fields.
 		foreach ( $this->tabs as $tab ) {
@@ -75,7 +75,7 @@ class Main {
 			__( 'Options DAME', 'dame' ),
 			'manage_options',
 			'dame-settings',
-			[ $this, 'render_page' ]
+			array( $this, 'render_page' )
 		);
 	}
 
@@ -97,8 +97,9 @@ class Main {
 			</h2>
 
 			<?php
-			$custom_form_tabs = [ 'saisons', 'assignation' ];
-			if ( ! in_array( $active_tab, $custom_form_tabs, true ) ) : ?>
+			$custom_form_tabs = array( 'saisons', 'assignation' );
+			if ( ! in_array( $active_tab, $custom_form_tabs, true ) ) :
+				?>
 				<form action="options.php" method="post">
 					<?php settings_fields( 'dame_options_group' ); ?>
 			<?php endif; ?>
@@ -126,7 +127,7 @@ class Main {
 	 * @return array<string, mixed> The sanitized array.
 	 */
 	public function sanitize_options( $input ) {
-		$options = get_option( 'dame_options', [] );
+		$options    = get_option( 'dame_options', array() );
 		$active_tab = isset( $_POST['dame_active_tab'] ) ? sanitize_key( $_POST['dame_active_tab'] ) : '';
 
 		if ( isset( $this->tabs[ $active_tab ] ) && method_exists( $this->tabs[ $active_tab ], 'sanitize' ) ) {

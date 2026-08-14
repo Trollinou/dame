@@ -21,7 +21,7 @@ class Adherent {
 	 * Initialize the actions.
 	 */
 	public function init(): void {
-		add_action( 'admin_post_dame_transform_to_contact', [ $this, 'handle_transformation' ] );
+		add_action( 'admin_post_dame_transform_to_contact', array( $this, 'handle_transformation' ) );
 	}
 
 	/**
@@ -74,12 +74,14 @@ class Adherent {
 		}
 
 		// 3. Création du nouveau Contact
-		$contact_id = wp_insert_post( [
-			'post_title'  => $new_title,
-			'post_type'   => 'dame_contact',
-			'post_status' => 'publish',
-			'post_name'   => sanitize_title( $new_title ),
-		] );
+		$contact_id = wp_insert_post(
+			array(
+				'post_title'  => $new_title,
+				'post_type'   => 'dame_contact',
+				'post_status' => 'publish',
+				'post_name'   => sanitize_title( $new_title ),
+			)
+		);
 
 		if ( is_wp_error( $contact_id ) ) {
 			wp_die( esc_html__( 'Erreur lors de la création de la fiche contact.', 'dame' ) );

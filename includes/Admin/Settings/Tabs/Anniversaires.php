@@ -25,7 +25,7 @@ class Anniversaires {
 	 * Register settings.
 	 */
 	public function register(): void {
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
 		add_settings_section(
 			'dame_birthday_section',
@@ -37,7 +37,7 @@ class Anniversaires {
 		add_settings_field(
 			'dame_birthday_emails_enabled',
 			__( 'Activer les emails', 'dame' ),
-			[ $this, 'render_enabled_field' ],
+			array( $this, 'render_enabled_field' ),
 			'dame_birthday_section_group',
 			'dame_birthday_section'
 		);
@@ -45,7 +45,7 @@ class Anniversaires {
 		add_settings_field(
 			'dame_birthday_article_slug',
 			__( 'Slug de l\'article (Modèle)', 'dame' ),
-			[ $this, 'render_slug_field' ],
+			array( $this, 'render_slug_field' ),
 			'dame_birthday_section_group',
 			'dame_birthday_section'
 		);
@@ -53,7 +53,7 @@ class Anniversaires {
 		add_settings_field(
 			'dame_birthday_time',
 			__( 'Heure d\'envoi', 'dame' ),
-			[ $this, 'render_time_field' ],
+			array( $this, 'render_time_field' ),
 			'dame_birthday_section_group',
 			'dame_birthday_section'
 		);
@@ -86,7 +86,7 @@ class Anniversaires {
 	 */
 	public function render_slug_field(): void {
 		$options = get_option( 'dame_options' );
-		$value = isset( $options['birthday_article_slug'] ) ? $options['birthday_article_slug'] : '';
+		$value   = isset( $options['birthday_article_slug'] ) ? $options['birthday_article_slug'] : '';
 		echo '<input type="text" name="dame_options[birthday_article_slug]" value="' . esc_attr( $value ) . '" class="regular-text" />';
 		echo '<p class="description">' . esc_html__( 'Slug de l\'article ou de la page à utiliser comme contenu de l\'email.', 'dame' ) . '</p>';
 	}
@@ -96,7 +96,7 @@ class Anniversaires {
 	 */
 	public function render_time_field(): void {
 		$options = get_option( 'dame_options' );
-		$value = isset( $options['birthday_time'] ) ? $options['birthday_time'] : '09:00';
+		$value   = isset( $options['birthday_time'] ) ? $options['birthday_time'] : '09:00';
 		echo '<input type="time" name="dame_options[birthday_time]" value="' . esc_attr( $value ) . '" />';
 		echo '<p class="description">' . esc_html__( 'Heure à laquelle les emails de vœux seront envoyés chaque jour.', 'dame' ) . '</p>';
 	}

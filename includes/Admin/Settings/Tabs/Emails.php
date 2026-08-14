@@ -32,24 +32,24 @@ class Emails {
 			'dame_mailing_section_group'
 		);
 
-		$fields = [
-			'sender_email' => __( 'Email de l\'expéditeur', 'dame' ),
-			'smtp_host' => __( 'Serveur SMTP', 'dame' ),
-			'smtp_port' => __( 'Port SMTP', 'dame' ),
+		$fields = array(
+			'sender_email'    => __( 'Email de l\'expéditeur', 'dame' ),
+			'smtp_host'       => __( 'Serveur SMTP', 'dame' ),
+			'smtp_port'       => __( 'Port SMTP', 'dame' ),
 			'smtp_encryption' => __( 'Chiffrement', 'dame' ),
-			'smtp_username' => __( 'Utilisateur SMTP', 'dame' ),
-			'smtp_password' => __( 'Mot de passe SMTP', 'dame' ),
+			'smtp_username'   => __( 'Utilisateur SMTP', 'dame' ),
+			'smtp_password'   => __( 'Mot de passe SMTP', 'dame' ),
 			'smtp_batch_size' => __( 'Taille du lot (emails/minute)', 'dame' ),
-		];
+		);
 
 		foreach ( $fields as $key => $label ) {
 			add_settings_field(
 				'dame_' . $key,
 				$label,
-				[ $this, 'render_field' ],
+				array( $this, 'render_field' ),
 				'dame_mailing_section_group',
 				'dame_mailing_section',
-				[ 'key' => $key ]
+				array( 'key' => $key )
 			);
 		}
 	}
@@ -60,12 +60,12 @@ class Emails {
 	 * @param array<string, mixed> $args Arguments.
 	 */
 	public function render_field( $args ): void {
-		$key = $args['key'];
+		$key     = $args['key'];
 		$options = get_option( 'dame_options' );
-		$value = isset( $options[ $key ] ) ? $options[ $key ] : '';
+		$value   = isset( $options[ $key ] ) ? $options[ $key ] : '';
 
 		if ( 'smtp_encryption' === $key ) {
-			$encryption = $value ?: 'tls';
+			$encryption = ! empty( $value ) ? $value : 'tls';
 			echo '<select name="dame_options[smtp_encryption]">';
 			echo '<option value="none" ' . selected( $encryption, 'none', false ) . '>Aucun</option>';
 			echo '<option value="ssl" ' . selected( $encryption, 'ssl', false ) . '>SSL</option>';
@@ -110,7 +110,7 @@ class Emails {
 		if ( isset( $input['smtp_port'] ) ) {
 			$existing_options['smtp_port'] = absint( $input['smtp_port'] );
 		}
-		if ( isset( $input['smtp_encryption'] ) && in_array( $input['smtp_encryption'], [ 'none', 'ssl', 'tls' ], true ) ) {
+		if ( isset( $input['smtp_encryption'] ) && in_array( $input['smtp_encryption'], array( 'none', 'ssl', 'tls' ), true ) ) {
 			$existing_options['smtp_encryption'] = $input['smtp_encryption'];
 		}
 		if ( isset( $input['smtp_username'] ) ) {

@@ -19,14 +19,14 @@ class Actions {
 		add_meta_box(
 			'dame_special_actions_metabox',
 			__( 'Actions spéciales', 'dame' ),
-			[ $this, 'render' ],
+			array( $this, 'render' ),
 			'adherent',
 			'side',
 			'low'
 		);
 
-		add_filter( 'postbox_classes_adherent_dame_special_actions_metabox', [ $this, 'close_metabox_by_default' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_filter( 'postbox_classes_adherent_dame_special_actions_metabox', array( $this, 'close_metabox_by_default' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 	}
 
 	/**
@@ -46,9 +46,13 @@ class Actions {
 		}
 
 		wp_enqueue_script( 'dame-admin-adherent-actions', \DAME_PLUGIN_URL . 'assets/js/admin-adherent-actions.js', array(), \DAME_VERSION, true );
-		wp_localize_script( 'dame-admin-adherent-actions', 'dame_adherent_actions_data', array(
-			'confirm_revert' => __( 'Êtes-vous sûr de vouloir annuler cette adhésion et renvoyer cette personne en pré-inscription ? Cette action est irréversible.', 'dame' )
-		) );
+		wp_localize_script(
+			'dame-admin-adherent-actions',
+			'dame_adherent_actions_data',
+			array(
+				'confirm_revert' => __( 'Êtes-vous sûr de vouloir annuler cette adhésion et renvoyer cette personne en pré-inscription ? Cette action est irréversible.', 'dame' ),
+			)
+		);
 	}
 
 	/**
@@ -94,7 +98,7 @@ class Actions {
 			?>
 			<p><?php esc_html_e( "Cette action va supprimer cet adhérent et créer une nouvelle pré-inscription avec ses données. L'adhérent disparaîtra de la liste des adhérents.", 'dame' ); ?></p>
 			<button type="submit" name="dame_revert_to_pre_inscription" value="revert" class="button button-secondary" style="width: 100%; margin-bottom: 10px;">
-				<?php esc_html_e( "Annuler et renvoyer en pré-inscription", 'dame' ); ?>
+				<?php esc_html_e( 'Annuler et renvoyer en pré-inscription', 'dame' ); ?>
 			</button>
 			<?php
 		} else {
@@ -106,9 +110,9 @@ class Actions {
 		$transform_url = wp_nonce_url( $transform_url, 'dame_transform_contact_' . $post->ID );
 		?>
 		<hr>
-		<p class="description"><?php esc_html_e( "Crée une fiche Contact avec les informations de cet adhérent et met la fiche adhérent à la corbeille.", 'dame' ); ?></p>
+		<p class="description"><?php esc_html_e( 'Crée une fiche Contact avec les informations de cet adhérent et met la fiche adhérent à la corbeille.', 'dame' ); ?></p>
 		<a href="<?php echo esc_url( $transform_url ); ?>" class="button button-secondary" style="width: 100%; text-align: center;" onclick="return confirm('<?php echo esc_js( __( 'Voulez-vous vraiment transformer cet adhérent en contact ? La fiche adhérent actuelle sera mise à la corbeille.', 'dame' ) ); ?>');">
-			<?php esc_html_e( "Transformer en Contact", 'dame' ); ?>
+			<?php esc_html_e( 'Transformer en Contact', 'dame' ); ?>
 		</a>
 		<?php
 	}

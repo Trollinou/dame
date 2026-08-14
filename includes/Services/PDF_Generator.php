@@ -20,11 +20,11 @@ class PDF_Generator {
 	 * Initialize the service.
 	 */
 	public function init(): void {
-		add_action( 'wp_ajax_dame_generate_health_form', [ $this, 'generate_health_form' ] );
-		add_action( 'wp_ajax_nopriv_dame_generate_health_form', [ $this, 'generate_health_form' ] );
+		add_action( 'wp_ajax_dame_generate_health_form', array( $this, 'generate_health_form' ) );
+		add_action( 'wp_ajax_nopriv_dame_generate_health_form', array( $this, 'generate_health_form' ) );
 
-		add_action( 'wp_ajax_dame_generate_parental_auth', [ $this, 'generate_parental_auth' ] );
-		add_action( 'wp_ajax_nopriv_dame_generate_parental_auth', [ $this, 'generate_parental_auth' ] );
+		add_action( 'wp_ajax_dame_generate_parental_auth', array( $this, 'generate_parental_auth' ) );
+		add_action( 'wp_ajax_nopriv_dame_generate_parental_auth', array( $this, 'generate_parental_auth' ) );
 	}
 
 	/**
@@ -32,14 +32,15 @@ class PDF_Generator {
 	 */
 	public function generate_health_form(): void {
 		// 1. Security check
-		if ( ! isset( $_GET['post_id'] ) || ! isset( $_GET['_wpnonce'] ) ) {
-			wp_die( __( "Paramètres invalides.", 'dame' ), 400 );
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ! isset( $_GET['post_id'] ) || empty( $nonce ) ) {
+			wp_die( esc_html__( 'Paramètres invalides.', 'dame' ), 400 );
 		}
 
 		$post_id = intval( $_GET['post_id'] );
 
-		if ( ! wp_verify_nonce( $_GET['_wpnonce'], 'dame_generate_health_form_' . $post_id ) ) {
-			wp_die( __( "La vérification de sécurité a échoué.", 'dame' ), 403 );
+		if ( ! wp_verify_nonce( $nonce, 'dame_generate_health_form_' . $post_id ) ) {
+			wp_die( esc_html__( 'La vérification de sécurité a échoué.', 'dame' ), 403 );
 		}
 
 		// 2. Get data from post meta
@@ -54,78 +55,85 @@ class PDF_Generator {
 
 		// 3. Data validation
 		if ( empty( $first_name ) || empty( $last_name ) || empty( $birth_date_str ) || empty( $city ) ) {
-			wp_die( __( "Données de préinscription manquantes ou invalides.", 'dame' ), 404 );
+			wp_die( esc_html__( 'Données de préinscription manquantes ou invalides.', 'dame' ), 404 );
 		}
 
 		// 4. Calculate Age
-		$birth_date = DateTime::createFromFormat( 'Y-m-d', $birth_date_str );
-		$today      = new DateTime();
-		$age        = $today->diff( $birth_date )->y;
+		try {
+			$birth_date = new \DateTime( $birth_date_str );
+			$now        = new \DateTime();
+			$age        = $now->diff( $birth_date )->y;
+		} catch ( \Exception $e ) {
+			$age = 0;
+		}
 
-		// 5. Prepare data for PDF
-		$full_name_adherent_for_pdf = \DAME\Core\Utils::generate_adherent_title( $post_id );
-		$current_date               = wp_date( 'd/m/Y' );
-
-		// Handle UTF-8 to Windows-1252 conversion for FPDF standard fonts
+		$full_name_adherent_for_pdf = \DAME\Core\Utils::format_lastname( (string) $last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $first_name );
 		$full_name_adherent_for_pdf = mb_convert_encoding( $full_name_adherent_for_pdf, 'ISO-8859-1', 'UTF-8' );
-		$city_for_pdf               = mb_convert_encoding( $city, 'ISO-8859-1', 'UTF-8' );
+		$city_for_pdf               = mb_convert_encoding( (string) $city, 'ISO-8859-1', 'UTF-8' );
+		$current_date               = gmdate( 'd/m/Y' );
+
+		// 5. Load FPDI
+		if ( ! class_exists( '\setasign\Fpdi\Fpdi' ) ) {
+			require_once DAME_PLUGIN_DIR . 'vendor/autoload.php';
+		}
 
 		// 6. Generate PDF
-		$pdf = new Fpdi();
-		$pdf->AddPage();
-
 		try {
-			// Set the template file
-			$template_path = dirname( __DIR__, 2 ) . '/assets/pdf/ffe_attestation_sante.pdf';
-			$pdf->setSourceFile( $template_path );
-			$tplId = $pdf->importPage( 1 );
-			$pdf->useTemplate( $tplId, 0, 0, 210, 297 );
-		} catch ( Exception $e ) {
-			wp_die( sprintf( __( "Erreur lors du chargement du template PDF : %s", 'dame' ), $e->getMessage() ), 500 );
-		}
+			$pdf = new Fpdi();
+			$pdf->AddPage();
+			$pdf->setSourceFile( DAME_PLUGIN_DIR . 'assets/pdf/fiche-sante.pdf' );
+			$tpl_id = $pdf->importPage( 1 );
+			$pdf->useTemplate( $tpl_id, 0, 0, 210 );
 
-		// Set font for the data
-		$pdf->SetFont( 'Helvetica' );
-		$pdf->SetTextColor( 0, 0, 0 );
+			// Set font for the data
+			$pdf->SetFont( 'Helvetica' );
+			$pdf->SetTextColor( 0, 0, 0 );
 
-		if ( $age >= 18 ) {
-			// Major adherent
-			$pdf->SetXY( 54, 128 );
-			$pdf->Write( 0, $full_name_adherent_for_pdf );
+			if ( $age >= 18 ) {
+				// Major adherent
+				$pdf->SetXY( 54, 128 );
+				$pdf->Write( 0, $full_name_adherent_for_pdf );
 
-			$pdf->SetXY( 32, 156 );
-			$pdf->Write( 0, $current_date );
+				$pdf->SetXY( 32, 156 );
+				$pdf->Write( 0, $current_date );
 
-			$pdf->SetXY( 62, 156 );
-			$pdf->Write( 0, $city_for_pdf );
+				$pdf->SetXY( 62, 156 );
+				$pdf->Write( 0, $city_for_pdf );
 
-		} else {
-			// Minor adherent
-			if ( empty( $legal_rep_1_first_name ) || empty( $legal_rep_1_last_name ) || empty( $legal_rep_1_city ) ) {
-				wp_die( __( "Données du représentant légal manquantes pour un adhérent mineur.", 'dame' ), 400 );
+			} else {
+				// Minor adherent
+				if ( empty( $legal_rep_1_first_name ) || empty( $legal_rep_1_last_name ) || empty( $legal_rep_1_city ) ) {
+					wp_die( esc_html__( 'Données du représentant légal manquantes pour un adhérent mineur.', 'dame' ), 400 );
+				}
+
+				$full_name_rep1_for_pdf   = \DAME\Core\Utils::format_lastname( (string) $legal_rep_1_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $legal_rep_1_first_name );
+				$full_name_rep1_for_pdf   = mb_convert_encoding( $full_name_rep1_for_pdf, 'ISO-8859-1', 'UTF-8' );
+				$legal_rep_1_city_for_pdf = mb_convert_encoding( (string) $legal_rep_1_city, 'ISO-8859-1', 'UTF-8' );
+
+				$pdf->SetXY( 54, 181 );
+				$pdf->Write( 0, $full_name_rep1_for_pdf );
+
+				$pdf->SetXY( 119, 190 );
+				$pdf->Write( 0, $full_name_adherent_for_pdf );
+
+				$pdf->SetXY( 32, 227 );
+				$pdf->Write( 0, $current_date );
+
+				$pdf->SetXY( 62, 227 );
+				$pdf->Write( 0, $legal_rep_1_city_for_pdf );
 			}
 
-			$full_name_rep1_for_pdf   = \DAME\Core\Utils::format_lastname( (string) $legal_rep_1_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $legal_rep_1_first_name );
-			$full_name_rep1_for_pdf   = mb_convert_encoding( $full_name_rep1_for_pdf, 'ISO-8859-1', 'UTF-8' );
-			$legal_rep_1_city_for_pdf = mb_convert_encoding( $legal_rep_1_city, 'ISO-8859-1', 'UTF-8' );
-
-			$pdf->SetXY( 54, 181 );
-			$pdf->Write( 0, $full_name_rep1_for_pdf );
-
-			$pdf->SetXY( 119, 190 );
-			$pdf->Write( 0, $full_name_adherent_for_pdf );
-
-			$pdf->SetXY( 32, 227 );
-			$pdf->Write( 0, $current_date );
-
-			$pdf->SetXY( 62, 227 );
-			$pdf->Write( 0, $legal_rep_1_city_for_pdf );
+			// 7. Output PDF
+			$filename = sanitize_file_name( 'attestation_sante_' . $last_name . '_' . $first_name . '.pdf' );
+			$pdf->Output( 'D', $filename );
+			exit;
+		} catch ( \Exception $e ) {
+			wp_die(
+				/* translators: %s: Message d'erreur PDF */
+				esc_html( sprintf( __( 'Erreur lors de la génération du PDF : %s', 'dame' ), $e->getMessage() ) ),
+				500
+			);
 		}
-
-		// 7. Output PDF
-		$filename = sanitize_file_name( 'attestation_sante_' . $last_name . '_' . $first_name . '.pdf' );
-		$pdf->Output( 'D', $filename );
-		exit;
 	}
 
 	/**
@@ -133,14 +141,15 @@ class PDF_Generator {
 	 */
 	public function generate_parental_auth(): void {
 		// 1. Security check
-		if ( ! isset( $_GET['post_id'] ) || ! isset( $_GET['_wpnonce'] ) ) {
-			wp_die( __( "Paramètres invalides.", 'dame' ), 400 );
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ! isset( $_GET['post_id'] ) || empty( $nonce ) ) {
+			wp_die( esc_html__( 'Paramètres invalides.', 'dame' ), 400 );
 		}
 
 		$post_id = intval( $_GET['post_id'] );
 
-		if ( ! wp_verify_nonce( $_GET['_wpnonce'], 'dame_generate_parental_auth_' . $post_id ) ) {
-			wp_die( __( "La vérification de sécurité a échoué.", 'dame' ), 403 );
+		if ( ! wp_verify_nonce( $nonce, 'dame_generate_parental_auth_' . $post_id ) ) {
+			wp_die( esc_html__( 'La vérification de sécurité a échoué.', 'dame' ), 403 );
 		}
 
 		// 2. Get all required data from post meta
@@ -164,8 +173,12 @@ class PDF_Generator {
 		$rl2_profession  = get_post_meta( $post_id, '_dame_legal_rep_2_profession', true );
 
 		// 3. Data validation
-		if ( empty( $first_name ) || empty( $last_name ) || empty( $birth_date_str ) ) {
-			wp_die( __( "Données de préinscription de l'adhérent manquantes ou invalides.", 'dame' ), 404 );
+		if ( empty( $first_name ) || empty( $last_name ) || empty( $birth_date_str ) || empty( $city ) ) {
+			wp_die( esc_html__( 'Données de préinscription manquantes ou invalides.', 'dame' ), 404 );
+		}
+
+		if ( empty( $rl1_first_name ) || empty( $rl1_last_name ) ) {
+			wp_die( esc_html__( 'Données du représentant légal 1 manquantes.', 'dame' ), 404 );
 		}
 
 		$birth_date_obj = DateTime::createFromFormat( 'Y-m-d', $birth_date_str );
@@ -173,12 +186,12 @@ class PDF_Generator {
 		$age            = $today->diff( $birth_date_obj )->y;
 
 		if ( $age >= 18 ) {
-			wp_die( __( "L'autorisation parentale ne peut être générée que pour un adhérent mineur.", 'dame' ), 400 );
+			wp_die( esc_html__( "L'autorisation parentale ne peut être générée que pour un adhérent mineur.", 'dame' ), 400 );
 		}
 
 		// 4. Prepare data for PDF
 		$adherent_full_name            = mb_convert_encoding( \DAME\Core\Utils::generate_adherent_title( $post_id ), 'ISO-8859-1', 'UTF-8' );
-		$adherent_birth_date_formatted = mb_convert_encoding( wp_date( 'd/m/Y', strtotime( $birth_date_str ), new \DateTimeZone('UTC') ), 'ISO-8859-1', 'UTF-8' );
+		$adherent_birth_date_formatted = mb_convert_encoding( wp_date( 'd/m/Y', strtotime( $birth_date_str ), new \DateTimeZone( 'UTC' ) ), 'ISO-8859-1', 'UTF-8' );
 		$adherent_city                 = mb_convert_encoding( $city, 'ISO-8859-1', 'UTF-8' );
 		$current_date                  = wp_date( 'd/m/Y' );
 		$rl1_full_name                 = '';
@@ -194,10 +207,14 @@ class PDF_Generator {
 		try {
 			$template_path = dirname( __DIR__, 2 ) . '/assets/pdf/el_autorisation_parentale.pdf';
 			$pdf->setSourceFile( $template_path );
-			$tplId = $pdf->importPage( 1 );
-			$pdf->useTemplate( $tplId, 0, 0, 210, 297 );
+			$tpl_id = $pdf->importPage( 1 );
+			$pdf->useTemplate( $tpl_id, 0, 0, 210, 297 );
 		} catch ( Exception $e ) {
-			wp_die( sprintf( __( "Erreur lors du chargement du template PDF : %s", 'dame' ), $e->getMessage() ), 500 );
+			wp_die(
+				/* translators: %s: Message d'erreur PDF */
+				esc_html( sprintf( __( 'Erreur lors du chargement du template PDF : %s', 'dame' ), $e->getMessage() ) ),
+				500
+			);
 		}
 
 		$pdf->SetFont( 'Helvetica', '', 12 );
@@ -235,7 +252,7 @@ class PDF_Generator {
 		}
 		if ( ! empty( $rl1_birth_date ) ) {
 			$pdf->SetXY( 54, 270 );
-			$pdf->Write( 0, mb_convert_encoding( wp_date( 'd/m/Y', strtotime( $rl1_birth_date ), new \DateTimeZone('UTC') ), 'ISO-8859-1', 'UTF-8' ) );
+			$pdf->Write( 0, mb_convert_encoding( wp_date( 'd/m/Y', strtotime( $rl1_birth_date ), new \DateTimeZone( 'UTC' ) ), 'ISO-8859-1', 'UTF-8' ) );
 		}
 		if ( ! empty( $rl1_profession ) ) {
 			$pdf->SetXY( 35, 279 );
@@ -257,7 +274,7 @@ class PDF_Generator {
 		}
 		if ( ! empty( $rl2_birth_date ) ) {
 			$pdf->SetXY( 154, 270 );
-			$pdf->Write( 0, mb_convert_encoding( wp_date( 'd/m/Y', strtotime( $rl2_birth_date ), new \DateTimeZone('UTC') ), 'ISO-8859-1', 'UTF-8' ) );
+			$pdf->Write( 0, mb_convert_encoding( wp_date( 'd/m/Y', strtotime( $rl2_birth_date ), new \DateTimeZone( 'UTC' ) ), 'ISO-8859-1', 'UTF-8' ) );
 		}
 		if ( ! empty( $rl2_profession ) ) {
 			$pdf->SetXY( 135, 279 );

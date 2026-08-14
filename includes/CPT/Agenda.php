@@ -19,11 +19,11 @@ class Agenda {
 	 * Initialize the CPT.
 	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register' ], 0 );
-		add_filter( 'the_content', [ $this, 'display_event_details' ] );
-		add_filter( 'use_block_editor_for_post_type', [ $this, 'disable_block_editor' ], 10, 2 );
+		add_action( 'init', array( $this, 'register' ), 0 );
+		add_filter( 'the_content', array( $this, 'display_event_details' ) );
+		add_filter( 'use_block_editor_for_post_type', array( $this, 'disable_block_editor' ), 10, 2 );
 		if ( is_admin() ) {
-			add_action( 'admin_init', [ $this, 'save_last_list_url' ] );
+			add_action( 'admin_init', array( $this, 'save_last_list_url' ) );
 		}
 	}
 
@@ -76,25 +76,25 @@ class Agenda {
 		);
 
 		$args = array(
-			'label'                 => __( 'Événement', 'dame' ),
-			'description'           => __( 'Les événements de l\'agenda', 'dame' ),
-			'labels'                => $labels,
-			'supports'              => array( 'title', 'custom-fields' ),
-			'hierarchical'          => false,
-			'public'                => true,
-			'show_ui'               => true,
-			'show_in_menu'          => 'dame-admin',
-			'menu_position'         => 25,
-			'menu_icon'             => 'dashicons-calendar-alt',
-			'show_in_admin_bar'     => true,
-			'show_in_nav_menus'     => true,
-			'can_export'            => true,
-			'has_archive'           => false,
-			'exclude_from_search'   => false,
-			'publicly_queryable'    => true,
-			'capability_type'       => 'post',
-			'show_in_rest'          => true,
-			'rest_base'             => 'agenda',
+			'label'               => __( 'Événement', 'dame' ),
+			'description'         => __( 'Les événements de l\'agenda', 'dame' ),
+			'labels'              => $labels,
+			'supports'            => array( 'title', 'custom-fields' ),
+			'hierarchical'        => false,
+			'public'              => true,
+			'show_ui'             => true,
+			'show_in_menu'        => 'dame-admin',
+			'menu_position'       => 25,
+			'menu_icon'           => 'dashicons-calendar-alt',
+			'show_in_admin_bar'   => true,
+			'show_in_nav_menus'   => true,
+			'can_export'          => true,
+			'has_archive'         => false,
+			'exclude_from_search' => false,
+			'publicly_queryable'  => true,
+			'capability_type'     => 'post',
+			'show_in_rest'        => true,
+			'rest_base'           => 'agenda',
 		);
 
 		register_post_type( 'dame_agenda', $args );
@@ -133,7 +133,8 @@ class Agenda {
 					$date_display = date_i18n( get_option( 'date_format' ), $start_date->getTimestamp() );
 				} else {
 					$date_display = sprintf(
-						__( 'From %s to %s', 'dame' ),
+						/* translators: 1: Date de début, 2: Date de fin */
+						__( 'From %1$s to %2$s', 'dame' ),
 						date_i18n( get_option( 'date_format' ), $start_date->getTimestamp() ),
 						date_i18n( get_option( 'date_format' ), $end_date->getTimestamp() )
 					);
@@ -146,7 +147,7 @@ class Agenda {
 					),
 					home_url()
 				);
-				$button_html = '<a href="' . esc_url( $ics_download_url ) . '" class="button dame-add-to-calendar-button">📅 ' . __( 'Ajouter à mon agenda', 'dame' ) . '</a>';
+				$button_html      = '<a href="' . esc_url( $ics_download_url ) . '" class="button dame-add-to-calendar-button">📅 ' . __( 'Ajouter à mon agenda', 'dame' ) . '</a>';
 
 				$details_html .= '<div class="dame-event-detail-item dame-event-date">';
 				$details_html .= '<h4>' . __( 'Date', 'dame' ) . '</h4>';
@@ -166,8 +167,8 @@ class Agenda {
 			$competition_type = get_post_meta( $post_id, '_dame_competition_type', true );
 			if ( $competition_type && 'non' !== $competition_type ) {
 				$competition_level = get_post_meta( $post_id, '_dame_competition_level', true );
-				$type_label = ( 'individuelle' === $competition_type ) ? __( 'Individuelle', 'dame' ) : __( 'Par équipe', 'dame' );
-				$level_label = '';
+				$type_label        = ( 'individuelle' === $competition_type ) ? __( 'Individuelle', 'dame' ) : __( 'Par équipe', 'dame' );
+				$level_label       = '';
 				if ( 'departementale' === $competition_level ) {
 					$level_label = __( 'Départementale', 'dame' );
 				} elseif ( 'regionale' === $competition_level ) {
@@ -191,20 +192,20 @@ class Agenda {
 			}
 
 			// Location.
-			$address_1    = get_post_meta( $post_id, '_dame_address_1', true );
+			$address_1 = get_post_meta( $post_id, '_dame_address_1', true );
 			if ( ! empty( $location ) || ! empty( $address_1 ) ) {
-				$address_2    = get_post_meta( $post_id, '_dame_address_2', true );
-				$postal_code  = get_post_meta( $post_id, '_dame_postal_code', true );
-				$city         = get_post_meta( $post_id, '_dame_city', true );
-				$latitude     = get_post_meta( $post_id, '_dame_latitude', true );
-				$longitude    = get_post_meta( $post_id, '_dame_longitude', true );
-				$distance     = get_post_meta( $post_id, '_dame_distance', true );
-				$travel_time  = get_post_meta( $post_id, '_dame_travel_time', true );
+				$address_2   = get_post_meta( $post_id, '_dame_address_2', true );
+				$postal_code = get_post_meta( $post_id, '_dame_postal_code', true );
+				$city        = get_post_meta( $post_id, '_dame_city', true );
+				$latitude    = get_post_meta( $post_id, '_dame_latitude', true );
+				$longitude   = get_post_meta( $post_id, '_dame_longitude', true );
+				$distance    = get_post_meta( $post_id, '_dame_distance', true );
+				$travel_time = get_post_meta( $post_id, '_dame_travel_time', true );
 
-				$details_html .= '<div class="dame-event-detail-item dame-event-location">';
-				$details_html .= '<h4>' . __( 'Lieu', 'dame' ) . '</h4>';
+				$details_html  .= '<div class="dame-event-detail-item dame-event-location">';
+				$details_html  .= '<h4>' . __( 'Lieu', 'dame' ) . '</h4>';
 				$location_title = ! empty( $location ) ? $location : $address_1;
-				$details_html .= '<p><strong>' . esc_html( $location_title ) . '</strong></p>';
+				$details_html  .= '<p><strong>' . esc_html( $location_title ) . '</strong></p>';
 
 				$full_address = '';
 				if ( ! empty( $address_1 ) ) {
@@ -230,7 +231,12 @@ class Agenda {
 				}
 
 				if ( ! empty( $distance ) && ! empty( $travel_time ) ) {
-					$details_html .= '<p class="dame-travel-info">' . sprintf( __( 'Distance: %s - Temps de trajet: %s', 'dame' ), esc_html( $distance ), esc_html( $travel_time ) ) . '</p>';
+					$details_html .= '<p class="dame-travel-info">' . sprintf(
+						/* translators: 1: Distance, 2: Temps de trajet */
+						__( 'Distance: %1$s - Temps de trajet: %2$s', 'dame' ),
+						esc_html( $distance ),
+						esc_html( $travel_time )
+					) . '</p>';
 				}
 
 				$details_html .= '</div>';
@@ -262,12 +268,13 @@ class Agenda {
 	 */
 	public function save_last_list_url(): void {
 		global $pagenow;
-		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'dame_agenda' === $_GET['post_type'] ) {
+		$post_type = isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '';
+		if ( 'edit.php' === $pagenow && 'dame_agenda' === $post_type ) {
 			$user_id = get_current_user_id();
 			if ( $user_id ) {
-				$url = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+				$url = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 				if ( $url ) {
-					$parsed = parse_url( $url );
+					$parsed     = wp_parse_url( $url );
 					$path_query = ( $parsed['path'] ?? '' ) . ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' );
 					update_user_meta( $user_id, 'dame_last_agenda_list_url', $path_query );
 				}

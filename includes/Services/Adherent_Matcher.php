@@ -79,30 +79,30 @@ class Adherent_Matcher {
 		}
 
 		$query = new WP_Query(
-			[
+			array(
 				'post_type'      => 'adherent',
 				'post_status'    => 'any',
 				'posts_per_page' => 1,
-				'meta_query'     => [
+				'meta_query'     => array(
 					'relation' => 'OR',
-					[
+					array(
 						'key'     => '_dame_email',
 						'value'   => $email,
 						'compare' => '=',
-					],
-					[
+					),
+					array(
 						'key'     => '_dame_legal_rep_1_email',
 						'value'   => $email,
 						'compare' => '=',
-					],
-					[
+					),
+					array(
 						'key'     => '_dame_legal_rep_2_email',
 						'value'   => $email,
 						'compare' => '=',
-					],
-				],
+					),
+				),
 				'fields'         => 'ids',
-			]
+			)
 		);
 
 		if ( $query->have_posts() ) {

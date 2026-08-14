@@ -22,8 +22,8 @@ class Details {
 	 * Initialize the metabox.
 	 */
 	public function init(): void {
-		add_action( 'add_meta_boxes', [ $this, 'register' ] );
-		add_action( 'save_post', [ $this, 'save' ] );
+		add_action( 'add_meta_boxes', array( $this, 'register' ) );
+		add_action( 'save_post', array( $this, 'save' ) );
 	}
 
 	/**
@@ -33,7 +33,7 @@ class Details {
 		add_meta_box(
 			'dame_contact_details_metabox',
 			__( 'Détails du contact', 'dame' ),
-			[ $this, 'render' ],
+			array( $this, 'render' ),
 			'dame_contact',
 			'normal',
 			'high'
@@ -55,16 +55,16 @@ class Details {
 		if ( ! $sexe ) {
 			$sexe = 'Non précisé';
 		}
-		$role         = get_post_meta( $post->ID, '_dame_contact_role', true );
-		$email        = get_post_meta( $post->ID, '_dame_contact_email', true );
-		$no_emails    = get_post_meta( $post->ID, '_dame_contact_no_emails', true );
-		$phone        = get_post_meta( $post->ID, '_dame_contact_phone', true );
-		$address_1    = get_post_meta( $post->ID, '_dame_contact_address_1', true );
-		$address_2    = get_post_meta( $post->ID, '_dame_contact_address_2', true );
-		$postcode     = get_post_meta( $post->ID, '_dame_contact_postcode', true );
-		$city         = get_post_meta( $post->ID, '_dame_contact_city', true );
-		$department   = get_post_meta( $post->ID, '_dame_contact_department', true );
-		$region       = get_post_meta( $post->ID, '_dame_contact_region', true );
+		$role       = get_post_meta( $post->ID, '_dame_contact_role', true );
+		$email      = get_post_meta( $post->ID, '_dame_contact_email', true );
+		$no_emails  = get_post_meta( $post->ID, '_dame_contact_no_emails', true );
+		$phone      = get_post_meta( $post->ID, '_dame_contact_phone', true );
+		$address_1  = get_post_meta( $post->ID, '_dame_contact_address_1', true );
+		$address_2  = get_post_meta( $post->ID, '_dame_contact_address_2', true );
+		$postcode   = get_post_meta( $post->ID, '_dame_contact_postcode', true );
+		$city       = get_post_meta( $post->ID, '_dame_contact_city', true );
+		$department = get_post_meta( $post->ID, '_dame_contact_department', true );
+		$region     = get_post_meta( $post->ID, '_dame_contact_region', true );
 
 		$departments = Data_Provider::get_departments();
 		$regions     = Data_Provider::get_regions();
@@ -223,7 +223,8 @@ class Details {
 	 */
 	public function save( int $post_id ): void {
 		// Vérifications de sécurité (Nonce, Autosave, Capacités)
-		if ( ! isset( $_POST['dame_contact_meta_nonce'] ) || ! wp_verify_nonce( $_POST['dame_contact_meta_nonce'], 'dame_save_contact_meta' ) ) {
+		$nonce = isset( $_POST['dame_contact_meta_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_contact_meta_nonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'dame_save_contact_meta' ) ) {
 			return;
 		}
 
@@ -236,21 +237,21 @@ class Details {
 		}
 
 		// 1. Traitement spécifique et formatage pour le Nom et le Prénom
-		$first_name = isset( $_POST['_dame_contact_first_name'] ) ? sanitize_text_field( $_POST['_dame_contact_first_name'] ) : '';
-		$last_name  = isset( $_POST['_dame_contact_last_name'] ) ? sanitize_text_field( $_POST['_dame_contact_last_name'] ) : '';
+		$first_name = isset( $_POST['_dame_contact_first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['_dame_contact_first_name'] ) ) : '';
+		$last_name  = isset( $_POST['_dame_contact_last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['_dame_contact_last_name'] ) ) : '';
 
 		if ( isset( $_POST['_dame_contact_first_name'] ) ) {
-			$first_name = Utils::format_firstname( $first_name ); // Formatage : "Jean-pierre" -> "Jean-Pierre"
+			$first_name = Utils::format_firstname( $first_name );
 			update_post_meta( $post_id, '_dame_contact_first_name', $first_name );
 		}
 
 		if ( isset( $_POST['_dame_contact_last_name'] ) ) {
-			$last_name = Utils::format_lastname( $last_name ); // Formatage : "dupont" -> "DUPONT"
+			$last_name = Utils::format_lastname( $last_name );
 			update_post_meta( $post_id, '_dame_contact_last_name', $last_name );
 		}
 
 		// 2. Sauvegarde des autres champs standards
-		$fields = [
+		$fields = array(
 			'_dame_contact_organization',
 			'_dame_contact_sexe',
 			'_dame_contact_role',
@@ -261,17 +262,17 @@ class Details {
 			'_dame_contact_city',
 			'_dame_contact_department',
 			'_dame_contact_region',
-		];
+		);
 
 		foreach ( $fields as $field ) {
 			if ( isset( $_POST[ $field ] ) ) {
-				update_post_meta( $post_id, $field, sanitize_text_field( $_POST[ $field ] ) );
+				update_post_meta( $post_id, $field, sanitize_text_field( wp_unslash( $_POST[ $field ] ) ) );
 			}
 		}
 
 		// 3. Sauvegarde spécifique pour l'Email et le refus de mailing
 		if ( isset( $_POST['_dame_contact_email'] ) ) {
-			update_post_meta( $post_id, '_dame_contact_email', sanitize_email( $_POST['_dame_contact_email'] ) );
+			update_post_meta( $post_id, '_dame_contact_email', sanitize_email( wp_unslash( $_POST['_dame_contact_email'] ) ) );
 		}
 
 		$no_emails = isset( $_POST['_dame_contact_no_emails'] ) ? '1' : '0';
@@ -282,16 +283,18 @@ class Details {
 
 		if ( get_the_title( $post_id ) !== $new_title ) {
 			// Désactivation temporaire du hook pour éviter la boucle infinie
-			remove_action( 'save_post', [ $this, 'save' ] );
+			remove_action( 'save_post', array( $this, 'save' ) );
 
-			wp_update_post( [
-				'ID'         => $post_id,
-				'post_title' => $new_title,
-				'post_name'  => sanitize_title( $new_title ),
-			] );
+			wp_update_post(
+				array(
+					'ID'         => $post_id,
+					'post_title' => $new_title,
+					'post_name'  => sanitize_title( $new_title ),
+				)
+			);
 
 			// Réactivation du hook
-			add_action( 'save_post', [ $this, 'save' ] );
+			add_action( 'save_post', array( $this, 'save' ) );
 		}
 	}
 }

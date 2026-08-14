@@ -22,8 +22,8 @@ class Mailing {
 	 */
 	public function init(): void {
 
-		add_action( 'admin_post_dame_process_mailing', [ $this, 'process_mailing' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'admin_post_dame_process_mailing', array( $this, 'process_mailing' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 	}
 
 
@@ -46,16 +46,22 @@ class Mailing {
 		);
 
 		// Prépare le mapping Région -> Départements pour le JS
-		$regions = Data_Provider::get_regions();
-		$region_mapping = [];
+		$regions        = Data_Provider::get_regions();
+		$region_mapping = array();
 		foreach ( array_keys( $regions ) as $code ) {
-			if ( 'NA' === $code ) continue;
+			if ( 'NA' === $code ) {
+				continue;
+			}
 			$region_mapping[ $code ] = Data_Provider::get_departments_by_region( $code );
 		}
 
-		wp_localize_script( 'dame-admin-mailing', 'dameMailingData', [
-			'regionMapping' => $region_mapping,
-		] );
+		wp_localize_script(
+			'dame-admin-mailing',
+			'dameMailingData',
+			array(
+				'regionMapping' => $region_mapping,
+			)
+		);
 
 		wp_enqueue_style(
 			'dame-admin-styles',
@@ -77,7 +83,7 @@ class Mailing {
 		$user_id     = get_current_user_id();
 		$state_key   = 'dame_mailing_state_' . $user_id;
 		$saved_state = get_transient( $state_key );
-		
+
 		// On supprime le transient immédiatement après lecture pour qu'il ne serve qu'une fois.
 		if ( false !== $saved_state ) {
 			delete_transient( $state_key );
@@ -92,7 +98,7 @@ class Mailing {
 		$state_groups_saisonnier = isset( $saved_state['dame_recipient_groups_saisonnier'] ) ? array_map( 'absint', (array) $saved_state['dame_recipient_groups_saisonnier'] ) : array();
 		$state_groups_permanent  = isset( $saved_state['dame_recipient_groups_permanent'] ) ? array_map( 'absint', (array) $saved_state['dame_recipient_groups_permanent'] ) : array();
 		$state_contact_types     = isset( $saved_state['dame_recipient_contact_types'] ) ? array_map( 'absint', (array) $saved_state['dame_recipient_contact_types'] ) : array();
-		
+
 		// Nouveaux états géographiques et manuels
 		$state_depts             = isset( $saved_state['dame_contact_depts'] ) ? array_map( 'sanitize_text_field', (array) $saved_state['dame_contact_depts'] ) : array();
 		$state_regions           = isset( $saved_state['dame_contact_regions'] ) ? array_map( 'sanitize_text_field', (array) $saved_state['dame_contact_regions'] ) : array();
@@ -106,9 +112,26 @@ class Mailing {
 		$error   = isset( $_GET['error'] ) ? sanitize_key( $_GET['error'] ) : '';
 
 		// Données pour les listes
-		$seasons       = get_terms( array( 'taxonomy' => 'dame_saison_adhesion', 'hide_empty' => false, 'orderby' => 'name', 'order' => 'DESC' ) );
-		$all_groups    = get_terms( array( 'taxonomy' => 'dame_group', 'hide_empty' => false ) );
-		$contact_types = get_terms( array( 'taxonomy' => 'dame_contact_type', 'hide_empty' => false ) );
+		$seasons       = get_terms(
+			array(
+				'taxonomy'   => 'dame_saison_adhesion',
+				'hide_empty' => false,
+				'orderby'    => 'name',
+				'order'      => 'DESC',
+			)
+		);
+		$all_groups    = get_terms(
+			array(
+				'taxonomy'   => 'dame_group',
+				'hide_empty' => false,
+			)
+		);
+		$contact_types = get_terms(
+			array(
+				'taxonomy'   => 'dame_contact_type',
+				'hide_empty' => false,
+			)
+		);
 		$departments   = Data_Provider::get_departments();
 		$regions       = Data_Provider::get_regions();
 
@@ -124,14 +147,38 @@ class Mailing {
 			}
 		}
 
-		$messages = get_posts( array( 'post_type' => 'dame_message', 'post_status' => 'publish', 'posts_per_page' => -1, 'orderby' => 'date', 'order' => 'DESC' ) );
-		$adherents = get_posts( array( 'post_type' => 'adherent', 'posts_per_page' => -1, 'post_status' => 'publish', 'orderby' => 'title', 'order' => 'ASC' ) );
-		$contacts  = get_posts( array( 'post_type' => 'dame_contact', 'posts_per_page' => -1, 'post_status' => 'publish', 'orderby' => 'title', 'order' => 'ASC' ) );
+		$messages  = get_posts(
+			array(
+				'post_type'      => 'dame_message',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+			)
+		);
+		$adherents = get_posts(
+			array(
+				'post_type'      => 'adherent',
+				'posts_per_page' => -1,
+				'post_status'    => 'publish',
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+			)
+		);
+		$contacts  = get_posts(
+			array(
+				'post_type'      => 'dame_contact',
+				'posts_per_page' => -1,
+				'post_status'    => 'publish',
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+			)
+		);
 
 		/**
 		 * Helper pour rendre une liste avec recherche.
 		 */
-		$render_searchable_list = function( string $placeholder, array $items, string $name_attr, array $checked_items, callable $label_callback, ?callable $data_callback = null ) {
+		$render_searchable_list = function ( string $placeholder, array $items, string $name_attr, array $checked_items, callable $label_callback, ?callable $data_callback = null ) {
 			?>
 			<div class="dame-searchable-list-wrapper">
 				<div class="dame-search-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
@@ -141,16 +188,19 @@ class Mailing {
 					</span>
 				</div>
 				<div class="dame-checkbox-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccd0d4; padding: 10px; background: #f9f9f9;">
-					<?php foreach ( $items as $key => $value ) : 
-						$id = is_object($value) ? ($value->ID ?? $value->term_id) : $key;
-						$label = $label_callback($value, $key);
-						if ( empty($label) ) continue;
-						$is_checked = in_array($id, $checked_items);
-						$data_attrs = $data_callback ? $data_callback($value, $key) : '';
-					?>
+					<?php
+					foreach ( $items as $key => $value ) :
+						$id    = is_object( $value ) ? ( $value->ID ?? $value->term_id ) : $key;
+						$label = $label_callback( $value, $key );
+						if ( empty( $label ) ) {
+							continue;
+						}
+						$is_checked = in_array( $id, $checked_items );
+						$data_attrs = $data_callback ? $data_callback( $value, $key ) : '';
+						?>
 						<label style="display: block;">
-							<input type="checkbox" name="<?php echo esc_attr($name_attr); ?>[]" value="<?php echo esc_attr((string) $id); ?>" <?php checked($is_checked); ?> <?php echo $data_attrs; ?>> 
-							<?php echo esc_html($label); ?>
+							<input type="checkbox" name="<?php echo esc_attr( $name_attr ); ?>[]" value="<?php echo esc_attr( (string) $id ); ?>" <?php checked( $is_checked ); ?> <?php echo $data_attrs; ?>> 
+							<?php echo esc_html( $label ); ?>
 						</label>
 					<?php endforeach; ?>
 				</div>
@@ -164,7 +214,8 @@ class Mailing {
 
 			<?php
 			// Affichage des notifications de succès.
-			if ( 1 === $success && $count > 0 ) : ?>
+			if ( 1 === $success && $count > 0 ) :
+				?>
 				<div class="notice notice-success is-dismissible">
 					<p><?php echo esc_html( sprintf( __( 'Planification réussie. %d messages sont en cours d\'envoi.', 'dame' ), $count ) ); ?></p>
 				</div>
@@ -254,7 +305,7 @@ class Mailing {
 								<label><strong><?php esc_html_e( 'Saisons', 'dame' ); ?></strong></label><br>
 								<select name="dame_recipient_seasons[]" multiple size="5" class="widefat">
 									<?php foreach ( $seasons as $s ) : ?>
-										<option value="<?php echo $s->term_id; ?>" <?php echo in_array($s->term_id, $state_seasons) ? 'selected' : ''; ?>><?php echo esc_html($s->name); ?></option>
+										<option value="<?php echo $s->term_id; ?>" <?php echo in_array( $s->term_id, $state_seasons ) ? 'selected' : ''; ?>><?php echo esc_html( $s->name ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</div>
@@ -263,7 +314,7 @@ class Mailing {
 								<label><strong><?php esc_html_e( 'Groupes Saisonniers', 'dame' ); ?></strong></label><br>
 								<select name="dame_recipient_groups_saisonnier[]" multiple size="5" class="widefat">
 									<?php foreach ( $saisonniers as $g ) : ?>
-										<option value="<?php echo $g->term_id; ?>" <?php echo in_array($g->term_id, $state_groups_saisonnier) ? 'selected' : ''; ?>><?php echo esc_html($g->name); ?></option>
+										<option value="<?php echo $g->term_id; ?>" <?php echo in_array( $g->term_id, $state_groups_saisonnier ) ? 'selected' : ''; ?>><?php echo esc_html( $g->name ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</div>
@@ -272,7 +323,7 @@ class Mailing {
 								<label><strong><?php esc_html_e( 'Groupes Permanents', 'dame' ); ?></strong></label><br>
 								<select name="dame_recipient_groups_permanent[]" multiple size="5" class="widefat">
 									<?php foreach ( $permanents as $g ) : ?>
-										<option value="<?php echo $g->term_id; ?>" <?php echo in_array($g->term_id, $state_groups_permanent) ? 'selected' : ''; ?>><?php echo esc_html($g->name); ?></option>
+										<option value="<?php echo $g->term_id; ?>" <?php echo in_array( $g->term_id, $state_groups_permanent ) ? 'selected' : ''; ?>><?php echo esc_html( $g->name ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</div>
@@ -280,13 +331,15 @@ class Mailing {
 
 						<!-- Adhérents : Manuel -->
 						<div class="dame-adherent-manual-wrap <?php echo 'manual' === $state_adherent_method ? '' : 'dame-hidden'; ?>">
-							<?php $render_searchable_list(
+							<?php
+							$render_searchable_list(
 								__( 'Rechercher un adhérent...', 'dame' ),
 								$adherents,
 								'dame_manual_recipients',
 								$state_manual_recipients,
-								fn($a) => $a->post_title
-							); ?>
+								fn( $a ) => $a->post_title
+							);
+							?>
 						</div>
 					</div>
 
@@ -305,7 +358,7 @@ class Mailing {
 								<label><strong><?php esc_html_e( 'Types de Contacts', 'dame' ); ?></strong></label><br>
 								<select name="dame_recipient_contact_types[]" id="dame_contact_types_select" multiple size="5" class="widefat">
 									<?php foreach ( $contact_types as $t ) : ?>
-										<option value="<?php echo $t->term_id; ?>" <?php echo in_array($t->term_id, $state_contact_types) ? 'selected' : ''; ?>><?php echo esc_html($t->name); ?></option>
+										<option value="<?php echo $t->term_id; ?>" <?php echo in_array( $t->term_id, $state_contact_types ) ? 'selected' : ''; ?>><?php echo esc_html( $t->name ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</div>
@@ -314,45 +367,51 @@ class Mailing {
 								<!-- Régions avec recherche -->
 								<div style="flex: 1; min-width: 0;" class="dame-region-criteria-list">
 									<label><strong><?php esc_html_e( 'Régions', 'dame' ); ?></strong></label><br>
-									<?php $render_searchable_list(
+									<?php
+									$render_searchable_list(
 										__( 'Filtrer les régions...', 'dame' ),
 										$regions,
 										'dame_contact_regions',
 										$state_regions,
-										fn($name, $code) => ($code === 'NA') ? '' : $name
-									); ?>
+										fn( $name, $code ) => ( $code === 'NA' ) ? '' : $name
+									);
+									?>
 								</div>
 
 								<!-- Départements avec recherche -->
 								<div style="flex: 1; min-width: 0;" class="dame-dept-criteria-list">
 									<label><strong><?php esc_html_e( 'Départements', 'dame' ); ?></strong></label><br>
-									<?php $render_searchable_list(
+									<?php
+									$render_searchable_list(
 										__( 'Filtrer les départements...', 'dame' ),
 										$departments,
 										'dame_contact_depts',
 										$state_depts,
-										fn($name) => $name
-									); ?>
+										fn( $name ) => $name
+									);
+									?>
 								</div>
 							</div>
 						</div>
 
 						<!-- Contacts : Manuel -->
 						<div class="dame-contact-manual-wrap <?php echo 'manual' === $state_contact_method ? '' : 'dame-hidden'; ?>">
-							<?php $render_searchable_list(
+							<?php
+							$render_searchable_list(
 								__( 'Rechercher un contact...', 'dame' ),
 								$contacts,
 								'dame_manual_contacts',
 								$state_manual_contacts,
-								fn($c) => $c->post_title,
-								function($c) {
-									$dept = get_post_meta($c->ID, '_dame_contact_department', true);
-									$reg = get_post_meta($c->ID, '_dame_contact_region', true);
-									$terms = wp_get_post_terms($c->ID, 'dame_contact_type', ['fields' => 'ids']);
-									$types = is_array($terms) ? implode(',', $terms) : '';
-									return sprintf('data-dept="%s" data-region="%s" data-types="%s"', esc_attr($dept), esc_attr($reg), esc_attr($types));
+								fn( $c ) => $c->post_title,
+								function ( $c ) {
+									$dept  = get_post_meta( $c->ID, '_dame_contact_department', true );
+									$reg   = get_post_meta( $c->ID, '_dame_contact_region', true );
+									$terms = wp_get_post_terms( $c->ID, 'dame_contact_type', array( 'fields' => 'ids' ) );
+									$types = is_array( $terms ) ? implode( ',', $terms ) : '';
+									return sprintf( 'data-dept="%s" data-region="%s" data-types="%s"', esc_attr( $dept ), esc_attr( $reg ), esc_attr( $types ) );
 								}
-							); ?>
+							);
+							?>
 						</div>
 					</div>
 				</div>
@@ -370,12 +429,12 @@ class Mailing {
 	 * Gère les critères complexes, les sélections manuelles et la planification des envois.
 	 */
 	public function process_mailing(): void {
-		$base_url = admin_url( 'admin.php?page=dame-mailing' );
-		$user_id  = get_current_user_id();
+		$base_url  = admin_url( 'admin.php?page=dame-mailing' );
+		$user_id   = get_current_user_id();
 		$state_key = 'dame_mailing_state_' . $user_id;
 
 		// Fonction interne pour sauvegarder l'état (données POST) avant redirection en cas d'erreur.
-		$save_state_and_redirect = function( string $error_code ) use ( $base_url, $state_key ) {
+		$save_state_and_redirect = function ( string $error_code ) use ( $base_url, $state_key ) {
 			$data = $_POST;
 			if ( ! empty( $_FILES['dame_message_attachment']['name'] ) ) {
 				$data['_had_attachment'] = true;
@@ -403,36 +462,36 @@ class Mailing {
 
 		$adherent_method = isset( $_POST['dame_adherent_method'] ) ? sanitize_key( $_POST['dame_adherent_method'] ) : 'group';
 		$contact_method  = isset( $_POST['dame_contact_method'] ) ? sanitize_key( $_POST['dame_contact_method'] ) : 'group';
-		
-		$recipient_emails = [];
-		$adherent_ids     = [];
-		$contact_ids      = [];
+
+		$recipient_emails = array();
+		$adherent_ids     = array();
+		$contact_ids      = array();
 
 		// Initialisation des métadonnées de suivi
-		$meta_seasons           = [];
-		$meta_groups_saisonnier = [];
-		$meta_groups_permanent  = [];
-		$meta_contact_types     = [];
-		$meta_depts             = [];
-		$meta_regions           = [];
-		$meta_manual_recipients = [];
-		$meta_manual_contacts   = [];
+		$meta_seasons           = array();
+		$meta_groups_saisonnier = array();
+		$meta_groups_permanent  = array();
+		$meta_contact_types     = array();
+		$meta_depts             = array();
+		$meta_regions           = array();
+		$meta_manual_recipients = array();
+		$meta_manual_contacts   = array();
 		$meta_gender            = 'all';
 
 		// 2. Identification des IDs des destinataires
 		$adherent_criteria_selected = false;
-		
+
 		// A. Bloc Adhérents
 		if ( 'manual' === $adherent_method ) {
 			if ( ! empty( $_POST['dame_manual_recipients'] ) && is_array( $_POST['dame_manual_recipients'] ) ) {
-				$adherent_ids = array_map( 'absint', $_POST['dame_manual_recipients'] );
-				$meta_manual_recipients = $adherent_ids;
+				$adherent_ids               = array_map( 'absint', $_POST['dame_manual_recipients'] );
+				$meta_manual_recipients     = $adherent_ids;
 				$adherent_criteria_selected = true;
 			}
 		} else {
-			$seasons           = isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', $_POST['dame_recipient_seasons'] ) : [];
-			$groups_saisonnier = isset( $_POST['dame_recipient_groups_saisonnier'] ) ? array_map( 'absint', $_POST['dame_recipient_groups_saisonnier'] ) : [];
-			$groups_permanent  = isset( $_POST['dame_recipient_groups_permanent'] ) ? array_map( 'absint', $_POST['dame_recipient_groups_permanent'] ) : [];
+			$seasons           = isset( $_POST['dame_recipient_seasons'] ) ? array_map( 'absint', $_POST['dame_recipient_seasons'] ) : array();
+			$groups_saisonnier = isset( $_POST['dame_recipient_groups_saisonnier'] ) ? array_map( 'absint', $_POST['dame_recipient_groups_saisonnier'] ) : array();
+			$groups_permanent  = isset( $_POST['dame_recipient_groups_permanent'] ) ? array_map( 'absint', $_POST['dame_recipient_groups_permanent'] ) : array();
 			$gender            = isset( $_POST['dame_recipient_gender'] ) ? sanitize_text_field( $_POST['dame_recipient_gender'] ) : 'all';
 
 			$meta_seasons           = $seasons;
@@ -442,24 +501,37 @@ class Mailing {
 
 			if ( ! empty( $seasons ) || ! empty( $groups_saisonnier ) || ! empty( $groups_permanent ) || 'all' !== $gender ) {
 				$adherent_criteria_selected = true;
-				$args = [
+				$args                       = array(
 					'post_type'      => 'adherent',
 					'posts_per_page' => -1,
 					'fields'         => 'ids',
-					'tax_query'      => [ 'relation' => 'OR' ],
-				];
+					'tax_query'      => array( 'relation' => 'OR' ),
+				);
 
 				if ( ! empty( $seasons ) ) {
-					$args['tax_query'][] = [ 'taxonomy' => 'dame_saison_adhesion', 'field' => 'term_id', 'terms' => $seasons ];
+					$args['tax_query'][] = array(
+						'taxonomy' => 'dame_saison_adhesion',
+						'field'    => 'term_id',
+						'terms'    => $seasons,
+					);
 				}
 
 				$all_groups = array_merge( $groups_saisonnier, $groups_permanent );
 				if ( ! empty( $all_groups ) ) {
-					$args['tax_query'][] = [ 'taxonomy' => 'dame_group', 'field' => 'term_id', 'terms' => $all_groups ];
+					$args['tax_query'][] = array(
+						'taxonomy' => 'dame_group',
+						'field'    => 'term_id',
+						'terms'    => $all_groups,
+					);
 				}
 
 				if ( 'all' !== $gender ) {
-					$args['meta_query'] = [ [ 'key' => '_dame_sexe', 'value' => $gender ] ];
+					$args['meta_query'] = array(
+						array(
+							'key'   => '_dame_sexe',
+							'value' => $gender,
+						),
+					);
 				}
 				$adherent_ids = get_posts( $args );
 			}
@@ -469,14 +541,14 @@ class Mailing {
 		$contact_criteria_selected = false;
 		if ( 'manual' === $contact_method ) {
 			if ( ! empty( $_POST['dame_manual_contacts'] ) && is_array( $_POST['dame_manual_contacts'] ) ) {
-				$contact_ids = array_map( 'absint', $_POST['dame_manual_contacts'] );
-				$meta_manual_contacts = $contact_ids;
+				$contact_ids               = array_map( 'absint', $_POST['dame_manual_contacts'] );
+				$meta_manual_contacts      = $contact_ids;
 				$contact_criteria_selected = true;
 			}
 		} else {
-			$contact_types = isset( $_POST['dame_recipient_contact_types'] ) ? array_map( 'absint', $_POST['dame_recipient_contact_types'] ) : [];
-			$depts         = isset( $_POST['dame_contact_depts'] ) ? array_map( 'sanitize_text_field', $_POST['dame_contact_depts'] ) : [];
-			$regions       = isset( $_POST['dame_contact_regions'] ) ? array_map( 'sanitize_text_field', $_POST['dame_contact_regions'] ) : [];
+			$contact_types = isset( $_POST['dame_recipient_contact_types'] ) ? array_map( 'absint', $_POST['dame_recipient_contact_types'] ) : array();
+			$depts         = isset( $_POST['dame_contact_depts'] ) ? array_map( 'sanitize_text_field', $_POST['dame_contact_depts'] ) : array();
+			$regions       = isset( $_POST['dame_contact_regions'] ) ? array_map( 'sanitize_text_field', $_POST['dame_contact_regions'] ) : array();
 
 			$meta_contact_types = $contact_types;
 			$meta_depts         = $depts;
@@ -489,27 +561,57 @@ class Mailing {
 				$contact_criteria_selected = true;
 				if ( $has_types && $has_depts ) {
 					// Intersection stricte Type et Département
-					$contact_ids = get_posts( [
-						'post_type'      => 'dame_contact',
-						'posts_per_page' => -1,
-						'fields'         => 'ids',
-						'tax_query'      => [ [ 'taxonomy' => 'dame_contact_type', 'field' => 'term_id', 'terms' => $contact_types ] ],
-						'meta_query'     => [ [ 'key' => '_dame_contact_department', 'value' => $depts, 'compare' => 'IN' ] ],
-					] );
+					$contact_ids = get_posts(
+						array(
+							'post_type'      => 'dame_contact',
+							'posts_per_page' => -1,
+							'fields'         => 'ids',
+							'tax_query'      => array(
+								array(
+									'taxonomy' => 'dame_contact_type',
+									'field'    => 'term_id',
+									'terms'    => $contact_types,
+								),
+							),
+							'meta_query'     => array(
+								array(
+									'key'     => '_dame_contact_department',
+									'value'   => $depts,
+									'compare' => 'IN',
+								),
+							),
+						)
+					);
 				} elseif ( $has_types ) {
-					$contact_ids = get_posts( [
-						'post_type'      => 'dame_contact',
-						'posts_per_page' => -1,
-						'fields'         => 'ids',
-						'tax_query'      => [ [ 'taxonomy' => 'dame_contact_type', 'field' => 'term_id', 'terms' => $contact_types ] ],
-					] );
+					$contact_ids = get_posts(
+						array(
+							'post_type'      => 'dame_contact',
+							'posts_per_page' => -1,
+							'fields'         => 'ids',
+							'tax_query'      => array(
+								array(
+									'taxonomy' => 'dame_contact_type',
+									'field'    => 'term_id',
+									'terms'    => $contact_types,
+								),
+							),
+						)
+					);
 				} elseif ( $has_depts ) {
-					$contact_ids = get_posts( [
-						'post_type'      => 'dame_contact',
-						'posts_per_page' => -1,
-						'fields'         => 'ids',
-						'meta_query'     => [ [ 'key' => '_dame_contact_department', 'value' => $depts, 'compare' => 'IN' ] ],
-					] );
+					$contact_ids = get_posts(
+						array(
+							'post_type'      => 'dame_contact',
+							'posts_per_page' => -1,
+							'fields'         => 'ids',
+							'meta_query'     => array(
+								array(
+									'key'     => '_dame_contact_department',
+									'value'   => $depts,
+									'compare' => 'IN',
+								),
+							),
+						)
+					);
 				}
 			}
 		}
@@ -524,14 +626,13 @@ class Mailing {
 			$save_state_and_redirect( 'no_recipients' );
 		}
 
-		// Filtrage incrémental : On retire ceux qui ont déjà reçu ce message précis, 
+		// Filtrage incrémental : On retire ceux qui ont déjà reçu ce message précis,
 		// MAIS seulement pour les modes par critères (le mode manuel permet le renvoi ciblé).
-		$filter_already_received = function( $id ) use ( $message_id ) {
+		$filter_already_received = function ( $id ) use ( $message_id ) {
 			$received_messages = get_post_meta( $id, '_dame_message_received', false );
 			$received_ids      = array_map( 'strval', (array) $received_messages );
 			return ! in_array( (string) $message_id, $received_ids, true );
 		};
-
 
 		if ( 'manual' !== $adherent_method ) {
 			$adherent_ids = array_filter( $adherent_ids, $filter_already_received );
@@ -554,9 +655,9 @@ class Mailing {
 		}
 
 		// 3. Collecte des Destinataires et E-mails (Logique de priorité et agrégation stricte)
-		$email_data = []; // email_key => [ 'id' => primary_id, 'names' => [], 'prio' => 1-3, 'raw_email' => '...' ]
-		
-		$format_name = function( $id, $type = 'adherent' ) {
+		$email_data = array(); // email_key => [ 'id' => primary_id, 'names' => [], 'prio' => 1-3, 'raw_email' => '...' ]
+
+		$format_name = function ( $id, $type = 'adherent' ) {
 			if ( 'adherent' === $type ) {
 				return \DAME\Core\Utils::generate_adherent_title( $id );
 			} else {
@@ -575,7 +676,12 @@ class Mailing {
 				$raw_email = trim( (string) $email );
 				$lemail    = strtolower( $raw_email );
 				if ( ! isset( $email_data[ $lemail ] ) ) {
-					$email_data[ $lemail ] = [ 'id' => $aid, 'names' => [], 'prio' => 1, 'raw_email' => $raw_email ];
+					$email_data[ $lemail ] = array(
+						'id'        => $aid,
+						'names'     => array(),
+						'prio'      => 1,
+						'raw_email' => $raw_email,
+					);
 				}
 				$email_data[ $lemail ]['names'][] = $format_name( $aid );
 			}
@@ -590,7 +696,12 @@ class Mailing {
 					$raw_email = trim( (string) $email );
 					$lemail    = strtolower( $raw_email );
 					if ( ! isset( $email_data[ $lemail ] ) ) {
-						$email_data[ $lemail ] = [ 'id' => $aid, 'names' => [], 'prio' => 2, 'raw_email' => $raw_email ];
+						$email_data[ $lemail ] = array(
+							'id'        => $aid,
+							'names'     => array(),
+							'prio'      => 2,
+							'raw_email' => $raw_email,
+						);
 					}
 					if ( 2 === $email_data[ $lemail ]['prio'] ) {
 						$email_data[ $lemail ]['names'][] = $format_name( $aid ) . ' (RL)';
@@ -607,7 +718,12 @@ class Mailing {
 				$raw_email = trim( (string) $email );
 				$lemail    = strtolower( $raw_email );
 				if ( ! isset( $email_data[ $lemail ] ) ) {
-					$email_data[ $lemail ] = [ 'id' => $cid, 'names' => [], 'prio' => 3, 'raw_email' => $raw_email ];
+					$email_data[ $lemail ] = array(
+						'id'        => $cid,
+						'names'     => array(),
+						'prio'      => 3,
+						'raw_email' => $raw_email,
+					);
 				}
 				if ( 3 === $email_data[ $lemail ]['prio'] ) {
 					$email_data[ $lemail ]['names'][] = $format_name( $cid, 'contact' );
@@ -625,15 +741,19 @@ class Mailing {
 		// 3b. Pré-enregistrement SQL (Tracking) - Unicité garantie
 		global $wpdb;
 		$table_tracking = $wpdb->prefix . 'dame_message_opens';
-		$values_sql = [];
+		$values_sql     = array();
 
 		foreach ( $email_data as $info ) {
-			$email = $info['raw_email'];
-			$hash  = md5( strtolower( trim( $email ) ) );
-			$label = implode( ', ', array_unique( $info['names'] ) );
-			$values_sql[] = $wpdb->prepare( 
-				'(%d, %d, %s, %s, %s)', 
-				$message_id, $info['id'], $label, $email, $hash
+			$email        = $info['raw_email'];
+			$hash         = md5( strtolower( trim( $email ) ) );
+			$label        = implode( ', ', array_unique( $info['names'] ) );
+			$values_sql[] = $wpdb->prepare(
+				'(%d, %d, %s, %s, %s)',
+				$message_id,
+				$info['id'],
+				$label,
+				$email,
+				$hash
 			);
 		}
 
@@ -641,10 +761,12 @@ class Mailing {
 			// On évite les doublons en ne supprimant que les destinataires que l'on s'apprête à (ré)insérer
 			// tout en conservant l'historique des autres envois pour ce message (envois cumulés).
 			$emails_to_insert = array_column( $email_data, 'raw_email' );
-			$wpdb->query( $wpdb->prepare(
-				"DELETE FROM {$table_tracking} WHERE message_id = %d AND recipient_email IN (" . implode( ',', array_fill( 0, count( $emails_to_insert ), '%s' ) ) . ")",
-				array_merge( [ $message_id ], $emails_to_insert )
-			) );
+			$wpdb->query(
+				$wpdb->prepare(
+					"DELETE FROM {$table_tracking} WHERE message_id = %d AND recipient_email IN (" . implode( ',', array_fill( 0, count( $emails_to_insert ), '%s' ) ) . ')',
+					array_merge( array( $message_id ), $emails_to_insert )
+				)
+			);
 
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->query( "INSERT INTO {$table_tracking} (message_id, recipient_id, recipient_name, recipient_email, email_hash) VALUES " . implode( ',', $values_sql ) );
@@ -655,17 +777,17 @@ class Mailing {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 
 			// Configuration de l'upload et validation MIME stricte.
-			$upload_overrides = [
+			$upload_overrides = array(
 				'test_form' => false,
-				'mimes'     => [
+				'mimes'     => array(
 					'pdf'          => 'application/pdf',
 					'jpg|jpeg|jpe' => 'image/jpeg',
 					'png'          => 'image/png',
 					'docx'         => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 					'doc'          => 'application/msword',
 					'odt'          => 'application/vnd.oasis.opendocument.text',
-				],
-			];
+				),
+			);
 
 			$upload = wp_handle_upload( $_FILES['dame_message_attachment'], $upload_overrides );
 
@@ -719,7 +841,15 @@ class Mailing {
 			wp_schedule_single_event( time(), 'dame_cron_process_queue' );
 		}
 
-		wp_redirect( add_query_arg( [ 'success' => 1, 'count' => count( $recipient_emails ) ], $base_url ) );
+		wp_redirect(
+			add_query_arg(
+				array(
+					'success' => 1,
+					'count'   => count( $recipient_emails ),
+				),
+				$base_url
+			)
+		);
 		exit;
 	}
 }

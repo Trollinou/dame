@@ -36,18 +36,6 @@ try {
     process.exit(1);
 }
 
-const pwaDir = path.join(rootDir, 'pwa');
-if (fs.existsSync(pwaDir)) {
-    console.log('📱 Compilation de la PWA...');
-    try {
-        execSync('npm install', { cwd: pwaDir, stdio: 'inherit' });
-        execSync('npm run build', { cwd: pwaDir, stdio: 'inherit' });
-    } catch (error) {
-        console.error('❌ Erreur : Le build de la PWA a échoué. Packaging annulé.');
-        process.exit(1);
-    }
-}
-
 // Nettoyage préalable
 if (fs.existsSync(path.join(rootDir, zipName))) {
     fs.unlinkSync(path.join(rootDir, zipName));
@@ -281,8 +269,8 @@ try {
 console.log('🧹 Nettoyage des fichiers inutiles dans vendor (FPDF)...');
 const fpdfDir = path.join(tempDestDir, 'vendor/setasign/fpdf');
 if (fs.existsSync(fpdfDir)) {
-    fs.rmSync(path.join(fpdfDir, 'doc'), { recursive: true, force: true });
-    fs.rmSync(path.join(fpdfDir, 'tutorial'), { recursive: true, force: true });
+    fs.rmSync(path.join(fpdfDir, 'doc'), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    fs.rmSync(path.join(fpdfDir, 'tutorial'), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     ['FAQ.htm', 'changelog.htm', 'install.txt'].forEach(file => {
         const filePath = path.join(fpdfDir, file);
         if (fs.existsSync(filePath)) {
@@ -312,4 +300,3 @@ try {
 fs.rmSync(buildDir, { recursive: true, force: true });
 
 console.log(`✅ Package créé avec succès : ${zipName} (Environnement local préservé)`);
-console.log('ℹ️  La PWA a été compilée avec succès et incluse dans le plugin.');

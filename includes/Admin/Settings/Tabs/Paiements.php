@@ -35,7 +35,7 @@ class Paiements {
 		add_settings_field(
 			'dame_payment_url',
 			__( 'URL de paiement (HelloAsso, etc.)', 'dame' ),
-			[ $this, 'render_url_field' ],
+			array( $this, 'render_url_field' ),
 			'dame_payment_section_group',
 			'dame_payment_section'
 		);
@@ -46,7 +46,7 @@ class Paiements {
 	 */
 	public function render_url_field(): void {
 		$options = get_option( 'dame_options' );
-		$value = isset( $options['payment_url'] ) ? $options['payment_url'] : '';
+		$value   = isset( $options['payment_url'] ) ? $options['payment_url'] : '';
 		echo '<input type="url" name="dame_options[payment_url]" value="' . esc_attr( $value ) . '" class="regular-text" />';
 	}
 

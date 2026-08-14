@@ -35,7 +35,7 @@ class Sauvegarde {
 		add_settings_field(
 			'dame_backup_time',
 			__( 'Heure de sauvegarde (HH:MM)', 'dame' ),
-			[ $this, 'render_time_field' ],
+			array( $this, 'render_time_field' ),
 			'dame_backup_section_group',
 			'dame_backup_section'
 		);
@@ -46,7 +46,7 @@ class Sauvegarde {
 	 */
 	public function render_time_field(): void {
 		$options = get_option( 'dame_options' );
-		$value = isset( $options['backup_time'] ) ? $options['backup_time'] : '';
+		$value   = isset( $options['backup_time'] ) ? $options['backup_time'] : '';
 		echo '<input type="time" name="dame_options[backup_time]" value="' . esc_attr( $value ) . '" class="regular-text" />';
 	}
 

@@ -18,9 +18,9 @@ class TestSend {
 	 * Initialize the metabox.
 	 */
 	public function init(): void {
-		add_action( 'add_meta_boxes', [ $this, 'add_metabox' ] );
-		add_action( 'admin_post_dame_send_test_email', [ $this, 'handle_test_send' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'add_meta_boxes', array( $this, 'add_metabox' ) );
+		add_action( 'admin_post_dame_send_test_email', array( $this, 'handle_test_send' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 	}
 
 	/**
@@ -45,12 +45,16 @@ class TestSend {
 		}
 
 		wp_enqueue_script( 'dame-admin-test-send', \DAME_PLUGIN_URL . 'assets/js/admin-test-send.js', array( 'jquery' ), \DAME_VERSION, true );
-		wp_localize_script( 'dame-admin-test-send', 'dame_test_send_data', array(
-			'post_id' => $post->ID,
-			'nonce' => wp_create_nonce( 'dame_test_send_' . $post->ID ),
-			'alert_empty' => __( 'Veuillez saisir un email.', 'dame' ),
-			'admin_url' => admin_url( 'admin-post.php' )
-		) );
+		wp_localize_script(
+			'dame-admin-test-send',
+			'dame_test_send_data',
+			array(
+				'post_id'     => $post->ID,
+				'nonce'       => wp_create_nonce( 'dame_test_send_' . $post->ID ),
+				'alert_empty' => __( 'Veuillez saisir un email.', 'dame' ),
+				'admin_url'   => admin_url( 'admin-post.php' ),
+			)
+		);
 	}
 
 	/**
@@ -60,7 +64,7 @@ class TestSend {
 		add_meta_box(
 			'dame_message_test_send',
 			__( 'Envoyer un test', 'dame' ),
-			[ $this, 'render' ],
+			array( $this, 'render' ),
 			'dame_message',
 			'side',
 			'default'
@@ -79,13 +83,13 @@ class TestSend {
 			<?php esc_html_e( 'Envoyez un email de test pour vérifier le rendu.', 'dame' ); ?>
 		</p>
 		<!-- Note: We can't nest forms in HTML. The WP Edit Post screen is already a form.
-		     So we usually use AJAX or a separate submit button that changes the action via JS.
-		     OR simpler: A link/button that triggers a JS call.
+			So we usually use AJAX or a separate submit button that changes the action via JS.
+			OR simpler: A link/button that triggers a JS call.
 
-		     HOWEVER, "Source: message-actions.php" suggests legacy might have used a separate form or a clever hack.
-		     But since we are refactoring, let's use a small dedicated form if possible? No, nested forms are invalid.
+			HOWEVER, "Source: message-actions.php" suggests legacy might have used a separate form or a clever hack.
+			But since we are refactoring, let's use a small dedicated form if possible? No, nested forms are invalid.
 
-		     Best approach for "simple admin": Use JS to post to admin-post.php.
+			Best approach for "simple admin": Use JS to post to admin-post.php.
 		-->
 
 		<label for="dame_test_email">Email :</label>
@@ -163,7 +167,7 @@ class TestSend {
 			wp_die( 'Permission denied.' );
 		}
 
-		$email = sanitize_email( $_POST['test_email'] );
+		$email = sanitize_email( wp_unslash( $_POST['test_email'] ) );
 		if ( ! is_email( $email ) ) {
 			wp_die( 'Invalid email.' );
 		}
@@ -198,7 +202,7 @@ class TestSend {
 		$redirect_url = get_edit_post_link( $post_id, 'url' );
 		$redirect_url = add_query_arg( 'dame_test_sent', $sent ? '1' : '0', $redirect_url );
 
-		wp_redirect( $redirect_url );
+		wp_safe_redirect( $redirect_url );
 		exit;
 	}
 }

@@ -6,35 +6,33 @@
 
 /* global dameMailingData */
 
-document.addEventListener( 'DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
 	// 1. Toggling Adherent Methods
 	const adMethodRadios = document.querySelectorAll(
 		'input[name="dame_adherent_method"]'
 	);
-	const adGroupWrap = document.querySelector( '.dame-adherent-group-wrap' );
-	const adManualWrap = document.querySelector( '.dame-adherent-manual-wrap' );
+	const adGroupWrap = document.querySelector('.dame-adherent-group-wrap');
+	const adManualWrap = document.querySelector('.dame-adherent-manual-wrap');
 
-	if ( adMethodRadios.length > 0 && adGroupWrap && adManualWrap ) {
-		adMethodRadios.forEach( ( radio ) => {
-			radio.addEventListener( 'change', function () {
-				if ( this.value === 'group' ) {
-					adGroupWrap.classList.remove( 'dame-hidden' );
-					adManualWrap.classList.add( 'dame-hidden' );
+	if (adMethodRadios.length > 0 && adGroupWrap && adManualWrap) {
+		adMethodRadios.forEach((radio) => {
+			radio.addEventListener('change', function () {
+				if (this.value === 'group') {
+					adGroupWrap.classList.remove('dame-hidden');
+					adManualWrap.classList.add('dame-hidden');
 				} else {
-					adGroupWrap.classList.add( 'dame-hidden' );
-					adManualWrap.classList.remove( 'dame-hidden' );
+					adGroupWrap.classList.add('dame-hidden');
+					adManualWrap.classList.remove('dame-hidden');
 				}
-			} );
-		} );
+			});
+		});
 	}
 
 	// 2. Toggling Contact Methods with "Magic" Pre-checking
 	const contactMethodRadios = document.querySelectorAll(
 		'input[name="dame_contact_method"]'
 	);
-	const contactGroupWrap = document.querySelector(
-		'.dame-contact-group-wrap'
-	);
+	const contactGroupWrap = document.querySelector('.dame-contact-group-wrap');
 	const contactManualWrap = document.querySelector(
 		'.dame-contact-manual-wrap'
 	);
@@ -48,8 +46,8 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			'input[name="dame_contact_method"]:checked'
 		).value;
 
-		contactMethodRadios.forEach( ( radio ) => {
-			radio.addEventListener( 'change', function () {
+		contactMethodRadios.forEach((radio) => {
+			radio.addEventListener('change', function () {
 				const newMethod = this.value;
 
 				// Confirmation lors du retour au mode Critères depuis Manuel
@@ -74,41 +72,39 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 				currentContactMethod = newMethod;
 
-				if ( newMethod === 'group' ) {
-					contactGroupWrap.classList.remove( 'dame-hidden' );
-					contactManualWrap.classList.add( 'dame-hidden' );
+				if (newMethod === 'group') {
+					contactGroupWrap.classList.remove('dame-hidden');
+					contactManualWrap.classList.add('dame-hidden');
 
 					// Reset manual selection when going back to Criteria
 					contactManualWrap
-						.querySelectorAll( 'input[type="checkbox"]' )
-						.forEach( ( cb ) => ( cb.checked = false ) );
+						.querySelectorAll('input[type="checkbox"]')
+						.forEach((cb) => (cb.checked = false));
 					const manualList = contactManualWrap.querySelector(
 						'.dame-checkbox-list'
 					);
-					if ( manualList ) {
-						reorderList( manualList );
-						updateSelectionCount( manualList );
+					if (manualList) {
+						reorderList(manualList);
+						updateSelectionCount(manualList);
 					}
 				} else {
-					contactGroupWrap.classList.add( 'dame-hidden' );
-					contactManualWrap.classList.remove( 'dame-hidden' );
+					contactGroupWrap.classList.add('dame-hidden');
+					contactManualWrap.classList.remove('dame-hidden');
 
 					// MAGIC: Pre-check based on criteria
 					performContactPrecheck();
 				}
-			} );
-		} );
+			});
+		});
 	}
 
 	// Listen for changes to checkboxes to trigger reordering and count update
-	document.addEventListener( 'change', function ( e ) {
-		if (
-			e.target.matches( '.dame-checkbox-list input[type="checkbox"]' )
-		) {
-			const listContainer = e.target.closest( '.dame-checkbox-list' );
-			if ( listContainer ) {
-				reorderList( listContainer );
-				updateSelectionCount( listContainer );
+	document.addEventListener('change', function (e) {
+		if (e.target.matches('.dame-checkbox-list input[type="checkbox"]')) {
+			const listContainer = e.target.closest('.dame-checkbox-list');
+			if (listContainer) {
+				reorderList(listContainer);
+				updateSelectionCount(listContainer);
 			}
 		}
 
@@ -123,44 +119,42 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			const depts =
 				typeof dameMailingData !== 'undefined' &&
 				dameMailingData.regionMapping
-					? dameMailingData.regionMapping[ regionCode ]
+					? dameMailingData.regionMapping[regionCode]
 					: [];
 
 			const deptList = document.querySelector(
 				'.dame-dept-criteria-list .dame-checkbox-list'
 			);
-			if ( ! deptList || depts.length === 0 ) {
+			if (!deptList || depts.length === 0) {
 				return;
 			}
 
-			depts.forEach( ( code ) => {
+			depts.forEach((code) => {
 				const deptCheckbox = deptList.querySelector(
-					`input[value="${ code }"]`
+					`input[value="${code}"]`
 				);
-				if ( deptCheckbox ) {
+				if (deptCheckbox) {
 					deptCheckbox.checked = isChecked;
 				}
-			} );
+			});
 
 			// Trigger reorder and count update for departments list
-			reorderList( deptList );
-			updateSelectionCount( deptList );
+			reorderList(deptList);
+			updateSelectionCount(deptList);
 		}
-	} );
+	});
 
 	/**
 	 * Updates the selection counter for a list.
 	 * @param {HTMLElement} listContainer The .dame-checkbox-list element.
 	 */
-	function updateSelectionCount( listContainer ) {
-		const wrapper = listContainer.closest(
-			'.dame-searchable-list-wrapper'
-		);
-		if ( ! wrapper ) {
+	function updateSelectionCount(listContainer) {
+		const wrapper = listContainer.closest('.dame-searchable-list-wrapper');
+		if (!wrapper) {
 			return;
 		}
-		const countSpan = wrapper.querySelector( '.dame-selection-count' );
-		if ( countSpan ) {
+		const countSpan = wrapper.querySelector('.dame-selection-count');
+		if (countSpan) {
 			const checkedCount = listContainer.querySelectorAll(
 				'input[type="checkbox"]:checked'
 			).length;
@@ -172,26 +166,26 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	 * Reorders a list to move checked items to the top.
 	 * @param {HTMLElement} listContainer The .dame-checkbox-list element.
 	 */
-	function reorderList( listContainer ) {
-		const labels = Array.from( listContainer.querySelectorAll( 'label' ) );
+	function reorderList(listContainer) {
+		const labels = Array.from(listContainer.querySelectorAll('label'));
 
 		// Sort labels: checked first, then alphabetical
-		labels.sort( ( a, b ) => {
-			const aChecked = a.querySelector( 'input' ).checked;
-			const bChecked = b.querySelector( 'input' ).checked;
+		labels.sort((a, b) => {
+			const aChecked = a.querySelector('input').checked;
+			const bChecked = b.querySelector('input').checked;
 
-			if ( aChecked && ! bChecked ) {
+			if (aChecked && !bChecked) {
 				return -1;
 			}
-			if ( ! aChecked && bChecked ) {
+			if (!aChecked && bChecked) {
 				return 1;
 			}
 
-			return a.textContent.trim().localeCompare( b.textContent.trim() );
-		} );
+			return a.textContent.trim().localeCompare(b.textContent.trim());
+		});
 
 		// Append sorted elements back to container
-		labels.forEach( ( label ) => listContainer.appendChild( label ) );
+		labels.forEach((label) => listContainer.appendChild(label));
 	}
 
 	/**
@@ -201,24 +195,24 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		const typesSelect = document.getElementById(
 			'dame_contact_types_select'
 		);
-		if ( typesSelect ) {
-			Array.from( typesSelect.options ).forEach(
-				( opt ) => ( opt.selected = false )
+		if (typesSelect) {
+			Array.from(typesSelect.options).forEach(
+				(opt) => (opt.selected = false)
 			);
 		}
 		const criteriaLists = document.querySelectorAll(
 			'.dame-dept-criteria-list, .dame-region-criteria-list'
 		);
-		criteriaLists.forEach( ( container ) => {
+		criteriaLists.forEach((container) => {
 			container
-				.querySelectorAll( 'input[type="checkbox"]' )
-				.forEach( ( cb ) => ( cb.checked = false ) );
-			const list = container.querySelector( '.dame-checkbox-list' );
-			if ( list ) {
-				reorderList( list );
-				updateSelectionCount( list );
+				.querySelectorAll('input[type="checkbox"]')
+				.forEach((cb) => (cb.checked = false));
+			const list = container.querySelector('.dame-checkbox-list');
+			if (list) {
+				reorderList(list);
+				updateSelectionCount(list);
 			}
-		} );
+		});
 	}
 
 	/**
@@ -228,18 +222,18 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		const typesSelect = document.getElementById(
 			'dame_contact_types_select'
 		);
-		if ( ! typesSelect || ! contactManualWrap ) {
+		if (!typesSelect || !contactManualWrap) {
 			return;
 		}
 
-		const selectedTypes = Array.from( typesSelect.selectedOptions ).map(
-			( opt ) => opt.value
+		const selectedTypes = Array.from(typesSelect.selectedOptions).map(
+			(opt) => opt.value
 		);
 		const selectedDepts = Array.from(
 			document.querySelectorAll(
 				'.dame-dept-criteria-list input[type="checkbox"]:checked'
 			)
-		).map( ( cb ) => cb.value );
+		).map((cb) => cb.value);
 
 		const hasTypes = selectedTypes.length > 0;
 		const hasDepts = selectedDepts.length > 0;
@@ -248,53 +242,51 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			'input[type="checkbox"]'
 		);
 
-		contactCheckboxes.forEach( ( cb ) => {
-			const dept = cb.getAttribute( 'data-dept' ) || '';
-			const typesAttr = cb.getAttribute( 'data-types' ) || '';
-			const types = typesAttr.split( ',' );
+		contactCheckboxes.forEach((cb) => {
+			const dept = cb.getAttribute('data-dept') || '';
+			const typesAttr = cb.getAttribute('data-types') || '';
+			const types = typesAttr.split(',');
 
-			const matchType = types.some( ( t ) =>
-				selectedTypes.includes( t )
-			);
-			const matchDept = selectedDepts.includes( dept );
+			const matchType = types.some((t) => selectedTypes.includes(t));
+			const matchDept = selectedDepts.includes(dept);
 
 			let shouldCheck = false;
 
-			if ( hasTypes && hasDepts ) {
+			if (hasTypes && hasDepts) {
 				// Intersection du Type et des départements sélectionnés
 				shouldCheck = matchType && matchDept;
-			} else if ( hasTypes ) {
+			} else if (hasTypes) {
 				// Seulement par type
 				shouldCheck = matchType;
-			} else if ( hasDepts ) {
+			} else if (hasDepts) {
 				// Seulement par département
 				shouldCheck = matchDept;
 			}
 
-			if ( shouldCheck ) {
+			if (shouldCheck) {
 				cb.checked = true;
 			}
-		} );
+		});
 
 		// Trigger reorder after magic pre-check
 		const manualList = contactManualWrap.querySelector(
 			'.dame-checkbox-list'
 		);
-		if ( manualList ) {
-			reorderList( manualList );
-			updateSelectionCount( manualList );
+		if (manualList) {
+			reorderList(manualList);
+			updateSelectionCount(manualList);
 		}
 	}
 
 	// 3. Searchable Lists Logic (Universal)
-	const searchInputs = document.querySelectorAll( '.dame-list-search' );
-	const checkboxLists = document.querySelectorAll( '.dame-checkbox-list' );
+	const searchInputs = document.querySelectorAll('.dame-list-search');
+	const checkboxLists = document.querySelectorAll('.dame-checkbox-list');
 
 	// Initial reorder and count update for all lists on page load
-	checkboxLists.forEach( ( list ) => {
-		reorderList( list );
-		updateSelectionCount( list );
-	} );
+	checkboxLists.forEach((list) => {
+		reorderList(list);
+		updateSelectionCount(list);
+	});
 
 	/**
 	 * Normalizes text by converting to lowercase and removing accents.
@@ -302,69 +294,69 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	 * @param {string} text The text to normalize.
 	 * @return {string} The normalized text.
 	 */
-	function normalizeText( text ) {
+	function normalizeText(text) {
 		return text
 			.toLowerCase()
-			.normalize( 'NFD' )
-			.replace( /[\u0300-\u036f]/g, '' );
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '');
 	}
 
-	searchInputs.forEach( ( input ) => {
-		input.addEventListener( 'keyup', function () {
-			const wrapper = this.closest( '.dame-searchable-list-wrapper' );
+	searchInputs.forEach((input) => {
+		input.addEventListener('keyup', function () {
+			const wrapper = this.closest('.dame-searchable-list-wrapper');
 			const list = wrapper
-				? wrapper.querySelector( '.dame-checkbox-list' )
+				? wrapper.querySelector('.dame-checkbox-list')
 				: null;
-			if ( ! list ) {
+			if (!list) {
 				return;
 			}
 
-			const filter = normalizeText( this.value );
+			const filter = normalizeText(this.value);
 
-			const labels = list.querySelectorAll( 'label' );
-			labels.forEach( ( label ) => {
-				const text = normalizeText( label.textContent );
-				if ( text.indexOf( filter ) > -1 ) {
+			const labels = list.querySelectorAll('label');
+			labels.forEach((label) => {
+				const text = normalizeText(label.textContent);
+				if (text.indexOf(filter) > -1) {
 					label.style.display = 'block';
 				} else {
 					label.style.display = 'none';
 				}
-			} );
-		} );
-	} );
+			});
+		});
+	});
 
 	// 4. Already sent warning logic
-	const messageSelect = document.getElementById( 'dame_message_to_send' );
-	const warningDiv = document.getElementById( 'dame_message_warning' );
+	const messageSelect = document.getElementById('dame_message_to_send');
+	const warningDiv = document.getElementById('dame_message_warning');
 
-	if ( messageSelect && warningDiv ) {
-		messageSelect.addEventListener( 'change', function () {
-			const selectedOption = this.options[ this.selectedIndex ];
-			const status = selectedOption.getAttribute( 'data-status' );
-			const submitBtn = document.querySelector( 'input[type="submit"]' );
+	if (messageSelect && warningDiv) {
+		messageSelect.addEventListener('change', function () {
+			const selectedOption = this.options[this.selectedIndex];
+			const status = selectedOption.getAttribute('data-status');
+			const submitBtn = document.querySelector('input[type="submit"]');
 
-			if ( status === 'scheduled' ) {
+			if (status === 'scheduled') {
 				warningDiv.style.display = 'block';
 				warningDiv.style.color = '#d63638';
 				warningDiv.textContent =
 					"Ce message est actuellement en cours d'envoi. Veuillez attendre la fin du traitement.";
-				if ( submitBtn ) {
+				if (submitBtn) {
 					submitBtn.disabled = true;
 				}
-			} else if ( status === 'sent' ) {
+			} else if (status === 'sent') {
 				warningDiv.style.display = 'block';
 				warningDiv.style.color = '#2271b1';
 				warningDiv.textContent =
 					"Ce message a déjà été expédié. Tout nouvel envoi sera incrémental : les personnes l'ayant déjà reçu seront automatiquement ignorées.";
-				if ( submitBtn ) {
+				if (submitBtn) {
 					submitBtn.disabled = false;
 				}
 			} else {
 				warningDiv.style.display = 'none';
-				if ( submitBtn ) {
+				if (submitBtn) {
 					submitBtn.disabled = false;
 				}
 			}
-		} );
+		});
 	}
-} );
+});

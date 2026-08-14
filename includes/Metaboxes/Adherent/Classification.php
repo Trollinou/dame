@@ -19,7 +19,7 @@ class Classification {
 		add_meta_box(
 			'dame_classification_metabox',
 			__( 'Classification et Adhésion', 'dame' ),
-			[ $this, 'render' ],
+			array( $this, 'render' ),
 			'adherent',
 			'side',
 			'high'
@@ -36,7 +36,7 @@ class Classification {
 		wp_nonce_field( 'dame_save_adherent_meta', 'dame_metabox_nonce' );
 
 		$transient_data = get_transient( 'dame_post_data_' . $post->ID );
-		$get_value = function( $field_name ) use ( $post, $transient_data ) {
+		$get_value      = function ( $field_name ) use ( $post, $transient_data ) {
 			return isset( $transient_data[ $field_name ] )
 				? $transient_data[ $field_name ]
 				: get_post_meta( $post->ID, '_' . $field_name, true );
@@ -63,7 +63,7 @@ class Classification {
 		if ( ! $arbitre_level ) {
 			$arbitre_level = 'Non';
 		}
-		$arbitre_options = ['Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2'];
+		$arbitre_options = array( 'Non', 'Jeune', 'Club', 'Open 1', 'Open 2', 'Elite 1', 'Elite 2' );
 
 		?>
 		<div style="display: flex; gap: 10px; margin-bottom: 12px;">
@@ -122,7 +122,7 @@ class Classification {
 			<select id="dame_health_document" name="dame_health_document" style="width:100%;">
 				<?php
 				$health_doc_options = \DAME\Services\Data_Provider::get_health_document_options();
-				$health_document = get_post_meta( $post->ID, '_dame_health_document', true );
+				$health_document    = get_post_meta( $post->ID, '_dame_health_document', true );
 				foreach ( $health_doc_options as $value => $label ) :
 					?>
 					<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $health_document, $value ); ?>><?php echo esc_html( $label ); ?></option>
@@ -133,7 +133,7 @@ class Classification {
 			<label for="dame_adherent_honorabilite"><strong><?php _e( 'Contrôle d\'honorabilité', 'dame' ); ?></strong></label>
 			<select id="dame_adherent_honorabilite" name="dame_adherent_honorabilite" style="width:100%;">
 				<?php
-				$honorabilite_options = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
+				$honorabilite_options  = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
 				$selected_honorabilite = get_post_meta( $post->ID, '_dame_adherent_honorabilite', true ) ?: 'Non requis';
 				foreach ( $honorabilite_options as $option ) :
 					?>
@@ -154,7 +154,7 @@ class Classification {
 		<p><strong><?php _e( 'Lier à un compte WordPress', 'dame' ); ?></strong></p>
 		<?php
 		// Exclude users who are already linked to another adherent.
-		$exclude_users = function_exists( 'dame_get_assigned_user_ids' ) ? dame_get_assigned_user_ids( $post->ID ) : [];
+		$exclude_users = function_exists( 'dame_get_assigned_user_ids' ) ? dame_get_assigned_user_ids( $post->ID ) : array();
 
 		// Get the total number of users to check for an edge case.
 		$user_count_result = count_users();
@@ -191,7 +191,7 @@ class Classification {
 			return;
 		}
 
-		$errors = [];
+		$errors = array();
 		if ( empty( $_POST['dame_license_type'] ) ) {
 			$errors[] = __( 'Le type de licence est obligatoire.', 'dame' );
 		}
@@ -209,7 +209,7 @@ class Classification {
 			set_transient( 'dame_error_message', $errors_str, 10 );
 
 			// Save posted data to transient to repopulate form
-			$post_data_to_save = get_transient( 'dame_post_data_' . $post_id ) ?: [];
+			$post_data_to_save = get_transient( 'dame_post_data_' . $post_id ) ?: array();
 			foreach ( $_POST as $key => $value ) {
 				if ( strpos( $key, 'dame_' ) === 0 ) {
 					$post_data_to_save[ $key ] = wp_unslash( $value );
@@ -220,13 +220,13 @@ class Classification {
 		}
 
 		// Save Meta
-		$fields = [
-			'dame_license_number' => 'sanitize_text_field',
-			'dame_license_type' => 'sanitize_text_field',
-			'dame_health_document' => 'sanitize_key',
+		$fields = array(
+			'dame_license_number'        => 'sanitize_text_field',
+			'dame_license_type'          => 'sanitize_text_field',
+			'dame_health_document'       => 'sanitize_key',
 			'dame_adherent_honorabilite' => 'sanitize_text_field',
-			'dame_arbitre_level' => 'sanitize_text_field',
-		];
+			'dame_arbitre_level'         => 'sanitize_text_field',
+		);
 
 		foreach ( $fields as $field_name => $sanitize_callback ) {
 			if ( isset( $_POST[ $field_name ] ) ) {
@@ -254,7 +254,7 @@ class Classification {
 				if ( 'active' === $status_value ) {
 					// Only add if not already present
 					if ( ! has_term( (int) $current_season_id, 'dame_saison_adhesion', $post_id ) ) {
-						wp_set_object_terms( $post_id, [ (int) $current_season_id ], 'dame_saison_adhesion', true );
+						wp_set_object_terms( $post_id, array( (int) $current_season_id ), 'dame_saison_adhesion', true );
 					}
 				} elseif ( 'inactive' === $status_value ) {
 					wp_remove_object_terms( $post_id, (int) $current_season_id, 'dame_saison_adhesion' );

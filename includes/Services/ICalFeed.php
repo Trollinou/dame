@@ -21,19 +21,19 @@ class ICalFeed {
 	 * Initialize the service.
 	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register_feed' ] );
-		add_filter( 'query_vars', [ $this, 'add_query_vars' ] );
-		add_action( 'do_feed_dame-agenda-ical', [ $this, 'handle_feed_request' ] );
-		add_action( 'save_post_dame_agenda', [ $this, 'update_event_meta' ] );
-		add_action( 'template_redirect', [ $this, 'handle_single_event_download' ] );
-		add_action( 'views_edit-dame_ical_feed', [ $this, 'display_global_feeds_notice' ] );
+		add_action( 'init', array( $this, 'register_feed' ) );
+		add_filter( 'query_vars', array( $this, 'add_query_vars' ) );
+		add_action( 'do_feed_dame-agenda-ical', array( $this, 'handle_feed_request' ) );
+		add_action( 'save_post_dame_agenda', array( $this, 'update_event_meta' ) );
+		add_action( 'template_redirect', array( $this, 'handle_single_event_download' ) );
+		add_action( 'views_edit-dame_ical_feed', array( $this, 'display_global_feeds_notice' ) );
 	}
 
 	/**
 	 * Registers the iCal feed and rewrite rule.
 	 */
 	public function register_feed(): void {
-		add_feed( 'dame-agenda-ical', [ $this, 'handle_feed_request' ] );
+		add_feed( 'dame-agenda-ical', array( $this, 'handle_feed_request' ) );
 		add_rewrite_rule( '^feed/agenda/([^/]+)\.ics$', 'index.php?feed=dame-agenda-ical&dame_feed_slug=$matches[1]', 'top' );
 	}
 
@@ -72,7 +72,7 @@ class ICalFeed {
 		}
 
 		// List of critical fields that should trigger a sequence update.
-		$critical_fields = [
+		$critical_fields = array(
 			'_dame_start_date',
 			'_dame_start_time',
 			'_dame_end_date',
@@ -82,7 +82,7 @@ class ICalFeed {
 			'_dame_address_1',
 			'_dame_city',
 			'_dame_agenda_description',
-		];
+		);
 
 		$changed = false;
 		foreach ( $critical_fields as $meta_key ) {
@@ -242,7 +242,7 @@ class ICalFeed {
 	 *
 	 * @param array<int, \WP_Post> $event_posts    Array of event posts.
 	 * @param array<string, mixed> $feed_details   Feed metadata.
-	 * @param bool  $force_download Whether to force download as attachment.
+	 * @param bool                 $force_download Whether to force download as attachment.
 	 * @return void
 	 */
 	private function generate_ics( $event_posts, $feed_details, $force_download = false ): void {
@@ -263,11 +263,11 @@ class ICalFeed {
 		echo "PRODID:-//DAME Plugin//NONSGML v1.0//EN\r\n";
 		echo "CALSCALE:GREGORIAN\r\n";
 		echo "METHOD:PUBLISH\r\n";
-		echo "X-WR-TIMEZONE:" . $timezone_string . "\r\n";
-		echo $this->fold_line( "NAME:" . $feed_details['name'] ) . "\r\n";
-		echo "SOURCE:" . $feed_details['url'] . "\r\n";
+		echo 'X-WR-TIMEZONE:' . $timezone_string . "\r\n";
+		echo $this->fold_line( 'NAME:' . $feed_details['name'] ) . "\r\n";
+		echo 'SOURCE:' . $feed_details['url'] . "\r\n";
 		echo "REFRESH-INTERVAL;VALUE=DURATION:P1D\r\n";
-		echo "X-WR-CALNAME:" . $feed_details['name'] . "\r\n";
+		echo 'X-WR-CALNAME:' . $feed_details['name'] . "\r\n";
 
 		foreach ( $event_posts as $post ) {
 			$post_id = $post->ID;
@@ -309,7 +309,7 @@ class ICalFeed {
 			} else {
 				$start_datetime_str = $start_date_str . ( ! empty( $start_time ) ? 'T' . str_replace( ':', '', $start_time ) . '00' : 'T000000' );
 				$end_datetime_str   = ( ! empty( $end_date_str ) ? $end_date_str : $start_date_str ) . ( ! empty( $end_time ) ? 'T' . str_replace( ':', '', $end_time ) . '00' : 'T235959' );
-				
+
 				$dtstart = ';TZID=' . $timezone_string . ':' . str_replace( '-', '', $start_datetime_str );
 				$dtend   = ';TZID=' . $timezone_string . ':' . str_replace( '-', '', $end_datetime_str );
 			}
@@ -351,19 +351,19 @@ class ICalFeed {
 			$summary = $this->format_for_ics( $post->post_title );
 
 			echo "BEGIN:VEVENT\r\n";
-			echo "UID:" . $uid . "\r\n";
-			echo "SEQUENCE:" . $sequence . "\r\n";
-			echo "DTSTAMP:" . $dtstamp . "\r\n";
-			echo "DTSTART" . $dtstart . "\r\n";
-			echo "DTEND" . $dtend . "\r\n";
-			echo $this->fold_line( "SUMMARY:" . $summary ) . "\r\n";
+			echo 'UID:' . $uid . "\r\n";
+			echo 'SEQUENCE:' . $sequence . "\r\n";
+			echo 'DTSTAMP:' . $dtstamp . "\r\n";
+			echo 'DTSTART' . $dtstart . "\r\n";
+			echo 'DTEND' . $dtend . "\r\n";
+			echo $this->fold_line( 'SUMMARY:' . $summary ) . "\r\n";
 			if ( ! empty( $description ) ) {
-				echo $this->fold_line( "DESCRIPTION:" . $description ) . "\r\n";
+				echo $this->fold_line( 'DESCRIPTION:' . $description ) . "\r\n";
 			}
 			if ( ! empty( $location ) ) {
-				echo $this->fold_line( "LOCATION:" . $location ) . "\r\n";
+				echo $this->fold_line( 'LOCATION:' . $location ) . "\r\n";
 			}
-			echo "URL:" . get_permalink( $post_id ) . "\r\n";
+			echo 'URL:' . get_permalink( $post_id ) . "\r\n";
 			echo "END:VEVENT\r\n";
 		}
 
@@ -380,10 +380,10 @@ class ICalFeed {
 	private function format_for_ics( $text ) {
 		// Replace non-breaking spaces and other common problematic entities first
 		$text = str_replace( '&nbsp;', ' ', (string) $text );
-		
+
 		// Strip any remaining HTML tags and decode entities (like &rsquo; to ')
 		$text = html_entity_decode( strip_tags( $text ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
-		
+
 		$text = str_replace( '\\', '\\\\', $text );
 		$text = str_replace( ',', '\,', $text );
 		$text = str_replace( ';', '\;', $text );

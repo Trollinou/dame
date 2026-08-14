@@ -19,7 +19,7 @@ class Tracker {
 	 * Initialize the Tracker.
 	 */
 	public function init(): void {
-		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
+		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
 	/**
@@ -33,7 +33,7 @@ class Tracker {
 			'/track',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'handle_tracking_pixel' ],
+				'callback'            => array( $this, 'handle_tracking_pixel' ),
 				'permission_callback' => '__return_true', // Publicly accessible.
 			)
 		);
@@ -71,14 +71,19 @@ class Tracker {
 		// Update all recipients sharing this email for this message.
 		// Since we now have one row per recipient, we mark everyone with this email as "opened".
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$updated = $wpdb->query( $wpdb->prepare(
-			"UPDATE {$table_name} 
+		$updated = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$table_name} 
 			SET opened_at = %s, user_ip = %s 
 			WHERE message_id = %d AND email_hash = %s",
-			$now, $user_ip, $message_id, $email_hash
-		) );
+				$now,
+				$user_ip,
+				$message_id,
+				$email_hash
+			)
+		);
 
-		// Fallback: If no rows were updated (e.g. log missing but pixel hit), 
+		// Fallback: If no rows were updated (e.g. log missing but pixel hit),
 		// we could insert a generic row, but it's better to log only known recipients.
 
 		// Serve a 1x1 transparent GIF image.

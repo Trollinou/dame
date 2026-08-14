@@ -16,23 +16,23 @@ use DAME\Admin\Pages\MessageReport;
 class Menu {
 
 	public function init(): void {
-		add_action( 'admin_menu', [ $this, 'add_menus' ], 10 );
-		add_action( 'admin_menu', [ $this, 'reorder_dame_submenu' ], 999 );
-		add_filter( 'parent_file', [ $this, 'highlight_parent_menu' ] );
-		add_filter( 'submenu_file', [ $this, 'highlight_submenu' ] );
-		(new MessageReport())->init();
-		(new Backups())->init();
-		(new Mailing())->init();
+		add_action( 'admin_menu', array( $this, 'add_menus' ), 10 );
+		add_action( 'admin_menu', array( $this, 'reorder_dame_submenu' ), 999 );
+		add_filter( 'parent_file', array( $this, 'highlight_parent_menu' ) );
+		add_filter( 'submenu_file', array( $this, 'highlight_submenu' ) );
+		( new MessageReport() )->init();
+		( new Backups() )->init();
+		( new Mailing() )->init();
 	}
 
 	public function add_menus(): void {
 		// 1. Menu Parent & Tableau de bord (slug: dame-admin)
 		add_menu_page(
-			__( "DAME - Gestion", "dame" ),
-			__( "DAME", "dame" ),
+			__( 'DAME - Gestion', 'dame' ),
+			__( 'DAME', 'dame' ),
 			'edit_dame_messages',
 			'dame-admin',
-			[ $this, 'render_dashboard' ],
+			array( $this, 'render_dashboard' ),
 			'dashicons-groups',
 			30
 		);
@@ -40,51 +40,51 @@ class Menu {
 		// Envoyer un message (Mailing)
 		add_submenu_page(
 			'dame-admin',
-			__( "Envoyer un message", "dame" ),
-			__( "Envoyer un message", "dame" ),
+			__( 'Envoyer un message', 'dame' ),
+			__( 'Envoyer un message', 'dame' ),
 			'edit_dame_messages',
 			'dame-mailing',
-			[ new Mailing(), 'render' ]
+			array( new Mailing(), 'render' )
 		);
 
 		// Sauvegardes
 		add_submenu_page(
 			'dame-admin',
-			__( "Sauvegardes et Import", "dame" ),
-			__( "Sauvegardes", "dame" ),
+			__( 'Sauvegardes et Import', 'dame' ),
+			__( 'Sauvegardes', 'dame' ),
 			'manage_options',
 			'dame-backups',
-			[ new Backups(), 'render' ]
+			array( new Backups(), 'render' )
 		);
 
 		// Import FFE
 		add_submenu_page(
 			'dame-admin',
-			__( "Import fichier FFE", "dame" ),
-			__( "Import FFE", "dame" ),
+			__( 'Import fichier FFE', 'dame' ),
+			__( 'Import FFE', 'dame' ),
 			'manage_options',
 			'dame-import-ffe',
-			[ new ImportFFE(), 'render' ]
+			array( new ImportFFE(), 'render' )
 		);
 
 		// Réglages
 		add_submenu_page(
 			'dame-admin',
-			__( "Réglages DAME", "dame" ),
-			__( "Réglages", "dame" ),
+			__( 'Réglages DAME', 'dame' ),
+			__( 'Réglages', 'dame' ),
 			'manage_options',
 			'dame-settings',
-			[ new SettingsMain(), 'render_page' ]
+			array( new SettingsMain(), 'render_page' )
 		);
 
 		// Page cachée : Rapport détaillé d'un message
 		add_submenu_page(
-			'dame-admin', 
-			__( "Rapport du message", "dame" ),
-			__( "Rapport", "dame" ),
+			'dame-admin',
+			__( 'Rapport du message', 'dame' ),
+			__( 'Rapport', 'dame' ),
 			'edit_dame_messages',
 			'dame-message-report',
-			[ new MessageReport(), 'render' ]
+			array( new MessageReport(), 'render' )
 		);
 	}
 
@@ -96,31 +96,31 @@ class Menu {
 		}
 
 		$dame_submenu = $submenu['dame-admin'];
-		$reordered = [];
+		$reordered    = array();
 
-		$desired_order = [
-			'dame-admin' => __( "Tableau de bord", "dame" ),
-			'edit.php?post_type=adherent' => __( "Tous les adhérents", "dame" ),
-			'edit.php?post_type=dame_contact' => __( "Tous les contacts", "dame" ),
-			'edit.php?post_type=dame_pre_inscription' => __( "Toutes les préinscriptions", "dame" ),
-			'edit.php?post_type=dame_agenda' => __( "Tous les évènements", "dame" ),
-			'edit.php?post_type=benevolat' => __( "Appels à bénévoles", "dame" ),
-			'edit.php?post_type=dame_message' => __( "Tous les messages", "dame" ),
-			'dame-mailing' => __( "Envoyer un message", "dame" ),
-			'edit-tags.php?taxonomy=dame_group&amp;post_type=adherent' => __( "Groupes d'Adhérent", "dame" ),
-			'edit-tags.php?taxonomy=dame_contact_type&amp;post_type=dame_contact' => __( "Groupes de Contact", "dame" ),
-			'edit-tags.php?taxonomy=dame_agenda_category&amp;post_type=dame_agenda' => __( "Groupes d'Évènements", "dame" ),
-			'edit-tags.php?taxonomy=dame_saison_adhesion&amp;post_type=adherent' => __( "Saisons d'adhésion", "dame" ),
-			'edit.php?post_type=dame_ical_feed' => __( "Flux d'agenda", "dame" ),
-			'dame-import-ffe' => __( "Import FFE", "dame" ),
-			'dame-backups' => __( "Sauvegardes et Restaurations", "dame" ),
-			'dame-settings' => __( "Réglages", "dame" ),
-		];
+		$desired_order = array(
+			'dame-admin'                              => __( 'Tableau de bord', 'dame' ),
+			'edit.php?post_type=adherent'             => __( 'Tous les adhérents', 'dame' ),
+			'edit.php?post_type=dame_contact'         => __( 'Tous les contacts', 'dame' ),
+			'edit.php?post_type=dame_pre_inscription' => __( 'Toutes les préinscriptions', 'dame' ),
+			'edit.php?post_type=dame_agenda'          => __( 'Tous les évènements', 'dame' ),
+			'edit.php?post_type=benevolat'            => __( 'Appels à bénévoles', 'dame' ),
+			'edit.php?post_type=dame_message'         => __( 'Tous les messages', 'dame' ),
+			'dame-mailing'                            => __( 'Envoyer un message', 'dame' ),
+			'edit-tags.php?taxonomy=dame_group&amp;post_type=adherent' => __( "Groupes d'Adhérent", 'dame' ),
+			'edit-tags.php?taxonomy=dame_contact_type&amp;post_type=dame_contact' => __( 'Groupes de Contact', 'dame' ),
+			'edit-tags.php?taxonomy=dame_agenda_category&amp;post_type=dame_agenda' => __( "Groupes d'Évènements", 'dame' ),
+			'edit-tags.php?taxonomy=dame_saison_adhesion&amp;post_type=adherent' => __( "Saisons d'adhésion", 'dame' ),
+			'edit.php?post_type=dame_ical_feed'       => __( "Flux d'agenda", 'dame' ),
+			'dame-import-ffe'                         => __( 'Import FFE', 'dame' ),
+			'dame-backups'                            => __( 'Sauvegardes et Restaurations', 'dame' ),
+			'dame-settings'                           => __( 'Réglages', 'dame' ),
+		);
 
 		foreach ( $desired_order as $url => $new_title ) {
 			$found = false;
 			foreach ( $dame_submenu as $key => $item ) {
-				$item_url = str_replace( '&', '&amp;', $item[2] );
+				$item_url   = str_replace( '&', '&amp;', $item[2] );
 				$target_url = str_replace( '&', '&amp;', $url );
 
 				if ( $item_url === $target_url || $item[2] === $url ) {
@@ -129,16 +129,16 @@ class Menu {
 						$item[3] = $new_title;
 					}
 					$reordered[] = $item;
-					unset( $dame_submenu[$key] );
+					unset( $dame_submenu[ $key ] );
 					$found = true;
 					break;
 				}
 			}
 
 			if ( ! $found ) {
-				$cap = ( strpos( $url, 'edit-tags.php' ) !== false ) ? 'manage_categories' : 'manage_options';
-				$clean_url = str_replace( '&amp;', '&', $url );
-				$reordered[] = [ $new_title, $cap, $clean_url, $new_title ];
+				$cap         = ( strpos( $url, 'edit-tags.php' ) !== false ) ? 'manage_categories' : 'manage_options';
+				$clean_url   = str_replace( '&amp;', '&', $url );
+				$reordered[] = array( $new_title, $cap, $clean_url, $new_title );
 			}
 		}
 
@@ -159,85 +159,93 @@ class Menu {
 		$season_name           = ( $season_term && ! is_wp_error( $season_term ) ) ? $season_term->name : __( 'Non définie', 'dame' );
 
 		// 2. Comptage Adhérents (Saison en cours)
-		$adherents_args = [
+		$adherents_args = array(
 			'post_type'      => 'adherent',
 			'posts_per_page' => -1,
 			'post_status'    => 'publish',
 			'fields'         => 'ids',
-		];
+		);
 		if ( $current_season_tag_id ) {
-			$adherents_args['tax_query'] = [
-				[
+			$adherents_args['tax_query'] = array(
+				array(
 					'taxonomy' => 'dame_saison_adhesion',
 					'field'    => 'term_id',
 					'terms'    => $current_season_tag_id,
-				],
-			];
+				),
+			);
 		}
 		$adherent_ids    = get_posts( $adherents_args );
 		$total_adherents = count( $adherent_ids );
 
-		$licence_counts = [
+		$licence_counts = array(
 			'A'      => 0,
 			'B'      => 0,
 			'Autres' => 0,
-		];
+		);
 		if ( $total_adherents > 0 ) {
 			foreach ( $adherent_ids as $id ) {
 				$licence_type = get_post_meta( $id, '_dame_license_type', true );
 				if ( strpos( $licence_type, 'Licence A' ) !== false || $licence_type === 'A' ) {
-					$licence_counts['A']++;
+					++$licence_counts['A'];
 				} elseif ( strpos( $licence_type, 'Licence B' ) !== false || $licence_type === 'B' ) {
-					$licence_counts['B']++;
+					++$licence_counts['B'];
 				} else {
-					$licence_counts['Autres']++;
+					++$licence_counts['Autres'];
 				}
 			}
 		}
 
 		// 3. Derniers Adhérents
-		$latest_adherents = get_posts( [
-			'post_type'      => 'adherent',
-			'posts_per_page' => 5,
-			'orderby'        => 'date',
-			'order'          => 'DESC',
-			'post_status'    => 'publish',
-		] );
+		$latest_adherents = get_posts(
+			array(
+				'post_type'      => 'adherent',
+				'posts_per_page' => 5,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+				'post_status'    => 'publish',
+			)
+		);
 
 		// 4. Préinscriptions en attente
-		$pre_inscriptions_query = new \WP_Query( [
-			'post_type'      => 'dame_pre_inscription',
-			'post_status'    => [ 'pending', 'draft' ],
-			'posts_per_page' => 1,
-		] );
+		$pre_inscriptions_query  = new \WP_Query(
+			array(
+				'post_type'      => 'dame_pre_inscription',
+				'post_status'    => array( 'pending', 'draft' ),
+				'posts_per_page' => 1,
+			)
+		);
 		$pending_preinscriptions = $pre_inscriptions_query->found_posts;
 
 		// 5. Prochains événements Agenda
-		$today = current_time( 'Y-m-d' );
-		$upcoming_events = get_posts( [
-			'post_type'      => 'dame_agenda',
-			'posts_per_page' => 5,
-			'meta_key'       => '_dame_start_date',
-			'orderby'        => 'meta_value',
-			'order'          => 'ASC',
-			'meta_query'     => [
-				[
-					'key'     => '_dame_start_date',
-					'value'   => $today,
-					'compare' => '>=',
-					'type'    => 'DATE',
-				],
-			],
-			'post_status'    => 'publish',
-		] );
+		$today           = current_time( 'Y-m-d' );
+		$upcoming_events = get_posts(
+			array(
+				'post_type'      => 'dame_agenda',
+				'posts_per_page' => 5,
+				'meta_key'       => '_dame_start_date',
+				'orderby'        => 'meta_value',
+				'order'          => 'ASC',
+				'meta_query'     => array(
+					array(
+						'key'     => '_dame_start_date',
+						'value'   => $today,
+						'compare' => '>=',
+						'type'    => 'DATE',
+					),
+				),
+				'post_status'    => 'publish',
+			)
+		);
 
 		// 6. Bénévolats en cours
-		$active_benevolats = [];
-		$all_benevolats    = get_posts( [
-			'post_type'      => 'benevolat',
-			'posts_per_page' => -1,
-			'post_status'    => 'publish',
-		] );
+		$active_benevolats = array();
+		$all_benevolats    = get_posts(
+			array(
+				'post_type'      => 'benevolat',
+				'posts_per_page' => -1,
+				'post_status'    => 'publish',
+			)
+		);
 
 		if ( ! empty( $all_benevolats ) ) {
 			foreach ( $all_benevolats as $benevolat ) {
@@ -252,26 +260,31 @@ class Menu {
 					$last_date  = max( $dates );
 
 					if ( $last_date >= $today ) {
-						$responses_query = new \WP_Query( [
-							'post_type'      => 'benevolat_reponse',
-							'post_status'    => 'publish',
-							'post_parent'    => $benevolat->ID,
-							'posts_per_page' => 1,
-						] );
+						$responses_query = new \WP_Query(
+							array(
+								'post_type'      => 'benevolat_reponse',
+								'post_status'    => 'publish',
+								'post_parent'    => $benevolat->ID,
+								'posts_per_page' => 1,
+							)
+						);
 
-						$active_benevolats[] = [
+						$active_benevolats[] = array(
 							'ID'              => $benevolat->ID,
 							'title'           => $benevolat->post_title,
 							'first_date'      => $first_date,
 							'responses_count' => $responses_query->found_posts,
-						];
+						);
 					}
 				}
 			}
 
-			usort( $active_benevolats, function( array $a, array $b ) {
-				return strcmp( $a['first_date'], $b['first_date'] );
-			} );
+			usort(
+				$active_benevolats,
+				function ( array $a, array $b ) {
+					return strcmp( $a['first_date'], $b['first_date'] );
+				}
+			);
 		}
 
 		?>
@@ -328,19 +341,58 @@ class Menu {
 								<ul>
 									<li>
 										<strong><?php esc_html_e( 'Licence A :', 'dame' ); ?></strong>
-										<a href="<?php echo esc_url( add_query_arg( [ 'post_type' => 'adherent', 'dame_license_type_filter' => 'A', 'dame_saison_filter' => $current_season_tag_id ], admin_url( 'edit.php' ) ) ); ?>">
+										<a href="
+										<?php
+										echo esc_url(
+											add_query_arg(
+												array(
+													'post_type' => 'adherent',
+													'dame_license_type_filter' => 'A',
+													'dame_saison_filter' => $current_season_tag_id,
+												),
+												admin_url( 'edit.php' )
+											)
+										);
+										?>
+													">
 											<?php echo intval( $licence_counts['A'] ); ?>
 										</a>
 									</li>
 									<li>
 										<strong><?php esc_html_e( 'Licence B :', 'dame' ); ?></strong>
-										<a href="<?php echo esc_url( add_query_arg( [ 'post_type' => 'adherent', 'dame_license_type_filter' => 'B', 'dame_saison_filter' => $current_season_tag_id ], admin_url( 'edit.php' ) ) ); ?>">
+										<a href="
+										<?php
+										echo esc_url(
+											add_query_arg(
+												array(
+													'post_type' => 'adherent',
+													'dame_license_type_filter' => 'B',
+													'dame_saison_filter' => $current_season_tag_id,
+												),
+												admin_url( 'edit.php' )
+											)
+										);
+										?>
+													">
 											<?php echo intval( $licence_counts['B'] ); ?>
 										</a>
 									</li>
 									<li>
 										<strong><?php esc_html_e( 'Autres / Non précisé :', 'dame' ); ?></strong>
-										<a href="<?php echo esc_url( add_query_arg( [ 'post_type' => 'adherent', 'dame_license_type_filter' => 'Autres', 'dame_saison_filter' => $current_season_tag_id ], admin_url( 'edit.php' ) ) ); ?>">
+										<a href="
+										<?php
+										echo esc_url(
+											add_query_arg(
+												array(
+													'post_type' => 'adherent',
+													'dame_license_type_filter' => 'Autres',
+													'dame_saison_filter' => $current_season_tag_id,
+												),
+												admin_url( 'edit.php' )
+											)
+										);
+										?>
+													">
 											<?php echo intval( $licence_counts['Autres'] ); ?>
 										</a>
 									</li>
@@ -360,10 +412,11 @@ class Menu {
 									<p><?php esc_html_e( 'Aucun événement à venir.', 'dame' ); ?></p>
 								<?php else : ?>
 									<ul>
-										<?php foreach ( $upcoming_events as $event ) :
-											$start_date = get_post_meta( $event->ID, '_dame_start_date', true );
+										<?php
+										foreach ( $upcoming_events as $event ) :
+											$start_date     = get_post_meta( $event->ID, '_dame_start_date', true );
 											$formatted_date = wp_date( get_option( 'date_format' ), strtotime( $start_date ) );
-										?>
+											?>
 											<li>
 												<strong><?php echo esc_html( $formatted_date ); ?></strong> :
 												<a href="<?php echo esc_url( get_edit_post_link( $event->ID ) ); ?>">
@@ -384,9 +437,10 @@ class Menu {
 									<p><?php esc_html_e( 'Aucun appel en cours.', 'dame' ); ?></p>
 								<?php else : ?>
 									<ul>
-										<?php foreach ( $active_benevolats as $benevolat ) :
+										<?php
+										foreach ( $active_benevolats as $benevolat ) :
 											$formatted_date = wp_date( get_option( 'date_format' ), strtotime( $benevolat['first_date'] ) );
-										?>
+											?>
 											<li>
 												<strong><?php echo esc_html( $formatted_date ); ?></strong> :
 												<a href="<?php echo esc_url( get_edit_post_link( $benevolat['ID'] ) ); ?>">
@@ -412,7 +466,7 @@ class Menu {
 
 	public function highlight_parent_menu( string $parent_file ): string {
 		global $current_screen;
-		$dame_taxonomies = [ 'dame_saison_adhesion', 'dame_group', 'dame_agenda_category', 'dame_contact_type' ];
+		$dame_taxonomies = array( 'dame_saison_adhesion', 'dame_group', 'dame_agenda_category', 'dame_contact_type' );
 
 		if ( isset( $current_screen->taxonomy ) && in_array( $current_screen->taxonomy, $dame_taxonomies ) ) {
 			return 'dame-admin';

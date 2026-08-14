@@ -1,7 +1,0 @@
-{
-  "name": "Echiquier Lédonien",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "vue-vite"
-}

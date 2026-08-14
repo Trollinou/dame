@@ -20,7 +20,7 @@ class Reconciliation {
 	 * Initialize the metabox.
 	 */
 	public function init(): void {
-		add_action( 'add_meta_boxes', [ $this, 'add_box' ] );
+		add_action( 'add_meta_boxes', array( $this, 'add_box' ) );
 	}
 
 	/**
@@ -32,7 +32,7 @@ class Reconciliation {
 			add_meta_box(
 				'dame_pre_inscription_reconciliation',
 				__( 'Rapprochement avec un adhérent existant', 'dame' ),
-				[ $this, 'render' ],
+				array( $this, 'render' ),
 				'dame_pre_inscription',
 				'normal',
 				'high',
@@ -44,7 +44,7 @@ class Reconciliation {
 	/**
 	 * Render the meta box.
 	 *
-	 * @param \WP_Post $post The post object.
+	 * @param \WP_Post             $post The post object.
 	 * @param array<string, mixed> $metabox The metabox arguments.
 	 */
 	public function render( $post, $metabox ): void {
@@ -72,42 +72,60 @@ class Reconciliation {
 				'Document de santé'   => 'dame_health_document',
 			),
 			'Représentant Légal 1'     => array(
-				'Rep. 1 - Nom de naissance'        => 'dame_legal_rep_1_last_name',
-				'Rep. 1 - Prénom'                  => 'dame_legal_rep_1_first_name',
-				'Rep. 1 - Date de naissance'       => 'dame_legal_rep_1_date_naissance',
-				'Rep. 1 - Lieu de naissance'       => 'dame_legal_rep_1_commune_naissance',
+				'Rep. 1 - Nom de naissance'         => 'dame_legal_rep_1_last_name',
+				'Rep. 1 - Prénom'                   => 'dame_legal_rep_1_first_name',
+				'Rep. 1 - Date de naissance'        => 'dame_legal_rep_1_date_naissance',
+				'Rep. 1 - Lieu de naissance'        => 'dame_legal_rep_1_commune_naissance',
 				'Rep. 1 - Contrôle d\'honorabilité' => 'dame_legal_rep_1_honorabilite',
-				'Rep. 1 - Numéro de téléphone'     => 'dame_legal_rep_1_phone',
-				'Rep. 1 - Email'                   => 'dame_legal_rep_1_email',
-				'Rep. 1 - Profession'              => 'dame_legal_rep_1_profession',
-				'Rep. 1 - Adresse'                 => 'dame_legal_rep_1_address_1',
-				'Rep. 1 - Complément'              => 'dame_legal_rep_1_address_2',
-				'Rep. 1 - Code Postal'             => 'dame_legal_rep_1_postal_code',
-				'Rep. 1 - Ville'                   => 'dame_legal_rep_1_city',
+				'Rep. 1 - Numéro de téléphone'      => 'dame_legal_rep_1_phone',
+				'Rep. 1 - Email'                    => 'dame_legal_rep_1_email',
+				'Rep. 1 - Profession'               => 'dame_legal_rep_1_profession',
+				'Rep. 1 - Adresse'                  => 'dame_legal_rep_1_address_1',
+				'Rep. 1 - Complément'               => 'dame_legal_rep_1_address_2',
+				'Rep. 1 - Code Postal'              => 'dame_legal_rep_1_postal_code',
+				'Rep. 1 - Ville'                    => 'dame_legal_rep_1_city',
 			),
 			'Représentant Légal 2'     => array(
-				'Rep. 2 - Nom de naissance'        => 'dame_legal_rep_2_last_name',
-				'Rep. 2 - Prénom'                  => 'dame_legal_rep_2_first_name',
-				'Rep. 2 - Date de naissance'       => 'dame_legal_rep_2_date_naissance',
-				'Rep. 2 - Lieu de naissance'       => 'dame_legal_rep_2_commune_naissance',
+				'Rep. 2 - Nom de naissance'         => 'dame_legal_rep_2_last_name',
+				'Rep. 2 - Prénom'                   => 'dame_legal_rep_2_first_name',
+				'Rep. 2 - Date de naissance'        => 'dame_legal_rep_2_date_naissance',
+				'Rep. 2 - Lieu de naissance'        => 'dame_legal_rep_2_commune_naissance',
 				'Rep. 2 - Contrôle d\'honorabilité' => 'dame_legal_rep_2_honorabilite',
-				'Rep. 2 - Numéro de téléphone'     => 'dame_legal_rep_2_phone',
-				'Rep. 2 - Email'                   => 'dame_legal_rep_2_email',
-				'Rep. 2 - Profession'              => 'dame_legal_rep_2_profession',
-				'Rep. 2 - Adresse'                 => 'dame_legal_rep_2_address_1',
-				'Rep. 2 - Complément'              => 'dame_legal_rep_2_address_2',
-				'Rep. 2 - Code Postal'             => 'dame_legal_rep_2_postal_code',
-				'Rep. 2 - Ville'                   => 'dame_legal_rep_2_city',
+				'Rep. 2 - Numéro de téléphone'      => 'dame_legal_rep_2_phone',
+				'Rep. 2 - Email'                    => 'dame_legal_rep_2_email',
+				'Rep. 2 - Profession'               => 'dame_legal_rep_2_profession',
+				'Rep. 2 - Adresse'                  => 'dame_legal_rep_2_address_1',
+				'Rep. 2 - Complément'               => 'dame_legal_rep_2_address_2',
+				'Rep. 2 - Code Postal'              => 'dame_legal_rep_2_postal_code',
+				'Rep. 2 - Ville'                    => 'dame_legal_rep_2_city',
 			),
 		);
 		?>
-		<p><?php printf( __( 'Correspondance trouvée avec l\'adhérent <a href="%s" target="_blank">#%d</a>.', 'dame' ), esc_url( get_edit_post_link( $matched_id ) ), (int) $matched_id ); ?></p>
+		?>
+		<p>
+		<?php
+			echo wp_kses(
+				sprintf(
+					/* translators: 1: Lien vers l'édition de l'adhérent, 2: ID de l'adhérent */
+					__( 'Correspondance trouvée avec l\'adhérent <a href="%1$s" target="_blank">#%2$d</a>.', 'dame' ),
+					esc_url( get_edit_post_link( $matched_id ) ),
+					(int) $matched_id
+				),
+				array(
+					'a' => array(
+						'href'   => array(),
+						'target' => array(),
+					),
+				)
+			);
+		?>
+		</p>
 		<table class="wp-list-table widefat fixed striped dame-reconciliation-table">
 			<thead>
 				<tr>
-					<th style="width: 25%;"><?php _e( 'Champ', 'dame' ); ?></th>
-					<th style="width: 37.5%;"><?php _e( 'Donnée de la Préinscription', 'dame' ); ?></th>
-					<th style="width: 37.5%;"><?php _e( 'Donnée de l\'Adhérent Existant', 'dame' ); ?></th>
+					<th style="width: 25%;"><?php esc_html_e( 'Champ', 'dame' ); ?></th>
+					<th style="width: 37.5%;"><?php esc_html_e( 'Donnée de la Préinscription', 'dame' ); ?></th>
+					<th style="width: 37.5%;"><?php esc_html_e( 'Donnée de l\'Adhérent Existant', 'dame' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -149,11 +167,10 @@ class Reconciliation {
 								}
 							}
 						} elseif ( 'dame_health_document' === $key_suffix ) {
-							$options = Data_Provider::get_health_document_options();
+							$options               = Data_Provider::get_health_document_options();
 							$pre_inscription_value = isset( $options[ $pre_inscription_value ] ) ? $options[ $pre_inscription_value ] : $pre_inscription_value;
 							$adherent_value        = isset( $options[ $adherent_value ] ) ? $options[ $adherent_value ] : $adherent_value;
 						}
-
 
 						// Show all fields from the pre-inscription, even if empty, to be comprehensive.
 						$highlight_class = ( (string) $pre_inscription_value !== (string) $adherent_value ) ? 'dame-highlight-diff' : '';

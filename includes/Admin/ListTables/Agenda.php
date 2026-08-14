@@ -19,12 +19,12 @@ class Agenda {
 	 * Initialize the list table customizations.
 	 */
 	public function init(): void {
-		add_filter( 'manage_edit-dame_agenda_columns', [ $this, 'set_columns' ] );
-		add_action( 'manage_dame_agenda_posts_custom_column', [ $this, 'render_columns' ], 10, 2 );
-		add_filter( 'manage_edit-dame_agenda_sortable_columns', [ $this, 'set_sortable_columns' ] );
-		add_action( 'restrict_manage_posts', [ $this, 'add_filters' ] );
-		add_action( 'pre_get_posts', [ $this, 'filter_and_sort' ] );
-		add_filter( 'months_dropdown_results', [ $this, 'suppress_months_dropdown' ], 10, 2 );
+		add_filter( 'manage_edit-dame_agenda_columns', array( $this, 'set_columns' ) );
+		add_action( 'manage_dame_agenda_posts_custom_column', array( $this, 'render_columns' ), 10, 2 );
+		add_filter( 'manage_edit-dame_agenda_sortable_columns', array( $this, 'set_sortable_columns' ) );
+		add_action( 'restrict_manage_posts', array( $this, 'add_filters' ) );
+		add_action( 'pre_get_posts', array( $this, 'filter_and_sort' ) );
+		add_filter( 'months_dropdown_results', array( $this, 'suppress_months_dropdown' ), 10, 2 );
 	}
 
 	/**
@@ -149,7 +149,7 @@ class Agenda {
 		}
 
 		// --- Category Filter (existing) ---
-		$taxonomy   = 'dame_agenda_category';
+		$taxonomy          = 'dame_agenda_category';
 		$selected_category = $_GET[ $taxonomy ] ?? '';
 		$category_terms    = get_terms(
 			array(
@@ -305,15 +305,15 @@ class Agenda {
 			? sanitize_text_field( wp_unslash( $_GET['dame_start_month'] ) )
 			: $defaults['start_month'];
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$start_year  = isset( $_GET['dame_start_year'] ) && '' !== $_GET['dame_start_year']
+		$start_year = isset( $_GET['dame_start_year'] ) && '' !== $_GET['dame_start_year']
 			? sanitize_text_field( wp_unslash( $_GET['dame_start_year'] ) )
 			: $defaults['start_year'];
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$end_month   = isset( $_GET['dame_end_month'] ) && '' !== $_GET['dame_end_month']
+		$end_month = isset( $_GET['dame_end_month'] ) && '' !== $_GET['dame_end_month']
 			? sanitize_text_field( wp_unslash( $_GET['dame_end_month'] ) )
 			: $defaults['end_month'];
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$end_year    = isset( $_GET['dame_end_year'] ) && '' !== $_GET['dame_end_year']
+		$end_year = isset( $_GET['dame_end_year'] ) && '' !== $_GET['dame_end_year']
 			? sanitize_text_field( wp_unslash( $_GET['dame_end_year'] ) )
 			: $defaults['end_year'];
 
@@ -389,7 +389,7 @@ class Agenda {
 	 * Suppresses the default months dropdown for the Agenda CPT.
 	 *
 	 * @param array<string, mixed> $months    The default months list.
-	 * @param string $post_type The current post type.
+	 * @param string               $post_type The current post type.
 	 * @return array<string, mixed> The modified months list (empty for our CPT).
 	 */
 	public function suppress_months_dropdown( $months, $post_type ) {

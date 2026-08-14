@@ -19,9 +19,9 @@ class RegistrationForm {
 	 * Initialize the shortcode and AJAX hooks.
 	 */
 	public function init(): void {
-		add_shortcode( 'dame_fiche_inscription', [ $this, 'render' ] );
-		add_action( 'wp_ajax_dame_submit_pre_inscription', [ $this, 'handle_submission' ] );
-		add_action( 'wp_ajax_nopriv_dame_submit_pre_inscription', [ $this, 'handle_submission' ] );
+		add_shortcode( 'dame_fiche_inscription', array( $this, 'render' ) );
+		add_action( 'wp_ajax_dame_submit_pre_inscription', array( $this, 'handle_submission' ) );
+		add_action( 'wp_ajax_nopriv_dame_submit_pre_inscription', array( $this, 'handle_submission' ) );
 	}
 
 	/**
@@ -192,20 +192,20 @@ class RegistrationForm {
 				</div>
 
 				<h4>
-					<?php _e( "Questionnaire de santé", 'dame' ); ?>
+					<?php _e( 'Questionnaire de santé', 'dame' ); ?>
 					<span id="health-questionnaire-link-container" style="display: none; margin-left: 10px; font-weight: normal;">
 						<a href="#" id="health-questionnaire-link" target="_blank" style="font-size: initial; color: blue; text-decoration: underline;"></a>
 					</span>
 				</h4>
 				<p>
-					<label><input type="radio" name="dame_health_questionnaire" value="non" required> <?php _e( "J’ai répondu NON partout", 'dame' ); ?></label>
-					<label><input type="radio" name="dame_health_questionnaire" value="oui"> <?php _e( "J’ai au moins une réponse à OUI", 'dame' ); ?></label>
+					<label><input type="radio" name="dame_health_questionnaire" value="non" required> <?php _e( 'J’ai répondu NON partout', 'dame' ); ?></label>
+					<label><input type="radio" name="dame_health_questionnaire" value="oui"> <?php _e( 'J’ai au moins une réponse à OUI', 'dame' ); ?></label>
 				</p>
 
 				<p>
 					<label for="dame_consent_checkbox">
 						<input type="checkbox" id="dame_consent_checkbox" name="dame_consent_checkbox" required>
-						<?php _e( "En cochant cette case, je reconnais avoir pris connaissance du règlement intérieur de l’Association Échiquier Lédonien et m’engage à le respecter.", 'dame' ); ?>
+						<?php _e( 'En cochant cette case, je reconnais avoir pris connaissance du règlement intérieur de l’Association Échiquier Lédonien et m’engage à le respecter.', 'dame' ); ?>
 					</label>
 				</p>
 
@@ -230,7 +230,7 @@ class RegistrationForm {
 	public function handle_submission(): void {
 		// 1. Security Check: Verify nonce
 		if ( ! isset( $_POST['dame_nonce'] ) || ! wp_verify_nonce( $_POST['dame_nonce'], 'dame_pre_inscription_nonce' ) ) {
-			wp_send_json_error( array( 'message' => __( "La vérification de sécurité a échoué. Veuillez rafraîchir la page.", 'dame' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'La vérification de sécurité a échoué. Veuillez rafraîchir la page.', 'dame' ) ), 403 );
 		}
 
 		// If usage name is empty, copy birth name into it.
@@ -239,19 +239,19 @@ class RegistrationForm {
 		}
 
 		// 2. Validation
-		$errors = array();
+		$errors          = array();
 		$required_fields = array(
-			'dame_first_name'           => __( "Le prénom est obligatoire.", 'dame' ),
-			'dame_birth_name'           => __( "Le nom de naissance est obligatoire.", 'dame' ),
-			'dame_birth_date'           => __( "La date de naissance est obligatoire.", 'dame' ),
-			'dame_license_type'         => __( "Le type de licence est obligatoire.", 'dame' ),
-			'dame_sexe'                 => __( "Le sexe est obligatoire.", 'dame' ),
+			'dame_first_name'           => __( 'Le prénom est obligatoire.', 'dame' ),
+			'dame_birth_name'           => __( 'Le nom de naissance est obligatoire.', 'dame' ),
+			'dame_birth_date'           => __( 'La date de naissance est obligatoire.', 'dame' ),
+			'dame_license_type'         => __( 'Le type de licence est obligatoire.', 'dame' ),
+			'dame_sexe'                 => __( 'Le sexe est obligatoire.', 'dame' ),
 			'dame_email'                => __( "L'email est obligatoire.", 'dame' ),
-			'dame_phone_number'         => __( "Le numéro de téléphone est obligatoire.", 'dame' ),
+			'dame_phone_number'         => __( 'Le numéro de téléphone est obligatoire.', 'dame' ),
 			'dame_address_1'            => __( "L'adresse est obligatoire.", 'dame' ),
-			'dame_city'                 => __( "La ville est obligatoire.", 'dame' ),
-			'dame_health_questionnaire' => __( "La réponse au questionnaire de santé est obligatoire.", 'dame' ),
-			'dame_consent_checkbox'     => __( "Vous devez accepter le règlement intérieur.", 'dame' ),
+			'dame_city'                 => __( 'La ville est obligatoire.', 'dame' ),
+			'dame_health_questionnaire' => __( 'La réponse au questionnaire de santé est obligatoire.', 'dame' ),
+			'dame_consent_checkbox'     => __( 'Vous devez accepter le règlement intérieur.', 'dame' ),
 		);
 
 		foreach ( $required_fields as $field_key => $error_message ) {
@@ -269,12 +269,12 @@ class RegistrationForm {
 
 				if ( $age < 18 ) {
 					$rep1_required_fields = array(
-						'dame_legal_rep_1_first_name' => __( "Le prénom du représentant légal 1 est obligatoire.", 'dame' ),
-						'dame_legal_rep_1_last_name'  => __( "Le nom de naissance du représentant légal 1 est obligatoire.", 'dame' ),
+						'dame_legal_rep_1_first_name' => __( 'Le prénom du représentant légal 1 est obligatoire.', 'dame' ),
+						'dame_legal_rep_1_last_name'  => __( 'Le nom de naissance du représentant légal 1 est obligatoire.', 'dame' ),
 						'dame_legal_rep_1_email'      => __( "L'email du représentant légal 1 est obligatoire.", 'dame' ),
-						'dame_legal_rep_1_phone'      => __( "Le téléphone du représentant légal 1 est obligatoire.", 'dame' ),
+						'dame_legal_rep_1_phone'      => __( 'Le téléphone du représentant légal 1 est obligatoire.', 'dame' ),
 						'dame_legal_rep_1_address_1'  => __( "L'adresse du représentant légal 1 est obligatoire.", 'dame' ),
-						'dame_legal_rep_1_city'       => __( "La ville du représentant légal 1 est obligatoire.", 'dame' ),
+						'dame_legal_rep_1_city'       => __( 'La ville du représentant légal 1 est obligatoire.', 'dame' ),
 					);
 
 					foreach ( $rep1_required_fields as $field_key => $error_message ) {
@@ -285,7 +285,7 @@ class RegistrationForm {
 				} else {
 					// For adults, birth city is required for the honorability check.
 					if ( empty( $_POST['dame_birth_city'] ) ) {
-						$errors[] = __( "La commune de naissance est obligatoire pour les personnes majeures.", 'dame' );
+						$errors[] = __( 'La commune de naissance est obligatoire pour les personnes majeures.', 'dame' );
 					}
 				}
 			}
@@ -307,16 +307,45 @@ class RegistrationForm {
 		}
 
 		// 3. Sanitize Data
-		$sanitized_data = array();
+		$sanitized_data     = array();
 		$fields_to_sanitize = array(
-			'dame_first_name', 'dame_last_name', 'dame_birth_name', 'dame_birth_date', 'dame_license_type', 'dame_birth_city', 'dame_sexe', 'dame_profession',
-			'dame_email', 'dame_phone_number', 'dame_address_1', 'dame_address_2', 'dame_postal_code', 'dame_city', 'dame_taille_vetements',
-			'dame_legal_rep_1_first_name', 'dame_legal_rep_1_last_name', 'dame_legal_rep_1_email', 'dame_legal_rep_1_phone',
-			'dame_legal_rep_1_address_1', 'dame_legal_rep_1_address_2', 'dame_legal_rep_1_postal_code', 'dame_legal_rep_1_city', 'dame_legal_rep_1_profession',
-			'dame_legal_rep_1_date_naissance', 'dame_legal_rep_1_commune_naissance',
-			'dame_legal_rep_2_first_name', 'dame_legal_rep_2_last_name', 'dame_legal_rep_2_email', 'dame_legal_rep_2_phone',
-			'dame_legal_rep_2_address_1', 'dame_legal_rep_2_address_2', 'dame_legal_rep_2_postal_code', 'dame_legal_rep_2_city', 'dame_legal_rep_2_profession',
-			'dame_legal_rep_2_date_naissance', 'dame_legal_rep_2_commune_naissance',
+			'dame_first_name',
+			'dame_last_name',
+			'dame_birth_name',
+			'dame_birth_date',
+			'dame_license_type',
+			'dame_birth_city',
+			'dame_sexe',
+			'dame_profession',
+			'dame_email',
+			'dame_phone_number',
+			'dame_address_1',
+			'dame_address_2',
+			'dame_postal_code',
+			'dame_city',
+			'dame_taille_vetements',
+			'dame_legal_rep_1_first_name',
+			'dame_legal_rep_1_last_name',
+			'dame_legal_rep_1_email',
+			'dame_legal_rep_1_phone',
+			'dame_legal_rep_1_address_1',
+			'dame_legal_rep_1_address_2',
+			'dame_legal_rep_1_postal_code',
+			'dame_legal_rep_1_city',
+			'dame_legal_rep_1_profession',
+			'dame_legal_rep_1_date_naissance',
+			'dame_legal_rep_1_commune_naissance',
+			'dame_legal_rep_2_first_name',
+			'dame_legal_rep_2_last_name',
+			'dame_legal_rep_2_email',
+			'dame_legal_rep_2_phone',
+			'dame_legal_rep_2_address_1',
+			'dame_legal_rep_2_address_2',
+			'dame_legal_rep_2_postal_code',
+			'dame_legal_rep_2_city',
+			'dame_legal_rep_2_profession',
+			'dame_legal_rep_2_date_naissance',
+			'dame_legal_rep_2_commune_naissance',
 			'dame_health_questionnaire',
 		);
 
@@ -330,7 +359,7 @@ class RegistrationForm {
 			}
 		}
 
-		$sanitized_data['dame_email_refuses_comms'] = isset( $_POST['dame_refuses_comms'] ) ? '1' : '0';
+		$sanitized_data['dame_email_refuses_comms']             = isset( $_POST['dame_refuses_comms'] ) ? '1' : '0';
 		$sanitized_data['dame_legal_rep_1_email_refuses_comms'] = isset( $_POST['dame_legal_rep_1_refuses_comms'] ) ? '1' : '0';
 		$sanitized_data['dame_legal_rep_2_email_refuses_comms'] = isset( $_POST['dame_legal_rep_2_refuses_comms'] ) ? '1' : '0';
 
@@ -379,32 +408,32 @@ class RegistrationForm {
 
 		// 4. Create Pre-inscription Post
 		$effective_last_name = ! empty( $sanitized_data['dame_last_name'] ) ? $sanitized_data['dame_last_name'] : $sanitized_data['dame_birth_name'];
-		$post_title = \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $sanitized_data['dame_first_name'] );
-		
+		$post_title          = \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $sanitized_data['dame_first_name'] );
+
 		$post_data = array(
 			'post_title'  => $post_title,
 			'post_type'   => 'dame_pre_inscription',
 			'post_status' => 'pending',
 		);
-		$post_id = wp_insert_post( $post_data, true );
+		$post_id   = wp_insert_post( $post_data, true );
 
 		if ( is_wp_error( $post_id ) ) {
-			wp_send_json_error( array( 'message' => __( "Erreur lors de la création de la fiche de préinscription.", 'dame' ) . ' ' . $post_id->get_error_message() ) );
+			wp_send_json_error( array( 'message' => __( 'Erreur lors de la création de la fiche de préinscription.', 'dame' ) . ' ' . $post_id->get_error_message() ) );
 		}
 
 		// 5. Save Meta Data (Bulk Insert for N+1 optimization)
 		global $wpdb;
-		$meta_insert_values = [];
-		$meta_insert_placeholders = [];
+		$meta_insert_values       = array();
+		$meta_insert_placeholders = array();
 
 		foreach ( $sanitized_data as $key => $value ) {
 			// Skip direct save of health_questionnaire, it will be mapped and saved below.
 			if ( 'dame_health_questionnaire' === $key ) {
 				continue;
 			}
-			$meta_insert_values[] = $post_id;
-			$meta_insert_values[] = '_' . $key;
-			$meta_insert_values[] = maybe_serialize( $value );
+			$meta_insert_values[]       = $post_id;
+			$meta_insert_values[]       = '_' . $key;
+			$meta_insert_values[]       = maybe_serialize( $value );
 			$meta_insert_placeholders[] = '(%d, %s, %s)';
 		}
 
@@ -418,27 +447,26 @@ class RegistrationForm {
 			}
 		}
 
-		$meta_insert_values[] = $post_id;
-		$meta_insert_values[] = '_dame_health_document';
-		$meta_insert_values[] = $health_document_status;
+		$meta_insert_values[]       = $post_id;
+		$meta_insert_values[]       = '_dame_health_document';
+		$meta_insert_values[]       = $health_document_status;
 		$meta_insert_placeholders[] = '(%d, %s, %s)';
 
 		$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
 		$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
 
-
 		// 6. Send Email Notification
-		$options = get_option( 'dame_options' );
+		$options         = get_option( 'dame_options' );
 		$recipient_email = isset( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
 
-		$subject = "Nouvelle préinscription de " . $sanitized_data['dame_first_name'] . ' ' . $sanitized_data['dame_last_name'];
+		$subject = 'Nouvelle préinscription de ' . $sanitized_data['dame_first_name'] . ' ' . $sanitized_data['dame_last_name'];
 		$body    = "Une nouvelle demande de préinscription a été soumise.\n\n";
 		$body   .= "Voici les détails :\n";
 		foreach ( $sanitized_data as $key => $value ) {
 			if ( ! empty( $value ) ) {
 				$label = str_replace( array( 'dame_', '_' ), array( '', ' ' ), $key );
 				$label = mb_convert_case( $label, MB_CASE_TITLE, 'UTF-8' );
-				$body .= "- " . $label . ": " . $value . "\n";
+				$body .= '- ' . $label . ': ' . $value . "\n";
 			}
 		}
 		$headers = array( 'From: ' . $recipient_email );
@@ -446,23 +474,23 @@ class RegistrationForm {
 		wp_mail( $recipient_email, $subject, $body, $headers );
 
 		// 7. Return Success Message
-		$options = get_option( 'dame_options' );
-		$payment_url = isset( $options['payment_url'] ) ? $options['payment_url'] : '';
+		$options      = get_option( 'dame_options' );
+		$payment_url  = isset( $options['payment_url'] ) ? $options['payment_url'] : '';
 		$sender_email = isset( $options['sender_email'] ) && ! empty( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
 
 		$response_data = array(
-			'message'            => sprintf(
-				__( "La préinscription pour %s %s a bien été enregistrée.", 'dame' ),
+			'message'              => sprintf(
+				__( 'La préinscription pour %1$s %2$s a bien été enregistrée.', 'dame' ),
 				$sanitized_data['dame_first_name'],
 				$sanitized_data['dame_last_name']
 			),
 			'health_questionnaire' => $sanitized_data['dame_health_questionnaire'], // 'oui' or 'non' for the JS logic
-			'post_id'            => $post_id,
-			'full_name'          => \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $sanitized_data['dame_first_name'] ),
-			'nonce'              => wp_create_nonce( 'dame_generate_health_form_' . $post_id ),
-			'is_minor'           => $is_minor,
-			'payment_url'        => $payment_url,
-			'sender_email'       => $sender_email,
+			'post_id'              => $post_id,
+			'full_name'            => \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $sanitized_data['dame_first_name'] ),
+			'nonce'                => wp_create_nonce( 'dame_generate_health_form_' . $post_id ),
+			'is_minor'             => $is_minor,
+			'payment_url'          => $payment_url,
+			'sender_email'         => $sender_email,
 		);
 
 		if ( $is_minor ) {

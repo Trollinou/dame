@@ -18,9 +18,9 @@ class Benevolat {
 	 * Initialize shortcode hooks.
 	 */
 	public function init(): void {
-		add_shortcode( 'dame_benevolat', [ $this, 'render' ] );
-		add_action( 'admin_post_nopriv_dame_submit_benevolat', [ $this, 'handle_submission' ] );
-		add_action( 'admin_post_dame_submit_benevolat', [ $this, 'handle_submission' ] );
+		add_shortcode( 'dame_benevolat', array( $this, 'render' ) );
+		add_action( 'admin_post_nopriv_dame_submit_benevolat', array( $this, 'handle_submission' ) );
+		add_action( 'admin_post_dame_submit_benevolat', array( $this, 'handle_submission' ) );
 	}
 
 	/**
@@ -31,10 +31,10 @@ class Benevolat {
 	 */
 	public function render( $atts ) {
 		$atts = shortcode_atts(
-			[
+			array(
 				'slug' => '',
-			],
-			is_array( $atts ) ? $atts : [],
+			),
+			is_array( $atts ) ? $atts : array(),
 			'dame_benevolat'
 		);
 
@@ -58,16 +58,18 @@ class Benevolat {
 		global $wpdb;
 		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$vote_results = $wpdb->get_results( $wpdb->prepare(
-			"SELECT v.choice_key, COUNT(DISTINCT v.recipient_id) as count 
+		$vote_results = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT v.choice_key, COUNT(DISTINCT v.recipient_id) as count 
 			 FROM {$table_votes} v
 			 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
 			 WHERE v.poll_id = %d AND p.post_status = 'publish'
 			 GROUP BY v.choice_key",
-			$benevolat->ID
-		) );
+				$benevolat->ID
+			)
+		);
 
-		$response_counts = [];
+		$response_counts = array();
 		foreach ( $vote_results as $row ) {
 			$parts = explode( '_', $row->choice_key );
 			if ( count( $parts ) === 2 ) {
@@ -77,16 +79,18 @@ class Benevolat {
 
 		$current_user_id = get_current_user_id();
 		$user_has_voted  = false;
-		$user_responses  = [];
+		$user_responses  = array();
 
 		if ( $current_user_id ) {
-			$existing_response = get_posts( [
-				'post_type'      => 'benevolat_reponse',
-				'post_status'    => 'publish',
-				'author'         => $current_user_id,
-				'post_parent'    => $benevolat->ID,
-				'posts_per_page' => 1,
-			] );
+			$existing_response = get_posts(
+				array(
+					'post_type'      => 'benevolat_reponse',
+					'post_status'    => 'publish',
+					'author'         => $current_user_id,
+					'post_parent'    => $benevolat->ID,
+					'posts_per_page' => 1,
+				)
+			);
 			if ( ! empty( $existing_response ) ) {
 				$user_has_voted = true;
 				$user_responses = get_post_meta( $existing_response[0]->ID, '_dame_benevolat_responses', true );
@@ -95,14 +99,16 @@ class Benevolat {
 			$cookie_name = 'dame_benevolat_response_' . $benevolat->ID;
 			if ( isset( $_COOKIE[ $cookie_name ] ) ) {
 				$guest_response_id = sanitize_text_field( wp_unslash( $_COOKIE[ $cookie_name ] ) );
-				$existing_response = get_posts( [
-					'post_type'      => 'benevolat_reponse',
-					'post_status'    => 'publish',
-					'post_parent'    => $benevolat->ID,
-					'posts_per_page' => 1,
-					'meta_key'       => '_dame_guest_response_id',
-					'meta_value'     => $guest_response_id,
-				] );
+				$existing_response = get_posts(
+					array(
+						'post_type'      => 'benevolat_reponse',
+						'post_status'    => 'publish',
+						'post_parent'    => $benevolat->ID,
+						'posts_per_page' => 1,
+						'meta_key'       => '_dame_guest_response_id',
+						'meta_value'     => $guest_response_id,
+					)
+				);
 				if ( ! empty( $existing_response ) ) {
 					$user_has_voted = true;
 					$user_responses = get_post_meta( $existing_response[0]->ID, '_dame_benevolat_responses', true );
@@ -111,7 +117,7 @@ class Benevolat {
 		}
 
 		if ( ! is_array( $user_responses ) ) {
-			$user_responses = [];
+			$user_responses = array();
 		}
 
 		$today = wp_date( 'Y-m-d' );
@@ -222,15 +228,15 @@ class Benevolat {
 		}
 
 		$name      = sanitize_text_field( wp_unslash( $_POST['benevolat_name'] ) );
-		$responses = isset( $_POST['benevolat_responses'] ) ? (array) wp_unslash( $_POST['benevolat_responses'] ) : [];
+		$responses = isset( $_POST['benevolat_responses'] ) ? (array) wp_unslash( $_POST['benevolat_responses'] ) : array();
 
 		// 1. Get configuration to identify past dates
 		$benevolat_data = get_post_meta( $benevolat_id, '_dame_benevolat_data', true );
 		if ( ! is_array( $benevolat_data ) ) {
-			$benevolat_data = [];
+			$benevolat_data = array();
 		}
-		$today = wp_date( 'Y-m-d' );
-		$past_date_indices = [];
+		$today             = wp_date( 'Y-m-d' );
+		$past_date_indices = array();
 		foreach ( $benevolat_data as $idx => $info ) {
 			if ( $info['date'] <= $today ) {
 				$past_date_indices[] = (int) $idx;
@@ -238,7 +244,7 @@ class Benevolat {
 		}
 
 		// 2. Sanitize and filter NEW responses (ignore any manual injection for past dates)
-		$sanitized_responses = [];
+		$sanitized_responses = array();
 		foreach ( $responses as $date_index => $time_slots ) {
 			$date_index = (int) $date_index;
 			if ( in_array( $date_index, $past_date_indices, true ) ) {
@@ -251,37 +257,41 @@ class Benevolat {
 
 		$user_id              = get_current_user_id();
 		$existing_response_id = 0;
-		$previous_meta        = [];
+		$previous_meta        = array();
 
 		if ( $user_id ) {
-			$existing_responses = get_posts( [
-				'post_type'      => 'benevolat_reponse',
-				'post_status'    => 'publish',
-				'author'         => $user_id,
-				'post_parent'    => $benevolat_id,
-				'posts_per_page' => 1,
-				'fields'         => 'ids',
-			] );
+			$existing_responses = get_posts(
+				array(
+					'post_type'      => 'benevolat_reponse',
+					'post_status'    => 'publish',
+					'author'         => $user_id,
+					'post_parent'    => $benevolat_id,
+					'posts_per_page' => 1,
+					'fields'         => 'ids',
+				)
+			);
 			if ( ! empty( $existing_responses ) ) {
 				$existing_response_id = $existing_responses[0];
-				$previous_meta = get_post_meta( $existing_response_id, '_dame_benevolat_responses', true );
+				$previous_meta        = get_post_meta( $existing_response_id, '_dame_benevolat_responses', true );
 			}
 		} else {
 			$cookie_name = 'dame_benevolat_response_' . $benevolat_id;
 			if ( isset( $_COOKIE[ $cookie_name ] ) ) {
 				$guest_response_id  = sanitize_text_field( wp_unslash( $_COOKIE[ $cookie_name ] ) );
-				$existing_responses = get_posts( [
-					'post_type'      => 'benevolat_reponse',
-					'post_status'    => 'publish',
-					'post_parent'    => $benevolat_id,
-					'posts_per_page' => 1,
-					'fields'         => 'ids',
-					'meta_key'       => '_dame_guest_response_id',
-					'meta_value'     => $guest_response_id,
-				] );
+				$existing_responses = get_posts(
+					array(
+						'post_type'      => 'benevolat_reponse',
+						'post_status'    => 'publish',
+						'post_parent'    => $benevolat_id,
+						'posts_per_page' => 1,
+						'fields'         => 'ids',
+						'meta_key'       => '_dame_guest_response_id',
+						'meta_value'     => $guest_response_id,
+					)
+				);
 				if ( ! empty( $existing_responses ) ) {
 					$existing_response_id = $existing_responses[0];
-					$previous_meta = get_post_meta( $existing_response_id, '_dame_benevolat_responses', true );
+					$previous_meta        = get_post_meta( $existing_response_id, '_dame_benevolat_responses', true );
 				}
 			}
 		}
@@ -295,13 +305,13 @@ class Benevolat {
 			}
 		}
 
-		$post_data = [
+		$post_data = array(
 			'post_title'  => $name,
 			'post_type'   => 'benevolat_reponse',
 			'post_status' => 'publish',
 			'post_parent' => $benevolat_id,
 			'post_author' => $user_id,
-		];
+		);
 
 		if ( $existing_response_id ) {
 			$post_data['ID'] = $existing_response_id;
@@ -317,21 +327,30 @@ class Benevolat {
 			// Sync with SQL table for real-time stats and race condition prevention
 			global $wpdb;
 			$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
-			
+
 			// 1. Clear previous votes for this response
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->delete( $table_votes, [ 'poll_id' => $benevolat_id, 'recipient_id' => $response_id ] );
+			$wpdb->delete(
+				$table_votes,
+				array(
+					'poll_id'      => $benevolat_id,
+					'recipient_id' => $response_id,
+				)
+			);
 
 			// 2. Insert new votes
 			foreach ( $sanitized_responses as $date_index => $time_slots ) {
 				foreach ( $time_slots as $time_index => $value ) {
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-					$wpdb->insert( $table_votes, [
-						'poll_id'      => $benevolat_id,
-						'recipient_id' => $response_id,
-						'choice_key'   => "{$date_index}_{$time_index}",
-						'voted_at'     => current_time( 'mysql', true )
-					] );
+					$wpdb->insert(
+						$table_votes,
+						array(
+							'poll_id'      => $benevolat_id,
+							'recipient_id' => $response_id,
+							'choice_key'   => "{$date_index}_{$time_index}",
+							'voted_at'     => current_time( 'mysql', true ),
+						)
+					);
 				}
 			}
 

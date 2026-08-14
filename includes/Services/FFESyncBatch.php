@@ -60,11 +60,11 @@ class FFESyncBatch {
 	 * @return array<array<string, string>>
 	 */
 	private function scrape_players( string $club_id ): array {
-		$url = self::BASE_URL . '/ListeJoueurs.aspx?Action=JOUEURCLUBREF&ClubRef=' . $club_id;
-		$all_players = [];
-		$page = 1;
+		$url         = self::BASE_URL . '/ListeJoueurs.aspx?Action=JOUEURCLUBREF&ClubRef=' . $club_id;
+		$all_players = array();
+		$page        = 1;
 		$current_url = $url;
-		$post_data = [];
+		$post_data   = array();
 
 		while ( true ) {
 			$response = $this->fetch_page( $current_url, $post_data );
@@ -73,7 +73,7 @@ class FFESyncBatch {
 			}
 
 			$html = wp_remote_retrieve_body( $response );
-			$dom = new DOMDocument();
+			$dom  = new DOMDocument();
 			@$dom->loadHTML( '<?xml encoding="UTF-8">' . $html );
 			$xpath = new DOMXPath( $dom );
 
@@ -90,11 +90,11 @@ class FFESyncBatch {
 			}
 
 			// Prepare POST data for next page (ASP.NET __doPostBack)
-			$post_data = $this->get_aspnet_fields( $xpath );
-			$post_data['__EVENTTARGET'] = $next_page_info['target'];
+			$post_data                    = $this->get_aspnet_fields( $xpath );
+			$post_data['__EVENTTARGET']   = $next_page_info['target'];
 			$post_data['__EVENTARGUMENT'] = $next_page_info['argument'];
 
-			$page++;
+			++$page;
 			$current_url = $url; // Always POST to the same URL
 		}
 
@@ -104,20 +104,20 @@ class FFESyncBatch {
 	/**
 	 * Fetch a page using WP Remote.
 	 *
-	 * @param string $url URL.
+	 * @param string                $url URL.
 	 * @param array<string, string> $post_data Optional POST data.
 	 * @return array<string, mixed>|WP_Error
 	 */
-	private function fetch_page( string $url, array $post_data = [] ): array|WP_Error {
-		$args = [
+	private function fetch_page( string $url, array $post_data = array() ): array|WP_Error {
+		$args = array(
 			'timeout'    => 30,
 			'user-agent' => self::USER_AGENT,
-		];
+		);
 
 		if ( ! empty( $post_data ) ) {
-			$args['method'] = 'POST';
-			$args['body']   = $post_data;
-			$args['headers'] = [ 'Referer' => $url ];
+			$args['method']  = 'POST';
+			$args['body']    = $post_data;
+			$args['headers'] = array( 'Referer' => $url );
 		}
 
 		return wp_remote_request( $url, $args );
@@ -130,46 +130,46 @@ class FFESyncBatch {
 	 * @return array<array<string, string>>
 	 */
 	private function parse_player_table( DOMXPath $xpath ): array {
-		$players = [];
-		$rows = $xpath->query( "//div[contains(@class, 'page-mid')]//tr" );
+		$players = array();
+		$rows    = $xpath->query( "//div[contains(@class, 'page-mid')]//tr" );
 
 		if ( $rows ) {
 			foreach ( $rows as $row ) {
-				$cols = $xpath->query( "td", $row );
+				$cols = $xpath->query( 'td', $row );
 				if ( $cols->length >= 8 ) {
-					$licence_ffe = trim( $cols->item(0)->textContent );
-					$nom_complet = trim( $cols->item(1)->textContent );
-					$licence_type = trim( $cols->item(2)->textContent );
-					
+					$licence_ffe  = trim( $cols->item( 0 )->textContent );
+					$nom_complet  = trim( $cols->item( 1 )->textContent );
+					$licence_type = trim( $cols->item( 2 )->textContent );
+
 					// Extraction id_ffe depuis le lien
-					$link_node = $xpath->query( "td[4]/a", $row );
-					$id_ffe = '';
+					$link_node = $xpath->query( 'td[4]/a', $row );
+					$id_ffe    = '';
 					if ( $link_node->length > 0 ) {
-						$link_element = $link_node->item(0);
+						$link_element = $link_node->item( 0 );
 						if ( $link_element instanceof \DOMElement ) {
-							$href = $link_element->getAttribute('href');
+							$href = $link_element->getAttribute( 'href' );
 							if ( preg_match( '/Id=(.+)/', $href, $matches ) ) {
 								$id_ffe = $matches[1];
 							}
 						}
 					}
 
-					$elo_standard = trim( str_replace( "\xc2\xa0", ' ', $cols->item(4)->textContent ) );
-					$elo_rapide   = trim( str_replace( "\xc2\xa0", ' ', $cols->item(5)->textContent ) );
-					$elo_blitz    = trim( str_replace( "\xc2\xa0", ' ', $cols->item(6)->textContent ) );
-					$categorie    = trim( $cols->item(7)->textContent );
+					$elo_standard = trim( str_replace( "\xc2\xa0", ' ', $cols->item( 4 )->textContent ) );
+					$elo_rapide   = trim( str_replace( "\xc2\xa0", ' ', $cols->item( 5 )->textContent ) );
+					$elo_blitz    = trim( str_replace( "\xc2\xa0", ' ', $cols->item( 6 )->textContent ) );
+					$categorie    = trim( $cols->item( 7 )->textContent );
 
 					if ( ! empty( $id_ffe ) && ! empty( $nom_complet ) ) {
-						$players[] = [
+						$players[] = array(
 							'id_ffe'       => $id_ffe,
 							'nom_complet'  => $nom_complet,
 							'licence_num'  => $licence_ffe,
 							'licence_type' => $licence_type,
 							'categorie'    => $categorie,
-							'elo_standard' => $elo_standard ?: '0',
-							'elo_rapide'   => $elo_rapide ?: '0',
-							'elo_blitz'    => $elo_blitz ?: '0',
-						];
+							'elo_standard' => ! empty( $elo_standard ) ? $elo_standard : '0',
+							'elo_rapide'   => ! empty( $elo_rapide ) ? $elo_rapide : '0',
+							'elo_blitz'    => ! empty( $elo_blitz ) ? $elo_blitz : '0',
+						);
 					}
 				}
 			}
@@ -185,15 +185,15 @@ class FFESyncBatch {
 	 * @return array<string, string>
 	 */
 	private function get_aspnet_fields( DOMXPath $xpath ): array {
-		$fields = [];
+		$fields = array();
 		$inputs = $xpath->query( "//input[@type='hidden']" );
 		if ( $inputs ) {
 			foreach ( $inputs as $input ) {
 				if ( ! $input instanceof \DOMElement ) {
 					continue;
 				}
-				$name = $input->getAttribute('name');
-				$value = $input->getAttribute('value');
+				$name  = $input->getAttribute( 'name' );
+				$value = $input->getAttribute( 'value' );
 				if ( $name ) {
 					$fields[ $name ] = $value;
 				}
@@ -206,22 +206,26 @@ class FFESyncBatch {
 	 * Get next page info from pager.
 	 *
 	 * @param DOMXPath $xpath XPath.
-	 * @param int $current_page Current page number.
+	 * @param int      $current_page Current page number.
 	 * @return array{target: string, argument: string}|null
 	 */
 	private function get_next_page_info( DOMXPath $xpath, int $current_page ): ?array {
 		$next_page_num = (string) ( $current_page + 1 );
-		$links = $xpath->query( "//div[contains(@class, 'pager')]//a" );
+		$links         = $xpath->query( "//div[contains(@class, 'pager')]//a" );
 
 		if ( $links ) {
 			foreach ( $links as $link ) {
 				if ( ! $link instanceof \DOMElement ) {
 					continue;
 				}
+				// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				if ( trim( $link->textContent ) === $next_page_num ) {
-					$href = $link->getAttribute('href');
+					$href = $link->getAttribute( 'href' );
 					if ( preg_match( "/__doPostBack\('(.*?)','(.*?)'\)/", $href, $matches ) ) {
-						return [ 'target' => $matches[1], 'argument' => $matches[2] ];
+						return array(
+							'target'   => $matches[1],
+							'argument' => $matches[2],
+						);
 					}
 				}
 			}
@@ -236,17 +240,17 @@ class FFESyncBatch {
 	 * @param array<array<string, string>> $players Scraped players.
 	 */
 	private function update_members( array $players ): void {
-		$active_adherents = $this->get_active_adherents();
-		$members_by_license = [];
-		$members_by_name    = [];
+		$active_adherents   = $this->get_active_adherents();
+		$members_by_license = array();
+		$members_by_name    = array();
 
 		foreach ( $active_adherents as $adherent ) {
-			$license = get_post_meta( $adherent->ID, '_dame_license_number', true );
+			$license       = get_post_meta( $adherent->ID, '_dame_license_number', true );
 			$license_clean = strtoupper( str_replace( ' ', '', (string) $license ) );
 			if ( ! empty( $license_clean ) ) {
 				$members_by_license[ $license_clean ] = $adherent->ID;
 			}
-			$normalized_name = $this->normalize_name( $adherent->post_title );
+			$normalized_name                     = $this->normalize_name( $adherent->post_title );
 			$members_by_name[ $normalized_name ] = $adherent->ID;
 		}
 
@@ -255,7 +259,7 @@ class FFESyncBatch {
 		$fide_limit    = 10;
 
 		foreach ( $players as $player ) {
-			$licence_clean = strtoupper( str_replace( ' ', '', $player['licence_num'] ) );
+			$licence_clean  = strtoupper( str_replace( ' ', '', $player['licence_num'] ) );
 			$nom_normalized = $this->normalize_name( $player['nom_complet'] );
 
 			$post_id = 0;
@@ -279,10 +283,10 @@ class FFESyncBatch {
 					if ( $fide_id ) {
 						update_post_meta( $post_id, '_dame_fide_id', $fide_id );
 					}
-					$fide_lookups++;
+					++$fide_lookups;
 				}
 
-				$updated_count++;
+				++$updated_count;
 			}
 		}
 
@@ -296,7 +300,7 @@ class FFESyncBatch {
 	 * @return string|null
 	 */
 	private function fetch_fide_id( string $id_ffe ): ?string {
-		$url = self::BASE_URL . '/FicheJoueur.aspx?Id=' . $id_ffe;
+		$url      = self::BASE_URL . '/FicheJoueur.aspx?Id=' . $id_ffe;
 		$response = $this->fetch_page( $url );
 		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
 			return null;
@@ -317,25 +321,28 @@ class FFESyncBatch {
 	 */
 	private function get_active_adherents(): array {
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-		$args = [
+		$args                  = array(
 			'post_type'      => 'adherent',
 			'posts_per_page' => -1,
 			'post_status'    => 'publish',
-		];
+		);
 		if ( $current_season_tag_id ) {
-			$args['tax_query'] = [
-				[
+			$args['tax_query'] = array(
+				array(
 					'taxonomy' => 'dame_saison_adhesion',
 					'field'    => 'term_id',
 					'terms'    => (int) $current_season_tag_id,
-				],
-			];
+				),
+			);
 		}
 		return get_posts( $args );
 	}
 
 	/**
 	 * Normalize a name for matching.
+	 *
+	 * @param string $name Name to normalize.
+	 * @return string
 	 */
 	private function normalize_name( string $name ): string {
 		$name = iconv( 'UTF-8', 'ASCII//TRANSLIT//IGNORE', $name );

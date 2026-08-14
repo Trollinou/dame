@@ -1,16 +1,16 @@
-jQuery( document ).ready( function ( $ ) {
-	$( '#dame_send_test_btn' ).on( 'click', function () {
-		const email = $( '#dame_test_email' ).val();
+jQuery(document).ready(function ($) {
+	$('#dame_send_test_btn').on('click', function () {
+		const email = $('#dame_test_email').val();
 		const post_id = dame_test_send_data.post_id;
 		const nonce = dame_test_send_data.nonce;
 
-		if ( ! email ) {
-			alert( dame_test_send_data.alert_empty );
+		if (!email) {
+			alert(dame_test_send_data.alert_empty);
 			return;
 		}
 
-		$( '#dame_test_spinner' ).addClass( 'is-active' );
-		$( '#dame_test_result' ).html( '' );
+		$('#dame_test_spinner').addClass('is-active');
+		$('#dame_test_result').html('');
 
 		const form = $(
 			'<form action="' +
@@ -28,7 +28,7 @@ jQuery( document ).ready( function ( $ ) {
 				'">' +
 				'</form>'
 		);
-		$( 'body' ).append( form );
+		$('body').append(form);
 		form.submit();
-	} );
-} );
+	});
+});

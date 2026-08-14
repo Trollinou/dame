@@ -19,7 +19,7 @@ class Info {
 	 * Initialize the metabox.
 	 */
 	public function init(): void {
-		add_action( 'add_meta_boxes', [ $this, 'add_meta_box' ] );
+		add_action( 'add_meta_boxes', array( $this, 'add_meta_box' ) );
 	}
 
 	/**
@@ -29,7 +29,7 @@ class Info {
 		add_meta_box(
 			'dame_ical_feed_info',
 			__( 'Informations de connexion', 'dame' ),
-			[ $this, 'render' ],
+			array( $this, 'render' ),
 			'dame_ical_feed',
 			'side',
 			'high'
@@ -45,19 +45,19 @@ class Info {
 		$feed_slug = $post->post_name;
 		$feed_url  = home_url( '/feed/agenda/' . $feed_slug . '.ics' );
 
-		echo '<p><strong>' . __( 'URL de ce flux :', 'dame' ) . '</strong></p>';
+		echo '<p><strong>' . esc_html__( 'URL de ce flux :', 'dame' ) . '</strong></p>';
 		echo '<input type="text" value="' . esc_url( $feed_url ) . '" class="widefat" readonly onclick="this.select();">';
-		echo '<p class="description">' . __( 'Copiez cette URL pour vous abonner à ce flux personnalisé dans votre application d\'agenda.', 'dame' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Copiez cette URL pour vous abonner à ce flux personnalisé dans votre application d\'agenda.', 'dame' ) . '</p>';
 
 		echo '<hr>';
 
-		echo '<p><strong>' . __( 'Flux Globaux :', 'dame' ) . '</strong></p>';
+		echo '<p><strong>' . esc_html__( 'Flux Globaux :', 'dame' ) . '</strong></p>';
 
-		echo '<label>' . __( 'Flux Public :', 'dame' ) . '</label>';
+		echo '<label>' . esc_html__( 'Flux Public :', 'dame' ) . '</label>';
 		echo '<input type="text" value="' . esc_url( home_url( '/feed/agenda/public.ics' ) ) . '" class="widefat" readonly onclick="this.select();" style="margin-bottom: 10px;">';
 
-		echo '<label>' . __( 'Flux Privé :', 'dame' ) . '</label>';
+		echo '<label>' . esc_html__( 'Flux Privé :', 'dame' ) . '</label>';
 		echo '<input type="text" value="' . esc_url( home_url( '/feed/agenda/prive.ics' ) ) . '" class="widefat" readonly onclick="this.select();">';
-		echo '<p class="description">' . __( 'Le flux privé nécessite une authentification.', 'dame' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Le flux privé nécessite une authentification.', 'dame' ) . '</p>';
 	}
 }

@@ -135,31 +135,31 @@ class Utils {
 	 */
 	public static function get_adherent_age_category( $birth_date_str, $gender = 'Masculin' ) {
 		if ( ! $birth_date_str ) {
-			return __( "Date de naissance manquante", 'dame' );
+			return __( 'Date de naissance manquante', 'dame' );
 		}
 
 		try {
 			$birth_date = new DateTime( $birth_date_str, new \DateTimeZone( 'UTC' ) );
 		} catch ( \Exception $e ) {
-			return __( "Date de naissance invalide", 'dame' );
+			return __( 'Date de naissance invalide', 'dame' );
 		}
 
 		// Get the current season tag ID from options.
 		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
 		if ( ! $current_season_tag_id ) {
-			return __( "Saison non définie", 'dame' );
+			return __( 'Saison non définie', 'dame' );
 		}
 
 		$season_term = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
 		if ( is_wp_error( $season_term ) || ! $season_term ) {
-			return __( "Saison invalide", 'dame' );
+			return __( 'Saison invalide', 'dame' );
 		}
 
 		// Season name is expected to be in "YYYY/YYYY" format, e.g., "2023/2024".
 		$season_name = $season_term->name;
 		$years       = explode( '/', $season_name );
 		if ( count( $years ) !== 2 || ! is_numeric( $years[1] ) ) {
-			return __( "Format de saison invalide", 'dame' );
+			return __( 'Format de saison invalide', 'dame' );
 		}
 		$season_end_year = (int) $years[1];
 
@@ -271,16 +271,46 @@ class Utils {
 		$reference_date  = new DateTime( $season_end_year . '-01-01', new \DateTimeZone( 'UTC' ) );
 
 		$age_map = array(
-			'u8'          => array( 'min' => 0, 'max' => 7 ),
-			'u10'         => array( 'min' => 8, 'max' => 9 ),
-			'u12'         => array( 'min' => 10, 'max' => 11 ),
-			'u14'         => array( 'min' => 12, 'max' => 13 ),
-			'u16'         => array( 'min' => 14, 'max' => 15 ),
-			'u18'         => array( 'min' => 16, 'max' => 17 ),
-			'u20'         => array( 'min' => 18, 'max' => 19 ),
-			'senior'      => array( 'min' => 20, 'max' => 49 ),
-			'senior-plus' => array( 'min' => 50, 'max' => 64 ),
-			'veteran'     => array( 'min' => 65, 'max' => 999 ),
+			'u8'          => array(
+				'min' => 0,
+				'max' => 7,
+			),
+			'u10'         => array(
+				'min' => 8,
+				'max' => 9,
+			),
+			'u12'         => array(
+				'min' => 10,
+				'max' => 11,
+			),
+			'u14'         => array(
+				'min' => 12,
+				'max' => 13,
+			),
+			'u16'         => array(
+				'min' => 14,
+				'max' => 15,
+			),
+			'u18'         => array(
+				'min' => 16,
+				'max' => 17,
+			),
+			'u20'         => array(
+				'min' => 18,
+				'max' => 19,
+			),
+			'senior'      => array(
+				'min' => 20,
+				'max' => 49,
+			),
+			'senior-plus' => array(
+				'min' => 50,
+				'max' => 64,
+			),
+			'veteran'     => array(
+				'min' => 65,
+				'max' => 999,
+			),
 		);
 
 		// Remove 'f' from category key for age map lookup
@@ -297,8 +327,8 @@ class Utils {
 		$end_date->modify( "-$min_age years" );
 
 		$start_date = clone $reference_date;
-		$start_date->modify( "-" . ( $max_age + 1 ) . " years" );
-		$start_date->modify( "+1 day" );
+		$start_date->modify( '-' . ( $max_age + 1 ) . ' years' );
+		$start_date->modify( '+1 day' );
 
 		return array(
 			'start' => $start_date->format( 'Y-m-d' ),
@@ -376,7 +406,6 @@ class Utils {
 
 				$adherent_ids = get_posts( $query_args );
 			}
-
 		} elseif ( 'manual' === $selection_method ) {
 			$ids          = get_post_meta( $message_id, '_dame_manual_recipients', true );
 			$adherent_ids = ! empty( $ids ) && is_array( $ids ) ? $ids : array();
@@ -484,6 +513,6 @@ class Utils {
 		if ( ! empty( $organization ) ) {
 			return (string) $organization . ( ! empty( $base_name ) ? ' (' . $base_name . ')' : '' );
 		}
-		return $base_name ?: __( 'Contact sans nom', 'dame' );
+		return ! empty( $base_name ) ? $base_name : __( 'Contact sans nom', 'dame' );
 	}
 }

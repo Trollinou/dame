@@ -16,7 +16,7 @@ class Roles {
 	 * Initialize the roles.
 	 */
 	public function init(): void {
-		add_action( 'init', [ $this, 'register_roles' ] );
+		add_action( 'init', array( $this, 'register_roles' ) );
 	}
 
 	/**

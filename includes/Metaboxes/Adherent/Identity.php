@@ -23,7 +23,7 @@ class Identity {
 		add_meta_box(
 			'dame_adherent_details_metabox',
 			__( 'Informations sur l\'adhérent', 'dame' ),
-			[ $this, 'render' ],
+			array( $this, 'render' ),
 			'adherent',
 			'normal',
 			'high'
@@ -97,7 +97,7 @@ class Identity {
 		</div>
 		<?php
 
-		$get_value = function( $field_name, $default = '' ) use ( $post, $transient_data ) {
+		$get_value = function ( $field_name, $default = '' ) use ( $post, $transient_data ) {
 			return isset( $transient_data[ $field_name ] )
 				? $transient_data[ $field_name ]
 				: get_post_meta( $post->ID, '_' . $field_name, true );
@@ -105,29 +105,29 @@ class Identity {
 
 		// Retrieve values using the helper function
 		$birth_name = $get_value( 'dame_birth_name' );
-		$last_name = $get_value( 'dame_last_name' );
+		$last_name  = $get_value( 'dame_last_name' );
 		$first_name = $get_value( 'dame_first_name' );
-		$sexe = $get_value( 'dame_sexe', 'Non précisé' );
+		$sexe       = $get_value( 'dame_sexe', 'Non précisé' );
 		if ( ! $sexe ) {
 			$sexe = 'Non précisé';
 		}
-		$birth_date = $get_value( 'dame_birth_date' );
-		$birth_city = $get_value( 'dame_birth_city' );
-		$phone = $get_value( 'dame_phone_number' );
-		$email = $get_value( 'dame_email' );
+		$birth_date          = $get_value( 'dame_birth_date' );
+		$birth_city          = $get_value( 'dame_birth_city' );
+		$phone               = $get_value( 'dame_phone_number' );
+		$email               = $get_value( 'dame_email' );
 		$email_refuses_comms = $get_value( 'dame_email_refuses_comms' );
-		$profession = $get_value( 'dame_profession' );
-		$address_1 = $get_value( 'dame_address_1' );
-		$address_2 = $get_value( 'dame_address_2' );
-		$postal_code = $get_value( 'dame_postal_code' );
-		$city = $get_value( 'dame_city' );
-		$country = $get_value( 'dame_country' );
-		$region = $get_value( 'dame_region' );
-		$department = $get_value( 'dame_department' );
+		$profession          = $get_value( 'dame_profession' );
+		$address_1           = $get_value( 'dame_address_1' );
+		$address_2           = $get_value( 'dame_address_2' );
+		$postal_code         = $get_value( 'dame_postal_code' );
+		$city                = $get_value( 'dame_city' );
+		$country             = $get_value( 'dame_country' );
+		$region              = $get_value( 'dame_region' );
+		$department          = $get_value( 'dame_department' );
 
-		$latitude = $get_value( 'dame_latitude' );
-		$longitude = $get_value( 'dame_longitude' );
-		$distance = $get_value( 'dame_distance' );
+		$latitude    = $get_value( 'dame_latitude' );
+		$longitude   = $get_value( 'dame_longitude' );
+		$distance    = $get_value( 'dame_distance' );
 		$travel_time = $get_value( 'dame_travel_time' );
 		?>
 		<input type="hidden" id="dame_latitude" name="dame_latitude" value="<?php echo esc_attr( $latitude ); ?>" class="dame-js-lat" data-group="adherent" />
@@ -251,7 +251,7 @@ class Identity {
 			return;
 		}
 
-		$errors = [];
+		$errors = array();
 		if ( empty( $_POST['dame_first_name'] ) ) {
 			$errors[] = __( 'Le prénom est obligatoire.', 'dame' );
 		}
@@ -324,10 +324,8 @@ class Identity {
 				}
 
 				update_post_meta( $post_id, '_' . $field_name, $value );
-			} else {
-				if ( 'absint' === $sanitize_callback ) {
+			} elseif ( 'absint' === $sanitize_callback ) {
 					update_post_meta( $post_id, '_' . $field_name, 0 );
-				}
 			}
 		}
 	}
@@ -338,18 +336,28 @@ class Identity {
 	 * @return array<string, string>
 	 */
 	private function get_meta_fields(): array {
-		return [
-			'dame_first_name' => 'sanitize_text_field', 'dame_last_name' => 'sanitize_text_field', 'dame_birth_name' => 'sanitize_text_field',
-			'dame_birth_date' => 'sanitize_text_field', 'dame_birth_city' => 'sanitize_text_field',
-			'dame_email' => 'sanitize_email', 'dame_address_1' => 'sanitize_text_field',
-			'dame_address_2' => 'sanitize_text_field', 'dame_postal_code' => 'sanitize_text_field',
-			'dame_city' => 'sanitize_text_field', 'dame_phone_number' => 'sanitize_text_field',
-			'dame_sexe' => 'sanitize_text_field',
-			'dame_profession' => 'sanitize_text_field',
-			'dame_country' => 'sanitize_text_field', 'dame_region' => 'sanitize_text_field', 'dame_department' => 'sanitize_text_field',
+		return array(
+			'dame_first_name'          => 'sanitize_text_field',
+			'dame_last_name'           => 'sanitize_text_field',
+			'dame_birth_name'          => 'sanitize_text_field',
+			'dame_birth_date'          => 'sanitize_text_field',
+			'dame_birth_city'          => 'sanitize_text_field',
+			'dame_email'               => 'sanitize_email',
+			'dame_address_1'           => 'sanitize_text_field',
+			'dame_address_2'           => 'sanitize_text_field',
+			'dame_postal_code'         => 'sanitize_text_field',
+			'dame_city'                => 'sanitize_text_field',
+			'dame_phone_number'        => 'sanitize_text_field',
+			'dame_sexe'                => 'sanitize_text_field',
+			'dame_profession'          => 'sanitize_text_field',
+			'dame_country'             => 'sanitize_text_field',
+			'dame_region'              => 'sanitize_text_field',
+			'dame_department'          => 'sanitize_text_field',
 			'dame_email_refuses_comms' => 'absint',
-			'dame_latitude' => 'sanitize_text_field', 'dame_longitude' => 'sanitize_text_field',
-			'dame_distance' => 'sanitize_text_field', 'dame_travel_time' => 'sanitize_text_field',
-		];
+			'dame_latitude'            => 'sanitize_text_field',
+			'dame_longitude'           => 'sanitize_text_field',
+			'dame_distance'            => 'sanitize_text_field',
+			'dame_travel_time'         => 'sanitize_text_field',
+		);
 	}
 }
