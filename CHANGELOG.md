@@ -1,6 +1,6 @@
 # Changelog
 
-## [5.0.1] - 2026-08-14
+## [5.0.0] - 2026-08-14
 
 ### Qualité du Code & Conformité Standards
 - **PHP CodeSniffer (PHPCS & PHPCBF)** :
@@ -17,8 +17,6 @@
   - Remplacement des appels `date()` par `gmdate()` et typage strict des comparaisons dans `Upgrader.php`.
 - **PHPStan** :
   - Validation du code au Niveau 6 (`phpstan.neon`) sur l'ensemble des 80 fichiers du projet sans aucune erreur (`0 error`).
-
-## [5.0.0] - 2026-08-10
 
 ### Packaging & Architecture
 - **Transfert de l'installeur PWA vers `dame-pwa`** :

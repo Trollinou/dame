@@ -1,4 +1,4 @@
-# Release Notes — DAME v5.0.1
+# Release Notes — DAME v5.0.0
 
 **Date :** 14 août 2026
 
@@ -13,7 +13,7 @@
   - Codebase validée avec 0 erreur (`[OK] No errors`) sur l'ensemble des 80 fichiers PHP.
 
 ## 📄 Fichiers Modifiés / Déploiement
-- `dame.php` (version 5.0.1 & constante `DAME_VERSION`)
-- `package.json` (version 5.0.1)
+- `dame.php` (version 5.0.0 & constante `DAME_VERSION`)
+- `package.json` (version 5.0.0)
 - `CHANGELOG.md`
 - `RELEASE.md`
