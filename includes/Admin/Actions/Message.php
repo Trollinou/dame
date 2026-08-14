@@ -300,16 +300,16 @@ class Message {
 	 * @return WP_Post The validated message post.
 	 */
 	private function get_verified_post( string $nonce_action, $capabilities = 'edit_dame_messages' ): WP_Post {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce is verified via wp_verify_nonce below.
 		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
-		if ( ! ( isset( $_GET['post'] ) || isset( $_POST['post'] ) ) || empty( $nonce ) ) {
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce is verified via wp_verify_nonce below.
+		$raw_post = isset( $_GET['post'] ) ? sanitize_text_field( wp_unslash( $_GET['post'] ) ) : ( isset( $_POST['post'] ) ? sanitize_text_field( wp_unslash( $_POST['post'] ) ) : 0 );
+		$post_id  = absint( $raw_post );
+
+		if ( ! $post_id || empty( $nonce ) ) {
 			wp_die( esc_html__( 'Données manquantes.', 'dame' ) );
 		}
-
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$raw_post = isset( $_GET['post'] ) ? wp_unslash( $_GET['post'] ) : ( isset( $_POST['post'] ) ? wp_unslash( $_POST['post'] ) : 0 ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$post_id  = absint( $raw_post );
 
 		if ( ! wp_verify_nonce( $nonce, $nonce_action . '_' . $post_id ) ) {
 			wp_die( esc_html__( 'Vérification de sécurité échouée.', 'dame' ) );

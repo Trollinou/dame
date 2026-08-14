@@ -37,9 +37,11 @@ class Assignation {
 	public function render(): void {
 		// Get all linked user IDs first.
 		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$linked_user_ids = $wpdb->get_col(
 			$wpdb->prepare(
-				"SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value != ''",
+				'SELECT meta_value FROM %i WHERE meta_key = %s AND meta_value != \'\'',
+				$wpdb->postmeta,
 				'_dame_linked_wp_user'
 			)
 		);
@@ -202,34 +204,39 @@ class Assignation {
 	 * Display admin notices.
 	 */
 	public function display_notices(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice query args.
 		if ( ! isset( $_GET['page'] ) || 'dame-settings' !== $_GET['page'] ) {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice query args.
 		if ( ! isset( $_GET['tab'] ) || 'assignation' !== $_GET['tab'] ) {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice query args.
 		if ( isset( $_GET['message'] ) ) {
-			if ( 'success' === $_GET['message'] ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice query args.
+			$message = sanitize_text_field( wp_unslash( $_GET['message'] ) );
+			if ( 'success' === $message ) {
 				?>
 				<div class="notice notice-success is-dismissible">
 					<p><?php esc_html_e( 'Compte assigné avec succès.', 'dame' ); ?></p>
 				</div>
 				<?php
-			} elseif ( 'missing_user' === $_GET['message'] ) {
+			} elseif ( 'missing_user' === $message ) {
 				?>
 				<div class="notice notice-warning is-dismissible">
 					<p><?php esc_html_e( 'Veuillez sélectionner un compte WordPress à assigner.', 'dame' ); ?></p>
 				</div>
 				<?php
-			} elseif ( 'invalid_user' === $_GET['message'] ) {
+			} elseif ( 'invalid_user' === $message ) {
 				?>
 				<div class="notice notice-error is-dismissible">
 					<p><?php esc_html_e( "Le compte WordPress sélectionné n'existe pas.", 'dame' ); ?></p>
 				</div>
 				<?php
-			} elseif ( 'invalid_role' === $_GET['message'] ) {
+			} elseif ( 'invalid_role' === $message ) {
 				?>
 				<div class="notice notice-error is-dismissible">
 					<p><?php esc_html_e( 'Le rôle sélectionné est invalide.', 'dame' ); ?></p>

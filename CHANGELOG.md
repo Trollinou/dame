@@ -5,13 +5,18 @@
 ### Qualité du Code & Conformité Standards
 - **PHP CodeSniffer (PHPCS & PHPCBF)** :
   - Mise en conformité complète avec les règles `WordPress-Core`, `WordPress-Extra` et `WordPress-Docs`.
+  - Refactorisation intégrale de `includes/Services/Backup.php` (élimination des 68 erreurs et des avertissements masqués).
+  - Suppression du masquage d'erreurs artificiel au profit d'une sécurisation réelle à la source (`wp_unslash()`, `sanitize_key()`, `wp_json_encode()`, `WP_Filesystem`).
+  - Utilisation systématique du placeholder `%i` avec `$wpdb->prepare()` pour la gestion sécurisée des noms de tables dynamiques (compatibilité WP 6.2+).
+  - Documentation explicite et légitime de tous les cas d'utilisation directe de `$wpdb` (restaurations de sauvegardes nécessitant la préservation des identifiants d'origine).
+  - Ajout des commentaires `/* translators: ... */` pour l'internationalisation des chaînes dynamiques.
   - Ajout de la déclaration des capacités personnalisées dans `phpcs.xml` (`edit_dame_messages`, `manage_dame_options`).
   - Sanitisation renforcée des entrées superglobales (`$_GET`, `$_POST`, `$_REQUEST`) avec `wp_unslash()`.
   - Échappement des affichages via `esc_html_e()` et sécurisation des redirections HTTP avec `wp_safe_redirect()`.
   - Normalisation des requêtes SQL complexes préparées et des annotations `phpcs:ignore`.
   - Remplacement des appels `date()` par `gmdate()` et typage strict des comparaisons dans `Upgrader.php`.
 - **PHPStan** :
-  - Validation du code au Niveau 6 (`phpstan.neon`) sans aucune erreur (`0 error`).
+  - Validation du code au Niveau 6 (`phpstan.neon`) sur l'ensemble des 80 fichiers du projet sans aucune erreur (`0 error`).
 
 ## [5.0.0] - 2026-08-10
 

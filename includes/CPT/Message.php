@@ -28,6 +28,7 @@ class Message {
 	 * Displays a success notice after a message send reset.
 	 */
 	public function display_reset_notice(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice GET query arg.
 		$reset_done = isset( $_GET['reset_done'] ) ? sanitize_text_field( wp_unslash( $_GET['reset_done'] ) ) : '';
 		if ( '1' === $reset_done ) {
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'L\'historique d\'envoi du message a été réinitialisé avec succès.', 'dame' ) . '</p></div>';
@@ -116,7 +117,7 @@ class Message {
 		$table_name = $wpdb->prefix . 'dame_message_opens';
 
 		// Delete all tracking entries associated with this message ID.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom plugin table cleanup on post deletion.
 		$wpdb->delete(
 			$table_name,
 			array( 'message_id' => $post_id ),
@@ -129,6 +130,7 @@ class Message {
 	 */
 	public function save_last_list_url(): void {
 		global $pagenow;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list view page navigation tracking.
 		$post_type = isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '';
 		if ( 'edit.php' === $pagenow && 'dame_message' === $post_type ) {
 			$user_id = get_current_user_id();

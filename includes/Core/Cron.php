@@ -8,6 +8,11 @@ use DAME\Services\FFESyncBatch;
 use DateTime;
 
 class Cron {
+	/**
+	 * Initializes Cron action hooks.
+	 *
+	 * @return void
+	 */
 	public function init(): void {
 		add_action(
 			'dame_daily_backup_event',
@@ -30,6 +35,11 @@ class Cron {
 		add_action( 'admin_init', array( $this, 'schedule_events' ) );
 	}
 
+	/**
+	 * Schedules daily events if not already scheduled or if schedule time has changed.
+	 *
+	 * @return void
+	 */
 	public function schedule_events(): void {
 		$options  = get_option( 'dame_options', array() );
 		$time_str = ! empty( $options['backup_time'] ) ? $options['backup_time'] : '01:00';

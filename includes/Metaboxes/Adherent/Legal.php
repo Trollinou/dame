@@ -64,24 +64,24 @@ class Legal {
 		$rep2_postal_code         = $get_value( 'dame_legal_rep_2_postal_code' );
 		$rep2_city                = $get_value( 'dame_legal_rep_2_city' );
 		?>
-		<p><?php _e( 'Remplir ces informations si l\'adhérent est mineur. Au moins un représentant est requis.', 'dame' ); ?></p>
+		<p><?php esc_html_e( 'Remplir ces informations si l\'adhérent est mineur. Au moins un représentant est requis.', 'dame' ); ?></p>
 
-		<h4><?php _e( 'Représentant Légal 1', 'dame' ); ?></h4>
+		<h4><?php esc_html_e( 'Représentant Légal 1', 'dame' ); ?></h4>
 		<table class="form-table">
 			<tr>
-				<th><label for="dame_legal_rep_1_last_name"><?php _e( 'Nom de naissance', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_1_last_name"><?php esc_html_e( 'Nom de naissance', 'dame' ); ?></label></th>
 				<td><input type="text" id="dame_legal_rep_1_last_name" name="dame_legal_rep_1_last_name" value="<?php echo esc_attr( $rep1_last_name ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_1_first_name"><?php _e( 'Prénom', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_1_first_name"><?php esc_html_e( 'Prénom', 'dame' ); ?></label></th>
 				<td><input type="text" id="dame_legal_rep_1_first_name" name="dame_legal_rep_1_first_name" value="<?php echo esc_attr( $rep1_first_name ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_1_date_naissance"><?php _e( 'Date de naissance', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_1_date_naissance"><?php esc_html_e( 'Date de naissance', 'dame' ); ?></label></th>
 				<td><input type="date" id="dame_legal_rep_1_date_naissance" name="dame_legal_rep_1_date_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_1_date_naissance', true ) ); ?>" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_1_commune_naissance"><?php _e( 'Lieu de naissance', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_1_commune_naissance"><?php esc_html_e( 'Lieu de naissance', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-autocomplete-wrapper">
 						<input type="text" id="dame_legal_rep_1_commune_naissance" name="dame_legal_rep_1_commune_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_1_commune_naissance', true ) ); ?>" class="regular-text dame-js-birth-city" />
@@ -89,7 +89,7 @@ class Legal {
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_1_honorabilite"><?php _e( 'Contrôle d\'honorabilité', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_1_honorabilite"><?php esc_html_e( 'Contrôle d\'honorabilité', 'dame' ); ?></label></th>
 				<td>
 					<select id="dame_legal_rep_1_honorabilite" name="dame_legal_rep_1_honorabilite">
 						<?php
@@ -103,25 +103,25 @@ class Legal {
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_1_phone"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_1_phone"><?php esc_html_e( 'Numéro de téléphone', 'dame' ); ?></label></th>
 				<td><input type="tel" id="dame_legal_rep_1_phone" name="dame_legal_rep_1_phone" value="<?php echo esc_attr( $rep1_phone ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_1_email"><?php _e( 'Email', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_1_email"><?php esc_html_e( 'Email', 'dame' ); ?></label></th>
 				<td>
 					<input type="email" id="dame_legal_rep_1_email" name="dame_legal_rep_1_email" value="<?php echo esc_attr( $rep1_email ); ?>" class="regular-text" />
 					<label>
 						<input type="checkbox" name="dame_legal_rep_1_email_refuses_comms" value="1" <?php checked( $rep1_email_refuses_comms, '1' ); ?> />
-						<?php _e( 'Refus mailing', 'dame' ); ?>
+						<?php esc_html_e( 'Refus mailing', 'dame' ); ?>
 					</label>
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_1_profession"><?php _e( 'Profession', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_1_profession"><?php esc_html_e( 'Profession', 'dame' ); ?></label></th>
 				<td><input type="text" id="dame_legal_rep_1_profession" name="dame_legal_rep_1_profession" value="<?php echo esc_attr( $rep1_profession ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_1_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_1_address_1"><?php esc_html_e( 'Adresse', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-autocomplete-wrapper">
 						<input type="text" id="dame_legal_rep_1_address_1" name="dame_legal_rep_1_address_1" value="<?php echo esc_attr( $rep1_address_1 ); ?>" class="regular-text dame-js-address" data-group="rep1" autocomplete="off" />
@@ -129,15 +129,15 @@ class Legal {
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_1_address_2"><?php _e( 'Complément', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_1_address_2"><?php esc_html_e( 'Complément', 'dame' ); ?></label></th>
 				<td><input type="text" id="dame_legal_rep_1_address_2" name="dame_legal_rep_1_address_2" value="<?php echo esc_attr( $rep1_address_2 ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_1_postal_code"><?php _e( 'Code Postal / Ville', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_1_postal_code"><?php esc_html_e( 'Code Postal / Ville', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-inline-fields">
-						<input type="text" id="dame_legal_rep_1_postal_code" name="dame_legal_rep_1_postal_code" value="<?php echo esc_attr( $rep1_postal_code ); ?>" class="postal-code dame-js-zip" data-group="rep1" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
-						<input type="text" id="dame_legal_rep_1_city" name="dame_legal_rep_1_city" value="<?php echo esc_attr( $rep1_city ); ?>" class="city dame-js-city" data-group="rep1" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
+						<input type="text" id="dame_legal_rep_1_postal_code" name="dame_legal_rep_1_postal_code" value="<?php echo esc_attr( $rep1_postal_code ); ?>" class="postal-code dame-js-zip" data-group="rep1" placeholder="<?php esc_attr_e( 'Code Postal', 'dame' ); ?>" />
+						<input type="text" id="dame_legal_rep_1_city" name="dame_legal_rep_1_city" value="<?php echo esc_attr( $rep1_city ); ?>" class="city dame-js-city" data-group="rep1" placeholder="<?php esc_attr_e( 'Ville', 'dame' ); ?>" />
 					</div>
 				</td>
 			</tr>
@@ -145,22 +145,22 @@ class Legal {
 
 		<hr>
 
-		<h4><?php _e( 'Représentant Légal 2', 'dame' ); ?></h4>
+		<h4><?php esc_html_e( 'Représentant Légal 2', 'dame' ); ?></h4>
 		<table class="form-table">
 			<tr>
-				<th><label for="dame_legal_rep_2_last_name"><?php _e( 'Nom de naissance', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_2_last_name"><?php esc_html_e( 'Nom de naissance', 'dame' ); ?></label></th>
 				<td><input type="text" id="dame_legal_rep_2_last_name" name="dame_legal_rep_2_last_name" value="<?php echo esc_attr( $rep2_last_name ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_2_first_name"><?php _e( 'Prénom', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_2_first_name"><?php esc_html_e( 'Prénom', 'dame' ); ?></label></th>
 				<td><input type="text" id="dame_legal_rep_2_first_name" name="dame_legal_rep_2_first_name" value="<?php echo esc_attr( $rep2_first_name ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_2_date_naissance"><?php _e( 'Date de naissance', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_2_date_naissance"><?php esc_html_e( 'Date de naissance', 'dame' ); ?></label></th>
 				<td><input type="date" id="dame_legal_rep_2_date_naissance" name="dame_legal_rep_2_date_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_2_date_naissance', true ) ); ?>" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_2_commune_naissance"><?php _e( 'Lieu de naissance', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_2_commune_naissance"><?php esc_html_e( 'Lieu de naissance', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-autocomplete-wrapper">
 						<input type="text" id="dame_legal_rep_2_commune_naissance" name="dame_legal_rep_2_commune_naissance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_legal_rep_2_commune_naissance', true ) ); ?>" class="regular-text dame-js-birth-city" />
@@ -168,7 +168,7 @@ class Legal {
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_2_honorabilite"><?php _e( 'Contrôle d\'honorabilité', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_2_honorabilite"><?php esc_html_e( 'Contrôle d\'honorabilité', 'dame' ); ?></label></th>
 				<td>
 					<select id="dame_legal_rep_2_honorabilite" name="dame_legal_rep_2_honorabilite">
 						<?php
@@ -182,25 +182,25 @@ class Legal {
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_2_phone"><?php _e( 'Numéro de téléphone', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_2_phone"><?php esc_html_e( 'Numéro de téléphone', 'dame' ); ?></label></th>
 				<td><input type="tel" id="dame_legal_rep_2_phone" name="dame_legal_rep_2_phone" value="<?php echo esc_attr( $rep2_phone ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_2_email"><?php _e( 'Email', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_2_email"><?php esc_html_e( 'Email', 'dame' ); ?></label></th>
 				<td>
 					<input type="email" id="dame_legal_rep_2_email" name="dame_legal_rep_2_email" value="<?php echo esc_attr( $rep2_email ); ?>" class="regular-text" />
 					<label>
 						<input type="checkbox" name="dame_legal_rep_2_email_refuses_comms" value="1" <?php checked( $rep2_email_refuses_comms, '1' ); ?> />
-						<?php _e( 'Refus mailing', 'dame' ); ?>
+						<?php esc_html_e( 'Refus mailing', 'dame' ); ?>
 					</label>
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_2_profession"><?php _e( 'Profession', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_2_profession"><?php esc_html_e( 'Profession', 'dame' ); ?></label></th>
 				<td><input type="text" id="dame_legal_rep_2_profession" name="dame_legal_rep_2_profession" value="<?php echo esc_attr( $rep2_profession ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_2_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_2_address_1"><?php esc_html_e( 'Adresse', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-autocomplete-wrapper">
 						<input type="text" id="dame_legal_rep_2_address_1" name="dame_legal_rep_2_address_1" value="<?php echo esc_attr( $rep2_address_1 ); ?>" class="regular-text dame-js-address" data-group="rep2" autocomplete="off" />
@@ -208,15 +208,15 @@ class Legal {
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_2_address_2"><?php _e( 'Complément', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_2_address_2"><?php esc_html_e( 'Complément', 'dame' ); ?></label></th>
 				<td><input type="text" id="dame_legal_rep_2_address_2" name="dame_legal_rep_2_address_2" value="<?php echo esc_attr( $rep2_address_2 ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_legal_rep_2_postal_code"><?php _e( 'Code Postal / Ville', 'dame' ); ?></label></th>
+				<th><label for="dame_legal_rep_2_postal_code"><?php esc_html_e( 'Code Postal / Ville', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-inline-fields">
-						<input type="text" id="dame_legal_rep_2_postal_code" name="dame_legal_rep_2_postal_code" value="<?php echo esc_attr( $rep2_postal_code ); ?>" class="postal-code dame-js-zip" data-group="rep2" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
-						<input type="text" id="dame_legal_rep_2_city" name="dame_legal_rep_2_city" value="<?php echo esc_attr( $rep2_city ); ?>" class="city dame-js-city" data-group="rep2" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
+						<input type="text" id="dame_legal_rep_2_postal_code" name="dame_legal_rep_2_postal_code" value="<?php echo esc_attr( $rep2_postal_code ); ?>" class="postal-code dame-js-zip" data-group="rep2" placeholder="<?php esc_attr_e( 'Code Postal', 'dame' ); ?>" />
+						<input type="text" id="dame_legal_rep_2_city" name="dame_legal_rep_2_city" value="<?php echo esc_attr( $rep2_city ); ?>" class="city dame-js-city" data-group="rep2" placeholder="<?php esc_attr_e( 'Ville', 'dame' ); ?>" />
 					</div>
 				</td>
 			</tr>
@@ -230,15 +230,21 @@ class Legal {
 	 * @param int $post_id Post ID.
 	 */
 	public function save( $post_id ): void {
-		if ( ! isset( $_POST['dame_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_metabox_nonce'], 'dame_save_adherent_meta' ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$nonce = isset( $_POST['dame_metabox_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_metabox_nonce'] ) ) : '';
+		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'dame_save_adherent_meta' ) ) {
 			return;
 		}
 
 		$errors = array();
-		if ( ! empty( $_POST['dame_legal_rep_1_email'] ) && ! is_email( $_POST['dame_legal_rep_1_email'] ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$rep1_email = isset( $_POST['dame_legal_rep_1_email'] ) ? sanitize_email( wp_unslash( $_POST['dame_legal_rep_1_email'] ) ) : '';
+		if ( ! empty( $rep1_email ) && ! is_email( $rep1_email ) ) {
 			$errors[] = __( "Le format de l'email du représentant légal 1 est invalide.", 'dame' );
 		}
-		if ( ! empty( $_POST['dame_legal_rep_2_email'] ) && ! is_email( $_POST['dame_legal_rep_2_email'] ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$rep2_email = isset( $_POST['dame_legal_rep_2_email'] ) ? sanitize_email( wp_unslash( $_POST['dame_legal_rep_2_email'] ) ) : '';
+		if ( ! empty( $rep2_email ) && ! is_email( $rep2_email ) ) {
 			$errors[] = __( "Le format de l'email du représentant légal 2 est invalide.", 'dame' );
 		}
 
@@ -255,6 +261,7 @@ class Legal {
 
 			// Save posted data
 			$post_data_to_save = array();
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			foreach ( $_POST as $key => $value ) {
 				if ( strpos( $key, 'dame_' ) === 0 ) {
 					$post_data_to_save[ $key ] = wp_unslash( $value );

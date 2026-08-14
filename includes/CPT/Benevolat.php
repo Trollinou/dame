@@ -53,7 +53,7 @@ class Benevolat {
 
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'dame_benevolat_votes';
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom plugin table cleanup on CPT deletion.
 		$wpdb->delete( $table_name, array( 'recipient_id' => $post_id ), array( '%d' ) );
 	}
 
@@ -138,6 +138,7 @@ class Benevolat {
 	 */
 	public function save_last_list_url(): void {
 		global $pagenow;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list view page navigation tracking.
 		$post_type = isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '';
 		if ( 'edit.php' === $pagenow && 'benevolat' === $post_type ) {
 			$user_id = get_current_user_id();

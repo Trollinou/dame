@@ -57,7 +57,7 @@ class Benevolat {
 		// Get all responses to calculate counts for each time slot via SQL
 		global $wpdb;
 		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$vote_results = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT v.choice_key, COUNT(DISTINCT v.recipient_id) as count 
@@ -125,25 +125,31 @@ class Benevolat {
 		ob_start();
 		?>
 		<style>
-			.benevolat-timeslot-label.is-past { color: #888; opacity: 0.7; cursor: not-allowed; }
-			.benevolat-date-row.is-past { background-color: #f9f9f9; }
+			.dame-benevolat-wrapper { margin: 20px 0; }
+			.dame-benevolat-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+			.dame-benevolat-table th, .dame-benevolat-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+			.dame-benevolat-table th { background-color: #f2f2f2; }
+			.benevolat-timeslot-label { display: block; margin-bottom: 5px; }
+			.benevolat-date-row.is-past { background-color: #fcf8e3; opacity: 0.7; }
+			.benevolat-timeslot-label.is-past { cursor: not-allowed; }
 		</style>
 		<div class="dame-benevolat-wrapper">
 			<h3><?php echo esc_html( (string) $benevolat->post_title ); ?></h3>
 			<?php if ( ! empty( $benevolat->post_content ) ) : ?>
 				<div class="benevolat-description">
-					<?php echo wpautop( wp_kses_post( $benevolat->post_content ) ); ?>
+					<?php echo wp_kses_post( wpautop( $benevolat->post_content ) ); ?>
 				</div>
 			<?php endif; ?>
 
 			<form id="dame-benevolat-form-<?php echo esc_attr( (string) $benevolat->ID ); ?>" class="dame-benevolat-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="dame_submit_benevolat">
 				<input type="hidden" name="benevolat_id" value="<?php echo esc_attr( (string) $benevolat->ID ); ?>">
+				<?php // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized ?>
 				<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) ); ?>">
 				<?php wp_nonce_field( 'dame_submit_benevolat_response_' . $benevolat->ID, 'dame_benevolat_nonce' ); ?>
 
 				<p>
-					<label for="benevolat_name"><?php _e( 'Votre nom :', 'dame' ); ?></label>
+					<label for="benevolat_name"><?php esc_html_e( 'Votre nom :', 'dame' ); ?></label>
 					<?php
 					$current_user = wp_get_current_user();
 					if ( is_user_logged_in() ) {
@@ -159,8 +165,8 @@ class Benevolat {
 				<table class="dame-benevolat-table">
 					<thead>
 						<tr>
-							<th><?php _e( 'Date', 'dame' ); ?></th>
-							<th><?php _e( 'Disponibilités', 'dame' ); ?></th>
+							<th><?php esc_html_e( 'Date', 'dame' ); ?></th>
+							<th><?php esc_html_e( 'Disponibilités', 'dame' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -174,7 +180,7 @@ class Benevolat {
 								<td>
 									<?php echo esc_html( $formatted_date ); ?>
 									<?php if ( $is_locked ) : ?>
-										<br><small style="color: #d63638; font-style: italic;"><?php _e( '(Verrouillé)', 'dame' ); ?></small>
+										<br><small style="color: #d63638; font-style: italic;"><?php esc_html_e( '(Verrouillé)', 'dame' ); ?></small>
 									<?php endif; ?>
 								</td>
 								<td>
@@ -182,18 +188,22 @@ class Benevolat {
 										<?php foreach ( $date_info['time_slots'] as $time_index => $time_slot ) : ?>
 											<?php
 											$checked = '';
-											if ( isset( $user_responses[ $date_index ][ $time_index ] ) && '1' == $user_responses[ $date_index ][ $time_index ] ) {
+											if ( isset( $user_responses[ $date_index ][ $time_index ] ) && '1' === (string) $user_responses[ $date_index ][ $time_index ] ) {
 												$checked = 'checked';
 											}
 											$count = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
 											?>
 											<label class="benevolat-timeslot-label <?php echo $is_locked ? 'is-past' : ''; ?>">
 												<input type="checkbox" name="benevolat_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?> <?php disabled( $is_locked ); ?>>
-												<?php echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ); ?> (<?php printf( _n( '%d inscrit', '%d inscrits', $count, 'dame' ), $count ); ?>)
+												<?php
+												echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ) . ' ';
+												/* translators: %d: number of registered volunteers */
+												echo esc_html( sprintf( _n( '(%d inscrit)', '(%d inscrits)', $count, 'dame' ), $count ) );
+												?>
 											</label>
 										<?php endforeach; ?>
 									<?php else : ?>
-										<?php _e( 'Aucune plage horaire définie pour cette date.', 'dame' ); ?>
+										<?php esc_html_e( 'Aucune plage horaire définie pour cette date.', 'dame' ); ?>
 									<?php endif; ?>
 								</td>
 							</tr>
@@ -203,8 +213,9 @@ class Benevolat {
 
 				<p>
 					<input type="submit" name="submit_benevolat" value="<?php echo esc_attr( $user_has_voted ? __( 'Mettre à jour', 'dame' ) : __( 'S\'inscrire', 'dame' ) ); ?>">
+					<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 					<?php if ( isset( $_GET['vote'] ) && 'success' === $_GET['vote'] ) : ?>
-						<span class="benevolat-success-message-inline" style="margin-left: 10px; color: green;"><?php _e( 'Merci, votre réponse a été enregistrée.', 'dame' ); ?></span>
+						<span class="benevolat-success-message-inline" style="margin-left: 10px; color: green;"><?php esc_html_e( 'Merci, votre réponse a été enregistrée.', 'dame' ); ?></span>
 					<?php endif; ?>
 				</p>
 			</form>
@@ -217,17 +228,21 @@ class Benevolat {
 	 * Handle benevolat form submission.
 	 */
 	public function handle_submission(): void {
-		if ( ! isset( $_POST['submit_benevolat'], $_POST['dame_benevolat_nonce'] ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$nonce = isset( $_POST['dame_benevolat_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_benevolat_nonce'] ) ) : '';
+		if ( ! isset( $_POST['submit_benevolat'] ) || ! $nonce ) {
 			return;
 		}
 
 		$benevolat_id = isset( $_POST['benevolat_id'] ) ? intval( $_POST['benevolat_id'] ) : 0;
 
-		if ( ! $benevolat_id || ! wp_verify_nonce( $_POST['dame_benevolat_nonce'], 'dame_submit_benevolat_response_' . $benevolat_id ) ) {
+		if ( ! $benevolat_id || ! wp_verify_nonce( $nonce, 'dame_submit_benevolat_response_' . $benevolat_id ) ) {
 			wp_die( 'Invalid nonce.' );
 		}
 
-		$name      = sanitize_text_field( wp_unslash( $_POST['benevolat_name'] ) );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		$name = isset( $_POST['benevolat_name'] ) ? sanitize_text_field( wp_unslash( $_POST['benevolat_name'] ) ) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$responses = isset( $_POST['benevolat_responses'] ) ? (array) wp_unslash( $_POST['benevolat_responses'] ) : array();
 
 		// 1. Get configuration to identify past dates

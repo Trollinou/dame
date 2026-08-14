@@ -68,6 +68,11 @@
         <severity>0</severity>
     </rule>
 
+    <!-- Autoriser le nom de paramètre $default dans les fonctions helper d'extraction meta/options -->
+    <rule ref="Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound">
+        <severity>0</severity>
+    </rule>
+
     <!-- 2. Fichiers & dossiers à analyser -->
     <file>dame.php</file>
     <file>uninstall.php</file>

@@ -65,7 +65,8 @@ class Anniversaires {
 	 * @param string $hook The current admin page hook.
 	 */
 	public function enqueue_scripts( $hook ): void {
-		if ( strpos( $hook, 'dame-settings' ) === false || ( isset( $_GET['tab'] ) && $_GET['tab'] !== 'anniversaires' ) ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin settings tab check.
+		if ( strpos( $hook, 'dame-settings' ) === false || ( isset( $_GET['tab'] ) && 'anniversaires' !== $_GET['tab'] ) ) {
 			return;
 		}
 

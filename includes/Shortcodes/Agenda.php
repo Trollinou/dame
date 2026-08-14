@@ -118,8 +118,8 @@ class Agenda {
 					<div class="dame-agenda-nav-buttons">
 						<button id="dame-agenda-prev-month" class="button">&lt;</button>
 						<button id="dame-agenda-today" class="button">
-							<span class="dame-desktop-text"><?php _e( 'Aujourd\'hui', 'dame' ); ?></span>
-							<span class="dame-mobile-text"><?php _e( 'Auj.', 'dame' ); ?></span>
+							<span class="dame-desktop-text"><?php esc_html_e( 'Aujourd\'hui', 'dame' ); ?></span>
+							<span class="dame-mobile-text"><?php esc_html_e( 'Auj.', 'dame' ); ?></span>
 						</button>
 						<button id="dame-agenda-next-month" class="button">&gt;</button>
 					</div>
@@ -127,17 +127,17 @@ class Agenda {
 
 				<div class="dame-agenda-secondary-controls">
 					<div class="dame-agenda-search">
-						<label for="dame-agenda-search-input" class="screen-reader-text"><?php _e( 'Rechercher un événement', 'dame' ); ?></label>
-						<input type="search" id="dame-agenda-search-input" placeholder="<?php _e( 'Rechercher...', 'dame' ); ?>">
+						<label for="dame-agenda-search-input" class="screen-reader-text"><?php esc_html_e( 'Rechercher un événement', 'dame' ); ?></label>
+						<input type="search" id="dame-agenda-search-input" placeholder="<?php esc_attr_e( 'Rechercher...', 'dame' ); ?>">
 					</div>
 					<div class="dame-agenda-filter">
-						<button id="dame-agenda-filter-toggle" class="button"><?php _e( 'Filtres', 'dame' ); ?></button>
+						<button id="dame-agenda-filter-toggle" class="button"><?php esc_html_e( 'Filtres', 'dame' ); ?></button>
 						<div id="dame-agenda-filter-panel" style="display: none;">
-							<h5><?php _e( 'Catégories', 'dame' ); ?></h5>
+							<h5><?php esc_html_e( 'Catégories', 'dame' ); ?></h5>
 							<?php if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) : ?>
 								<?php $this->render_category_checklist( $categories ); ?>
 							<?php else : ?>
-								<p><?php _e( 'Aucune catégorie d\'événement trouvée.', 'dame' ); ?></p>
+								<p><?php esc_html_e( 'Aucune catégorie d\'événement trouvée.', 'dame' ); ?></p>
 							<?php endif; ?>
 						</div>
 					</div>
@@ -163,7 +163,7 @@ class Agenda {
 	private function render_category_checklist( $categories, $parent_id = 0 ): void {
 		$children = array();
 		foreach ( $categories as $category ) {
-			if ( $category->parent == $parent_id ) {
+			if ( (int) $category->parent === (int) $parent_id ) {
 				$children[] = $category;
 			}
 		}
@@ -198,17 +198,22 @@ class Agenda {
 	public function get_events_ajax(): void {
 		check_ajax_referer( 'dame_agenda_nonce', 'nonce' );
 
-		$start_date_str = isset( $_POST['start_date'] ) ? sanitize_text_field( $_POST['start_date'] ) : '';
-		$end_date_str   = isset( $_POST['end_date'] ) ? sanitize_text_field( $_POST['end_date'] ) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$start_date_str = isset( $_POST['start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$end_date_str = isset( $_POST['end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) : '';
 
 		$date_regex = '/^\d{4}-\d{2}-\d{2}$/';
 		if ( ! preg_match( $date_regex, $start_date_str ) || ! preg_match( $date_regex, $end_date_str ) ) {
 			wp_send_json_error( 'Invalid date format provided.' );
 		}
 
-		$categories           = isset( $_POST['categories'] ) ? array_map( 'intval', $_POST['categories'] ) : array();
-		$unchecked_categories = isset( $_POST['unchecked_categories'] ) ? array_map( 'intval', $_POST['unchecked_categories'] ) : array();
-		$search_term          = isset( $_POST['search'] ) ? sanitize_text_field( $_POST['search'] ) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		$categories = isset( $_POST['categories'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['categories'] ) ) : array();
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		$unchecked_categories = isset( $_POST['unchecked_categories'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['unchecked_categories'] ) ) : array();
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$search_term = isset( $_POST['search'] ) ? sanitize_text_field( wp_unslash( $_POST['search'] ) ) : '';
 
 		$post_status   = array( 'publish' );
 		$allowed_roles = array( 'staff', 'administrator', 'editor', 'entraineur' );
@@ -488,7 +493,7 @@ class Agenda {
 				?>
 				<div class="dame-liste-agenda-item">
 					<div class="dame-liste-agenda-date-icon">
-						<div class="date-circle" <?php echo $date_circle_style; ?>>
+						<div class="date-circle" <?php echo wp_kses_post( $date_circle_style ); ?>>
 							<span class="day-of-week"><?php echo esc_html( mb_strtoupper( $day_of_week, 'UTF-8' ) ); ?></span>
 							<span class="day-number"><?php echo esc_html( $day_number ); ?></span>
 							<span class="month-abbr"><?php echo esc_html( mb_strtoupper( $month_abbr, 'UTF-8' ) ); ?></span>
@@ -537,7 +542,7 @@ class Agenda {
 								}
 							}
 							?>
-							<div class="event-description"><?php echo apply_filters( 'the_content', $truncated_description ); ?></div>
+							<div class="event-description"><?php echo wp_kses_post( apply_filters( 'the_content', $truncated_description ) ); ?></div>
 						<?php endif; ?>
 					</div>
 				</div>

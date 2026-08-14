@@ -203,22 +203,22 @@ class Manager {
 		</style>
 		<table class="form-table">
 			<tr>
-				<th><label><?php _e( 'Type de compétition', 'dame' ); ?></label></th>
+				<th><label><?php esc_html_e( 'Type de compétition', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-radio-group">
-						<label><input type="radio" name="dame_competition_type" value="non" <?php checked( $competition_type, 'non' ); ?>> <?php _e( 'Non', 'dame' ); ?></label>
-						<label><input type="radio" name="dame_competition_type" value="individuelle" <?php checked( $competition_type, 'individuelle' ); ?>> <?php _e( 'Individuelle', 'dame' ); ?></label>
-						<label><input type="radio" name="dame_competition_type" value="equipe" <?php checked( $competition_type, 'equipe' ); ?>> <?php _e( 'Par équipe', 'dame' ); ?></label>
+						<label><input type="radio" name="dame_competition_type" value="non" <?php checked( $competition_type, 'non' ); ?>> <?php esc_html_e( 'Non', 'dame' ); ?></label>
+						<label><input type="radio" name="dame_competition_type" value="individuelle" <?php checked( $competition_type, 'individuelle' ); ?>> <?php esc_html_e( 'Individuelle', 'dame' ); ?></label>
+						<label><input type="radio" name="dame_competition_type" value="equipe" <?php checked( $competition_type, 'equipe' ); ?>> <?php esc_html_e( 'Par équipe', 'dame' ); ?></label>
 					</div>
 				</td>
 			</tr>
 			<tr id="dame_competition_level_wrapper">
-				<th><label><?php _e( 'Niveau de compétition', 'dame' ); ?></label></th>
+				<th><label><?php esc_html_e( 'Niveau de compétition', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-radio-group">
-						<label><input type="radio" name="dame_competition_level" value="departementale" <?php checked( $competition_level, 'departementale' ); ?>> <?php _e( 'Départementale', 'dame' ); ?></label>
-						<label><input type="radio" name="dame_competition_level" value="regionale" <?php checked( $competition_level, 'regionale' ); ?>> <?php _e( 'Régionale', 'dame' ); ?></label>
-						<label><input type="radio" name="dame_competition_level" value="nationale" <?php checked( $competition_level, 'nationale' ); ?>> <?php _e( 'Nationale', 'dame' ); ?></label>
+						<label><input type="radio" name="dame_competition_level" value="departementale" <?php checked( $competition_level, 'departementale' ); ?>> <?php esc_html_e( 'Départementale', 'dame' ); ?></label>
+						<label><input type="radio" name="dame_competition_level" value="regionale" <?php checked( $competition_level, 'regionale' ); ?>> <?php esc_html_e( 'Régionale', 'dame' ); ?></label>
+						<label><input type="radio" name="dame_competition_level" value="nationale" <?php checked( $competition_level, 'nationale' ); ?>> <?php esc_html_e( 'Nationale', 'dame' ); ?></label>
 					</div>
 				</td>
 			</tr>
@@ -283,13 +283,13 @@ class Manager {
 		<table class="form-table">
 			<!-- Date and Time Fields -->
 			<tr>
-				<th><label for="dame_all_day"><?php _e( 'Journée entière', 'dame' ); ?></label></th>
+				<th><label for="dame_all_day"><?php esc_html_e( 'Journée entière', 'dame' ); ?></label></th>
 				<td>
 					<input type="checkbox" id="dame_all_day" name="dame_all_day" value="1" <?php checked( $all_day, '1' ); ?> />
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_start_date"><?php _e( 'Date de début', 'dame' ); ?></label></th>
+				<th><label for="dame_start_date"><?php esc_html_e( 'Date de début', 'dame' ); ?></label></th>
 				<td>
 					<input type="date" id="dame_start_date" name="dame_start_date" value="<?php echo esc_attr( $start_date ); ?>" />
 					<span class="dame-time-fields 
@@ -298,13 +298,13 @@ class Manager {
 						echo 'hidden';}
 					?>
 					">
-						<label for="dame_start_time" class="screen-reader-text"><?php _e( 'Heure de début', 'dame' ); ?></label>
+						<label for="dame_start_time" class="screen-reader-text"><?php esc_html_e( 'Heure de début', 'dame' ); ?></label>
 						<input type="time" id="dame_start_time" name="dame_start_time" value="<?php echo esc_attr( $start_time ); ?>" step="900" />
 					</span>
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_end_date"><?php _e( 'Date de fin', 'dame' ); ?></label></th>
+				<th><label for="dame_end_date"><?php esc_html_e( 'Date de fin', 'dame' ); ?></label></th>
 				<td>
 					<input type="date" id="dame_end_date" name="dame_end_date" value="<?php echo esc_attr( $end_date ); ?>" />
 					<span class="dame-time-fields 
@@ -313,7 +313,7 @@ class Manager {
 						echo 'hidden';}
 					?>
 					">
-						<label for="dame_end_time" class="screen-reader-text"><?php _e( 'Heure de fin', 'dame' ); ?></label>
+						<label for="dame_end_time" class="screen-reader-text"><?php esc_html_e( 'Heure de fin', 'dame' ); ?></label>
 						<input type="time" id="dame_end_time" name="dame_end_time" value="<?php echo esc_attr( $end_time ); ?>" step="900" />
 					</span>
 				</td>
@@ -321,14 +321,14 @@ class Manager {
 
 			<!-- Location Fields -->
 			<tr>
-				<th colspan="2"><h4><?php _e( 'Lieu', 'dame' ); ?></h4></th>
+				<th colspan="2"><h4><?php esc_html_e( 'Lieu', 'dame' ); ?></h4></th>
 			</tr>
 			<tr>
-				<th><label for="dame_location_name"><?php _e( 'Intitulé du lieu', 'dame' ); ?></label></th>
+				<th><label for="dame_location_name"><?php esc_html_e( 'Intitulé du lieu', 'dame' ); ?></label></th>
 				<td><input type="text" id="dame_location_name" name="dame_location_name" value="<?php echo esc_attr( $location_name ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_address_1"><?php _e( 'Adresse', 'dame' ); ?></label></th>
+				<th><label for="dame_address_1"><?php esc_html_e( 'Adresse', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-autocomplete-wrapper" style="position: relative;">
 						<input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text dame-js-address" data-group="event_location" autocomplete="off" />
@@ -336,34 +336,34 @@ class Manager {
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_address_2"><?php _e( 'Complément', 'dame' ); ?></label></th>
+				<th><label for="dame_address_2"><?php esc_html_e( 'Complément', 'dame' ); ?></label></th>
 				<td><input type="text" id="dame_address_2" name="dame_address_2" value="<?php echo esc_attr( $address_2 ); ?>" class="regular-text" /></td>
 			</tr>
 			<tr>
-				<th><label for="dame_postal_code"><?php _e( 'Code Postal / Ville', 'dame' ); ?></label></th>
+				<th><label for="dame_postal_code"><?php esc_html_e( 'Code Postal / Ville', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-inline-fields">
-						<input type="text" id="dame_postal_code" name="dame_postal_code" value="<?php echo esc_attr( $postal_code ); ?>" class="postal-code dame-js-zip" data-group="event_location" placeholder="<?php _e( 'Code Postal', 'dame' ); ?>" />
-						<input type="text" id="dame_city" name="dame_city" value="<?php echo esc_attr( $city ); ?>" class="city dame-js-city" data-group="event_location" placeholder="<?php _e( 'Ville', 'dame' ); ?>" />
+						<input type="text" id="dame_postal_code" name="dame_postal_code" value="<?php echo esc_attr( $postal_code ); ?>" class="postal-code dame-js-zip" data-group="event_location" placeholder="<?php esc_attr_e( 'Code Postal', 'dame' ); ?>" />
+						<input type="text" id="dame_city" name="dame_city" value="<?php echo esc_attr( $city ); ?>" class="city dame-js-city" data-group="event_location" placeholder="<?php esc_attr_e( 'Ville', 'dame' ); ?>" />
 					</div>
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_latitude"><?php _e( 'Latitude / Longitude', 'dame' ); ?></label></th>
+				<th><label for="dame_latitude"><?php esc_html_e( 'Latitude / Longitude', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-inline-fields">
-						<input type="text" id="dame_latitude" name="dame_latitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_latitude', true ) ); ?>" readonly="readonly" class="dame-js-lat" data-group="event_location" placeholder="<?php _e( 'Latitude', 'dame' ); ?>" />
-						<input type="text" id="dame_longitude" name="dame_longitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_longitude', true ) ); ?>" readonly="readonly" class="dame-js-long" data-group="event_location" placeholder="<?php _e( 'Longitude', 'dame' ); ?>" />
+						<input type="text" id="dame_latitude" name="dame_latitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_latitude', true ) ); ?>" readonly="readonly" class="dame-js-lat" data-group="event_location" placeholder="<?php esc_attr_e( 'Latitude', 'dame' ); ?>" />
+						<input type="text" id="dame_longitude" name="dame_longitude" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_longitude', true ) ); ?>" readonly="readonly" class="dame-js-long" data-group="event_location" placeholder="<?php esc_attr_e( 'Longitude', 'dame' ); ?>" />
 					</div>
 				</td>
 			</tr>
 			<tr>
-				<th><label for="dame_distance"><?php _e( 'Distance / Temps de trajet', 'dame' ); ?></label></th>
+				<th><label for="dame_distance"><?php esc_html_e( 'Distance / Temps de trajet', 'dame' ); ?></label></th>
 				<td>
 					<div class="dame-inline-fields">
-						<input type="text" id="dame_distance" name="dame_distance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_distance', true ) ); ?>" readonly="readonly" class="dame-js-dist" data-group="event_location" placeholder="<?php _e( 'Distance (km)', 'dame' ); ?>" />
-						<input type="text" id="dame_travel_time" name="dame_travel_time" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_travel_time', true ) ); ?>" readonly="readonly" class="dame-js-time" data-group="event_location" placeholder="<?php _e( 'Temps de trajet', 'dame' ); ?>" />
-						<button type="button" id="dame_calculate_route_button" class="button"><?php _e( 'Calculer', 'dame' ); ?></button>
+						<input type="text" id="dame_distance" name="dame_distance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_distance', true ) ); ?>" readonly="readonly" class="dame-js-dist" data-group="event_location" placeholder="<?php esc_attr_e( 'Distance (km)', 'dame' ); ?>" />
+						<input type="text" id="dame_travel_time" name="dame_travel_time" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_travel_time', true ) ); ?>" readonly="readonly" class="dame-js-time" data-group="event_location" placeholder="<?php esc_attr_e( 'Temps de trajet', 'dame' ); ?>" />
+						<button type="button" id="dame_calculate_route_button" class="button"><?php esc_html_e( 'Calculer', 'dame' ); ?></button>
 					</div>
 				</td>
 			</tr>

@@ -60,7 +60,8 @@ class ICalFeed {
 
 		// Ensure UID exists.
 		if ( ! get_post_meta( $post_id, '_dame_ical_uid', true ) ) {
-			$uid = wp_generate_uuid4() . '@' . parse_url( home_url(), PHP_URL_HOST );
+			$host = wp_parse_url( home_url(), PHP_URL_HOST );
+			$uid  = wp_generate_uuid4() . '@' . ( is_string( $host ) ? $host : 'localhost' );
 			update_post_meta( $post_id, '_dame_ical_uid', $uid );
 		}
 
@@ -68,6 +69,12 @@ class ICalFeed {
 		$current_sequence = (int) get_post_meta( $post_id, '_dame_ical_sequence', true );
 		if ( $current_sequence === 0 ) {
 			update_post_meta( $post_id, '_dame_ical_sequence', 1 );
+			return;
+		}
+
+		// Verify nonce on save post action.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check handled conditionally for post save.
+		if ( ! isset( $_POST['dame_agenda_metabox_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dame_agenda_metabox_nonce'] ) ), 'dame_save_agenda_meta' ) ) {
 			return;
 		}
 
@@ -90,7 +97,7 @@ class ICalFeed {
 			$post_key = ltrim( $meta_key, '_' );
 			if ( isset( $_POST[ $post_key ] ) ) {
 				$old_value = get_post_meta( $post_id, $meta_key, true );
-				$new_value = wp_unslash( $_POST[ $post_key ] );
+				$new_value = sanitize_text_field( wp_unslash( $_POST[ $post_key ] ) );
 
 				// Simple comparison for strings/numbers.
 				if ( (string) $old_value !== (string) $new_value ) {
@@ -101,9 +108,11 @@ class ICalFeed {
 		}
 
 		// Also check the post title.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Handled by nonce check above.
 		if ( ! $changed && isset( $_POST['post_title'] ) ) {
 			$post = get_post( $post_id );
-			if ( $post && $_POST['post_title'] !== $post->post_title ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Handled by nonce check above.
+			if ( $post && sanitize_text_field( wp_unslash( $_POST['post_title'] ) ) !== $post->post_title ) {
 				$changed = true;
 			}
 		}
@@ -181,7 +190,9 @@ class ICalFeed {
 	 * Handles single event download.
 	 */
 	public function handle_single_event_download(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public GET action for downloading single ICS event file.
 		if ( isset( $_GET['dame_ics_download'] ) && '1' === $_GET['dame_ics_download'] && isset( $_GET['event_id'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public GET action for downloading single ICS event file.
 			$post_id = intval( $_GET['event_id'] );
 			$post    = get_post( $post_id );
 
@@ -258,15 +269,25 @@ class ICalFeed {
 			$timezone_string = 'Europe/Paris';
 		}
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed header stream.
 		echo "BEGIN:VCALENDAR\r\n";
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed header stream.
 		echo "VERSION:2.0\r\n";
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed header stream.
 		echo "PRODID:-//DAME Plugin//NONSGML v1.0//EN\r\n";
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed header stream.
 		echo "CALSCALE:GREGORIAN\r\n";
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed header stream.
 		echo "METHOD:PUBLISH\r\n";
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed header stream.
 		echo 'X-WR-TIMEZONE:' . $timezone_string . "\r\n";
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 		echo $this->fold_line( 'NAME:' . $feed_details['name'] ) . "\r\n";
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 		echo 'SOURCE:' . $feed_details['url'] . "\r\n";
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 		echo "REFRESH-INTERVAL;VALUE=DURATION:P1D\r\n";
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 		echo 'X-WR-CALNAME:' . $feed_details['name'] . "\r\n";
 
 		foreach ( $event_posts as $post ) {
@@ -275,7 +296,8 @@ class ICalFeed {
 			// Ensure UID and Sequence exist.
 			$uid = get_post_meta( $post_id, '_dame_ical_uid', true );
 			if ( empty( $uid ) ) {
-				$uid = wp_generate_uuid4() . '@' . parse_url( home_url(), PHP_URL_HOST );
+				$host = wp_parse_url( home_url(), PHP_URL_HOST );
+				$uid  = wp_generate_uuid4() . '@' . ( is_string( $host ) ? $host : 'localhost' );
 				update_post_meta( $post_id, '_dame_ical_uid', $uid );
 			}
 
@@ -314,7 +336,7 @@ class ICalFeed {
 				$dtend   = ';TZID=' . $timezone_string . ':' . str_replace( '-', '', $end_datetime_str );
 			}
 
-			$description = $this->format_for_ics( strip_tags( get_post_meta( $post_id, '_dame_agenda_description', true ) ) );
+			$description = $this->format_for_ics( wp_strip_all_tags( (string) get_post_meta( $post_id, '_dame_agenda_description', true ) ) );
 
 			// Build full location string.
 			$location_name = get_post_meta( $post_id, '_dame_location_name', true );
@@ -350,23 +372,35 @@ class ICalFeed {
 
 			$summary = $this->format_for_ics( $post->post_title );
 
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed VEVENT block stream.
 			echo "BEGIN:VEVENT\r\n";
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 			echo 'UID:' . $uid . "\r\n";
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 			echo 'SEQUENCE:' . $sequence . "\r\n";
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 			echo 'DTSTAMP:' . $dtstamp . "\r\n";
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 			echo 'DTSTART' . $dtstart . "\r\n";
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 			echo 'DTEND' . $dtend . "\r\n";
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 			echo $this->fold_line( 'SUMMARY:' . $summary ) . "\r\n";
 			if ( ! empty( $description ) ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 				echo $this->fold_line( 'DESCRIPTION:' . $description ) . "\r\n";
 			}
 			if ( ! empty( $location ) ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 				echo $this->fold_line( 'LOCATION:' . $location ) . "\r\n";
 			}
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed stream.
 			echo 'URL:' . get_permalink( $post_id ) . "\r\n";
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed VEVENT block stream.
 			echo "END:VEVENT\r\n";
 		}
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- iCal feed footer stream.
 		echo "END:VCALENDAR\r\n";
 		exit;
 	}
@@ -382,7 +416,7 @@ class ICalFeed {
 		$text = str_replace( '&nbsp;', ' ', (string) $text );
 
 		// Strip any remaining HTML tags and decode entities (like &rsquo; to ')
-		$text = html_entity_decode( strip_tags( $text ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		$text = html_entity_decode( wp_strip_all_tags( $text ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 
 		$text = str_replace( '\\', '\\\\', $text );
 		$text = str_replace( ',', '\,', $text );

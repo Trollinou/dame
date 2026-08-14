@@ -77,7 +77,7 @@ class Manager {
 		?>
 		<div class="dame-shortcode-helper-inline" style="margin: 10px 0 5px 0; font-size: 13px;">
 			<span class="dashicons dashicons-shortcode" style="font-size: 18px; vertical-align: middle;"></span>
-			<strong><?php _e( 'Shortcode :', 'dame' ); ?></strong>
+			<strong><?php esc_html_e( 'Shortcode :', 'dame' ); ?></strong>
 			<code style="user-select: all; cursor: pointer; background: #fff; border: 1px solid #ccd0d4; padding: 3px 8px;" title="<?php esc_attr_e( 'Cliquer pour sélectionner', 'dame' ); ?>">
 				[dame_benevolat slug="<?php echo esc_attr( (string) $post->post_name ?: 'votre-slug' ); ?>"]
 			</code>
@@ -162,9 +162,9 @@ class Manager {
 
 		<div id="benevolat-config-container">
 			<?php if ( $is_locked ) : ?>
-				<p><strong><?php _e( 'Cet appel est verrouillé car il a déjà reçu des réponses. Vous ne pouvez plus modifier les dates ou les plages horaires.', 'dame' ); ?></strong></p>
+				<p><strong><?php esc_html_e( 'Cet appel est verrouillé car il a déjà reçu des réponses. Vous ne pouvez plus modifier les dates ou les plages horaires.', 'dame' ); ?></strong></p>
 			<?php else : ?>
-				<p><?php _e( 'Ajoutez les dates et les plages horaires pour cet appel à bénévoles.', 'dame' ); ?></p>
+				<p><?php esc_html_e( 'Ajoutez les dates et les plages horaires pour cet appel à bénévoles.', 'dame' ); ?></p>
 			<?php endif; ?>
 
 			<div id="benevolat-dates-wrapper">
@@ -176,10 +176,10 @@ class Manager {
 							<hr>
 							<h4><?php echo esc_html( sprintf( __( 'Date %d', 'dame' ), $date_key + 1 ) ); ?></h4>
 							<p>
-								<label for="benevolat_date_<?php echo esc_attr( (string) $date_key ); ?>"><?php _e( 'Date:', 'dame' ); ?></label>
+								<label for="benevolat_date_<?php echo esc_attr( (string) $date_key ); ?>"><?php esc_html_e( 'Date:', 'dame' ); ?></label>
 								<input type="date" id="benevolat_date_<?php echo esc_attr( (string) $date_key ); ?>" name="_dame_benevolat_data[<?php echo esc_attr( (string) $date_key ); ?>][date]" value="<?php echo esc_attr( $date_info['date'] ); ?>" class="benevolat-date-input" <?php disabled( $is_locked ); ?>>
 								<?php if ( ! $is_locked ) : ?>
-									<button type="button" class="button remove-benevolat-date"><?php _e( 'Supprimer cette date', 'dame' ); ?></button>
+									<button type="button" class="button remove-benevolat-date"><?php esc_html_e( 'Supprimer cette date', 'dame' ); ?></button>
 								<?php endif; ?>
 							</p>
 							<div class="benevolat-time-slots-wrapper">
@@ -188,12 +188,12 @@ class Manager {
 									foreach ( $date_info['time_slots'] as $time_key => $time_slot ) {
 										?>
 										<div class="benevolat-time-slot-group">
-											<label><?php _e( 'Plage horaire:', 'dame' ); ?></label>
+											<label><?php esc_html_e( 'Plage horaire:', 'dame' ); ?></label>
 											<input type="time" name="_dame_benevolat_data[<?php echo esc_attr( (string) $date_key ); ?>][time_slots][<?php echo esc_attr( (string) $time_key ); ?>][start]" value="<?php echo esc_attr( $time_slot['start'] ); ?>" step="900" <?php disabled( $is_locked ); ?>>
 											<span>-</span>
 											<input type="time" name="_dame_benevolat_data[<?php echo esc_attr( (string) $date_key ); ?>][time_slots][<?php echo esc_attr( (string) $time_key ); ?>][end]" value="<?php echo esc_attr( $time_slot['end'] ); ?>" step="900" <?php disabled( $is_locked ); ?>>
 											<?php if ( ! $is_locked ) : ?>
-												<button type="button" class="button remove-benevolat-time-slot"><?php _e( 'Supprimer', 'dame' ); ?></button>
+												<button type="button" class="button remove-benevolat-time-slot"><?php esc_html_e( 'Supprimer', 'dame' ); ?></button>
 											<?php endif; ?>
 										</div>
 										<?php
@@ -202,7 +202,7 @@ class Manager {
 								?>
 							</div>
 							<?php if ( ! $is_locked ) : ?>
-								<button type="button" class="button add-benevolat-time-slot"><?php _e( 'Ajouter une plage horaire', 'dame' ); ?></button>
+								<button type="button" class="button add-benevolat-time-slot"><?php esc_html_e( 'Ajouter une plage horaire', 'dame' ); ?></button>
 							<?php endif; ?>
 						</div>
 						<?php
@@ -212,7 +212,7 @@ class Manager {
 			</div>
 			<?php if ( ! $is_locked ) : ?>
 				<p>
-					<button type="button" id="add-benevolat-date" class="button button-primary"><?php _e( 'Ajouter une date', 'dame' ); ?></button>
+					<button type="button" id="add-benevolat-date" class="button button-primary"><?php esc_html_e( 'Ajouter une date', 'dame' ); ?></button>
 				</p>
 			<?php endif; ?>
 		</div>
@@ -227,7 +227,7 @@ class Manager {
 	public function render_results( $post ): void {
 		$benevolat_data = get_post_meta( $post->ID, '_dame_benevolat_data', true );
 		if ( empty( $benevolat_data ) ) {
-			echo '<p>' . __( 'L\'appel n\'a pas encore été configuré.', 'dame' ) . '</p>';
+			echo '<p>' . esc_html__( 'L\'appel n\'a pas encore été configuré.', 'dame' ) . '</p>';
 			return;
 		}
 
@@ -243,7 +243,7 @@ class Manager {
 		);
 
 		if ( empty( $responses ) ) {
-			echo '<p>' . __( 'Aucune réponse pour le moment.', 'dame' ) . '</p>';
+			echo '<p>' . esc_html__( 'Aucune réponse pour le moment.', 'dame' ) . '</p>';
 			return;
 		}
 
@@ -304,11 +304,11 @@ class Manager {
 			.benevolat-results-table ul { margin: 0; padding-left: 15px; }
 		</style>
 		<div class="benevolat-results-wrapper">
-			<h4><?php _e( 'Tableau récapitulatif', 'dame' ); ?></h4>
+			<h4><?php esc_html_e( 'Tableau récapitulatif', 'dame' ); ?></h4>
 			<table class="benevolat-results-table">
 				<thead>
 					<tr>
-						<th><?php _e( 'Plage Horaire', 'dame' ); ?></th>
+						<th><?php esc_html_e( 'Plage Horaire', 'dame' ); ?></th>
 						<?php foreach ( array_keys( $grouped_results ) as $date_header ) : ?>
 							<th><?php echo esc_html( $date_header ); ?></th>
 						<?php endforeach; ?>
@@ -346,12 +346,12 @@ class Manager {
 
 			<hr style="margin: 20px 0;">
 
-			<h4><?php _e( 'Liste des participants', 'dame' ); ?></h4>
+			<h4><?php esc_html_e( 'Liste des participants', 'dame' ); ?></h4>
 			<table class="wp-list-table widefat striped">
 				<thead>
 					<tr>
-						<th><?php _e( 'Nom', 'dame' ); ?></th>
-						<th><?php _e( 'Action', 'dame' ); ?></th>
+						<th><?php esc_html_e( 'Nom', 'dame' ); ?></th>
+						<th><?php esc_html_e( 'Action', 'dame' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -371,8 +371,8 @@ class Manager {
 						<tr>
 							<td><?php echo esc_html( $response->post_title ); ?></td>
 							<td>
-								<a href="<?php echo esc_url( $delete_url ); ?>" class="button button-small button-danger" onclick="return confirm('<?php _e( 'Êtes-vous sûr de vouloir supprimer cette réponse ?', 'dame' ); ?>');">
-									<?php _e( 'Supprimer', 'dame' ); ?>
+								<a href="<?php echo esc_url( $delete_url ); ?>" class="button button-small button-danger" onclick="return confirm('<?php esc_attr_e( 'Êtes-vous sûr de vouloir supprimer cette réponse ?', 'dame' ); ?>');">
+									<?php esc_html_e( 'Supprimer', 'dame' ); ?>
 								</a>
 							</td>
 						</tr>

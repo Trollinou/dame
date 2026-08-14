@@ -86,6 +86,7 @@ class Adherent {
 	 */
 	public function save_last_list_url(): void {
 		global $pagenow;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list view page navigation tracking.
 		$post_type = isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '';
 		if ( 'edit.php' === $pagenow && 'adherent' === $post_type ) {
 			$user_id = get_current_user_id();

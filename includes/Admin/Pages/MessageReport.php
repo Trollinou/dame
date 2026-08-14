@@ -41,6 +41,7 @@ class MessageReport {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin report page view.
 		$message_id = isset( $_GET['message_id'] ) ? absint( $_GET['message_id'] ) : 0;
 		if ( ! $message_id ) {
 			echo '<div class="wrap"><p>' . esc_html__( 'Message invalide.', 'dame' ) . '</p></div>';
@@ -57,7 +58,8 @@ class MessageReport {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$unique_opens = (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(DISTINCT email_hash) FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'SELECT COUNT(DISTINCT email_hash) FROM %i WHERE message_id = %d AND opened_at IS NOT NULL',
+				$table_name,
 				$message_id
 			)
 		);
@@ -191,9 +193,8 @@ class MessageReport {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at 
-			FROM {$table_name} 
-			WHERE message_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at FROM %i WHERE message_id = %d',
+				$table_name,
 				$message_id
 			),
 			ARRAY_A

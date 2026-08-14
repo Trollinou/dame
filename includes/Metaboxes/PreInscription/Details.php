@@ -242,15 +242,15 @@ class Details {
 		);
 
 		foreach ( $field_groups as $group_label => $fields ) {
-			echo '<h3>' . esc_html__( $group_label, 'dame' ) . '</h3>';
+			echo '<h3>' . esc_html( $group_label ) . '</h3>';
 			echo '<table class="form-table">';
 			foreach ( $fields as $label => $config ) {
 				$key      = $config['key'];
 				$value    = $get_value( $key );
-				$required = isset( $config['required'] ) && $config['required'] ? ' <span class="description">(' . __( 'obligatoire', 'dame' ) . ')</span>' : '';
+				$required = isset( $config['required'] ) && $config['required'] ? ' <span class="description">(' . esc_html__( 'obligatoire', 'dame' ) . ')</span>' : '';
 
 				echo '<tr>';
-				echo '<th><label for="' . esc_attr( $key ) . '">' . esc_html__( $label, 'dame' ) . $required . '</label></th>';
+				echo '<th><label for="' . esc_attr( $key ) . '">' . esc_html( $label ) . wp_kses_post( $required ) . '</label></th>';
 				echo '<td>';
 
 				if ( 'select' === $config['type'] ) {
@@ -312,7 +312,9 @@ class Details {
 	 * @param int $post_id Post ID.
 	 */
 	public function save( $post_id ): void {
-		if ( ! isset( $_POST['dame_pre_inscription_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_pre_inscription_metabox_nonce'], 'dame_save_pre_inscription_meta' ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$nonce = isset( $_POST['dame_pre_inscription_metabox_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_pre_inscription_metabox_nonce'] ) ) : '';
+		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'dame_save_pre_inscription_meta' ) ) {
 			return;
 		}
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -326,8 +328,10 @@ class Details {
 		}
 
 		// Handle Usage Name logic
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		if ( empty( $_POST['dame_last_name'] ) && ! empty( $_POST['dame_birth_name'] ) ) {
-			$_POST['dame_last_name'] = $_POST['dame_birth_name'];
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$_POST['dame_last_name'] = sanitize_text_field( wp_unslash( $_POST['dame_birth_name'] ) );
 		}
 
 		// Update Post Title based on names

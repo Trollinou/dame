@@ -107,9 +107,12 @@ class Mailing {
 		$state_had_attachment    = ! empty( $saved_state['_had_attachment'] );
 
 		// Gestion des notifications (Admin Notices).
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin page notice query args.
 		$success = isset( $_GET['success'] ) ? absint( $_GET['success'] ) : 0;
-		$count   = isset( $_GET['count'] ) ? absint( $_GET['count'] ) : 0;
-		$error   = isset( $_GET['error'] ) ? sanitize_key( $_GET['error'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin page notice query args.
+		$count = isset( $_GET['count'] ) ? absint( $_GET['count'] ) : 0;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin page notice query args.
+		$error = isset( $_GET['error'] ) ? sanitize_key( $_GET['error'] ) : '';
 
 		// Données pour les listes
 		$seasons       = get_terms(
@@ -195,7 +198,7 @@ class Mailing {
 						if ( empty( $label ) ) {
 							continue;
 						}
-						$is_checked = in_array( $id, $checked_items );
+						$is_checked = in_array( $id, $checked_items, true ) || in_array( (string) $id, array_map( 'strval', $checked_items ), true );
 						$data_attrs = $data_callback ? $data_callback( $value, $key ) : '';
 						?>
 						<label style="display: block;">
@@ -444,6 +447,7 @@ class Mailing {
 		$save_state_and_redirect = function ( string $error_code ) use ( $base_url, $state_key ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$data = $_POST;
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( ! empty( $_FILES['dame_message_attachment']['name'] ) ) {
 				$data['_had_attachment'] = true;
 			}
@@ -844,7 +848,7 @@ class Mailing {
 			wp_schedule_single_event( time(), 'dame_cron_process_queue' );
 		}
 
-		wp_redirect(
+		wp_safe_redirect(
 			add_query_arg(
 				array(
 					'success' => 1,

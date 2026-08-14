@@ -57,32 +57,32 @@ class Contact {
 
 				<!-- Honeypot -->
 				<div style="display:none;">
-					<label for="dame_contact_hp"><?php _e( 'Laissez ce champ vide', 'dame' ); ?></label>
+					<label for="dame_contact_hp"><?php esc_html_e( 'Laissez ce champ vide', 'dame' ); ?></label>
 					<input type="text" id="dame_contact_hp" name="dame_contact_hp" value="">
 				</div>
 
 				<p>
-					<label for="dame_contact_name"><?php _e( 'Nom', 'dame' ); ?> <span class="required">*</span></label>
+					<label for="dame_contact_name"><?php esc_html_e( 'Nom', 'dame' ); ?> <span class="required">*</span></label>
 					<input type="text" id="dame_contact_name" name="dame_contact_name" required>
 				</p>
 
 				<p>
-					<label for="dame_contact_email"><?php _e( 'Courriel', 'dame' ); ?> <span class="required">*</span></label>
+					<label for="dame_contact_email"><?php esc_html_e( 'Courriel', 'dame' ); ?> <span class="required">*</span></label>
 					<input type="email" id="dame_contact_email" name="dame_contact_email" required>
 				</p>
 
 				<p>
-					<label for="dame_contact_subject"><?php _e( 'Sujet', 'dame' ); ?> <span class="required">*</span></label>
+					<label for="dame_contact_subject"><?php esc_html_e( 'Sujet', 'dame' ); ?> <span class="required">*</span></label>
 					<input type="text" id="dame_contact_subject" name="dame_contact_subject" required>
 				</p>
 
 				<p>
-					<label for="dame_contact_message"><?php _e( 'Message', 'dame' ); ?> <span class="required">*</span></label>
+					<label for="dame_contact_message"><?php esc_html_e( 'Message', 'dame' ); ?> <span class="required">*</span></label>
 					<textarea id="dame_contact_message" name="dame_contact_message" rows="5" required></textarea>
 				</p>
 
 				<p>
-					<button type="submit"><?php _e( 'Envoyer', 'dame' ); ?></button>
+					<button type="submit"><?php esc_html_e( 'Envoyer', 'dame' ); ?></button>
 				</p>
 
 				<div id="dame-contact-feedback" style="display:none;"></div>
@@ -98,7 +98,9 @@ class Contact {
 	 */
 	public function handle_submission(): void {
 		// 1. Security Check: Verify nonce
-		if ( ! isset( $_POST['dame_contact_nonce_field'] ) || ! wp_verify_nonce( $_POST['dame_contact_nonce_field'], 'dame_contact_nonce' ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$nonce = isset( $_POST['dame_contact_nonce_field'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_contact_nonce_field'] ) ) : '';
+		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'dame_contact_nonce' ) ) {
 			wp_send_json_error( array( 'message' => __( 'La vérification de sécurité a échoué. Veuillez rafraîchir la page.', 'dame' ) ), 403 );
 		}
 
@@ -124,7 +126,9 @@ class Contact {
 		}
 
 		// Email format validation
-		if ( ! empty( $_POST['dame_contact_email'] ) && ! is_email( $_POST['dame_contact_email'] ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$email_input = isset( $_POST['dame_contact_email'] ) ? sanitize_email( wp_unslash( $_POST['dame_contact_email'] ) ) : '';
+		if ( ! empty( $email_input ) && ! is_email( $email_input ) ) {
 			$errors[] = __( "L'adresse de courriel n'est pas valide.", 'dame' );
 		}
 
@@ -133,10 +137,13 @@ class Contact {
 		}
 
 		// 3. Sanitize Data
-		$name    = sanitize_text_field( wp_unslash( $_POST['dame_contact_name'] ) );
-		$email   = sanitize_email( wp_unslash( $_POST['dame_contact_email'] ) );
-		$subject = sanitize_text_field( wp_unslash( $_POST['dame_contact_subject'] ) );
-		$message = sanitize_textarea_field( wp_unslash( $_POST['dame_contact_message'] ) );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		$name  = isset( $_POST['dame_contact_name'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_contact_name'] ) ) : '';
+		$email = $email_input;
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		$subject = isset( $_POST['dame_contact_subject'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_contact_subject'] ) ) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		$message = isset( $_POST['dame_contact_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['dame_contact_message'] ) ) : '';
 
 		// 4. Send Email
 		$options = get_option( 'dame_options' );

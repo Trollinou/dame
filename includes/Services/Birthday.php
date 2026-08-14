@@ -228,6 +228,11 @@ class Birthday {
 		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_dame_upcoming_birthdays_%' OR option_name LIKE '_transient_timeout_dame_today_birthdays_%'" );
 	}
 
+	/**
+	 * Sends birthday wishes emails to members whose birthday is today.
+	 *
+	 * @return void
+	 */
 	public function send_wishes(): void {
 		$options = get_option( 'dame_options' );
 		if ( empty( $options['birthday_emails_enabled'] ) ) {

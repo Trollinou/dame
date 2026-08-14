@@ -42,6 +42,7 @@ class Saisons {
 	 * @param string $hook The current admin page hook.
 	 */
 	public function enqueue_scripts( $hook ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin settings tab check.
 		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
 		if ( false === strpos( $hook, 'dame-settings' ) || 'saisons' !== $tab ) {
 			return;

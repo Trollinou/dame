@@ -68,14 +68,11 @@ class Tracker {
 		$user_ip    = $this->get_user_ip();
 		$now        = current_time( 'mysql', true );
 
-		// Update all recipients sharing this email for this message.
-		// Since we now have one row per recipient, we mark everyone with this email as "opened".
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$updated = $wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$table_name} 
-			SET opened_at = %s, user_ip = %s 
-			WHERE message_id = %d AND email_hash = %s",
+				'UPDATE %i SET opened_at = %s, user_ip = %s WHERE message_id = %d AND email_hash = %s',
+				$table_name,
 				$now,
 				$user_ip,
 				$message_id,
@@ -104,7 +101,7 @@ class Tracker {
 		header( 'Expires: 0' );
 
 		// 1x1 transparent GIF binary data.
-		echo base64_decode( 'R0lGODlhAQABAJAAAP8AAAAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw==' );
+		echo "\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Raw binary image stream.
 		exit;
 	}
 
@@ -117,14 +114,15 @@ class Tracker {
 		$ip = '';
 
 		// Check for proxy headers but validate they are valid IPs.
-		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-			$ip = wp_unslash( $_SERVER['HTTP_CLIENT_IP'] );
-		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+		if ( isset( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+			$ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
+		} elseif ( isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
 			// X-Forwarded-For can contain a list of IPs. We take the first one.
-			$ips = explode( ',', wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
-			$ip  = trim( $ips[0] );
-		} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-			$ip = wp_unslash( $_SERVER['REMOTE_ADDR'] );
+			$raw_ips = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
+			$ips     = explode( ',', $raw_ips );
+			$ip      = trim( $ips[0] );
+		} elseif ( isset( $_SERVER['REMOTE_ADDR'] ) ) {
+			$ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
 		}
 
 		// Validate the IP address format.

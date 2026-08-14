@@ -157,13 +157,11 @@ class Registration {
 	 * Handles the token verification when clicking the link in the email.
 	 */
 	public function handle_token_verification(): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( ! isset( $_GET['dame_token'] ) ) {
+		if ( ! isset( $_GET['dame_token'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public email activation link.
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$token = sanitize_text_field( wp_unslash( $_GET['dame_token'] ) );
+		$token = isset( $_GET['dame_token'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_token'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public email activation link.
 
 		$users = get_users(
 			array(

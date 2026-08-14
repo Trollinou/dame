@@ -149,7 +149,8 @@ class Agenda {
 		}
 
 		// --- Category Filter (existing) ---
-		$taxonomy          = 'dame_agenda_category';
+		$taxonomy = 'dame_agenda_category';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		$selected_category = isset( $_GET[ $taxonomy ] ) ? sanitize_text_field( wp_unslash( $_GET[ $taxonomy ] ) ) : '';
 		$category_terms    = get_terms(
 			array(
@@ -179,18 +180,19 @@ class Agenda {
 
 		$defaults = $this->get_default_date_range();
 
-		$start_month = isset( $_GET['dame_start_month'] ) && '' !== $_GET['dame_start_month']
-			? sanitize_text_field( wp_unslash( $_GET['dame_start_month'] ) )
-			: $defaults['start_month'];
-		$start_year  = isset( $_GET['dame_start_year'] ) && '' !== $_GET['dame_start_year']
-			? sanitize_text_field( wp_unslash( $_GET['dame_start_year'] ) )
-			: $defaults['start_year'];
-		$end_month   = isset( $_GET['dame_end_month'] ) && '' !== $_GET['dame_end_month']
-			? sanitize_text_field( wp_unslash( $_GET['dame_end_month'] ) )
-			: $defaults['end_month'];
-		$end_year    = isset( $_GET['dame_end_year'] ) && '' !== $_GET['dame_end_year']
-			? sanitize_text_field( wp_unslash( $_GET['dame_end_year'] ) )
-			: $defaults['end_year'];
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
+		$raw_start_month = isset( $_GET['dame_start_month'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_start_month'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
+		$raw_start_year = isset( $_GET['dame_start_year'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_start_year'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
+		$raw_end_month = isset( $_GET['dame_end_month'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_end_month'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
+		$raw_end_year = isset( $_GET['dame_end_year'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_end_year'] ) ) : '';
+
+		$start_month = '' !== $raw_start_month ? $raw_start_month : $defaults['start_month'];
+		$start_year  = '' !== $raw_start_year ? $raw_start_year : $defaults['start_year'];
+		$end_month   = '' !== $raw_end_month ? $raw_end_month : $defaults['end_month'];
+		$end_year    = '' !== $raw_end_year ? $raw_end_year : $defaults['end_year'];
 
 		// Get all distinct years from event start and end dates
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -258,13 +260,13 @@ class Agenda {
 	 * @param WP_Query $query The main WP_Query instance.
 	 */
 	public function filter_and_sort( $query ): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		if ( ! is_admin() || ! $query->is_main_query() || ! isset( $_GET['post_type'] ) || 'dame_agenda' !== $_GET['post_type'] ) {
 			return;
 		}
 
 		// Handle sorting: default to ascending (oldest to newest) by start date if orderby is not set.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		if ( ! isset( $_GET['orderby'] ) ) {
 			$query->set( 'meta_key', '_dame_start_date' );
 			$query->set( 'orderby', 'meta_value' );
@@ -284,7 +286,7 @@ class Agenda {
 		}
 
 		// Handle category filter.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		if ( isset( $_GET['dame_agenda_category'] ) && '' !== $_GET['dame_agenda_category'] ) {
 			$tax_query = $query->get( 'tax_query' ) ?: array();
 			if ( empty( $tax_query ) ) {
@@ -293,6 +295,7 @@ class Agenda {
 			$tax_query[] = array(
 				'taxonomy' => 'dame_agenda_category',
 				'field'    => 'slug',
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 				'terms'    => sanitize_text_field( wp_unslash( $_GET['dame_agenda_category'] ) ),
 			);
 			$query->set( 'tax_query', $tax_query );
@@ -301,22 +304,19 @@ class Agenda {
 		// --- Handle Date Range Filter ---
 		$defaults = $this->get_default_date_range();
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$start_month = isset( $_GET['dame_start_month'] ) && '' !== $_GET['dame_start_month']
-			? sanitize_text_field( wp_unslash( $_GET['dame_start_month'] ) )
-			: $defaults['start_month'];
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$start_year = isset( $_GET['dame_start_year'] ) && '' !== $_GET['dame_start_year']
-			? sanitize_text_field( wp_unslash( $_GET['dame_start_year'] ) )
-			: $defaults['start_year'];
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$end_month = isset( $_GET['dame_end_month'] ) && '' !== $_GET['dame_end_month']
-			? sanitize_text_field( wp_unslash( $_GET['dame_end_month'] ) )
-			: $defaults['end_month'];
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$end_year = isset( $_GET['dame_end_year'] ) && '' !== $_GET['dame_end_year']
-			? sanitize_text_field( wp_unslash( $_GET['dame_end_year'] ) )
-			: $defaults['end_year'];
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
+		$raw_start_month = isset( $_GET['dame_start_month'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_start_month'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
+		$raw_start_year = isset( $_GET['dame_start_year'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_start_year'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
+		$raw_end_month = isset( $_GET['dame_end_month'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_end_month'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
+		$raw_end_year = isset( $_GET['dame_end_year'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_end_year'] ) ) : '';
+
+		$start_month = '' !== $raw_start_month ? $raw_start_month : $defaults['start_month'];
+		$start_year  = '' !== $raw_start_year ? $raw_start_year : $defaults['start_year'];
+		$end_month   = '' !== $raw_end_month ? $raw_end_month : $defaults['end_month'];
+		$end_year    = '' !== $raw_end_year ? $raw_end_year : $defaults['end_year'];
 
 		if ( ! empty( $start_month ) && ! empty( $start_year ) && ! empty( $end_month ) && ! empty( $end_year ) ) {
 			$start_date_str = $start_year . '-' . $start_month . '-01';

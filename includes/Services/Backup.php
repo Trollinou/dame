@@ -60,66 +60,68 @@ class Backup {
 		}
 
 		// 1. Export CSV Adherents
-		if ( isset( $_POST['dame_export_csv_action'], $_POST['dame_export_csv_nonce'] ) && wp_verify_nonce( $_POST['dame_export_csv_nonce'], 'dame_export_csv_nonce_action' ) ) {
+		if ( isset( $_POST['dame_export_csv_action'], $_POST['dame_export_csv_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_export_csv_nonce'] ) ), 'dame_export_csv_nonce_action' ) ) {
 			$this->export_csv_adherents();
 		}
 
 		// 2. Import CSV Adherents
-		if ( isset( $_POST['dame_import_csv_action'], $_POST['dame_import_csv_nonce'] ) && wp_verify_nonce( $_POST['dame_import_csv_nonce'], 'dame_import_csv_nonce_action' ) ) {
+		if ( isset( $_POST['dame_import_csv_action'], $_POST['dame_import_csv_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_import_csv_nonce'] ) ), 'dame_import_csv_nonce_action' ) ) {
 			$this->import_csv_adherents();
 		}
 
 		// 3. Export JSON Adherents (Backup)
-		if ( isset( $_POST['dame_export_action'], $_POST['dame_export_nonce'] ) && wp_verify_nonce( $_POST['dame_export_nonce'], 'dame_export_nonce_action' ) ) {
+		if ( isset( $_POST['dame_export_action'], $_POST['dame_export_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_export_nonce'] ) ), 'dame_export_nonce_action' ) ) {
 			$this->export_json_adherents();
 		}
 
 		// 4. Import JSON Adherents (Restore)
-		if ( isset( $_POST['dame_import'], $_POST['dame_import_nonce'] ) && wp_verify_nonce( $_POST['dame_import_nonce'], 'dame_import_nonce_action' ) ) {
+		if ( isset( $_POST['dame_import'], $_POST['dame_import_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_import_nonce'] ) ), 'dame_import_nonce_action' ) ) {
 			$this->import_json_adherents();
 		}
 
 		// 5. Export JSON Agenda
-		if ( isset( $_POST['dame_agenda_backup_action'], $_POST['dame_agenda_backup_nonce'] ) && wp_verify_nonce( $_POST['dame_agenda_backup_nonce'], 'dame_agenda_backup_nonce_action' ) ) {
+		if ( isset( $_POST['dame_agenda_backup_action'], $_POST['dame_agenda_backup_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_agenda_backup_nonce'] ) ), 'dame_agenda_backup_nonce_action' ) ) {
 			$this->export_json_agenda();
 		}
 
 		// 6. Import JSON Agenda
-		if ( isset( $_POST['dame_agenda_restore_action'], $_POST['dame_agenda_restore_nonce'] ) && wp_verify_nonce( $_POST['dame_agenda_restore_nonce'], 'dame_agenda_restore_nonce_action' ) ) {
+		if ( isset( $_POST['dame_agenda_restore_action'], $_POST['dame_agenda_restore_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_agenda_restore_nonce'] ) ), 'dame_agenda_restore_nonce_action' ) ) {
 			$this->import_json_agenda();
 		}
 
 		// 7. Export JSON Site Content
-		if ( isset( $_POST['dame_site_backup_action'], $_POST['dame_site_backup_nonce'] ) && wp_verify_nonce( $_POST['dame_site_backup_nonce'], 'dame_site_backup_nonce_action' ) ) {
+		if ( isset( $_POST['dame_site_backup_action'], $_POST['dame_site_backup_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_site_backup_nonce'] ) ), 'dame_site_backup_nonce_action' ) ) {
 			$this->export_json_site();
 		}
 
 		// 8. Import JSON Site Content
-		if ( isset( $_POST['dame_site_restore_action'], $_POST['dame_site_restore_nonce'] ) && wp_verify_nonce( $_POST['dame_site_restore_nonce'], 'dame_site_restore_nonce_action' ) ) {
+		if ( isset( $_POST['dame_site_restore_action'], $_POST['dame_site_restore_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_site_restore_nonce'] ) ), 'dame_site_restore_nonce_action' ) ) {
 			$this->import_json_site();
 		}
 
 		// 9. Export CSV Contacts
-		if ( isset( $_POST['dame_export_contacts_csv_action'], $_POST['dame_export_contacts_csv_nonce'] ) && wp_verify_nonce( $_POST['dame_export_contacts_csv_nonce'], 'dame_export_contacts_csv_nonce_action' ) ) {
+		if ( isset( $_POST['dame_export_contacts_csv_action'], $_POST['dame_export_contacts_csv_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_export_contacts_csv_nonce'] ) ), 'dame_export_contacts_csv_nonce_action' ) ) {
 			$this->export_csv_contacts();
 		}
 
 		// 8. Import CSV Contacts
-		if ( isset( $_POST['dame_import_contacts_csv_action'], $_POST['dame_import_contacts_csv_nonce'] ) && wp_verify_nonce( $_POST['dame_import_contacts_csv_nonce'], 'dame_import_contacts_csv_nonce_action' ) ) {
+		if ( isset( $_POST['dame_import_contacts_csv_action'], $_POST['dame_import_contacts_csv_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_import_contacts_csv_nonce'] ) ), 'dame_import_contacts_csv_nonce_action' ) ) {
 			$this->import_csv_contacts();
 		}
 	}
 
 	/*
-	-------------------------------------------------------------------------
+	 * -------------------------------------------------------------------------
 	 * CONTACTS - CSV
-	 * ------------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------------
+	 */
 
 	/**
 	 * Handle contacts export to CSV.
 	 */
 	private function export_csv_contacts(): void {
-		$type_slug = isset( $_POST['contact_type'] ) ? sanitize_key( $_POST['contact_type'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified in handle_manual_actions.
+		$type_slug = isset( $_POST['contact_type'] ) ? sanitize_key( wp_unslash( $_POST['contact_type'] ) ) : '';
 		if ( empty( $type_slug ) ) {
 			return;
 		}
@@ -195,13 +197,19 @@ class Backup {
 	 * Handle contacts import from CSV.
 	 */
 	private function import_csv_contacts(): void {
-		$type_slug = isset( $_POST['contact_type'] ) ? sanitize_key( $_POST['contact_type'] ) : '';
-		if ( empty( $type_slug ) || ! isset( $_FILES['dame_import_contacts_file'] ) || $_FILES['dame_import_contacts_file']['error'] !== UPLOAD_ERR_OK ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified in handle_manual_actions.
+		$type_slug = isset( $_POST['contact_type'] ) ? sanitize_key( wp_unslash( $_POST['contact_type'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified in handle_manual_actions.
+		if ( empty( $type_slug ) || ! isset( $_FILES['dame_import_contacts_file'] ) || ! is_array( $_FILES['dame_import_contacts_file'] ) || empty( $_FILES['dame_import_contacts_file']['tmp_name'] ) || ( isset( $_FILES['dame_import_contacts_file']['error'] ) && UPLOAD_ERR_OK !== $_FILES['dame_import_contacts_file']['error'] ) ) {
 			$this->add_admin_notice( __( 'Données invalides pour l\'import.', 'dame' ), 'error' );
 			return;
 		}
 
-		$handle = fopen( $_FILES['dame_import_contacts_file']['tmp_name'], 'r' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Uploaded temp file path verified in handle_manual_actions.
+		$raw_tmp  = isset( $_FILES['dame_import_contacts_file']['tmp_name'] ) ? $_FILES['dame_import_contacts_file']['tmp_name'] : '';
+		$tmp_file = sanitize_text_field( wp_unslash( $raw_tmp ) );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Local CSV import file handle.
+		$handle = fopen( $tmp_file, 'r' );
 		if ( ! $handle ) {
 			$this->add_admin_notice( __( 'Impossible d\'ouvrir le fichier CSV.', 'dame' ), 'error' );
 			return;
@@ -372,6 +380,7 @@ class Backup {
 
 		$this->add_admin_notice(
 			sprintf(
+				/* translators: 1: Count of created contacts, 2: Count of updated contacts */
 				__( 'Import terminé : %1$d contacts créés, %2$d mis à jour.', 'dame' ),
 				$created,
 				$updated
@@ -380,10 +389,14 @@ class Backup {
 	}
 
 	/*
-	-------------------------------------------------------------------------
+	 * -------------------------------------------------------------------------
 	 * ADHERENTS - CSV
-	 * ------------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------------
+	 */
 
+	/**
+	 * Export adherents to CSV file.
+	 */
 	private function export_csv_adherents(): void {
 		$filename = 'dame-export-adherents-' . wp_date( 'Y-m-d' ) . '.csv';
 
@@ -458,6 +471,7 @@ class Backup {
 		// 3. Add dynamic season headers.
 		if ( ! is_wp_error( $all_seasons ) ) {
 			foreach ( $all_seasons as $season ) {
+				/* translators: %s: Season name */
 				$headers[] = sprintf( __( 'Adhérent %s', 'dame' ), $season->name );
 			}
 		}
@@ -565,14 +579,20 @@ class Backup {
 		exit;
 	}
 
+	/**
+	 * Import adherents from uploaded CSV file.
+	 */
 	private function import_csv_adherents(): void {
-		if ( ! isset( $_FILES['dame_import_csv_file'] ) || $_FILES['dame_import_csv_file']['error'] !== UPLOAD_ERR_OK ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified in handle_manual_actions.
+		if ( ! isset( $_FILES['dame_import_csv_file'] ) || ! is_array( $_FILES['dame_import_csv_file'] ) || empty( $_FILES['dame_import_csv_file']['tmp_name'] ) || ( isset( $_FILES['dame_import_csv_file']['error'] ) && UPLOAD_ERR_OK !== $_FILES['dame_import_csv_file']['error'] ) ) {
 			$this->add_admin_notice( __( 'Erreur lors du téléversement du fichier.', 'dame' ), 'error' );
 			return;
 		}
 
-		$file      = $_FILES['dame_import_csv_file'];
-		$mime_type = mime_content_type( $file['tmp_name'] );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Uploaded temp file path verified in handle_manual_actions.
+		$raw_tmp   = isset( $_FILES['dame_import_csv_file']['tmp_name'] ) ? $_FILES['dame_import_csv_file']['tmp_name'] : '';
+		$tmp_file  = sanitize_text_field( wp_unslash( $raw_tmp ) );
+		$mime_type = mime_content_type( $tmp_file );
 
 		if ( 'text/plain' !== $mime_type && 'text/csv' !== $mime_type ) {
 			$this->add_admin_notice( __( 'Le fichier téléversé n\'est pas un fichier CSV valide.', 'dame' ), 'error' );
@@ -582,7 +602,8 @@ class Backup {
 		// Increase execution time
 		set_time_limit( 300 );
 
-		$handle = fopen( $file['tmp_name'], 'r' );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Local CSV file handle.
+		$handle = fopen( $tmp_file, 'r' );
 		if ( false === $handle ) {
 			$this->add_admin_notice( __( 'Impossible d\'ouvrir le fichier téléversé.', 'dame' ), 'error' );
 			return;
@@ -934,6 +955,7 @@ class Backup {
 		fclose( $handle );
 
 		$message = sprintf(
+			/* translators: %d: Count of imported adherents */
 			_n(
 				'%d adhérent a été importé avec succès.',
 				'%d adhérents ont été importés avec succès.',
@@ -946,9 +968,10 @@ class Backup {
 	}
 
 	/*
-	-------------------------------------------------------------------------
+	 * -------------------------------------------------------------------------
 	 * ADHERENTS - JSON (BACKUP/RESTORE)
-	 * ------------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------------
+	 */
 
 	/**
 	 * Generate Adherent export data.
@@ -1075,8 +1098,9 @@ class Backup {
 
 		// Message logs (envois + ouvertures)
 		global $wpdb;
-		$table_name    = $wpdb->prefix . 'dame_message_opens';
-		$tracking_data = $wpdb->get_results( "SELECT * FROM {$table_name}", ARRAY_A );
+		$table_name = $wpdb->prefix . 'dame_message_opens';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- System backup message tracking query.
+		$tracking_data = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i', $table_name ), ARRAY_A );
 		if ( is_array( $tracking_data ) ) {
 			$data['message_tracking'] = $tracking_data;
 		}
@@ -1099,33 +1123,53 @@ class Backup {
 		return $data;
 	}
 
+	/**
+	 * Export JSON adherents backup file.
+	 */
 	private function export_json_adherents(): void {
 		$data     = $this->generate_adherent_export_data();
-		$gz       = gzcompress( json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
+		$gz       = gzcompress( (string) wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
 		$filename = 'dame-adherents-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
 		ob_clean();
 		header( 'Content-Type: application/octet-stream' );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
-		header( 'Content-Length: ' . strlen( $gz ) );
+		header( 'Content-Length: ' . strlen( (string) $gz ) );
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Binary stream output.
 		echo $gz;
 		exit;
 	}
 
+	/**
+	 * Import JSON adherents restore file.
+	 */
 	private function import_json_adherents(): void {
-		if ( ! isset( $_FILES['dame_import_file'] ) ) {
+		if ( ! isset( $_POST['dame_import_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_import_nonce'] ) ), 'dame_import_nonce_action' ) ) {
 			return;
 		}
-		$json = gzuncompress( file_get_contents( $_FILES['dame_import_file']['tmp_name'] ) );
-		$data = json_decode( $json, true );
+		if ( ! isset( $_FILES['dame_import_file'] ) || ! is_array( $_FILES['dame_import_file'] ) || empty( $_FILES['dame_import_file']['tmp_name'] ) ) {
+			return;
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Uploaded temp file path.
+		$tmp_file = sanitize_text_field( wp_unslash( $_FILES['dame_import_file']['tmp_name'] ) );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local temp file read.
+		$json = gzuncompress( (string) file_get_contents( $tmp_file ) );
+		$data = json_decode( (string) $json, true );
 		if ( ! $data ) {
 			return;
 		}
 
 		global $wpdb;
-		$post_types = array( 'adherent', 'dame_contact', 'dame_pre_inscription', 'dame_message' );
+		$post_types   = array( 'adherent', 'dame_contact', 'dame_pre_inscription', 'dame_message' );
+		$placeholders = implode( ',', array_fill( 0, count( $post_types ), '%s' ) );
 
 		// 1. PURGE
-		$posts_to_delete = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_type IN ('" . implode( "','", $post_types ) . "')" );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- System restore purge.
+		$posts_to_delete = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT ID FROM %i WHERE post_type IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				array_merge( array( $wpdb->posts ), $post_types )
+			)
+		);
 		foreach ( $posts_to_delete as $pid ) {
 			wp_delete_post( (int) $pid, true );
 		}
@@ -1293,11 +1337,9 @@ class Backup {
 
 			if ( ! $exists ) {
 				$wpdb->insert( $wpdb->users, $u['data'] );
-			} else {
+			} elseif ( $uid !== $current_user_id ) {
 				// Don't update the current user performing the restore to avoid session issues
-				if ( $uid !== $current_user_id ) {
-					$wpdb->update( $wpdb->users, $u['data'], array( 'ID' => $uid ) );
-				}
+				$wpdb->update( $wpdb->users, $u['data'], array( 'ID' => $uid ) );
 			}
 
 			// Restore User Meta
@@ -1362,9 +1404,10 @@ class Backup {
 	}
 
 	/*
-	-------------------------------------------------------------------------
+	 * -------------------------------------------------------------------------
 	 * AGENDA - JSON (BACKUP/RESTORE)
-	 * ------------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------------
+	 */
 
 	/**
 	 * Generate Agenda export data (Events and Polls).
@@ -1447,7 +1490,11 @@ class Backup {
 		// Benevolat Votes
 		global $wpdb;
 		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
-		$votes_data  = $wpdb->get_results( "SELECT * FROM {$table_votes}", ARRAY_A );
+		// Benevolat Votes
+		global $wpdb;
+		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- System backup.
+		$votes_data = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i', $table_votes ), ARRAY_A );
 		if ( is_array( $votes_data ) ) {
 			$data['benevolat_votes'] = $votes_data;
 		}
@@ -1455,33 +1502,53 @@ class Backup {
 		return $data;
 	}
 
+	/**
+	 * Export JSON agenda backup file.
+	 */
 	private function export_json_agenda(): void {
 		$data     = $this->generate_agenda_export_data();
-		$gz       = gzcompress( json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
+		$gz       = gzcompress( (string) wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
 		$filename = 'dame-agenda-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
 		ob_clean();
 		header( 'Content-Type: application/octet-stream' );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
-		header( 'Content-Length: ' . strlen( $gz ) );
+		header( 'Content-Length: ' . strlen( (string) $gz ) );
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Binary stream output.
 		echo $gz;
 		exit;
 	}
 
+	/**
+	 * Import JSON agenda restore file.
+	 */
 	private function import_json_agenda(): void {
-		if ( ! isset( $_FILES['dame_agenda_restore_file'] ) ) {
+		if ( ! isset( $_POST['dame_agenda_restore_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_agenda_restore_nonce'] ) ), 'dame_agenda_restore_nonce_action' ) ) {
 			return;
 		}
-		$json = gzuncompress( file_get_contents( $_FILES['dame_agenda_restore_file']['tmp_name'] ) );
-		$data = json_decode( $json, true );
+		if ( ! isset( $_FILES['dame_agenda_restore_file'] ) || ! is_array( $_FILES['dame_agenda_restore_file'] ) || empty( $_FILES['dame_agenda_restore_file']['tmp_name'] ) ) {
+			return;
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Uploaded temp file path.
+		$tmp_file = sanitize_text_field( wp_unslash( $_FILES['dame_agenda_restore_file']['tmp_name'] ) );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local temp file read.
+		$json = gzuncompress( (string) file_get_contents( $tmp_file ) );
+		$data = json_decode( (string) $json, true );
 		if ( ! $data ) {
 			return;
 		}
 
 		global $wpdb;
-		$post_types = array( 'dame_agenda', 'benevolat', 'benevolat_reponse' );
+		$post_types   = array( 'dame_agenda', 'benevolat', 'benevolat_reponse' );
+		$placeholders = implode( ',', array_fill( 0, count( $post_types ), '%s' ) );
 
 		// 1. PURGE
-		$posts_to_delete = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_type IN ('" . implode( "','", $post_types ) . "')" );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- System restore purge.
+		$posts_to_delete = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT ID FROM %i WHERE post_type IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				array_merge( array( $wpdb->posts ), $post_types )
+			)
+		);
 		foreach ( $posts_to_delete as $pid ) {
 			wp_delete_post( (int) $pid, true );
 		}
@@ -1627,12 +1694,10 @@ class Backup {
 	}
 
 	/*
-	-------------------------------------------------------------------------
+	 * -------------------------------------------------------------------------
 	 * ARTICLES, PAGES, MENUS - JSON (BACKUP/RESTORE)
-
-	/* -------------------------------------------------------------------------
-	 * ARTICLES, PAGES, MENUS - JSON (BACKUP/RESTORE)
-	 * ------------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------------
+	 */
 
 	/**
 	 * Generate Site Content export data (Posts, Pages, Menus).
@@ -1735,12 +1800,13 @@ class Backup {
 	 */
 	private function export_json_site(): void {
 		$data     = $this->generate_site_export_data();
-		$gz       = gzcompress( json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
+		$gz       = gzcompress( (string) wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) );
 		$filename = 'dame-site-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
 		ob_clean();
 		header( 'Content-Type: application/octet-stream' );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
-		header( 'Content-Length: ' . strlen( $gz ) );
+		header( 'Content-Length: ' . strlen( (string) $gz ) );
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Binary stream output.
 		echo $gz;
 		exit;
 	}
@@ -1749,22 +1815,35 @@ class Backup {
 	 * Import Site Content from JSON GZ.
 	 */
 	private function import_json_site(): void {
-		if ( ! isset( $_FILES['dame_site_restore_file'] ) || $_FILES['dame_site_restore_file']['error'] !== UPLOAD_ERR_OK ) {
+		if ( ! isset( $_POST['dame_site_restore_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_site_restore_nonce'] ) ), 'dame_site_restore_nonce_action' ) ) {
+			return;
+		}
+		if ( ! isset( $_FILES['dame_site_restore_file'] ) || ! is_array( $_FILES['dame_site_restore_file'] ) || empty( $_FILES['dame_site_restore_file']['tmp_name'] ) || ( isset( $_FILES['dame_site_restore_file']['error'] ) && UPLOAD_ERR_OK !== $_FILES['dame_site_restore_file']['error'] ) ) {
 			return;
 		}
 
-		$json = gzuncompress( file_get_contents( $_FILES['dame_site_restore_file']['tmp_name'] ) );
-		$data = json_decode( $json, true );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Uploaded temp file path.
+		$tmp_file = sanitize_text_field( wp_unslash( $_FILES['dame_site_restore_file']['tmp_name'] ) );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local temp file read.
+		$json = gzuncompress( (string) file_get_contents( $tmp_file ) );
+		$data = json_decode( (string) $json, true );
 		if ( ! $data ) {
 			return;
 		}
 
 		global $wpdb;
-		$post_types = array( 'post', 'page', 'nav_menu_item' );
-		$taxonomies = get_object_taxonomies( $post_types );
+		$post_types   = array( 'post', 'page', 'nav_menu_item' );
+		$taxonomies   = get_object_taxonomies( $post_types );
+		$placeholders = implode( ',', array_fill( 0, count( $post_types ), '%s' ) );
 
 		// 1. PURGE EVERYTHING
-		$posts_to_delete = $wpdb->get_col( "SELECT ID FROM $wpdb->posts WHERE post_type IN ('" . implode( "','", $post_types ) . "')" );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- System restore purge.
+		$posts_to_delete = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT ID FROM %i WHERE post_type IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				array_merge( array( $wpdb->posts ), $post_types )
+			)
+		);
 		foreach ( $posts_to_delete as $pid ) {
 			wp_delete_post( (int) $pid, true );
 		}
@@ -1910,33 +1989,49 @@ class Backup {
 	}
 
 	/*
-	-------------------------------------------------------------------------
+	 * -------------------------------------------------------------------------
 	 * CRON JOB
-	 * ------------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------------
+	 */
 
+	/**
+	 * Runs the daily scheduled backup job.
+	 */
 	public function run_scheduled_backup(): void {
 		global $wpdb;
 		$upload_dir = wp_upload_dir();
 		$backup_dir = trailingslashit( $upload_dir['basedir'] ) . 'dame-backups';
 		wp_mkdir_p( $backup_dir );
 
+		// Initialize WP_Filesystem
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		WP_Filesystem();
+		global $wp_filesystem;
+
 		// Generate files
 		$data_adherent = $this->generate_adherent_export_data();
 		$file_adherent = trailingslashit( $backup_dir ) . 'dame-adherents-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
-		file_put_contents( $file_adherent, gzcompress( json_encode( $data_adherent ) ) );
+		if ( $wp_filesystem ) {
+			$wp_filesystem->put_contents( $file_adherent, (string) gzcompress( (string) wp_json_encode( $data_adherent ) ) );
+		}
 
 		$data_agenda = $this->generate_agenda_export_data();
 		$file_agenda = trailingslashit( $backup_dir ) . 'dame-agenda-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
-		file_put_contents( $file_agenda, gzcompress( json_encode( $data_agenda ) ) );
+		if ( $wp_filesystem ) {
+			$wp_filesystem->put_contents( $file_agenda, (string) gzcompress( (string) wp_json_encode( $data_agenda ) ) );
+		}
 
 		$data_site = $this->generate_site_export_data();
 		$file_site = trailingslashit( $backup_dir ) . 'dame-site-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
-		file_put_contents( $file_site, gzcompress( json_encode( $data_site ) ) );
+		if ( $wp_filesystem ) {
+			$wp_filesystem->put_contents( $file_site, (string) gzcompress( (string) wp_json_encode( $data_site ) ) );
+		}
 
 		// Send Email
 		$options = get_option( 'dame_options' );
 		$to      = $options['sender_email'] ?? get_option( 'admin_email' );
 		if ( $to ) {
+			/* translators: %s: Site title */
 			$subject = sprintf( __( 'Sauvegarde journalière DAME pour %s', 'dame' ), get_bloginfo( 'name' ) );
 			$body    = '<p>' . __( 'Veuillez trouver ci-joint les sauvegardes journalières.', 'dame' ) . '</p>';
 			$headers = array( 'Content-Type: text/html; charset=UTF-8' );
@@ -1944,8 +2039,8 @@ class Backup {
 		}
 
 		// Cleanup
-		@unlink( $file_adherent );
-		@unlink( $file_agenda );
-		@unlink( $file_site );
+		wp_delete_file( $file_adherent );
+		wp_delete_file( $file_agenda );
+		wp_delete_file( $file_site );
 	}
 }

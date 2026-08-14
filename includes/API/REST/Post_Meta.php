@@ -177,7 +177,8 @@ class Post_Meta {
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$choices = $wpdb->get_col(
 						$wpdb->prepare(
-							"SELECT choice_key FROM {$table} WHERE recipient_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+							'SELECT choice_key FROM %i WHERE recipient_id = %d',
+							$table,
 							$post_arr['id']
 						)
 					);
@@ -221,7 +222,8 @@ class Post_Meta {
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$recipients = $wpdb->get_results(
 						$wpdb->prepare(
-							"SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at, opened_at FROM {$table_name} WHERE message_id = %d ORDER BY recipient_name ASC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+							'SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at, opened_at FROM %i WHERE message_id = %d ORDER BY recipient_name ASC',
+							$table_name,
 							$message_id
 						),
 						ARRAY_A
@@ -243,7 +245,8 @@ class Post_Meta {
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$unique_opens = (int) $wpdb->get_var(
 						$wpdb->prepare(
-							"SELECT COUNT(DISTINCT email_hash) FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+							'SELECT COUNT(DISTINCT email_hash) FROM %i WHERE message_id = %d AND opened_at IS NOT NULL',
+							$table_name,
 							$message_id
 						)
 					);
