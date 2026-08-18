@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.1.0] - 2026-08-18
+
+### Contacts & Sauvegardes / Imports
+- **Import HelloAsso des participants aux tournois (CSV)** :
+  - Ajout d'un formulaire dédié d'importation CSV des participants HelloAsso avec attribution d'une catégorie cible (`dame_contact_type`).
+  - Système de matching multicritère pour identifier et exclure automatiquement les adhérents du club lors de l'import :
+    - Vérification de l'adresse email (adhérent ou représentant légal 1 et 2).
+    - Normalisation et comparaison du couple Nom + Prénom (participant et payeur) avec les adhérents et leurs représentants légaux via `Utils::normalize_name()`.
+    - Détection et extraction des numéros de licence FFE et FIDE via `Utils::extract_license_numbers()` depuis le texte saisi dans le formulaire HelloAsso.
+  - Gestion multi-catégories des contacts existants : conservation des groupes/catégories précédents lors du rattachement à un nouveau groupe de tournoi.
+- **Outil de Détection & Nettoyage sélectif des Doublons Contacts / Adhérents** :
+  - Intégration d'un tableau récapitulatif interactif dans la page *Sauvegardes et Import*.
+  - Détection automatique des contacts externes correspondant à un adhérent publié (par Email ou Nom/Prénom).
+  - Affichage précis du motif de correspondance (distinction adhérent / représentant légal 1 / représentant légal 2) et lien direct vers la fiche adhérent correspondante.
+  - Sélection unitaire ou groupée par cases à cocher et suppression sécurisée des contacts superflus.
+
 ## [5.0.0] - 2026-08-14
 
 ### Qualité du Code & Conformité Standards

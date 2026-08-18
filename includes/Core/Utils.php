@@ -515,4 +515,44 @@ class Utils {
 		}
 		return ! empty( $base_name ) ? $base_name : __( 'Contact sans nom', 'dame' );
 	}
+
+	/**
+	 * Normalizes a name string for comparison (lowercase, accents removed, non-alphanumeric removed).
+	 *
+	 * @param string $name The raw name.
+	 * @return string The normalized alphanumeric lowercase string.
+	 */
+	public static function normalize_name( string $name ): string {
+		$clean = remove_accents( mb_strtolower( trim( $name ), 'UTF-8' ) );
+		return (string) preg_replace( '/[^a-z0-9]/', '', $clean );
+	}
+
+	/**
+	 * Extracts potential FFE or FIDE license codes from a raw text string.
+	 *
+	 * @param string $text The raw text input.
+	 * @return array<int, string> List of uppercase extracted license codes.
+	 */
+	public static function extract_license_numbers( string $text ): array {
+		$licenses = array();
+		if ( empty( trim( $text ) ) ) {
+			return $licenses;
+		}
+
+		// 1. Match FFE license pattern (1 letter + 5 digits, e.g. W55619, K68043)
+		if ( preg_match_all( '/\b([A-Za-z]\d{5})\b/u', $text, $matches_ffe ) ) {
+			foreach ( $matches_ffe[1] as $ffe_code ) {
+				$licenses[] = mb_strtoupper( trim( $ffe_code ), 'UTF-8' );
+			}
+		}
+
+		// 2. Match FIDE / numeric license pattern (6 to 9 consecutive digits, e.g. 652009327)
+		if ( preg_match_all( '/\b(\d{6,9})\b/u', $text, $matches_fide ) ) {
+			foreach ( $matches_fide[1] as $fide_code ) {
+				$licenses[] = trim( $fide_code );
+			}
+		}
+
+		return array_unique( $licenses );
+	}
 }

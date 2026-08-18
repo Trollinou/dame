@@ -1,19 +1,24 @@
-# Release Notes — DAME v5.0.0
+# Release Notes — DAME v5.1.0
 
-**Date :** 14 août 2026
+**Date :** 18 août 2026
 
 ## 🚀 Changements Majeurs
 
-### Assurance Qualité & Conformité PHPCS / PHPStan
-- **Conformité PHPCS (WordPress Coding Standards)** :
-  - 100% de conformité sur l'ensemble des modules d'administration, taxonomies, colonnes et composants du plugin (`WordPress-Core`, `WordPress-Extra`, `WordPress-Docs`).
-  - Sécurisation accrue des redirections (`wp_safe_redirect`) et sanitisation des entrées HTTP avec `wp_unslash()`.
-  - Normalisation de l'échappement à l'affichage (`esc_html_e()`) et ajout des annotations `phpcs:ignore` ciblées pour les requêtes SQL préparées et filtres GET natifs WP.
-- **Analyse Statique PHPStan (Niveau 6)** :
-  - Codebase validée avec 0 erreur (`[OK] No errors`) sur l'ensemble des 80 fichiers PHP.
+### Contacts & Sauvegardes / Imports
+- **Import HelloAsso des tournois (CSV)** :
+  - Support de l'import CSV HelloAsso avec attribution de catégorie.
+  - Détection multicritère (Email, Nom+Prénom normalisé, Licence FFE/FIDE) excluant automatiquement les adhérents et leurs représentants légaux.
+  - Conservation des catégories existantes pour les contacts multi-groupes.
+- **Outil de Détection & Nettoyage sélectif des Doublons** :
+  - Tableau interactif listant les fiches contacts correspondant à des adhérents enregistrés.
+  - Affichage précis de la source de correspondance (Adhérent / Représentant légal) avec lien direct vers la fiche.
+  - Suppression sélective avec confirmation.
 
 ## 📄 Fichiers Modifiés / Déploiement
-- `dame.php` (version 5.0.0 & constante `DAME_VERSION`)
-- `package.json` (version 5.0.0)
+- `dame.php` (version 5.1.0 & constante `DAME_VERSION`)
+- `package.json` (version 5.1.0)
+- `includes/Admin/Pages/Backups.php`
+- `includes/Core/Utils.php`
+- `includes/Services/Backup.php`
 - `CHANGELOG.md`
 - `RELEASE.md`
