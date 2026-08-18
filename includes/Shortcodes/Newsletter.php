@@ -53,10 +53,13 @@ class Newsletter {
 
 		$attributes = shortcode_atts(
 			array(
-				'button_text' => __( 'S\'inscrire à la newsletter', 'dame' ),
-				'layout'      => 'button', // 'button' or 'inline'
-				'title'       => __( 'Inscription à la newsletter', 'dame' ),
-				'subtitle'    => __( 'Recevez régulièrement nos actualités et informations.', 'dame' ),
+				'button_text'  => __( 'S\'inscrire à la newsletter', 'dame' ),
+				'button_class' => '',
+				'class'        => '',
+				'show_icon'    => 'true',
+				'layout'       => 'button', // 'button' or 'inline'
+				'title'        => __( 'Inscription à la newsletter', 'dame' ),
+				'subtitle'     => __( 'Recevez régulièrement nos actualités et informations.', 'dame' ),
 			),
 			is_array( $atts ) ? $atts : array(),
 			'dame_newsletter'
@@ -103,10 +106,24 @@ class Newsletter {
 			</div>
 			<?php
 		} else {
+			$custom_classes = trim( (string) ( $attributes['button_class'] ?: $attributes['class'] ) );
+			$btn_classes    = array( 'dame-nl-btn-trigger' );
+
+			if ( ! empty( $custom_classes ) ) {
+				$btn_classes[] = 'dame-nl-btn-trigger--custom';
+				$btn_classes[] = $custom_classes;
+			} else {
+				// Standard WP element button helper class
+				$btn_classes[] = 'wp-element-button';
+			}
+
+			$show_icon = filter_var( $attributes['show_icon'], FILTER_VALIDATE_BOOLEAN );
 			?>
 			<div class="dame-nl-container dame-nl-container--button">
-				<button type="button" class="dame-nl-btn-trigger" data-dame-modal-target="<?php echo esc_attr( $modal_id ); ?>">
-					<span class="dashicons dashicons-email-alt" aria-hidden="true"></span>
+				<button type="button" class="<?php echo esc_attr( implode( ' ', $btn_classes ) ); ?>" data-dame-modal-target="<?php echo esc_attr( $modal_id ); ?>">
+					<?php if ( $show_icon ) : ?>
+						<span class="dashicons dashicons-email-alt" aria-hidden="true"></span>
+					<?php endif; ?>
 					<span><?php echo esc_html( $attributes['button_text'] ); ?></span>
 				</button>
 

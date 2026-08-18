@@ -131,25 +131,29 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background-color: #0f172a;
-    color: #ffffff;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 18px;
-    font-size: 15px;
-    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
     text-decoration: none;
     line-height: 1.4;
 
-    &:hover {
-        background-color: #1e293b;
+    /* Styles par défaut DAME (si aucune classe personnalisée n'est fournie) */
+    &:not(.dame-nl-btn-trigger--custom) {
+        background-color: #0f172a;
         color: #ffffff;
-    }
+        border: none;
+        border-radius: 6px;
+        padding: 10px 18px;
+        font-size: 15px;
+        font-weight: 600;
+        transition: background-color 0.2s ease, transform 0.1s ease;
 
-    &:active {
-        transform: scale(0.98);
+        &:hover {
+            background-color: #1e293b;
+            color: #ffffff;
+        }
+
+        &:active {
+            transform: scale(0.98);
+        }
     }
 
     .dashicons {

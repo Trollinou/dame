@@ -38,6 +38,7 @@
 ### Newsletter & Inscription Visiteurs
 - **Système d'inscription à la Newsletter avec Double Opt-In** :
   - Ajout des shortcodes `[dame_newsletter]` et `[newsletter]` avec affichage en bouton déclencheur ouvrant une boîte modale accessible (Vanilla JS ES2021) ou formulaire en ligne (`layout="inline"`).
+  - Support de la personnalisation des classes CSS (`class` / `button_class`) et de l'icône (`show_icon`) pour hériter nativement du design des boutons du thème WordPress actif (classes standard `wp-element-button`, `btn`, etc.).
   - Validation sécurisée par email (Double Opt-In, durée de validité 48h) et protections anti-spam (Honeypot invisible, Nonce WP, assainissement strict).
   - Vérification automatique et intelligente des doublons :
     - Détection des adresses emails déjà enregistrées chez les adhérents ou leurs responsables légaux (1 et 2) avec message d'information immédiat.
