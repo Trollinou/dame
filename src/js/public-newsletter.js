@@ -4,6 +4,14 @@
  */
 
 document.addEventListener('DOMContentLoaded', function () {
+	// Move modals to body to escape any parent CSS stacking context or transform
+	const modals = document.querySelectorAll('.dame-nl-modal');
+	modals.forEach(function (modal) {
+		if (modal.parentElement !== document.body) {
+			document.body.appendChild(modal);
+		}
+	});
+
 	// 1. Modal Trigger & Management
 	const triggers = document.querySelectorAll('.dame-nl-btn-trigger');
 
