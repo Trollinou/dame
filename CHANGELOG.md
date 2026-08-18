@@ -2,6 +2,17 @@
 
 ## [5.1.0] - 2026-08-18
 
+### Newsletter & Inscription Visiteurs
+- **Système d'inscription à la Newsletter avec Double Opt-In** :
+  - Ajout des shortcodes `[dame_newsletter]` et `[newsletter]` avec affichage en bouton déclencheur ouvrant une boîte modale accessible (Vanilla JS ES2021) ou formulaire en ligne (`layout="inline"`).
+  - Validation sécurisée par email (Double Opt-In, durée de validité 48h) et protections anti-spam (Honeypot invisible, Nonce WP, assainissement strict).
+  - Vérification automatique et intelligente des doublons :
+    - Détection des adresses emails déjà enregistrées chez les adhérents ou leurs responsables légaux (1 et 2) avec message d'information immédiat.
+    - Détection des contacts existants avec ajout automatique au groupe Newsletter sans duplication de fiche.
+  - Création et mise à jour automatique des fiches `dame_contact` avec rattachement au groupe de contact cible et réactivation du consentement emailing.
+- **Réglages Newsletter dans l'onglet Emails** :
+  - Section dédiée dans *Options DAME > Emails* pour configurer le groupe de contact assigné (`dame_contact_type`), l'activation du Double Opt-In et la personnalisation des textes (sujet, contenu du mail de validation avec balises dynamiques, message de succès).
+
 ### Contacts & Sauvegardes / Imports
 - **Import HelloAsso des participants aux tournois (CSV)** :
   - Ajout d'un formulaire dédié d'importation CSV des participants HelloAsso avec attribution d'une catégorie cible (`dame_contact_type`).

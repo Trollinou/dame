@@ -38,10 +38,12 @@ use DAME\Services\PDF_Generator;
 use DAME\Services\ICalFeed as ICalFeedService;
 use DAME\Services\Backup;
 use DAME\Services\Birthday;
+use DAME\Services\Newsletter as NewsletterService;
 use DAME\Shortcodes\RegistrationForm;
 use DAME\Shortcodes\Agenda as AgendaShortcode;
 use DAME\Shortcodes\Benevolat as BenevolatShortcode;
 use DAME\Shortcodes\Contact as ContactShortcode;
+use DAME\Shortcodes\Newsletter as NewsletterShortcode;
 use DAME\Admin\Assets;
 use DAME\Admin\Pages\ViewAdherent;
 use DAME\Admin\Settings\Main as SettingsMain;
@@ -171,6 +173,9 @@ class Plugin {
 		$backup_service = new Backup();
 		$backup_service->init();
 
+		$newsletter_service = new NewsletterService();
+		$newsletter_service->init();
+
 		$cron_manager = new Cron();
 		$cron_manager->init();
 
@@ -186,6 +191,9 @@ class Plugin {
 
 		$contact_shortcode = new ContactShortcode();
 		$contact_shortcode->init();
+
+		$newsletter_shortcode = new NewsletterShortcode();
+		$newsletter_shortcode->init();
 
 		// Initialize Taxonomies (MUST BE GLOBAL, NOT INSIDE is_admin)
 		$season_taxonomy = new Season();
