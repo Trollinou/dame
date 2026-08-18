@@ -27,7 +27,19 @@ class Newsletter {
 	 *
 	 * @var int
 	 */
+	/**
+	 * Unique counter for multiple forms on same page.
+	 *
+	 * @var int
+	 */
 	private static int $instance_counter = 0;
+
+	/**
+	 * List of modals to render in the footer.
+	 *
+	 * @var array<string, array<string, string>>
+	 */
+	private static array $modals_to_render = array();
 
 	/**
 	 * Initializes the shortcodes and AJAX handlers.
@@ -38,6 +50,8 @@ class Newsletter {
 
 		add_action( 'wp_ajax_dame_submit_newsletter', array( $this, 'handle_submission' ) );
 		add_action( 'wp_ajax_nopriv_dame_submit_newsletter', array( $this, 'handle_submission' ) );
+
+		add_action( 'wp_footer', array( $this, 'render_footer_modals' ) );
 	}
 
 	/**
@@ -106,6 +120,14 @@ class Newsletter {
 			</div>
 			<?php
 		} else {
+			// Enregistrer la modale pour le footer
+			self::$modals_to_render[ $modal_id ] = array(
+				'form_id'  => $form_id,
+				'modal_id' => $modal_id,
+				'title'    => (string) $attributes['title'],
+				'subtitle' => (string) $attributes['subtitle'],
+			);
+
 			$custom_classes = trim( (string) ( $attributes['button_class'] ?: $attributes['class'] ) );
 			$btn_classes    = array( 'dame-nl-btn-trigger' );
 
@@ -126,21 +148,38 @@ class Newsletter {
 					<?php endif; ?>
 					<span><?php echo esc_html( $attributes['button_text'] ); ?></span>
 				</button>
-
-				<div id="<?php echo esc_attr( $modal_id ); ?>" class="dame-nl-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="<?php echo esc_attr( $modal_id ); ?>-title">
-					<div class="dame-nl-modal__backdrop" data-dame-modal-close></div>
-					<div class="dame-nl-modal__dialog">
-						<button type="button" class="dame-nl-modal__close" data-dame-modal-close aria-label="<?php esc_attr_e( 'Fermer la fenêtre', 'dame' ); ?>">&times;</button>
-						<div class="dame-nl-modal__body">
-							<?php $this->render_form_content( $form_id, $attributes['title'], $attributes['subtitle'], $modal_id . '-title' ); ?>
-						</div>
-					</div>
-				</div>
 			</div>
 			<?php
 		}
 
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Renders all queued modals in the footer at document root level.
+	 */
+	public function render_footer_modals(): void {
+		if ( empty( self::$modals_to_render ) ) {
+			return;
+		}
+
+		foreach ( self::$modals_to_render as $modal_data ) {
+			$modal_id = $modal_data['modal_id'];
+			$form_id  = $modal_data['form_id'];
+			$title    = $modal_data['title'];
+			$subtitle = $modal_data['subtitle'];
+			?>
+			<div id="<?php echo esc_attr( $modal_id ); ?>" class="dame-nl-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="<?php echo esc_attr( $modal_id ); ?>-title">
+				<div class="dame-nl-modal__backdrop" data-dame-modal-close></div>
+				<div class="dame-nl-modal__dialog">
+					<button type="button" class="dame-nl-modal__close" data-dame-modal-close aria-label="<?php esc_attr_e( 'Fermer la fenêtre', 'dame' ); ?>">&times;</button>
+					<div class="dame-nl-modal__body">
+						<?php $this->render_form_content( $form_id, $title, $subtitle, $modal_id . '-title' ); ?>
+					</div>
+				</div>
+			</div>
+			<?php
+		}
 	}
 
 	/**
