@@ -63,11 +63,11 @@ class Menu {
 			array( new Backups(), 'render' )
 		);
 
-		// Import FFE
+		// Import Manuel
 		add_submenu_page(
 			'dame-admin',
-			__( 'Import fichier FFE', 'dame' ),
-			__( 'Import FFE', 'dame' ),
+			__( 'Import Manuel', 'dame' ),
+			__( 'Import Manuel', 'dame' ),
 			'manage_options',
 			'dame-import-ffe',
 			array( new ImportFFE(), 'render' )
@@ -121,7 +121,7 @@ class Menu {
 			'edit-tags.php?taxonomy=dame_agenda_category&amp;post_type=dame_agenda' => __( "Groupes d'Évènements", 'dame' ),
 			'edit-tags.php?taxonomy=dame_saison_adhesion&amp;post_type=adherent' => __( "Saisons d'adhésion", 'dame' ),
 			'edit.php?post_type=dame_ical_feed'       => __( "Flux d'agenda", 'dame' ),
-			'dame-import-ffe'                         => __( 'Import FFE', 'dame' ),
+			'dame-import-ffe'                         => __( 'Import Manuel', 'dame' ),
 			'dame-backups'                            => __( 'Sauvegardes et Restaurations', 'dame' ),
 			'dame-settings'                           => __( 'Réglages', 'dame' ),
 		);

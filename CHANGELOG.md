@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.1.1] - 2026-08-18
+
+### Administration & Ergonomie
+- **Création du menu unifié « Import Manuel »** :
+  - Renommage du menu *Import FFE* en *Import Manuel*.
+  - Rassemblement de l'ensemble des modules d'import CSV au même endroit :
+    - Mise à jour des licences & classements FFE.
+    - Importation des fiches adhérents (CSV).
+    - Importation des contacts externes (CSV).
+    - Importation des participants HelloAsso (CSV) avec exclusion automatique des adhérents.
+    - Outil de détection et nettoyage sélectif des doublons Contacts / Adhérents.
+- **Recentrage de la page « Sauvegardes et Restaurations »** :
+  - Simplification de l'interface dédiée exclusivement aux sauvegardes / restaurations globales (`.json.gz`), exports CSV et sauvegardes d'agenda/site.
+
 ## [5.1.0] - 2026-08-18
 
 ### Newsletter & Inscription Visiteurs

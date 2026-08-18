@@ -22,6 +22,28 @@ class ImportFFE {
 	 */
 	public function init(): void {
 		add_action( 'admin_init', array( $this, 'handle_import' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+	}
+
+	/**
+	 * Enqueue scripts.
+	 *
+	 * @param string $hook The current admin page hook.
+	 */
+	public function enqueue_scripts( string $hook ): void {
+		if ( strpos( $hook, 'dame-import-ffe' ) === false ) {
+			return;
+		}
+
+		wp_enqueue_script( 'dame-admin-backups-adherent', \DAME_PLUGIN_URL . 'assets/js/admin-backups-adherent.js', array(), \DAME_VERSION, true );
+		wp_localize_script(
+			'dame-admin-backups-adherent',
+			'dame_backup_adherent_data',
+			array(
+				'confirm_restore'    => __( "Êtes-vous sûr de vouloir restaurer cette sauvegarde ? Toutes les données d'adhérents existantes seront supprimées et remplacées. Cette action est irréversible.", 'dame' ),
+				'confirm_import_csv' => __( 'Êtes-vous sûr de vouloir importer ce fichier CSV ?', 'dame' ),
+			)
+		);
 	}
 
 	/**
@@ -32,29 +54,215 @@ class ImportFFE {
 			return;
 		}
 
+		$contact_types = get_terms(
+			array(
+				'taxonomy'   => 'dame_contact_type',
+				'hide_empty' => false,
+			)
+		);
+
 		$this->display_report();
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Import fichier FFE', 'dame' ); ?></h1>
-			<p><?php esc_html_e( 'Cet outil permet de mettre à jour les données des adhérents (Licence, ELO, ID FIDE) à partir d\'un export CSV de la FFE.', 'dame' ); ?></p>
+			<h1><?php esc_html_e( 'Import Manuel', 'dame' ); ?></h1>
+			<p><?php esc_html_e( 'Ce module rassemble l\'ensemble des outils d\'importation de fichiers CSV (adhérents, contacts, participants HelloAsso et mise à jour FFE).', 'dame' ); ?></p>
 
-			<div class="notice notice-info">
-				<p>
-					<?php esc_html_e( 'Le fichier CSV doit utiliser le point-virgule (;) comme séparateur.', 'dame' ); ?><br>
-					<?php esc_html_e( 'Colonnes attendues : id_ffe (index 0), nom_complet (index 1), licence_num (index 2), elo_standard (index 5), elo_rapide (index 6), elo_blitz (index 7), fide_id (index 12).', 'dame' ); ?>
-				</p>
-			</div>
-
-			<div class="card" style="max-width: 600px; margin-top: 20px;">
-				<form method="post" enctype="multipart/form-data">
-					<?php wp_nonce_field( 'dame_import_ffe_nonce_action', 'dame_import_ffe_nonce' ); ?>
-					<p>
-						<label for="dame_ffe_csv"><strong><?php esc_html_e( 'Sélectionnez le fichier CSV :', 'dame' ); ?></strong></label><br>
-						<input type="file" id="dame_ffe_csv" name="dame_ffe_csv" accept=".csv" required style="margin-top: 10px;">
+			<!-- 1. SECTION ADHÉRENTS -->
+			<h2 style="margin-top: 30px;"><?php esc_html_e( 'Adhérents', 'dame' ); ?></h2>
+			<div style="display:flex; gap: 20px; align-items: stretch;">
+				
+				<!-- MISE À JOUR FFE -->
+				<div style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+					<h3><?php esc_html_e( 'Mise à jour FFE (Licences & ELO)', 'dame' ); ?></h3>
+					<p style="color: #666; font-size: 13px;">
+						<?php esc_html_e( 'Met à jour les licences, classements ELO et identifiants FIDE des adhérents actifs à partir d\'un export FFE.', 'dame' ); ?>
 					</p>
-					<?php submit_button( __( 'Lancer l\'importation', 'dame' ), 'primary', 'dame_import_ffe_submit' ); ?>
-				</form>
+					<form method="post" enctype="multipart/form-data">
+						<?php wp_nonce_field( 'dame_import_ffe_nonce_action', 'dame_import_ffe_nonce' ); ?>
+						<p>
+							<label for="dame_ffe_csv"><strong><?php esc_html_e( 'Fichier CSV FFE :', 'dame' ); ?></strong></label><br>
+							<input type="file" id="dame_ffe_csv" name="dame_ffe_csv" accept=".csv" required style="margin-top: 5px;">
+						</p>
+						<?php submit_button( __( 'Lancer la mise à jour FFE', 'dame' ), 'primary', 'dame_import_ffe_submit', false ); ?>
+					</form>
+				</div>
+
+				<!-- IMPORTER ADHÉRENTS CSV -->
+				<div style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+					<h3><?php esc_html_e( 'Importer des adhérents (CSV)', 'dame' ); ?></h3>
+					<p style="color: #666; font-size: 13px;">
+						<?php esc_html_e( 'Importe ou met à jour des fiches adhérents à partir d\'un export CSV standard DAME.', 'dame' ); ?>
+					</p>
+					<form method="post" enctype="multipart/form-data" id="dame-import-csv-form" action="">
+						<?php wp_nonce_field( 'dame_import_csv_nonce_action', 'dame_import_csv_nonce' ); ?>
+						<p>
+							<label for="dame_import_csv_file"><strong><?php esc_html_e( 'Fichier CSV Adhérents :', 'dame' ); ?></strong></label><br>
+							<input type="file" id="dame_import_csv_file" name="dame_import_csv_file" accept=".csv" required style="margin-top: 5px;">
+						</p>
+						<?php submit_button( __( 'Importer les adhérents (CSV)', 'dame' ), 'secondary', 'dame_import_csv_action', false ); ?>
+					</form>
+				</div>
 			</div>
+
+			<!-- 2. SECTION CONTACTS -->
+			<h2 style="margin-top: 40px;"><?php esc_html_e( 'Contacts externes', 'dame' ); ?></h2>
+			<div style="display:flex; gap: 20px; align-items: stretch;">
+				
+				<!-- IMPORTER CONTACTS STANDARD -->
+				<div style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+					<h3><?php esc_html_e( 'Importer des contacts (CSV)', 'dame' ); ?></h3>
+					<p style="color: #666; font-size: 13px;">
+						<?php esc_html_e( 'Importe des contacts externes (clubs, partenaires, presse) et les affecte à la catégorie sélectionnée.', 'dame' ); ?>
+					</p>
+					<form method="post" enctype="multipart/form-data" action="">
+						<?php wp_nonce_field( 'dame_import_contacts_csv_nonce_action', 'dame_import_contacts_csv_nonce' ); ?>
+						<input type="hidden" name="dame_import_contacts_csv_action" value="1">
+						<p>
+							<label for="dame_contact_type_import"><strong><?php esc_html_e( 'Catégorie cible :', 'dame' ); ?></strong></label><br>
+							<select name="contact_type" id="dame_contact_type_import" required style="width: 100%; max-width: 300px; margin-top: 5px;">
+								<option value=""><?php esc_html_e( '-- Sélectionner une catégorie --', 'dame' ); ?></option>
+								<?php
+								if ( ! is_wp_error( $contact_types ) ) :
+									foreach ( $contact_types as $type ) :
+										?>
+									<option value="<?php echo esc_attr( $type->slug ); ?>"><?php echo esc_html( $type->name ); ?></option>
+										<?php
+								endforeach;
+endif;
+								?>
+							</select>
+						</p>
+						<p>
+							<label for="dame_import_contacts_file"><strong><?php esc_html_e( 'Fichier CSV Contacts :', 'dame' ); ?></strong></label><br>
+							<input type="file" id="dame_import_contacts_file" name="dame_import_contacts_file" accept=".csv" required style="margin-top: 5px;">
+						</p>
+						<?php submit_button( __( 'Importer les contacts (CSV)', 'dame' ), 'secondary', 'submit', false ); ?>
+					</form>
+				</div>
+
+				<!-- IMPORTER HELLOASSO -->
+				<div style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+					<h3><?php esc_html_e( 'Importer des contacts HelloAsso (CSV)', 'dame' ); ?></h3>
+					<p style="color: #666; font-size: 13px;">
+						<?php esc_html_e( 'Importe les participants issus d\'un export HelloAsso en excluant automatiquement les adhérents du club.', 'dame' ); ?>
+					</p>
+					<form method="post" enctype="multipart/form-data" action="">
+						<?php wp_nonce_field( 'dame_import_helloasso_csv_nonce_action', 'dame_import_helloasso_csv_nonce' ); ?>
+						<input type="hidden" name="dame_import_helloasso_csv_action" value="1">
+						<p>
+							<label for="dame_helloasso_contact_type_import"><strong><?php esc_html_e( 'Catégorie cible :', 'dame' ); ?></strong></label><br>
+							<select name="contact_type" id="dame_helloasso_contact_type_import" required style="width: 100%; max-width: 300px; margin-top: 5px;">
+								<option value=""><?php esc_html_e( '-- Sélectionner une catégorie --', 'dame' ); ?></option>
+								<?php
+								if ( ! is_wp_error( $contact_types ) ) :
+									foreach ( $contact_types as $type ) :
+										?>
+									<option value="<?php echo esc_attr( $type->slug ); ?>"><?php echo esc_html( $type->name ); ?></option>
+										<?php
+								endforeach;
+endif;
+								?>
+							</select>
+						</p>
+						<p>
+							<label for="dame_import_helloasso_file"><strong><?php esc_html_e( 'Fichier CSV HelloAsso :', 'dame' ); ?></strong></label><br>
+							<input type="file" id="dame_import_helloasso_file" name="dame_import_helloasso_file" accept=".csv" required style="margin-top: 5px;">
+						</p>
+						<?php submit_button( __( 'Importer les contacts HelloAsso (CSV)', 'dame' ), 'secondary', 'submit', false ); ?>
+					</form>
+				</div>
+			</div>
+
+			<!-- 3. SECTION DOUBLONS CONTACTS / ADHÉRENTS -->
+			<h2 style="margin-top: 40px;"><?php esc_html_e( 'Détection et Nettoyage des doublons Contacts / Adhérents', 'dame' ); ?></h2>
+			<div class="dame-duplicates-section" style="padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+				<p style="margin-top: 0;">
+					<?php esc_html_e( 'Cet outil analyse l\'ensemble des contacts externes et détecte ceux qui correspondent à un adhérent enregistré (par Email identique ou par Nom & Prénom). Vous pouvez sélectionner les fiches contacts à supprimer pour nettoyer la base.', 'dame' ); ?>
+				</p>
+				<?php
+				$duplicates = \DAME\Services\Backup::get_contact_adherent_duplicates();
+				if ( empty( $duplicates ) ) :
+					?>
+					<div class="notice notice-success inline" style="margin: 10px 0; padding: 10px 15px;">
+						<p style="margin: 0;"><?php esc_html_e( '✓ Aucun contact en doublon avec les adhérents n\'a été détecté.', 'dame' ); ?></p>
+					</div>
+				<?php else : ?>
+					<form method="post" action="">
+						<?php wp_nonce_field( 'dame_delete_contact_duplicates_nonce_action', 'dame_delete_contact_duplicates_nonce' ); ?>
+						<input type="hidden" name="dame_delete_contact_duplicates_action" value="1">
+						
+						<p style="color: #d63638; font-weight: 600;">
+							<?php
+							printf(
+								/* translators: %d: Number of detected duplicates */
+								esc_html__( '%d contact(s) suspecté(s) d\'être des adhérents ont été trouvés :', 'dame' ),
+								count( $duplicates )
+							);
+							?>
+						</p>
+
+						<table class="wp-list-table widefat fixed striped" style="margin-bottom: 15px;">
+							<thead>
+								<tr>
+									<td id="cb" class="manage-column column-cb check-column" style="width: 35px;">
+										<input id="cb-select-all-duplicates" type="checkbox" onclick="document.querySelectorAll('.dame-duplicate-cb').forEach(cb => cb.checked = this.checked);">
+									</td>
+									<th scope="col" style="font-weight: 600;"><?php esc_html_e( 'Contact externe', 'dame' ); ?></th>
+									<th scope="col" style="font-weight: 600;"><?php esc_html_e( 'Email contact', 'dame' ); ?></th>
+									<th scope="col" style="font-weight: 600;"><?php esc_html_e( 'Catégorie(s)', 'dame' ); ?></th>
+									<th scope="col" style="font-weight: 600;"><?php esc_html_e( 'Adhérent correspondant & Motif', 'dame' ); ?></th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php foreach ( $duplicates as $dup ) : ?>
+									<tr>
+										<th scope="row" class="check-column">
+											<input type="checkbox" class="dame-duplicate-cb" name="selected_contacts[]" value="<?php echo esc_attr( (string) $dup['contact_id'] ); ?>">
+										</th>
+										<td>
+											<strong><?php echo esc_html( $dup['contact_name'] ); ?></strong>
+											<?php if ( ! empty( $dup['contact_org'] ) ) : ?>
+												<br><span style="color: #666; font-size: 12px;"><?php echo esc_html( $dup['contact_org'] ); ?></span>
+											<?php endif; ?>
+										</td>
+										<td>
+											<?php echo ! empty( $dup['contact_email'] ) ? esc_html( $dup['contact_email'] ) : '<em>' . esc_html__( 'Aucun', 'dame' ) . '</em>'; ?>
+										</td>
+										<td>
+											<?php
+											if ( ! empty( $dup['categories'] ) ) {
+												echo esc_html( implode( ', ', $dup['categories'] ) );
+											} else {
+												echo '<em>' . esc_html__( 'Aucune', 'dame' ) . '</em>';
+											}
+											?>
+										</td>
+										<td>
+											<a href="<?php echo esc_url( admin_url( 'post.php?post=' . (int) $dup['adherent_id'] . '&action=edit' ) ); ?>" target="_blank" style="font-weight: 500; text-decoration: underline;">
+												<?php echo esc_html( $dup['adherent_name'] ); ?> (#<?php echo esc_html( (string) $dup['adherent_id'] ); ?>)
+											</a>
+											<br><span style="color: #666; font-size: 12px;"><?php echo esc_html( $dup['match_reason'] ); ?></span>
+										</td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+
+						<?php
+						submit_button(
+							__( 'Supprimer les contacts sélectionnés', 'dame' ),
+							'delete',
+							'submit',
+							false,
+							array(
+								'onclick' => 'return confirm("' . esc_js( __( 'Êtes-vous sûr de vouloir supprimer définitivement les contacts sélectionnés ? Cette action est irréversible.', 'dame' ) ) . '");',
+							)
+						);
+						?>
+					</form>
+				<?php endif; ?>
+			</div>
+
 		</div>
 		<?php
 	}
