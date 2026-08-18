@@ -90,3 +90,55 @@ Lorsque le module complémentaire d'apprentissage (ROI) est actif, l'application
     -   *Étapes PGN* : Lecture et navigation pas à pas (Début, Précédent, Suivant) dans le déroulement d'une partie.
     -   *Étapes QCM* : Questions à choix multiples basées sur des positions clés pour tester vos choix tactiques ou stratégiques.
 
+## 7. Inscription à la Newsletter (Visiteurs)
+
+DAME intègre un système d'inscription à la newsletter sécurisé avec validation par email (**Double Opt-In** conforme RGPD), protection anti-spam (Honeypot invisible) et détection intelligente des doublons.
+
+### a. Utilisation du Shortcode
+
+Pour afficher le formulaire d'inscription sur vos pages, articles ou widgets :
+
+*   **Bouton avec fenêtre modale (Comportement par défaut) :**
+    ```text
+    [dame_newsletter]
+    ```
+*   **Personnaliser le texte du bouton :**
+    ```text
+    [dame_newsletter button_text="Recevoir nos actualités"]
+    ```
+*   **Adopter le style des boutons de votre thème :**
+    Passez les classes CSS de votre thème avec l'attribut `class` ou `button_class`, et désactivez l'icône email avec `show_icon="false"` :
+    ```text
+    [dame_newsletter class="entry-button wp-element-button ct-button" show_icon="false"]
+    ```
+*   **Formulaire direct en ligne (sans bouton ni modale) :**
+    ```text
+    [dame_newsletter layout="inline"]
+    ```
+
+### b. Paramètres & Attributs du Shortcode
+
+| Attribut | Description | Valeur par défaut |
+| :--- | :--- | :--- |
+| `button_text` | Texte affiché sur le bouton déclencheur | `"S'inscrire à la newsletter"` |
+| `class` / `button_class` | Classes CSS personnalisées pour le bouton | `""` |
+| `show_icon` | Affiche ou masque l'icône enveloppe Dashicons (`true` / `false`) | `"true"` |
+| `layout` | Mode d'affichage (`"button"` pour modale, `"inline"` pour direct) | `"button"` |
+| `title` | Titre du formulaire d'inscription | `"Inscription à la newsletter"` |
+| `subtitle` | Sous-titre explicatif sous le titre | `"Recevez régulièrement nos actualités et informations."` |
+
+### c. Configuration dans les Réglages
+
+1.  Rendez-vous dans `DAME > Réglages > Onglet Emails`.
+2.  Dans la section **Inscription à la Newsletter** :
+    *   **Groupe de contact assigné :** Sélectionnez le groupe de contact (taxonomie `dame_contact_type`) automatiquement attribué aux inscrits (ex: *Newsletter*).
+    *   **Validation par email (Double Opt-In) :** Case cochée par défaut. Envoie un lien de confirmation temporaire (valable 48h).
+    *   **Sujet & Corps de l'email :** Personnalisez le modèle d'email avec les balises dynamiques `{prenom}`, `{nom}`, `{lien_confirmation}`, `{nom_association}`.
+    *   **Message de succès :** Message affiché sur le site après confirmation du lien.
+
+### d. Détection Intelligente des Doublons
+
+*   **Adhérents & Responsables légaux :** Si l'email saisi appartient déjà à un membre ou un représentant légal, un message prévient le visiteur qu'il reçoit déjà automatiquement les communications du club.
+*   **Contacts existants :** Si l'email correspond à une fiche contact déjà existante, celle-ci n'est pas dupliquée : le groupe Newsletter lui est simplement ajouté lors de la confirmation.
+
+

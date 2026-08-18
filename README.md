@@ -48,12 +48,13 @@ Chaque fiche membre centralise :
 
 ### Messagerie & Communication
 *   **Mailing Ciblé :** Envoyez des messages à des segments précis (ex: "Toutes les femmes de l'école d'échecs").
+*   **Inscription Newsletter (Visiteurs) :** Formulaire public avec modale accessible (shortcode `[dame_newsletter]`), validation d'email par **Double Opt-In** (conforme RGPD), détection anti-doublon chez les adhérents/contacts et héritage du style du thème actif.
 *   **Traçabilité Totale :** Suivi individuel des envois (date/heure précise pour chaque destinataire) et statistiques d'ouverture (Pixel Tracking).
 *   **Gestion des Refus :** Case "Refus mailing" pour respecter les préférences de vos membres et partenaires.
 *   **Duplication flexible :** Transformez n'importe quel Message envoyé en Article WordPress (brouillon) pour alimenter votre blog sans double saisie.
 
-### Gestion des Partenaires (Contacts)
-*   **Module Dédié :** Un annuaire distinct pour les partenaires externes (Presse, Mairies, Sponsors), intégré au système de messagerie.
+### Gestion des Partenaires & Contacts
+*   **Module Dédié :** Un annuaire distinct pour les partenaires externes (Presse, Mairies, Sponsors, Abonnés Newsletter), intégré au système de messagerie.
 
 ### Appels à Bénévoles (Participation)
 *   **Planification :** Créez des événements (tournois, fêtes) et définissez des créneaux horaires.
