@@ -1,20 +1,32 @@
 # Changelog
 
-## [5.1.1] - 2026-08-18
+## [5.1.0] - 2026-08-18
 
-### Administration & Ergonomie
+### Imports & Contacts
 - **Création du menu unifié « Import Manuel »** :
   - Renommage du menu *Import FFE* en *Import Manuel*.
-  - Rassemblement de l'ensemble des modules d'import CSV au même endroit :
+  - Centralisation de l'ensemble des modules d'import CSV au même endroit :
     - Mise à jour des licences & classements FFE.
     - Importation des fiches adhérents (CSV).
-    - Importation des contacts externes (CSV).
+    - Importation des contacts externes (CSV standard).
     - Importation des participants HelloAsso (CSV) avec exclusion automatique des adhérents.
     - Outil de détection et nettoyage sélectif des doublons Contacts / Adhérents.
+- **Import HelloAsso des participants aux tournois (CSV)** :
+  - Formulaire dédié avec choix de la catégorie cible (`dame_contact_type`).
+  - Système de matching multicritère pour identifier et exclure automatiquement les adhérents du club lors de l'import :
+    - Vérification de l'adresse email (adhérent ou représentant légal 1 et 2).
+    - Normalisation et comparaison du couple Nom + Prénom (participant et payeur) avec les adhérents et leurs représentants légaux via `Utils::normalize_name()`.
+    - Détection et extraction des numéros de licence FFE et FIDE via `Utils::extract_license_numbers()` depuis le texte saisi dans le formulaire HelloAsso.
+  - Gestion multi-catégories des contacts existants : conservation des groupes/catégories précédents lors du rattachement à un nouveau groupe de tournoi.
+- **Outil de Détection & Nettoyage sélectif des Doublons Contacts / Adhérents** :
+  - Tableau interactif dans la page *Import Manuel*.
+  - Détection automatique des contacts externes correspondant à un adhérent publié (par Email ou Nom/Prénom).
+  - Affichage précis du motif de correspondance (distinction adhérent / représentant légal 1 / représentant légal 2) et lien direct vers la fiche adhérent correspondante.
+  - Sélection unitaire ou groupée par cases à cocher et suppression sécurisée des contacts superflus.
 - **Recentrage de la page « Sauvegardes et Restaurations »** :
   - Simplification de l'interface dédiée exclusivement aux sauvegardes / restaurations globales (`.json.gz`), exports CSV et sauvegardes d'agenda/site.
 
-## [5.1.0] - 2026-08-18
+## [5.0.0] - 2026-08-14
 
 ### Newsletter & Inscription Visiteurs
 - **Système d'inscription à la Newsletter avec Double Opt-In** :
