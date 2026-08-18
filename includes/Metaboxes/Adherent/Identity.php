@@ -124,7 +124,7 @@ class Identity {
 		?>
 		<!-- Hidden fields for geocoding -->
 		<input type="hidden" id="dame_latitude" name="dame_latitude" value="<?php echo esc_attr( $latitude ); ?>" class="dame-js-lat" data-group="adherent" />
-		<input type="hidden" id="dame_longitude" name="dame_longitude" value="<?php echo esc_attr( $longitude ); ?>" class="dame-js-lng" data-group="adherent" />
+		<input type="hidden" id="dame_longitude" name="dame_longitude" value="<?php echo esc_attr( $longitude ); ?>" class="dame-js-long dame-js-lng" data-group="adherent" />
 		<input type="hidden" id="dame_distance" name="dame_distance" value="<?php echo esc_attr( $distance ); ?>" class="dame-js-dist" data-group="adherent" />
 		<input type="hidden" id="dame_travel_time" name="dame_travel_time" value="<?php echo esc_attr( $travel_time ); ?>" class="dame-js-time" data-group="adherent" />
 

@@ -204,14 +204,30 @@ document.addEventListener('DOMContentLoaded', function () {
 		fetch(url)
 			.then((response) => response.json())
 			.then((data) => {
-				if (data.distance && data.duration) {
-					const distanceInKm = data.distance.toFixed(2);
-					const durationInHours = data.duration;
+				if (
+					typeof data.distance !== 'undefined' &&
+					data.distance !== null &&
+					typeof data.duration !== 'undefined' &&
+					data.duration !== null
+				) {
+					const distanceInKm = Number(data.distance).toFixed(2);
+					const durationInHours = Number(data.duration);
 					const hours = Math.floor(durationInHours);
 					const minutes = Math.round((durationInHours - hours) * 60);
 
-					distanceInput.value = `${distanceInKm} km`;
-					travelTimeInput.value = `${hours}h ${minutes}min`;
+					let formattedTime = '';
+					if (hours > 0) {
+						formattedTime = `${hours}h ${minutes < 10 ? '0' : ''}${minutes}min`;
+					} else {
+						formattedTime = `${minutes} min`;
+					}
+
+					if (distanceInput) {
+						distanceInput.value = `${distanceInKm} km`;
+					}
+					if (travelTimeInput) {
+						travelTimeInput.value = formattedTime;
+					}
 				}
 			})
 			.catch((error) => console.error('Error calculating route:', error));

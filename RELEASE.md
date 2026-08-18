@@ -24,6 +24,12 @@
 - **Simplification du menu « Sauvegardes et Restaurations »** :
   - Recentrage de l'écran sur les sauvegardes complètes (`.json.gz`), restaurations globales, exports CSV et sauvegardes de modules.
 
+### Événements & Géolocalisation
+- **Calcul d'itinéraire et de distance dans l'Agenda** :
+  - Rétablissement de l'action du bouton « Calculer » dans la métaboxe Agenda.
+  - Prise en charge des itinéraires locaux à distance / durée nulles (`0.00 km`, `0 min`).
+  - Géocodage automatique à la volée en cas d'absence des coordonnées GPS lors du clic.
+
 ## 📄 Fichiers Modifiés / Déploiement
 - `dame.php` (version 5.1.0 & constante `DAME_VERSION`)
 - `package.json` (version 5.1.0)
@@ -31,6 +37,10 @@
 - `includes/Admin/Pages/ImportFFE.php`
 - `includes/Admin/Pages/Backups.php`
 - `includes/Core/Utils.php`
+- `includes/Metaboxes/Agenda/Manager.php`
+- `includes/Metaboxes/Adherent/Identity.php`
+- `src/js/admin-common.js`
+- `assets/js/admin-common.js`
 - `includes/Services/Backup.php`
 - `CHANGELOG.md`
 - `RELEASE.md`

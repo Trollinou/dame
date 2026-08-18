@@ -2,6 +2,13 @@
 
 ## [5.1.0] - 2026-08-18
 
+### Événements & Géolocalisation
+- **Correction du calcul d'itinéraire et de distance dans l'Agenda** :
+  - Rétablissement de l'écouteur d'événement sur le bouton « Calculer » dans l'écran d'édition d'événement (`dame-js-calc`, `admin-common.js`).
+  - Prise en compte correcte des distances et durées nulles (`0.00 km`, `0 min`) lorsque l'événement a lieu à l'adresse du club.
+  - Ajout du géocodage à la volée lors du clic sur « Calculer » si les coordonnées GPS ne sont pas encore renseignées mais qu'une adresse est saisie.
+  - Amélioration des retours utilisateurs (état « Calcul en cours... », alertes en cas de coordonnées du club manquantes ou d'adresse introuvable).
+
 ### Imports & Contacts
 - **Création du menu unifié « Import Manuel »** :
   - Renommage du menu *Import FFE* en *Import Manuel*.

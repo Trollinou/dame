@@ -363,7 +363,7 @@ class Manager {
 					<div class="dame-inline-fields">
 						<input type="text" id="dame_distance" name="dame_distance" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_distance', true ) ); ?>" readonly="readonly" class="dame-js-dist" data-group="event_location" placeholder="<?php esc_attr_e( 'Distance (km)', 'dame' ); ?>" />
 						<input type="text" id="dame_travel_time" name="dame_travel_time" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dame_travel_time', true ) ); ?>" readonly="readonly" class="dame-js-time" data-group="event_location" placeholder="<?php esc_attr_e( 'Temps de trajet', 'dame' ); ?>" />
-						<button type="button" id="dame_calculate_route_button" class="button"><?php esc_html_e( 'Calculer', 'dame' ); ?></button>
+						<button type="button" id="dame_calculate_route_button" class="button dame-js-calc" data-group="event_location"><?php esc_html_e( 'Calculer', 'dame' ); ?></button>
 					</div>
 				</td>
 			</tr>

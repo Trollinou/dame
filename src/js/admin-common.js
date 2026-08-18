@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				`.dame-js-lat[data-group="${group}"]`
 			);
 			const longitudeInput = document.querySelector(
-				`.dame-js-long[data-group="${group}"]`
+				`.dame-js-long[data-group="${group}"], .dame-js-lng[data-group="${group}"]`
 			);
 			const distanceInput = document.querySelector(
 				`.dame-js-dist[data-group="${group}"]`
@@ -243,12 +243,26 @@ document.addEventListener('DOMContentLoaded', function () {
 		});
 	}
 
-	function calculateRoute(destLat, destLng, distanceInput, travelTimeInput) {
+	function calculateRoute(
+		destLat,
+		destLng,
+		distanceInput,
+		travelTimeInput,
+		button
+	) {
 		if (
 			!dame_admin_data ||
 			!dame_admin_data.assoc_latitude ||
 			!dame_admin_data.assoc_longitude
 		) {
+			console.warn(
+				"DAME: Les coordonnées de l'association ne sont pas configurées dans les réglages."
+			);
+			if (button) {
+				alert(
+					'Les coordonnées du club (latitude / longitude) ne sont pas configurées dans les réglages du plugin.'
+				);
+			}
 			return;
 		}
 
@@ -256,24 +270,59 @@ document.addEventListener('DOMContentLoaded', function () {
 		const startLng = dame_admin_data.assoc_longitude;
 		const url = `https://data.geopf.fr/navigation/itineraire?resource=bdtopo-osrm&start=${startLng},${startLat}&end=${destLng},${destLat}&profile=car&optimization=fastest&distanceUnit=kilometer&timeUnit=hour`;
 
+		if (button) {
+			button.disabled = true;
+			button.textContent = 'Calcul en cours...';
+		}
+
 		fetch(url)
-			.then((response) => response.json())
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+				return response.json();
+			})
 			.then((data) => {
-				if (data.distance && data.duration) {
-					const distanceInKm = data.distance.toFixed(2);
-					const durationInHours = data.duration;
+				if (
+					typeof data.distance !== 'undefined' &&
+					data.distance !== null &&
+					typeof data.duration !== 'undefined' &&
+					data.duration !== null
+				) {
+					const distanceInKm = Number(data.distance).toFixed(2);
+					const durationInHours = Number(data.duration);
 					const hours = Math.floor(durationInHours);
 					const minutes = Math.round((durationInHours - hours) * 60);
+
+					let formattedTime = '';
+					if (hours > 0) {
+						formattedTime = `${hours}h ${minutes < 10 ? '0' : ''}${minutes}min`;
+					} else {
+						formattedTime = `${minutes} min`;
+					}
 
 					if (distanceInput) {
 						distanceInput.value = `${distanceInKm} km`;
 					}
 					if (travelTimeInput) {
-						travelTimeInput.value = `${hours}h ${minutes}min`;
+						travelTimeInput.value = formattedTime;
 					}
 				}
 			})
-			.catch((error) => console.error('Error calculating route:', error));
+			.catch((error) => {
+				console.error('Error calculating route:', error);
+				if (button) {
+					alert(
+						"Impossible de calculer l'itinéraire. Veuillez vérifier l'adresse ou les coordonnées GPS."
+					);
+				}
+			})
+			.finally(() => {
+				if (button) {
+					button.disabled = false;
+					button.textContent = 'Calculer';
+				}
+			});
 	}
 
 	// --- 2. Birth City Autocomplete ---
@@ -467,8 +516,127 @@ document.addEventListener('DOMContentLoaded', function () {
 		});
 	}
 
+	// --- 4. Route Calculation Button Handler ---
+	function initRouteCalculation() {
+		const calcButtons = document.querySelectorAll(
+			'.dame-js-calc, #dame_calculate_route_button'
+		);
+
+		calcButtons.forEach(function (button) {
+			button.addEventListener('click', function () {
+				const group = button.dataset.group || 'event_location';
+				const addressInput =
+					document.querySelector(
+						`.dame-js-address[data-group="${group}"]`
+					) || document.getElementById('dame_address_1');
+				const postalCodeInput =
+					document.querySelector(
+						`.dame-js-zip[data-group="${group}"]`
+					) || document.getElementById('dame_postal_code');
+				const cityInput =
+					document.querySelector(
+						`.dame-js-city[data-group="${group}"]`
+					) || document.getElementById('dame_city');
+				const latitudeInput =
+					document.querySelector(
+						`.dame-js-lat[data-group="${group}"]`
+					) || document.getElementById('dame_latitude');
+				const longitudeInput =
+					document.querySelector(
+						`.dame-js-long[data-group="${group}"], .dame-js-lng[data-group="${group}"]`
+					) || document.getElementById('dame_longitude');
+				const distanceInput =
+					document.querySelector(
+						`.dame-js-dist[data-group="${group}"]`
+					) || document.getElementById('dame_distance');
+				const travelTimeInput =
+					document.querySelector(
+						`.dame-js-time[data-group="${group}"]`
+					) || document.getElementById('dame_travel_time');
+
+				const lat = latitudeInput ? latitudeInput.value.trim() : '';
+				const lng = longitudeInput ? longitudeInput.value.trim() : '';
+
+				if (lat && lng) {
+					calculateRoute(
+						lat,
+						lng,
+						distanceInput,
+						travelTimeInput,
+						button
+					);
+					return;
+				}
+
+				// If coordinates are missing, try geocoding from address text
+				const addressQuery = [
+					addressInput ? addressInput.value.trim() : '',
+					postalCodeInput ? postalCodeInput.value.trim() : '',
+					cityInput ? cityInput.value.trim() : '',
+				]
+					.filter(Boolean)
+					.join(' ');
+
+				if (!addressQuery) {
+					alert(
+						"Veuillez renseigner une adresse ou des coordonnées GPS pour calculer l'itinéraire."
+					);
+					return;
+				}
+
+				button.disabled = true;
+				button.textContent = 'Calcul en cours...';
+
+				fetch(
+					`https://data.geopf.fr/geocodage/completion?text=${encodeURIComponent(
+						addressQuery
+					)}&type=StreetAddress`
+				)
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.results && data.results.length > 0) {
+							const result = data.results[0];
+							if (latitudeInput && result.y) {
+								latitudeInput.value = result.y;
+							}
+							if (longitudeInput && result.x) {
+								longitudeInput.value = result.x;
+							}
+							if (result.y && result.x) {
+								calculateRoute(
+									result.y,
+									result.x,
+									distanceInput,
+									travelTimeInput,
+									button
+								);
+							} else {
+								button.disabled = false;
+								button.textContent = 'Calculer';
+							}
+						} else {
+							button.disabled = false;
+							button.textContent = 'Calculer';
+							alert(
+								"Adresse introuvable. Veuillez vérifier l'adresse saisie."
+							);
+						}
+					})
+					.catch((error) => {
+						console.error('Error geocoding address:', error);
+						button.disabled = false;
+						button.textContent = 'Calculer';
+						alert(
+							"Erreur lors de la recherche de l'adresse pour le calcul de l'itinéraire."
+						);
+					});
+			});
+		});
+	}
+
 	// Initialize all
 	initAddressFields();
 	initBirthCityFields();
 	initRegionSync();
+	initRouteCalculation();
 });
