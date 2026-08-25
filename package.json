@@ -8,6 +8,7 @@
     "build": "npm run build:css && npm run build:js",
     "lint:js": "eslint src/js/",
     "package": "node script/package.cjs",
+    "version-sync": "node scripts/version-sync.cjs",
     "watch": "sass --watch src/scss/:assets/css/"
   },
   "devDependencies": {
