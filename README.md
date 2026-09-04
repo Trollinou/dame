@@ -134,12 +134,20 @@ Récupère les identités liées à l'email de l'utilisateur connecté.
 *   **Méthode :** `GET`
 *   **Logique :** Si l'utilisateur est un adulte majeur unique lié à cet email, seul son profil de membre est renvoyé. Pour les familles, tous les profils (adhérents + représentants) sont listés.
 
-### 7. Gestion du Bénévolat
+### 7. Préinscriptions & Détails Adhérent
+*   **Soumission / Mise à jour :** `POST /wp-json/dame/v1/pre-inscription`
+    *   Prend en charge `adherent_id` et `pre_inscription_id`.
+    *   Met à jour le post `dame_pre_inscription` en attente au lieu de créer un doublon si le membre ou l'enfant a déjà soumis sa préinscription.
+*   **Détails Adhérent pour préremplissage :** `GET /wp-json/dame/v1/adherent-details?adherent_id={id}`
+    *   Renvoie en priorité les données de la préinscription `pending` si elle existe déjà (`is_pre_inscription: true`), sinon les données de la fiche `adherent` N-1.
+*   **Téléchargement Sécurisé PDF :** `GET /wp-json/dame/v1/pre-inscriptions/{id}/pdf/{health|parental}?token={token}`
+
+### 8. Gestion du Bénévolat
 *   **Récupérer mon vote :** `GET /wp-json/dame/v1/benevolats/{id}/my-vote`
 *   **Voter / Modifier :** `POST /wp-json/dame/v1/benevolats/{id}/vote`
     *   Corps : `{ "choices": ["0_1", "1_0"] }`
 
-### 8. Ressources Natives WordPress
+### 9. Ressources Natives WordPress
 Le plugin expose les Custom Post Types via `/wp-json/wp/v2/` :
 *   **Adhérents :** `adherents`
 *   **Agenda :** `agenda` (supporte `after_date` et `before_date`)

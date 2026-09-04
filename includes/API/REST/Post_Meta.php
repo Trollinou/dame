@@ -664,6 +664,9 @@ class Post_Meta {
 			'_dame_legal_rep_2_profession'        => 'string',
 			'_dame_legal_rep_2_date_naissance'    => 'string',
 			'_dame_legal_rep_2_commune_naissance' => 'string',
+			'_dame_adherent_id'                   => 'integer',
+			'_dame_submitted_by_email'            => 'string',
+			'_dame_submitted_by_user_id'          => 'integer',
 		);
 
 		$this->register_fields( 'dame_pre_inscription', $fields );

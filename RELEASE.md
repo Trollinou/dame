@@ -1,8 +1,12 @@
-# Release Notes — DAME v5.1.0
+# Release Notes — DAME v5.2.1
 
-**Date :** 18 août 2026
+**Date :** 4 septembre 2026
 
 ## 🚀 Changements Majeurs
+
+### Préinscriptions & Responsables Légaux (Majeurs)
+- Prise en charge complète de la reprise et de la modification des préinscriptions pour les enfants atteignant la majorité (18 ans et plus).
+- Autorisation de reprise via la fiche adhérent existante et traçabilité du dépositaire via `_dame_submitted_by_email`.
 
 ### Imports & Contacts
 - **Menu unifié « Import Manuel »** :

@@ -1,5 +1,24 @@
 # Changelog
 
+## [5.2.1] - 2026-09-04
+
+### Préinscriptions & Responsables Légaux
+- **Gestion des enfants devenus majeurs lors de la préinscription** :
+  - **Rechargement et modification pour le responsable légal** : Résolution du cas où un parent ayant initié la préinscription d'un enfant atteignant la majorité (18 ans ou plus) ne pouvait plus recharger ni modifier sa fiche en raison de la suppression des métadonnées de représentant légal sur la préinscription.
+  - **Autorisation par la fiche adhérent** : L'accès à la préinscription en attente (`find_pending_pre_inscription`) vérifie désormais si l'utilisateur connecté est autorisé sur la fiche `adherent` d'origine (en tant qu'adhérent ou représentant légal 1 ou 2), permettant ainsi de récupérer directement la préinscription liée (`_dame_adherent_id`).
+  - **Enregistrement du dépositaire (`_dame_submitted_by_email` & `_dame_submitted_by_user_id`)** : Mémorisation systématique du compte connecté ayant soumis la préinscription, garantissant la visibilité et la reprise de la saisie par le parent dépositaire.
+  - **Récupération optimisée dans `GET /dame/v1/my-identities`** : Prise en compte dans la requête de recherche des identifiants d'adhérents accessibles ainsi que du champ `_dame_submitted_by_email`, assurant que la préinscription apparaît bien comme saisie (`has_pre_inscription: true`) sur le profil du responsable légal.
+
+## [5.2.0] - 2026-09-04
+
+### Préinscriptions & API REST
+- **Reprise et mise à jour des préinscriptions existantes (Anti-doublons PWA)** :
+  - **Endpoint `POST /dame/v1/pre-inscription`** : Détection intelligente des préinscriptions en attente (`pending`). En cas de re-soumission pour un même adhérent ou un même enfant d'un foyer, le post existant est mis à jour (`wp_update_post`) avec actualisation de toutes les métadonnées au lieu de créer un doublon. Un e-mail spécifique de notification de mise à jour est envoyé au club.
+  - **Enregistrement de `_dame_adherent_id`** : Les nouvelles préinscriptions enregistrent explicitement l'identifiant de l'adhérent rattaché, garantissant un lien direct et univoque.
+  - **Rétrocompatibilité totale** : Les préinscriptions déjà présentes en base (sans `_dame_adherent_id`) sont automatiquement identifiées par le triplet (prénom, date de naissance, nom) associé à l'e-mail du compte connecté. Aucune préinscription existante n'est altérée ou perdue.
+  - **Endpoint `GET /dame/v1/adherent-details`** : Lorsqu'une préinscription `pending` existe pour l'adhérent ciblé, les données renvoyées sont celles de sa préinscription récente (questionnaire santé, coordonnées actualisées, préférences) avec les indicateurs `is_pre_inscription: true` et `pre_inscription_id`.
+  - **Endpoint `GET /dame/v1/my-identities`** : Détection globale en une seule requête des préinscriptions en cours. Enrichissement de chaque identité et membre associé avec `has_pre_inscription` et `pre_inscription_id`. Rattachement automatique des nouvelles fiches enfants en attente au profil du responsable légal.
+
 ## [5.1.0] - 2026-08-18
 
 ### Événements & Géolocalisation
