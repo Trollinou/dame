@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.2.2] - 2026-09-06
+
+### Groupes d'adhérents & Apprentissage
+- **Interopérabilité avec le module LMS ROI** :
+  - **Helper `Group::get_groups_for_adherent`** : Exposition d'une méthode statique pour récupérer de façon optimisée les groupes actifs (`dame_group`) rattachés à un adhérent, facilitant l'assignation de cours ciblés par les entraîneurs.
+
 ## [5.2.1] - 2026-09-04
 
 ### Préinscriptions & Responsables Légaux

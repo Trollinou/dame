@@ -277,4 +277,31 @@ class Group {
 			<?php
 		}
 	}
+
+	/**
+	 * Get groups for a specific adherent.
+	 *
+	 * @param int $adherent_id Adherent post ID.
+	 * @return array<int, array{id: int, name: string, slug: string}> List of groups.
+	 */
+	public static function get_groups_for_adherent( int $adherent_id ): array {
+		if ( $adherent_id <= 0 ) {
+			return array();
+		}
+		$terms = wp_get_object_terms( $adherent_id, 'dame_group' );
+		if ( is_wp_error( $terms ) || empty( $terms ) ) {
+			return array();
+		}
+		$result = array();
+		foreach ( $terms as $term ) {
+			if ( $term instanceof WP_Term ) {
+				$result[] = array(
+					'id'   => (int) $term->term_id,
+					'name' => html_entity_decode( (string) $term->name, ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
+					'slug' => (string) $term->slug,
+				);
+			}
+		}
+		return $result;
+	}
 }
