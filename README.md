@@ -41,6 +41,7 @@ Chaque fiche membre centralise :
 ### 3. Classification et Segmentation
 *   **Groupes de Membres :** Classez vos adhérents par niveaux ou fonctions (École d'échecs, Compétition, Bénévoles, Élus) pour des filtres précis.
 *   **Filtres Avancés :** Retrouvez instantanément vos membres par saison, par groupe, par genre, par catégorie d'âge (calculée automatiquement en UTC) ou par type de licence.
+*   **Interopérabilité & Helper LMS :** Méthode statique optimisée `Group::get_groups_for_adherent(int $adherent_id): array` permettant aux extensions pédagogiques (comme ROI) d'interroger immédiatement les groupes d'entraînement rattachés à un adhérent.
 
 ---
 
@@ -64,6 +65,7 @@ Chaque fiche membre centralise :
 
 ### Agenda & Flux iCalendar
 *   **Calendrier Interactif :** Gestion des événements, compétitions et entraînements.
+*   **Assignation des Participants :** Sélection rapide des adhérents participants avec tri automatique des membres sélectionnés en haut de liste et champ de recherche instantané insensible à la casse et aux accents (Unicode NFD).
 *   **Flux ICS Magiques :** Abonnement direct sur iPhone, Android ou Mac avec gestion intelligente des fuseaux horaires (plus de décalage été/hiver).
 
 ### Préinscriptions en Ligne
