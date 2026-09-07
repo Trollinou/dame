@@ -1,6 +1,6 @@
 # Changelog
 
-## [5.2.2] - 2026-09-06
+## [Unreleased]
 
 ### Groupes d'adhérents & Apprentissage
 - **Interopérabilité avec le module LMS ROI** :
