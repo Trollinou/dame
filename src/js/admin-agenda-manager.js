@@ -54,11 +54,19 @@ jQuery(document).ready(function ($) {
 		}
 	});
 
+	function normalizeText(str) {
+		return (str || '')
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.toLowerCase()
+			.trim();
+	}
+
 	// Participant filter
-	$('#dame_participant_filter').on('keyup', function () {
-		const value = $(this).val().toLowerCase();
+	$('#dame_participant_filter').on('keyup input', function () {
+		const value = normalizeText($(this).val());
 		$('#dame_participants_list li').each(function () {
-			$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+			$(this).toggle(normalizeText($(this).text()).indexOf(value) > -1);
 		});
 	});
 });

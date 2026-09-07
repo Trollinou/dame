@@ -20,6 +20,12 @@ Utilisez le shortcode `[dame_agenda]` pour afficher un calendrier mensuel intera
 ### b. Afficher une liste des prochains événements
 Utilisez le shortcode `[dame_liste_agenda nombre="5"]` (le paramètre `nombre` est optionnel, défaut à 4).
 
+### c. Assignation des participants à un événement (Administration)
+Dans l'administration WordPress, lors de la création ou de l'édition d'un événement dans l'Agenda :
+- **Filtre de recherche instantané :** Un champ de texte permet de filtrer rapidement les adhérents par prénom ou nom. La recherche est insensible à la casse et aux accents (ex: taper "maelle" trouvera immédiatement "Maëlle").
+- **Organisation ergonomique :** Les adhérents déjà sélectionnés et inscrits sont automatiquement positionnés en tête de liste pour une lisibilité optimale.
+
+
 ## 3. Appels à Bénévoles (Bénévolat)
 
 Cette fonctionnalité permet de solliciter l'aide des membres pour vos événements (tournois, buvettes, installation).
@@ -82,7 +88,9 @@ L'application est accessible à l'adresse : `https://votre-site.com/pwa`.
 
 ## 6. Espace Apprentissage & Tactique (Module ROI)
 
-Lorsque le module complémentaire d'apprentissage (ROI) est actif, l'application PWA propose un catalogue d'exercices d'entraînement et de tactique :
+Lorsque le module complémentaire d'apprentissage (ROI) est actif, l'application PWA propose un catalogue d'exercices d'entraînement et de cours structurés :
+-   **Méthode EEF (École d'Échecs à la Française) :** Cursus fédéral officiel accessible à tous les apprenants (Pions, Cavaliers, Fous, etc.) avec progression linéaire.
+-   **Cours assignés :** Cours spécifiques ciblés et prescrits par les entraîneurs du club pour un groupe ou des adhérents précis (débloqués immédiatement pour les élèves ciblés).
 -   **100 Commandements (Type 1) :** Questions à choix multiples portant sur les principes théoriques et stratégiques fondamentaux.
 -   **Pop'Echecs (Type 2) :** Exercices de repérage et de placement où vous devez positionner une pièce sur la case demandée.
 -   **ABCDaire Tactique (Type 3) :** Résolution de tactiques en jouant la bonne séquence de coups contre l'échiquier.
