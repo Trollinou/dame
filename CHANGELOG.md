@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.3.0] - 2026-09-11
+
 ### Ergonomie & Administration (Adhérents & Contacts)
 - **Bouton de retour filtré (`edit_form_top`)** :
   - **Adhérents (`adherent`)** : Déplacement du bouton « Retour à la liste filtrée » au sommet de la page d'édition (`edit_form_top`), en dehors du panneau « Informations sur l'adhérent ».
