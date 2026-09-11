@@ -12,7 +12,8 @@
     - Support complet de la planification anticipée au mois d'août de l'année $X$ pour la saison débutant en septembre $X$ et s'achevant le 31 août $X+1$.
     - Double condition d'arrêt : à la date de fin choisie par l'utilisateur (ou au nombre de séances demandé), plafonnée strictement à la fin de saison.
   - **Génération unitaire & Duplication intégrale** :
-    - Création immédiate de véritables posts `dame_agenda` indépendants dans la base de données, permettant de déplacer ou de supprimer des séances isolées (vacances scolaires, jours fériés) sans affecter la série.
+    - **Cycle de vie Brouillon / Publication** : L'enregistrement en brouillon (`draft`) ne sauvegarde que l'événement modèle et mémorise la configuration de récurrence sans générer de doublons. La création par lot des occurrences indépendantes (`Batch_Creator`) est déclenchée uniquement lors de la publication finale (`publish`).
+    - Création de véritables posts `dame_agenda` indépendants dans la base de données lors de la publication, permettant de déplacer ou de supprimer des séances isolées (vacances scolaires, jours fériés) sans affecter la série.
     - Duplication fidèle de toutes les métadonnées : catégories `dame_agenda_category`, horaires, lieu, coordonnées GPS, calculs d'itinéraires et temps de trajet, participants et descriptions WYSIWYG.
     - Permaliens optimisés avec suffixe date `YYYYMMDD` (ex: `entrainement-jeunes-20240904`).
   - **Suppression sélective & Gestion de série (`Series_Manager`)** :

@@ -35,7 +35,9 @@ Lors de la création d'un nouvel événement (`DAME > Agenda > Ajouter un évén
 4. Choisissez la condition de fin :
    - **Jusqu'au [Date]** : Vous pouvez fixer une date de fin (ex: fin des cours le 25 juin). Le système plafonnera automatiquement la date au **31 août** de la saison en cours (permettant la planification en août $X$ pour la saison $X/X+1$).
    - **Après [N] séances**.
-5. À la publication, **chaque séance est créée comme un événement indépendant** dans le calendrier. Vous pouvez ainsi librement supprimer une séance tombant sur les vacances scolaires ou déplacer une séance isolée.
+5. **Enregistrement en brouillon vs Publication :**
+   - Si vous enregistrez l'événement en **Brouillon**, seul l'événement modèle est sauvegardé et vos réglages de récurrence restent mémorisés pour modification ultérieure.
+   - Dès que vous cliquez sur **Publier**, **chaque séance est créée comme un événement indépendant** dans le calendrier. Vous pouvez ainsi librement supprimer une séance tombant sur les vacances scolaires ou déplacer une séance isolée.
 6. **Suppression de série :**
    - En éditant un événement appartenant à une série, vous disposez d'un bouton **« Supprimer cet événement et les suivants »** (si déclenché sur le 1er événement, supprime toute la série ; si déclenché en cours d'année, supprime les séances restantes en conservant l'historique des séances passées).
 
