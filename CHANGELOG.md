@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Ergonomie & Administration (Adhérents & Contacts)
+- **Bouton de retour filtré (`edit_form_top`)** :
+  - **Adhérents (`adherent`)** : Déplacement du bouton « Retour à la liste filtrée » au sommet de la page d'édition (`edit_form_top`), en dehors du panneau « Informations sur l'adhérent ».
+  - **Contacts (`dame_contact`)** : Déplacement du bouton « Retour à la liste filtrée » au sommet de la page d'édition (`edit_form_top`), en dehors du panneau « Détails du contact ».
+
 ### Flux iCalendar (`dame_ical_feed`)
 - **Gestion et personnalisation des flux iCalendar** :
   - **Identifiant / Slug personnalisable** : Ajout d'un champ dédié dans la métabox de configuration et support natif du slug pour définir précisément l'URL du flux (`/feed/agenda/{slug}.ics`).
