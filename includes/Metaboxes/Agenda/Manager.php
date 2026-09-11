@@ -8,7 +8,11 @@
 namespace DAME\Metaboxes\Agenda;
 
 use WP_Post;
+use DateTimeImmutable;
 use DAME\Services\Data_Provider;
+use DAME\Services\Agenda\Recurrence_Calculator;
+use DAME\Services\Agenda\Batch_Creator;
+use DAME\Services\Agenda\Series_Manager;
 
 /**
  * Class Manager
@@ -23,6 +27,9 @@ class Manager {
 		add_action( 'add_meta_boxes', array( $this, 'register_meta_boxes' ) );
 		add_action( 'save_post_dame_agenda', array( $this, 'save' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'admin_post_dame_delete_series_from', array( $this, 'handle_delete_series_from' ) );
+		add_action( 'admin_post_dame_delete_entire_series', array( $this, 'handle_delete_entire_series' ) );
+		add_action( 'admin_notices', array( $this, 'display_admin_notices' ) );
 	}
 
 	/**
@@ -116,6 +123,14 @@ class Manager {
 			'core'
 		);
 		add_meta_box(
+			'dame_agenda_recurrence_metabox',
+			__( 'Récurrence & Répétition', 'dame' ),
+			array( $this, 'render_recurrence' ),
+			'dame_agenda',
+			'normal',
+			'default'
+		);
+		add_meta_box(
 			'dame_agenda_participants_metabox',
 			__( 'Participants', 'dame' ),
 			array( $this, 'render_participants' ),
@@ -123,6 +138,16 @@ class Manager {
 			'side',
 			'high'
 		);
+	}
+
+	/**
+	 * Renders the recurrence meta box.
+	 *
+	 * @param WP_Post $post The post object.
+	 */
+	public function render_recurrence( $post ): void {
+		$recurrence_metabox = new Recurrence_Metabox();
+		$recurrence_metabox->render( $post );
 	}
 
 	/**
@@ -557,6 +582,134 @@ class Manager {
 		} else {
 			// If no participants are selected, save an empty array.
 			update_post_meta( $post_id, '_dame_event_participants', array() );
+		}
+
+		// --- Handle Recurrence Batch Creation ---
+		$existing_group = get_post_meta( $post_id, '_dame_recurrence_group_id', true );
+		if ( empty( $existing_group ) && isset( $_POST['dame_enable_recurrence'] ) && '1' === $_POST['dame_enable_recurrence'] ) {
+			$start_date_val = isset( $_POST['dame_start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_start_date'] ) ) : '';
+			$start_time_val = isset( $_POST['dame_start_time'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_start_time'] ) ) : '00:00';
+
+			if ( ! empty( $start_date_val ) ) {
+				$start_datetime_str = ! empty( $start_time_val ) ? sprintf( '%s %s', $start_date_val, $start_time_val ) : sprintf( '%s 00:00:00', $start_date_val );
+				try {
+					$start_dt = new DateTimeImmutable( $start_datetime_str );
+
+					$rules = array(
+						'frequency'               => isset( $_POST['dame_recurrence_frequency'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_frequency'] ) ) : 'weekly',
+						'interval_weeks'          => isset( $_POST['dame_recurrence_interval_weeks'] ) ? max( 1, (int) $_POST['dame_recurrence_interval_weeks'] ) : 1,
+						'days_of_week'            => isset( $_POST['dame_recurrence_days_of_week'] ) && is_array( $_POST['dame_recurrence_days_of_week'] ) ? array_map( 'intval', $_POST['dame_recurrence_days_of_week'] ) : array(),
+						'monthly_type'            => isset( $_POST['dame_recurrence_monthly_type'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_monthly_type'] ) ) : 'ordinal',
+						'ordinal'                 => isset( $_POST['dame_recurrence_ordinal'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_ordinal'] ) ) : 'first',
+						'day_name'                => isset( $_POST['dame_recurrence_day_name'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_day_name'] ) ) : 'friday',
+						'day_of_month'            => isset( $_POST['dame_recurrence_day_of_month'] ) ? (int) $_POST['dame_recurrence_day_of_month'] : (int) $start_dt->format( 'j' ),
+						'interval_months'         => 1,
+					);
+
+					$end_type      = isset( $_POST['dame_recurrence_end_type'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_end_type'] ) ) : 'until_date';
+					$user_end_date = null;
+					$max_count     = null;
+
+					if ( 'until_date' === $end_type && ! empty( $_POST['dame_recurrence_end_date'] ) ) {
+						$user_end_date = new DateTimeImmutable( sanitize_text_field( wp_unslash( $_POST['dame_recurrence_end_date'] ) ) );
+					} elseif ( 'count' === $end_type && ! empty( $_POST['dame_recurrence_max_count'] ) ) {
+						$max_count = max( 1, (int) $_POST['dame_recurrence_max_count'] );
+					}
+
+					$occurrences = Recurrence_Calculator::calculate_occurrences(
+						$rules,
+						$start_dt,
+						$user_end_date,
+						$max_count
+					);
+
+					if ( ! empty( $occurrences ) ) {
+						Batch_Creator::create_series( $post_id, $occurrences );
+					}
+				} catch ( \Exception $e ) {
+					// Date format error handled gracefully.
+				}
+			}
+		}
+	}
+
+	/**
+	 * Handles deleting an event and subsequent events in a series.
+	 */
+	public function handle_delete_series_from(): void {
+		$post_id = isset( $_GET['post_id'] ) ? (int) $_GET['post_id'] : 0;
+		if ( ! $post_id || ! current_user_can( 'delete_post', $post_id ) ) {
+			wp_die( esc_html__( 'Action non autorisée.', 'dame' ) );
+		}
+
+		check_admin_referer( 'dame_delete_series_from_' . $post_id );
+
+		$deleted_count = Series_Manager::delete_series_from( $post_id );
+
+		$redirect_url = add_query_arg(
+			array(
+				'post_type' => 'dame_agenda',
+				'dame_msg'  => 'series_deleted',
+				'count'     => $deleted_count,
+			),
+			admin_url( 'edit.php' )
+		);
+
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
+
+	/**
+	 * Handles deleting an entire series.
+	 */
+	public function handle_delete_entire_series(): void {
+		$group_id = isset( $_GET['group_id'] ) ? sanitize_text_field( wp_unslash( $_GET['group_id'] ) ) : '';
+		$post_id  = isset( $_GET['post_id'] ) ? (int) $_GET['post_id'] : 0;
+
+		if ( empty( $group_id ) || ( $post_id && ! current_user_can( 'delete_post', $post_id ) ) ) {
+			wp_die( esc_html__( 'Action non autorisée.', 'dame' ) );
+		}
+
+		check_admin_referer( 'dame_delete_entire_series_' . $group_id );
+
+		$deleted_count = Series_Manager::delete_entire_series( $group_id );
+
+		$redirect_url = add_query_arg(
+			array(
+				'post_type' => 'dame_agenda',
+				'dame_msg'  => 'entire_series_deleted',
+				'count'     => $deleted_count,
+			),
+			admin_url( 'edit.php' )
+		);
+
+		wp_safe_redirect( $redirect_url );
+		exit;
+	}
+
+	/**
+	 * Display admin notices for series deletion.
+	 */
+	public function display_admin_notices(): void {
+		if ( ! isset( $_GET['dame_msg'] ) ) {
+			return;
+		}
+
+		$count = isset( $_GET['count'] ) ? (int) $_GET['count'] : 0;
+		$msg   = sanitize_key( wp_unslash( $_GET['dame_msg'] ) );
+
+		if ( 'series_deleted' === $msg ) {
+			echo '<div class="notice notice-success is-dismissible"><p>' . sprintf(
+				/* translators: %d: nombre d'événements supprimés */
+				esc_html__( '%d événement(s) de la série ont été mis à la corbeille avec succès.', 'dame' ),
+				$count
+			) . '</p></div>';
+		} elseif ( 'entire_series_deleted' === $msg ) {
+			echo '<div class="notice notice-success is-dismissible"><p>' . sprintf(
+				/* translators: %d: nombre d'événements supprimés */
+				esc_html__( 'La série complète (%d événements) a été mise à la corbeille avec succès.', 'dame' ),
+				$count
+			) . '</p></div>';
 		}
 	}
 }

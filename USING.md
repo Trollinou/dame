@@ -25,6 +25,20 @@ Dans l'administration WordPress, lors de la création ou de l'édition d'un év�
 - **Filtre de recherche instantané :** Un champ de texte permet de filtrer rapidement les adhérents par prénom ou nom. La recherche est insensible à la casse et aux accents (ex: taper "maelle" trouvera immédiatement "Maëlle").
 - **Organisation ergonomique :** Les adhérents déjà sélectionnés et inscrits sont automatiquement positionnés en tête de liste pour une lisibilité optimale.
 
+### d. Planification d'événements récurrents (Séries)
+Lors de la création d'un nouvel événement (`DAME > Agenda > Ajouter un événement`) :
+1. Renseignez les informations de base (Titre, Catégories, Date et Heure de la première séance, Lieu, Participants).
+2. Dans la métabox **Récurrence & Répétition**, cochez la case **« Activer la répétition »**.
+3. Choisissez le type de fréquence :
+   - **Hebdomadaire** : Choisissez l'intervalle (ex: toutes les 1 ou 2 semaines) et cochez les jours souhaités (ex: Mercredi).
+   - **Mensuelle** : Choisissez soit une position ordinale (ex: *1er Vendredi du mois* pour les tournois de blitz), soit un jour fixe du mois (ex: *le 15 de chaque mois*).
+4. Choisissez la condition de fin :
+   - **Jusqu'au [Date]** : Vous pouvez fixer une date de fin (ex: fin des cours le 25 juin). Le système plafonnera automatiquement la date au **31 août** de la saison en cours (permettant la planification en août $X$ pour la saison $X/X+1$).
+   - **Après [N] séances**.
+5. À la publication, **chaque séance est créée comme un événement indépendant** dans le calendrier. Vous pouvez ainsi librement supprimer une séance tombant sur les vacances scolaires ou déplacer une séance isolée.
+6. **Suppression de série :**
+   - En éditant un événement appartenant à une série, vous disposez d'un bouton **« Supprimer cet événement et les suivants »** (si déclenché sur le 1er événement, supprime toute la série ; si déclenché en cours d'année, supprime les séances restantes en conservant l'historique des séances passées).
+
 
 ## 3. Appels à Bénévoles (Bénévolat)
 

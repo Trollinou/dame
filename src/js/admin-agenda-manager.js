@@ -69,4 +69,91 @@ jQuery(document).ready(function ($) {
 			$(this).toggle(normalizeText($(this).text()).indexOf(value) > -1);
 		});
 	});
+
+	// --- Recurrence Form Dynamics ---
+	function toggleRecurrenceOptions() {
+		if ($('#dame_enable_recurrence').is(':checked')) {
+			$('#dame_recurrence_options').slideDown(150);
+			updateSeasonLimitNotice();
+		} else {
+			$('#dame_recurrence_options').slideUp(150);
+		}
+	}
+
+	function toggleRecurrenceFrequency() {
+		const freq = $('#dame_recurrence_frequency').val();
+		if (freq === 'monthly') {
+			$('#dame_recurrence_weekly_row').hide();
+			$('#dame_recurrence_monthly_row').show();
+		} else {
+			$('#dame_recurrence_monthly_row').hide();
+			$('#dame_recurrence_weekly_row').show();
+		}
+	}
+
+	function updateSeasonLimitNotice() {
+		const startDateVal = $('#dame_start_date').val();
+		if (!startDateVal) {
+			return;
+		}
+
+		const parts = startDateVal.split('-');
+		if (parts.length === 3) {
+			const year = parseInt(parts[0], 10);
+			const month = parseInt(parts[1], 10);
+			const endYear = month >= 9 ? year + 1 : year;
+			const maxSeasonDate = endYear + '-08-31';
+			const displayLimit = '31/08/' + endYear;
+
+			$('#dame_recurrence_end_date').attr('max', maxSeasonDate);
+			$('#dame_season_limit_text').text(
+				'Les répétitions ne pourront pas dépasser le ' +
+					displayLimit +
+					' (fin de saison).'
+			);
+		}
+	}
+
+	$('#dame_enable_recurrence').on('change', toggleRecurrenceOptions);
+	$('#dame_recurrence_frequency').on('change', toggleRecurrenceFrequency);
+	$('#dame_start_date').on('change', updateSeasonLimitNotice);
+
+	// --- Series Deletion Confirmations ---
+	$('.dame-js-delete-series-from').on('click', function (e) {
+		const count = $(this).data('count') || 1;
+		const isParent =
+			$(this).data('is-parent') === 1 ||
+			$(this).data('is-parent') === '1';
+
+		let msg = '';
+		if (isParent) {
+			msg =
+				'Êtes-vous sûr de vouloir supprimer tous les événements de cette série (' +
+				count +
+				' séances) ?';
+		} else {
+			msg =
+				'Êtes-vous sûr de vouloir supprimer cet événement et les suivants (' +
+				count +
+				' séances au total à partir de cette date) ? Les séances passées seront conservées.';
+		}
+
+		if (!confirm(msg)) {
+			e.preventDefault();
+			return false;
+		}
+	});
+
+	$('.dame-js-delete-entire-series').on('click', function (e) {
+		const total = $(this).data('total') || '';
+		const msg =
+			'Attention : Êtes-vous sûr de vouloir supprimer TOUTE la série (' +
+			total +
+			' séances, y compris les séances passées) ?';
+
+		if (!confirm(msg)) {
+			e.preventDefault();
+			return false;
+		}
+	});
 });

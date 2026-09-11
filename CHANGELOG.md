@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+### Agenda & Événements Récurrents
+- **Planification par lot d'événements récurrents (`dame_agenda`)** :
+  - **Saisie de récurrences (Hebdomadaire & Mensuelle)** :
+    - Mode hebdomadaire : intervalle de répétition personnalisable (toutes les $X$ semaines) avec sélection des jours de la semaine (Lundi à Dimanche).
+    - Mode mensuel : règle ordinale (ex: *1er vendredi du mois*, *dernier samedi du mois*) ou jour fixe (ex: *le 15 de chaque mois*).
+  - **Gestion stricte de la saison sportive (1er septembre au 31 août)** :
+    - Calcul automatique de la date butoir maximale de la saison à partir de la date de début de l'événement initial.
+    - Support complet de la planification anticipée au mois d'août de l'année $X$ pour la saison débutant en septembre $X$ et s'achevant le 31 août $X+1$.
+    - Double condition d'arrêt : à la date de fin choisie par l'utilisateur (ou au nombre de séances demandé), plafonnée strictement à la fin de saison.
+  - **Génération unitaire & Duplication intégrale** :
+    - Création immédiate de véritables posts `dame_agenda` indépendants dans la base de données, permettant de déplacer ou de supprimer des séances isolées (vacances scolaires, jours fériés) sans affecter la série.
+    - Duplication fidèle de toutes les métadonnées : catégories `dame_agenda_category`, horaires, lieu, coordonnées GPS, calculs d'itinéraires et temps de trajet, participants et descriptions WYSIWYG.
+    - Permaliens optimisés avec suffixe date `YYYYMMDD` (ex: `entrainement-jeunes-20240904`).
+  - **Suppression sélective & Gestion de série (`Series_Manager`)** :
+    - Rattachement de groupe via `_dame_recurrence_group_id`.
+    - Action « Supprimer cet événement et les suivants » : supprime l'intégralité de la série si déclenchée depuis le premier événement, ou supprime uniquement les séances futures si déclenchée en cours d'année afin de préserver l'historique des séances passées.
+    - Option de suppression globale de toute la série.
+  - **Architecture & Composants dédiés** :
+    - Service de calcul pur : `DAME\Services\Agenda\Recurrence_Calculator`.
+    - Service de création par lot : `DAME\Services\Agenda\Batch_Creator`.
+    - Service de gestion/suppression : `DAME\Services\Agenda\Series_Manager`.
+    - Composant d'interface métabox : `DAME\Metaboxes\Agenda\Recurrence_Metabox`.
+
 ## [5.2.2] - 2026-09-07
 
 ### Groupes d'adhérents & Apprentissage
