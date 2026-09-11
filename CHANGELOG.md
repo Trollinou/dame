@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.3.1] - 2026-09-11
+
 ### Correctifs & API REST
 - **Rétablissement de l'exposition REST des métadonnées (`dame_agenda`, `adherent`, `dame_contact`)** :
   - Restauration du support `'custom-fields'` dans la définition des Custom Post Types afin de garantir la présence de l'objet `meta` dans les réponses JSON de l'API REST WordPress (`/wp-json/wp/v2/agenda`, `/wp-json/wp/v2/adherents`, `/wp-json/wp/v2/contacts`).
