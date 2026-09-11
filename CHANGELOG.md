@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Flux iCalendar (`dame_ical_feed`)
+- **Gestion et personnalisation des flux iCalendar** :
+  - **Identifiant / Slug personnalisable** : Ajout d'un champ dédié dans la métabox de configuration et support natif du slug pour définir précisément l'URL du flux (`/feed/agenda/{slug}.ics`).
+  - **Indentation hiérarchique des catégories** : Affichage arborescent avec décalage visuel des sous-catégories dans la sélection de la métabox de configuration.
+  - **Colonnes administratives personnalisées (`Admin\Columns\ICalFeed`)** : Affichage direct de l'URL d'abonnement (champ copiable en un clic) et de la liste des catégories incluses dans la liste d'administration des flux.
+  - **Amélioration UX** : Message informatif guidant l'utilisateur lors de la création d'un nouveau flux (explication du nom et génération automatique de l'URL).
+
 ### Agenda & Événements Récurrents
 - **Planification par lot d'événements récurrents (`dame_agenda`)** :
   - **Saisie de récurrences (Hebdomadaire & Mensuelle)** :

@@ -48,6 +48,7 @@ use DAME\Admin\Assets;
 use DAME\Admin\Pages\ViewAdherent;
 use DAME\Admin\Settings\Main as SettingsMain;
 use DAME\Admin\Columns\Adherent as AdherentColumns;
+use DAME\Admin\Columns\ICalFeed as ICalFeedColumns;
 use DAME\Admin\ListTables\Agenda as AgendaListTable;
 use DAME\Admin\ListTables\Benevolat as BenevolatListTable;
 use DAME\Admin\Actions\Agenda as AgendaActions;
@@ -280,6 +281,9 @@ class Plugin {
 
 			$ical_feed_info = new ICalFeedInfo();
 			$ical_feed_info->init();
+
+			$ical_feed_columns = new ICalFeedColumns();
+			$ical_feed_columns->init();
 
 			$benevolat_metaboxes = new BenevolatMetaboxManager();
 			$benevolat_metaboxes->init();

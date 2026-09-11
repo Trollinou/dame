@@ -52,7 +52,7 @@ class ICalFeed {
 			'capability_type'    => 'post',
 			'has_archive'        => false,
 			'hierarchical'       => false,
-			'supports'           => array( 'title' ),
+			'supports'           => array( 'title', 'slug' ),
 			'show_in_rest'       => true,
 			'rest_base'          => 'ical-feeds',
 		);
