@@ -54,34 +54,51 @@ class Recurrence_Metabox {
 			}
 		}
 
+		$is_enabled     = ( '1' === (string) get_post_meta( $post->ID, '_dame_recurrence_enabled', true ) );
+		$pending_config = get_post_meta( $post->ID, '_dame_recurrence_pending_config', true );
+		if ( ! is_array( $pending_config ) ) {
+			$pending_config = array();
+		}
+
+		$frequency      = (string) ( $pending_config['frequency'] ?? 'weekly' );
+		$interval_weeks = (int) ( $pending_config['interval_weeks'] ?? 1 );
+		$days_of_week   = is_array( $pending_config['days_of_week'] ?? null ) ? $pending_config['days_of_week'] : array();
+		$monthly_type   = (string) ( $pending_config['monthly_type'] ?? 'ordinal' );
+		$ordinal        = (string) ( $pending_config['ordinal'] ?? 'first' );
+		$day_name       = (string) ( $pending_config['day_name'] ?? 'friday' );
+		$day_of_month   = (int) ( $pending_config['day_of_month'] ?? 1 );
+		$end_type       = (string) ( $pending_config['end_type'] ?? 'until_date' );
+		$end_date       = (string) ( $pending_config['end_date'] ?? '' );
+		$max_count      = (int) ( $pending_config['max_count'] ?? 10 );
+
 		?>
 		<div class="dame-recurrence-wrapper">
 			<p>
 				<label style="font-weight: 600; cursor: pointer;">
-					<input type="checkbox" id="dame_enable_recurrence" name="dame_enable_recurrence" value="1" />
+					<input type="checkbox" id="dame_enable_recurrence" name="dame_enable_recurrence" value="1" <?php checked( $is_enabled, true ); ?> />
 					<?php esc_html_e( 'Activer la répétition (Créer une série d\'événements)', 'dame' ); ?>
 				</label>
 			</p>
 
-			<div id="dame_recurrence_options" style="display: none; padding: 15px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 10px;">
+			<div id="dame_recurrence_options" style="<?php echo $is_enabled ? '' : 'display: none;'; ?> padding: 15px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 10px;">
 				<table class="form-table" style="margin-top: 0;">
 					<tr>
 						<th style="width: 160px; padding: 8px 0;"><label for="dame_recurrence_frequency"><?php esc_html_e( 'Fréquence', 'dame' ); ?></label></th>
 						<td style="padding: 8px 0;">
 							<select id="dame_recurrence_frequency" name="dame_recurrence_frequency" style="min-width: 180px;">
-								<option value="weekly"><?php esc_html_e( 'Hebdomadaire (par semaine)', 'dame' ); ?></option>
-								<option value="monthly"><?php esc_html_e( 'Mensuelle (par mois)', 'dame' ); ?></option>
+								<option value="weekly" <?php selected( $frequency, 'weekly' ); ?>><?php esc_html_e( 'Hebdomadaire (par semaine)', 'dame' ); ?></option>
+								<option value="monthly" <?php selected( $frequency, 'monthly' ); ?>><?php esc_html_e( 'Mensuelle (par mois)', 'dame' ); ?></option>
 							</select>
 						</td>
 					</tr>
 
 					<!-- Weekly Settings -->
-					<tr id="dame_recurrence_weekly_row">
+					<tr id="dame_recurrence_weekly_row" style="<?php echo 'monthly' === $frequency ? 'display: none;' : ''; ?>">
 						<th style="padding: 8px 0;"><label><?php esc_html_e( 'Répétition', 'dame' ); ?></label></th>
 						<td style="padding: 8px 0;">
 							<div style="margin-bottom: 8px;">
 								<?php esc_html_e( 'Toutes les', 'dame' ); ?>
-								<input type="number" id="dame_recurrence_interval_weeks" name="dame_recurrence_interval_weeks" value="1" min="1" max="52" style="width: 60px; text-align: center;" />
+								<input type="number" id="dame_recurrence_interval_weeks" name="dame_recurrence_interval_weeks" value="<?php echo esc_attr( (string) $interval_weeks ); ?>" min="1" max="52" style="width: 60px; text-align: center;" />
 								<?php esc_html_e( 'semaine(s) le :', 'dame' ); ?>
 							</div>
 							<div class="dame-days-checklist" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px;">
@@ -96,8 +113,9 @@ class Recurrence_Metabox {
 									7 => __( 'Dim', 'dame' ),
 								);
 								foreach ( $days as $num => $label ) {
+									$checked = in_array( $num, $days_of_week, true ) ? 'checked="checked"' : '';
 									echo '<label style="cursor: pointer;">';
-									echo '<input type="checkbox" name="dame_recurrence_days_of_week[]" value="' . esc_attr( (string) $num ) . '" class="dame-recurrence-day-checkbox" /> ';
+									echo '<input type="checkbox" name="dame_recurrence_days_of_week[]" value="' . esc_attr( (string) $num ) . '" class="dame-recurrence-day-checkbox" ' . $checked . ' /> ';
 									echo esc_html( $label );
 									echo '</label>';
 								}
@@ -108,37 +126,37 @@ class Recurrence_Metabox {
 					</tr>
 
 					<!-- Monthly Settings -->
-					<tr id="dame_recurrence_monthly_row" style="display: none;">
+					<tr id="dame_recurrence_monthly_row" style="<?php echo 'monthly' === $frequency ? '' : 'display: none;'; ?>">
 						<th style="padding: 8px 0;"><label><?php esc_html_e( 'Règle mensuelle', 'dame' ); ?></label></th>
 						<td style="padding: 8px 0;">
 							<div style="margin-bottom: 8px;">
 								<label style="cursor: pointer;">
-									<input type="radio" name="dame_recurrence_monthly_type" value="ordinal" checked="checked" />
+									<input type="radio" name="dame_recurrence_monthly_type" value="ordinal" <?php checked( $monthly_type, 'ordinal' ); ?> />
 									<?php esc_html_e( 'Chaque', 'dame' ); ?>
 									<select name="dame_recurrence_ordinal" id="dame_recurrence_ordinal">
-										<option value="first"><?php esc_html_e( '1er', 'dame' ); ?></option>
-										<option value="second"><?php esc_html_e( '2ème', 'dame' ); ?></option>
-										<option value="third"><?php esc_html_e( '3ème', 'dame' ); ?></option>
-										<option value="fourth"><?php esc_html_e( '4ème', 'dame' ); ?></option>
-										<option value="last"><?php esc_html_e( 'Dernier', 'dame' ); ?></option>
+										<option value="first" <?php selected( $ordinal, 'first' ); ?>><?php esc_html_e( '1er', 'dame' ); ?></option>
+										<option value="second" <?php selected( $ordinal, 'second' ); ?>><?php esc_html_e( '2ème', 'dame' ); ?></option>
+										<option value="third" <?php selected( $ordinal, 'third' ); ?>><?php esc_html_e( '3ème', 'dame' ); ?></option>
+										<option value="fourth" <?php selected( $ordinal, 'fourth' ); ?>><?php esc_html_e( '4ème', 'dame' ); ?></option>
+										<option value="last" <?php selected( $ordinal, 'last' ); ?>><?php esc_html_e( 'Dernier', 'dame' ); ?></option>
 									</select>
 									<select name="dame_recurrence_day_name" id="dame_recurrence_day_name">
-										<option value="monday"><?php esc_html_e( 'Lundi', 'dame' ); ?></option>
-										<option value="tuesday"><?php esc_html_e( 'Mardi', 'dame' ); ?></option>
-										<option value="wednesday"><?php esc_html_e( 'Mercredi', 'dame' ); ?></option>
-										<option value="thursday"><?php esc_html_e( 'Jeudi', 'dame' ); ?></option>
-										<option value="friday"><?php esc_html_e( 'Vendredi', 'dame' ); ?></option>
-										<option value="saturday"><?php esc_html_e( 'Samedi', 'dame' ); ?></option>
-										<option value="sunday"><?php esc_html_e( 'Dimanche', 'dame' ); ?></option>
+										<option value="monday" <?php selected( $day_name, 'monday' ); ?>><?php esc_html_e( 'Lundi', 'dame' ); ?></option>
+										<option value="tuesday" <?php selected( $day_name, 'tuesday' ); ?>><?php esc_html_e( 'Mardi', 'dame' ); ?></option>
+										<option value="wednesday" <?php selected( $day_name, 'wednesday' ); ?>><?php esc_html_e( 'Mercredi', 'dame' ); ?></option>
+										<option value="thursday" <?php selected( $day_name, 'thursday' ); ?>><?php esc_html_e( 'Jeudi', 'dame' ); ?></option>
+										<option value="friday" <?php selected( $day_name, 'friday' ); ?>><?php esc_html_e( 'Vendredi', 'dame' ); ?></option>
+										<option value="saturday" <?php selected( $day_name, 'saturday' ); ?>><?php esc_html_e( 'Samedi', 'dame' ); ?></option>
+										<option value="sunday" <?php selected( $day_name, 'sunday' ); ?>><?php esc_html_e( 'Dimanche', 'dame' ); ?></option>
 									</select>
 									<?php esc_html_e( 'du mois', 'dame' ); ?>
 								</label>
 							</div>
 							<div>
 								<label style="cursor: pointer;">
-									<input type="radio" name="dame_recurrence_monthly_type" value="day_of_month" />
+									<input type="radio" name="dame_recurrence_monthly_type" value="day_of_month" <?php checked( $monthly_type, 'day_of_month' ); ?> />
 									<?php esc_html_e( 'Le', 'dame' ); ?>
-									<input type="number" name="dame_recurrence_day_of_month" id="dame_recurrence_day_of_month" min="1" max="31" value="1" style="width: 55px; text-align: center;" />
+									<input type="number" name="dame_recurrence_day_of_month" id="dame_recurrence_day_of_month" min="1" max="31" value="<?php echo esc_attr( (string) $day_of_month ); ?>" style="width: 55px; text-align: center;" />
 									<?php esc_html_e( 'de chaque mois', 'dame' ); ?>
 								</label>
 							</div>
@@ -151,16 +169,16 @@ class Recurrence_Metabox {
 						<td style="padding: 8px 0;">
 							<div style="margin-bottom: 8px;">
 								<label style="cursor: pointer;">
-									<input type="radio" name="dame_recurrence_end_type" value="until_date" checked="checked" />
+									<input type="radio" name="dame_recurrence_end_type" value="until_date" <?php checked( $end_type, 'until_date' ); ?> />
 									<?php esc_html_e( 'Jusqu\'au', 'dame' ); ?>
-									<input type="date" id="dame_recurrence_end_date" name="dame_recurrence_end_date" />
+									<input type="date" id="dame_recurrence_end_date" name="dame_recurrence_end_date" value="<?php echo esc_attr( $end_date ); ?>" />
 								</label>
 							</div>
 							<div>
 								<label style="cursor: pointer;">
-									<input type="radio" name="dame_recurrence_end_type" value="count" />
+									<input type="radio" name="dame_recurrence_end_type" value="count" <?php checked( $end_type, 'count' ); ?> />
 									<?php esc_html_e( 'Après', 'dame' ); ?>
-									<input type="number" id="dame_recurrence_max_count" name="dame_recurrence_max_count" min="2" max="60" value="10" style="width: 60px; text-align: center;" />
+									<input type="number" id="dame_recurrence_max_count" name="dame_recurrence_max_count" min="2" max="60" value="<?php echo esc_attr( (string) $max_count ); ?>" style="width: 60px; text-align: center;" />
 									<?php esc_html_e( 'séances au total', 'dame' ); ?>
 								</label>
 							</div>
@@ -187,7 +205,7 @@ class Recurrence_Metabox {
 
 				<div style="margin-top: 12px; padding: 10px; background: #e0f2fe; border-left: 4px solid #0284c7; border-radius: 4px; font-size: 13px; color: #0369a1;">
 					<strong><?php esc_html_e( 'Fonctionnement :', 'dame' ); ?></strong>
-					<?php esc_html_e( 'Lors de l\'enregistrement, un événement indépendant sera créé pour chaque séance dans le calendrier. Vous pourrez ensuite déplacer ou supprimer certaines séances individuellement (vacances, jours fériés) sans impacter les autres.', 'dame' ); ?>
+					<?php esc_html_e( 'En brouillon, seul le modèle est sauvegardé. Lors de la publication finale, un événement indépendant sera généré pour chaque séance dans le calendrier.', 'dame' ); ?>
 				</div>
 			</div>
 		</div>
