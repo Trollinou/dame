@@ -34,6 +34,8 @@ class Manager {
 	 * Register meta boxes.
 	 */
 	public function add_meta_boxes(): void {
+		remove_meta_box( 'postcustom', 'adherent', 'normal' );
+
 		$identity = new Identity();
 		$identity->register();
 

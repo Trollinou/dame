@@ -93,6 +93,8 @@ class Details {
 	 * Register the metabox.
 	 */
 	public function register(): void {
+		remove_meta_box( 'postcustom', 'dame_contact', 'normal' );
+
 		add_meta_box(
 			'dame_contact_details_metabox',
 			__( 'Détails du contact', 'dame' ),

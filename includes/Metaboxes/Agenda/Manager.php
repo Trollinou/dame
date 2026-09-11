@@ -170,6 +170,8 @@ class Manager {
 	 * Register the metaboxes.
 	 */
 	public function register_meta_boxes(): void {
+		remove_meta_box( 'postcustom', 'dame_agenda', 'normal' );
+
 		add_meta_box(
 			'dame_agenda_description_metabox',
 			__( 'Description', 'dame' ),

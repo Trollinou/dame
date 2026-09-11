@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Correctifs & API REST
+- **Rétablissement de l'exposition REST des métadonnées (`dame_agenda`, `adherent`, `dame_contact`)** :
+  - Restauration du support `'custom-fields'` dans la définition des Custom Post Types afin de garantir la présence de l'objet `meta` dans les réponses JSON de l'API REST WordPress (`/wp-json/wp/v2/agenda`, `/wp-json/wp/v2/adherents`, `/wp-json/wp/v2/contacts`).
+  - Résolution du bug d'affichage dans la PWA où les événements de l'agenda n'apparaissaient plus en mode liste ou calendrier en raison de métadonnées de dates manquantes.
+  - Masquage propre de la métabox native superflue via `remove_meta_box( 'postcustom', ..., 'normal' )` dans les gestionnaires d'administration sans perturber le fonctionnement de l'API REST.
+
 ## [5.3.0] - 2026-09-11
 
 ### Ergonomie & Administration (Adhérents & Contacts)

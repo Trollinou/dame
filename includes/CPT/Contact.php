@@ -71,7 +71,7 @@ class Contact {
 			'label'               => __( 'Contact', 'dame' ),
 			'description'         => __( 'Contacts externes (Presse, Élus, Clubs voisins)', 'dame' ),
 			'labels'              => $labels,
-			'supports'            => array( 'title' ),
+			'supports'            => array( 'title', 'custom-fields' ),
 			'hierarchical'        => false,
 			'public'              => false,
 			'show_ui'             => true,

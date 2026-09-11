@@ -79,7 +79,7 @@ class Agenda {
 			'label'               => __( 'Événement', 'dame' ),
 			'description'         => __( 'Les événements de l\'agenda', 'dame' ),
 			'labels'              => $labels,
-			'supports'            => array( 'title' ),
+			'supports'            => array( 'title', 'custom-fields' ),
 			'hierarchical'        => false,
 			'public'              => true,
 			'show_ui'             => true,
