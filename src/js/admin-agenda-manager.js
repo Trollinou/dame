@@ -4,7 +4,7 @@ jQuery(document).ready(function ($) {
 		const competitionType = $(
 			'input[name="dame_competition_type"]:checked'
 		).val();
-		if (competitionType === 'non') {
+		if (!competitionType || competitionType === 'non') {
 			$('#dame_competition_level_wrapper').hide();
 		} else {
 			$('#dame_competition_level_wrapper').show();
@@ -37,7 +37,7 @@ jQuery(document).ready(function ($) {
 		}
 	});
 
-	// UX: Validate Category Selection on submit
+	// UX: Validate Category Selection and Competition Type on submit
 	$('#post').on('submit', function (e) {
 		// Only if we are on the agenda edit screen
 		if ($('#dame_agenda_categorychecklist').length > 0) {
@@ -51,6 +51,20 @@ jQuery(document).ready(function ($) {
 				$('.spinner').removeClass('is-active');
 				return false;
 			}
+		}
+
+		if (
+			$('input[name="dame_competition_type"]').length > 0 &&
+			$('input[name="dame_competition_type"]:checked').length === 0
+		) {
+			alert(
+				dame_agenda_manager_data.alert_competition_type ||
+					'Veuillez sélectionner un type de compétition.'
+			);
+			e.preventDefault();
+			$('#publish').removeClass('disabled');
+			$('.spinner').removeClass('is-active');
+			return false;
 		}
 	});
 

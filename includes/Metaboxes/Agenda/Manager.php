@@ -27,6 +27,7 @@ class Manager {
 		add_action( 'add_meta_boxes', array( $this, 'register_meta_boxes' ) );
 		add_action( 'save_post_dame_agenda', array( $this, 'save' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'edit_form_top', array( $this, 'render_back_button' ) );
 		add_action( 'admin_post_dame_delete_series_from', array( $this, 'handle_delete_series_from' ) );
 		add_action( 'admin_post_dame_delete_entire_series', array( $this, 'handle_delete_entire_series' ) );
 		add_action( 'admin_notices', array( $this, 'display_admin_notices' ) );
@@ -97,9 +98,72 @@ class Manager {
 			'dame-admin-agenda-manager',
 			'dame_agenda_manager_data',
 			array(
-				'alert_category' => __( 'Veuillez sélectionner au moins une catégorie.', 'dame' ),
+				'alert_category'         => __( 'Veuillez sélectionner au moins une catégorie.', 'dame' ),
+				'alert_competition_type' => __( 'Veuillez sélectionner un type de compétition.', 'dame' ),
 			)
 		);
+	}
+
+	/**
+	 * Renders the back link above the form fields.
+	 *
+	 * @param WP_Post $post The post object.
+	 */
+	public function render_back_button( WP_Post $post ): void {
+		if ( 'dame_agenda' !== $post->post_type ) {
+			return;
+		}
+
+		$user_id  = get_current_user_id();
+		$list_url = $user_id ? (string) get_user_meta( $user_id, 'dame_last_agenda_list_url', true ) : '';
+		if ( empty( $list_url ) ) {
+			$list_url = admin_url( 'edit.php?post_type=dame_agenda' );
+		} else {
+			$list_url = admin_url( ltrim( str_replace( '/wp-admin/', '', $list_url ), '/' ) );
+		}
+		?>
+		<style>
+			.dame-back-link {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				text-decoration: none;
+				color: #1e293b;
+				background-color: #f8fafc;
+				border: 1px solid #cbd5e1;
+				border-radius: 6px;
+				padding: 8px 16px;
+				font-weight: 500;
+				font-size: 13px;
+				transition: all 0.15s ease-in-out;
+				box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+			}
+			.dame-back-link:hover {
+				background-color: #f1f5f9;
+				border-color: #94a3b8;
+				color: #0f172a;
+			}
+			.dame-back-link:hover .dashicons {
+				transform: translateX(-3px);
+				color: #0f172a;
+			}
+			.dame-back-link .dashicons {
+				font-size: 18px;
+				width: 18px;
+				height: 18px;
+				line-height: 18px;
+				margin: 0;
+				color: #64748b;
+				transition: transform 0.15s ease-in-out;
+			}
+		</style>
+		<div style="margin: 15px 0;">
+			<a href="<?php echo esc_url( $list_url ); ?>" class="dame-back-link">
+				<span class="dashicons dashicons-arrow-left-alt"></span>
+				<span style="line-height: 1;"><?php esc_html_e( 'Retour à la liste filtrée', 'dame' ); ?></span>
+			</a>
+		</div>
+		<?php
 	}
 
 	/**
@@ -164,63 +228,13 @@ class Manager {
 			$meta_key = 'dame_' . $field_name;
 			return isset( $transient_data[ $meta_key ] )
 				? esc_attr( $transient_data[ $meta_key ] )
-				: get_post_meta( $post->ID, '_' . $meta_key, true );
+				: ( (string) get_post_meta( $post->ID, '_' . $meta_key, true ) ?: $default );
 		};
 
-		$competition_type  = $get_value( 'competition_type', 'non' );
+		$competition_type  = $get_value( 'competition_type', '' );
 		$competition_level = $get_value( 'competition_level', 'departementale' );
 		$description       = $get_value( 'agenda_description' );
-
-		$user_id  = get_current_user_id();
-		$list_url = $user_id ? (string) get_user_meta( $user_id, 'dame_last_agenda_list_url', true ) : '';
-		if ( empty( $list_url ) ) {
-			$list_url = admin_url( 'edit.php?post_type=dame_agenda' );
-		} else {
-			$list_url = admin_url( ltrim( str_replace( '/wp-admin/', '', $list_url ), '/' ) );
-		}
-
 		?>
-		<style>
-			.dame-back-link {
-				display: inline-flex;
-				align-items: center;
-				gap: 8px;
-				text-decoration: none;
-				color: #1e293b;
-				background-color: #f8fafc;
-				border: 1px solid #cbd5e1;
-				border-radius: 6px;
-				padding: 8px 16px;
-				font-weight: 500;
-				font-size: 13px;
-				transition: all 0.15s ease-in-out;
-				box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-			}
-			.dame-back-link:hover {
-				background-color: #f1f5f9;
-				border-color: #94a3b8;
-				color: #0f172a;
-			}
-			.dame-back-link:hover .dashicons {
-				transform: translateX(-3px);
-				color: #0f172a;
-			}
-			.dame-back-link .dashicons {
-				font-size: 18px;
-				width: 18px;
-				height: 18px;
-				line-height: 18px;
-				margin: 0;
-				color: #64748b;
-				transition: transform 0.15s ease-in-out;
-			}
-		</style>
-		<div style="margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">
-			<a href="<?php echo esc_url( $list_url ); ?>" class="dame-back-link">
-				<span class="dashicons dashicons-arrow-left-alt"></span>
-				<span style="line-height: 1;"><?php esc_html_e( 'Retour à la liste filtrée', 'dame' ); ?></span>
-			</a>
-		</div>
 		<style>
 			.dame-radio-group { display: flex; gap: 1em; margin-bottom: 0.5em; }
 			.dame-radio-group label { display: flex; align-items: center; gap: 0.2em; }
@@ -228,10 +242,10 @@ class Manager {
 		</style>
 		<table class="form-table">
 			<tr>
-				<th><label><?php esc_html_e( 'Type de compétition', 'dame' ); ?></label></th>
+				<th><label><?php esc_html_e( 'Type de compétition', 'dame' ); ?> <span class="description" style="color: #d63638;">*</span></label></th>
 				<td>
 					<div class="dame-radio-group">
-						<label><input type="radio" name="dame_competition_type" value="non" <?php checked( $competition_type, 'non' ); ?>> <?php esc_html_e( 'Non', 'dame' ); ?></label>
+						<label><input type="radio" name="dame_competition_type" value="non" <?php checked( $competition_type, 'non' ); ?> required> <?php esc_html_e( 'Non', 'dame' ); ?></label>
 						<label><input type="radio" name="dame_competition_type" value="individuelle" <?php checked( $competition_type, 'individuelle' ); ?>> <?php esc_html_e( 'Individuelle', 'dame' ); ?></label>
 						<label><input type="radio" name="dame_competition_type" value="equipe" <?php checked( $competition_type, 'equipe' ); ?>> <?php esc_html_e( 'Par équipe', 'dame' ); ?></label>
 					</div>
@@ -513,6 +527,9 @@ class Manager {
 		}
 		if ( empty( $_POST['dame_end_date'] ) ) {
 			$errors[] = __( 'La date de fin est obligatoire.', 'dame' );
+		}
+		if ( empty( $_POST['dame_competition_type'] ) ) {
+			$errors[] = __( 'Le type de compétition est obligatoire.', 'dame' );
 		}
 
 		if ( ! empty( $errors ) ) {

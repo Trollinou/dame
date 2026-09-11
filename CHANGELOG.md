@@ -27,6 +27,10 @@
     - Rattachement de groupe via `_dame_recurrence_group_id`.
     - Action « Supprimer cet événement et les suivants » : supprime l'intégralité de la série si déclenchée depuis le premier événement, ou supprime uniquement les séances futures si déclenchée en cours d'année afin de préserver l'historique des séances passées.
     - Option de suppression globale de toute la série.
+  - **Ergonomie & Nettoyage du formulaire d'édition (`dame_agenda`)** :
+    - **Bouton de retour filtré** : Déplacement du bouton « Retour à la liste filtrée » au sommet de la page d'édition (`edit_form_top`), en dehors du panneau « Description ».
+    - **Type de compétition obligatoire** : Validation stricte (indicateur visuel `*`, validation HTML5/JS et contrôle serveur PHP) et suppression de la pré-sélection par défaut.
+    - **Suppression des Champs personnalisés natifs** : Retrait du support `'custom-fields'` pour masquer la métabox native superflue tout en préservant l'exposition des métadonnées via l'API REST.
   - **Architecture & Composants dédiés** :
     - Service de calcul pur : `DAME\Services\Agenda\Recurrence_Calculator`.
     - Service de création par lot : `DAME\Services\Agenda\Batch_Creator`.
