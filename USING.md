@@ -165,4 +165,25 @@ Pour afficher le formulaire d'inscription sur vos pages, articles ou widgets :
 *   **Adhérents & Responsables légaux :** Si l'email saisi appartient déjà à un membre ou un représentant légal, un message prévient le visiteur qu'il reçoit déjà automatiquement les communications du club.
 *   **Contacts existants :** Si l'email correspond à une fiche contact déjà existante, celle-ci n'est pas dupliquée : le groupe Newsletter lui est simplement ajouté lors de la confirmation.
 
+## 8. Formulaire de Préinscription & Signature Électronique
 
+Le shortcode `[dame_fiche_inscription]` permet aux futurs adhérents de saisir leur préinscription directement depuis le site WordPress :
+```text
+[dame_fiche_inscription]
+```
+
+### a. Fonctionnement et signature tactile/souris
+1. **Questionnaire de santé :** Le formulaire propose le lien vers le questionnaire officiel FFE adapté selon l'âge (Majeur ou Mineur).
+2. **Réponse « NON » partout :** 
+   - Déploie immédiatement la zone de **Signature électronique manuscrite** (canvas HTML5 tactile et souris).
+   - Affiche les engagements obligatoires : attestation sur l'honneur (majeur) et consentement du représentant légal (mineur).
+   - L'apposition de la signature est obligatoire pour pouvoir soumettre le formulaire.
+   - Les documents PDF (`ffe_attestation_sante.pdf` et `el_autorisation_parentale.pdf`) sont pré-remplis, signés avec l'image PNG et l'empreinte d'audit (date, heure et adresse IP), puis enregistrés dans le répertoire sécurisé du plugin.
+3. **Réponse « OUI » à au moins une question :**
+   - Aucune signature n'est demandée sur le formulaire.
+   - Un message prévient l'adhérent qu'un certificat médical de moins de 6 mois est obligatoire pour finaliser sa licence.
+4. **Validation et cycle de vie documentaire :**
+   - **En préinscription :** L'administrateur peut visualiser directement les documents signés depuis la boîte « Détails de la Préinscription ».
+   - **Lors de la validation :** Les documents signés de la préinscription sont physiquement dupliqués sous un nom dédié à l'adhérent et à la saison en cours (`_dame_doc_health_attestation_path_{season_id}`).
+   - **Nettoyage automatique de la préinscription :** La préinscription d'origine est ensuite supprimée avec ses fichiers temporaires initiaux, laissant l'adhérent avec ses propres documents autonomes et pérennes.
+   - Si une préinscription sans suite est supprimée manuellement par l'administrateur, ses documents associés sont automatiquement détruits du serveur (conformité RGPD).

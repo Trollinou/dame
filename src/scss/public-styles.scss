@@ -490,3 +490,23 @@ body.dame-modal-active {
         }
     }
 }
+
+/* ==========================================================================
+   Public Pre-inscription Signature Pad
+   ========================================================================== */
+#dame-signature-section {
+    box-sizing: border-box;
+    transition: all 0.2s ease-in-out;
+
+    .dame-signature-wrapper {
+        box-sizing: border-box;
+        overflow: hidden;
+
+        canvas {
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+    }
+}
+

@@ -304,6 +304,56 @@ class Details {
 			}
 			echo '</table>';
 		}
+
+		$health_doc   = (string) get_post_meta( $post->ID, '_dame_doc_health_attestation_path', true );
+		$parental_doc = (string) get_post_meta( $post->ID, '_dame_doc_parental_auth_path', true );
+		$sig_date     = (string) get_post_meta( $post->ID, '_dame_signature_date', true );
+
+		if ( ! empty( $health_doc ) || ! empty( $parental_doc ) || ! empty( $sig_date ) ) {
+			echo '<h3>' . esc_html__( 'Documents et Signature Électronique', 'dame' ) . '</h3>';
+			echo '<table class="form-table">';
+
+			if ( ! empty( $sig_date ) ) {
+				echo '<tr>';
+				echo '<th>' . esc_html__( 'Date de signature', 'dame' ) . '</th>';
+				echo '<td><strong>' . esc_html( $sig_date ) . '</strong></td>';
+				echo '</tr>';
+			}
+
+			if ( ! empty( $health_doc ) ) {
+				$health_url = add_query_arg(
+					array(
+						'action'   => 'dame_download_doc',
+						'type'     => 'health',
+						'post_id'  => $post->ID,
+						'_wpnonce' => wp_create_nonce( 'dame_download_doc_' . $post->ID ),
+					),
+					admin_url( 'admin-ajax.php' )
+				);
+				echo '<tr>';
+				echo '<th>' . esc_html__( 'Attestation de santé', 'dame' ) . '</th>';
+				echo '<td><a href="' . esc_url( $health_url ) . '" class="button button-secondary" target="_blank">' . esc_html__( 'Voir le document signé', 'dame' ) . '</a></td>';
+				echo '</tr>';
+			}
+
+			if ( ! empty( $parental_doc ) ) {
+				$parental_url = add_query_arg(
+					array(
+						'action'   => 'dame_download_doc',
+						'type'     => 'parental',
+						'post_id'  => $post->ID,
+						'_wpnonce' => wp_create_nonce( 'dame_download_doc_' . $post->ID ),
+					),
+					admin_url( 'admin-ajax.php' )
+				);
+				echo '<tr>';
+				echo '<th>' . esc_html__( 'Autorisation parentale', 'dame' ) . '</th>';
+				echo '<td><a href="' . esc_url( $parental_url ) . '" class="button button-secondary" target="_blank">' . esc_html__( 'Voir le document signé', 'dame' ) . '</a></td>';
+				echo '</tr>';
+			}
+
+			echo '</table>';
+		}
 	}
 
 	/**

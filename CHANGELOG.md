@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Dématérialisation & Signature Électronique des Documents
+- **Signature manuscrite intégrée au formulaire de préinscription (`[dame_fiche_inscription]`)** :
+  - Intégration d'un canvas tactile et souris HTML5 pour recueillir la signature manuscrite lors des réponses négatives au questionnaire de santé FFE.
+  - Cases à cocher d'engagement obligatoires (attestation sur l'honneur pour majeur, accord du responsable légal pour mineur).
+  - Validation dynamique côté client et serveur empêchant la soumission si la signature ou les consentements requis sont manquants.
+  - Incrustation haute précision de la signature manuscrite, de l'identité, de la date, de la commune et de l'empreinte d'audit (horodatage UTC et IP) sur le formulaire officiel FFE (`ffe_attestation_sante.pdf`) et sur l'autorisation parentale pour mineurs.
+  - Téléchargement immédiat de l'exemplaire signé sur l'écran de confirmation post-soumission.
+- **Gestion documentaire & Stockage sécurisé (`Document_Storage`)** :
+  - Création du service `Document_Storage` isolant tous les PDFs générés dans `wp-content/uploads/dame-documents/` avec protection automatique `.htaccess` et `index.php`.
+  - Duplication physique des fichiers signés (`Document_Storage::duplicate_file`) lors du transfert d'une préinscription vers la fiche adhérent, garantissant l'indépendance des cycles de vie et la pérennité des documents rattachés à la saison sportive (`_dame_doc_health_attestation_path_{season_id}`).
+  - Nettoyage automatique des documents sur le serveur (`before_delete_post`) lors de la suppression d'une préinscription non retenue (conformité RGPD).
+  - Consultation directe et téléchargement sécurisé des documents signés depuis l'administration dans les boîtes de métadonnées de la préinscription et de la fiche adhérent (`dame_download_doc`).
+  - Possibilité pour l'administrateur d'importer manuellement des documents (PDF, JPG, PNG) pour remplacer ou compléter les attestations de la saison courante.
+
 ## [5.3.1] - 2026-09-11
 
 ### Correctifs & API REST

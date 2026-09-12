@@ -5,7 +5,11 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\CPT;
+
+use DAME\Services\Document_Storage;
 
 /**
  * Class PreInscription
@@ -17,6 +21,7 @@ class PreInscription {
 	 */
 	public function init(): void {
 		add_action( 'init', array( $this, 'register' ), 0 );
+		add_action( 'before_delete_post', array( $this, 'cleanup_documents_on_delete' ) );
 	}
 
 	/**
@@ -79,5 +84,26 @@ class PreInscription {
 		);
 
 		register_post_type( 'dame_pre_inscription', $args );
+	}
+
+	/**
+	 * Deletes physical stored documents when a pre-inscription is deleted.
+	 *
+	 * @param int $post_id Post ID being deleted.
+	 */
+	public function cleanup_documents_on_delete( int $post_id ): void {
+		if ( 'dame_pre_inscription' !== get_post_type( $post_id ) ) {
+			return;
+		}
+
+		$health_doc = (string) get_post_meta( $post_id, '_dame_doc_health_attestation_path', true );
+		if ( ! empty( $health_doc ) ) {
+			Document_Storage::delete_file( $health_doc );
+		}
+
+		$parental_doc = (string) get_post_meta( $post_id, '_dame_doc_parental_auth_path', true );
+		if ( ! empty( $parental_doc ) ) {
+			Document_Storage::delete_file( $parental_doc );
+		}
 	}
 }

@@ -5,9 +5,12 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\PreInscription;
 
 use DAME\Services\Adherent_Matcher;
+use DAME\Services\Document_Storage;
 
 /**
  * Class Actions
@@ -53,7 +56,7 @@ class Actions {
 	 * Add the meta box.
 	 */
 	public function add_box(): void {
-		$matched_id = Adherent_Matcher::find_match( get_the_ID() );
+		$matched_id = Adherent_Matcher::find_match( (int) get_the_ID() );
 		add_meta_box(
 			'dame_pre_inscription_actions',
 			__( 'Actions de Validation', 'dame' ),
@@ -77,7 +80,7 @@ class Actions {
 		?>
 		<div class="dame-actions-wrapper">
 			<?php if ( $matched_id ) : ?>
-				<input type="hidden" name="dame_matched_adherent_id" value="<?php echo esc_attr( $matched_id ); ?>" />
+				<input type="hidden" name="dame_matched_adherent_id" value="<?php echo esc_attr( (string) $matched_id ); ?>" />
 				<p><strong><span class="dashicons dashicons-yes-alt" style="color: green;"></span> <?php esc_html_e( 'Adhérent existant trouvé !', 'dame' ); ?></strong></p>
 				<p>
 					<button type="submit" name="dame_pre_inscription_action" value="validate_update" class="button button-primary button-large"><?php esc_html_e( "Mettre à jour l'adhérent", 'dame' ); ?></button>
@@ -102,9 +105,6 @@ class Actions {
 	 * @param int $post_id Post ID.
 	 */
 	public function save( $post_id ): void {
-		// Note: Field saving is handled by Details class (priority 10).
-		// This runs at priority 20 to handle actions AFTER fields are saved.
-
 		$action_nonce = isset( $_POST['dame_pre_inscription_action_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_pre_inscription_action_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $action_nonce, 'dame_pre_inscription_process_action' ) ) {
 			return;
@@ -124,19 +124,54 @@ class Actions {
 
 			switch ( $action ) {
 				case 'delete':
+					// Document cleanup is handled automatically via before_delete_post in PreInscription CPT
 					wp_delete_post( $post_id, true );
 					wp_safe_redirect( admin_url( 'edit.php?post_type=dame_pre_inscription&message=101' ) );
 					exit;
 
 				case 'validate_new':
 				case 'validate_update':
-					// Data is already saved by Details class, so we can read it fresh from the DB.
-					$pre_inscription_meta = get_post_meta( $post_id );
-					$adherent_meta        = array();
+					$pre_inscription_meta  = get_post_meta( $post_id );
+					$adherent_meta         = array();
+					$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
+					$season_suffix         = $current_season_tag_id > 0 ? '_' . $current_season_tag_id : '';
+
 					foreach ( $pre_inscription_meta as $key => $value ) {
 						if ( strpos( $key, '_dame_' ) === 0 ) {
 							$adherent_meta[ $key ] = maybe_unserialize( $value[0] );
 						}
+					}
+
+					// Duplicate documents physically so adherent has its own files
+					$last_name_adherent  = isset( $adherent_meta['_dame_last_name'] ) ? sanitize_file_name( (string) $adherent_meta['_dame_last_name'] ) : 'adherent';
+					$first_name_adherent = isset( $adherent_meta['_dame_first_name'] ) ? sanitize_file_name( (string) $adherent_meta['_dame_first_name'] ) : '';
+
+					if ( ! empty( $adherent_meta['_dame_doc_health_attestation_path'] ) ) {
+						$source_health = (string) $adherent_meta['_dame_doc_health_attestation_path'];
+						$target_name   = 'attestation_sante_' . $last_name_adherent . '_' . $first_name_adherent . $season_suffix . '.pdf';
+						$copied_health = Document_Storage::duplicate_file( $source_health, $target_name );
+						if ( $copied_health ) {
+							$adherent_meta['_dame_doc_health_attestation_path'] = $copied_health;
+							if ( $season_suffix ) {
+								$adherent_meta[ '_dame_doc_health_attestation_path' . $season_suffix ] = $copied_health;
+							}
+						}
+					}
+
+					if ( ! empty( $adherent_meta['_dame_doc_parental_auth_path'] ) ) {
+						$source_parental = (string) $adherent_meta['_dame_doc_parental_auth_path'];
+						$target_name     = 'attestation_parentale_' . $last_name_adherent . '_' . $first_name_adherent . $season_suffix . '.pdf';
+						$copied_parental = Document_Storage::duplicate_file( $source_parental, $target_name );
+						if ( $copied_parental ) {
+							$adherent_meta['_dame_doc_parental_auth_path'] = $copied_parental;
+							if ( $season_suffix ) {
+								$adherent_meta[ '_dame_doc_parental_auth_path' . $season_suffix ] = $copied_parental;
+							}
+						}
+					}
+
+					if ( isset( $adherent_meta['_dame_signature_date'] ) && $season_suffix ) {
+						$adherent_meta[ '_dame_signature_date' . $season_suffix ] = $adherent_meta['_dame_signature_date'];
 					}
 
 					$post_title       = get_the_title( $post_id );
@@ -155,7 +190,6 @@ class Actions {
 					} else { // validate_update
 						$adherent_id = isset( $_POST['dame_matched_adherent_id'] ) ? absint( $_POST['dame_matched_adherent_id'] ) : 0;
 						if ( ! $adherent_id ) {
-							// Fallback: treat as new if ID is missing.
 							$adherent_id      = wp_insert_post(
 								array(
 									'post_title'  => $post_title,
@@ -166,7 +200,6 @@ class Actions {
 							);
 							$redirect_message = 6;
 						} else {
-							// Update existing adherent
 							wp_update_post(
 								array(
 									'ID'         => $adherent_id,
@@ -208,18 +241,19 @@ class Actions {
 					}
 
 					// Set adherent to 'Active' for the current season
-					$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
 					if ( $current_season_tag_id ) {
-						wp_add_object_terms( $adherent_id, (int) $current_season_tag_id, 'dame_saison_adhesion' );
+						wp_add_object_terms( $adherent_id, $current_season_tag_id, 'dame_saison_adhesion' );
 					}
 
-					// Delete the pre-inscription post
+					// Delete pre-inscription post (its original documents will be cleaned up, adherent keeps its copies)
 					wp_delete_post( $post_id, true );
 
 					// Redirect to the adherent's edit page
 					$redirect_url = get_edit_post_link( $adherent_id, 'raw' );
-					wp_safe_redirect( add_query_arg( 'message', $redirect_message, $redirect_url ) );
-					exit;
+					if ( $redirect_url ) {
+						wp_safe_redirect( add_query_arg( 'message', $redirect_message, $redirect_url ) );
+						exit;
+					}
 			}
 		}
 	}

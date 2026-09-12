@@ -202,7 +202,41 @@ class RegistrationForm {
 					<label><input type="radio" name="dame_health_questionnaire" value="oui"> <?php esc_html_e( 'J’ai au moins une réponse à OUI', 'dame' ); ?></label>
 				</p>
 
-				<p>
+				<div id="dame-signature-section" style="display: none; margin-top: 20px; padding: 15px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc;">
+					<h4 style="margin-top: 0; margin-bottom: 8px; color: #1e293b;">
+						<?php esc_html_e( 'Signature électronique', 'dame' ); ?>
+					</h4>
+					<p id="dame-signature-hint" style="margin-bottom: 12px; font-size: 0.9em; color: #475569;">
+						<?php esc_html_e( 'Veuillez apposer votre signature manuscrite ci-dessous.', 'dame' ); ?>
+					</p>
+
+					<p id="dame-health-attestation-consent-p" style="margin-bottom: 10px;">
+						<label for="dame_health_attestation_consent" style="font-weight: normal; display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+							<input type="checkbox" id="dame_health_attestation_consent" name="dame_health_attestation_consent" value="1" style="margin-top: 4px; width: auto;">
+							<span><?php esc_html_e( 'J’atteste sur l’honneur avoir répondu « NON » à toutes les questions du questionnaire de santé et m’engage à signaler tout changement de mon état de santé.', 'dame' ); ?></span>
+						</label>
+					</p>
+
+					<p id="dame-parental-auth-consent-p" style="display: none; margin-bottom: 12px;">
+						<label for="dame_parental_auth_consent" style="font-weight: normal; display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+							<input type="checkbox" id="dame_parental_auth_consent" name="dame_parental_auth_consent" value="1" style="margin-top: 4px; width: auto;">
+							<span><?php esc_html_e( 'En tant que représentant légal, j’autorise le mineur à participer aux activités du club et confirme l’exactitude des informations fournies.', 'dame' ); ?></span>
+						</label>
+					</p>
+
+					<div class="dame-signature-wrapper" style="position: relative; border: 1px dashed #94a3b8; border-radius: 6px; background-color: #ffffff; margin-bottom: 8px;">
+						<canvas id="dame-signature-canvas" style="display: block; width: 100%; height: 160px; touch-action: none; cursor: crosshair;"></canvas>
+					</div>
+					<div style="display: flex; justify-content: space-between; align-items: center;">
+						<span style="font-size: 0.8em; color: #64748b;"><?php esc_html_e( 'Signez avec votre doigt ou la souris dans le cadre ci-dessus', 'dame' ); ?></span>
+						<button type="button" id="dame-clear-signature" style="background: none; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 10px; font-size: 0.85em; cursor: pointer; color: #475569;">
+							<?php esc_html_e( 'Effacer la signature', 'dame' ); ?>
+						</button>
+					</div>
+					<input type="hidden" id="dame_signature_image" name="signature_image" value="">
+				</div>
+
+				<p style="margin-top: 20px;">
 					<label for="dame_consent_checkbox">
 						<input type="checkbox" id="dame_consent_checkbox" name="dame_consent_checkbox" required>
 						<?php esc_html_e( 'En cochant cette case, je reconnais avoir pris connaissance du règlement intérieur de l’Association Échiquier Lédonien et m’engage à le respecter.', 'dame' ); ?>
@@ -466,6 +500,57 @@ class RegistrationForm {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
 
+		// Process electronic signature if provided and health questionnaire is negative
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$signature_image     = isset( $_POST['signature_image'] ) ? sanitize_text_field( wp_unslash( $_POST['signature_image'] ) ) : '';
+		$has_signed_health   = false;
+		$has_signed_parental = false;
+
+		if ( ! empty( $signature_image ) && str_starts_with( $signature_image, 'data:image/png;base64,' ) ) {
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+			$raw_png = base64_decode( substr( $signature_image, strlen( 'data:image/png;base64,' ) ) );
+			if ( $raw_png ) {
+				$temp_sig = wp_tempnam( 'sig_' );
+				if ( $temp_sig ) {
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+					file_put_contents( $temp_sig, $raw_png );
+
+					$remote_ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+					$audit_data = array(
+						'timestamp' => time(),
+						'ip'        => $remote_ip,
+					);
+
+					$pdf_service = new \DAME\Services\PDF_Generator();
+
+					// 1. Generate Signed Health Attestation if answers were all NO
+					if ( isset( $sanitized_data['dame_health_questionnaire'] ) && 'non' === $sanitized_data['dame_health_questionnaire'] ) {
+						$stored_health = $pdf_service->save_signed_health_doc( $post_id, $temp_sig, $audit_data );
+						if ( $stored_health ) {
+							update_post_meta( $post_id, '_dame_doc_health_attestation_path', $stored_health );
+							$has_signed_health = true;
+						}
+					}
+
+					// 2. Generate Signed Parental Auth if adherent is minor
+					if ( $is_minor ) {
+						$stored_parental = $pdf_service->save_signed_parental_doc( $post_id, $temp_sig, $audit_data );
+						if ( $stored_parental ) {
+							update_post_meta( $post_id, '_dame_doc_parental_auth_path', $stored_parental );
+							$has_signed_parental = true;
+						}
+					}
+
+					update_post_meta( $post_id, '_dame_signature_date', current_time( 'mysql' ) );
+					update_post_meta( $post_id, '_dame_signature_ip', $remote_ip );
+
+					if ( file_exists( $temp_sig ) ) {
+						wp_delete_file( $temp_sig );
+					}
+				}
+			}
+		}
+
 		// 6. Send Email Notification
 		$options         = get_option( 'dame_options' );
 		$recipient_email = isset( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
@@ -503,6 +588,8 @@ class RegistrationForm {
 			'is_minor'             => $is_minor,
 			'payment_url'          => $payment_url,
 			'sender_email'         => $sender_email,
+			'has_signed_health'    => $has_signed_health,
+			'has_signed_parental'  => $has_signed_parental,
 		);
 
 		if ( $is_minor ) {

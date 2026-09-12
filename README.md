@@ -35,7 +35,11 @@ Oubliez les statuts figés (ancien/nouveau). DAME utilise une taxonomie de saiso
 Chaque fiche membre centralise :
 *   **Identité & Coordonnées :** État civil complet, adresses, emails et téléphones.
 *   **Représentants Légaux :** Gestion double pour les mineurs avec fonctions de recopie rapide des coordonnées.
-*   **Santé & Légal :** Suivi des attestations de santé, certificats médicaux et autorisations parentales (avec génération de PDF).
+*   **Santé, Documents & Signatures Électroniques :** Suivi des attestations de santé officielles FFE (`ffe_attestation_sante.pdf`), des certificats médicaux et des autorisations parentales pour mineurs (`el_autorisation_parentale.pdf`).
+    *   **Signature Électronique Dématérialisée :** Incrustation automatique de la signature manuscrite tactile (horodatage UTC et IP de traçabilité) sur les PDFs officiels dès la préinscription.
+    *   **Stockage Dédié & Sécurisé :** Les documents sont isolés dans `wp-content/uploads/dame-documents/` avec protection automatique `.htaccess` contre tout accès public non autorisé.
+    *   **Nettoyage Automatique :** Suppression intégrale des fichiers sur disque lors de la suppression d'une préinscription pour éviter tout fichier orphelin (conformité RGPD).
+    *   **Gestion Documentaire par Saison (Métabox Adhérent) :** Consultation immédiate des PDFs signés et possibilité d'importer manuellement (PDF/JPG/PNG) les documents manquants pour la saison courante.
 *   **Honorabilité :** Champs spécifiques pour le contrôle d'honorabilité (obligatoire pour les encadrants et bénévoles en contact avec des mineurs).
 
 ### 3. Classification et Segmentation

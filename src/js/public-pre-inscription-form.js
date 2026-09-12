@@ -168,20 +168,290 @@ document.addEventListener('DOMContentLoaded', function () {
 		rep2LastNameInput.addEventListener('input', formatLastNameInput);
 	}
 
-	// Handle Form Submission
+	// Form and submit elements
 	const form = document.getElementById('dame-pre-inscription-form');
-
-	// Handle consent checkbox
 	const consentCheckbox = document.getElementById('dame_consent_checkbox');
 	const submitButtonInForm = form
 		? form.querySelector('button[type="submit"]')
 		: null;
 
-	if (consentCheckbox && submitButtonInForm) {
-		consentCheckbox.addEventListener('change', function () {
-			submitButtonInForm.disabled = !this.checked;
-		});
+	// Signature Canvas & Validation Logic
+	const signatureSection = document.getElementById('dame-signature-section');
+	const signatureCanvas = document.getElementById('dame-signature-canvas');
+	const clearSignatureBtn = document.getElementById('dame-clear-signature');
+	const signatureImageInput = document.getElementById('dame_signature_image');
+	const healthAttestationConsent = document.getElementById(
+		'dame_health_attestation_consent'
+	);
+	const parentalAuthConsentP = document.getElementById(
+		'dame-parental-auth-consent-p'
+	);
+	const parentalAuthConsent = document.getElementById(
+		'dame_parental_auth_consent'
+	);
+	const signatureHint = document.getElementById('dame-signature-hint');
+
+	let signatureCtx = null;
+	let isDrawing = false;
+	let hasSignature = false;
+
+	const setupCanvas = () => {
+		if (!signatureCanvas) {
+			return;
+		}
+		const rect = signatureCanvas.getBoundingClientRect();
+		if (rect.width === 0) {
+			return;
+		}
+
+		let tempImg = null;
+		if (
+			signatureCtx &&
+			signatureCanvas.width > 0 &&
+			signatureCanvas.height > 0 &&
+			hasSignature
+		) {
+			tempImg = signatureCtx.getImageData(
+				0,
+				0,
+				signatureCanvas.width,
+				signatureCanvas.height
+			);
+		}
+
+		const dpr = window.devicePixelRatio || 1;
+		signatureCanvas.width = rect.width * dpr;
+		signatureCanvas.height = 160 * dpr;
+
+		signatureCtx = signatureCanvas.getContext('2d');
+		if (signatureCtx) {
+			signatureCtx.scale(dpr, dpr);
+			signatureCtx.lineCap = 'round';
+			signatureCtx.lineJoin = 'round';
+			signatureCtx.lineWidth = 2.5;
+			signatureCtx.strokeStyle = '#000000';
+
+			if (tempImg) {
+				signatureCtx.putImageData(tempImg, 0, 0);
+			}
+		}
+	};
+
+	const clearSignature = () => {
+		if (!signatureCanvas || !signatureCtx) {
+			return;
+		}
+		signatureCtx.clearRect(
+			0,
+			0,
+			signatureCanvas.width,
+			signatureCanvas.height
+		);
+		hasSignature = false;
+		if (signatureImageInput) {
+			signatureImageInput.value = '';
+		}
+		checkSubmitState();
+	};
+
+	if (clearSignatureBtn) {
+		clearSignatureBtn.addEventListener('click', clearSignature);
 	}
+
+	window.addEventListener('resize', setupCanvas);
+
+	const getPointerPos = (e) => {
+		const rect = signatureCanvas.getBoundingClientRect();
+		return {
+			x: e.clientX - rect.left,
+			y: e.clientY - rect.top,
+		};
+	};
+
+	if (signatureCanvas) {
+		signatureCanvas.addEventListener('pointerdown', function (e) {
+			if (!signatureCtx) {
+				setupCanvas();
+			}
+			signatureCanvas.setPointerCapture(e.pointerId);
+			isDrawing = true;
+			const pos = getPointerPos(e);
+			signatureCtx.beginPath();
+			signatureCtx.moveTo(pos.x, pos.y);
+		});
+
+		signatureCanvas.addEventListener('pointermove', function (e) {
+			if (!isDrawing || !signatureCtx) {
+				return;
+			}
+			const pos = getPointerPos(e);
+			signatureCtx.lineTo(pos.x, pos.y);
+			signatureCtx.stroke();
+			hasSignature = true;
+			checkSubmitState();
+		});
+
+		const stopDrawing = function (e) {
+			if (!isDrawing) {
+				return;
+			}
+			isDrawing = false;
+			if (
+				signatureCanvas.hasPointerCapture &&
+				signatureCanvas.hasPointerCapture(e.pointerId)
+			) {
+				signatureCanvas.releasePointerCapture(e.pointerId);
+			}
+			if (hasSignature && signatureImageInput) {
+				signatureImageInput.value =
+					signatureCanvas.toDataURL('image/png');
+			}
+			checkSubmitState();
+		};
+
+		signatureCanvas.addEventListener('pointerup', stopDrawing);
+		signatureCanvas.addEventListener('pointercancel', stopDrawing);
+	}
+
+	// Dynamic health questionnaire change handler
+	const updateHealthAndSignatureState = () => {
+		const selectedRadio = form
+			? form.querySelector(
+					'input[name="dame_health_questionnaire"]:checked'
+				)
+			: null;
+		const val = selectedRadio ? selectedRadio.value : '';
+
+		const birthDate = birthDateInput
+			? new Date(birthDateInput.value)
+			: null;
+		let isMinor = false;
+		if (birthDate && !isNaN(birthDate.getTime())) {
+			const today = new Date();
+			let age = today.getFullYear() - birthDate.getFullYear();
+			const m = today.getMonth() - birthDate.getMonth();
+			if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+				age--;
+			}
+			isMinor = age < 18;
+		}
+
+		if (val === 'non') {
+			if (signatureSection) {
+				signatureSection.style.display = 'block';
+				setTimeout(setupCanvas, 50);
+			}
+			if (isMinor) {
+				if (parentalAuthConsentP) {
+					parentalAuthConsentP.style.display = 'block';
+				}
+				if (signatureHint) {
+					signatureHint.textContent =
+						'Veuillez apposer ci-dessous la signature manuscrite du représentant légal.';
+				}
+			} else {
+				if (parentalAuthConsentP) {
+					parentalAuthConsentP.style.display = 'none';
+				}
+				if (signatureHint) {
+					signatureHint.textContent =
+						'Veuillez apposer ci-dessous votre signature manuscrite.';
+				}
+			}
+		} else if (signatureSection) {
+			signatureSection.style.display = 'none';
+		}
+		checkSubmitState();
+	};
+
+	const healthRadios = form
+		? form.querySelectorAll('input[name="dame_health_questionnaire"]')
+		: [];
+	healthRadios.forEach((radio) => {
+		radio.addEventListener('change', updateHealthAndSignatureState);
+	});
+
+	birthDateInput.addEventListener('change', () => {
+		setTimeout(updateHealthAndSignatureState, 50);
+	});
+
+	// Check form validation state for submit button
+	const checkSubmitState = () => {
+		if (!submitButtonInForm) {
+			return;
+		}
+
+		const isConsentChecked = consentCheckbox
+			? consentCheckbox.checked
+			: false;
+		if (!isConsentChecked) {
+			submitButtonInForm.disabled = true;
+			return;
+		}
+
+		const selectedRadio = form
+			? form.querySelector(
+					'input[name="dame_health_questionnaire"]:checked'
+				)
+			: null;
+		const healthVal = selectedRadio ? selectedRadio.value : '';
+
+		if (healthVal === 'non') {
+			const isHealthConsent = healthAttestationConsent
+				? healthAttestationConsent.checked
+				: false;
+			if (!isHealthConsent) {
+				submitButtonInForm.disabled = true;
+				return;
+			}
+
+			// If minor, parental auth consent must also be checked
+			const birthDate = birthDateInput
+				? new Date(birthDateInput.value)
+				: null;
+			let isMinor = false;
+			if (birthDate && !isNaN(birthDate.getTime())) {
+				const today = new Date();
+				let age = today.getFullYear() - birthDate.getFullYear();
+				const m = today.getMonth() - birthDate.getMonth();
+				if (
+					m < 0 ||
+					(m === 0 && today.getDate() < birthDate.getDate())
+				) {
+					age--;
+				}
+				isMinor = age < 18;
+			}
+
+			if (isMinor) {
+				const isParentalConsent = parentalAuthConsent
+					? parentalAuthConsent.checked
+					: false;
+				if (!isParentalConsent) {
+					submitButtonInForm.disabled = true;
+					return;
+				}
+			}
+
+			if (!hasSignature) {
+				submitButtonInForm.disabled = true;
+				return;
+			}
+		}
+
+		submitButtonInForm.disabled = false;
+	};
+
+	if (consentCheckbox) {
+		consentCheckbox.addEventListener('change', checkSubmitState);
+	}
+	if (healthAttestationConsent) {
+		healthAttestationConsent.addEventListener('change', checkSubmitState);
+	}
+	if (parentalAuthConsent) {
+		parentalAuthConsent.addEventListener('change', checkSubmitState);
+	}
+
 	const messagesDiv = document.getElementById('dame-form-messages');
 
 	if (form) {
@@ -223,12 +493,32 @@ document.addEventListener('DOMContentLoaded', function () {
 					"Veuillez remplir tous les champs obligatoires. Ils sont marqués d'un astérisque (*).";
 				messagesDiv.style.display = 'block';
 				firstInvalidField.focus();
-				// Scroll to the message to make sure it's visible
 				messagesDiv.scrollIntoView({
 					behavior: 'smooth',
 					block: 'center',
 				});
-				return; // Stop form submission
+				return;
+			}
+
+			// Ensure signature is captured in hidden input if questionnaire is 'non'
+			const selectedHealthRadio = form.querySelector(
+				'input[name="dame_health_questionnaire"]:checked'
+			);
+			if (selectedHealthRadio && selectedHealthRadio.value === 'non') {
+				if (!hasSignature || !signatureCanvas) {
+					messagesDiv.innerHTML =
+						'Veuillez apposer votre signature électronique dans le cadre prévu.';
+					messagesDiv.style.display = 'block';
+					signatureCanvas.scrollIntoView({
+						behavior: 'smooth',
+						block: 'center',
+					});
+					return;
+				}
+				if (signatureImageInput) {
+					signatureImageInput.value =
+						signatureCanvas.toDataURL('image/png');
+				}
 			}
 
 			const formData = new FormData(form);
@@ -257,42 +547,72 @@ document.addEventListener('DOMContentLoaded', function () {
                             </p>`;
 						}
 
-						// 2. Check if any download links are needed
-						const needsHealthAttestation =
-							data.data.health_questionnaire === 'non';
-						const needsParentalAuth = data.data.is_minor;
-						const hasDownloadLinks =
-							needsHealthAttestation || needsParentalAuth;
+						// 2. Check if documents were signed or need manual download
+						const hasSignedHealth = Boolean(
+							data.data.has_signed_health
+						);
+						const hasSignedParental = Boolean(
+							data.data.has_signed_parental
+						);
 
-						// 3. Add the informational message if there are any download links
-						if (hasDownloadLinks) {
-							const senderEmail = data.data.sender_email;
-							const emailLink = senderEmail
-								? `<a href="mailto:${senderEmail}">${senderEmail}</a>`
-								: "l'email du club";
-							const messageText = `Vous trouverez ci-après le(s) document(s) à signer, puis à nous remettre en main propre ou à nous renvoyer à l’adresse ${emailLink}`;
-							successHtml += `<p style="margin-top: 1.5em;">${messageText}</p>`;
-						}
+						if (hasSignedHealth || hasSignedParental) {
+							successHtml += `
+							<p style="margin-top: 1.2em; font-weight: bold; color: #166534;">
+								&#x2705; Vos documents (attestation de santé${hasSignedParental ? ' et autorisation parentale' : ''}) ont été signés électroniquement avec succès et sont enregistrés.
+							</p>
+							<div style="margin: 1em 0 1.5em 0;">
+								<p style="margin-bottom: 0.5em; font-size: 0.95em;">Vous pouvez télécharger votre exemplaire signé ci-dessous :</p>`;
 
-						// 4. Add the actual download links
-						if (hasDownloadLinks) {
-							successHtml += `<div style="margin-bottom: 1.5em;">`;
-							if (needsHealthAttestation) {
+							if (hasSignedHealth) {
 								successHtml += `
-                                <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" style="display: block; color: blue; text-decoration: underline; margin-bottom: 0.5em; margin-left: 1.5em;">
-                                    &#x1F4E5; Télécharger mon attestation de santé à remettre signé
-                                </a>`;
+								<a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" target="_blank" style="display: block; color: blue; text-decoration: underline; margin-bottom: 0.5em; margin-left: 1.5em;">
+									&#x1F4E5; Télécharger mon attestation de santé signée
+								</a>`;
 							}
-							if (needsParentalAuth) {
+							if (
+								hasSignedParental &&
+								data.data.parental_auth_nonce
+							) {
 								successHtml += `
-                                <a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}" style="display: block; color: blue; text-decoration: underline; margin-left: 1.5em;">
-                                    &#x1F4E5; Télécharger l'autorisation parentale a remettre signé
-                                </a>`;
+								<a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}" target="_blank" style="display: block; color: blue; text-decoration: underline; margin-left: 1.5em;">
+									&#x1F4E5; Télécharger mon autorisation parentale signée
+								</a>`;
 							}
 							successHtml += `</div>`;
+						} else {
+							// Check if any unsigned download links are needed (e.g. if health questionnaire was 'non' without signature fallback)
+							const needsHealthAttestation =
+								data.data.health_questionnaire === 'non';
+							const needsParentalAuth = data.data.is_minor;
+							const hasDownloadLinks =
+								needsHealthAttestation || needsParentalAuth;
+
+							if (hasDownloadLinks) {
+								const senderEmail = data.data.sender_email;
+								const emailLink = senderEmail
+									? `<a href="mailto:${senderEmail}">${senderEmail}</a>`
+									: "l'email du club";
+								const messageText = `Vous trouverez ci-après le(s) document(s) à signer, puis à nous remettre en main propre ou à nous renvoyer à l’adresse ${emailLink}`;
+								successHtml += `<p style="margin-top: 1.5em;">${messageText}</p>`;
+
+								successHtml += `<div style="margin-bottom: 1.5em;">`;
+								if (needsHealthAttestation) {
+									successHtml += `
+									<a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" style="display: block; color: blue; text-decoration: underline; margin-bottom: 0.5em; margin-left: 1.5em;">
+										&#x1F4E5; Télécharger mon attestation de santé à remettre signé
+									</a>`;
+								}
+								if (needsParentalAuth) {
+									successHtml += `
+									<a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}" style="display: block; color: blue; text-decoration: underline; margin-left: 1.5em;">
+										&#x1F4E5; Télécharger l'autorisation parentale a remettre signé
+									</a>`;
+								}
+								successHtml += `</div>`;
+							}
 						}
 
-						// 5. Add the action buttons
+						// 3. Add the action buttons
 						successHtml += `<div style="margin-top: 1em;">`;
 						successHtml += `
                         <button id="dame-new-adhesion-button" type="button" class="button dame-button" style="background-color: #fe0007; color: white; border: none; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; display: block;">
@@ -345,10 +665,25 @@ document.addEventListener('DOMContentLoaded', function () {
 				document.getElementById('dame_birth_city').value = '';
 
 				// Also clear radio buttons for health questionnaire
-				const healthRadios = form.querySelectorAll(
+				const healthRadiosToClear = form.querySelectorAll(
 					'input[name="dame_health_questionnaire"]'
 				);
-				healthRadios.forEach((radio) => (radio.checked = false));
+				healthRadiosToClear.forEach((radio) => (radio.checked = false));
+
+				// Clear signature & checkboxes
+				clearSignature();
+				if (healthAttestationConsent) {
+					healthAttestationConsent.checked = false;
+				}
+				if (parentalAuthConsent) {
+					parentalAuthConsent.checked = false;
+				}
+				if (consentCheckbox) {
+					consentCheckbox.checked = false;
+				}
+				if (signatureSection) {
+					signatureSection.style.display = 'none';
+				}
 
 				// Hide the dynamic fields section until a new birth date is entered
 				if (dynamicFields) {

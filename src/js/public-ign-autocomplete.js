@@ -192,6 +192,10 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	function calculateRoute(destLat, destLng, distanceInput, travelTimeInput) {
+		if (typeof dame_admin_data === 'undefined' || !dame_admin_data) {
+			return;
+		}
+
 		const startLat = dame_admin_data.assoc_latitude;
 		const startLng = dame_admin_data.assoc_longitude;
 

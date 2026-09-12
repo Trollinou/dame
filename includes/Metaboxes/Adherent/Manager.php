@@ -15,6 +15,7 @@ use DAME\Metaboxes\Adherent\Diverse;
 use DAME\Metaboxes\Adherent\Classification;
 use DAME\Metaboxes\Adherent\Groups;
 use DAME\Metaboxes\Adherent\Actions;
+use DAME\Metaboxes\Adherent\Documents;
 
 /**
  * Class Manager
@@ -53,6 +54,9 @@ class Manager {
 
 		$groups = new Groups();
 		$groups->register();
+
+		$documents = new Documents();
+		$documents->register();
 
 		$actions = new Actions();
 		$actions->register();
@@ -93,6 +97,9 @@ class Manager {
 
 		$classification = new Classification();
 		$classification->save( $post_id );
+
+		$documents = new Documents();
+		$documents->save( $post_id );
 	}
 
 	/**
