@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.4.0] - 2026-09-12
+
 ### Dématérialisation & Signature Électronique des Documents
 - **Signature manuscrite intégrée au formulaire de préinscription (`[dame_fiche_inscription]`)** :
   - Intégration d'un canvas tactile et souris HTML5 pour recueillir la signature manuscrite lors des réponses négatives au questionnaire de santé FFE.
