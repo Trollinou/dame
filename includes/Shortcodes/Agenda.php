@@ -514,42 +514,8 @@ class Agenda {
 						<?php
 						$description = (string) get_post_meta( $post_id, '_dame_agenda_description', true );
 						if ( ! empty( $description ) ) :
-							$truncated_description = '';
 							$permalink             = (string) get_permalink( $post_id );
-							$read_more_link        = '&nbsp;<a href="' . esc_url( $permalink ) . '" class="dame-read-more">...</a>';
-
-							// Regex to find trailing <br> tags, whitespace, and &nbsp;.
-							$cleanup_regex = '/(?:<br\s*\/?>|\s|&nbsp;)*$/i';
-
-							// Find the position of the first closing paragraph tag.
-							$first_p_closing_pos = strpos( $description, '</p>' );
-
-							if ( $first_p_closing_pos !== false ) {
-								// Paragraph tag exists.
-								$first_paragraph_content = substr( $description, 0, $first_p_closing_pos );
-								$rest_of_description     = substr( $description, $first_p_closing_pos + strlen( '</p>' ) );
-
-								if ( trim( $rest_of_description ) !== '' ) {
-									// More content exists after the first paragraph.
-									$cleaned_content       = preg_replace( $cleanup_regex, '', $first_paragraph_content );
-									$truncated_description = $cleaned_content . $read_more_link . '</p>';
-								} else {
-									// Only one paragraph, so display the whole description.
-									$truncated_description = $description;
-								}
-							} else {
-								// No paragraph tags, fall back to truncating by the first line break.
-								$lines      = explode( "\n", $description, 2 );
-								$first_line = $lines[0];
-
-								if ( isset( $lines[1] ) && trim( $lines[1] ) !== '' ) {
-									// More lines exist.
-									$cleaned_line          = preg_replace( $cleanup_regex, '', $first_line );
-									$truncated_description = $cleaned_line . $read_more_link;
-								} else {
-									$truncated_description = $first_line;
-								}
-							}
+							$truncated_description = $this->truncate_html_description( $description, $permalink );
 							?>
 							<div class="event-description"><?php echo wp_kses_post( apply_filters( 'the_content', $truncated_description ) ); ?></div>
 						<?php endif; ?>
@@ -561,5 +527,38 @@ class Agenda {
 		wp_reset_postdata();
 		$output = ob_get_clean();
 		return false !== $output ? $output : '';
+	}
+
+	/**
+	 * Truncates event description to its first paragraph or block using the WordPress HTML API.
+	 *
+	 * @param string $html Event HTML description.
+	 * @param string $permalink Event link.
+	 * @return string Truncated HTML with read more link.
+	 */
+	private function truncate_html_description( string $html, string $permalink ): string {
+		$html = trim( $html );
+		if ( '' === $html ) {
+			return '';
+		}
+
+		$read_more_link = '&nbsp;<a href="' . esc_url( $permalink ) . '" class="dame-read-more">...</a>';
+
+		$first_p_closing_pos = strpos( $html, '</p>' );
+		if ( false !== $first_p_closing_pos ) {
+			$first_p = substr( $html, 0, $first_p_closing_pos );
+			$rest    = trim( substr( $html, $first_p_closing_pos + 4 ) );
+			if ( '' !== $rest ) {
+				return $first_p . $read_more_link . '</p>';
+			}
+			return $html;
+		}
+
+		$lines = explode( "\n", $html, 2 );
+		if ( isset( $lines[1] ) && '' !== trim( $lines[1] ) ) {
+			return trim( $lines[0] ) . $read_more_link;
+		}
+
+		return $html;
 	}
 }

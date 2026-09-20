@@ -193,6 +193,19 @@ class Identities {
 		$pending_preinscriptions = array_values( array_filter( $pending_pre_query->posts, static fn( $p ) => $p instanceof \WP_Post ) );
 		$matched_pre_ids         = array();
 
+		// Bulk prime post, taxonomy term, and meta caches to eliminate N+1 queries.
+		$all_prime_ids = array_values(
+			array_unique(
+				array_merge(
+					$accessible_adh_ids,
+					array_map( static fn( \WP_Post $p ) => (int) $p->ID, $pending_preinscriptions )
+				)
+			)
+		);
+		if ( ! empty( $all_prime_ids ) ) {
+			_prime_post_caches( $all_prime_ids, true, true );
+		}
+
 		$identities = array();
 		$seen_ids   = array(); // Pour éviter les doublons techniques.
 
@@ -395,8 +408,7 @@ class Identities {
 					$matched_pre_ids[] = $matched_pre->ID;
 				}
 
-				/* @var array<int, array<string, mixed>> $associated_members */
-				$associated_members   = $reps[ $rep_name ]['associated_members'];
+				$associated_members   = (array) $reps[ $rep_name ]['associated_members'];
 				$associated_members[] = array(
 					'firstname'           => $this->get_firstname( $adh->ID ),
 					'member_id'           => $adh->ID,
@@ -452,8 +464,7 @@ class Identities {
 			foreach ( $unmatched_pres as $unmatched_pre ) {
 				$matched_pre_ids[]    = $unmatched_pre->ID;
 				$child_fname          = (string) get_post_meta( $unmatched_pre->ID, '_dame_first_name', true );
-				/* @var array<int, array<string, mixed>> $first_rep_members */
-				$first_rep_members   = $reps[ $first_rep_key ]['associated_members'];
+				$first_rep_members   = (array) $reps[ $first_rep_key ]['associated_members'];
 				$first_rep_members[] = array(
 					'firstname'           => $child_fname,
 					'name'                => get_the_title( $unmatched_pre->ID ),

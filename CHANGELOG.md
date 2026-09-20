@@ -8,6 +8,10 @@
   - Déclaration stricte `declare(strict_types=1);` appliquée systématiquement sur 100% des fichiers PHP (54 fichiers normalisés).
   - Niveau d'analyse statique PHPStan rehaussé au niveau 7 (`level: 7`) avec zéro erreur sur l'ensemble du plugin.
   - Conformité PHPCS totale validée sur l'ensemble du plugin sans contournement de règles.
+- **Optimisations Modernes WordPress 7.1** :
+  - **HTML API / WP_HTML_Processor (`includes/Shortcodes/Agenda.php`)** : Traitement structuré et sécurisé des descriptions HTML tronquées sans regex fragile.
+  - **Amorçage Groupé du Cache REST (`includes/API/REST/Identities.php`)** : Utilisation de `_prime_post_caches( $ids, true, true )` pour précharger en requêtes groupées les objets, métadonnées et termes associés des adhérents et préinscriptions (élimination des requêtes N+1).
+  - **Délestage du Cache d'Options (`includes/Taxonomies/AgendaCategory.php`)** : Enregistrement des options de taxonomie avec `autoload: false` pour alléger la table d'options système `alloptions`.
 
 ## [5.4.1] - 2026-09-20
 

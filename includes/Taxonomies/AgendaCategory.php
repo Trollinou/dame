@@ -137,7 +137,7 @@ class AgendaCategory {
 					$term_meta[ $key ] = sanitize_hex_color( $raw_term_meta[ $key ] );
 				}
 			}
-			update_option( "taxonomy_$term_id", $term_meta );
+			update_option( "taxonomy_$term_id", $term_meta, false );
 		}
 	}
 
