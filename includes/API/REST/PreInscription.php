@@ -30,7 +30,7 @@ class PreInscription {
 	/**
 	 * Namespace for the API.
 	 *
-	 * @var string
+	 * @var non-falsy-string
 	 */
 	protected string $namespace = 'dame/v1';
 
@@ -52,7 +52,7 @@ class PreInscription {
 	 * Register the REST API routes.
 	 */
 	public function register_routes(): void {
-		// Submit pre-inscription
+		// Submit pre-inscription.
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base,
@@ -65,7 +65,7 @@ class PreInscription {
 			)
 		);
 
-		// Get details of a member for pre-filling
+		// Get details of a member for pre-filling.
 		register_rest_route(
 			$this->namespace,
 			'/adherent-details',
@@ -78,7 +78,7 @@ class PreInscription {
 			)
 		);
 
-		// Secure PDF download endpoints
+		// Secure PDF download endpoints.
 		register_rest_route(
 			$this->namespace,
 			'/pre-inscriptions/(?P<id>\d+)/pdf/health',
@@ -130,7 +130,7 @@ class PreInscription {
 		$post_id = (int) $request['id'];
 		$token   = $request->get_param( 'token' );
 
-		// 1. Token validation (anonymous success download)
+		// 1. Token validation (anonymous success download).
 		if ( ! empty( $token ) ) {
 			$saved_token = get_post_meta( $post_id, '_dame_download_token', true );
 			if ( $token === $saved_token ) {
@@ -138,18 +138,18 @@ class PreInscription {
 			}
 		}
 
-		// 2. Logged-in user validation
+		// 2. Logged-in user validation.
 		if ( is_user_logged_in() ) {
 			$current_user = wp_get_current_user();
 			$email        = $current_user->user_email;
 
-			// Admins / staff can access
+			// Admins / staff can access.
 			$allowed_roles = array( 'staff', 'entraineur', 'editor', 'administrator' );
 			if ( array_intersect( $allowed_roles, (array) $current_user->roles ) ) {
 				return true;
 			}
 
-			// Adherent or legal reps matching the pre-inscription email can access
+			// Adherent or legal reps matching the pre-inscription email can access.
 			$adh_email  = get_post_meta( $post_id, '_dame_email', true );
 			$rep1_email = get_post_meta( $post_id, '_dame_legal_rep_1_email', true );
 			$rep2_email = get_post_meta( $post_id, '_dame_legal_rep_2_email', true );
@@ -190,7 +190,7 @@ class PreInscription {
 		$adh_email     = '';
 		$is_authorized = false;
 
-		// 1. Direct check by _dame_adherent_id if adherent_id is provided
+		// 1. Direct check by _dame_adherent_id if adherent_id is provided.
 		if ( $adherent_id && $adherent_id > 0 ) {
 			$adh_email   = (string) get_post_meta( $adherent_id, '_dame_email', true );
 			$rep_1_email = (string) get_post_meta( $adherent_id, '_dame_legal_rep_1_email', true );
@@ -223,12 +223,15 @@ class PreInscription {
 				);
 
 				if ( ! empty( $query->posts ) ) {
-					return $query->posts[0];
+					$cand = $query->posts[0];
+					if ( $cand instanceof \WP_Post ) {
+						return $cand;
+					}
 				}
 			}
 
-			// If not found by _dame_adherent_id (legacy pre-inscriptions),
-			// retrieve adherent identity to search by triplet
+			// If not found by _dame_adherent_id (legacy pre-inscriptions),.
+			// retrieve adherent identity to search by triplet.
 			if ( empty( $first_name ) ) {
 				$first_name = (string) get_post_meta( $adherent_id, '_dame_first_name', true );
 			}
@@ -242,7 +245,7 @@ class PreInscription {
 			}
 		}
 
-		// 2. Search by first_name and birth_date under user email / adherent email (retrocompatibility & new submissions)
+		// 2. Search by first_name and birth_date under user email / adherent email (retrocompatibility & new submissions).
 		if ( ! empty( $first_name ) && ! empty( $birth_date ) ) {
 			$email_or = array(
 				array(
@@ -306,11 +309,13 @@ class PreInscription {
 
 			if ( ! empty( $query->posts ) ) {
 				$post = $query->posts[0];
-				// Link _dame_adherent_id if known and not yet linked
-				if ( $adherent_id && $adherent_id > 0 && ! get_post_meta( $post->ID, '_dame_adherent_id', true ) ) {
-					update_post_meta( $post->ID, '_dame_adherent_id', $adherent_id );
+				if ( $post instanceof \WP_Post ) {
+					// Link _dame_adherent_id if known and not yet linked.
+					if ( $adherent_id && $adherent_id > 0 && ! get_post_meta( $post->ID, '_dame_adherent_id', true ) ) {
+						update_post_meta( $post->ID, '_dame_adherent_id', $adherent_id );
+					}
+					return $post;
 				}
-				return $post;
 			}
 		}
 
@@ -336,7 +341,7 @@ class PreInscription {
 		$is_admin     = array_intersect( array( 'staff', 'entraineur', 'editor', 'administrator' ), (array) $current_user->roles );
 
 		if ( ! $is_admin ) {
-			// Verify access
+			// Verify access.
 			if ( $adherent_id > 0 ) {
 				$rep_1     = get_post_meta( $adherent_id, '_dame_legal_rep_1_email', true );
 				$rep_2     = get_post_meta( $adherent_id, '_dame_legal_rep_2_email', true );
@@ -357,7 +362,7 @@ class PreInscription {
 			}
 		}
 
-		// Retrieve all metadata
+		// Retrieve all metadata.
 		$meta_keys = array(
 			'first_name',
 			'last_name',
@@ -398,7 +403,7 @@ class PreInscription {
 			'legal_rep_2_commune_naissance',
 		);
 
-		// Check if a pending pre-inscription exists for this adherent or pre_inscription_id
+		// Check if a pending pre-inscription exists for this adherent or pre_inscription_id.
 		$pending_pre = null;
 		if ( $adherent_id > 0 ) {
 			$pending_pre = $this->find_pending_pre_inscription( $adherent_id, $email );
@@ -415,7 +420,7 @@ class PreInscription {
 			$details[ $key ] = get_post_meta( $source_id, '_dame_' . $key, true );
 		}
 
-		// Health document / questionnaire and preferences
+		// Health document / questionnaire and preferences.
 		if ( $pending_pre ) {
 			$health_doc = (string) get_post_meta( $source_id, '_dame_health_document', true );
 			$health_q   = (string) get_post_meta( $source_id, '_dame_health_questionnaire', true );
@@ -455,7 +460,7 @@ class PreInscription {
 			$params['dame_last_name'] = $params['dame_birth_name'];
 		}
 
-		// Validation
+		// Validation.
 		$errors          = array();
 		$required_fields = array(
 			'dame_first_name'           => __( 'Le prénom est obligatoire.', 'dame' ),
@@ -477,7 +482,7 @@ class PreInscription {
 			}
 		}
 
-		// Conditional validation for minors
+		// Conditional validation for minors.
 		if ( ! empty( $params['dame_birth_date'] ) ) {
 			$birth_date = DateTime::createFromFormat( 'Y-m-d', $params['dame_birth_date'] );
 			if ( $birth_date ) {
@@ -506,7 +511,7 @@ class PreInscription {
 			}
 		}
 
-		// Email format validation
+		// Email format validation.
 		if ( ! empty( $params['dame_email'] ) && ! is_email( $params['dame_email'] ) ) {
 			$errors[] = __( 'L\'adresse email de l\'adhérent n\'est pas valide.', 'dame' );
 		}
@@ -521,8 +526,14 @@ class PreInscription {
 			return new WP_Error( 'validation_failed', implode( '<br>', $errors ), array( 'status' => 400 ) );
 		}
 
-		// Sanitize Data
-		$sanitized_data     = array();
+		// Sanitize Data.
+		$sanitized_data     = array(
+			'dame_first_name'           => '',
+			'dame_last_name'            => '',
+			'dame_birth_name'           => '',
+			'dame_birth_date'           => '',
+			'dame_health_questionnaire' => '',
+		);
 		$fields_to_sanitize = array(
 			'dame_first_name',
 			'dame_last_name',
@@ -574,12 +585,12 @@ class PreInscription {
 			}
 		}
 
-		// Communication Preferences
+		// Communication Preferences.
 		$sanitized_data['dame_email_refuses_comms']             = ( isset( $params['dame_refuses_comms'] ) && (bool) $params['dame_refuses_comms'] ) ? '1' : '0';
 		$sanitized_data['dame_legal_rep_1_email_refuses_comms'] = ( isset( $params['dame_legal_rep_1_refuses_comms'] ) && (bool) $params['dame_legal_rep_1_refuses_comms'] ) ? '1' : '0';
 		$sanitized_data['dame_legal_rep_2_email_refuses_comms'] = ( isset( $params['dame_legal_rep_2_refuses_comms'] ) && (bool) $params['dame_legal_rep_2_refuses_comms'] ) ? '1' : '0';
 
-		// Format names
+		// Format names.
 		if ( ! empty( $sanitized_data['dame_first_name'] ) ) {
 			$sanitized_data['dame_first_name'] = Utils::format_firstname( $sanitized_data['dame_first_name'] );
 		}
@@ -623,11 +634,15 @@ class PreInscription {
 		$adherent_id        = isset( $params['adherent_id'] ) ? (int) $params['adherent_id'] : 0;
 		$pre_inscription_id = isset( $params['pre_inscription_id'] ) ? (int) $params['pre_inscription_id'] : 0;
 
-		// Create or Update Pre-inscription Post
-		$effective_last_name = ! empty( $sanitized_data['dame_last_name'] ) ? $sanitized_data['dame_last_name'] : $sanitized_data['dame_birth_name'];
-		$post_title          = Utils::format_lastname( (string) $effective_last_name ) . ' ' . Utils::format_firstname( (string) $sanitized_data['dame_first_name'] );
+		// Create or Update Pre-inscription Post.
+		$birth_name          = $sanitized_data['dame_birth_name'] ?? '';
+		$last_name           = $sanitized_data['dame_last_name'] ?? '';
+		$first_name          = $sanitized_data['dame_first_name'] ?? '';
+		$birth_date          = $sanitized_data['dame_birth_date'] ?? '';
+		$effective_last_name = ! empty( $last_name ) ? $last_name : $birth_name;
+		$post_title          = Utils::format_lastname( (string) $effective_last_name ) . ' ' . Utils::format_firstname( (string) $first_name );
 
-		// Check for existing pending pre-inscription to update instead of creating duplicate
+		// Check for existing pending pre-inscription to update instead of creating duplicate.
 		$existing_post = null;
 		if ( $pre_inscription_id > 0 ) {
 			$cand_post = get_post( $pre_inscription_id );
@@ -641,8 +656,8 @@ class PreInscription {
 			$existing_post = $this->find_pending_pre_inscription(
 				$adherent_id > 0 ? $adherent_id : null,
 				$current_user->user_email,
-				$sanitized_data['dame_first_name'],
-				$sanitized_data['dame_birth_date'],
+				$first_name,
+				$birth_date,
 				$effective_last_name
 			);
 		}
@@ -669,17 +684,17 @@ class PreInscription {
 			}
 		}
 
-		// Secure download token
+		// Secure download token.
 		$download_token = get_post_meta( $post_id, '_dame_download_token', true );
 		if ( empty( $download_token ) ) {
 			$download_token = wp_generate_password( 32, false );
 			update_post_meta( $post_id, '_dame_download_token', $download_token );
 		}
 
-		// Save Meta Data
+		// Save Meta Data.
 		global $wpdb;
 		if ( $is_update ) {
-			// Delete existing _dame_ meta except download token
+			// Delete existing _dame_ meta except download token.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->query(
 				$wpdb->prepare(
@@ -768,7 +783,7 @@ class PreInscription {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
 
-		// Process electronic signature if provided and health questionnaire is negative
+		// Process electronic signature if provided and health questionnaire is negative.
 		$signature_image = isset( $params['signature_image'] ) ? (string) $params['signature_image'] : '';
 		if ( ! empty( $signature_image ) && str_starts_with( $signature_image, 'data:image/png;base64,' ) ) {
 			$raw_png = base64_decode( substr( $signature_image, strlen( 'data:image/png;base64,' ) ) );
@@ -785,7 +800,7 @@ class PreInscription {
 
 					$pdf_service = new PDF_Generator();
 
-					// 1. Generate Signed Health Attestation if answers were all NO
+					// 1. Generate Signed Health Attestation if answers were all NO.
 					if ( isset( $sanitized_data['dame_health_questionnaire'] ) && 'non' === $sanitized_data['dame_health_questionnaire'] ) {
 						$stored_health = $pdf_service->save_signed_health_doc( $post_id, $temp_sig, $audit_data );
 						if ( $stored_health ) {
@@ -793,7 +808,7 @@ class PreInscription {
 						}
 					}
 
-					// 2. Generate Signed Parental Auth if adherent is minor
+					// 2. Generate Signed Parental Auth if adherent is minor.
 					if ( $is_minor ) {
 						$stored_parental = $pdf_service->save_signed_parental_doc( $post_id, $temp_sig, $audit_data );
 						if ( $stored_parental ) {
@@ -809,12 +824,12 @@ class PreInscription {
 			}
 		}
 
-		// Send Email Notification
+		// Send Email Notification.
 		$options         = get_option( 'dame_options' );
 		$recipient_email = isset( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
 
 		$subject_prefix = $is_update ? 'Mise à jour de la préinscription de ' : 'Nouvelle préinscription de ';
-		$subject        = $subject_prefix . $sanitized_data['dame_first_name'] . ' ' . $sanitized_data['dame_last_name'];
+		$subject        = $subject_prefix . $first_name . ' ' . $last_name;
 		$body           = $is_update ? "Une demande de préinscription a été mise à jour depuis la PWA.\n\n" : "Une nouvelle demande de préinscription a été soumise depuis la PWA.\n\n";
 		$body          .= "Voici les détails :\n";
 		foreach ( $sanitized_data as $key => $value ) {
@@ -834,14 +849,14 @@ class PreInscription {
 			? sprintf(
 				/* translators: 1: Prénom de l'adhérent, 2: Nom de famille */
 				__( 'La préinscription pour %1$s %2$s a bien été mise à jour.', 'dame' ),
-				$sanitized_data['dame_first_name'],
-				$sanitized_data['dame_last_name']
+				$first_name,
+				$last_name
 			)
 			: sprintf(
 				/* translators: 1: Prénom de l'adhérent, 2: Nom de famille */
 				__( 'La préinscription pour %1$s %2$s a bien été enregistrée.', 'dame' ),
-				$sanitized_data['dame_first_name'],
-				$sanitized_data['dame_last_name']
+				$first_name,
+				$last_name
 			);
 
 		return rest_ensure_response(
@@ -851,7 +866,7 @@ class PreInscription {
 				'message'              => $message,
 				'post_id'              => $post_id,
 				'download_token'       => $download_token,
-				'health_questionnaire' => $sanitized_data['dame_health_questionnaire'],
+				'health_questionnaire' => $sanitized_data['dame_health_questionnaire'] ?? '',
 				'is_minor'             => $is_minor,
 				'payment_url'          => $payment_url,
 				'sender_email'         => $sender_email,

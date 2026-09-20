@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Core;
 
 use DAME\CPT\Adherent;
@@ -105,7 +107,7 @@ class Plugin {
 		$roles = new Roles();
 		$roles->init();
 
-		// Gestion des montées de version et migrations
+		// Gestion des montées de version et migrations.
 		$upgrader = new Upgrader();
 		$upgrader->init();
 
@@ -196,7 +198,7 @@ class Plugin {
 		$newsletter_shortcode = new NewsletterShortcode();
 		$newsletter_shortcode->init();
 
-		// Initialize Taxonomies (MUST BE GLOBAL, NOT INSIDE is_admin)
+		// Initialize Taxonomies (MUST BE GLOBAL, NOT INSIDE is_admin).
 		$season_taxonomy = new Season();
 		$season_taxonomy->init();
 
@@ -209,7 +211,7 @@ class Plugin {
 		$agenda_category_taxonomy = new AgendaCategory();
 		$agenda_category_taxonomy->init();
 
-		// Initialisation de la Toolbar
+		// Initialisation de la Toolbar.
 		$toolbar = new Toolbar();
 		$toolbar->init();
 
@@ -227,23 +229,23 @@ class Plugin {
 			$contact_details = new ContactDetails();
 			$contact_details->init();
 
-			// Initialize Admin Assets
+			// Initialize Admin Assets.
 			$admin_assets = new Assets();
 			$admin_assets->init();
 
-			// Initialize Pages
+			// Initialize Pages.
 			$view_adherent_page = new ViewAdherent();
 			$view_adherent_page->init();
 
-			// Initialize Settings
+			// Initialize Settings.
 			$settings = new SettingsMain();
 			$settings->init();
 
-			// Initialize Adherent Columns (Migrated)
+			// Initialize Adherent Columns (Migrated).
 			$adherent_columns = new AdherentColumns();
 			$adherent_columns->init();
 
-			// Initialize PreInscription Metaboxes
+			// Initialize PreInscription Metaboxes.
 			$pre_inscription_details = new PreInscriptionDetails();
 			$pre_inscription_details->init();
 
@@ -253,7 +255,7 @@ class Plugin {
 			$pre_inscription_actions = new PreInscriptionActions();
 			$pre_inscription_actions->init();
 
-			// Initialize Message Pages & Actions
+			// Initialize Message Pages & Actions.
 			$mailing_page = new Mailing();
 			$mailing_page->init();
 
@@ -272,7 +274,7 @@ class Plugin {
 			$message_test_send = new TestSend();
 			$message_test_send->init();
 
-			// Initialize Agenda Metaboxes, Lists and Actions
+			// Initialize Agenda Metaboxes, Lists and Actions.
 			$agenda_metaboxes = new AgendaMetaboxManager();
 			$agenda_metaboxes->init();
 
@@ -297,7 +299,7 @@ class Plugin {
 			$agenda_actions = new AgendaActions();
 			$agenda_actions->init();
 
-			// Initialisation des pages de sauvegardes manuelles
+			// Initialisation des pages de sauvegardes manuelles.
 
 		}
 	}

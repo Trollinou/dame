@@ -127,7 +127,7 @@ class PDF_Generator {
 		$pdf->SetTextColor( 0, 0, 0 );
 
 		if ( $age >= 18 ) {
-			// Section 1 : Licencié(e)s majeurs
+			// Section 1 : Licencié(e)s majeurs.
 			$pdf->SetFontSize( 10 );
 			$pdf->SetXY( 57, 128 );
 			$pdf->Write( 0, $full_name_adherent_for_pdf );
@@ -153,7 +153,7 @@ class PDF_Generator {
 				}
 			}
 		} else {
-			// Section 2 : Licencié(e)s mineurs
+			// Section 2 : Licencié(e)s mineurs.
 			if ( empty( $legal_rep_1_first_name ) || empty( $legal_rep_1_last_name ) ) {
 				throw new Exception( esc_html__( 'Données du représentant légal manquantes pour un adhérent mineur.', 'dame' ) );
 			}
@@ -238,9 +238,12 @@ class PDF_Generator {
 		}
 
 		$adherent_full_name            = mb_convert_encoding( Utils::generate_adherent_title( $post_id ), 'ISO-8859-1', 'UTF-8' );
-		$adherent_birth_date_formatted = mb_convert_encoding( wp_date( 'd/m/Y', strtotime( (string) $birth_date_str ), new \DateTimeZone( 'UTC' ) ) ?: '', 'ISO-8859-1', 'UTF-8' );
+		$birth_ts                      = strtotime( (string) $birth_date_str );
+		$raw_birth_date                = false !== $birth_ts ? wp_date( 'd/m/Y', $birth_ts, new \DateTimeZone( 'UTC' ) ) : '';
+		$adherent_birth_date_formatted = mb_convert_encoding( false !== $raw_birth_date ? $raw_birth_date : '', 'ISO-8859-1', 'UTF-8' );
 		$adherent_city                 = mb_convert_encoding( (string) $city, 'ISO-8859-1', 'UTF-8' );
-		$current_date                  = wp_date( 'd/m/Y' ) ?: gmdate( 'd/m/Y' );
+		$raw_curr_date                 = wp_date( 'd/m/Y' );
+		$current_date                  = false !== $raw_curr_date ? $raw_curr_date : gmdate( 'd/m/Y' );
 		$rl1_full_name                 = mb_convert_encoding( Utils::format_lastname( (string) $rl1_last_name ) . ' ' . Utils::format_firstname( (string) $rl1_first_name ), 'ISO-8859-1', 'UTF-8' );
 
 		if ( ! class_exists( '\setasign\Fpdi\Fpdi' ) ) {
@@ -294,7 +297,7 @@ class PDF_Generator {
 			}
 		}
 
-		// Rep 1 data
+		// Rep 1 data.
 		$pdf->SetXY( 25, 248 );
 		$pdf->Write( 0, mb_convert_encoding( mb_strtoupper( (string) $rl1_last_name, 'UTF-8' ), 'ISO-8859-1', 'UTF-8' ) );
 
@@ -306,14 +309,16 @@ class PDF_Generator {
 		}
 		if ( ! empty( $rl1_birth_date ) ) {
 			$pdf->SetXY( 54, 270 );
-			$pdf->Write( 0, mb_convert_encoding( (string) wp_date( 'd/m/Y', strtotime( (string) $rl1_birth_date ), new \DateTimeZone( 'UTC' ) ), 'ISO-8859-1', 'UTF-8' ) );
+			$rl1_ts = strtotime( (string) $rl1_birth_date );
+			$rl1_date_formatted = false !== $rl1_ts ? (string) wp_date( 'd/m/Y', $rl1_ts, new \DateTimeZone( 'UTC' ) ) : '';
+			$pdf->Write( 0, mb_convert_encoding( $rl1_date_formatted, 'ISO-8859-1', 'UTF-8' ) );
 		}
 		if ( ! empty( $rl1_profession ) ) {
 			$pdf->SetXY( 35, 279 );
 			$pdf->Write( 0, mb_convert_encoding( (string) $rl1_profession, 'ISO-8859-1', 'UTF-8' ) );
 		}
 
-		// Rep 2 data
+		// Rep 2 data.
 		if ( ! empty( $rl2_last_name ) ) {
 			$pdf->SetXY( 125, 248 );
 			$pdf->Write( 0, mb_convert_encoding( mb_strtoupper( (string) $rl2_last_name, 'UTF-8' ), 'ISO-8859-1', 'UTF-8' ) );
@@ -328,7 +333,9 @@ class PDF_Generator {
 		}
 		if ( ! empty( $rl2_birth_date ) ) {
 			$pdf->SetXY( 154, 270 );
-			$pdf->Write( 0, mb_convert_encoding( (string) wp_date( 'd/m/Y', strtotime( (string) $rl2_birth_date ), new \DateTimeZone( 'UTC' ) ), 'ISO-8859-1', 'UTF-8' ) );
+			$rl2_ts = strtotime( (string) $rl2_birth_date );
+			$rl2_date_formatted = false !== $rl2_ts ? (string) wp_date( 'd/m/Y', $rl2_ts, new \DateTimeZone( 'UTC' ) ) : '';
+			$pdf->Write( 0, mb_convert_encoding( $rl2_date_formatted, 'ISO-8859-1', 'UTF-8' ) );
 		}
 		if ( ! empty( $rl2_profession ) ) {
 			$pdf->SetXY( 135, 279 );
@@ -399,7 +406,7 @@ class PDF_Generator {
 			wp_die( esc_html__( 'La vérification de sécurité a échoué.', 'dame' ), 403 );
 		}
 
-		// Check if signed document already exists on disk
+		// Check if signed document already exists on disk.
 		$stored_doc = (string) get_post_meta( $post_id, '_dame_doc_health_attestation_path', true );
 		if ( ! empty( $stored_doc ) ) {
 			$abs_path = Document_Storage::get_absolute_path( $stored_doc );
@@ -440,7 +447,7 @@ class PDF_Generator {
 			wp_die( esc_html__( 'La vérification de sécurité a échoué.', 'dame' ), 403 );
 		}
 
-		// Check if signed document already exists on disk
+		// Check if signed document already exists on disk.
 		$stored_doc = (string) get_post_meta( $post_id, '_dame_doc_parental_auth_path', true );
 		if ( ! empty( $stored_doc ) ) {
 			$abs_path = Document_Storage::get_absolute_path( $stored_doc );

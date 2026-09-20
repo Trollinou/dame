@@ -3,8 +3,8 @@
  * Plugin Name:       DAME - Dossier Administratif des Membres Échiquéens
  * Plugin URI:        https://github.com/trollinou/dame
  * Description:       Gère une base de données d'adhérents pour un club.
- * Version:           5.4.0
- * Requires at least: 7.0.1
+ * Version:           5.4.1
+ * Requires at least: 7.1
  * Requires PHP:      8.4
  * Author:            Etienne Gagnon
  * Text Domain:       dame
@@ -13,13 +13,15 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// 1. Définition des Constantes (CRITIQUE pour le fonctionnement)
+// 1. Définition des Constantes (CRITIQUE pour le fonctionnement).
 if ( ! defined( 'DAME_VERSION' ) ) {
-	define( 'DAME_VERSION', '5.4.0' );
+	define( 'DAME_VERSION', '5.4.1' );
 }
 
 if ( ! defined( 'DAME_PLUGIN_DIR' ) ) {
@@ -30,12 +32,12 @@ if ( ! defined( 'DAME_PLUGIN_URL' ) ) {
 	define( 'DAME_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
-// 2. Autoloader Composer (pour les librairies tierces)
+// 2. Autoloader Composer (pour les librairies tierces).
 if ( file_exists( plugin_dir_path( __FILE__ ) . 'vendor/autoload.php' ) ) {
 	require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 }
 
-// 3. Autoloader SPL (Conforme AGENTS.md)
+// 3. Autoloader SPL (Conforme AGENTS.md).
 spl_autoload_register(
 	function ( $class_name ) {
 		$prefix   = 'DAME\\';
@@ -55,7 +57,7 @@ spl_autoload_register(
 	}
 );
 
-// 3. Initialisation du Plugin
+// 3. Initialisation du Plugin.
 if ( class_exists( 'DAME\Core\Plugin' ) ) {
 	$dame = DAME\Core\Plugin::get_instance();
 	$dame->run();
@@ -65,7 +67,7 @@ if ( class_exists( 'DAME\Core\Plugin' ) ) {
  * Fonction d'activation (pour les règles de réécriture)
  */
 function dame_activate_plugin(): void {
-	// Déclenche l'écriture des règles iCal / Benevolat
+	// Déclenche l'écriture des règles iCal / Benevolat.
 	if ( class_exists( 'DAME\Services\ICalFeed' ) ) {
 		$ical = new DAME\Services\ICalFeed();
 		$ical->register_feed();

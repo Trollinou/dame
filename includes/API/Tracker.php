@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\API;
 
 use WP_REST_Server;
@@ -80,7 +82,7 @@ class Tracker {
 			)
 		);
 
-		// Fallback: If no rows were updated (e.g. log missing but pixel hit),
+		// Fallback: If no rows were updated (e.g. log missing but pixel hit),.
 		// we could insert a generic row, but it's better to log only known recipients.
 
 		// Serve a 1x1 transparent GIF image.

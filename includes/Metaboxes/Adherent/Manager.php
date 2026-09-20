@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\Adherent;
 
 use WP_Post;

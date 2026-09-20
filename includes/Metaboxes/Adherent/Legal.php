@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\Adherent;
 
 /**
@@ -40,7 +42,7 @@ class Legal {
 				: get_post_meta( $post->ID, '_' . $field_name, true );
 		};
 
-		// Rep 1
+		// Rep 1.
 		$rep1_first_name          = $get_value( 'dame_legal_rep_1_first_name' );
 		$rep1_last_name           = $get_value( 'dame_legal_rep_1_last_name' );
 		$rep1_email               = $get_value( 'dame_legal_rep_1_email' );
@@ -52,7 +54,7 @@ class Legal {
 		$rep1_postal_code         = $get_value( 'dame_legal_rep_1_postal_code' );
 		$rep1_city                = $get_value( 'dame_legal_rep_1_city' );
 
-		// Rep 2
+		// Rep 2.
 		$rep2_first_name          = $get_value( 'dame_legal_rep_2_first_name' );
 		$rep2_last_name           = $get_value( 'dame_legal_rep_2_last_name' );
 		$rep2_email               = $get_value( 'dame_legal_rep_2_email' );
@@ -94,7 +96,8 @@ class Legal {
 					<select id="dame_legal_rep_1_honorabilite" name="dame_legal_rep_1_honorabilite">
 						<?php
 						$honorabilite1_options  = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
-						$selected_honorabilite1 = get_post_meta( $post->ID, '_dame_legal_rep_1_honorabilite', true ) ?: 'Non requis';
+						$honorabilite1_raw      = get_post_meta( $post->ID, '_dame_legal_rep_1_honorabilite', true );
+						$selected_honorabilite1 = ! empty( $honorabilite1_raw ) ? $honorabilite1_raw : 'Non requis';
 						foreach ( $honorabilite1_options as $option ) :
 							?>
 							<option value="<?php echo esc_attr( $option ); ?>" <?php selected( $selected_honorabilite1, $option ); ?>><?php echo esc_html( $option ); ?></option>
@@ -173,7 +176,8 @@ class Legal {
 					<select id="dame_legal_rep_2_honorabilite" name="dame_legal_rep_2_honorabilite">
 						<?php
 						$honorabilite2_options  = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
-						$selected_honorabilite2 = get_post_meta( $post->ID, '_dame_legal_rep_2_honorabilite', true ) ?: 'Non requis';
+						$honorabilite2_raw      = get_post_meta( $post->ID, '_dame_legal_rep_2_honorabilite', true );
+						$selected_honorabilite2 = ! empty( $honorabilite2_raw ) ? $honorabilite2_raw : 'Non requis';
 						foreach ( $honorabilite2_options as $option ) :
 							?>
 							<option value="<?php echo esc_attr( $option ); ?>" <?php selected( $selected_honorabilite2, $option ); ?>><?php echo esc_html( $option ); ?></option>
@@ -259,7 +263,7 @@ class Legal {
 			}
 			set_transient( 'dame_error_message', $errors_str, 10 );
 
-			// Save posted data
+			// Save posted data.
 			$post_data_to_save = array();
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			foreach ( $_POST as $key => $value ) {
@@ -304,7 +308,8 @@ class Legal {
 
 		foreach ( $fields as $field_name => $sanitize_callback ) {
 			if ( isset( $_POST[ $field_name ] ) ) {
-				$value = call_user_func( $sanitize_callback, wp_unslash( $_POST[ $field_name ] ) );
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized dynamically below via $sanitize_callback.
+				$value = (string) call_user_func( $sanitize_callback, wp_unslash( $_POST[ $field_name ] ) );
 
 				if ( 'dame_legal_rep_1_first_name' === $field_name || 'dame_legal_rep_2_first_name' === $field_name ) {
 					$value = \DAME\Core\Utils::format_firstname( $value );

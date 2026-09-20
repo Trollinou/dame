@@ -5,6 +5,8 @@
  * @package DAME\Services
  */
 
+declare(strict_types=1);
+
 namespace DAME\Services;
 
 use DateTime;
@@ -40,8 +42,8 @@ class ICalFeed {
 	/**
 	 * Adds custom query variables.
 	 *
-	 * @param array<string, mixed> $vars The existing query variables.
-	 * @return array<string, mixed> The modified query variables.
+	 * @param list<string> $vars The existing query variables.
+	 * @return list<string> The modified query variables.
 	 */
 	public function add_query_vars( $vars ): array {
 		$vars[] = 'dame_feed_slug';
@@ -137,7 +139,7 @@ class ICalFeed {
 			'post_status'    => 'publish',
 		);
 
-		// Remove .ics from the slug for processing
+		// Remove .ics from the slug for processing.
 		$feed_slug_base = preg_replace( '/\.ics$/', '', $feed_slug );
 
 		$feed_details = array(
@@ -307,7 +309,8 @@ class ICalFeed {
 				update_post_meta( $post_id, '_dame_ical_sequence', $sequence );
 			}
 
-			$dtstamp = gmdate( 'Ymd\THis\Z', strtotime( $post->post_modified_gmt ) );
+			$mod_ts  = strtotime( $post->post_modified_gmt );
+			$dtstamp = gmdate( 'Ymd\THis\Z', false !== $mod_ts ? $mod_ts : time() );
 
 			$start_date_str = get_post_meta( $post_id, '_dame_start_date', true );
 			$end_date_str   = get_post_meta( $post_id, '_dame_end_date', true );
@@ -412,10 +415,10 @@ class ICalFeed {
 	 * @return string Formatted text.
 	 */
 	private function format_for_ics( $text ) {
-		// Replace non-breaking spaces and other common problematic entities first
+		// Replace non-breaking spaces and other common problematic entities first.
 		$text = str_replace( '&nbsp;', ' ', (string) $text );
 
-		// Strip any remaining HTML tags and decode entities (like &rsquo; to ')
+		// Strip any remaining HTML tags and decode entities (like &rsquo; to ').
 		$text = html_entity_decode( wp_strip_all_tags( $text ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 
 		$text = str_replace( '\\', '\\\\', $text );

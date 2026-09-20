@@ -23,7 +23,7 @@ class Benevolat {
 	/**
 	 * Namespace for the API.
 	 *
-	 * @var string
+	 * @var non-falsy-string
 	 */
 	protected string $namespace = 'dame/v1';
 

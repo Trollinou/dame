@@ -5,6 +5,8 @@
  * @package DAME\Taxonomies
  */
 
+declare(strict_types=1);
+
 namespace DAME\Taxonomies;
 
 use WP_Term;

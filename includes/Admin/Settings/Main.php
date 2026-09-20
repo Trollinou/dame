@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Admin\Settings;
 
 use DAME\Admin\Settings\Tabs\Association;
@@ -24,15 +26,15 @@ class Main {
 	/**
 	 * Array of tab instances.
 	 *
-	 * @var array<string, object>
+	 * @var array<string, Association|Assignation|Saisons|Anniversaires|Paiements|Sauvegarde|Emails|Desinstallation>
 	 */
-	private $tabs = array();
+	private array $tabs = array();
 
 	/**
 	 * Constructor.
 	 */
 	public function __construct() {
-		// Instantiate Tabs
+		// Instantiate Tabs.
 		$this->tabs['association']     = new Association();
 		$this->tabs['assignation']     = new Assignation();
 		$this->tabs['saisons']         = new Saisons();

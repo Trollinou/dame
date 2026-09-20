@@ -66,14 +66,14 @@ class Post_Meta {
 	 * @return array<string, mixed> The modified query arguments.
 	 */
 	public function filter_agenda_query( array $args, WP_REST_Request $request ): array {
-		// 1. Gestion du tri par date de début
+		// 1. Gestion du tri par date de début.
 		$orderby = $request->get_param( 'orderby' );
 		if ( 'meta_value' === $orderby ) {
 			$args['meta_key'] = '_dame_start_date';
 			$args['orderby']  = 'meta_value';
 		}
 
-		// 2. Gestion des filtres de fenêtre temporelle (Optimisation Réseau)
+		// 2. Gestion des filtres de fenêtre temporelle (Optimisation Réseau).
 		$after_date  = $request->get_param( 'after_date' );
 		$before_date = $request->get_param( 'before_date' );
 
@@ -108,7 +108,6 @@ class Post_Meta {
 			);
 		}
 
-
 		return $args;
 	}
 
@@ -116,7 +115,7 @@ class Post_Meta {
 	 * Registers custom REST fields that are not automatically handled by register_meta.
 	 */
 	public function register_custom_rest_fields(): void {
-		// Catégorie d'âge pour les adhérents
+		// Catégorie d'âge pour les adhérents.
 		register_rest_field(
 			'adherent',
 			'dame_age_category',
@@ -133,7 +132,7 @@ class Post_Meta {
 			)
 		);
 
-		// Benevolat Data
+		// Benevolat Data.
 		register_rest_field(
 			'benevolat',
 			'dame_benevolat_data',
@@ -151,7 +150,7 @@ class Post_Meta {
 			)
 		);
 
-		// Benevolat Response Parent ID
+		// Benevolat Response Parent ID.
 		register_rest_field(
 			'benevolat_reponse',
 			'benevolat_id',
@@ -166,7 +165,7 @@ class Post_Meta {
 			)
 		);
 
-		// Choix sélectionnés pour une réponse
+		// Choix sélectionnés pour une réponse.
 		register_rest_field(
 			'benevolat_reponse',
 			'choices',
@@ -174,7 +173,7 @@ class Post_Meta {
 				'get_callback' => function ( $post_arr ) {
 					global $wpdb;
 					$table = $wpdb->prefix . 'dame_benevolat_votes';
-					// Récupère toutes les clés de choix (ex: "0_1", "1_0") pour cette réponse
+					// Récupère toutes les clés de choix (ex: "0_1", "1_0") pour cette réponse.
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$choices = $wpdb->get_col(
 						$wpdb->prepare(
@@ -193,14 +192,14 @@ class Post_Meta {
 			)
 		);
 
-		// Formatage HTML de la description de l'agenda
+		// Formatage HTML de la description de l'agenda.
 		register_rest_field(
 			'dame_agenda',
 			'_dame_agenda_description_html',
 			array(
 				'get_callback' => function ( $post_arr ) {
 					$desc = get_post_meta( $post_arr['id'], '_dame_agenda_description', true );
-					// Applique les <p> et <br> comme le ferait the_content()
+					// Applique les <p> et <br> comme le ferait the_content().
 					return wpautop( $desc );
 				},
 				'schema'       => array(
@@ -210,7 +209,7 @@ class Post_Meta {
 			)
 		);
 
-		// Données structurées des catégories d'agenda (avec couleur)
+		// Données structurées des catégories d'agenda (avec couleur).
 		register_rest_field(
 			'dame_agenda',
 			'categories_data',
@@ -250,7 +249,7 @@ class Post_Meta {
 				),
 			)
 		);
-		// Rapport d'envoi et d'ouverture pour les Messages
+		// Rapport d'envoi et d'ouverture pour les Messages.
 		register_rest_field(
 			'dame_message',
 			'report',
@@ -260,7 +259,7 @@ class Post_Meta {
 					$message_id = $post_arr['id'];
 					$table_name = $wpdb->prefix . 'dame_message_opens';
 
-					// 1. Récupération de tous les destinataires
+					// 1. Récupération de tous les destinataires.
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$recipients = $wpdb->get_results(
 						$wpdb->prepare(
@@ -283,7 +282,7 @@ class Post_Meta {
 						);
 					}
 
-					// 2. Calcul des ouvertures uniques
+					// 2. Calcul des ouvertures uniques.
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$unique_opens = (int) $wpdb->get_var(
 						$wpdb->prepare(
@@ -293,7 +292,7 @@ class Post_Meta {
 						)
 					);
 
-					// 3. Calcul du nombre d'envois
+					// 3. Calcul du nombre d'envois.
 					$total = count( $recipients );
 					$sent  = 0;
 					foreach ( $recipients as $r ) {
@@ -497,7 +496,7 @@ class Post_Meta {
 
 		$this->register_fields( 'dame_agenda', $fields );
 
-		// Participants is an array, needs special handling or 'string' with serialization (not ideal)
+		// Participants is an array, needs special handling or 'string' with serialization (not ideal).
 		// Better to use 'array' type if supported or custom register_rest_field.
 		// WordPress register_meta supports 'array' type since 5.3.
 		register_meta(

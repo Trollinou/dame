@@ -1,4 +1,11 @@
 <?php
+/**
+ * Cron tasks for DAME.
+ *
+ * @package DAME
+ */
+
+declare(strict_types=1);
 
 namespace DAME\Core;
 
@@ -7,6 +14,9 @@ use DAME\Services\Birthday;
 use DAME\Services\FFESyncBatch;
 use DateTime;
 
+/**
+ * Class Cron
+ */
 class Cron {
 	/**
 	 * Initializes Cron action hooks.
@@ -46,7 +56,7 @@ class Cron {
 
 		$backup_timestamp = $this->get_timestamp_from_local_time( $time_str );
 
-		// Check if scheduled time has changed
+		// Check if scheduled time has changed.
 		$scheduled_backup = wp_next_scheduled( 'dame_daily_backup_event' );
 		if ( $scheduled_backup && (int) $scheduled_backup !== (int) $backup_timestamp ) {
 			wp_clear_scheduled_hook( 'dame_daily_backup_event' );
@@ -57,7 +67,7 @@ class Cron {
 			wp_schedule_event( $backup_timestamp, 'daily', 'dame_daily_backup_event' );
 		}
 
-		// Birthday emails
+		// Birthday emails.
 		if ( ! empty( $options['birthday_emails_enabled'] ) ) {
 			$birthday_time      = ! empty( $options['birthday_time'] ) ? $options['birthday_time'] : '09:00';
 			$birthday_timestamp = $this->get_timestamp_from_local_time( $birthday_time );
@@ -75,7 +85,7 @@ class Cron {
 			wp_clear_scheduled_hook( 'dame_birthday_email_event' );
 		}
 
-		// FFE Sync
+		// FFE Sync.
 		$ffe_sync_time      = '12:00';
 		$ffe_sync_timestamp = $this->get_timestamp_from_local_time( $ffe_sync_time );
 		$scheduled_ffe_sync = wp_next_scheduled( 'dame_ffe_sync_event' );
@@ -96,7 +106,9 @@ class Cron {
 		$now      = new DateTime( 'now', $timezone );
 		$target   = DateTime::createFromFormat( 'Y-m-d H:i', $now->format( 'Y-m-d' ) . ' ' . $time_str, $timezone );
 
-		if ( $target <= $now ) {
+		if ( ! $target instanceof DateTime ) {
+			$target = new DateTime( 'tomorrow ' . $time_str, $timezone );
+		} elseif ( $target <= $now ) {
 			$target->modify( '+1 day' );
 		}
 

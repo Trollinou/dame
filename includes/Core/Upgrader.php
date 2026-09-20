@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Core;
 
 use WP_Query;
@@ -41,81 +43,81 @@ class Upgrader {
 	 */
 	private function perform_upgrade( string $old_version, string $new_version ): void {
 
-		// Version < 2.0.0 : Capacités et Permaliens
+		// Version < 2.0.0 : Capacités et Permaliens.
 		if ( version_compare( $old_version, '2.0.0', '<' ) ) {
-			// Note : Assurez-vous que cette fonction globale existe encore ou déplacez-la ici
+			// Note : Assurez-vous que cette fonction globale existe encore ou déplacez-la ici.
 			if ( function_exists( 'dame_add_capabilities_to_roles' ) ) {
 				dame_add_capabilities_to_roles();
 			}
 			flush_rewrite_rules();
 		}
 
-		// Version < 2.2.0 : Migration Taxonomie Saisons
+		// Version < 2.2.0 : Migration Taxonomie Saisons.
 		if ( version_compare( $old_version, '2.2.0', '<' ) ) {
 			$this->migrate_seasons_v220();
 		}
 
-		// Version < 2.2.1 : Tailles vêtements
+		// Version < 2.2.1 : Tailles vêtements.
 		if ( version_compare( $old_version, '2.2.1', '<' ) ) {
 			$this->migrate_clothing_sizes_v221();
 		}
 
-		// Version < 3.3.0 : Groupes
+		// Version < 3.3.0 : Groupes.
 		if ( version_compare( $old_version, '3.3.0', '<' ) ) {
 			$this->migrate_to_group_taxonomy_v330();
 		}
 
-		// Version < 3.3.9 : Nom de naissance
+		// Version < 3.3.9 : Nom de naissance.
 		if ( version_compare( $old_version, '3.3.9', '<' ) ) {
 			$this->migrate_birth_name_v339();
 		}
 
-		// Version < 3.4.0 : Table SQL des ouvertures d'emails
+		// Version < 3.4.0 : Table SQL des ouvertures d'emails.
 		if ( version_compare( $old_version, '3.4.0', '<' ) ) {
 			$this->create_message_opens_table_v340();
 		}
 
-		// Version < 4.2.0 : Refonte du suivi des messages (Enrichissement SQL + Migration postmeta)
+		// Version < 4.2.0 : Refonte du suivi des messages (Enrichissement SQL + Migration postmeta).
 		if ( version_compare( $old_version, '4.2.0', '<' ) ) {
 			$this->upgrade_message_tracking_v420();
 		}
 
-		// Version < 4.2.1 : Correction migration messagerie (Emails partagés)
+		// Version < 4.2.1 : Correction migration messagerie (Emails partagés).
 		if ( version_compare( $old_version, '4.2.1', '<' ) ) {
 			$this->upgrade_message_tracking_v421();
 		}
 
-		// Version < 4.2.2 : Ajout de recipient_name et agrégation des noms
+		// Version < 4.2.2 : Ajout de recipient_name et agrégation des noms.
 		if ( version_compare( $old_version, '4.2.2', '<' ) ) {
 			$this->upgrade_message_tracking_v422();
 		}
 
-		// Version < 4.2.4 : Neutralisation des anciens logs pour éviter les envois accidentels
+		// Version < 4.2.4 : Neutralisation des anciens logs pour éviter les envois accidentels.
 		if ( version_compare( $old_version, '4.2.4', '<' ) ) {
 			$this->neutralize_legacy_logs_v424();
 		}
 
-		// Version < 4.3.2 : Table SQL des votes de sondages
+		// Version < 4.3.2 : Table SQL des votes de sondages.
 		if ( version_compare( $old_version, '4.3.2', '<' ) ) {
 			$this->upgrade_poll_votes_v432();
 		}
 
-		// Version < 4.3.7 : Nettoyage des doublons de votes de sondages
+		// Version < 4.3.7 : Nettoyage des doublons de votes de sondages.
 		if ( version_compare( $old_version, '4.3.7', '<' ) ) {
 			$this->cleanup_poll_votes_v437();
 		}
 
-		// Version < 4.5.0 : Renommage Sondage -> Benevolat
+		// Version < 4.5.0 : Renommage Sondage -> Benevolat.
 		if ( version_compare( $old_version, '4.5.0', '<' ) ) {
 			$this->rename_sondage_to_benevolat_v450();
 		}
 
-		// Version < 4.5.7 : Sexe des contacts par défaut
+		// Version < 4.5.7 : Sexe des contacts par défaut.
 		if ( version_compare( $old_version, '4.5.7', '<' ) ) {
 			$this->initialize_contact_gender_v457();
 		}
 
-		// Finalisation
+		// Finalisation.
 		update_option( 'dame_plugin_version', $new_version );
 	}
 
@@ -129,27 +131,27 @@ class Upgrader {
 	private function rename_sondage_to_benevolat_v450(): void {
 		global $wpdb;
 
-		// 1. Rename SQL Table
+		// 1. Rename SQL Table.
 		$old_table = $wpdb->prefix . 'dame_poll_votes';
 		$new_table = $wpdb->prefix . 'dame_benevolat_votes';
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange
 		$wpdb->query( "RENAME TABLE {$old_table} TO {$new_table}" );
 
-		// 2. Update Post Types
+		// 2. Update Post Types.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update( $wpdb->posts, array( 'post_type' => 'benevolat' ), array( 'post_type' => 'sondage' ) );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update( $wpdb->posts, array( 'post_type' => 'benevolat_reponse' ), array( 'post_type' => 'sondage_reponse' ) );
 
-		// 3. Update Meta Keys
+		// 3. Update Meta Keys.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query( "UPDATE {$wpdb->postmeta} SET meta_key = REPLACE(meta_key, '_dame_sondage_', '_dame_benevolat_') WHERE meta_key LIKE '_dame_sondage_%'" );
 
-		// 4. Update specific non-standard meta keys if any
-		// _dame_guest_response_id is still fine as it's not "sondage" specific in its prefix, but wait
+		// 4. Update specific non-standard meta keys if any.
+		// _dame_guest_response_id is still fine as it's not "sondage" specific in its prefix, but wait.
 		// the cookie name was dame_sondage_response_... let's check if there are others.
-		// Actually, let's just do a broad replace for any meta key containing "sondage"
+		// Actually, let's just do a broad replace for any meta key containing "sondage".
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query( "UPDATE {$wpdb->postmeta} SET meta_key = REPLACE(meta_key, 'sondage', 'benevolat') WHERE meta_key LIKE '%sondage%'" );
 
@@ -346,11 +348,11 @@ class Upgrader {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'dame_message_opens';
 
-		// 1. Structure update
+		// 1. Structure update.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$wpdb->query( "ALTER TABLE {$table_name} ADD COLUMN recipient_id bigint(20) NOT NULL DEFAULT 0 AFTER message_id, ADD COLUMN recipient_name varchar(255) NOT NULL DEFAULT '' AFTER recipient_id, ADD COLUMN recipient_email varchar(255) NOT NULL DEFAULT '' AFTER recipient_name, ADD COLUMN sent_at datetime NULL DEFAULT NULL AFTER email_hash, MODIFY COLUMN opened_at datetime NULL DEFAULT NULL, MODIFY COLUMN user_ip varchar(45) NULL DEFAULT NULL, ADD INDEX recipient_id_idx (recipient_id), ADD INDEX message_recipient_idx (message_id, recipient_id)" );
 
-		// 2. Data Migration from postmeta
+		// 2. Data Migration from postmeta.
 		$post_types = array( 'adherent', 'dame_contact' );
 		$posts      = get_posts(
 			array(
@@ -367,7 +369,7 @@ class Upgrader {
 				continue;
 			}
 
-			// Determine primary email
+			// Determine primary email.
 			$type  = get_post_type( $pid );
 			$email = ( 'adherent' === $type ) ? get_post_meta( $pid, '_dame_email', true ) : get_post_meta( $pid, '_dame_contact_email', true );
 
@@ -380,7 +382,7 @@ class Upgrader {
 				$mid     = (int) $mid;
 				$sent_at = get_post_meta( $pid, "_dame_message_{$mid}_sent_at", true );
 
-				// Look for existing open record
+				// Look for existing open record.
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$existing_id = $wpdb->get_var(
 					$wpdb->prepare(
@@ -397,7 +399,7 @@ class Upgrader {
 						array(
 							'recipient_id'    => $pid,
 							'recipient_email' => $email,
-							'sent_at'         => $sent_at ?: current_time( 'mysql', true ),
+							'sent_at'         => ! empty( $sent_at ) ? $sent_at : current_time( 'mysql', true ),
 						),
 						array( 'id' => $existing_id )
 					);
@@ -410,7 +412,7 @@ class Upgrader {
 							'recipient_id'    => $pid,
 							'recipient_email' => $email,
 							'email_hash'      => $hash,
-							'sent_at'         => $sent_at ?: current_time( 'mysql', true ),
+							'sent_at'         => ! empty( $sent_at ) ? $sent_at : current_time( 'mysql', true ),
 							'opened_at'       => null,
 							'user_ip'         => null,
 						)
@@ -457,7 +459,7 @@ class Upgrader {
 				$mid     = (int) $mid;
 				$sent_at = get_post_meta( $pid, "_dame_message_{$mid}_sent_at", true );
 
-				// 1. Check if this specific recipient already has a row
+				// 1. Check if this specific recipient already has a row.
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$exists = $wpdb->get_var(
 					$wpdb->prepare(
@@ -471,7 +473,7 @@ class Upgrader {
 					continue;
 				}
 
-				// 2. Look for an "old" open record for this email that isn't linked yet
+				// 2. Look for an "old" open record for this email that isn't linked yet.
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$ghost_row = $wpdb->get_row(
 					$wpdb->prepare(
@@ -482,19 +484,19 @@ class Upgrader {
 				);
 
 				if ( $ghost_row ) {
-					// Claim the ghost row
+					// Claim the ghost row.
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$wpdb->update(
 						$table_name,
 						array(
 							'recipient_id'    => $pid,
 							'recipient_email' => $email,
-							'sent_at'         => $sent_at ?: current_time( 'mysql', true ),
+							'sent_at'         => ! empty( $sent_at ) ? $sent_at : current_time( 'mysql', true ),
 						),
 						array( 'id' => $ghost_row->id )
 					);
 				} else {
-					// 3. Check if another recipient with the SAME email was already opened
+					// 3. Check if another recipient with the SAME email was already opened.
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$sibling_open = $wpdb->get_row(
 						$wpdb->prepare(
@@ -504,7 +506,7 @@ class Upgrader {
 						)
 					);
 
-					// Create new individual row
+					// Create new individual row.
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$wpdb->insert(
 						$table_name,
@@ -513,7 +515,7 @@ class Upgrader {
 							'recipient_id'    => $pid,
 							'recipient_email' => $email,
 							'email_hash'      => $hash,
-							'sent_at'         => $sent_at ?: current_time( 'mysql', true ),
+							'sent_at'         => ! empty( $sent_at ) ? $sent_at : current_time( 'mysql', true ),
 							'opened_at'       => $sibling_open ? $sibling_open->opened_at : null,
 							'user_ip'         => $sibling_open ? $sibling_open->user_ip : null,
 						)
@@ -532,7 +534,7 @@ class Upgrader {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'dame_message_opens';
 
-		// 1. Add column if missing
+		// 1. Add column if missing.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$column_exists = $wpdb->get_results( "SHOW COLUMNS FROM {$table_name} LIKE 'recipient_name'" );
 		if ( empty( $column_exists ) ) {
@@ -540,7 +542,7 @@ class Upgrader {
 			$wpdb->query( "ALTER TABLE {$table_name} ADD COLUMN recipient_name varchar(255) NOT NULL DEFAULT '' AFTER recipient_id" );
 		}
 
-		// 2. Populate names for existing entries that have a recipient_id
+		// 2. Populate names for existing entries that have a recipient_id.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = $wpdb->get_results( "SELECT DISTINCT recipient_id FROM {$table_name} WHERE recipient_id > 0 AND recipient_name = ''" );
 
@@ -591,7 +593,7 @@ class Upgrader {
 		$table_name      = $wpdb->prefix . 'dame_poll_votes';
 		$charset_collate = $wpdb->get_charset_collate();
 
-		// 1. Create table
+		// 1. Create table.
 		$sql = "CREATE TABLE $table_name (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			poll_id bigint(20) NOT NULL,
@@ -607,11 +609,11 @@ class Upgrader {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 
-		// 2. Clear table before migration to avoid duplicates if re-run
+		// 2. Clear table before migration to avoid duplicates if re-run.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->query( "TRUNCATE TABLE {$table_name}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-		// 3. Migrate existing votes from sondage_reponse posts
+		// 3. Migrate existing votes from sondage_reponse posts.
 		$responses = get_posts(
 			array(
 				'post_type'      => 'sondage_reponse',
@@ -622,7 +624,7 @@ class Upgrader {
 
 		foreach ( $responses as $r ) {
 			$poll_id      = (int) $r->post_parent;
-			$recipient_id = (int) $r->ID; // Use the response post ID as unique recipient identifier
+			$recipient_id = (int) $r->ID; // Use the response post ID as unique recipient identifier.
 			$voted_at     = $r->post_date;
 
 			$meta = get_post_meta( $r->ID, '_dame_sondage_responses', true );

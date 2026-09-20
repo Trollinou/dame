@@ -5,6 +5,8 @@
  * @package DAME\Metaboxes\Agenda
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\Agenda;
 
 use WP_Post;
@@ -50,7 +52,7 @@ class Manager {
 		}
 
 		// Enqueue the common admin script which handles address autocomplete and geolocation.
-		// We explicitly register and localize it here to ensure it's available for the Agenda CPT
+		// We explicitly register and localize it here to ensure it's available for the Agenda CPT.
 		// with the necessary data (latitude/longitude options), as Assets.php might not cover this CPT.
 
 		// Define the URL to the assets directory relative to the plugin root.
@@ -61,7 +63,7 @@ class Manager {
 		wp_register_script(
 			'dame-admin-common',
 			$plugin_url . 'assets/js/admin-common.js',
-			array(), // Dependencies if any
+			array(), // Dependencies if any.
 			\DAME_VERSION,
 			true
 		);
@@ -92,7 +94,7 @@ class Manager {
 			\DAME_VERSION
 		);
 
-		// Specific Agenda Manager Script
+		// Specific Agenda Manager Script.
 		wp_enqueue_script( 'dame-admin-agenda-manager', \DAME_PLUGIN_URL . 'assets/js/admin-agenda-manager.js', array( 'jquery' ), \DAME_VERSION, true );
 		wp_localize_script(
 			'dame-admin-agenda-manager',
@@ -226,11 +228,13 @@ class Manager {
 		$transient_data = get_transient( 'dame_agenda_post_data_' . $post->ID );
 
 		// Helper function to get value from transient first, then from post meta.
-		$get_value = function ( $field_name, $default = '' ) use ( $post, $transient_data ) {
+		$get_value = function ( $field_name, $default_val = '' ) use ( $post, $transient_data ) {
 			$meta_key = 'dame_' . $field_name;
-			return isset( $transient_data[ $meta_key ] )
-				? esc_attr( $transient_data[ $meta_key ] )
-				: ( (string) get_post_meta( $post->ID, '_' . $meta_key, true ) ?: $default );
+			if ( isset( $transient_data[ $meta_key ] ) ) {
+				return esc_attr( $transient_data[ $meta_key ] );
+			}
+			$val = (string) get_post_meta( $post->ID, '_' . $meta_key, true );
+			return '' !== $val ? $val : $default_val;
 		};
 
 		$competition_type  = $get_value( 'competition_type', '' );
@@ -474,10 +478,9 @@ class Manager {
 			<ul id="dame_participants_list">
 				<?php
 				foreach ( $sorted_adherents as $adherent ) {
-					$checked = in_array( $adherent->ID, $selected_participants, true ) ? 'checked="checked"' : '';
 					echo '<li>';
 					echo '<label>';
-					echo '<input type="checkbox" name="dame_event_participants[]" value="' . esc_attr( (string) $adherent->ID ) . '" ' . $checked . '> ';
+					echo '<input type="checkbox" name="dame_event_participants[]" value="' . esc_attr( (string) $adherent->ID ) . '" ' . checked( in_array( $adherent->ID, $selected_participants, true ), true, false ) . '> ';
 					echo esc_html( $adherent->post_title );
 					echo '</label>';
 					echo '</li>';
@@ -492,11 +495,15 @@ class Manager {
 	/**
 	 * Save meta box content for Agenda CPT.
 	 *
-	 * @param int $post_id Post ID
+	 * @param int $post_id Post ID.
 	 */
 	public function save( $post_id ): void {
-		// --- Security checks ---
-		if ( ! isset( $_POST['dame_agenda_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['dame_agenda_metabox_nonce'], 'dame_save_agenda_meta' ) ) {
+		// --- Security checks ---.
+		if ( ! isset( $_POST['dame_agenda_metabox_nonce'] ) ) {
+			return;
+		}
+		$nonce = sanitize_text_field( wp_unslash( $_POST['dame_agenda_metabox_nonce'] ) );
+		if ( ! wp_verify_nonce( $nonce, 'dame_save_agenda_meta' ) ) {
 			return;
 		}
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -506,7 +513,7 @@ class Manager {
 			return;
 		}
 
-		// --- Validation ---
+		// --- Validation ---.
 		$errors = array();
 
 		// Check for at least one category checked.
@@ -514,7 +521,9 @@ class Manager {
 		// If empty, or all values are 0/empty, we have an error.
 		$has_category = false;
 		if ( isset( $_POST['tax_input']['dame_agenda_category'] ) && is_array( $_POST['tax_input']['dame_agenda_category'] ) ) {
-			$cats = array_filter( $_POST['tax_input']['dame_agenda_category'] );
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$raw_cats = wp_unslash( $_POST['tax_input']['dame_agenda_category'] );
+			$cats     = array_filter( array_map( 'absint', (array) $raw_cats ) );
 			if ( ! empty( $cats ) ) {
 				$has_category = true;
 			}
@@ -537,7 +546,7 @@ class Manager {
 		if ( ! empty( $errors ) ) {
 			set_transient( 'dame_error_message', implode( '<br>', $errors ), 10 );
 
-			// Store submitted data in a transient to repopulate the form
+			// Store submitted data in a transient to repopulate the form.
 			$post_data_to_save = array();
 			foreach ( $_POST as $key => $value ) {
 				if ( strpos( $key, 'dame_' ) === 0 || $key === 'tax_input' ) {
@@ -546,10 +555,10 @@ class Manager {
 			}
 			set_transient( 'dame_agenda_post_data_' . $post_id, $post_data_to_save, 60 );
 
-			// Unhook this function to prevent infinite loops
+			// Unhook this function to prevent infinite loops.
 			remove_action( 'save_post_dame_agenda', array( $this, 'save' ) );
 
-			// Update the post to be a draft
+			// Update the post to be a draft.
 			wp_update_post(
 				array(
 					'ID'          => $post_id,
@@ -557,14 +566,14 @@ class Manager {
 				)
 			);
 
-			// Re-hook the function add_action( 'save_post_dame_agenda', [ $this, 'save' ] ): void;
+			// Re-hook the save function.
 			return;
 		}
 
-		// If we are here, it means there are no errors, so we can delete any transient data
+		// If we are here, it means there are no errors, so we can delete any transient data.
 		delete_transient( 'dame_agenda_post_data_' . $post_id );
 
-		// --- Sanitize and Save Data ---
+		// --- Sanitize and Save Data ---.
 		$fields = array(
 			'dame_start_date'         => 'sanitize_text_field',
 			'dame_start_time'         => 'sanitize_text_field',
@@ -587,6 +596,7 @@ class Manager {
 
 		foreach ( $fields as $field_name => $sanitize_callback ) {
 			if ( isset( $_POST[ $field_name ] ) ) {
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized dynamically below via $sanitize_callback.
 				$value = call_user_func( $sanitize_callback, wp_unslash( $_POST[ $field_name ] ) );
 				update_post_meta( $post_id, '_' . $field_name, $value );
 			} elseif ( 'absint' === $sanitize_callback ) {
@@ -594,7 +604,7 @@ class Manager {
 			}
 		}
 
-		// --- Save Participants ---
+		// --- Save Participants ---.
 		if ( isset( $_POST['dame_event_participants'] ) ) {
 			$participant_ids = array_map( 'intval', $_POST['dame_event_participants'] );
 			update_post_meta( $post_id, '_dame_event_participants', $participant_ids );
@@ -603,25 +613,25 @@ class Manager {
 			update_post_meta( $post_id, '_dame_event_participants', array() );
 		}
 
-		// --- Handle Recurrence Batch Creation or Draft Saving ---
+		// --- Handle Recurrence Batch Creation or Draft Saving ---.
 		$post_status    = get_post_status( $post_id );
 		$existing_group = get_post_meta( $post_id, '_dame_recurrence_group_id', true );
 
-		// 1. If not published (Draft, Auto-Draft, Pending, etc.)
+		// 1. If not published (Draft, Auto-Draft, Pending, etc.).
 		if ( 'publish' !== $post_status ) {
 			if ( empty( $existing_group ) ) {
 				if ( isset( $_POST['dame_enable_recurrence'] ) && '1' === $_POST['dame_enable_recurrence'] ) {
 					$pending_config = array(
-						'frequency'       => isset( $_POST['dame_recurrence_frequency'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_frequency'] ) ) : 'weekly',
-						'interval_weeks'  => isset( $_POST['dame_recurrence_interval_weeks'] ) ? max( 1, (int) $_POST['dame_recurrence_interval_weeks'] ) : 1,
-						'days_of_week'    => isset( $_POST['dame_recurrence_days_of_week'] ) && is_array( $_POST['dame_recurrence_days_of_week'] ) ? array_map( 'intval', $_POST['dame_recurrence_days_of_week'] ) : array(),
-						'monthly_type'    => isset( $_POST['dame_recurrence_monthly_type'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_monthly_type'] ) ) : 'ordinal',
-						'ordinal'         => isset( $_POST['dame_recurrence_ordinal'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_ordinal'] ) ) : 'first',
-						'day_name'        => isset( $_POST['dame_recurrence_day_name'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_day_name'] ) ) : 'friday',
-						'day_of_month'    => isset( $_POST['dame_recurrence_day_of_month'] ) ? (int) $_POST['dame_recurrence_day_of_month'] : 1,
-						'end_type'        => isset( $_POST['dame_recurrence_end_type'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_end_type'] ) ) : 'until_date',
-						'end_date'        => isset( $_POST['dame_recurrence_end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_recurrence_end_date'] ) ) : '',
-						'max_count'       => isset( $_POST['dame_recurrence_max_count'] ) ? max( 1, (int) $_POST['dame_recurrence_max_count'] ) : 10,
+						'frequency'      => isset( $_POST['dame_recurrence_frequency'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_frequency'] ) ) : 'weekly',
+						'interval_weeks' => isset( $_POST['dame_recurrence_interval_weeks'] ) ? max( 1, (int) $_POST['dame_recurrence_interval_weeks'] ) : 1,
+						'days_of_week'   => isset( $_POST['dame_recurrence_days_of_week'] ) && is_array( $_POST['dame_recurrence_days_of_week'] ) ? array_map( 'intval', $_POST['dame_recurrence_days_of_week'] ) : array(),
+						'monthly_type'   => isset( $_POST['dame_recurrence_monthly_type'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_monthly_type'] ) ) : 'ordinal',
+						'ordinal'        => isset( $_POST['dame_recurrence_ordinal'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_ordinal'] ) ) : 'first',
+						'day_name'       => isset( $_POST['dame_recurrence_day_name'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_day_name'] ) ) : 'friday',
+						'day_of_month'   => isset( $_POST['dame_recurrence_day_of_month'] ) ? (int) $_POST['dame_recurrence_day_of_month'] : 1,
+						'end_type'       => isset( $_POST['dame_recurrence_end_type'] ) ? sanitize_key( wp_unslash( $_POST['dame_recurrence_end_type'] ) ) : 'until_date',
+						'end_date'       => isset( $_POST['dame_recurrence_end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_recurrence_end_date'] ) ) : '',
+						'max_count'      => isset( $_POST['dame_recurrence_max_count'] ) ? max( 1, (int) $_POST['dame_recurrence_max_count'] ) : 10,
 					);
 					update_post_meta( $post_id, '_dame_recurrence_enabled', 1 );
 					update_post_meta( $post_id, '_dame_recurrence_pending_config', $pending_config );
@@ -633,7 +643,7 @@ class Manager {
 			return;
 		}
 
-		// 2. If post is published: create the batch series if enabled and not already created
+		// 2. If post is published: create the batch series if enabled and not already created.
 		if ( empty( $existing_group ) ) {
 			$is_enabled = ( isset( $_POST['dame_enable_recurrence'] ) && '1' === $_POST['dame_enable_recurrence'] )
 				|| ( '1' === (string) get_post_meta( $post_id, '_dame_recurrence_enabled', true ) );
@@ -693,7 +703,7 @@ class Manager {
 						delete_post_meta( $post_id, '_dame_recurrence_enabled' );
 						delete_post_meta( $post_id, '_dame_recurrence_pending_config' );
 					} catch ( \Exception $e ) {
-						// Date format error handled gracefully.
+						unset( $e );
 					}
 				}
 			}
@@ -766,17 +776,13 @@ class Manager {
 		$msg   = sanitize_key( wp_unslash( $_GET['dame_msg'] ) );
 
 		if ( 'series_deleted' === $msg ) {
-			echo '<div class="notice notice-success is-dismissible"><p>' . sprintf(
-				/* translators: %d: nombre d'événements supprimés */
-				esc_html__( '%d événement(s) de la série ont été mis à la corbeille avec succès.', 'dame' ),
-				$count
-			) . '</p></div>';
+			/* translators: %d: nombre d'événements supprimés */
+			$notice = sprintf( __( '%d événement(s) de la série ont été mis à la corbeille avec succès.', 'dame' ), $count );
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $notice ) . '</p></div>';
 		} elseif ( 'entire_series_deleted' === $msg ) {
-			echo '<div class="notice notice-success is-dismissible"><p>' . sprintf(
-				/* translators: %d: nombre d'événements supprimés */
-				esc_html__( 'La série complète (%d événements) a été mise à la corbeille avec succès.', 'dame' ),
-				$count
-			) . '</p></div>';
+			/* translators: %d: nombre d'événements supprimés */
+			$notice = sprintf( __( 'La série complète (%d événements) a été mise à la corbeille avec succès.', 'dame' ), $count );
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $notice ) . '</p></div>';
 		}
 	}
 }

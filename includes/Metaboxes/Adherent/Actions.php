@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\Adherent;
 
 /**
@@ -58,10 +60,10 @@ class Actions {
 	/**
 	 * Close the "Actions spéciales" metabox by default.
 	 *
-	 * @param array<string, mixed> $classes An array of postbox classes.
-	 * @return array<string, mixed> The modified array of classes.
+	 * @param array<int, string> $classes An array of postbox classes.
+	 * @return array<int, string> The modified array of classes.
 	 */
-	public function close_metabox_by_default( $classes ) {
+	public function close_metabox_by_default( array $classes ): array {
 		if ( function_exists( 'get_current_screen' ) && get_current_screen() && get_current_screen()->id === 'adherent' ) {
 			$classes[] = 'closed';
 		}
@@ -105,7 +107,7 @@ class Actions {
 			echo '<p>' . esc_html__( "L'annulation d'adhésion n'est disponible que pour les adhérents qui ont uniquement l'adhésion de la saison en cours.", 'dame' ) . '</p>';
 		}
 
-		// Bouton : Transformer en Contact (Toujours disponible)
+		// Bouton : Transformer en Contact (Toujours disponible).
 		$transform_url = admin_url( 'admin-post.php?action=dame_transform_to_contact&post_id=' . $post->ID );
 		$transform_url = wp_nonce_url( $transform_url, 'dame_transform_contact_' . $post->ID );
 		?>

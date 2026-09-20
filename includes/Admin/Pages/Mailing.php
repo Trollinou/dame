@@ -45,7 +45,7 @@ class Mailing {
 			true
 		);
 
-		// Prépare le mapping Région -> Départements pour le JS
+		// Prépare le mapping Région -> Départements pour le JS.
 		$regions        = Data_Provider::get_regions();
 		$region_mapping = array();
 		foreach ( array_keys( $regions ) as $code ) {
@@ -89,7 +89,7 @@ class Mailing {
 			delete_transient( $state_key );
 		}
 
-		// Initialisation des variables d'état (existantes et nouvelles)
+		// Initialisation des variables d'état (existantes et nouvelles).
 		$state_message           = isset( $saved_state['dame_message_to_send'] ) ? absint( $saved_state['dame_message_to_send'] ) : 0;
 		$state_adherent_method   = isset( $saved_state['dame_adherent_method'] ) ? sanitize_key( $saved_state['dame_adherent_method'] ) : 'group';
 		$state_contact_method    = isset( $saved_state['dame_contact_method'] ) ? sanitize_key( $saved_state['dame_contact_method'] ) : 'group';
@@ -99,7 +99,7 @@ class Mailing {
 		$state_groups_permanent  = isset( $saved_state['dame_recipient_groups_permanent'] ) ? array_map( 'absint', (array) $saved_state['dame_recipient_groups_permanent'] ) : array();
 		$state_contact_types     = isset( $saved_state['dame_recipient_contact_types'] ) ? array_map( 'absint', (array) $saved_state['dame_recipient_contact_types'] ) : array();
 
-		// Nouveaux états géographiques et manuels
+		// Nouveaux états géographiques et manuels.
 		$state_depts             = isset( $saved_state['dame_contact_depts'] ) ? array_map( 'sanitize_text_field', (array) $saved_state['dame_contact_depts'] ) : array();
 		$state_regions           = isset( $saved_state['dame_contact_regions'] ) ? array_map( 'sanitize_text_field', (array) $saved_state['dame_contact_regions'] ) : array();
 		$state_manual_recipients = isset( $saved_state['dame_manual_recipients'] ) ? array_map( 'absint', (array) $saved_state['dame_manual_recipients'] ) : array();
@@ -114,27 +114,31 @@ class Mailing {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin page notice query args.
 		$error = isset( $_GET['error'] ) ? sanitize_key( $_GET['error'] ) : '';
 
-		// Données pour les listes
-		$seasons       = get_terms(
+		// Données pour les listes.
+		$raw_seasons   = get_terms(
 			array(
 				'taxonomy'   => 'dame_saison_adhesion',
 				'hide_empty' => false,
-				'orderby'    => 'name',
-				'order'      => 'DESC',
 			)
 		);
-		$all_groups    = get_terms(
+		$seasons       = is_array( $raw_seasons ) ? $raw_seasons : array();
+
+		$raw_groups    = get_terms(
 			array(
 				'taxonomy'   => 'dame_group',
 				'hide_empty' => false,
 			)
 		);
-		$contact_types = get_terms(
+		$all_groups    = is_array( $raw_groups ) ? $raw_groups : array();
+
+		$raw_contacts  = get_terms(
 			array(
 				'taxonomy'   => 'dame_contact_type',
 				'hide_empty' => false,
 			)
 		);
+		$contact_types = is_array( $raw_contacts ) ? $raw_contacts : array();
+
 		$departments   = Data_Provider::get_departments();
 		$regions       = Data_Provider::get_regions();
 
@@ -193,7 +197,7 @@ class Mailing {
 				<div class="dame-checkbox-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccd0d4; padding: 10px; background: #f9f9f9;">
 					<?php
 					foreach ( $items as $key => $value ) :
-						$id    = is_object( $value ) ? ( $value->ID ?? $value->term_id ) : $key;
+						$id    = is_object( $value ) ? ( isset( $value->ID ) ? $value->ID : ( isset( $value->term_id ) ? $value->term_id : $key ) ) : $key;
 						$label = $label_callback( $value, $key );
 						if ( empty( $label ) ) {
 							continue;
@@ -456,7 +460,7 @@ class Mailing {
 			exit;
 		};
 
-		// 1. Sécurité et Permissions
+		// 1. Sécurité et Permissions.
 		$nonce = isset( $_POST['dame_mailing_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_mailing_nonce'] ) ) : '';
 		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'dame_mailing_action' ) ) {
 			wp_safe_redirect( add_query_arg( 'error', 'nonce', $base_url ) );
@@ -480,7 +484,7 @@ class Mailing {
 		$adherent_ids     = array();
 		$contact_ids      = array();
 
-		// Initialisation des métadonnées de suivi
+		// Initialisation des métadonnées de suivi.
 		$meta_seasons           = array();
 		$meta_groups_saisonnier = array();
 		$meta_groups_permanent  = array();
@@ -491,10 +495,10 @@ class Mailing {
 		$meta_manual_contacts   = array();
 		$meta_gender            = 'all';
 
-		// 2. Identification des IDs des destinataires
+		// 2. Identification des IDs des destinataires.
 		$adherent_criteria_selected = false;
 
-		// A. Bloc Adhérents
+		// A. Bloc Adhérents.
 		if ( 'manual' === $adherent_method ) {
 			if ( ! empty( $_POST['dame_manual_recipients'] ) && is_array( $_POST['dame_manual_recipients'] ) ) {
 				$adherent_ids               = array_map( 'absint', $_POST['dame_manual_recipients'] );
@@ -550,7 +554,7 @@ class Mailing {
 			}
 		}
 
-		// B. Bloc Contacts
+		// B. Bloc Contacts.
 		$contact_criteria_selected = false;
 		if ( 'manual' === $contact_method ) {
 			if ( ! empty( $_POST['dame_manual_contacts'] ) && is_array( $_POST['dame_manual_contacts'] ) ) {
@@ -573,7 +577,7 @@ class Mailing {
 			if ( $has_types || $has_depts ) {
 				$contact_criteria_selected = true;
 				if ( $has_types && $has_depts ) {
-					// Intersection stricte Type et Département
+					// Intersection stricte Type et Département.
 					$contact_ids = get_posts(
 						array(
 							'post_type'      => 'dame_contact',
@@ -629,17 +633,17 @@ class Mailing {
 			}
 		}
 
-		// 1. Check si au moins un critère a été saisi (pour éviter d'envoyer à "personne" par oubli)
+		// 1. Check si au moins un critère a été saisi (pour éviter d'envoyer à "personne" par oubli).
 		if ( ! $adherent_criteria_selected && ! $contact_criteria_selected ) {
 			$save_state_and_redirect( 'no_criteria' );
 		}
 
-		// 2. Check si des gens correspondent aux critères (avant filtrage incrémental)
+		// 2. Check si des gens correspondent aux critères (avant filtrage incrémental).
 		if ( empty( $adherent_ids ) && empty( $contact_ids ) ) {
 			$save_state_and_redirect( 'no_recipients' );
 		}
 
-		// Filtrage incrémental : On retire ceux qui ont déjà reçu ce message précis,
+		// Filtrage incrémental : On retire ceux qui ont déjà reçu ce message précis,.
 		// MAIS seulement pour les modes par critères (le mode manuel permet le renvoi ciblé).
 		$filter_already_received = function ( $id ) use ( $message_id ) {
 			$received_messages = get_post_meta( $id, '_dame_message_received', false );
@@ -655,20 +659,20 @@ class Mailing {
 			$contact_ids = array_filter( $contact_ids, $filter_already_received );
 		}
 
-		// 4. Check final après filtrage incrémental
+		// 4. Check final après filtrage incrémental.
 		if ( empty( $adherent_ids ) && empty( $contact_ids ) ) {
 			$save_state_and_redirect( 'all_already_received' );
 		}
 
-		// Optimisation : Pré-chargement des caches de métadonnées (Warm-up)
+		// Optimisation : Pré-chargement des caches de métadonnées (Warm-up).
 		// Évite le problème N+1 de get_post_meta dans les boucles de priorité ci-dessous.
 		$all_ids_to_warm = array_merge( $adherent_ids, $contact_ids );
 		if ( ! empty( $all_ids_to_warm ) ) {
 			update_meta_cache( 'post', $all_ids_to_warm );
 		}
 
-		// 3. Collecte des Destinataires et E-mails (Logique de priorité et agrégation stricte)
-		$email_data = array(); // email_key => [ 'id' => primary_id, 'names' => [], 'prio' => 1-3, 'raw_email' => '...' ]
+		// 3. Collecte des Destinataires et E-mails (Logique de priorité et agrégation stricte).
+		$email_data = array(); // email_key => [ 'id' => primary_id, 'names' => [], 'prio' => 1-3, 'raw_email' => '...' ].
 
 		$format_name = function ( $id, $type = 'adherent' ) {
 			if ( 'adherent' === $type ) {
@@ -678,11 +682,11 @@ class Mailing {
 			}
 		};
 
-		// On s'assure d'avoir des IDs uniques au départ
+		// On s'assure d'avoir des IDs uniques au départ.
 		$adherent_ids = array_unique( (array) $adherent_ids );
 		$contact_ids  = array_unique( (array) $contact_ids );
 
-		// Priorité 1 : Emails directs des Adhérents
+		// Priorité 1 : Emails directs des Adhérents.
 		foreach ( $adherent_ids as $aid ) {
 			$email = get_post_meta( $aid, '_dame_email', true );
 			if ( ! empty( $email ) && is_email( $email ) && '1' !== get_post_meta( $aid, '_dame_email_refuses_comms', true ) ) {
@@ -700,7 +704,7 @@ class Mailing {
 			}
 		}
 
-		// Priorité 2 : Emails des Représentants Légaux (si non pris par un Adhérent direct)
+		// Priorité 2 : Emails des Représentants Légaux (si non pris par un Adhérent direct).
 		foreach ( $adherent_ids as $aid ) {
 			for ( $i = 1; $i <= 2; $i++ ) {
 				$email   = get_post_meta( $aid, "_dame_legal_rep_{$i}_email", true );
@@ -723,7 +727,7 @@ class Mailing {
 			}
 		}
 
-		// Priorité 3 : Emails des Contacts (si non pris par Adhérent ou Représentant)
+		// Priorité 3 : Emails des Contacts (si non pris par Adhérent ou Représentant).
 		foreach ( $contact_ids as $cid ) {
 			$email   = get_post_meta( $cid, '_dame_contact_email', true );
 			$refuses = get_post_meta( $cid, '_dame_contact_no_emails', true );
@@ -744,14 +748,14 @@ class Mailing {
 			}
 		}
 
-		// Liste finale des emails pour l'envoi physique
+		// Liste finale des emails pour l'envoi physique.
 		$recipient_emails = array_column( $email_data, 'raw_email' );
 
 		if ( empty( $recipient_emails ) ) {
 			$save_state_and_redirect( 'no_valid_emails' );
 		}
 
-		// 3b. Pré-enregistrement SQL (Tracking) - Unicité garantie
+		// 3b. Pré-enregistrement SQL (Tracking) - Unicité garantie.
 		global $wpdb;
 		$table_tracking = $wpdb->prefix . 'dame_message_opens';
 		$values_sql     = array();
@@ -771,7 +775,7 @@ class Mailing {
 		}
 
 		if ( ! empty( $values_sql ) ) {
-			// On évite les doublons en ne supprimant que les destinataires que l'on s'apprête à (ré)insérer
+			// On évite les doublons en ne supprimant que les destinataires que l'on s'apprête à (ré)insérer.
 			// tout en conservant l'historique des autres envois pour ce message (envois cumulés).
 			$emails_to_insert = array_column( $email_data, 'raw_email' );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -786,7 +790,7 @@ class Mailing {
 			$wpdb->query( "INSERT INTO {$table_tracking} (message_id, recipient_id, recipient_name, recipient_email, email_hash) VALUES " . implode( ',', $values_sql ) );
 		}
 
-		// 4. Gestion de la Pièce Jointe (Optionnelle)
+		// 4. Gestion de la Pièce Jointe (Optionnelle).
 		if ( isset( $_FILES['dame_message_attachment']['error'] ) && ! empty( $_FILES['dame_message_attachment']['name'] ) && $_FILES['dame_message_attachment']['error'] !== UPLOAD_ERR_NO_FILE ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 
@@ -811,7 +815,7 @@ class Mailing {
 			delete_post_meta( $message_id, '_dame_message_attachment' );
 		}
 
-		// 5. Sauvegarde et Mise en file d'attente globale
+		// 5. Sauvegarde et Mise en file d'attente globale.
 		$old_count = (int) get_post_meta( $message_id, '_dame_message_recipients_count', true );
 		$new_total = $old_count + count( $recipient_emails );
 
@@ -838,12 +842,12 @@ class Mailing {
 			update_post_meta( $message_id, '_dame_manual_contacts', $meta_manual_contacts );
 		}
 
-		// On calcule le nombre de lots théoriques pour l'affichage de progression
+		// On calcule le nombre de lots théoriques pour l'affichage de progression.
 		$total_batches = (int) ceil( count( $recipient_emails ) / 20 );
 		update_post_meta( $message_id, '_dame_scheduled_batches_total', $total_batches );
 		update_post_meta( $message_id, '_dame_scheduled_batches_processed', 0 );
 
-		// On déclenche le processeur global s'il n'est pas déjà planifié
+		// On déclenche le processeur global s'il n'est pas déjà planifié.
 		if ( ! wp_next_scheduled( 'dame_cron_process_queue' ) ) {
 			wp_schedule_single_event( time(), 'dame_cron_process_queue' );
 		}

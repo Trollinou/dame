@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Admin\Settings\Tabs;
 
 use WP_Query;

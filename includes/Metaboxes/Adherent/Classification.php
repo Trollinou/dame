@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\Adherent;
 
 /**
@@ -32,7 +34,7 @@ class Classification {
 	 * @param \WP_Post $post The post object.
 	 */
 	public function render( $post ): void {
-		// Add nonce field for security
+		// Add nonce field for security.
 		wp_nonce_field( 'dame_save_adherent_meta', 'dame_metabox_nonce' );
 
 		$transient_data = get_transient( 'dame_post_data_' . $post->ID );
@@ -42,12 +44,15 @@ class Classification {
 				: get_post_meta( $post->ID, '_' . $field_name, true );
 		};
 
-		$license_number = $get_value( 'dame_license_number' );
-		$fide_id        = get_post_meta( $post->ID, '_dame_fide_id', true );
-		$ffe_id         = get_post_meta( $post->ID, '_dame_ffe_id', true );
-		$elo_standard   = get_post_meta( $post->ID, '_dame_elo_standard', true ) ?: '0';
-		$elo_rapide     = get_post_meta( $post->ID, '_dame_elo_rapide', true ) ?: '0';
-		$elo_blitz      = get_post_meta( $post->ID, '_dame_elo_blitz', true ) ?: '0';
+		$license_number   = $get_value( 'dame_license_number' );
+		$fide_id          = get_post_meta( $post->ID, '_dame_fide_id', true );
+		$ffe_id           = get_post_meta( $post->ID, '_dame_ffe_id', true );
+		$elo_standard_raw = get_post_meta( $post->ID, '_dame_elo_standard', true );
+		$elo_standard     = '' !== $elo_standard_raw && false !== $elo_standard_raw ? $elo_standard_raw : '0';
+		$elo_rapide_raw   = get_post_meta( $post->ID, '_dame_elo_rapide', true );
+		$elo_rapide       = '' !== $elo_rapide_raw && false !== $elo_rapide_raw ? $elo_rapide_raw : '0';
+		$elo_blitz_raw    = get_post_meta( $post->ID, '_dame_elo_blitz', true );
+		$elo_blitz        = '' !== $elo_blitz_raw && false !== $elo_blitz_raw ? $elo_blitz_raw : '0';
 
 		$license_type = get_post_meta( $post->ID, '_dame_license_type', true );
 		if ( ! $license_type ) {
@@ -73,7 +78,7 @@ class Classification {
 			</div>
 			<div style="flex: 1;">
 				<label for="dame_fide_id"><strong><?php esc_html_e( 'ID FIDE', 'dame' ); ?></strong></label>
-				<input type="text" id="dame_fide_id" value="<?php echo esc_attr( $fide_id ?: '' ); ?>" style="width:100%;" readonly />
+				<input type="text" id="dame_fide_id" value="<?php echo esc_attr( ! empty( $fide_id ) ? $fide_id : '' ); ?>" style="width:100%;" readonly />
 			</div>
 		</div>
 
@@ -94,11 +99,11 @@ class Classification {
 		<input type="hidden" name="dame_ffe_id" value="<?php echo esc_attr( $ffe_id ); ?>">
 		<hr>
 		<?php
-		// --- Display current status and season history ---
+		// --- Display current status and season history ---.
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
 
-		// --- Add a simple control to set Active/Inactive status ---
-		// Determine if the adherent has the current season term
+		// --- Add a simple control to set Active/Inactive status ---.
+		// Determine if the adherent has the current season term.
 		$is_active = ( $current_season_tag_id && has_term( (int) $current_season_tag_id, 'dame_saison_adhesion', $post->ID ) );
 
 		echo '<p>';
@@ -134,7 +139,8 @@ class Classification {
 			<select id="dame_adherent_honorabilite" name="dame_adherent_honorabilite" style="width:100%;">
 				<?php
 				$honorabilite_options  = array( 'Non requis', 'En cours', 'Favorable', 'Défavorable' );
-				$selected_honorabilite = get_post_meta( $post->ID, '_dame_adherent_honorabilite', true ) ?: 'Non requis';
+				$honorabilite_raw      = get_post_meta( $post->ID, '_dame_adherent_honorabilite', true );
+				$selected_honorabilite = ! empty( $honorabilite_raw ) ? $honorabilite_raw : 'Non requis';
 				foreach ( $honorabilite_options as $option ) :
 					?>
 					<option value="<?php echo esc_attr( $option ); ?>" <?php selected( $selected_honorabilite, $option ); ?>><?php echo esc_html( $option ); ?></option>
@@ -211,8 +217,9 @@ class Classification {
 			}
 			set_transient( 'dame_error_message', $errors_str, 10 );
 
-			// Save posted data to transient to repopulate form
-			$post_data_to_save = get_transient( 'dame_post_data_' . $post_id ) ?: array();
+			// Save posted data to transient to repopulate form.
+			$cached_post_data  = get_transient( 'dame_post_data_' . $post_id );
+			$post_data_to_save = ! empty( $cached_post_data ) && is_array( $cached_post_data ) ? $cached_post_data : array();
 			foreach ( $_POST as $key => $value ) {
 				if ( strpos( $key, 'dame_' ) === 0 ) {
 					$post_data_to_save[ $key ] = sanitize_text_field( wp_unslash( $value ) );
@@ -222,7 +229,7 @@ class Classification {
 			return;
 		}
 
-		// Save Meta
+		// Save Meta.
 		$fields = array(
 			'dame_license_number'        => 'sanitize_text_field',
 			'dame_license_type'          => 'sanitize_text_field',
@@ -240,7 +247,7 @@ class Classification {
 			}
 		}
 
-		// Handle Linked User
+		// Handle Linked User.
 		if ( isset( $_POST['dame_linked_wp_user'] ) ) {
 			$linked_user_id = intval( $_POST['dame_linked_wp_user'] );
 			if ( $linked_user_id > 0 ) {
@@ -250,14 +257,14 @@ class Classification {
 			}
 		}
 
-		// Handle Membership Status (Taxonomy)
+		// Handle Membership Status (Taxonomy).
 		if ( isset( $_POST['dame_membership_status_control'] ) ) {
 			$current_season_id = get_option( 'dame_current_season_tag_id' );
 			if ( $current_season_id ) {
 				$status_value = sanitize_key( $_POST['dame_membership_status_control'] );
 
 				if ( 'active' === $status_value ) {
-					// Only add if not already present
+					// Only add if not already present.
 					if ( ! has_term( (int) $current_season_id, 'dame_saison_adhesion', $post_id ) ) {
 						wp_set_object_terms( $post_id, array( (int) $current_season_id ), 'dame_saison_adhesion', true );
 					}

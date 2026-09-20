@@ -11,7 +11,7 @@ Le plugin est structuré autour d'une architecture moderne (POO) garantissant pe
 
 ## Prérequis
 
-*   **WordPress :** 7.0 ou supérieur
+*   **WordPress :** 7.1 ou supérieur
 *   **PHP :** 8.4 ou supérieur
 
 ## Développement & Architecture
@@ -19,7 +19,7 @@ DAME utilise un workflow de développement professionnel pour garantir la perfor
 *   **Sources :** Tous les fichiers sources (Javascript ES2021, SCSS) se trouvent dans le répertoire `src/`.
 *   **Build Pipeline :** Les fichiers de production (minifiés et optimisés) sont générés dans `assets/` via `npm run build`.
 *   **Dépendances :** Gestion rigoureuse via Composer (librairies tierces) et npm (outils de développement).
-*   **Qualité :** Analyse statique PHP via PHPStan (Level 6) et linting JS via WP-Scripts.
+*   **Qualité :** Analyse statique PHP via PHPStan (Level 7) et linting JS via WP-Scripts.
 
 ## Fonctionnalités Cœurs : Gestion des Adhésions
 

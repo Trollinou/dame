@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Admin\Settings\Tabs;
 
 /**
@@ -27,7 +29,7 @@ class Saisons {
 	public function register(): void {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
-		// Registers actions/hooks logic
+		// Registers actions/hooks logic.
 		// If called during admin_init (via Main::register_settings), execute directly.
 		if ( doing_action( 'admin_init' ) ) {
 			$this->handle_actions();
@@ -62,7 +64,7 @@ class Saisons {
 	 * Render the tab content.
 	 */
 	public function render(): void {
-		// Custom UI for Seasons
+		// Custom UI for Seasons.
 		$this->render_ui();
 	}
 
@@ -74,7 +76,7 @@ class Saisons {
 	 * @return array<string, mixed> Sanitized options.
 	 */
 	public function sanitize( $input, $existing_options ) {
-		// Saisons tab doesn't use standard settings API submission
+		// Saisons tab doesn't use standard settings API submission.
 		return $existing_options;
 	}
 

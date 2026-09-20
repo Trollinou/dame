@@ -5,6 +5,8 @@
  * @package DAME\Shortcodes
  */
 
+declare(strict_types=1);
+
 namespace DAME\Shortcodes;
 
 use WP_Query;
@@ -150,7 +152,7 @@ class Agenda {
 			<div id="dame-event-tooltip" class="dame-tooltip" style="display: none;"></div>
 		</div>
 		<?php
-		return ob_get_clean();
+		return (string) ob_get_clean();
 	}
 
 	/**
@@ -297,15 +299,19 @@ class Agenda {
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post();
-				$post_id   = get_the_ID();
-				$term      = get_the_terms( $post_id, 'dame_agenda_category' );
-				$term_id   = ! empty( $term ) ? $term[0]->term_id : 0;
+				$post_id = get_the_ID();
+				if ( ! $post_id ) {
+					continue;
+				}
+				$terms   = get_the_terms( $post_id, 'dame_agenda_category' );
+				$term    = ( is_array( $terms ) && ! empty( $terms ) ) ? reset( $terms ) : null;
+				$term_id = $term ? $term->term_id : 0;
 				$term_meta = get_option( "taxonomy_$term_id" );
-				$color     = ! empty( $term_meta['color'] ) ? $term_meta['color'] : '#ccc';
+				$color     = ( is_array( $term_meta ) && ! empty( $term_meta['color'] ) ) ? $term_meta['color'] : '#ccc';
 
 				$start_date = get_post_meta( $post_id, '_dame_start_date', true );
 				$end_date   = get_post_meta( $post_id, '_dame_end_date', true );
-				$status     = get_post_status( $post_id );
+				$status     = (string) get_post_status( $post_id );
 
 				$event_data = array(
 					'id'          => $post_id,
@@ -320,7 +326,7 @@ class Agenda {
 					'location'    => get_post_meta( $post_id, '_dame_location_name', true ),
 					'description' => get_post_meta( $post_id, '_dame_agenda_description', true ),
 					'color'       => $color,
-					'category'    => ! empty( $term ) ? $term[0]->name : '',
+					'category'    => $term ? $term->name : '',
 				);
 
 				$bg_color = $color;
@@ -464,19 +470,22 @@ class Agenda {
 				$query->the_post();
 				?>
 				<?php
-				$post_id        = get_the_ID();
-				$start_date_str = get_post_meta( $post_id, '_dame_start_date', true );
-				$end_date_str   = get_post_meta( $post_id, '_dame_end_date', true );
-				$start_time     = get_post_meta( $post_id, '_dame_start_time', true );
-				$end_time       = get_post_meta( $post_id, '_dame_end_time', true );
+				$post_id = get_the_ID();
+				if ( ! $post_id ) {
+					continue;
+				}
+				$start_date_str = (string) get_post_meta( $post_id, '_dame_start_date', true );
+				$end_date_str   = (string) get_post_meta( $post_id, '_dame_end_date', true );
+				$start_time     = (string) get_post_meta( $post_id, '_dame_start_time', true );
+				$end_time       = (string) get_post_meta( $post_id, '_dame_end_time', true );
 				$all_day        = get_post_meta( $post_id, '_dame_all_day', true );
 
 				$start_date = new DateTime( $start_date_str );
 				$end_date   = new DateTime( $end_date_str );
 
-				$day_of_week = wp_date( 'D', $start_date->getTimestamp() );
+				$day_of_week = (string) wp_date( 'D', $start_date->getTimestamp() );
 				$day_number  = $start_date->format( 'd' );
-				$month_abbr  = wp_date( 'M', $start_date->getTimestamp() );
+				$month_abbr  = (string) wp_date( 'M', $start_date->getTimestamp() );
 
 				$date_display = wp_date( 'j F Y', $start_date->getTimestamp() );
 				if ( $start_date_str !== $end_date_str ) {
@@ -500,19 +509,19 @@ class Agenda {
 						</div>
 					</div>
 					<div class="dame-liste-agenda-details">
-						<h4 class="event-title"><a href="<?php the_permalink(); ?>"><?php echo esc_html( get_post_field( 'post_title', get_the_ID() ) ); ?></a></h4>
+						<h4 class="event-title"><a href="<?php the_permalink(); ?>"><?php echo esc_html( (string) get_post_field( 'post_title', $post_id ) ); ?></a></h4>
 						<p class="event-date"><?php echo $date_display; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 						<?php
-						$description = get_post_meta( get_the_ID(), '_dame_agenda_description', true );
+						$description = (string) get_post_meta( $post_id, '_dame_agenda_description', true );
 						if ( ! empty( $description ) ) :
 							$truncated_description = '';
-							$permalink             = get_permalink();
+							$permalink             = (string) get_permalink( $post_id );
 							$read_more_link        = '&nbsp;<a href="' . esc_url( $permalink ) . '" class="dame-read-more">...</a>';
 
-							// Regex to find trailing <br> tags, whitespace, and &nbsp;
+							// Regex to find trailing <br> tags, whitespace, and &nbsp;.
 							$cleanup_regex = '/(?:<br\s*\/?>|\s|&nbsp;)*$/i';
 
-							// Find the position of the first closing paragraph tag
+							// Find the position of the first closing paragraph tag.
 							$first_p_closing_pos = strpos( $description, '</p>' );
 
 							if ( $first_p_closing_pos !== false ) {
@@ -550,6 +559,7 @@ class Agenda {
 		</div>
 		<?php
 		wp_reset_postdata();
-		return ob_get_clean();
+		$output = ob_get_clean();
+		return false !== $output ? $output : '';
 	}
 }

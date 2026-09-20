@@ -44,7 +44,7 @@ class Documents {
 		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
 		$season_suffix         = $current_season_tag_id > 0 ? '_' . $current_season_tag_id : '';
 
-		// Check if adherent is minor
+		// Check if adherent is minor.
 		$birth_date_str = (string) get_post_meta( $post->ID, '_dame_birth_date', true );
 		$is_minor       = false;
 		if ( ! empty( $birth_date_str ) ) {
@@ -55,7 +55,7 @@ class Documents {
 			}
 		}
 
-		// Retrieve season-specific docs first, fallback to unversioned
+		// Retrieve season-specific docs first, fallback to unversioned.
 		$health_doc = (string) get_post_meta( $post->ID, '_dame_doc_health_attestation_path' . $season_suffix, true );
 		if ( empty( $health_doc ) ) {
 			$health_doc = (string) get_post_meta( $post->ID, '_dame_doc_health_attestation_path', true );
@@ -177,7 +177,7 @@ class Documents {
 			'png'      => 'image/png',
 		);
 
-		// 1. Health Doc Upload
+		// 1. Health Doc Upload.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( isset( $_FILES['dame_upload_health_doc']['tmp_name'] ) && ! empty( $_FILES['dame_upload_health_doc']['tmp_name'] ) ) {
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -189,7 +189,7 @@ class Documents {
 				$target_name = 'attestation_sante_' . sanitize_file_name( $last_name . '_' . $first_name . '_manuel.' . $check['ext'] );
 				$stored_name = Document_Storage::import_file( $tmp_path, $target_name );
 				if ( $stored_name ) {
-					// Delete previous if any
+					// Delete previous if any.
 					$old = (string) get_post_meta( $post_id, '_dame_doc_health_attestation_path' . $season_suffix, true );
 					if ( $old ) {
 						Document_Storage::delete_file( $old );
@@ -201,7 +201,7 @@ class Documents {
 			}
 		}
 
-		// 2. Parental Doc Upload
+		// 2. Parental Doc Upload.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( isset( $_FILES['dame_upload_parental_doc']['tmp_name'] ) && ! empty( $_FILES['dame_upload_parental_doc']['tmp_name'] ) ) {
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized

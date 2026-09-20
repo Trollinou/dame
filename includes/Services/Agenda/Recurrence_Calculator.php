@@ -40,10 +40,10 @@ class Recurrence_Calculator {
 	 * Calculates subsequent occurrence dates based on frequency rules and bounds.
 	 * Returns subsequent dates strictly greater than the initial start date.
 	 *
-	 * @param array<string, mixed>    $rules          Recurrence rules.
-	 * @param DateTimeImmutable       $start_date     The initial event start date and time.
-	 * @param DateTimeImmutable|null  $user_end_date  Optional user-defined end date.
-	 * @param int|null                $max_count      Optional maximum total occurrences (including initial event).
+	 * @param array<string, mixed>   $rules          Recurrence rules.
+	 * @param DateTimeImmutable      $start_date     The initial event start date and time.
+	 * @param DateTimeImmutable|null $user_end_date  Optional user-defined end date.
+	 * @param int|null               $max_count      Optional maximum total occurrences (including initial event).
 	 * @return array<DateTimeImmutable> Array of subsequent occurrence dates.
 	 */
 	public static function calculate_occurrences(
@@ -69,7 +69,7 @@ class Recurrence_Calculator {
 			return array();
 		}
 
-		$frequency = (string) ( $rules['frequency'] ?? 'weekly' );
+		$frequency   = (string) ( $rules['frequency'] ?? 'weekly' );
 		$occurrences = array();
 
 		if ( 'monthly' === $frequency ) {
@@ -94,10 +94,10 @@ class Recurrence_Calculator {
 	/**
 	 * Calculates weekly occurrences.
 	 *
-	 * @param array<string, mixed> $rules
-	 * @param DateTimeImmutable $start_date
-	 * @param DateTimeImmutable $deadline
-	 * @param int|null $max_subsequent
+	 * @param array<string, mixed> $rules          Recurrence rules.
+	 * @param DateTimeImmutable    $start_date     Start date.
+	 * @param DateTimeImmutable    $deadline       Calculation deadline.
+	 * @param int|null             $max_subsequent Maximum occurrences to calculate.
 	 * @return array<DateTimeImmutable>
 	 */
 	private static function calculate_weekly_occurrences(
@@ -108,7 +108,7 @@ class Recurrence_Calculator {
 	): array {
 		$interval = max( 1, (int) ( $rules['interval_weeks'] ?? 1 ) );
 		$days     = isset( $rules['days_of_week'] ) && is_array( $rules['days_of_week'] ) && ! empty( $rules['days_of_week'] )
-			? array_map( 'intval', $rules['days_of_week'] ) // 1 (Mon) to 7 (Sun)
+			? array_map( 'intval', $rules['days_of_week'] ) // 1 (Mon) to 7 (Sun).
 			: array( (int) $start_date->format( 'N' ) );
 
 		sort( $days );
@@ -150,7 +150,7 @@ class Recurrence_Calculator {
 			if ( $current_week_start > $deadline ) {
 				break;
 			}
-			$loop_count++;
+			++$loop_count;
 		}
 
 		return $occurrences;
@@ -159,10 +159,10 @@ class Recurrence_Calculator {
 	/**
 	 * Calculates monthly occurrences (day of month or ordinal day of week).
 	 *
-	 * @param array<string, mixed> $rules
-	 * @param DateTimeImmutable $start_date
-	 * @param DateTimeImmutable $deadline
-	 * @param int|null $max_subsequent
+	 * @param array<string, mixed> $rules          Recurrence rules.
+	 * @param DateTimeImmutable    $start_date     Start date.
+	 * @param DateTimeImmutable    $deadline       Calculation deadline.
+	 * @param int|null             $max_subsequent Maximum occurrences to calculate.
 	 * @return array<DateTimeImmutable>
 	 */
 	private static function calculate_monthly_occurrences(
@@ -171,11 +171,11 @@ class Recurrence_Calculator {
 		DateTimeImmutable $deadline,
 		?int $max_subsequent
 	): array {
-		$monthly_type = (string) ( $rules['monthly_type'] ?? 'ordinal' ); // 'ordinal' or 'day_of_month'
+		$monthly_type = (string) ( $rules['monthly_type'] ?? 'ordinal' ); // 'ordinal' or 'day_of_month'.
 		$interval     = max( 1, (int) ( $rules['interval_months'] ?? 1 ) );
 		$occurrences  = array();
 
-		$current_month = $start_date->modify( 'first day of this month' );
+		$current_month   = $start_date->modify( 'first day of this month' );
 		$iteration_limit = 24; // Safeguard (max 24 months).
 		$loop_count      = 0;
 
@@ -239,7 +239,7 @@ class Recurrence_Calculator {
 				}
 			}
 
-			$loop_count++;
+			++$loop_count;
 		}
 
 		return $occurrences;

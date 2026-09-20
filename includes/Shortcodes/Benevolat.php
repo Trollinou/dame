@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Shortcodes;
 
 use DateTime;
@@ -54,19 +56,13 @@ class Benevolat {
 			return '<p>' . __( 'Cet appel n\'a pas encore été configuré.', 'dame' ) . '</p>';
 		}
 
-		// Get all responses to calculate counts for each time slot via SQL
+		// Get all responses to calculate counts for each time slot via SQL.
 		global $wpdb;
 		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$vote_results = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT v.choice_key, COUNT(DISTINCT v.recipient_id) as count 
-			 FROM {$table_votes} v
-			 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
-			 WHERE v.poll_id = %d AND p.post_status = 'publish'
-			 GROUP BY v.choice_key",
-				$benevolat->ID
-			)
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->prepare( "SELECT v.choice_key, COUNT(DISTINCT v.recipient_id) as count FROM {$table_votes} v INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID WHERE v.poll_id = %d AND p.post_status = 'publish' GROUP BY v.choice_key", $benevolat->ID )
 		);
 
 		$response_counts = array();
@@ -245,7 +241,7 @@ class Benevolat {
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$responses = isset( $_POST['benevolat_responses'] ) ? (array) wp_unslash( $_POST['benevolat_responses'] ) : array();
 
-		// 1. Get configuration to identify past dates
+		// 1. Get configuration to identify past dates.
 		$benevolat_data = get_post_meta( $benevolat_id, '_dame_benevolat_data', true );
 		if ( ! is_array( $benevolat_data ) ) {
 			$benevolat_data = array();
@@ -258,12 +254,12 @@ class Benevolat {
 			}
 		}
 
-		// 2. Sanitize and filter NEW responses (ignore any manual injection for past dates)
+		// 2. Sanitize and filter NEW responses (ignore any manual injection for past dates).
 		$sanitized_responses = array();
 		foreach ( $responses as $date_index => $time_slots ) {
 			$date_index = (int) $date_index;
 			if ( in_array( $date_index, $past_date_indices, true ) ) {
-				continue; // Skip any values submitted for past dates
+				continue; // Skip any values submitted for past dates.
 			}
 			foreach ( $time_slots as $time_index => $value ) {
 				$sanitized_responses[ $date_index ][ (int) $time_index ] = 1;
@@ -311,7 +307,7 @@ class Benevolat {
 			}
 		}
 
-		// 3. Merge previous choices for PAST dates
+		// 3. Merge previous choices for PAST dates.
 		if ( ! empty( $previous_meta ) && is_array( $previous_meta ) ) {
 			foreach ( $past_date_indices as $idx ) {
 				if ( isset( $previous_meta[ $idx ] ) ) {
@@ -339,11 +335,11 @@ class Benevolat {
 		if ( $response_id ) {
 			update_post_meta( $response_id, '_dame_benevolat_responses', $sanitized_responses );
 
-			// Sync with SQL table for real-time stats and race condition prevention
+			// Sync with SQL table for real-time stats and race condition prevention.
 			global $wpdb;
 			$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
 
-			// 1. Clear previous votes for this response
+			// 1. Clear previous votes for this response.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->delete(
 				$table_votes,
@@ -353,7 +349,7 @@ class Benevolat {
 				)
 			);
 
-			// 2. Insert new votes
+			// 2. Insert new votes.
 			foreach ( $sanitized_responses as $date_index => $time_slots ) {
 				foreach ( $time_slots as $time_index => $value ) {
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery

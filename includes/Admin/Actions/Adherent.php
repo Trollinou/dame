@@ -50,7 +50,7 @@ class Adherent {
 			wp_die( esc_html__( 'L\'article n\'est pas un adhérent valide.', 'dame' ) );
 		}
 
-		// 1. Récupération des données de l'adhérent
+		// 1. Récupération des données de l'adhérent.
 		$first_name = get_post_meta( $post_id, '_dame_first_name', true );
 		$last_name  = get_post_meta( $post_id, '_dame_last_name', true );
 
@@ -67,14 +67,14 @@ class Adherent {
 		$department = get_post_meta( $post_id, '_dame_department', true );
 		$region     = get_post_meta( $post_id, '_dame_region', true );
 
-		// 2. Préparation du titre formaté
+		// 2. Préparation du titre formaté.
 		$new_title = Utils::generate_adherent_title( $post_id );
 
 		if ( empty( $new_title ) ) {
 			$new_title = $adherent->post_title;
 		}
 
-		// 3. Création du nouveau Contact
+		// 3. Création du nouveau Contact.
 		$contact_id = wp_insert_post(
 			array(
 				'post_title'  => $new_title,
@@ -88,7 +88,7 @@ class Adherent {
 			wp_die( esc_html__( 'Erreur lors de la création de la fiche contact.', 'dame' ) );
 		}
 
-		// 4. Migration des métadonnées vers le format Contact
+		// 4. Migration des métadonnées vers le format Contact.
 		update_post_meta( $contact_id, '_dame_contact_first_name', Utils::format_firstname( (string) $first_name ) );
 		update_post_meta( $contact_id, '_dame_contact_last_name', Utils::format_lastname( (string) $last_name ) );
 		update_post_meta( $contact_id, '_dame_contact_email', $email );
@@ -100,10 +100,10 @@ class Adherent {
 		update_post_meta( $contact_id, '_dame_contact_department', $department );
 		update_post_meta( $contact_id, '_dame_contact_region', $region );
 
-		// 5. Mise à la corbeille de l'adhérent original
+		// 5. Mise à la corbeille de l'adhérent original.
 		wp_trash_post( $post_id );
 
-		// 6. Redirection vers la fiche contact
+		// 6. Redirection vers la fiche contact.
 		wp_safe_redirect( get_edit_post_link( $contact_id, 'raw' ) );
 		exit;
 	}

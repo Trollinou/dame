@@ -5,6 +5,7 @@
  * @package DAME
  */
 
+declare(strict_types=1);
 // If uninstall not called from WordPress, then exit.
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
@@ -25,7 +26,7 @@ delete_transient( 'dame_import_export_notice' );
 
 global $wpdb;
 
-// 1. Delete all Plugin Custom Post Types
+// 1. Delete all Plugin Custom Post Types.
 $post_types = array(
 	'adherent',
 	'dame_contact',
@@ -51,7 +52,7 @@ foreach ( $post_types as $pt ) {
 	}
 }
 
-// 2. Delete Custom Taxonomies
+// 2. Delete Custom Taxonomies.
 $taxonomies = array(
 	'dame_saison_adhesion',
 	'dame_group',
@@ -73,7 +74,7 @@ foreach ( $taxonomies as $tax_name ) {
 	}
 }
 
-// 3. Drop Custom SQL Tables
+// 3. Drop Custom SQL Tables.
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.NotPrepared
 $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}dame_message_opens" );
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.NotPrepared

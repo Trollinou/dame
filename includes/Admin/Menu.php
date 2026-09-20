@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Admin;
 
 use DAME\Admin\Pages\Mailing;
@@ -13,6 +15,9 @@ use DAME\Admin\Pages\ImportFFE;
 use DAME\Admin\Settings\Main as SettingsMain;
 use DAME\Admin\Pages\MessageReport;
 
+/**
+ * Class Menu
+ */
 class Menu {
 
 	/**
@@ -32,7 +37,7 @@ class Menu {
 	 * Add admin menu pages.
 	 */
 	public function add_menus(): void {
-		// 1. Menu Parent & Tableau de bord (slug: dame-admin)
+		// 1. Menu Parent & Tableau de bord (slug: dame-admin).
 		add_menu_page(
 			__( 'DAME - Gestion', 'dame' ),
 			__( 'DAME', 'dame' ),
@@ -43,7 +48,7 @@ class Menu {
 			30
 		);
 
-		// Envoyer un message (Mailing)
+		// Envoyer un message (Mailing).
 		add_submenu_page(
 			'dame-admin',
 			__( 'Envoyer un message', 'dame' ),
@@ -53,7 +58,7 @@ class Menu {
 			array( new Mailing(), 'render' )
 		);
 
-		// Sauvegardes
+		// Sauvegardes.
 		add_submenu_page(
 			'dame-admin',
 			__( 'Sauvegardes et Import', 'dame' ),
@@ -63,7 +68,7 @@ class Menu {
 			array( new Backups(), 'render' )
 		);
 
-		// Import Manuel
+		// Import Manuel.
 		add_submenu_page(
 			'dame-admin',
 			__( 'Import Manuel', 'dame' ),
@@ -73,7 +78,7 @@ class Menu {
 			array( new ImportFFE(), 'render' )
 		);
 
-		// Réglages
+		// Réglages.
 		add_submenu_page(
 			'dame-admin',
 			__( 'Réglages DAME', 'dame' ),
@@ -83,7 +88,7 @@ class Menu {
 			array( new SettingsMain(), 'render_page' )
 		);
 
-		// Page cachée : Rapport détaillé d'un message
+		// Page cachée : Rapport détaillé d'un message.
 		add_submenu_page(
 			'dame-admin',
 			__( 'Rapport du message', 'dame' ),
@@ -166,12 +171,12 @@ class Menu {
 	 * Render the main DAME admin dashboard page.
 	 */
 	public function render_dashboard(): void {
-		// 1. Saison en cours
+		// 1. Saison en cours.
 		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
 		$season_term           = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
 		$season_name           = ( $season_term && ! is_wp_error( $season_term ) ) ? $season_term->name : __( 'Non définie', 'dame' );
 
-		// 2. Comptage Adhérents (Saison en cours)
+		// 2. Comptage Adhérents (Saison en cours).
 		$adherents_args = array(
 			'post_type'      => 'adherent',
 			'posts_per_page' => -1,
@@ -208,7 +213,7 @@ class Menu {
 			}
 		}
 
-		// 3. Derniers Adhérents
+		// 3. Derniers Adhérents.
 		$latest_adherents = get_posts(
 			array(
 				'post_type'      => 'adherent',
@@ -219,7 +224,7 @@ class Menu {
 			)
 		);
 
-		// 4. Préinscriptions en attente
+		// 4. Préinscriptions en attente.
 		$pre_inscriptions_query  = new \WP_Query(
 			array(
 				'post_type'      => 'dame_pre_inscription',
@@ -229,7 +234,7 @@ class Menu {
 		);
 		$pending_preinscriptions = $pre_inscriptions_query->found_posts;
 
-		// 5. Prochains événements Agenda
+		// 5. Prochains événements Agenda.
 		$today           = current_time( 'Y-m-d' );
 		$upcoming_events = get_posts(
 			array(
@@ -250,7 +255,7 @@ class Menu {
 			)
 		);
 
-		// 6. Bénévolats en cours
+		// 6. Bénévolats en cours.
 		$active_benevolats = array();
 		$all_benevolats    = get_posts(
 			array(
@@ -339,7 +344,7 @@ class Menu {
 												<a href="<?php echo esc_url( get_edit_post_link( $adherent->ID ) ); ?>">
 													<?php echo esc_html( get_the_title( $adherent->ID ) ); ?>
 												</a>
-												- <span style="color: #666; font-size: 0.9em;"><?php echo esc_html( get_the_date( '', $adherent->ID ) ); ?></span>
+												- <span style="color: #666; font-size: 0.9em;"><?php echo esc_html( (string) get_the_date( '', $adherent->ID ) ); ?></span>
 											</li>
 										<?php endforeach; ?>
 									</ul>
@@ -427,8 +432,15 @@ class Menu {
 									<ul>
 										<?php
 										foreach ( $upcoming_events as $event ) :
-											$start_date     = get_post_meta( $event->ID, '_dame_start_date', true );
-											$formatted_date = wp_date( get_option( 'date_format' ), strtotime( $start_date ) );
+											$start_date     = (string) get_post_meta( $event->ID, '_dame_start_date', true );
+											$start_ts       = strtotime( $start_date );
+											$formatted_date = '';
+											if ( false !== $start_ts ) {
+												$df_str = wp_date( (string) get_option( 'date_format' ), $start_ts );
+												if ( false !== $df_str ) {
+													$formatted_date = $df_str;
+												}
+											}
 											?>
 											<li>
 												<strong><?php echo esc_html( $formatted_date ); ?></strong> :
@@ -452,7 +464,14 @@ class Menu {
 									<ul>
 										<?php
 										foreach ( $active_benevolats as $benevolat ) :
-											$formatted_date = wp_date( get_option( 'date_format' ), strtotime( $benevolat['first_date'] ) );
+											$bene_ts        = strtotime( (string) $benevolat['first_date'] );
+											$formatted_date = '';
+											if ( false !== $bene_ts ) {
+												$df_str = wp_date( (string) get_option( 'date_format' ), $bene_ts );
+												if ( false !== $df_str ) {
+													$formatted_date = $df_str;
+												}
+											}
 											?>
 											<li>
 												<strong><?php echo esc_html( $formatted_date ); ?></strong> :

@@ -61,8 +61,8 @@ class Newsletter {
 	 * @return string HTML output.
 	 */
 	public function render( $atts ): string {
-		self::$instance_counter++;
-		$form_id = 'dame-nl-form-' . self::$instance_counter;
+		++self::$instance_counter;
+		$form_id  = 'dame-nl-form-' . self::$instance_counter;
 		$modal_id = 'dame-nl-modal-' . self::$instance_counter;
 
 		$attributes = shortcode_atts(
@@ -79,7 +79,7 @@ class Newsletter {
 			'dame_newsletter'
 		);
 
-		// Enqueue the public newsletter script
+		// Enqueue the public newsletter script.
 		wp_enqueue_script(
 			'dame-public-newsletter',
 			\DAME_PLUGIN_URL . 'assets/js/public-newsletter.js',
@@ -88,14 +88,14 @@ class Newsletter {
 			true
 		);
 
-		// Localize script
+		// Localize script.
 		wp_localize_script(
 			'dame-public-newsletter',
 			'dameNewsletterData',
 			array(
-				'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
-				'nonce'     => wp_create_nonce( 'dame_newsletter_nonce' ),
-				'i18n'      => array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'dame_newsletter_nonce' ),
+				'i18n'    => array(
 					'submitting'    => __( 'Inscription en cours...', 'dame' ),
 					'submitSuccess' => __( 'Inscription réussie !', 'dame' ),
 					'genericError'  => __( 'Une erreur est survenue. Veuillez réessayer.', 'dame' ),
@@ -103,7 +103,7 @@ class Newsletter {
 			)
 		);
 
-		// Enqueue public styles
+		// Enqueue public styles.
 		wp_enqueue_style(
 			'dame-public-styles',
 			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
@@ -120,7 +120,7 @@ class Newsletter {
 			</div>
 			<?php
 		} else {
-			// Enregistrer la modale pour le footer
+			// Enregistrer la modale pour le footer.
 			self::$modals_to_render[ $modal_id ] = array(
 				'form_id'  => $form_id,
 				'modal_id' => $modal_id,
@@ -128,14 +128,14 @@ class Newsletter {
 				'subtitle' => (string) $attributes['subtitle'],
 			);
 
-			$custom_classes = trim( (string) ( $attributes['button_class'] ?: $attributes['class'] ) );
+			$custom_classes = trim( (string) ( ! empty( $attributes['button_class'] ) ? $attributes['button_class'] : $attributes['class'] ) );
 			$btn_classes    = array( 'dame-nl-btn-trigger' );
 
 			if ( ! empty( $custom_classes ) ) {
 				$btn_classes[] = 'dame-nl-btn-trigger--custom';
 				$btn_classes[] = $custom_classes;
 			} else {
-				// Standard WP element button helper class
+				// Standard WP element button helper class.
 				$btn_classes[] = 'wp-element-button';
 			}
 
@@ -249,19 +249,19 @@ class Newsletter {
 	 * Handles AJAX subscription submission.
 	 */
 	public function handle_submission(): void {
-		// 1. Security: verify nonce
+		// 1. Security: verify nonce.
 		$nonce = isset( $_POST['dame_newsletter_nonce_field'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_newsletter_nonce_field'] ) ) : '';
 		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'dame_newsletter_nonce' ) ) {
 			wp_send_json_error( array( 'message' => __( 'La session a expiré. Veuillez rafraîchir la page et réessayer.', 'dame' ) ), 403 );
 		}
 
-		// 2. Honeypot check for bots
+		// 2. Honeypot check for bots.
 		if ( ! empty( $_POST['dame_newsletter_hp'] ) ) {
-			// Silently pretend success
+			// Silently pretend success.
 			wp_send_json_success( array( 'message' => __( 'Votre inscription a bien été prise en compte.', 'dame' ) ) );
 		}
 
-		// 3. Field validation
+		// 3. Field validation.
 		$last_name  = isset( $_POST['dame_newsletter_last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_newsletter_last_name'] ) ) : '';
 		$first_name = isset( $_POST['dame_newsletter_first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_newsletter_first_name'] ) ) : '';
 		$email      = isset( $_POST['dame_newsletter_email'] ) ? sanitize_email( wp_unslash( $_POST['dame_newsletter_email'] ) ) : '';
@@ -281,7 +281,7 @@ class Newsletter {
 			wp_send_json_error( array( 'message' => implode( ' ', $errors ) ), 400 );
 		}
 
-		// 4. Delegate to Newsletter Service
+		// 4. Delegate to Newsletter Service.
 		$service = new NewsletterService();
 		$result  = $service->handle_subscription( $first_name, $last_name, $email );
 

@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Admin\Pages;
 
 /**
@@ -24,10 +26,10 @@ class ViewAdherent {
 	 */
 	public function register(): void {
 		add_submenu_page(
-			'dame-hidden', // Parent slug
+			'dame-hidden', // Parent slug.
 			__( 'Consulter la fiche Adhérent', 'dame' ),
 			__( 'Consulter Adhérent', 'dame' ),
-			'read_private_pages', // Capability
+			'read_private_pages', // Capability.
 			'dame-view-adherent',
 			array( $this, 'render' )
 		);
@@ -46,19 +48,19 @@ class ViewAdherent {
 	 * Render the content of the adherent view page.
 	 */
 	public function render(): void {
-		// Check permissions
+		// Check permissions.
 		if ( ! current_user_can( 'read_private_pages' ) ) {
 			wp_die( esc_html__( 'Vous n\'avez pas la permission de voir cette page.', 'dame' ) );
 		}
 
-		// Get adherent ID from URL
+		// Get adherent ID from URL.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$adherent_id = isset( $_GET['adherent_id'] ) ? intval( wp_unslash( $_GET['adherent_id'] ) ) : 0;
 		if ( ! $adherent_id ) {
 			wp_die( esc_html__( 'ID de l\'adhérent non valide.', 'dame' ) );
 		}
 
-		// Get post object and check if it's a valid adherent
+		// Get post object and check if it's a valid adherent.
 		$adherent = get_post( $adherent_id );
 		if ( ! $adherent || 'adherent' !== $adherent->post_type ) {
 			wp_die( esc_html__( 'Adhérent non trouvé.', 'dame' ) );
@@ -250,7 +252,7 @@ class ViewAdherent {
 		if ( empty( $value ) && $value !== '0' ) {
 			return;
 		}
-		// Handle boolean values for display
+		// Handle boolean values for display.
 		if ( '1' === $value ) {
 			$value = 'Oui';
 		}
@@ -277,7 +279,7 @@ class ViewAdherent {
 		if ( empty( $value ) && $value !== '0' ) {
 			return;
 		}
-		// Handle boolean values for display
+		// Handle boolean values for display.
 		if ( '1' === $value ) {
 			$value = 'Oui';
 		}

@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Shortcodes;
 
 if ( ! defined( 'WPINC' ) ) {
@@ -32,10 +34,10 @@ class Contact {
 	 * @return string The HTML output of the contact form.
 	 */
 	public function render( $atts ) {
-		// Enqueue the script using the global constant
+		// Enqueue the script using the global constant.
 		wp_enqueue_script( 'dame-public-contact-form', \DAME_PLUGIN_URL . 'assets/js/public-contact-form.js', array( 'jquery' ), \DAME_VERSION, true );
 
-		// Localize the script with required data
+		// Localize the script with required data.
 		wp_localize_script(
 			'dame-public-contact-form',
 			'dame_contact_ajax',
@@ -90,27 +92,28 @@ class Contact {
 			</form>
 		</div>
 		<?php
-		return ob_get_clean();
+		$output = ob_get_clean();
+		return false !== $output ? $output : '';
 	}
 
 	/**
 	 * Handles the AJAX submission for the contact form.
 	 */
 	public function handle_submission(): void {
-		// 1. Security Check: Verify nonce
+		// 1. Security Check: Verify nonce.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$nonce = isset( $_POST['dame_contact_nonce_field'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_contact_nonce_field'] ) ) : '';
 		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'dame_contact_nonce' ) ) {
 			wp_send_json_error( array( 'message' => __( 'La vérification de sécurité a échoué. Veuillez rafraîchir la page.', 'dame' ) ), 403 );
 		}
 
-		// Honeypot Check
+		// Honeypot Check.
 		if ( ! empty( $_POST['dame_contact_hp'] ) ) {
-			// Silently fail for bots
+			// Silently fail for bots.
 			wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
 		}
 
-		// 2. Validation
+		// 2. Validation.
 		$errors          = array();
 		$required_fields = array(
 			'dame_contact_name'    => __( 'Le nom est obligatoire.', 'dame' ),
@@ -125,7 +128,7 @@ class Contact {
 			}
 		}
 
-		// Email format validation
+		// Email format validation.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$email_input = isset( $_POST['dame_contact_email'] ) ? sanitize_email( wp_unslash( $_POST['dame_contact_email'] ) ) : '';
 		if ( ! empty( $email_input ) && ! is_email( $email_input ) ) {
@@ -136,7 +139,7 @@ class Contact {
 			wp_send_json_error( array( 'message' => implode( ' ', $errors ) ), 400 );
 		}
 
-		// 3. Sanitize Data
+		// 3. Sanitize Data.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$name  = isset( $_POST['dame_contact_name'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_contact_name'] ) ) : '';
 		$email = $email_input;
@@ -145,7 +148,7 @@ class Contact {
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$message = isset( $_POST['dame_contact_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['dame_contact_message'] ) ) : '';
 
-		// 4. Send Email
+		// 4. Send Email.
 		$options = get_option( 'dame_options' );
 		$to      = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
 

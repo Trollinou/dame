@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Services;
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -41,7 +43,7 @@ class Mailer {
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$phpmailer->Port = isset( $options['smtp_port'] ) ? (int) $options['smtp_port'] : 465;
 
-			// Handle Authentication
+			// Handle Authentication.
 			if ( ! empty( $options['smtp_username'] ) && ! empty( $options['smtp_password'] ) ) {
 				// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$phpmailer->SMTPAuth = true;
@@ -51,7 +53,7 @@ class Mailer {
 				$phpmailer->Password = $options['smtp_password'];
 			}
 
-			// Handle Encryption (map smtp_secure to smtp_encryption)
+			// Handle Encryption (map smtp_secure to smtp_encryption).
 			if ( isset( $options['smtp_encryption'] ) && 'none' !== $options['smtp_encryption'] ) {
 				// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$phpmailer->SMTPSecure = $options['smtp_encryption'];

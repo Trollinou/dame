@@ -5,6 +5,8 @@
  * @package DAME\Metaboxes\ICalFeed
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\ICalFeed;
 
 use WP_Post;
@@ -64,7 +66,7 @@ class Settings {
 			return;
 		}
 
-		/** @var array<\WP_Term> $term_objects */
+		/* @var array<\WP_Term> $term_objects */
 		$term_objects = array_filter( $terms, static fn( $term ) => $term instanceof \WP_Term );
 
 		echo '<div class="category-checklist-container" style="max-height: 220px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; background: #fff;">';

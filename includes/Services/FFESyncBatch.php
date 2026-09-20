@@ -77,25 +77,25 @@ class FFESyncBatch {
 			@$dom->loadHTML( '<?xml encoding="UTF-8">' . $html );
 			$xpath = new DOMXPath( $dom );
 
-			// Extract players from table
+			// Extract players from table.
 			$new_players = $this->parse_player_table( $xpath );
 			$all_players = array_merge( $all_players, $new_players );
 
 			error_log( sprintf( 'DAME FFESyncBatch: Scraped page %d (%d players found so far)', $page, count( $all_players ) ) );
 
-			// Check for next page
+			// Check for next page.
 			$next_page_info = $this->get_next_page_info( $xpath, $page );
 			if ( ! $next_page_info ) {
 				break;
 			}
 
-			// Prepare POST data for next page (ASP.NET __doPostBack)
+			// Prepare POST data for next page (ASP.NET __doPostBack).
 			$post_data                    = $this->get_aspnet_fields( $xpath );
 			$post_data['__EVENTTARGET']   = $next_page_info['target'];
 			$post_data['__EVENTARGUMENT'] = $next_page_info['argument'];
 
 			++$page;
-			$current_url = $url; // Always POST to the same URL
+			$current_url = $url; // Always POST to the same URL.
 		}
 
 		return $all_players;
@@ -133,44 +133,59 @@ class FFESyncBatch {
 		$players = array();
 		$rows    = $xpath->query( "//div[contains(@class, 'page-mid')]//tr" );
 
-		if ( $rows ) {
+		if ( $rows instanceof \DOMNodeList ) {
 			foreach ( $rows as $row ) {
+				if ( ! $row instanceof \DOMNode ) {
+					continue;
+				}
 				$cols = $xpath->query( 'td', $row );
-				if ( $cols->length >= 8 ) {
-					$licence_ffe  = trim( $cols->item( 0 )->textContent );
-					$nom_complet  = trim( $cols->item( 1 )->textContent );
-					$licence_type = trim( $cols->item( 2 )->textContent );
+				if ( ! $cols instanceof \DOMNodeList || $cols->length < 8 ) {
+					continue;
+				}
 
-					// Extraction id_ffe depuis le lien
-					$link_node = $xpath->query( 'td[4]/a', $row );
-					$id_ffe    = '';
-					if ( $link_node->length > 0 ) {
-						$link_element = $link_node->item( 0 );
-						if ( $link_element instanceof \DOMElement ) {
-							$href = $link_element->getAttribute( 'href' );
-							if ( preg_match( '/Id=(.+)/', $href, $matches ) ) {
-								$id_ffe = $matches[1];
-							}
+				$item0 = $cols->item( 0 );
+				$item1 = $cols->item( 1 );
+				$item2 = $cols->item( 2 );
+				$item4 = $cols->item( 4 );
+				$item5 = $cols->item( 5 );
+				$item6 = $cols->item( 6 );
+				$item7 = $cols->item( 7 );
+
+				// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				$licence_ffe  = ( $item0 instanceof \DOMElement ) ? trim( $item0->textContent ) : '';
+				$nom_complet  = ( $item1 instanceof \DOMElement ) ? trim( $item1->textContent ) : '';
+				$licence_type = ( $item2 instanceof \DOMElement ) ? trim( $item2->textContent ) : '';
+
+				// Extraction id_ffe depuis le lien.
+				$link_node = $xpath->query( 'td[4]/a', $row );
+				$id_ffe    = '';
+				if ( $link_node instanceof \DOMNodeList && $link_node->length > 0 ) {
+					$link_element = $link_node->item( 0 );
+					if ( $link_element instanceof \DOMElement ) {
+						$href = $link_element->getAttribute( 'href' );
+						if ( preg_match( '/Id=(.+)/', $href, $matches ) ) {
+							$id_ffe = $matches[1];
 						}
 					}
+				}
 
-					$elo_standard = trim( str_replace( "\xc2\xa0", ' ', $cols->item( 4 )->textContent ) );
-					$elo_rapide   = trim( str_replace( "\xc2\xa0", ' ', $cols->item( 5 )->textContent ) );
-					$elo_blitz    = trim( str_replace( "\xc2\xa0", ' ', $cols->item( 6 )->textContent ) );
-					$categorie    = trim( $cols->item( 7 )->textContent );
+				$elo_standard = ( $item4 instanceof \DOMElement ) ? trim( str_replace( "\xc2\xa0", ' ', $item4->textContent ) ) : '';
+				$elo_rapide   = ( $item5 instanceof \DOMElement ) ? trim( str_replace( "\xc2\xa0", ' ', $item5->textContent ) ) : '';
+				$elo_blitz    = ( $item6 instanceof \DOMElement ) ? trim( str_replace( "\xc2\xa0", ' ', $item6->textContent ) ) : '';
+				$categorie    = ( $item7 instanceof \DOMElement ) ? trim( $item7->textContent ) : '';
+				// phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 
-					if ( ! empty( $id_ffe ) && ! empty( $nom_complet ) ) {
-						$players[] = array(
-							'id_ffe'       => $id_ffe,
-							'nom_complet'  => $nom_complet,
-							'licence_num'  => $licence_ffe,
-							'licence_type' => $licence_type,
-							'categorie'    => $categorie,
-							'elo_standard' => ! empty( $elo_standard ) ? $elo_standard : '0',
-							'elo_rapide'   => ! empty( $elo_rapide ) ? $elo_rapide : '0',
-							'elo_blitz'    => ! empty( $elo_blitz ) ? $elo_blitz : '0',
-						);
-					}
+				if ( ! empty( $id_ffe ) && ! empty( $nom_complet ) ) {
+					$players[] = array(
+						'id_ffe'       => $id_ffe,
+						'nom_complet'  => $nom_complet,
+						'licence_num'  => $licence_ffe,
+						'licence_type' => $licence_type,
+						'categorie'    => $categorie,
+						'elo_standard' => ! empty( $elo_standard ) ? $elo_standard : '0',
+						'elo_rapide'   => ! empty( $elo_rapide ) ? $elo_rapide : '0',
+						'elo_blitz'    => ! empty( $elo_blitz ) ? $elo_blitz : '0',
+					);
 				}
 			}
 		}
@@ -276,7 +291,7 @@ class FFESyncBatch {
 				update_post_meta( $post_id, '_dame_elo_rapide', $player['elo_rapide'] );
 				update_post_meta( $post_id, '_dame_elo_blitz', $player['elo_blitz'] );
 
-				// FIDE ID retrieval with safety limit
+				// FIDE ID retrieval with safety limit.
 				$fide_id = get_post_meta( $post_id, '_dame_fide_id', true );
 				if ( ( empty( $fide_id ) || 'NC' === $fide_id ) && $fide_lookups < $fide_limit ) {
 					$fide_id = $this->fetch_fide_id( $player['id_ffe'] );

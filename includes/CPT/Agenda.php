@@ -5,6 +5,8 @@
  * @package DAME\CPT
  */
 
+declare(strict_types=1);
+
 namespace DAME\CPT;
 
 use DateTime;
@@ -110,6 +112,9 @@ class Agenda {
 		// Check if we are on a single 'dame_agenda' post page.
 		if ( is_singular( 'dame_agenda' ) && in_the_loop() && is_main_query() ) {
 			$post_id = get_the_ID();
+			if ( ! $post_id ) {
+				return (string) $content;
+			}
 
 			// Get event meta data.
 			$start_date_str = get_post_meta( $post_id, '_dame_start_date', true );
@@ -243,10 +248,10 @@ class Agenda {
 
 				if ( ! empty( $latitude ) && ! empty( $longitude ) ) {
 					$details_html .= '<div class="map-container">';
-					// Embed map
+					// Embed map.
 					$details_html .= '<iframe src="https://maps.google.com/maps?q=' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '&hl=es;z=14&amp;output=embed" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"></iframe>';
 
-					// Navigation buttons
+					// Navigation buttons.
 					$details_html .= '<div class="nav-buttons">';
 					$details_html .= '<a href="https://www.google.com/maps/dir/?api=1&destination=' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '" target="_blank" class="button nav-button">📱 ' . __( 'Calculer l\'itinéraire', 'dame' ) . '</a>';
 					$details_html .= '<button id="dame-open-gps" data-lat="' . esc_attr( $latitude ) . '" data-lng="' . esc_attr( $longitude ) . '" class="button nav-button">🧭 ' . __( 'Ouvrir dans le GPS', 'dame' ) . '</button>';

@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Admin\Columns;
 
 use DAME\Services\Data_Provider;
@@ -21,18 +23,18 @@ class Adherent {
 	 * Initialize the columns logic.
 	 */
 	public function init(): void {
-		// Columns
+		// Columns.
 		add_filter( 'manage_adherent_posts_columns', array( $this, 'set_columns' ) );
 		add_action( 'manage_adherent_posts_custom_column', array( $this, 'render_columns' ), 10, 2 );
 		add_filter( 'manage_edit-adherent_sortable_columns', array( $this, 'set_sortable_columns' ) );
 
-		// Query & Filters
+		// Query & Filters.
 		add_action( 'pre_get_posts', array( $this, 'sort_columns' ) );
 		add_action( 'load-edit.php', array( $this, 'remove_date_filter' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'add_filters' ) );
 		add_action( 'pre_get_posts', array( $this, 'filter_query' ) );
 
-		// Search & Actions
+		// Search & Actions.
 		add_filter( 'posts_search', array( $this, 'extend_search' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'add_row_actions' ), 10, 2 );
 	}
@@ -169,7 +171,7 @@ class Adherent {
 	 */
 	public function set_sortable_columns( $columns ) {
 		$columns['dame_license_number'] = 'dame_license_number';
-		$columns['dame_age_category']   = 'dame_birth_date'; // Sort by birth date
+		$columns['dame_age_category']   = 'dame_birth_date'; // Sort by birth date.
 		return $columns;
 	}
 
@@ -199,7 +201,7 @@ class Adherent {
 	 */
 	public function remove_date_filter(): void {
 		$screen = get_current_screen();
-		// Correct screen ID for 'adherent' CPT is 'edit-adherent'
+		// Correct screen ID for 'adherent' CPT is 'edit-adherent'.
 		if ( $screen && strpos( $screen->id, 'edit-adherent' ) !== false ) {
 			add_filter( 'months_dropdown_results', '__return_empty_array' );
 		}
@@ -211,9 +213,9 @@ class Adherent {
 	public function add_filters(): void {
 		global $typenow;
 
-		// Correct CPT slug
+		// Correct CPT slug.
 		if ( 'adherent' === $typenow ) {
-			// Group filter
+			// Group filter.
 			$group_terms = get_terms(
 				array(
 					'taxonomy'   => 'dame_group',
@@ -236,7 +238,7 @@ class Adherent {
 				<?php
 			}
 
-			// Season filter
+			// Season filter.
 			$saisons = get_terms(
 				array(
 					'taxonomy'   => 'dame_saison_adhesion',
@@ -259,7 +261,7 @@ class Adherent {
 				<?php
 			}
 
-			// License Type filter
+			// License Type filter.
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$current_license = isset( $_GET['dame_license_type_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_license_type_filter'] ) ) : '';
 			?>
@@ -271,7 +273,7 @@ class Adherent {
 			</select>
 			<?php
 
-			// Gender filter
+			// Gender filter.
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$current_gender = isset( $_GET['dame_gender_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_gender_filter'] ) ) : '';
 			?>
@@ -283,7 +285,7 @@ class Adherent {
 			</select>
 			<?php
 
-			// Age Category filter
+			// Age Category filter.
 			$age_categories = \DAME\Core\Utils::get_all_age_categories();
 			if ( ! empty( $age_categories ) ) {
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -310,12 +312,12 @@ class Adherent {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$post_type = isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : '';
 
-		// Correct CPT slug
+		// Correct CPT slug.
 		if ( is_admin() && 'edit.php' === $pagenow && 'adherent' === $post_type && $query->is_main_query() ) {
-			$meta_query = $query->get( 'meta_query' ) ?: array();
-			$tax_query  = $query->get( 'tax_query' ) ?: array();
+			$meta_query = ! empty( $query->get( 'meta_query' ) ) ? $query->get( 'meta_query' ) : array();
+			$tax_query  = ! empty( $query->get( 'tax_query' ) ) ? $query->get( 'tax_query' ) : array();
 
-			// Group filter
+			// Group filter.
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( isset( $_GET['dame_group_filter'] ) && ! empty( $_GET['dame_group_filter'] ) ) {
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -329,7 +331,7 @@ class Adherent {
 				}
 			}
 
-			// Season filter
+			// Season filter.
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( isset( $_GET['dame_saison_filter'] ) && ! empty( $_GET['dame_saison_filter'] ) ) {
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -343,7 +345,7 @@ class Adherent {
 				}
 			}
 
-			// License Type filter
+			// License Type filter.
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( isset( $_GET['dame_license_type_filter'] ) && ! empty( $_GET['dame_license_type_filter'] ) ) {
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -411,7 +413,7 @@ class Adherent {
 				}
 			}
 
-			// Age Category filter
+			// Age Category filter.
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( isset( $_GET['dame_age_category_filter'] ) && ! empty( $_GET['dame_age_category_filter'] ) ) {
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -436,7 +438,7 @@ class Adherent {
 				}
 			}
 
-			// Gender filter
+			// Gender filter.
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( isset( $_GET['dame_gender_filter'] ) && ! empty( $_GET['dame_gender_filter'] ) ) {
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -494,7 +496,7 @@ class Adherent {
 	public function extend_search( $search, $query ) {
 		global $wpdb;
 
-		// Correct CPT slug
+		// Correct CPT slug.
 		if ( $query->is_search() && $query->get( 'post_type' ) === 'adherent' ) {
 			$search_term = $query->get( 's' );
 			if ( ! empty( $search_term ) ) {
@@ -526,7 +528,7 @@ class Adherent {
 	 * @return array<string, mixed> The modified row actions.
 	 */
 	public function add_row_actions( $actions, $post ): array {
-		// Correct CPT slug
+		// Correct CPT slug.
 		if ( 'adherent' === $post->post_type ) {
 			// CPT is not public, so the default 'View' link is not needed/broken.
 			unset( $actions['view'] );

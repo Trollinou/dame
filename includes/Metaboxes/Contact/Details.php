@@ -212,7 +212,7 @@ class Details {
 				<td>
 					<select name="_dame_contact_department" id="dame_contact_department" class="dame-js-dept" data-group="contact">
 						<?php foreach ( $departments as $code => $name ) : ?>
-							<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $department, $code ); ?>><?php echo esc_html( $name ); ?></option>
+							<option value="<?php echo esc_attr( (string) $code ); ?>" <?php selected( (string) $department, (string) $code ); ?>><?php echo esc_html( $name ); ?></option>
 						<?php endforeach; ?>
 					</select>
 				</td>
@@ -222,7 +222,7 @@ class Details {
 				<td>
 					<select name="_dame_contact_region" id="dame_contact_region" class="dame-js-region" data-group="contact">
 						<?php foreach ( $regions as $code => $name ) : ?>
-							<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $region, $code ); ?>><?php echo esc_html( $name ); ?></option>
+							<option value="<?php echo esc_attr( (string) $code ); ?>" <?php selected( (string) $region, (string) $code ); ?>><?php echo esc_html( $name ); ?></option>
 						<?php endforeach; ?>
 					</select>
 				</td>
@@ -237,7 +237,7 @@ class Details {
 	 * @param int $post_id L'ID du contact.
 	 */
 	public function save( int $post_id ): void {
-		// Vérifications de sécurité (Nonce, Autosave, Capacités)
+		// Vérifications de sécurité (Nonce, Autosave, Capacités).
 		$nonce = isset( $_POST['dame_contact_meta_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_contact_meta_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'dame_save_contact_meta' ) ) {
 			return;
@@ -251,7 +251,7 @@ class Details {
 			return;
 		}
 
-		// 1. Traitement spécifique et formatage pour le Nom et le Prénom
+		// 1. Traitement spécifique et formatage pour le Nom et le Prénom.
 		$first_name = isset( $_POST['_dame_contact_first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['_dame_contact_first_name'] ) ) : '';
 		$last_name  = isset( $_POST['_dame_contact_last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['_dame_contact_last_name'] ) ) : '';
 
@@ -265,7 +265,7 @@ class Details {
 			update_post_meta( $post_id, '_dame_contact_last_name', $last_name );
 		}
 
-		// 2. Sauvegarde des autres champs standards
+		// 2. Sauvegarde des autres champs standards.
 		$fields = array(
 			'_dame_contact_organization',
 			'_dame_contact_sexe',
@@ -285,7 +285,7 @@ class Details {
 			}
 		}
 
-		// 3. Sauvegarde spécifique pour l'Email et le refus de mailing
+		// 3. Sauvegarde spécifique pour l'Email et le refus de mailing.
 		if ( isset( $_POST['_dame_contact_email'] ) ) {
 			update_post_meta( $post_id, '_dame_contact_email', sanitize_email( wp_unslash( $_POST['_dame_contact_email'] ) ) );
 		}
@@ -293,11 +293,11 @@ class Details {
 		$no_emails = isset( $_POST['_dame_contact_no_emails'] ) ? '1' : '0';
 		update_post_meta( $post_id, '_dame_contact_no_emails', $no_emails );
 
-		// 4. Mise à jour automatique du titre natif
+		// 4. Mise à jour automatique du titre natif.
 		$new_title = Utils::generate_contact_title( $post_id );
 
 		if ( get_the_title( $post_id ) !== $new_title ) {
-			// Désactivation temporaire du hook pour éviter la boucle infinie
+			// Désactivation temporaire du hook pour éviter la boucle infinie.
 			remove_action( 'save_post', array( $this, 'save' ) );
 
 			wp_update_post(
@@ -308,7 +308,7 @@ class Details {
 				)
 			);
 
-			// Réactivation du hook
+			// Réactivation du hook.
 			add_action( 'save_post', array( $this, 'save' ) );
 		}
 	}

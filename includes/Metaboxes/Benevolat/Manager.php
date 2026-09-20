@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\Benevolat;
 
 /**
@@ -79,7 +81,7 @@ class Manager {
 			<span class="dashicons dashicons-shortcode" style="font-size: 18px; vertical-align: middle;"></span>
 			<strong><?php esc_html_e( 'Shortcode :', 'dame' ); ?></strong>
 			<code style="user-select: all; cursor: pointer; background: #fff; border: 1px solid #ccd0d4; padding: 3px 8px;" title="<?php esc_attr_e( 'Cliquer pour sélectionner', 'dame' ); ?>">
-				[dame_benevolat slug="<?php echo esc_attr( (string) $post->post_name ?: 'votre-slug' ); ?>"]
+				[dame_benevolat slug="<?php echo esc_attr( ! empty( $post->post_name ) ? (string) $post->post_name : 'votre-slug' ); ?>"]
 			</code>
 		</div>
 		<?php
@@ -174,6 +176,7 @@ class Manager {
 						?>
 						<div class="benevolat-date-group">
 							<hr>
+							<?php /* translators: %d: date index */ ?>
 							<h4><?php echo esc_html( sprintf( __( 'Date %d', 'dame' ), $date_key + 1 ) ); ?></h4>
 							<p>
 								<label for="benevolat_date_<?php echo esc_attr( (string) $date_key ); ?>"><?php esc_html_e( 'Date:', 'dame' ); ?></label>
@@ -247,7 +250,7 @@ class Manager {
 			return;
 		}
 
-		// Prepare data for the results table
+		// Prepare data for the results table.
 		$results = array();
 
 		foreach ( $benevolat_data as $date_index => $date_info ) {
@@ -267,15 +270,10 @@ class Manager {
 
 		global $wpdb;
 		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$vote_records = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT DISTINCT v.recipient_id, v.choice_key 
-			 FROM {$table_votes} v
-			 INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID
-			 WHERE v.poll_id = %d AND p.post_status = 'publish'",
-				$post->ID
-			)
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->prepare( "SELECT DISTINCT v.recipient_id, v.choice_key FROM {$table_votes} v INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID WHERE v.poll_id = %d AND p.post_status = 'publish'", $post->ID )
 		);
 
 		$response_titles = array();
@@ -405,7 +403,8 @@ class Manager {
 		if ( ! isset( $_POST['dame_benevolat_metabox_nonce'] ) ) {
 			return;
 		}
-		if ( ! wp_verify_nonce( $_POST['dame_benevolat_metabox_nonce'], 'dame_save_benevolat_metabox_data' ) ) {
+		$nonce = sanitize_text_field( wp_unslash( $_POST['dame_benevolat_metabox_nonce'] ) );
+		if ( ! wp_verify_nonce( $nonce, 'dame_save_benevolat_metabox_data' ) ) {
 			return;
 		}
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -420,8 +419,10 @@ class Manager {
 			return;
 		}
 
-		$benevolat_data = array();
-		foreach ( $_POST['_dame_benevolat_data'] as $date_group ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$raw_benevolat_data = is_array( $_POST['_dame_benevolat_data'] ) ? wp_unslash( $_POST['_dame_benevolat_data'] ) : array();
+		$benevolat_data     = array();
+		foreach ( (array) $raw_benevolat_data as $date_group ) {
 			if ( ! empty( $date_group['date'] ) ) {
 				$new_date_group = array(
 					'date'       => sanitize_text_field( $date_group['date'] ),
@@ -471,13 +472,14 @@ class Manager {
 		}
 
 		$response_id = intval( $_GET['response_id'] );
+		$raw_nonce   = sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) );
 
-		if ( ! wp_verify_nonce( $_GET['_wpnonce'], 'dame_delete_response_' . $response_id ) ) {
-			wp_die( __( 'Security check failed.', 'dame' ) );
+		if ( ! wp_verify_nonce( $raw_nonce, 'dame_delete_response_' . $response_id ) ) {
+			wp_die( esc_html__( 'Security check failed.', 'dame' ) );
 		}
 
 		if ( ! current_user_can( 'delete_post', $response_id ) ) {
-			wp_die( __( 'You do not have permission to delete this response.', 'dame' ) );
+			wp_die( esc_html__( 'You do not have permission to delete this response.', 'dame' ) );
 		}
 
 		wp_trash_post( $response_id );

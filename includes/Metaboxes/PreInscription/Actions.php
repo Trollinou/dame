@@ -124,7 +124,7 @@ class Actions {
 
 			switch ( $action ) {
 				case 'delete':
-					// Document cleanup is handled automatically via before_delete_post in PreInscription CPT
+					// Document cleanup is handled automatically via before_delete_post in PreInscription CPT.
 					wp_delete_post( $post_id, true );
 					wp_safe_redirect( admin_url( 'edit.php?post_type=dame_pre_inscription&message=101' ) );
 					exit;
@@ -142,7 +142,7 @@ class Actions {
 						}
 					}
 
-					// Duplicate documents physically so adherent has its own files
+					// Duplicate documents physically so adherent has its own files.
 					$last_name_adherent  = isset( $adherent_meta['_dame_last_name'] ) ? sanitize_file_name( (string) $adherent_meta['_dame_last_name'] ) : 'adherent';
 					$first_name_adherent = isset( $adherent_meta['_dame_first_name'] ) ? sanitize_file_name( (string) $adherent_meta['_dame_first_name'] ) : '';
 
@@ -187,7 +187,7 @@ class Actions {
 						);
 						$adherent_id        = wp_insert_post( $adherent_post_data, true );
 						$redirect_message   = 6; // Post published.
-					} else { // validate_update
+					} else { // validate_update.
 						$adherent_id = isset( $_POST['dame_matched_adherent_id'] ) ? absint( $_POST['dame_matched_adherent_id'] ) : 0;
 						if ( ! $adherent_id ) {
 							$adherent_id      = wp_insert_post(
@@ -240,15 +240,15 @@ class Actions {
 						return;
 					}
 
-					// Set adherent to 'Active' for the current season
+					// Set adherent to 'Active' for the current season.
 					if ( $current_season_tag_id ) {
 						wp_add_object_terms( $adherent_id, $current_season_tag_id, 'dame_saison_adhesion' );
 					}
 
-					// Delete pre-inscription post (its original documents will be cleaned up, adherent keeps its copies)
+					// Delete pre-inscription post (its original documents will be cleaned up, adherent keeps its copies).
 					wp_delete_post( $post_id, true );
 
-					// Redirect to the adherent's edit page
+					// Redirect to the adherent's edit page.
 					$redirect_url = get_edit_post_link( $adherent_id, 'raw' );
 					if ( $redirect_url ) {
 						wp_safe_redirect( add_query_arg( 'message', $redirect_message, $redirect_url ) );

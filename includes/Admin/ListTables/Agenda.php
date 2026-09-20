@@ -5,6 +5,8 @@
  * @package DAME\Admin\ListTables
  */
 
+declare(strict_types=1);
+
 namespace DAME\Admin\ListTables;
 
 use WP_Query;
@@ -148,7 +150,7 @@ class Agenda {
 			return;
 		}
 
-		// --- Category Filter (existing) ---
+		// --- Category Filter (existing) ---.
 		$taxonomy = 'dame_agenda_category';
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		$selected_category = isset( $_GET[ $taxonomy ] ) ? sanitize_text_field( wp_unslash( $_GET[ $taxonomy ] ) ) : '';
@@ -175,7 +177,7 @@ class Agenda {
 			echo '</select>';
 		}
 
-		// --- New Date Range Filter ---
+		// --- New Date Range Filter ---.
 		global $wpdb, $wp_locale;
 
 		$defaults = $this->get_default_date_range();
@@ -194,7 +196,7 @@ class Agenda {
 		$end_month   = '' !== $raw_end_month ? $raw_end_month : $defaults['end_month'];
 		$end_year    = '' !== $raw_end_year ? $raw_end_year : $defaults['end_year'];
 
-		// Get all distinct years from event start and end dates
+		// Get all distinct years from event start and end dates.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$raw_years = $wpdb->get_col(
 			$wpdb->prepare(
@@ -230,7 +232,7 @@ class Agenda {
 		<label for="dame_start_month" class="screen-reader-text"><?php esc_html_e( 'Mois de début', 'dame' ); ?></label>
 		<select name="dame_start_month" id="dame_start_month">
 			<?php foreach ( $months as $month_val => $month_name ) : ?>
-				<option value="<?php echo esc_attr( $month_val ); ?>" <?php selected( $start_month, $month_val ); ?>><?php echo esc_html( $month_name ); ?></option>
+				<option value="<?php echo esc_attr( (string) $month_val ); ?>" <?php selected( $start_month, (string) $month_val ); ?>><?php echo esc_html( $month_name ); ?></option>
 			<?php endforeach; ?>
 		</select>
 		<label for="dame_start_year" class="screen-reader-text"><?php esc_html_e( 'Année de début', 'dame' ); ?></label>
@@ -242,7 +244,7 @@ class Agenda {
 		<label for="dame_end_month" class="screen-reader-text"><?php esc_html_e( 'Mois de fin', 'dame' ); ?></label>
 		<select name="dame_end_month" id="dame_end_month">
 			<?php foreach ( $months as $month_val => $month_name ) : ?>
-				<option value="<?php echo esc_attr( $month_val ); ?>" <?php selected( $end_month, $month_val ); ?>><?php echo esc_html( $month_name ); ?></option>
+				<option value="<?php echo esc_attr( (string) $month_val ); ?>" <?php selected( $end_month, (string) $month_val ); ?>><?php echo esc_html( $month_name ); ?></option>
 			<?php endforeach; ?>
 		</select>
 		<label for="dame_end_year" class="screen-reader-text"><?php esc_html_e( 'Année de fin', 'dame' ); ?></label>
@@ -288,7 +290,7 @@ class Agenda {
 		// Handle category filter.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		if ( isset( $_GET['dame_agenda_category'] ) && '' !== $_GET['dame_agenda_category'] ) {
-			$tax_query = $query->get( 'tax_query' ) ?: array();
+			$tax_query = ! empty( $query->get( 'tax_query' ) ) ? $query->get( 'tax_query' ) : array();
 			if ( empty( $tax_query ) ) {
 				$tax_query = array( 'relation' => 'AND' );
 			}
@@ -301,7 +303,7 @@ class Agenda {
 			$query->set( 'tax_query', $tax_query );
 		}
 
-		// --- Handle Date Range Filter ---
+		// --- Handle Date Range Filter ---.
 		$defaults = $this->get_default_date_range();
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
@@ -322,11 +324,15 @@ class Agenda {
 			$start_date_str = $start_year . '-' . $start_month . '-01';
 			$end_date_str   = $end_year . '-' . $end_month . '-01';
 
-			if ( strtotime( $start_date_str ) <= strtotime( $end_date_str ) ) {
-				$first_day = wp_date( 'Y-m-d', strtotime( $start_date_str ) );
-				$last_day  = wp_date( 'Y-m-t', strtotime( $end_date_str ) );
+			$start_ts = strtotime( $start_date_str );
+			$end_ts   = strtotime( $end_date_str );
+			if ( false !== $start_ts && false !== $end_ts && $start_ts <= $end_ts ) {
+				$raw_first = wp_date( 'Y-m-d', $start_ts );
+				$raw_last  = wp_date( 'Y-m-t', $end_ts );
+				$first_day = false !== $raw_first ? (string) $raw_first : $start_date_str;
+				$last_day  = false !== $raw_last ? (string) $raw_last : $end_date_str;
 
-				$meta_query = $query->get( 'meta_query' ) ?: array();
+				$meta_query = ! empty( $query->get( 'meta_query' ) ) ? $query->get( 'meta_query' ) : array();
 				if ( empty( $meta_query ) ) {
 					$meta_query = array( 'relation' => 'AND' );
 				} elseif ( ! isset( $meta_query['relation'] ) ) {
@@ -352,8 +358,10 @@ class Agenda {
 	private function get_default_date_range(): array {
 		global $wpdb;
 
-		$default_start_month = wp_date( 'm' );
-		$default_start_year  = wp_date( 'Y' );
+		$raw_start_m         = wp_date( 'm' );
+		$raw_start_y         = wp_date( 'Y' );
+		$default_start_month = false !== $raw_start_m ? (string) $raw_start_m : '01';
+		$default_start_year  = false !== $raw_start_y ? (string) $raw_start_y : gmdate( 'Y' );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$max_date = $wpdb->get_var(
@@ -370,10 +378,24 @@ class Agenda {
 			)
 		);
 
-		if ( $max_date && strtotime( $max_date ) > strtotime( wp_date( 'Y-m-t' ) ) ) {
-			$timestamp         = strtotime( $max_date );
-			$default_end_month = wp_date( 'm', $timestamp );
-			$default_end_year  = wp_date( 'Y', $timestamp );
+		if ( is_string( $max_date ) && '' !== $max_date ) {
+			$max_ts  = strtotime( $max_date );
+			$raw_now = wp_date( 'Y-m-t' );
+			$now_ts  = strtotime( false !== $raw_now ? $raw_now : gmdate( 'Y-m-t' ) );
+			if ( false !== $max_ts && false !== $now_ts && $max_ts > $now_ts ) {
+				$formatted_m = wp_date( 'm', $max_ts );
+				$formatted_y = wp_date( 'Y', $max_ts );
+				if ( false !== $formatted_m && false !== $formatted_y ) {
+					$default_end_month = $formatted_m;
+					$default_end_year  = $formatted_y;
+				} else {
+					$default_end_month = $default_start_month;
+					$default_end_year  = $default_start_year;
+				}
+			} else {
+				$default_end_month = $default_start_month;
+				$default_end_year  = $default_start_year;
+			}
 		} else {
 			$default_end_month = $default_start_month;
 			$default_end_year  = $default_start_year;

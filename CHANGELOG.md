@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Migration WordPress 7.1 & Qualité PHP 8.4 Strict
+- **Passage aux Prérequis WordPress 7.1 & PHP 8.4 Strict (`dame.php`, `phpcs.xml`, `phpstan.neon`)** :
+  - Rehaussement du prérequis WordPress à la version 7.1 (`Requires at least: 7.1` et `minimum_wp_version: 7.1`).
+  - Déclaration stricte `declare(strict_types=1);` appliquée systématiquement sur 100% des fichiers PHP (54 fichiers normalisés).
+  - Niveau d'analyse statique PHPStan rehaussé au niveau 7 (`level: 7`) avec zéro erreur sur l'ensemble du plugin.
+  - Conformité PHPCS totale validée sur l'ensemble du plugin sans contournement de règles.
+
+## [5.4.1] - 2026-09-20
+
 ### Sauvegardes & Interopérabilité
 - **Filtre d'extension des sauvegardes automatiques (`dame_scheduled_backup_attachments`)** :
   - Ajout du filtre `dame_scheduled_backup_attachments` permettant aux modules complémentaires (notamment ROI) d'attacher automatiquement leurs fichiers de sauvegarde au courriel quotidien envoyé par DAME.

@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Admin\Pages;
 
 /**
@@ -51,10 +53,10 @@ class MessageReport {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'dame_message_opens';
 
-		// 1. Get all recipients for this message
+		// 1. Get all recipients for this message.
 		$recipients = $this->get_formatted_recipients( $message_id );
 
-		// 2. Get unique opens count (by email hash)
+		// 2. Get unique opens count (by email hash).
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$unique_opens = (int) $wpdb->get_var(
 			$wpdb->prepare(
@@ -64,7 +66,7 @@ class MessageReport {
 			)
 		);
 
-		// 3. Get all open data to mark individual recipients
+		// 3. Get all open data to mark individual recipients.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$opens_data = $wpdb->get_results(
 			$wpdb->prepare(
@@ -92,7 +94,7 @@ class MessageReport {
 				<h2><?php esc_html_e( 'Statistiques', 'dame' ); ?></h2>
 				<?php
 				$total_targets = count( $recipients );
-				// Count how many have been sent (sent_at is NOT NULL)
+				// Count how many have been sent (sent_at is NOT NULL).
 				$sent_count = 0;
 				foreach ( $recipients as $r ) {
 					if ( ! empty( $r['sent_at'] ) ) {
@@ -136,7 +138,9 @@ class MessageReport {
 								<td>
 									<?php
 									if ( ! empty( $sent_at ) ) {
-										echo esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $sent_at . ' UTC' ) ) );
+										$sent_ts = strtotime( $sent_at . ' UTC' );
+										$fmt     = false !== $sent_ts ? (string) wp_date( (string) get_option( 'date_format' ) . ' ' . (string) get_option( 'time_format' ), $sent_ts ) : '';
+										echo esc_html( $fmt );
 									} else {
 										echo '—';
 									}
@@ -147,7 +151,7 @@ class MessageReport {
 										<span style="color: green; font-weight: bold;">
 											<?php
 											$timestamp = strtotime( $opened_at . ' UTC' );
-											$date_fmt  = wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp );
+											$date_fmt  = false !== $timestamp ? (string) wp_date( (string) get_option( 'date_format' ) . ' ' . (string) get_option( 'time_format' ), $timestamp ) : '';
 											// translators: %s is the formatted date.
 											echo esc_html( sprintf( __( 'Ouvert le %s', 'dame' ), $date_fmt ) );
 											?>
@@ -189,7 +193,7 @@ class MessageReport {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'dame_message_opens';
 
-		// 1. Récupération des données brutes
+		// 1. Récupération des données brutes.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
@@ -204,14 +208,14 @@ class MessageReport {
 			return array();
 		}
 
-		// 2. CORRECTION : Reconstruction des noms manquants
-		// On boucle sur les résultats pour vérifier si le nom est présent
+		// 2. CORRECTION : Reconstruction des noms manquants.
+		// On boucle sur les résultats pour vérifier si le nom est présent.
 		foreach ( $results as $key => $row ) {
 			if ( empty( $row['name'] ) && ! empty( $row['recipient_id'] ) ) {
 				$post_id   = (int) $row['recipient_id'];
 				$post_type = get_post_type( $post_id );
 
-				// On utilise vos nouvelles fonctions de Utils pour retrouver le nom exact
+				// On utilise vos nouvelles fonctions de Utils pour retrouver le nom exact.
 				if ( 'adherent' === $post_type ) {
 					$results[ $key ]['name'] = \DAME\Core\Utils::generate_adherent_title( $post_id );
 				} elseif ( 'dame_contact' === $post_type ) {
@@ -219,13 +223,13 @@ class MessageReport {
 				}
 			}
 
-			// Sécurité : si toujours vide, on met l'email pour éviter une ligne vide
+			// Sécurité : si toujours vide, on met l'email pour éviter une ligne vide.
 			if ( empty( $results[ $key ]['name'] ) ) {
 				$results[ $key ]['name'] = $row['email'];
 			}
 		}
 
-		// 3. Tri alphabétique (maintenant que les noms sont récupérés)
+		// 3. Tri alphabétique (maintenant que les noms sont récupérés).
 		uasort( $results, fn( $a, $b ) => strcasecmp( (string) $a['name'], (string) $b['name'] ) );
 
 		return $results;

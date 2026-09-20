@@ -5,6 +5,8 @@
  * @package DAME\CPT
  */
 
+declare(strict_types=1);
+
 namespace DAME\CPT;
 
 /**
