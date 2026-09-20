@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Sauvegardes & Interopérabilité
+- **Filtre d'extension des sauvegardes automatiques (`dame_scheduled_backup_attachments`)** :
+  - Ajout du filtre `dame_scheduled_backup_attachments` permettant aux modules complémentaires (notamment ROI) d'attacher automatiquement leurs fichiers de sauvegarde au courriel quotidien envoyé par DAME.
+  - Nettoyage automatique et dynamique de l'ensemble des pièces jointes temporaires après expédition de l'email.
+
 ## [5.4.0] - 2026-09-12
 
 ### Dématérialisation & Signature Électronique des Documents

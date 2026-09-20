@@ -2511,20 +2511,34 @@ class Backup {
 			$wp_filesystem->put_contents( $file_site, (string) gzcompress( (string) wp_json_encode( $data_site ) ) );
 		}
 
+		// Attachments
+		$attachments = array( $file_adherent, $file_agenda, $file_site );
+		/**
+		 * Filter the attachments included in the scheduled daily backup email.
+		 *
+		 * @param array<int, string> $attachments List of file paths to attach.
+		 * @param string             $backup_dir  Directory where backups are temporarily saved.
+		 */
+		$attachments = apply_filters( 'dame_scheduled_backup_attachments', $attachments, $backup_dir );
+
 		// Send Email
 		$options = get_option( 'dame_options' );
 		$to      = $options['sender_email'] ?? get_option( 'admin_email' );
 		if ( $to ) {
 			/* translators: %s: Site title */
-			$subject = sprintf( __( 'Sauvegarde journalière DAME pour %s', 'dame' ), get_bloginfo( 'name' ) );
+			$subject = sprintf( __( 'Sauvegarde journalière pour %s', 'dame' ), get_bloginfo( 'name' ) );
 			$body    = '<p>' . __( 'Veuillez trouver ci-joint les sauvegardes journalières.', 'dame' ) . '</p>';
 			$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-			wp_mail( $to, $subject, $body, $headers, array( $file_adherent, $file_agenda, $file_site ) );
+			wp_mail( $to, $subject, $body, $headers, $attachments );
 		}
 
 		// Cleanup
-		wp_delete_file( $file_adherent );
-		wp_delete_file( $file_agenda );
-		wp_delete_file( $file_site );
+		if ( is_array( $attachments ) ) {
+			foreach ( $attachments as $attachment_file ) {
+				if ( is_string( $attachment_file ) && file_exists( $attachment_file ) ) {
+					wp_delete_file( $attachment_file );
+				}
+			}
+		}
 	}
 }
