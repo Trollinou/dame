@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\PreInscription;
 
 use DAME\Services\Data_Provider;
@@ -256,7 +258,7 @@ class Details {
 				if ( 'select' === $config['type'] ) {
 					echo '<select id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '">';
 					foreach ( $config['options'] as $option_value => $option_label ) {
-						// If options is not associative, use label as value
+						// If options is not associative, use label as value.
 						$val = is_int( $option_value ) ? $option_label : $option_value;
 						echo '<option value="' . esc_attr( $val ) . '" ' . selected( $value, $val, false ) . '>' . esc_html( $option_label ) . '</option>';
 					}
@@ -271,7 +273,7 @@ class Details {
 					$type            = ( 'text_autocomplete' === $config['type'] ) ? 'text' : $config['type'];
 					$is_autocomplete = ( 'text_autocomplete' === $config['type'] );
 
-					// Determine classes for autocompletion
+					// Determine classes for autocompletion.
 					$classes = 'regular-text';
 					if ( strpos( $key, 'birth_city' ) !== false || strpos( $key, 'commune_naissance' ) !== false ) {
 						$classes .= ' dame-js-birth-city';
@@ -283,7 +285,7 @@ class Details {
 						$classes .= ' dame-js-city';
 					}
 
-					// Determine data-group
+					// Determine data-group.
 					$data_group = 'adherent';
 					if ( strpos( $key, 'legal_rep_1' ) !== false ) {
 						$data_group = 'rep1';
@@ -377,14 +379,14 @@ class Details {
 			return;
 		}
 
-		// Handle Usage Name logic
+		// Handle Usage Name logic.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		if ( empty( $_POST['dame_last_name'] ) && ! empty( $_POST['dame_birth_name'] ) ) {
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 			$_POST['dame_last_name'] = sanitize_text_field( wp_unslash( $_POST['dame_birth_name'] ) );
 		}
 
-		// Update Post Title based on names
+		// Update Post Title based on names.
 		$new_title = \DAME\Core\Utils::generate_adherent_title( $post_id );
 
 		if ( $new_title ) {
@@ -451,7 +453,7 @@ class Details {
 			} elseif ( isset( $_POST[ $key ] ) ) {
 				$value = strpos( $key, 'email' ) !== false ? sanitize_email( wp_unslash( $_POST[ $key ] ) ) : sanitize_text_field( wp_unslash( $_POST[ $key ] ) );
 
-				// Format names
+				// Format names.
 				if ( 'dame_first_name' === $key || 'dame_legal_rep_1_first_name' === $key || 'dame_legal_rep_2_first_name' === $key ) {
 					$value = \DAME\Core\Utils::format_firstname( $value );
 				}

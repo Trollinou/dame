@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Shortcodes;
 
 use DateTime;
@@ -31,7 +33,7 @@ class RegistrationForm {
 	 * @return string
 	 */
 	public function render( $atts ) {
-		// Enqueue scripts and styles for the form
+		// Enqueue scripts and styles for the form.
 		wp_enqueue_style( 'dame-public-styles', \DAME_PLUGIN_URL . 'assets/css/public-styles.css', array(), \DAME_VERSION );
 
 		wp_enqueue_script( 'dame-public-geo-autocomplete', \DAME_PLUGIN_URL . 'assets/js/public-geo-autocomplete.js', array(), \DAME_VERSION, true );
@@ -253,7 +255,8 @@ class RegistrationForm {
 			</form>
 		</div>
 		<?php
-		return ob_get_clean();
+		$output = ob_get_clean();
+		return false !== $output ? $output : '';
 	}
 
 	/**
@@ -262,7 +265,7 @@ class RegistrationForm {
 	 * @return void
 	 */
 	public function handle_submission(): void {
-		// 1. Security Check: Verify nonce
+		// 1. Security Check: Verify nonce.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$nonce = isset( $_POST['dame_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_nonce'] ) ) : '';
 		if ( ! $nonce || ! wp_verify_nonce( $nonce, 'dame_pre_inscription_nonce' ) ) {
@@ -276,7 +279,7 @@ class RegistrationForm {
 			$_POST['dame_last_name'] = sanitize_text_field( wp_unslash( $_POST['dame_birth_name'] ) );
 		}
 
-		// 2. Validation
+		// 2. Validation.
 		$errors          = array();
 		$required_fields = array(
 			'dame_first_name'           => __( 'Le prénom est obligatoire.', 'dame' ),
@@ -298,7 +301,7 @@ class RegistrationForm {
 			}
 		}
 
-		// Conditional validation for minors
+		// Conditional validation for minors.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$birth_date_raw = isset( $_POST['dame_birth_date'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_birth_date'] ) ) : '';
 		if ( ! empty( $birth_date_raw ) ) {
@@ -329,7 +332,7 @@ class RegistrationForm {
 			}
 		}
 
-		// Email format validation (only if not empty, required check is above)
+		// Email format validation (only if not empty, required check is above).
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$email_raw = isset( $_POST['dame_email'] ) ? sanitize_email( wp_unslash( $_POST['dame_email'] ) ) : '';
 		if ( ! empty( $email_raw ) && ! is_email( $email_raw ) ) {
@@ -350,7 +353,7 @@ class RegistrationForm {
 			wp_send_json_error( array( 'message' => implode( '<br>', $errors ) ), 400 );
 		}
 
-		// 3. Sanitize Data
+		// 3. Sanitize Data.
 		$sanitized_data     = array();
 		$fields_to_sanitize = array(
 			'dame_first_name',
@@ -450,9 +453,12 @@ class RegistrationForm {
 			}
 		}
 
-		// 4. Create Pre-inscription Post
-		$effective_last_name = ! empty( $sanitized_data['dame_last_name'] ) ? $sanitized_data['dame_last_name'] : $sanitized_data['dame_birth_name'];
-		$post_title          = \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $sanitized_data['dame_first_name'] );
+		// 4. Create Pre-inscription Post.
+		$first_name          = $sanitized_data['dame_first_name'] ?? '';
+		$last_name           = $sanitized_data['dame_last_name'] ?? '';
+		$birth_name          = $sanitized_data['dame_birth_name'] ?? '';
+		$effective_last_name = ! empty( $last_name ) ? $last_name : $birth_name;
+		$post_title          = \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $first_name );
 
 		$post_data = array(
 			'post_title'  => $post_title,
@@ -465,7 +471,7 @@ class RegistrationForm {
 			wp_send_json_error( array( 'message' => __( 'Erreur lors de la création de la fiche de préinscription.', 'dame' ) . ' ' . $post_id->get_error_message() ) );
 		}
 
-		// 5. Save Meta Data (Bulk Insert for N+1 optimization)
+		// 5. Save Meta Data (Bulk Insert for N+1 optimization).
 		global $wpdb;
 		$meta_insert_values       = array();
 		$meta_insert_placeholders = array();
@@ -481,8 +487,8 @@ class RegistrationForm {
 			$meta_insert_placeholders[] = '(%d, %s, %s)';
 		}
 
-		// Map and save the health document status
-		$health_document_status = 'none'; // Default value
+		// Map and save the health document status.
+		$health_document_status = 'none'; // Default value.
 		if ( isset( $sanitized_data['dame_health_questionnaire'] ) ) {
 			if ( 'oui' === $sanitized_data['dame_health_questionnaire'] ) {
 				$health_document_status = 'certificate';
@@ -500,7 +506,7 @@ class RegistrationForm {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
 
-		// Process electronic signature if provided and health questionnaire is negative
+		// Process electronic signature if provided and health questionnaire is negative.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$signature_image     = isset( $_POST['signature_image'] ) ? sanitize_text_field( wp_unslash( $_POST['signature_image'] ) ) : '';
 		$has_signed_health   = false;
@@ -523,7 +529,7 @@ class RegistrationForm {
 
 					$pdf_service = new \DAME\Services\PDF_Generator();
 
-					// 1. Generate Signed Health Attestation if answers were all NO
+					// 1. Generate Signed Health Attestation if answers were all NO.
 					if ( isset( $sanitized_data['dame_health_questionnaire'] ) && 'non' === $sanitized_data['dame_health_questionnaire'] ) {
 						$stored_health = $pdf_service->save_signed_health_doc( $post_id, $temp_sig, $audit_data );
 						if ( $stored_health ) {
@@ -532,7 +538,7 @@ class RegistrationForm {
 						}
 					}
 
-					// 2. Generate Signed Parental Auth if adherent is minor
+					// 2. Generate Signed Parental Auth if adherent is minor.
 					if ( $is_minor ) {
 						$stored_parental = $pdf_service->save_signed_parental_doc( $post_id, $temp_sig, $audit_data );
 						if ( $stored_parental ) {
@@ -551,11 +557,11 @@ class RegistrationForm {
 			}
 		}
 
-		// 6. Send Email Notification
+		// 6. Send Email Notification.
 		$options         = get_option( 'dame_options' );
 		$recipient_email = isset( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
 
-		$subject = 'Nouvelle préinscription de ' . $sanitized_data['dame_first_name'] . ' ' . $sanitized_data['dame_last_name'];
+		$subject = 'Nouvelle préinscription de ' . $first_name . ' ' . $last_name;
 		$body    = "Une nouvelle demande de préinscription a été soumise.\n\n";
 		$body   .= "Voici les détails :\n";
 		foreach ( $sanitized_data as $key => $value ) {
@@ -569,7 +575,7 @@ class RegistrationForm {
 
 		wp_mail( $recipient_email, $subject, $body, $headers );
 
-		// 7. Return Success Message
+		// 7. Return Success Message.
 		$options      = get_option( 'dame_options' );
 		$payment_url  = isset( $options['payment_url'] ) ? $options['payment_url'] : '';
 		$sender_email = isset( $options['sender_email'] ) && ! empty( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
@@ -578,12 +584,12 @@ class RegistrationForm {
 			'message'              => sprintf(
 				/* translators: 1: first name, 2: last name */
 				__( 'La préinscription pour %1$s %2$s a bien été enregistrée.', 'dame' ),
-				$sanitized_data['dame_first_name'],
-				$sanitized_data['dame_last_name']
+				$first_name,
+				$last_name
 			),
-			'health_questionnaire' => $sanitized_data['dame_health_questionnaire'], // 'oui' or 'non' for the JS logic
+			'health_questionnaire' => $sanitized_data['dame_health_questionnaire'] ?? '', // 'oui' or 'non' for the JS logic
 			'post_id'              => $post_id,
-			'full_name'            => \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $sanitized_data['dame_first_name'] ),
+			'full_name'            => \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $first_name ),
 			'nonce'                => wp_create_nonce( 'dame_generate_health_form_' . $post_id ),
 			'is_minor'             => $is_minor,
 			'payment_url'          => $payment_url,

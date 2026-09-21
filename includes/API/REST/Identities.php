@@ -24,7 +24,7 @@ class Identities {
 	/**
 	 * Namespace for the API.
 	 *
-	 * @var string
+	 * @var non-falsy-string
 	 */
 	protected string $namespace = 'dame/v1';
 
@@ -90,14 +90,14 @@ class Identities {
 			return new WP_Error( 'no_email', __( 'Utilisateur sans email', 'dame' ), array( 'status' => 400 ) );
 		}
 
-		// 1. REQUÊTES DE BASE (Uniquement les membres actifs)
+		// 1. REQUÊTES DE BASE (Uniquement les membres actifs).
 		$args_base = array(
 			'post_type'      => 'adherent',
 			'post_status'    => 'publish',
 			'posts_per_page' => -1,
 		);
 
-		// Requête A (Directe : l'utilisateur est le joueur)
+		// Requête A (Directe : l'utilisateur est le joueur).
 		$query_a = new WP_Query(
 			array_merge(
 				$args_base,
@@ -113,7 +113,7 @@ class Identities {
 			)
 		);
 
-		// Requête B (Responsable Légal : l'utilisateur est le parent)
+		// Requête B (Responsable Légal : l'utilisateur est le parent).
 		$query_b = new WP_Query(
 			array_merge(
 				$args_base,
@@ -135,13 +135,13 @@ class Identities {
 			)
 		);
 
-		$adherents_a = $query_a->posts;
-		$adherents_b = $query_b->posts;
+		$adherents_a = array_values( array_filter( $query_a->posts, static fn( $p ) => $p instanceof \WP_Post ) );
+		$adherents_b = array_values( array_filter( $query_b->posts, static fn( $p ) => $p instanceof \WP_Post ) );
 
 		$accessible_adh_ids = array_values(
 			array_filter(
 				array_map(
-					fn( $p ) => (int) $p->ID,
+					static fn( \WP_Post $p ) => (int) $p->ID,
 					array_merge( $adherents_a, $adherents_b )
 				)
 			)
@@ -178,8 +178,8 @@ class Identities {
 			);
 		}
 
-		// Query pending pre-inscriptions for this user's email or accessible adherents in a single request
-		$pending_pre_query = new WP_Query(
+		// Query pending pre-inscriptions for this user's email or accessible adherents in a single request.
+		$pending_pre_query       = new WP_Query(
 			array(
 				'post_type'      => 'dame_pre_inscription',
 				'post_status'    => array( 'pending', 'publish', 'draft' ),
@@ -190,21 +190,34 @@ class Identities {
 				),
 			)
 		);
-		$pending_preinscriptions = $pending_pre_query->posts;
+		$pending_preinscriptions = array_values( array_filter( $pending_pre_query->posts, static fn( $p ) => $p instanceof \WP_Post ) );
 		$matched_pre_ids         = array();
 
+		// Bulk prime post, taxonomy term, and meta caches to eliminate N+1 queries.
+		$all_prime_ids = array_values(
+			array_unique(
+				array_merge(
+					$accessible_adh_ids,
+					array_map( static fn( \WP_Post $p ) => (int) $p->ID, $pending_preinscriptions )
+				)
+			)
+		);
+		if ( ! empty( $all_prime_ids ) ) {
+			_prime_post_caches( $all_prime_ids, true, true );
+		}
+
 		$identities = array();
-		$seen_ids   = array(); // Pour éviter les doublons techniques
+		$seen_ids   = array(); // Pour éviter les doublons techniques.
 
-		// 2. CONSTRUCTION DES IDENTITÉS
+		// 2. CONSTRUCTION DES IDENTITÉS.
 
-		// AJOUT DES PROFILS JOUEURS (Adhérents directs)
+		// AJOUT DES PROFILS JOUEURS (Adhérents directs).
 		foreach ( $adherents_a as $adh ) {
 			$identities[] = $this->prepare_full_identity( $adh, 'member', array(), $pending_preinscriptions, $matched_pre_ids, $email );
 			$seen_ids[]   = 'member_' . $adh->ID;
 		}
 
-		// AJOUT DES PROFILS PARENTS (Responsables Légaux)
+		// AJOUT DES PROFILS PARENTS (Responsables Légaux).
 		if ( ! empty( $adherents_b ) || ! empty( $pending_preinscriptions ) ) {
 			$reps = $this->extract_representative_identities( $adherents_b, $email, $pending_preinscriptions, $matched_pre_ids );
 			foreach ( $reps as $rep ) {
@@ -212,7 +225,7 @@ class Identities {
 			}
 		}
 
-		// 3. CAS PARTICULIER : Identité Admin
+		// 3. CAS PARTICULIER : Identité Admin.
 		$allowed_roles = array( 'staff', 'entraineur', 'editor', 'administrator' );
 		if ( array_intersect( $allowed_roles, (array) $current_user->roles ) ) {
 			array_unshift(
@@ -245,7 +258,7 @@ class Identities {
 	 * @return \WP_Post|null
 	 */
 	private function match_pending_pre_inscription( int $adherent_id, array $pending_preinscriptions, string $user_email = '' ): ?\WP_Post {
-		// 1. Direct match by _dame_adherent_id
+		// 1. Direct match by _dame_adherent_id.
 		foreach ( $pending_preinscriptions as $pre ) {
 			$linked_adh_id = (int) get_post_meta( $pre->ID, '_dame_adherent_id', true );
 			if ( $linked_adh_id === $adherent_id ) {
@@ -253,7 +266,7 @@ class Identities {
 			}
 		}
 
-		// 2. Fallback match by first_name and birth_date
+		// 2. Fallback match by first_name and birth_date.
 		$adh_fname = (string) get_post_meta( $adherent_id, '_dame_first_name', true );
 		$adh_bdate = (string) get_post_meta( $adherent_id, '_dame_birth_date', true );
 		$adh_email = (string) get_post_meta( $adherent_id, '_dame_email', true );
@@ -269,7 +282,7 @@ class Identities {
 				}
 			}
 
-			// 3. Fallback targeted DB query in case pre-inscription wasn't yet loaded in memory
+			// 3. Fallback targeted DB query in case pre-inscription wasn't yet loaded in memory.
 			$email_conditions = array(
 				array(
 					'key'     => '_dame_adherent_id',
@@ -331,8 +344,10 @@ class Identities {
 
 			if ( ! empty( $db_query->posts ) ) {
 				$found_pre = $db_query->posts[0];
-				update_post_meta( $found_pre->ID, '_dame_adherent_id', $adherent_id );
-				return $found_pre;
+				if ( $found_pre instanceof \WP_Post ) {
+					update_post_meta( $found_pre->ID, '_dame_adherent_id', $adherent_id );
+					return $found_pre;
+				}
 			}
 		}
 
@@ -349,17 +364,18 @@ class Identities {
 	 * @return array<int, array<string, mixed>>
 	 */
 	private function extract_representative_identities( array $adherents, string $email, array $pending_preinscriptions = array(), array &$matched_pre_ids = array() ): array {
+		/* @var array<string, array{id: string, name: string, firstname: string, type: string, elo_standard: string, elo_rapide: string, elo_blitz: string, associated_members: array<int, array<string, mixed>>}> $reps */
 		$reps       = array();
 		$seen_names = array();
 
 		foreach ( $adherents as $adh ) {
 			$rep_names_to_check = array();
 
-			// On vérifie RL1
+			// On vérifie RL1.
 			if ( get_post_meta( $adh->ID, '_dame_legal_rep_1_email', true ) === $email ) {
 				$rep_names_to_check[] = trim( get_post_meta( $adh->ID, '_dame_legal_rep_1_first_name', true ) . ' ' . get_post_meta( $adh->ID, '_dame_legal_rep_1_last_name', true ) );
 			}
-			// On vérifie RL2
+			// On vérifie RL2.
 			if ( get_post_meta( $adh->ID, '_dame_legal_rep_2_email', true ) === $email ) {
 				$rep_names_to_check[] = trim( get_post_meta( $adh->ID, '_dame_legal_rep_2_first_name', true ) . ' ' . get_post_meta( $adh->ID, '_dame_legal_rep_2_last_name', true ) );
 			}
@@ -378,12 +394,12 @@ class Identities {
 						'elo_standard'       => 'NC',
 						'elo_rapide'         => 'NC',
 						'elo_blitz'          => 'NC',
-						'associated_members' => array(), // On remplira après
+						'associated_members' => array(), // On remplira après.
 					);
 					$seen_names[ $rep_name ] = $rep_name;
 				}
 
-				// On ajoute cet enfant à la liste des membres associés de ce parent
+				// On ajoute cet enfant à la liste des membres associés de ce parent.
 				$elo_std     = get_post_meta( $adh->ID, '_dame_elo_standard', true );
 				$elo_rap     = get_post_meta( $adh->ID, '_dame_elo_rapide', true );
 				$elo_blz     = get_post_meta( $adh->ID, '_dame_elo_blitz', true );
@@ -392,7 +408,8 @@ class Identities {
 					$matched_pre_ids[] = $matched_pre->ID;
 				}
 
-				$reps[ $rep_name ]['associated_members'][] = array(
+				$associated_members   = (array) $reps[ $rep_name ]['associated_members'];
+				$associated_members[] = array(
 					'firstname'           => $this->get_firstname( $adh->ID ),
 					'member_id'           => $adh->ID,
 					'elo_standard'        => ! empty( $elo_std ) ? $elo_std : 'NC',
@@ -402,15 +419,16 @@ class Identities {
 					'has_pre_inscription' => ( null !== $matched_pre ),
 					'pre_inscription_id'  => $matched_pre ? $matched_pre->ID : null,
 				);
+				$reps[ $rep_name ]['associated_members'] = $associated_members;
 			}
 		}
 
-		// Check for any pending pre-inscriptions that didn't match existing adherents
-		// (e.g. newly pre-inscribed children for this representative)
+		// Check for any pending pre-inscriptions that didn't match existing adherents.
+		// (e.g. newly pre-inscribed children for this representative).
 		$unmatched_pres = array();
 		foreach ( $pending_preinscriptions as $pre ) {
 			if ( ! in_array( $pre->ID, $matched_pre_ids, true ) ) {
-				// Verify this pre-inscription has this email as a legal rep or submitter
+				// Verify this pre-inscription has this email as a legal rep or submitter.
 				$rep1_email = (string) get_post_meta( $pre->ID, '_dame_legal_rep_1_email', true );
 				$rep2_email = (string) get_post_meta( $pre->ID, '_dame_legal_rep_2_email', true );
 				$sub_email  = (string) get_post_meta( $pre->ID, '_dame_submitted_by_email', true );
@@ -421,7 +439,7 @@ class Identities {
 		}
 
 		if ( ! empty( $unmatched_pres ) ) {
-			// If no representative profile exists yet, create one using the legal rep name from the pre-inscription
+			// If no representative profile exists yet, create one using the legal rep name from the pre-inscription.
 			if ( empty( $reps ) ) {
 				$first_pre = $unmatched_pres[0];
 				$rep_name  = trim( (string) get_post_meta( $first_pre->ID, '_dame_legal_rep_1_first_name', true ) . ' ' . (string) get_post_meta( $first_pre->ID, '_dame_legal_rep_1_last_name', true ) );
@@ -441,12 +459,13 @@ class Identities {
 				);
 			}
 
-			// Add each unmatched pre-inscription to the representative's associated members
-			$first_rep_key = array_key_first( $reps );
+			// Add each unmatched pre-inscription to the representative's associated members.
+			$first_rep_key = (string) array_key_first( $reps );
 			foreach ( $unmatched_pres as $unmatched_pre ) {
-				$matched_pre_ids[] = $unmatched_pre->ID;
-				$child_fname       = (string) get_post_meta( $unmatched_pre->ID, '_dame_first_name', true );
-				$reps[ $first_rep_key ]['associated_members'][] = array(
+				$matched_pre_ids[]    = $unmatched_pre->ID;
+				$child_fname          = (string) get_post_meta( $unmatched_pre->ID, '_dame_first_name', true );
+				$first_rep_members   = (array) $reps[ $first_rep_key ]['associated_members'];
+				$first_rep_members[] = array(
 					'firstname'           => $child_fname,
 					'name'                => get_the_title( $unmatched_pre->ID ),
 					'member_id'           => 0,
@@ -457,6 +476,7 @@ class Identities {
 					'has_pre_inscription' => true,
 					'pre_inscription_id'  => $unmatched_pre->ID,
 				);
+				$reps[ $first_rep_key ]['associated_members'] = $first_rep_members;
 			}
 		}
 

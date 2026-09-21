@@ -1,4 +1,11 @@
 <?php
+/**
+ * Benevolat Admin List Table.
+ *
+ * @package DAME
+ */
+
+declare(strict_types=1);
 
 namespace DAME\Admin\ListTables;
 

@@ -5,6 +5,8 @@
  * @package DAME\Admin\Actions
  */
 
+declare(strict_types=1);
+
 namespace DAME\Admin\Actions;
 
 /**
@@ -49,20 +51,20 @@ class Agenda {
 		$new_post_args = array(
 			'post_author'  => $new_post_author->ID,
 			'post_content' => $post->post_content,
-			'post_status'  => 'draft', // Set new post to draft
+			'post_status'  => 'draft', // Set new post to draft.
 			'post_title'   => $post->post_title . ' (Copie)',
 			'post_type'    => $post->post_type,
 		);
 
 		// Temporarily remove the save hook to prevent it from firing with empty $_POST data.
 		// NOTE: In the new architecture, we need to remove the method from the class instance.
-		// However, since we don't have easy access to the exact instance of Manager here,
+		// However, since we don't have easy access to the exact instance of Manager here,.
 		// we rely on the fact that the action hook string is 'save_post_dame_agenda'.
 		// But Wait! 'remove_action' with an object method requires the exact SAME object instance.
 		// Since 'Agenda Metbox Manager' is instantiated in Plugin::run(), we can't easily access it here to remove the hook.
 		//
 		// Strategy: The save method in Manager checks for 'dame_agenda_metabox_nonce'.
-		// Since we are not submitting a form with that nonce here (we are doing a GET request for duplication),
+		// Since we are not submitting a form with that nonce here (we are doing a GET request for duplication),.
 		// the nonce check in Manager::save() will fail and it will return early.
 		// So we don't actually need to remove the hook! The 'save' logic is safe.
 

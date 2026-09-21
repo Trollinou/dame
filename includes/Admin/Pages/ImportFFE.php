@@ -293,7 +293,7 @@ endif;
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$file = $_FILES['dame_ffe_csv'];
 
-		// Check file type
+		// Check file type.
 		$file_type = wp_check_filetype( $file['name'] );
 		if ( 'csv' !== $file_type['ext'] && 'text/csv' !== $file['type'] ) {
 			add_settings_error( 'dame_import_ffe', 'invalid_type', __( 'Le fichier doit être au format CSV.', 'dame' ), 'error' );
@@ -307,11 +307,11 @@ endif;
 			return;
 		}
 
-		// 1. PRÉPARATION DES DONNÉES (Avant la boucle)
+		// 1. PRÉPARATION DES DONNÉES (Avant la boucle).
 		$active_adherents   = $this->get_active_adherents();
 		$members_by_license = array();
 		$members_by_name    = array();
-		$members_info       = array(); // For final report
+		$members_info       = array(); // For final report.
 
 		foreach ( $active_adherents as $adherent ) {
 			$license       = get_post_meta( $adherent->ID, '_dame_license_number', true );
@@ -326,15 +326,15 @@ endif;
 
 			$members_info[ $adherent->ID ] = array(
 				'name'    => $adherent->post_title,
-				'license' => $license ?: __( 'Non renseignée', 'dame' ),
+				'license' => ! empty( $license ) ? $license : __( 'Non renseignée', 'dame' ),
 			);
 		}
 
 		$updated_count = 0;
 		$updated_ids   = array();
 
-		// 2. LOGIQUE DE CORRESPONDANCE (Dans la boucle)
-		// Skip header if it exists
+		// 2. LOGIQUE DE CORRESPONDANCE (Dans la boucle).
+		// Skip header if it exists.
 		$first_row = fgetcsv( $handle, 0, ';', '"', '\\' );
 		if ( $first_row ) {
 			$is_data_row = is_numeric( $first_row[0] ) || preg_match( '/^[A-Z][0-9]{5}$/', $first_row[2] ?? '' );
@@ -351,7 +351,7 @@ endif;
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 		fclose( $handle );
 
-		// 3. GESTION DES ABSENTS ET RAPPORTS
+		// 3. GESTION DES ABSENTS ET RAPPORTS.
 		$missing_adherents = array();
 		foreach ( $members_info as $id => $info ) {
 			if ( ! in_array( $id, $updated_ids, true ) ) {
@@ -359,7 +359,7 @@ endif;
 			}
 		}
 
-		// Save results to transient
+		// Save results to transient.
 		set_transient(
 			'dame_ffe_import_results',
 			array(
@@ -397,16 +397,16 @@ endif;
 
 		$post_id = 0;
 
-		// ÉTAPE A : Recherche par Licence
+		// ÉTAPE A : Recherche par Licence.
 		if ( ! empty( $licence_clean ) && isset( $members_by_license[ $licence_clean ] ) ) {
 			$post_id = $members_by_license[ $licence_clean ];
 		} elseif ( ! empty( $nom_normalized ) && isset( $members_by_name[ $nom_normalized ] ) ) {
-			// ÉTAPE B : Recherche par Nom
+			// ÉTAPE B : Recherche par Nom.
 			$post_id = $members_by_name[ $nom_normalized ];
 		}
 
 		if ( $post_id && ! in_array( $post_id, $updated_ids, true ) ) {
-			// Match found! Update data
+			// Match found! Update data.
 			update_post_meta( $post_id, '_dame_license_number', $licence_num );
 			update_post_meta( $post_id, '_dame_ffe_id', $id_ffe );
 			update_post_meta( $post_id, '_dame_fide_id', $fide_id );
@@ -452,13 +452,13 @@ endif;
 	 * @param string $name Name to normalize.
 	 */
 	private function normalize_name( string $name ): string {
-		// Convert to ASCII
+		// Convert to ASCII.
 		$name = iconv( 'UTF-8', 'ASCII//TRANSLIT//IGNORE', $name );
-		// Lowercase
+		// Lowercase.
 		$name = strtolower( (string) $name );
-		// Remove non-alphanumeric (except spaces)
+		// Remove non-alphanumeric (except spaces).
 		$name = preg_replace( '/[^a-z0-9 ]/', '', $name );
-		// Remove extra spaces
+		// Remove extra spaces.
 		$name = preg_replace( '/\s+/', '', trim( (string) $name ) );
 
 		return (string) $name;

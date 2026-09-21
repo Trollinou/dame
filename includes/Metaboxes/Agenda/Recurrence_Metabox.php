@@ -41,13 +41,13 @@ class Recurrence_Metabox {
 	 * @param WP_Post $post Current post object.
 	 */
 	private function render_creation_form( WP_Post $post ): void {
-		$start_date_str = (string) get_post_meta( $post->ID, '_dame_start_date', true );
+		$start_date_str       = (string) get_post_meta( $post->ID, '_dame_start_date', true );
 		$season_limit_display = '';
 
 		if ( ! empty( $start_date_str ) ) {
 			try {
-				$dt = new DateTimeImmutable( $start_date_str );
-				$deadline = Recurrence_Calculator::get_season_deadline( $dt );
+				$dt                   = new DateTimeImmutable( $start_date_str );
+				$deadline             = Recurrence_Calculator::get_season_deadline( $dt );
 				$season_limit_display = $deadline->format( 'd/m/Y' );
 			} catch ( \Exception $e ) {
 				$season_limit_display = '';
@@ -113,9 +113,8 @@ class Recurrence_Metabox {
 									7 => __( 'Dim', 'dame' ),
 								);
 								foreach ( $days as $num => $label ) {
-									$checked = in_array( $num, $days_of_week, true ) ? 'checked="checked"' : '';
 									echo '<label style="cursor: pointer;">';
-									echo '<input type="checkbox" name="dame_recurrence_days_of_week[]" value="' . esc_attr( (string) $num ) . '" class="dame-recurrence-day-checkbox" ' . $checked . ' /> ';
+									echo '<input type="checkbox" name="dame_recurrence_days_of_week[]" value="' . esc_attr( (string) $num ) . '" class="dame-recurrence-day-checkbox" ' . checked( in_array( $num, $days_of_week, true ), true, false ) . ' /> ';
 									echo esc_html( $label );
 									echo '</label>';
 								}
@@ -219,10 +218,10 @@ class Recurrence_Metabox {
 	 * @param string  $group_id Recurrence group ID.
 	 */
 	private function render_existing_series_tools( WP_Post $post, string $group_id ): void {
-		$from_date       = (string) get_post_meta( $post->ID, '_dame_start_date', true );
-		$is_parent       = ( 1 === (int) get_post_meta( $post->ID, '_dame_recurrence_is_parent', true ) );
-		$total_events    = Series_Manager::count_series_events( $group_id, null );
-		$future_events   = Series_Manager::count_series_events( $group_id, $from_date );
+		$from_date     = (string) get_post_meta( $post->ID, '_dame_start_date', true );
+		$is_parent     = ( 1 === (int) get_post_meta( $post->ID, '_dame_recurrence_is_parent', true ) );
+		$total_events  = Series_Manager::count_series_events( $group_id, null );
+		$future_events = Series_Manager::count_series_events( $group_id, $from_date );
 
 		$delete_from_url = wp_nonce_url(
 			admin_url( 'admin-post.php?action=dame_delete_series_from&post_id=' . $post->ID ),
@@ -262,10 +261,10 @@ class Recurrence_Metabox {
 
 			<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0;">
 				<a href="<?php echo esc_url( $delete_from_url ); ?>"
-				   class="button button-secondary dame-js-delete-series-from"
-				   data-count="<?php echo esc_attr( (string) $future_events ); ?>"
-				   data-is-parent="<?php echo $is_parent ? '1' : '0'; ?>"
-				   style="color: #b91c1c; border-color: #fca5a5;">
+					class="button button-secondary dame-js-delete-series-from"
+					data-count="<?php echo esc_attr( (string) $future_events ); ?>"
+					data-is-parent="<?php echo $is_parent ? '1' : '0'; ?>"
+					style="color: #b91c1c; border-color: #fca5a5;">
 					<span class="dashicons dashicons-trash" style="vertical-align: text-top; font-size: 16px; margin-right: 2px;"></span>
 					<?php
 					if ( $is_parent ) {
@@ -282,9 +281,9 @@ class Recurrence_Metabox {
 
 				<?php if ( ! $is_parent && $total_events > $future_events ) : ?>
 					<a href="<?php echo esc_url( $delete_all_url ); ?>"
-					   class="button-link dame-js-delete-entire-series"
-					   data-total="<?php echo esc_attr( (string) $total_events ); ?>"
-					   style="color: #991b1b; text-decoration: underline; font-size: 12px; margin-left: 5px;">
+						class="button-link dame-js-delete-entire-series"
+						data-total="<?php echo esc_attr( (string) $total_events ); ?>"
+						style="color: #991b1b; text-decoration: underline; font-size: 12px; margin-left: 5px;">
 						<?php
 						printf(
 							/* translators: %d: nombre total d'événements */

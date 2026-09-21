@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Admin\Settings\Tabs;
 
 /**
@@ -25,7 +27,7 @@ class Emails {
 	 * Register settings.
 	 */
 	public function register(): void {
-		// Section SMTP
+		// Section SMTP.
 		add_settings_section(
 			'dame_mailing_section',
 			__( 'Configuration SMTP', 'dame' ),
@@ -54,7 +56,7 @@ class Emails {
 			);
 		}
 
-		// Section Newsletter
+		// Section Newsletter.
 		add_settings_section(
 			'dame_newsletter_section',
 			__( 'Inscription à la Newsletter', 'dame' ),
@@ -134,7 +136,7 @@ class Emails {
 		}
 
 		if ( 'newsletter_double_optin' === $key ) {
-			// Par défaut coché (1) si l'option n'a jamais été enregistrée
+			// Par défaut coché (1) si l'option n'a jamais été enregistrée.
 			$is_checked = ( '' === $value || '1' === (string) $value || true === $value );
 			echo '<label>';
 			echo '<input type="checkbox" name="dame_options[newsletter_double_optin]" value="1" ' . checked( $is_checked, true, false ) . ' /> ';
@@ -216,7 +218,7 @@ class Emails {
 			$existing_options['smtp_batch_size'] = absint( $input['smtp_batch_size'] );
 		}
 
-		// Newsletter settings sanitation
+		// Newsletter settings sanitation.
 		if ( isset( $input['newsletter_contact_type'] ) ) {
 			$existing_options['newsletter_contact_type'] = absint( $input['newsletter_contact_type'] );
 		}

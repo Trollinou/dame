@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\CPT;
 
 /**
@@ -92,7 +94,7 @@ class Message {
 				'read_private_posts' => 'read_private_dame_messages',
 				'create_posts'       => 'edit_dame_messages',
 			),
-			'show_in_rest'        => true, // Enable block editor support
+			'show_in_rest'        => true, // Enable block editor support.
 			'rest_base'           => 'messages',
 		);
 

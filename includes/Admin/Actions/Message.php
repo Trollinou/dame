@@ -156,12 +156,12 @@ class Message {
 			'post_author'  => get_current_user_id(),
 		);
 
-		// Si le message a été envoyé, on récupère sa date d'envoi
+		// Si le message a été envoyé, on récupère sa date d'envoi.
 		$status = get_post_meta( $post->ID, '_dame_message_status', true );
 		if ( 'sent' === $status ) {
 			$sent_date = get_post_meta( $post->ID, '_dame_sent_date', true );
 			if ( ! empty( $sent_date ) ) {
-				// La date peut être un timestamp ou une chaîne Y-m-d H:i:s
+				// La date peut être un timestamp ou une chaîne Y-m-d H:i:s.
 				if ( is_numeric( $sent_date ) ) {
 					$new_post_args['post_date'] = gmdate( 'Y-m-d H:i:s', (int) $sent_date );
 				} else {
@@ -176,7 +176,7 @@ class Message {
 			wp_die( esc_html__( 'Erreur lors de la création de l\'article : ', 'dame' ) . esc_html( $new_post_id->get_error_message() ) );
 		}
 
-		// Suppression des catégories par défaut si nécessaire pour respecter "aucune catégorie n'est positionné"
+		// Suppression des catégories par défaut si nécessaire pour respecter "aucune catégorie n'est positionné".
 		// Bien que WP en mette une par défaut, on vide pour s'assurer que l'utilisateur choisisse la sienne.
 		wp_set_post_categories( $new_post_id, array() );
 
@@ -192,13 +192,13 @@ class Message {
 		$post    = $this->get_verified_post( 'dame_reset_send' );
 		$post_id = $post->ID;
 
-		// 1. Reset message metadata
+		// 1. Reset message metadata.
 		update_post_meta( $post_id, '_dame_message_status', 'publish' );
 		update_post_meta( $post_id, '_dame_message_recipients_count', 0 );
 		update_post_meta( $post_id, '_dame_scheduled_batches_processed', 0 );
 		update_post_meta( $post_id, '_dame_scheduled_batches_total', 0 );
 
-		// Clear selection criteria
+		// Clear selection criteria.
 		delete_post_meta( $post_id, '_dame_recipient_method' );
 		delete_post_meta( $post_id, '_dame_recipient_seasons' );
 		delete_post_meta( $post_id, '_dame_recipient_groups_saisonnier' );
@@ -212,7 +212,7 @@ class Message {
 		delete_post_meta( $post_id, '_dame_adherent_method' );
 		delete_post_meta( $post_id, '_dame_contact_method' );
 
-		// 2. Purge global recipients history for this message (on adherents and contacts)
+		// 2. Purge global recipients history for this message (on adherents and contacts).
 		global $wpdb;
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->delete(
@@ -224,7 +224,7 @@ class Message {
 			array( '%s', '%s' )
 		);
 
-		// Also purge the individual send dates
+		// Also purge the individual send dates.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->delete(
 			$wpdb->postmeta,
@@ -232,7 +232,7 @@ class Message {
 			array( '%s' )
 		);
 
-		// 3. Purge tracking data (opens)
+		// 3. Purge tracking data (opens).
 		$table_opens = $wpdb->prefix . 'dame_message_opens';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->delete(

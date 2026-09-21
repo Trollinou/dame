@@ -1,4 +1,10 @@
 <?php
+/**
+ * Birthday service for DAME.
+ *
+ * @package DAME
+ */
+
 declare(strict_types=1);
 
 namespace DAME\Services;
@@ -6,6 +12,9 @@ namespace DAME\Services;
 use WP_Query;
 use DateTime;
 
+/**
+ * Class Birthday
+ */
 class Birthday {
 
 	/**
@@ -92,6 +101,9 @@ class Birthday {
 			$seen_ids  = array();
 
 			foreach ( $query->posts as $post ) {
+				if ( ! $post instanceof \WP_Post ) {
+					continue;
+				}
 				if ( in_array( $post->ID, $seen_ids, true ) ) {
 					continue;
 				}
@@ -257,13 +269,13 @@ class Birthday {
 		}
 		$article = $posts[0];
 
-		// Season Logic
+		// Season Logic.
 		$season_ids = $this->get_filtered_season_ids();
 		if ( empty( $season_ids ) ) {
 			return;
 		}
 
-		// Query Adherents
+		// Query Adherents.
 		$query = new WP_Query(
 			array(
 				'post_type'      => 'adherent',
@@ -293,6 +305,9 @@ class Birthday {
 		while ( $query->have_posts() ) {
 			$query->the_post();
 			$pid = get_the_ID();
+			if ( ! $pid ) {
+				continue;
+			}
 			$nom = get_post_meta( $pid, '_dame_last_name', true );
 			if ( empty( $nom ) ) {
 				$nom = get_post_meta( $pid, '_dame_birth_name', true );
@@ -328,7 +343,7 @@ class Birthday {
 		}
 		wp_reset_postdata();
 
-		// Report to Admin
+		// Report to Admin.
 		if ( ! empty( $sent_list ) ) {
 			wp_mail( $sender_email, 'Rapport Anniversaires', "Joyeux anniversaire envoyé à :\n" . implode( "\n", $sent_list ), $headers );
 		}

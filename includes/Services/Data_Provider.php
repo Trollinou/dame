@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Services;
 
 /**
@@ -12,16 +14,32 @@ namespace DAME\Services;
  */
 class Data_Provider {
 
-	/** @var array<string, string>|null */
+	/**
+	 * Countries cache.
+	 *
+	 * @var array<string, string>|null
+	 */
 	private static $countries = null;
 
-	/** @var array<string, string>|null */
+	/**
+	 * Regions cache.
+	 *
+	 * @var array<string, string>|null
+	 */
 	private static $regions = null;
 
-	/** @var array<int|string, string>|null */
+	/**
+	 * Departments cache.
+	 *
+	 * @var array<int|string, string>|null
+	 */
 	private static $departments = null;
 
-	/** @var array<string, string>|null */
+	/**
+	 * Academies cache.
+	 *
+	 * @var array<string, string>|null
+	 */
 	private static $academies = null;
 
 	/**
@@ -319,7 +337,8 @@ class Data_Provider {
 	 */
 	public static function get_departments_by_region( string $region_code ): array {
 		$mapping = self::get_department_region_mapping();
-		return array_keys( array_filter( $mapping, fn( $r ) => $r === $region_code ) );
+		$keys    = array_keys( array_filter( $mapping, fn( $r ) => $r === $region_code ) );
+		return array_values( array_map( 'strval', $keys ) );
 	}
 
 	/**

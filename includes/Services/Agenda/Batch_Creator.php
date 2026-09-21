@@ -21,7 +21,7 @@ class Batch_Creator {
 	/**
 	 * Creates a recurring series of events from a parent post.
 	 *
-	 * @param int                     $parent_post_id   The parent post ID.
+	 * @param int                      $parent_post_id   The parent post ID.
 	 * @param array<DateTimeImmutable> $occurrence_dates List of subsequent occurrence dates.
 	 * @return array<int> List of newly created post IDs.
 	 */

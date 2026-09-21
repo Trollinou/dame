@@ -46,7 +46,7 @@ class Identity {
 				: get_post_meta( $post->ID, '_' . $field_name, true );
 		};
 
-		// Retrieve values using the helper function
+		// Retrieve values using the helper function.
 		$birth_name          = $get_value( 'dame_birth_name' );
 		$last_name           = $get_value( 'dame_last_name' );
 		$first_name          = $get_value( 'dame_first_name' );
@@ -163,7 +163,7 @@ class Identity {
 				<td>
 					<select id="dame_department" name="dame_department" class="dame-js-dept" data-group="adherent">
 						<?php foreach ( \DAME\Services\Data_Provider::get_departments() as $code => $name ) : ?>
-							<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $department, $code ); ?>><?php echo esc_html( $name ); ?></option>
+							<option value="<?php echo esc_attr( (string) $code ); ?>" <?php selected( (string) $department, (string) $code ); ?>><?php echo esc_html( $name ); ?></option>
 						<?php endforeach; ?>
 					</select>
 				</td>
@@ -212,7 +212,7 @@ class Identity {
 			$errors[] = __( 'La date de naissance est obligatoire.', 'dame' );
 		}
 
-		// Email validation
+		// Email validation.
 		$email = isset( $_POST['dame_email'] ) ? sanitize_email( wp_unslash( $_POST['dame_email'] ) ) : '';
 		if ( ! empty( $email ) && ! is_email( $email ) ) {
 			$errors[] = __( "Le format de l'email de l'adhérent est invalide.", 'dame' );
@@ -221,7 +221,7 @@ class Identity {
 		if ( ! empty( $errors ) ) {
 			set_transient( 'dame_error_message', implode( '<br>', $errors ), 10 );
 
-			// Save posted data to transient to repopulate form
+			// Save posted data to transient to repopulate form.
 			$post_data_to_save = array();
 			foreach ( $_POST as $key => $value ) {
 				if ( strpos( $key, 'dame_' ) === 0 ) {
@@ -232,7 +232,7 @@ class Identity {
 			return;
 		}
 
-		// Title Generation
+		// Title Generation.
 		$new_title = \DAME\Core\Utils::generate_adherent_title( $post_id );
 
 		if ( get_the_title( $post_id ) !== $new_title ) {
@@ -245,7 +245,7 @@ class Identity {
 			);
 		}
 
-		// Save Fields
+		// Save Fields.
 		$fields = $this->get_meta_fields();
 
 		foreach ( $fields as $field_name => $sanitize_callback ) {
@@ -270,7 +270,7 @@ class Identity {
 	/**
 	 * Returns the list of meta fields and their sanitization callbacks.
 	 *
-	 * @return array<string, string>
+	 * @return array<string, callable-string>
 	 */
 	private function get_meta_fields(): array {
 		return array(

@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Core;
 
 /**
@@ -23,7 +25,7 @@ class Roles {
 	 * Register custom roles and assign capabilities.
 	 */
 	public function register_roles(): void {
-		// Role: Membre
+		// Role: Membre.
 		add_role(
 			'membre',
 			__( 'Membre', 'dame' ),
@@ -33,8 +35,8 @@ class Roles {
 			)
 		);
 
-		// Role: Staff (Membre du Bureau)
-		// Based on Contributor
+		// Role: Staff (Membre du Bureau).
+		// Based on Contributor.
 		$contributor = get_role( 'contributor' );
 		if ( $contributor ) {
 			$staff_caps = array_merge(
@@ -48,8 +50,8 @@ class Roles {
 			add_role( 'staff', __( 'Membre du Bureau', 'dame' ), $staff_caps );
 		}
 
-		// Role: Entraineur
-		// Based on Editor
+		// Role: Entraineur.
+		// Based on Editor.
 		$entraineur_caps = array(
 			'delete_others_pages'    => true,
 			'delete_others_posts'    => true,
@@ -80,7 +82,7 @@ class Roles {
 		);
 		add_role( 'entraineur', __( 'Entraineur', 'dame' ), $entraineur_caps );
 
-		// Assign custom message capabilities
+		// Assign custom message capabilities.
 		$roles_to_modify = array( 'administrator', 'editor', 'staff', 'entraineur' );
 		foreach ( $roles_to_modify as $role_name ) {
 			$role = get_role( $role_name );

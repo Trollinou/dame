@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Taxonomies;
 
 use WP_Term;
@@ -20,18 +22,18 @@ class Group {
 	public function init(): void {
 		add_action( 'init', array( $this, 'register' ), 0 );
 
-		// Fields
+		// Fields.
 		add_action( 'dame_group_add_form_fields', array( $this, 'add_form_fields' ), 10, 1 );
 		add_action( 'dame_group_edit_form_fields', array( $this, 'edit_form_fields' ), 10, 2 );
 		add_action( 'edited_dame_group', array( $this, 'save_group_type' ), 10, 1 );
 		add_action( 'create_dame_group', array( $this, 'save_group_type' ), 10, 1 );
 
-		// Columns
+		// Columns.
 		add_filter( 'manage_edit-dame_group_columns', array( $this, 'add_type_column' ) );
 		add_filter( 'manage_dame_group_custom_column', array( $this, 'render_type_column' ), 10, 3 );
 
-		// Actions
-		add_filter( 'tag_row_actions', array( $this, 'add_reset_link' ), 10, 2 );
+		// Actions.
+		add_filter( 'tag_row_actions', array( $this, 'add_reset_action' ), 10, 2 );
 		add_action( 'admin_post_dame_reset_group', array( $this, 'handle_reset_action' ) );
 		add_action( 'admin_notices', array( $this, 'show_reset_notice' ) );
 	}
@@ -101,7 +103,7 @@ class Group {
 	public function edit_form_fields( $term, $taxonomy ): void {
 		$group_type = get_term_meta( $term->term_id, '_dame_group_type', true );
 		if ( empty( $group_type ) ) {
-			$group_type = 'saisonnier'; // Default value
+			$group_type = 'saisonnier'; // Default value.
 		}
 		?>
 		<tr class="form-field">
@@ -155,7 +157,7 @@ class Group {
 			if ( 'permanent' === $group_type ) {
 				$content = __( 'Permanent', 'dame' );
 			} else {
-				$content = __( 'Saisonnier', 'dame' ); // Default
+				$content = __( 'Saisonnier', 'dame' ); // Default.
 			}
 		}
 		return $content;
@@ -166,68 +168,62 @@ class Group {
 	 *
 	 * @param array<string, string> $actions An array of action links.
 	 * @param WP_Term               $term    The term object.
-	 * @return array<string, string> The modified array of action links.
+	 * @return array<string, string>
 	 */
-	public function add_reset_link( $actions, $term ): array {
-		// Check if we are on the 'dame_group' taxonomy screen.
-		if ( 'dame_group' !== $term->taxonomy ) {
+	public function add_reset_action( array $actions, $term ): array {
+		// Only add the action if the current user has the capability to edit terms.
+		if ( ! current_user_can( 'edit_term', $term->term_id ) ) {
 			return $actions;
 		}
 
-		// Check if the user has the required capability.
-		if ( current_user_can( 'manage_categories' ) ) {
-			// Build the URL for the reset action.
-			$reset_url = add_query_arg(
+		$reset_url = wp_nonce_url(
+			add_query_arg(
 				array(
 					'action'   => 'dame_reset_group',
 					'taxonomy' => 'dame_group',
 					'tag_ID'   => $term->term_id,
-					'_wpnonce' => wp_create_nonce( 'dame_reset_group_' . $term->term_id ),
 				),
-				admin_url( 'admin-post.php' )
-			);
+				admin_url( 'edit-tags.php' )
+			),
+			'dame_reset_group_' . $term->term_id
+		);
 
-			// translators: %s is the group name.
-			$confirm_msg = sprintf( __( 'Êtes-vous sûr de vouloir supprimer tous les adhérents du groupe "%s" ? Cette action est irréversible.', 'dame' ), $term->name );
+		$actions['reset'] = sprintf(
+			'<a href="%s" onclick="return confirm(\'%s\');">%s</a>',
+			esc_url( $reset_url ),
+			esc_js( __( 'Êtes-vous sûr de vouloir réinitialiser ce groupe ? Tous les adhérents seront retirés de ce groupe.', 'dame' ) ),
+			esc_html__( 'Réinitialiser', 'dame' )
+		);
 
-			// Add a confirmation dialog.
-			$actions['reset'] = sprintf(
-				'<a href="%s" onclick="return confirm(\'%s\')">%s</a>',
-				esc_url( $reset_url ),
-				esc_js( $confirm_msg ),
-				esc_html__( 'Réinitialiser', 'dame' )
-			);
-		}
 		return $actions;
 	}
 
 	/**
-	 * Handle the group reset action.
+	 * Handle the "Reset" action for the group taxonomy.
 	 */
 	public function handle_reset_action(): void {
-		// Check if the action is correct.
-		if ( ! isset( $_GET['action'] ) || 'dame_reset_group' !== $_GET['action'] ) {
+		// Check if our action is triggered.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['action'] ) || 'dame_reset_group' !== $_GET['action'] || ! isset( $_GET['tag_ID'] ) ) {
 			return;
 		}
 
-		// Check user capabilities first.
-		if ( ! current_user_can( 'manage_categories' ) ) {
-			wp_die( esc_html__( 'Vous n\'avez pas les permissions suffisantes pour effectuer cette action.', 'dame' ) );
+		$term_id = (int) $_GET['tag_ID'];
+
+		// Verify the nonce.
+		check_admin_referer( 'dame_reset_group_' . $term_id );
+
+		// Check user capabilities.
+		if ( ! current_user_can( 'edit_term', $term_id ) ) {
+			wp_die( esc_html__( 'Vous n\'avez pas la permission d\'effectuer cette action.', 'dame' ) );
 		}
 
-		// Get the term ID and verify the nonce.
-		$term_id = isset( $_GET['tag_ID'] ) ? intval( $_GET['tag_ID'] ) : 0;
-		$nonce   = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
-		if ( ! $term_id || ! $nonce || ! wp_verify_nonce( $nonce, 'dame_reset_group_' . $term_id ) ) {
-			wp_die( esc_html__( 'Échec de la vérification de sécurité.', 'dame' ) );
-		}
-
-		// Get all adherents in the group.
+		// Get all adherents in this group.
 		$adherents = get_posts(
 			array(
 				'post_type'      => 'adherent',
 				'posts_per_page' => -1,
-				'tax_query'      => array(
+				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 					array(
 						'taxonomy' => 'dame_group',
 						'field'    => 'term_id',
@@ -240,7 +236,7 @@ class Group {
 
 		// If there are adherents, remove them from the group.
 		if ( ! empty( $adherents ) ) {
-			/** @var int[] $adherents */
+			/* @var int[] $adherents */
 			foreach ( $adherents as $adherent_id ) {
 				wp_remove_object_terms( $adherent_id, $term_id, 'dame_group' );
 			}

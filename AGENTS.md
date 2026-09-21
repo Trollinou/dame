@@ -6,7 +6,7 @@
 
 ## 2. Stack Technique
 - **Plugin** : `DAME` | Slug: `dame` | Prefix: `dame_` | Namespace: `DAME\` | Table: `{$wpdb->prefix}dame_`
-- **WordPress** : 7.0.1 (Interactivity API, Transients).
+- **WordPress** : 7.1 (Interactivity API, Transients).
 - **PHP** : 8.4 avec `declare(strict_types=1);`. Composer AUTORISÉ en prod (`composer install --no-dev --optimize-autoloader`). Inclure `vendor/autoload.php` + Autoloader SPL natif fallback dans `dame.php`.
 - **JS / CSS** : ES2021 Vanilla (pas de jQuery), SCSS avec BEM. Sources dans `src/`, compilés dans `build/` et `assets/`.
 
@@ -22,5 +22,5 @@
 - **Shortcodes** : Capturer `wp_editor()` via `ob_start()` / `ob_get_clean()`.
 
 ## 5. QA & Conformité
-- Config PHPStan Level 6 (`phpstan.neon`), PHPCS (détection des écarts de standards) et PHPCBF (correction automatique du style) + ESLint WP (`eslint.config.js`).
+- Config PHPStan Level 7 (`phpstan.neon`), PHPCS (détection des écarts de standards) et PHPCBF (correction automatique du style) + ESLint WP (`eslint.config.js`).
 - Versionning sémantique synchronisé : `dame.php`, constante `DAME_VERSION`, `package.json`, `CHANGELOG.md`, `RELEASE.md`.

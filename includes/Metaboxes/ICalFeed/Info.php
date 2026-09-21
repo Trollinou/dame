@@ -5,6 +5,8 @@
  * @package DAME\Metaboxes\ICalFeed
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\ICalFeed;
 
 use WP_Post;

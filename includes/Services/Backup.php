@@ -1,4 +1,11 @@
 <?php
+/**
+ * Backup Service for DAME.
+ *
+ * @package DAME
+ */
+
+declare(strict_types=1);
 
 namespace DAME\Services;
 
@@ -59,62 +66,62 @@ class Backup {
 			return;
 		}
 
-		// 1. Export CSV Adherents
+		// 1. Export CSV Adherents.
 		if ( isset( $_POST['dame_export_csv_action'], $_POST['dame_export_csv_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_export_csv_nonce'] ) ), 'dame_export_csv_nonce_action' ) ) {
 			$this->export_csv_adherents();
 		}
 
-		// 2. Import CSV Adherents
+		// 2. Import CSV Adherents.
 		if ( isset( $_POST['dame_import_csv_action'], $_POST['dame_import_csv_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_import_csv_nonce'] ) ), 'dame_import_csv_nonce_action' ) ) {
 			$this->import_csv_adherents();
 		}
 
-		// 3. Export JSON Adherents (Backup)
+		// 3. Export JSON Adherents (Backup).
 		if ( isset( $_POST['dame_export_action'], $_POST['dame_export_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_export_nonce'] ) ), 'dame_export_nonce_action' ) ) {
 			$this->export_json_adherents();
 		}
 
-		// 4. Import JSON Adherents (Restore)
+		// 4. Import JSON Adherents (Restore).
 		if ( isset( $_POST['dame_import'], $_POST['dame_import_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_import_nonce'] ) ), 'dame_import_nonce_action' ) ) {
 			$this->import_json_adherents();
 		}
 
-		// 5. Export JSON Agenda
+		// 5. Export JSON Agenda.
 		if ( isset( $_POST['dame_agenda_backup_action'], $_POST['dame_agenda_backup_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_agenda_backup_nonce'] ) ), 'dame_agenda_backup_nonce_action' ) ) {
 			$this->export_json_agenda();
 		}
 
-		// 6. Import JSON Agenda
+		// 6. Import JSON Agenda.
 		if ( isset( $_POST['dame_agenda_restore_action'], $_POST['dame_agenda_restore_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_agenda_restore_nonce'] ) ), 'dame_agenda_restore_nonce_action' ) ) {
 			$this->import_json_agenda();
 		}
 
-		// 7. Export JSON Site Content
+		// 7. Export JSON Site Content.
 		if ( isset( $_POST['dame_site_backup_action'], $_POST['dame_site_backup_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_site_backup_nonce'] ) ), 'dame_site_backup_nonce_action' ) ) {
 			$this->export_json_site();
 		}
 
-		// 8. Import JSON Site Content
+		// 8. Import JSON Site Content.
 		if ( isset( $_POST['dame_site_restore_action'], $_POST['dame_site_restore_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_site_restore_nonce'] ) ), 'dame_site_restore_nonce_action' ) ) {
 			$this->import_json_site();
 		}
 
-		// 9. Export CSV Contacts
+		// 9. Export CSV Contacts.
 		if ( isset( $_POST['dame_export_contacts_csv_action'], $_POST['dame_export_contacts_csv_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_export_contacts_csv_nonce'] ) ), 'dame_export_contacts_csv_nonce_action' ) ) {
 			$this->export_csv_contacts();
 		}
 
-		// 10. Import CSV Contacts
+		// 10. Import CSV Contacts.
 		if ( isset( $_POST['dame_import_contacts_csv_action'], $_POST['dame_import_contacts_csv_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_import_contacts_csv_nonce'] ) ), 'dame_import_contacts_csv_nonce_action' ) ) {
 			$this->import_csv_contacts();
 		}
 
-		// 11. Import CSV HelloAsso Contacts
+		// 11. Import CSV HelloAsso Contacts.
 		if ( isset( $_POST['dame_import_helloasso_csv_action'], $_POST['dame_import_helloasso_csv_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_import_helloasso_csv_nonce'] ) ), 'dame_import_helloasso_csv_nonce_action' ) ) {
 			$this->import_csv_helloasso_contacts();
 		}
 
-		// 12. Delete Contact Duplicates
+		// 12. Delete Contact Duplicates.
 		if ( isset( $_POST['dame_delete_contact_duplicates_action'], $_POST['dame_delete_contact_duplicates_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_delete_contact_duplicates_nonce'] ) ), 'dame_delete_contact_duplicates_nonce_action' ) ) {
 			$this->delete_contact_duplicates();
 		}
@@ -143,8 +150,11 @@ class Backup {
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
 
 		$output = fopen( 'php://output', 'w' );
+		if ( ! is_resource( $output ) ) {
+			return;
+		}
 
-		// Headers
+		// Headers.
 		$headers = array(
 			'Organisation',
 			'Nom',
@@ -159,7 +169,7 @@ class Backup {
 			'Type',
 		);
 
-		// Convert headers to CP1252
+		// Convert headers to CP1252.
 		$headers_encoded = array_map( fn( $h ) => mb_convert_encoding( (string) $h, 'Windows-1252', 'UTF-8' ), $headers );
 		fputcsv( $output, $headers_encoded, ';', '"', '\\' );
 
@@ -179,21 +189,25 @@ class Backup {
 
 		if ( $query->have_posts() ) {
 			foreach ( $query->posts as $post ) {
+				$post_id = $post instanceof \WP_Post ? $post->ID : (int) $post;
+				if ( ! $post_id ) {
+					continue;
+				}
 				$row = array(
-					get_post_meta( $post->ID, '_dame_contact_organization', true ),
-					get_post_meta( $post->ID, '_dame_contact_last_name', true ),
-					get_post_meta( $post->ID, '_dame_contact_first_name', true ),
-					get_post_meta( $post->ID, '_dame_contact_role', true ),
-					get_post_meta( $post->ID, '_dame_contact_email', true ),
-					get_post_meta( $post->ID, '_dame_contact_no_emails', true ) ? 'O' : 'N',
-					get_post_meta( $post->ID, '_dame_contact_address_1', true ),
-					get_post_meta( $post->ID, '_dame_contact_address_2', true ),
-					get_post_meta( $post->ID, '_dame_contact_postcode', true ),
-					get_post_meta( $post->ID, '_dame_contact_city', true ),
+					get_post_meta( $post_id, '_dame_contact_organization', true ),
+					get_post_meta( $post_id, '_dame_contact_last_name', true ),
+					get_post_meta( $post_id, '_dame_contact_first_name', true ),
+					get_post_meta( $post_id, '_dame_contact_role', true ),
+					get_post_meta( $post_id, '_dame_contact_email', true ),
+					get_post_meta( $post_id, '_dame_contact_no_emails', true ) ? 'O' : 'N',
+					get_post_meta( $post_id, '_dame_contact_address_1', true ),
+					get_post_meta( $post_id, '_dame_contact_address_2', true ),
+					get_post_meta( $post_id, '_dame_contact_postcode', true ),
+					get_post_meta( $post_id, '_dame_contact_city', true ),
 					$type_slug,
 				);
 
-				// Convert row to CP1252
+				// Convert row to CP1252.
 				$row_encoded = array_map( fn( $val ) => mb_convert_encoding( (string) $val, 'Windows-1252', 'UTF-8' ), $row );
 				fputcsv( $output, $row_encoded, ';', '"', '\\' );
 			}
@@ -225,7 +239,7 @@ class Backup {
 			return;
 		}
 
-		// Read headers
+		// Read headers.
 		$headers = fgetcsv( $handle, 0, ';', '"', '\\' );
 		if ( ! $headers ) {
 			$this->add_admin_notice( __( 'Impossible de lire l\'en-tête du fichier CSV.', 'dame' ), 'error' );
@@ -233,10 +247,10 @@ class Backup {
 			return;
 		}
 
-		// Convert headers to UTF-8 and map them
+		// Convert headers to UTF-8 and map them.
 		$headers = array_map( fn( $h ) => mb_convert_encoding( (string) $h, 'UTF-8', 'Windows-1252' ), $headers );
 
-		// Remove BOM if present
+		// Remove BOM if present.
 		if ( isset( $headers[0] ) ) {
 			$headers[0] = preg_replace( '/^\x{FEFF}/u', '', $headers[0] );
 		}
@@ -248,10 +262,10 @@ class Backup {
 		$dept_mapping = Data_Provider::get_department_region_mapping();
 
 		while ( ( $row = fgetcsv( $handle, 0, ';', '"', '\\' ) ) !== false ) {
-			// Convert to UTF-8
+			// Convert to UTF-8.
 			$row = array_map( fn( $val ) => mb_convert_encoding( (string) $val, 'UTF-8', 'Windows-1252' ), $row );
 
-			// Map columns based on headers
+			// Map columns based on headers.
 			$org        = isset( $col_map['Organisation'] ) ? trim( $row[ $col_map['Organisation'] ] ?? '' ) : '';
 			$last_name  = isset( $col_map['Nom'] ) ? trim( $row[ $col_map['Nom'] ] ?? '' ) : '';
 			$first_name = isset( $col_map['Prenom'] ) ? trim( $row[ $col_map['Prenom'] ] ?? '' ) : '';
@@ -272,7 +286,7 @@ class Backup {
 				continue;
 			}
 
-			// Deduplication Logic
+			// Deduplication Logic.
 			$args = array(
 				'post_type'      => 'dame_contact',
 				'posts_per_page' => 1,
@@ -331,7 +345,7 @@ class Backup {
 			if ( ! empty( $org ) ) {
 				$new_title = $org . ( ! empty( $base_name ) ? ' (' . $base_name . ')' : '' );
 			} else {
-				$new_title = $base_name ?: __( 'Contact sans nom', 'dame' );
+				$new_title = ! empty( $base_name ) ? $base_name : __( 'Contact sans nom', 'dame' );
 			}
 
 			if ( $post_id ) {
@@ -365,7 +379,7 @@ class Backup {
 				update_post_meta( $post_id, '_dame_contact_postcode', $postcode );
 				update_post_meta( $post_id, '_dame_contact_city', $city );
 
-				// Enrichment: Dept & Region
+				// Enrichment: Dept & Region.
 				$dept_code = substr( $postcode, 0, 2 );
 				if ( strlen( $postcode ) >= 3 ) {
 					if ( strpos( $postcode, '20' ) === 0 ) {
@@ -381,7 +395,7 @@ class Backup {
 					update_post_meta( $post_id, '_dame_contact_region', $dept_mapping[ $dept_code ] );
 				}
 
-				// Assign Taxonomy
+				// Assign Taxonomy.
 				wp_set_object_terms( $post_id, $type_slug, 'dame_contact_type' );
 			}
 		}
@@ -451,10 +465,11 @@ class Backup {
 			$birth_name = trim( (string) ( $meta['_dame_birth_name'] ?? '' ) );
 			$full_name  = trim( Utils::format_lastname( $last_name ) . ' ' . Utils::format_firstname( $first_name ) );
 			if ( empty( $full_name ) ) {
+				/* translators: %d: adherent ID */
 				$full_name = sprintf( __( 'Adhérent #%d', 'dame' ), $post_id );
 			}
 
-			// 1. Emails
+			// 1. Emails.
 			$possible_emails = array(
 				array( $meta['_dame_email'] ?? '', __( 'Email adhérent', 'dame' ) ),
 				array( $meta['_dame_legal_rep_1_email'] ?? '', __( 'Email Resp. Légal 1', 'dame' ) ),
@@ -471,23 +486,27 @@ class Backup {
 				}
 			}
 
-			// 2. Normalized Names
+			// 2. Normalized Names.
 			$name_sources = array();
 			if ( ! empty( $last_name ) && ! empty( $first_name ) && mb_strlen( $last_name ) >= 2 && mb_strlen( $first_name ) >= 2 ) {
-				$name_sources[] = array( $last_name, $first_name, sprintf( __( 'Adhérent : %s %s', 'dame' ), $last_name, $first_name ) );
+				/* translators: 1: last name, 2: first name */
+				$name_sources[] = array( $last_name, $first_name, sprintf( __( 'Adhérent : %1$s %2$s', 'dame' ), $last_name, $first_name ) );
 			}
 			if ( ! empty( $birth_name ) && ! empty( $first_name ) && $birth_name !== $last_name && mb_strlen( $birth_name ) >= 2 && mb_strlen( $first_name ) >= 2 ) {
-				$name_sources[] = array( $birth_name, $first_name, sprintf( __( 'Nom de naissance : %s %s', 'dame' ), $birth_name, $first_name ) );
+				/* translators: 1: birth name, 2: first name */
+				$name_sources[] = array( $birth_name, $first_name, sprintf( __( 'Nom de naissance : %1$s %2$s', 'dame' ), $birth_name, $first_name ) );
 			}
 			$rep1_l = trim( (string) ( $meta['_dame_legal_rep_1_last_name'] ?? '' ) );
 			$rep1_f = trim( (string) ( $meta['_dame_legal_rep_1_first_name'] ?? '' ) );
 			if ( ! empty( $rep1_l ) && ! empty( $rep1_f ) && mb_strlen( $rep1_l ) >= 2 && mb_strlen( $rep1_f ) >= 2 ) {
-				$name_sources[] = array( $rep1_l, $rep1_f, sprintf( __( 'Resp. Légal 1 : %s %s', 'dame' ), $rep1_l, $rep1_f ) );
+				/* translators: 1: rep last name, 2: rep first name */
+				$name_sources[] = array( $rep1_l, $rep1_f, sprintf( __( 'Resp. Légal 1 : %1$s %2$s', 'dame' ), $rep1_l, $rep1_f ) );
 			}
 			$rep2_l = trim( (string) ( $meta['_dame_legal_rep_2_last_name'] ?? '' ) );
 			$rep2_f = trim( (string) ( $meta['_dame_legal_rep_2_first_name'] ?? '' ) );
 			if ( ! empty( $rep2_l ) && ! empty( $rep2_f ) && mb_strlen( $rep2_l ) >= 2 && mb_strlen( $rep2_f ) >= 2 ) {
-				$name_sources[] = array( $rep2_l, $rep2_f, sprintf( __( 'Resp. Légal 2 : %s %s', 'dame' ), $rep2_l, $rep2_f ) );
+				/* translators: 1: rep last name, 2: rep first name */
+				$name_sources[] = array( $rep2_l, $rep2_f, sprintf( __( 'Resp. Légal 2 : %1$s %2$s', 'dame' ), $rep2_l, $rep2_f ) );
 			}
 
 			foreach ( $name_sources as $src ) {
@@ -509,7 +528,7 @@ class Backup {
 				}
 			}
 
-			// 3. Licenses
+			// 3. Licenses.
 			$raw_lic = trim( (string) ( $meta['_dame_license_number'] ?? '' ) );
 			if ( ! empty( $raw_lic ) ) {
 				$extracted = Utils::extract_license_numbers( $raw_lic );
@@ -517,10 +536,12 @@ class Backup {
 					$extracted[] = mb_strtoupper( $raw_lic, 'UTF-8' );
 				}
 				foreach ( $extracted as $lic_code ) {
+					/* translators: %s: license number */
+					$detail                = sprintf( __( 'Licence %s', 'dame' ), $lic_code );
 					$licenses[ $lic_code ] = array(
 						'id'     => $post_id,
 						'name'   => $full_name,
-						'detail' => sprintf( __( 'Licence %s', 'dame' ), $lic_code ),
+						'detail' => $detail,
 					);
 				}
 			}
@@ -578,6 +599,7 @@ class Backup {
 
 			$contact_name = trim( Utils::format_lastname( $last ) . ' ' . Utils::format_firstname( $first ) );
 			if ( empty( $contact_name ) ) {
+				/* translators: %d: contact ID */
 				$contact_name = sprintf( __( 'Contact #%d', 'dame' ), $contact_id );
 			}
 
@@ -586,7 +608,7 @@ class Backup {
 			$adherent_name = '';
 			$match_reason  = '';
 
-			// Check 1: Email
+			// Check 1: Email.
 			if ( ! empty( $email ) && isset( $index['emails'][ $email ] ) ) {
 				$matched       = true;
 				$adherent_id   = $index['emails'][ $email ]['id'];
@@ -594,7 +616,7 @@ class Backup {
 				$match_reason  = $index['emails'][ $email ]['detail'];
 			}
 
-			// Check 2: Nom + Prénom
+			// Check 2: Nom + Prénom.
 			if ( ! $matched && ! empty( $last ) && ! empty( $first ) && mb_strlen( $last ) >= 2 && mb_strlen( $first ) >= 2 ) {
 				$key1 = Utils::normalize_name( $last . $first );
 				$key2 = Utils::normalize_name( $first . $last );
@@ -613,7 +635,7 @@ class Backup {
 			}
 
 			if ( $matched ) {
-				// Get assigned categories
+				// Get assigned categories.
 				$terms      = wp_get_object_terms( $contact_id, 'dame_contact_type', array( 'fields' => 'names' ) );
 				$categories = ( ! is_wp_error( $terms ) && is_array( $terms ) ) ? array_values( array_map( 'strval', $terms ) ) : array();
 
@@ -688,7 +710,7 @@ class Backup {
 			return;
 		}
 
-		// Read headers
+		// Read headers.
 		$headers = fgetcsv( $handle, 0, ';', '"', '\\' );
 		if ( ! $headers ) {
 			$this->add_admin_notice( __( 'Impossible de lire l\'en-tête du fichier CSV HelloAsso.', 'dame' ), 'error' );
@@ -696,15 +718,16 @@ class Backup {
 			return;
 		}
 
-		// Convert headers to UTF-8 and clean BOM
+		// Convert headers to UTF-8 and clean BOM.
 		$headers = array_map( fn( $h ) => mb_convert_encoding( (string) $h, 'UTF-8', 'auto' ), $headers );
 		if ( isset( $headers[0] ) ) {
-			$headers[0] = preg_replace( '/^\x{FEFF}/u', '', $headers[0] );
+			$headers[0] = (string) preg_replace( '/^\x{FEFF}/u', '', (string) $headers[0] );
 		}
 
-		$col_map = array_flip( $headers );
+		$headers_str = array_map( 'strval', $headers );
+		$col_map     = array_flip( $headers_str );
 
-		// Find potential license column in headers
+		// Find potential license column in headers.
 		$license_col_idx = null;
 		foreach ( $col_map as $header_name => $idx ) {
 			$h_lower = mb_strtolower( (string) $header_name, 'UTF-8' );
@@ -714,7 +737,7 @@ class Backup {
 			}
 		}
 
-		// 1. Fetch multi-criteria matching index for all adherents
+		// 1. Fetch multi-criteria matching index for all adherents.
 		$matching_index = self::get_adherents_matching_index();
 
 		$created           = 0;
@@ -723,20 +746,20 @@ class Backup {
 		$processed_emails  = array();
 
 		while ( ( $row = fgetcsv( $handle, 0, ';', '"', '\\' ) ) !== false ) {
-			// Convert row to UTF-8
+			// Convert row to UTF-8.
 			$row = array_map( fn( $val ) => mb_convert_encoding( (string) $val, 'UTF-8', 'auto' ), $row );
 
-			// Check order status if present
+			// Check order status if present.
 			$status_idx = $col_map['Statut de la commande'] ?? null;
 			if ( null !== $status_idx && isset( $row[ $status_idx ] ) ) {
-				$order_status = trim( $row[ $status_idx ] );
+				$order_status = trim( (string) $row[ $status_idx ] );
 				if ( ! empty( $order_status ) && 0 !== strcasecmp( $order_status, 'Validé' ) && 0 !== strcasecmp( $order_status, 'Valide' ) ) {
 					continue;
 				}
 			}
 
-			// Extract email (Email payeur)
-			$raw_email = isset( $col_map['Email payeur'] ) ? trim( $row[ $col_map['Email payeur'] ] ?? '' ) : '';
+			// Extract email (Email payeur).
+			$raw_email = isset( $col_map['Email payeur'] ) ? trim( (string) ( $row[ $col_map['Email payeur'] ] ?? '' ) ) : '';
 			$email     = sanitize_email( $raw_email );
 			if ( empty( $email ) || ! is_email( $email ) ) {
 				continue;
@@ -744,28 +767,28 @@ class Backup {
 
 			$email_lower = mb_strtolower( $email );
 
-			// Deduplication in current batch
+			// Deduplication in current batch.
 			if ( isset( $processed_emails[ $email_lower ] ) ) {
 				continue;
 			}
 			$processed_emails[ $email_lower ] = true;
 
-			// Extract identity fields
-			$payer_last  = isset( $col_map['Nom payeur'] ) ? trim( $row[ $col_map['Nom payeur'] ] ?? '' ) : '';
-			$payer_first = isset( $col_map['Prénom payeur'] ) ? trim( $row[ $col_map['Prénom payeur'] ] ?? '' ) : '';
-			$part_last   = isset( $col_map['Nom participant'] ) ? trim( $row[ $col_map['Nom participant'] ] ?? '' ) : '';
-			$part_first  = isset( $col_map['Prénom participant'] ) ? trim( $row[ $col_map['Prénom participant'] ] ?? '' ) : '';
-			$org         = isset( $col_map['Raison sociale'] ) ? trim( $row[ $col_map['Raison sociale'] ] ?? '' ) : '';
-			$raw_license = ( null !== $license_col_idx && isset( $row[ $license_col_idx ] ) ) ? trim( $row[ $license_col_idx ] ) : '';
+			// Extract identity fields.
+			$payer_last  = isset( $col_map['Nom payeur'] ) ? trim( (string) ( $row[ $col_map['Nom payeur'] ] ?? '' ) ) : '';
+			$payer_first = isset( $col_map['Prénom payeur'] ) ? trim( (string) ( $row[ $col_map['Prénom payeur'] ] ?? '' ) ) : '';
+			$part_last   = isset( $col_map['Nom participant'] ) ? trim( (string) ( $row[ $col_map['Nom participant'] ] ?? '' ) ) : '';
+			$part_first  = isset( $col_map['Prénom participant'] ) ? trim( (string) ( $row[ $col_map['Prénom participant'] ] ?? '' ) ) : '';
+			$org         = isset( $col_map['Raison sociale'] ) ? trim( (string) ( $row[ $col_map['Raison sociale'] ] ?? '' ) ) : '';
+			$raw_license = ( null !== $license_col_idx && isset( $row[ $license_col_idx ] ) ) ? trim( (string) $row[ $license_col_idx ] ) : '';
 
 			$is_adherent_matched = false;
 
-			// Check A: Email
+			// Check A: Email.
 			if ( isset( $matching_index['emails'][ $email_lower ] ) ) {
 				$is_adherent_matched = true;
 			}
 
-			// Check B: Nom + Prénom (Participant ou Payeur)
+			// Check B: Nom + Prénom (Participant ou Payeur).
 			if ( ! $is_adherent_matched ) {
 				$candidate_names = array();
 				if ( ! empty( $part_last ) && ! empty( $part_first ) ) {
@@ -785,7 +808,7 @@ class Backup {
 				}
 			}
 
-			// Check C: Licence FFE / FIDE
+			// Check C: Licence FFE / FIDE.
 			if ( ! $is_adherent_matched && ! empty( $raw_license ) ) {
 				$extracted_lics = Utils::extract_license_numbers( $raw_license );
 				foreach ( $extracted_lics as $lic_code ) {
@@ -804,7 +827,7 @@ class Backup {
 			$last_name  = ! empty( $payer_last ) ? $payer_last : $part_last;
 			$first_name = ! empty( $payer_first ) ? $payer_first : $part_first;
 
-			// Check if contact already exists in dame_contact by email
+			// Check if contact already exists in dame_contact by email.
 			$existing_contact_id = $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT p.ID 
@@ -820,11 +843,11 @@ class Backup {
 			);
 
 			if ( ! empty( $existing_contact_id ) ) {
-				// Contact already exists: append target category without overriding existing categories
+				// Contact already exists: append target category without overriding existing categories.
 				wp_set_object_terms( (int) $existing_contact_id, $type_slug, 'dame_contact_type', true );
 				++$updated;
 			} else {
-				// Create new contact
+				// Create new contact.
 				$formatted_last  = Utils::format_lastname( $last_name );
 				$formatted_first = Utils::format_firstname( $first_name );
 				$base_name       = trim( $formatted_last . ' ' . $formatted_first );
@@ -832,7 +855,7 @@ class Backup {
 				if ( ! empty( $org ) ) {
 					$new_title = $org . ( ! empty( $base_name ) ? ' (' . $base_name . ')' : '' );
 				} else {
-					$new_title = $base_name ?: __( 'Contact sans nom', 'dame' );
+					$new_title = ! empty( $base_name ) ? $base_name : __( 'Contact sans nom', 'dame' );
 				}
 
 				$post_id = wp_insert_post(
@@ -851,7 +874,7 @@ class Backup {
 					update_post_meta( $post_id, '_dame_contact_email', $email );
 					update_post_meta( $post_id, '_dame_contact_no_emails', '0' );
 
-					// Assign taxonomy (append = true)
+					// Assign taxonomy (append = true).
 					wp_set_object_terms( $post_id, $type_slug, 'dame_contact_type', true );
 
 					++$created;
@@ -889,11 +912,14 @@ class Backup {
 		header( 'Content-Disposition: attachment; filename=' . $filename );
 
 		$output = fopen( 'php://output', 'w' );
+		if ( ! is_resource( $output ) ) {
+			return;
+		}
 
 		// Add BOM to fix UTF-8 in Excel.
 		fprintf( $output, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
 
-		// --- Dynamic Headers ---
+		// --- Dynamic Headers ---.
 		// 1. Get all seasons and sort them.
 		$all_seasons = get_terms(
 			array(
@@ -962,7 +988,7 @@ class Backup {
 
 		fputcsv( $output, $headers, ';', '"', '\\' );
 
-		// --- Dynamic Rows ---
+		// --- Dynamic Rows ---.
 		$adherents_query = new WP_Query(
 			array(
 				'post_type'      => 'adherent',
@@ -977,8 +1003,11 @@ class Backup {
 			while ( $adherents_query->have_posts() ) {
 				$adherents_query->the_post();
 				$post_id = get_the_ID();
+				if ( ! $post_id ) {
+					continue;
+				}
 
-				// Get adherent's seasons
+				// Get adherent's seasons.
 				$adherent_seasons_slugs = wp_get_post_terms( $post_id, 'dame_saison_adhesion', array( 'fields' => 'slugs' ) );
 				if ( is_wp_error( $adherent_seasons_slugs ) ) {
 					$adherent_seasons_slugs = array();
@@ -1047,7 +1076,7 @@ class Backup {
 					get_post_meta( $post_id, '_dame_transport', true ),
 				);
 
-				// Add dynamic season data
+				// Add dynamic season data.
 				if ( ! is_wp_error( $all_seasons ) ) {
 					foreach ( $all_seasons as $season ) {
 						$row[] = in_array( $season->slug, $adherent_seasons_slugs, true ) ? 'O' : 'N';
@@ -1083,7 +1112,7 @@ class Backup {
 			return;
 		}
 
-		// Increase execution time
+		// Increase execution time.
 		set_time_limit( 300 );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Local CSV file handle.
@@ -1093,7 +1122,7 @@ class Backup {
 			return;
 		}
 
-		// Read header row and map columns
+		// Read header row and map columns.
 		$header = fgetcsv( $handle, 0, ';', '"', '\\' );
 		if ( false === $header ) {
 			$this->add_admin_notice( __( 'Impossible de lire l\'en-tête du fichier CSV.', 'dame' ), 'error' );
@@ -1101,7 +1130,7 @@ class Backup {
 			return;
 		}
 
-		// Remove BOM from the first header element if present
+		// Remove BOM from the first header element if present.
 		if ( isset( $header[0] ) ) {
 			$header[0] = preg_replace( '/^\x{FEFF}/u', '', $header[0] );
 		}
@@ -1155,7 +1184,7 @@ class Backup {
 		);
 		$col_map          = array_flip( $header );
 
-		// Data mapping from CSV columns to post meta keys
+		// Data mapping from CSV columns to post meta keys.
 		$meta_mapping = array(
 			'Nom de naissance'                        => '_dame_birth_name',
 			'Nom d\'usage'                            => '_dame_last_name',
@@ -1224,7 +1253,7 @@ class Backup {
 				}
 			}
 
-			// Capture dynamic seasons if present in CSV row based on expected pattern
+			// Capture dynamic seasons if present in CSV row based on expected pattern.
 			$season_data = array();
 			if ( ! is_wp_error( $all_seasons ) ) {
 				foreach ( $all_seasons as $season ) {
@@ -1236,22 +1265,22 @@ class Backup {
 				}
 			}
 
-			$first_name = $member_data['Prénom'];
-			$last_name  = $member_data['Nom d\'usage'];
-			$birth_name = $member_data['Nom de naissance'];
+			$first_name = $member_data['Prénom'] ?? '';
+			$last_name  = $member_data['Nom d\'usage'] ?? '';
+			$birth_name = $member_data['Nom de naissance'] ?? '';
 
 			if ( empty( $first_name ) || ( empty( $last_name ) && empty( $birth_name ) ) ) {
-				continue; // Skip rows without a name
+				continue; // Skip rows without a name.
 			}
 
 			$post_id = 0;
-			$email   = $member_data['Adresse email'];
-			$license = $member_data['Numéro de licence'];
+			$email   = $member_data['Adresse email'] ?? '';
+			$license = $member_data['Numéro de licence'] ?? '';
 
 			$effective_last_name = ! empty( $last_name ) ? $last_name : $birth_name;
 			$post_title          = \DAME\Core\Utils::format_lastname( (string) $effective_last_name ) . ' ' . \DAME\Core\Utils::format_firstname( (string) $first_name );
 
-			// Reconciliation
+			// Reconciliation.
 			$query_args = array(
 				'post_type'      => 'adherent',
 				'posts_per_page' => 1,
@@ -1304,7 +1333,7 @@ class Backup {
 				);
 				$post_id   = wp_insert_post( $post_data );
 			} else {
-				// Update title in case name changed
+				// Update title in case name changed.
 				wp_update_post(
 					array(
 						'ID'         => $post_id,
@@ -1315,7 +1344,7 @@ class Backup {
 
 			if ( $post_id ) {
 				foreach ( $meta_mapping as $csv_header => $meta_key ) {
-					$value = $member_data[ $csv_header ];
+					$value = $member_data[ $csv_header ] ?? '';
 
 					if ( '_dame_birth_date' === $meta_key ) {
 						if ( ! empty( $value ) ) {
@@ -1323,7 +1352,7 @@ class Backup {
 							if ( $date ) {
 								$value = $date->format( 'Y-m-d' );
 							} else {
-								$value = ''; // Invalid date format
+								$value = ''; // Invalid date format.
 							}
 						} else {
 							$value = '1950-09-19';
@@ -1331,10 +1360,10 @@ class Backup {
 					}
 
 					if ( '_dame_membership_status' === $meta_key ) {
-						$status_key       = 'N'; // Default to 'Non Adhérent'
+						$status_key       = 'N'; // Default to 'Non Adhérent'.
 						$normalized_value = mb_strtoupper( trim( $value ), 'UTF-8' );
 
-						// Handle cases like "Actif (A)" by extracting the key
+						// Handle cases like "Actif (A)" by extracting the key.
 						if ( preg_match( '/\(([A-Z])\)/', $normalized_value, $matches ) ) {
 							$normalized_value = $matches[1];
 						}
@@ -1358,7 +1387,7 @@ class Backup {
 						$value = $status_key;
 					}
 
-					// Sanitize phone numbers
+					// Sanitize phone numbers.
 					if ( in_array( $meta_key, array( '_dame_phone_number', '_dame_autre_telephone' ) ) ) {
 						$phone_number = str_replace( array( ' ', '.' ), '', $value );
 						if ( substr( $phone_number, 0, 3 ) === '+33' ) {
@@ -1369,7 +1398,7 @@ class Backup {
 						$value = $phone_number;
 					}
 
-					// Handle boolean fields (O/N)
+					// Handle boolean fields (O/N).
 					$boolean_fields = array(
 						'_dame_is_junior',
 						'_dame_is_pole_excellence',
@@ -1377,14 +1406,14 @@ class Backup {
 						'_dame_is_elu_local',
 					);
 					if ( in_array( $meta_key, $boolean_fields ) ) {
-						$value = ( mb_strtoupper( trim( $value ), 'UTF-8' ) === 'O' ) ? 1 : 0;
+						$value = ( mb_strtoupper( trim( (string) $value ), 'UTF-8' ) === 'O' ) ? 1 : 0;
 					}
 
-					update_post_meta( $post_id, $meta_key, sanitize_text_field( $value ) );
+					update_post_meta( $post_id, $meta_key, sanitize_text_field( (string) $value ) );
 				}
 
-				// Handle postal code logic
-				$postal_code = $member_data['Code Postal'];
+				// Handle postal code logic.
+				$postal_code = $member_data['Code Postal'] ?? '';
 				if ( ! empty( $postal_code ) ) {
 					update_post_meta( $post_id, '_dame_country', 'FR' );
 
@@ -1406,7 +1435,7 @@ class Backup {
 					}
 				}
 
-				// Set defaults for fields not in CSV
+				// Set defaults for fields not in CSV.
 				if ( empty( get_post_meta( $post_id, '_dame_license_type', true ) ) ) {
 					update_post_meta( $post_id, '_dame_license_type', 'Non précisé' );
 				}
@@ -1414,7 +1443,7 @@ class Backup {
 					update_post_meta( $post_id, '_dame_arbitre_level', 'Non' );
 				}
 
-				// Handle Seasons
+				// Handle Seasons.
 				if ( ! empty( $season_data ) ) {
 					$current_seasons = wp_get_post_terms( $post_id, 'dame_saison_adhesion', array( 'fields' => 'slugs' ) );
 					if ( is_wp_error( $current_seasons ) ) {
@@ -1477,7 +1506,7 @@ class Backup {
 
 		global $wpdb;
 
-		// 1. Export Users and Usermeta
+		// 1. Export Users and Usermeta.
 		$users = $wpdb->get_results( "SELECT * FROM $wpdb->users", ARRAY_A );
 		foreach ( $users as $user ) {
 			$meta      = $wpdb->get_results( $wpdb->prepare( "SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = %d", $user['ID'] ), ARRAY_A );
@@ -1491,7 +1520,7 @@ class Backup {
 			);
 		}
 
-		// 2. Taxonomies
+		// 2. Taxonomies.
 		foreach ( array( 'dame_saison_adhesion', 'dame_group', 'dame_contact_type' ) as $tax ) {
 			$terms = get_terms(
 				array(
@@ -1522,7 +1551,7 @@ class Backup {
 			}
 		}
 
-		// Combined Post Types for this section
+		// Combined Post Types for this section.
 		$post_types = array( 'adherent', 'dame_contact', 'dame_pre_inscription', 'dame_message' );
 		$query      = new WP_Query(
 			array(
@@ -1532,12 +1561,15 @@ class Backup {
 			)
 		);
 
-		// Optimisation : Pré-chargement des métadonnées
+		// Optimisation : Pré-chargement des métadonnées.
 		if ( ! empty( $query->posts ) ) {
 			update_meta_cache( 'post', wp_list_pluck( $query->posts, 'ID' ) );
 		}
 
 		foreach ( $query->posts as $post ) {
+			if ( ! $post instanceof \WP_Post ) {
+				continue;
+			}
 			$meta = array();
 			foreach ( get_post_meta( $post->ID ) as $k => $vals ) {
 				$meta[ $k ] = array_map( 'maybe_unserialize', $vals );
@@ -1580,7 +1612,7 @@ class Backup {
 			}
 		}
 
-		// Message logs (envois + ouvertures)
+		// Message logs (envois + ouvertures).
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'dame_message_opens';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- System backup message tracking query.
@@ -1589,7 +1621,7 @@ class Backup {
 			$data['message_tracking'] = $tracking_data;
 		}
 
-		// Options critiques
+		// Options critiques.
 		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
 		if ( $current_season_tag_id ) {
 			$term = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
@@ -1646,7 +1678,7 @@ class Backup {
 		$post_types   = array( 'adherent', 'dame_contact', 'dame_pre_inscription', 'dame_message' );
 		$placeholders = implode( ',', array_fill( 0, count( $post_types ), '%s' ) );
 
-		// 1. PURGE
+		// 1. PURGE.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- System restore purge.
 		$posts_to_delete = $wpdb->get_col(
 			$wpdb->prepare(
@@ -1674,13 +1706,13 @@ class Backup {
 			}
 		}
 
-		// 2. RESTORE TAXONOMIES
+		// 2. RESTORE TAXONOMIES.
 		foreach ( $data['taxonomy_terms'] ?? array() as $tax => $terms ) {
 			foreach ( $terms as $t ) {
 				$term_id = (int) $t['term_id'];
 				$tt_id   = (int) $t['term_taxonomy_id'];
 
-				// Term check
+				// Term check.
 				$exists = $wpdb->get_var( $wpdb->prepare( "SELECT term_id FROM $wpdb->terms WHERE term_id = %d", $term_id ) );
 				if ( ! $exists ) {
 					$wpdb->insert(
@@ -1703,7 +1735,7 @@ class Backup {
 					);
 				}
 
-				// Taxonomy check
+				// Taxonomy check.
 				$tt_exists = $wpdb->get_var( $wpdb->prepare( "SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE term_taxonomy_id = %d", $tt_id ) );
 				if ( ! $tt_exists ) {
 					$wpdb->insert(
@@ -1738,7 +1770,7 @@ class Backup {
 			}
 		}
 
-		// 3. RESTORE POSTS
+		// 3. RESTORE POSTS.
 		$max_post_id = 0;
 		$all_items   = array_merge( $data['adherents'] ?? array(), $data['contacts'] ?? array(), $data['pre_inscriptions'] ?? array(), $data['messages'] ?? array() );
 
@@ -1773,7 +1805,7 @@ class Backup {
 				$wpdb->insert( $wpdb->posts, $post_data );
 			} else {
 				$wpdb->update( $wpdb->posts, $post_data, array( 'ID' => $pid ) );
-				// Clean existing meta if updating
+				// Clean existing meta if updating.
 				$wpdb->delete( $wpdb->postmeta, array( 'post_id' => $pid ) );
 			}
 
@@ -1787,7 +1819,7 @@ class Backup {
 			}
 		}
 
-		// 4. RESTORE MESSAGE TRACKING
+		// 4. RESTORE MESSAGE TRACKING.
 		foreach ( $data['message_tracking'] ?? array() as $mo ) {
 			$wpdb->insert(
 				"{$wpdb->prefix}dame_message_opens",
@@ -1803,12 +1835,12 @@ class Backup {
 			);
 		}
 
-		// 5. REALIGN
+		// 5. REALIGN.
 		if ( $max_post_id > 0 ) {
 			$wpdb->query( $wpdb->prepare( "ALTER TABLE $wpdb->posts AUTO_INCREMENT = %d", $max_post_id + 1 ) );
 		}
 
-		// 6. RESTORE USERS (Upsert logic to avoid locking current admin out)
+		// 6. RESTORE USERS (Upsert logic to avoid locking current admin out).
 		$max_user_id     = 0;
 		$current_user_id = get_current_user_id();
 
@@ -1816,24 +1848,24 @@ class Backup {
 			$uid         = (int) $u['data']['ID'];
 			$max_user_id = max( $max_user_id, $uid );
 
-			// Check if user already exists
+			// Check if user already exists.
 			$exists = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users WHERE ID = %d", $uid ) );
 
 			if ( ! $exists ) {
 				$wpdb->insert( $wpdb->users, $u['data'] );
 			} elseif ( $uid !== $current_user_id ) {
-				// Don't update the current user performing the restore to avoid session issues
+				// Don't update the current user performing the restore to avoid session issues.
 				$wpdb->update( $wpdb->users, $u['data'], array( 'ID' => $uid ) );
 			}
 
-			// Restore User Meta
-			// We clear existing meta first (except for current user to be safe)
+			// Restore User Meta.
+			// We clear existing meta first (except for current user to be safe).
 			if ( $uid !== $current_user_id ) {
 				$wpdb->delete( $wpdb->usermeta, array( 'user_id' => $uid ) );
 			}
 
 			foreach ( $u['meta'] as $k => $vals ) {
-				// Normalize capability and user_level keys to current prefix
+				// Normalize capability and user_level keys to current prefix.
 				$normalized_key = $k;
 				if ( preg_match( '/^(.*)capabilities$/', $k, $matches ) ) {
 					$normalized_key = $wpdb->prefix . 'capabilities';
@@ -1843,14 +1875,14 @@ class Backup {
 
 				foreach ( $vals as $v ) {
 					if ( $uid === $current_user_id ) {
-						// For current user, only update keys if they don't exist to avoid breaking session
+						// For current user, only update keys if they don't exist to avoid breaking session.
 						if ( ! get_user_meta( $uid, $normalized_key, true ) ) {
 							add_user_meta( $uid, $normalized_key, $v, false );
 						}
 					} else {
-						// Use update_user_meta for the first value and add_user_meta for subsequent if multiple (rare for these keys)
+						// Use update_user_meta for the first value and add_user_meta for subsequent if multiple (rare for these keys).
 						// But here we are iterating over $vals which came from a raw DB query.
-						// To preserve the EXACT raw value (which is already serialized in DB),
+						// To preserve the EXACT raw value (which is already serialized in DB),.
 						// it's safer to use $wpdb->insert to avoid double serialization by WP meta functions.
 						$wpdb->insert(
 							$wpdb->usermeta,
@@ -1869,14 +1901,14 @@ class Backup {
 			$wpdb->query( $wpdb->prepare( "ALTER TABLE $wpdb->users AUTO_INCREMENT = %d", $max_user_id + 1 ) );
 		}
 
-		// 7. RESTORE OPTIONS
+		// 7. RESTORE OPTIONS.
 		if ( ! empty( $data['options']['dame_current_season_tag_slug'] ) ) {
 			$term = get_term_by( 'slug', $data['options']['dame_current_season_tag_slug'], 'dame_saison_adhesion' );
 			if ( $term && ! is_wp_error( $term ) ) {
 				update_option( 'dame_current_season_tag_id', $term->term_id );
 			}
 		} elseif ( ! empty( $data['options']['dame_current_season_tag_id'] ) ) {
-			// Fallback to ID if slug not found
+			// Fallback to ID if slug not found.
 			update_option( 'dame_current_season_tag_id', $data['options']['dame_current_season_tag_id'] );
 		}
 
@@ -1905,7 +1937,7 @@ class Backup {
 			'taxonomy_terms' => array(),
 		);
 
-		// Taxonomy Terms
+		// Taxonomy Terms.
 		$terms = get_terms(
 			array(
 				'taxonomy'   => 'dame_agenda_category',
@@ -1931,7 +1963,7 @@ class Backup {
 			}
 		}
 
-		// Events and Benevolat
+		// Events and Benevolat.
 		$post_types = array( 'dame_agenda', 'benevolat', 'benevolat_reponse' );
 		$query      = new WP_Query(
 			array(
@@ -1941,12 +1973,15 @@ class Backup {
 			)
 		);
 
-		// Optimisation : Pré-chargement des métadonnées
+		// Optimisation : Pré-chargement des métadonnées.
 		if ( ! empty( $query->posts ) ) {
 			update_meta_cache( 'post', wp_list_pluck( $query->posts, 'ID' ) );
 		}
 
 		foreach ( $query->posts as $post ) {
+			if ( ! $post instanceof \WP_Post ) {
+				continue;
+			}
 			$meta = array();
 			foreach ( get_post_meta( $post->ID ) as $k => $vals ) {
 				$meta[ $k ] = array_map( 'maybe_unserialize', $vals );
@@ -1971,10 +2006,10 @@ class Backup {
 			);
 		}
 
-		// Benevolat Votes
+		// Benevolat Votes.
 		global $wpdb;
 		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
-		// Benevolat Votes
+		// Benevolat Votes.
 		global $wpdb;
 		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- System backup.
@@ -2025,7 +2060,7 @@ class Backup {
 		$post_types   = array( 'dame_agenda', 'benevolat', 'benevolat_reponse' );
 		$placeholders = implode( ',', array_fill( 0, count( $post_types ), '%s' ) );
 
-		// 1. PURGE
+		// 1. PURGE.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- System restore purge.
 		$posts_to_delete = $wpdb->get_col(
 			$wpdb->prepare(
@@ -2043,17 +2078,20 @@ class Backup {
 				'fields'     => 'ids',
 			)
 		);
-		foreach ( $terms as $tid ) {
-			delete_option( "taxonomy_$tid" );
-			wp_delete_term( (int) $tid, 'dame_agenda_category' ); }
+		if ( is_array( $terms ) ) {
+			foreach ( $terms as $tid ) {
+				delete_option( "taxonomy_$tid" );
+				wp_delete_term( (int) $tid, 'dame_agenda_category' );
+			}
+		}
 		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}dame_benevolat_votes" );
 
-		// 2. RESTORE TAXONOMIES
+		// 2. RESTORE TAXONOMIES.
 		foreach ( $data['taxonomy_terms'] ?? array() as $t ) {
 			$term_id = (int) $t['term_id'];
 			$tt_id   = (int) $t['term_taxonomy_id'];
 
-			// Term check
+			// Term check.
 			if ( ! $wpdb->get_var( $wpdb->prepare( "SELECT term_id FROM $wpdb->terms WHERE term_id = %d", $term_id ) ) ) {
 				$wpdb->insert(
 					$wpdb->terms,
@@ -2075,7 +2113,7 @@ class Backup {
 				);
 			}
 
-			// Taxonomy check
+			// Taxonomy check.
 			if ( ! $wpdb->get_var( $wpdb->prepare( "SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE term_taxonomy_id = %d", $tt_id ) ) ) {
 				$wpdb->insert(
 					$wpdb->term_taxonomy,
@@ -2106,7 +2144,7 @@ class Backup {
 			}
 		}
 
-		// 3. RESTORE POSTS
+		// 3. RESTORE POSTS.
 		$max_post_id = 0;
 		foreach ( $data['posts'] ?? array() as $p ) {
 			$pid         = (int) $p['ID'];
@@ -2150,7 +2188,7 @@ class Backup {
 			}
 		}
 
-		// 4. RESTORE VOTES
+		// 4. RESTORE VOTES.
 		$votes = $data['benevolat_votes'] ?? $data['poll_votes'] ?? array();
 		foreach ( $votes as $vote ) {
 			$wpdb->insert(
@@ -2164,12 +2202,12 @@ class Backup {
 			);
 		}
 
-		// 5. REALIGN
+		// 5. REALIGN.
 		if ( $max_post_id > 0 ) {
 			$wpdb->query( $wpdb->prepare( "ALTER TABLE $wpdb->posts AUTO_INCREMENT = %d", $max_post_id + 1 ) );
 		}
 
-		// 6. TRIGGER AUTO-UPGRADE IF BACKUP IS OLD
+		// 6. TRIGGER AUTO-UPGRADE IF BACKUP IS OLD.
 		$backup_version = $data['version'] ?? '1.0.0';
 		update_option( 'dame_plugin_version', $backup_version );
 		( new \DAME\Core\Upgrader() )->check_for_updates();
@@ -2196,7 +2234,7 @@ class Backup {
 		);
 		$post_types = array( 'post', 'page', 'nav_menu_item' );
 
-		// 1. Identify and Export Taxonomies
+		// 1. Identify and Export Taxonomies.
 		$taxonomies = get_object_taxonomies( $post_types );
 		foreach ( $taxonomies as $tax ) {
 			$terms = get_terms(
@@ -2217,7 +2255,7 @@ class Backup {
 						'meta_data'        => array(),
 					);
 
-					// Export term meta
+					// Export term meta.
 					$term_meta = get_term_meta( $t->term_id );
 					if ( ! empty( $term_meta ) ) {
 						foreach ( $term_meta as $k => $v ) {
@@ -2230,7 +2268,7 @@ class Backup {
 			}
 		}
 
-		// 2. Export Posts
+		// 2. Export Posts.
 		$posts = get_posts(
 			array(
 				'post_type'      => $post_types,
@@ -2239,7 +2277,7 @@ class Backup {
 			)
 		);
 
-		// Optimisation : Pré-chargement des métadonnées
+		// Optimisation : Pré-chargement des métadonnées.
 		if ( ! empty( $posts ) ) {
 			update_meta_cache( 'post', wp_list_pluck( $posts, 'ID' ) );
 		}
@@ -2320,7 +2358,7 @@ class Backup {
 		$taxonomies   = get_object_taxonomies( $post_types );
 		$placeholders = implode( ',', array_fill( 0, count( $post_types ), '%s' ) );
 
-		// 1. PURGE EVERYTHING
+		// 1. PURGE EVERYTHING.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- System restore purge.
 		$posts_to_delete = $wpdb->get_col(
 			$wpdb->prepare(
@@ -2340,20 +2378,20 @@ class Backup {
 					'fields'     => 'ids',
 				)
 			);
-			if ( ! is_wp_error( $terms ) ) {
+			if ( ! is_wp_error( $terms ) && '' !== $tax ) {
 				foreach ( $terms as $tid ) {
 					wp_delete_term( (int) $tid, $tax );
 				}
 			}
 		}
 
-		// 2. RESTORE TAXONOMIES (Forcing IDs)
+		// 2. RESTORE TAXONOMIES (Forcing IDs).
 		foreach ( $data['taxonomy_terms'] ?? array() as $tax => $terms ) {
 			foreach ( $terms as $t ) {
 				$term_id = (int) $t['term_id'];
 				$tt_id   = (int) $t['term_taxonomy_id'];
 
-				// Term check
+				// Term check.
 				if ( ! $wpdb->get_var( $wpdb->prepare( "SELECT term_id FROM $wpdb->terms WHERE term_id = %d", $term_id ) ) ) {
 					$wpdb->insert(
 						$wpdb->terms,
@@ -2375,7 +2413,7 @@ class Backup {
 					);
 				}
 
-				// Taxonomy relation check
+				// Taxonomy relation check.
 				if ( ! $wpdb->get_var( $wpdb->prepare( "SELECT term_taxonomy_id FROM $wpdb->term_taxonomy WHERE term_taxonomy_id = %d", $tt_id ) ) ) {
 					$wpdb->insert(
 						$wpdb->term_taxonomy,
@@ -2401,7 +2439,7 @@ class Backup {
 					);
 				}
 
-				// Restore Term Meta
+				// Restore Term Meta.
 				if ( ! empty( $t['meta_data'] ) ) {
 					foreach ( $t['meta_data'] as $k => $v ) {
 						update_term_meta( $term_id, $k, $v );
@@ -2410,7 +2448,7 @@ class Backup {
 			}
 		}
 
-		// 3. RESTORE POSTS (Forcing IDs)
+		// 3. RESTORE POSTS (Forcing IDs).
 		$max_post_id = 0;
 		foreach ( $data['posts'] ?? array() as $p ) {
 			$pid         = (int) $p['ID'];
@@ -2446,25 +2484,25 @@ class Backup {
 				$wpdb->delete( $wpdb->postmeta, array( 'post_id' => $pid ) );
 			}
 
-			// Restore Meta
+			// Restore Meta.
 			foreach ( $p['meta_data'] as $k => $vals ) {
 				foreach ( $vals as $v ) {
 					add_post_meta( $pid, $k, $v, false );
 				}
 			}
 
-			// Restore Taxonomies
+			// Restore Taxonomies.
 			foreach ( $p['taxonomies'] ?? array() as $tax => $slugs ) {
 				wp_set_object_terms( $pid, $slugs, $tax );
 			}
 		}
 
-		// 4. REALIGN AUTO_INCREMENT
+		// 4. REALIGN AUTO_INCREMENT.
 		if ( $max_post_id > 0 ) {
 			$wpdb->query( $wpdb->prepare( "ALTER TABLE $wpdb->posts AUTO_INCREMENT = %d", $max_post_id + 1 ) );
 		}
 
-		// 5. TRIGGER AUTO-UPGRADE IF BACKUP IS OLD
+		// 5. TRIGGER AUTO-UPGRADE IF BACKUP IS OLD.
 		$backup_version = $data['version'] ?? '1.0.0';
 		update_option( 'dame_plugin_version', $backup_version );
 		( new \DAME\Core\Upgrader() )->check_for_updates();
@@ -2487,12 +2525,12 @@ class Backup {
 		$backup_dir = trailingslashit( $upload_dir['basedir'] ) . 'dame-backups';
 		wp_mkdir_p( $backup_dir );
 
-		// Initialize WP_Filesystem
+		// Initialize WP_Filesystem.
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		WP_Filesystem();
 		global $wp_filesystem;
 
-		// Generate files
+		// Generate files.
 		$data_adherent = $this->generate_adherent_export_data();
 		$file_adherent = trailingslashit( $backup_dir ) . 'dame-adherents-backup-' . wp_date( 'Y-m-d' ) . '.json.gz';
 		if ( $wp_filesystem ) {
@@ -2511,7 +2549,7 @@ class Backup {
 			$wp_filesystem->put_contents( $file_site, (string) gzcompress( (string) wp_json_encode( $data_site ) ) );
 		}
 
-		// Attachments
+		// Attachments.
 		$attachments = array( $file_adherent, $file_agenda, $file_site );
 		/**
 		 * Filter the attachments included in the scheduled daily backup email.
@@ -2521,7 +2559,7 @@ class Backup {
 		 */
 		$attachments = apply_filters( 'dame_scheduled_backup_attachments', $attachments, $backup_dir );
 
-		// Send Email
+		// Send Email.
 		$options = get_option( 'dame_options' );
 		$to      = $options['sender_email'] ?? get_option( 'admin_email' );
 		if ( $to ) {
@@ -2532,7 +2570,7 @@ class Backup {
 			wp_mail( $to, $subject, $body, $headers, $attachments );
 		}
 
-		// Cleanup
+		// Cleanup.
 		if ( is_array( $attachments ) ) {
 			foreach ( $attachments as $attachment_file ) {
 				if ( is_string( $attachment_file ) && file_exists( $attachment_file ) ) {

@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\Adherent;
 
 /**
@@ -28,7 +30,7 @@ class Groups {
 			'high'
 		);
 
-		// Add filter to open it by default
+		// Add filter to open it by default.
 		add_filter( 'postbox_classes_adherent_dame_group_checklist_metabox', array( $this, 'open_metabox_by_default' ) );
 	}
 
@@ -74,7 +76,7 @@ class Groups {
 			</div>
 			<?php
 			$tax_obj = get_taxonomy( $taxonomy );
-			if ( current_user_can( $tax_obj->cap->manage_terms ) ) {
+			if ( $tax_obj instanceof \WP_Taxonomy && current_user_can( $tax_obj->cap->manage_terms ) ) {
 				echo '<p style="margin-top:1em;"><a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . $taxonomy ) ) . '">' . esc_html( $tax_obj->labels->add_new_item ) . '</a></p>';
 			}
 			?>

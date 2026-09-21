@@ -22,7 +22,7 @@ class Contact {
 	public function init(): void {
 		add_action( 'init', array( $this, 'register_post_type' ), 0 );
 
-		// Hooks pour la liste d'administration (Colonnes et Filtres)
+		// Hooks pour la liste d'administration (Colonnes et Filtres).
 		if ( is_admin() ) {
 			add_filter( 'manage_dame_contact_posts_columns', array( $this, 'add_custom_columns' ) );
 			add_action( 'manage_dame_contact_posts_custom_column', array( $this, 'render_custom_columns' ), 10, 2 );
@@ -167,7 +167,7 @@ class Contact {
 			return;
 		}
 
-		// Filtre par Type de contact (Taxonomie)
+		// Filtre par Type de contact (Taxonomie).
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		$selected_type = isset( $_GET['dame_contact_type'] ) ? sanitize_key( wp_unslash( $_GET['dame_contact_type'] ) ) : '';
 		wp_dropdown_categories(
@@ -185,7 +185,7 @@ class Contact {
 			)
 		);
 
-		// Filtre par Civilité (Meta)
+		// Filtre par Civilité (Meta).
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		$selected_gender = isset( $_GET['dame_filter_gender'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_filter_gender'] ) ) : '';
 		echo '<select name="dame_filter_gender">';
@@ -195,7 +195,7 @@ class Contact {
 		echo '<option value="Non précisé" ' . selected( $selected_gender, 'Non précisé', false ) . '>' . esc_html__( 'Non précisé', 'dame' ) . '</option>';
 		echo '</select>';
 
-		// Filtre par Département (Meta)
+		// Filtre par Département (Meta).
 		$departments = Data_Provider::get_departments();
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		$selected_dept = isset( $_GET['dame_filter_dept'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_filter_dept'] ) ) : '';
@@ -211,7 +211,7 @@ class Contact {
 		}
 		echo '</select>';
 
-		// Filtre par Région (Meta)
+		// Filtre par Région (Meta).
 		$regions = Data_Provider::get_regions();
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		$selected_region = isset( $_GET['dame_filter_region'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_filter_region'] ) ) : '';
@@ -240,7 +240,7 @@ class Contact {
 
 		$meta_query = (array) $query->get( 'meta_query' );
 
-		// Filtrage Département
+		// Filtrage Département.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		if ( ! empty( $_GET['dame_filter_dept'] ) ) {
 			$meta_query[] = array(
@@ -251,7 +251,7 @@ class Contact {
 			);
 		}
 
-		// Filtrage Région
+		// Filtrage Région.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		if ( ! empty( $_GET['dame_filter_region'] ) ) {
 			$meta_query[] = array(
@@ -262,7 +262,7 @@ class Contact {
 			);
 		}
 
-		// Filtrage Civilité
+		// Filtrage Civilité.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.
 		if ( ! empty( $_GET['dame_filter_gender'] ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin list table GET query filter.

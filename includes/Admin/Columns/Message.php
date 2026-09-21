@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Admin\Columns;
 
 /**
@@ -60,7 +62,7 @@ class Message {
 								echo esc_html( get_date_from_gmt( $old_sent_date, 'd/m/Y H:i' ) );
 							}
 						} else {
-							echo esc_html( get_the_modified_date( 'd/m/Y H:i', $post_id ) );
+							echo esc_html( (string) get_the_modified_date( 'd/m/Y H:i', $post_id ) );
 						}
 					} else {
 						$processed = (int) get_post_meta( $post_id, '_dame_scheduled_batches_processed', true );

@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Metaboxes\PreInscription;
 
 use DAME\Services\Adherent_Matcher;
@@ -27,7 +29,11 @@ class Reconciliation {
 	 * Add the meta box.
 	 */
 	public function add_box(): void {
-		$matched_id = Adherent_Matcher::find_match( get_the_ID() );
+		$post_id = get_the_ID();
+		if ( ! $post_id ) {
+			return;
+		}
+		$matched_id = Adherent_Matcher::find_match( $post_id );
 		if ( $matched_id ) {
 			add_meta_box(
 				'dame_pre_inscription_reconciliation',
@@ -152,7 +158,7 @@ class Reconciliation {
 						$pre_inscription_value = get_post_meta( $pre_inscription_id, '_' . $key_suffix, true );
 						$adherent_value        = get_post_meta( $matched_id, '_' . $key_suffix, true );
 
-						// Special display formatting for certain fields
+						// Special display formatting for certain fields.
 						if ( 'dame_birth_date' === $key_suffix ) {
 							if ( $pre_inscription_value ) {
 								$date = DateTime::createFromFormat( 'Y-m-d', $pre_inscription_value );

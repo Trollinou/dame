@@ -132,12 +132,12 @@ class Document_Storage {
 
 		$dir = self::get_storage_dir();
 
-		// If already an absolute path inside our storage dir
+		// If already an absolute path inside our storage dir.
 		if ( str_starts_with( $relative_or_absolute, $dir ) ) {
 			return file_exists( $relative_or_absolute ) ? $relative_or_absolute : null;
 		}
 
-		// Strip potential folder prefixes
+		// Strip potential folder prefixes.
 		$filename  = basename( $relative_or_absolute );
 		$full_path = $dir . $filename;
 
@@ -156,7 +156,7 @@ class Document_Storage {
 			return true;
 		}
 
-		// Security: ensure path is strictly inside our storage directory
+		// Security: ensure path is strictly inside our storage directory.
 		$dir = self::get_storage_dir();
 		if ( ! str_starts_with( $path, $dir ) ) {
 			return false;

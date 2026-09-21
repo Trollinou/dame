@@ -5,6 +5,8 @@
  * @package DAME
  */
 
+declare(strict_types=1);
+
 namespace DAME\Core;
 
 use DateTime;
@@ -53,7 +55,7 @@ class Utils {
 			$g = hexdec( substr( $hexcolor, 2, 2 ) );
 			$b = hexdec( substr( $hexcolor, 4, 2 ) );
 		} else {
-			return '#000000'; // Return black for invalid hex codes
+			return '#000000'; // Return black for invalid hex codes.
 		}
 		$yiq = ( ( $r * 299 ) + ( $g * 587 ) + ( $b * 114 ) ) / 1000;
 		return ( $yiq >= 128 ) ? '#000000' : '#ffffff';
@@ -68,15 +70,15 @@ class Utils {
 	public static function hex_to_rgb( $hex_color ) {
 		$hex_color = ltrim( $hex_color, '#' );
 		if ( strlen( $hex_color ) === 3 ) {
-			$r = hexdec( $hex_color[0] . $hex_color[0] );
-			$g = hexdec( $hex_color[1] . $hex_color[1] );
-			$b = hexdec( $hex_color[2] . $hex_color[2] );
+			$r = (int) hexdec( $hex_color[0] . $hex_color[0] );
+			$g = (int) hexdec( $hex_color[1] . $hex_color[1] );
+			$b = (int) hexdec( $hex_color[2] . $hex_color[2] );
 		} elseif ( strlen( $hex_color ) === 6 ) {
-			$r = hexdec( substr( $hex_color, 0, 2 ) );
-			$g = hexdec( substr( $hex_color, 2, 2 ) );
-			$b = hexdec( substr( $hex_color, 4, 2 ) );
+			$r = (int) hexdec( substr( $hex_color, 0, 2 ) );
+			$g = (int) hexdec( substr( $hex_color, 2, 2 ) );
+			$b = (int) hexdec( substr( $hex_color, 4, 2 ) );
 		} else {
-			return null; // Invalid format
+			return null; // Invalid format.
 		}
 		return array(
 			'r' => $r,
@@ -98,10 +100,10 @@ class Utils {
 			return '#000000'; // Default to black for invalid colors.
 		}
 
-		// Calculate luminance
+		// Calculate luminance.
 		$luminance = ( 0.2126 * $rgb['r'] + 0.7152 * $rgb['g'] + 0.0722 * $rgb['b'] ) / 255;
 
-		// Use a threshold of 0.5 to decide text color
+		// Use a threshold of 0.5 to decide text color.
 		return $luminance > 0.5 ? '#000000' : '#ffffff';
 	}
 
@@ -116,7 +118,7 @@ class Utils {
 		$rgb = self::hex_to_rgb( $hex_color );
 
 		if ( ! $rgb ) {
-			return $hex_color; // Return original color if invalid
+			return $hex_color; // Return original color if invalid.
 		}
 
 		$new_r = round( $rgb['r'] + ( 255 - $rgb['r'] ) * $percentage );
@@ -313,7 +315,7 @@ class Utils {
 			),
 		);
 
-		// Remove 'f' from category key for age map lookup
+		// Remove 'f' from category key for age map lookup.
 		$age_key = rtrim( $category_key, 'f' );
 
 		if ( ! isset( $age_map[ $age_key ] ) ) {
@@ -371,7 +373,7 @@ class Utils {
 					),
 				);
 
-				// Clause 1: Seasons
+				// Clause 1: Seasons.
 				if ( ! empty( $seasons ) ) {
 					$query_args['tax_query'][] = array(
 						'taxonomy' => 'dame_saison_adhesion',
@@ -381,7 +383,7 @@ class Utils {
 					);
 				}
 
-				// Clause 2: Groups (Merge both types)
+				// Clause 2: Groups (Merge both types).
 				$all_groups = array_merge(
 					is_array( $saisonnier_groups ) ? $saisonnier_groups : array(),
 					is_array( $permanent_groups ) ? $permanent_groups : array()
@@ -396,7 +398,7 @@ class Utils {
 					);
 				}
 
-				// Meta Query for Gender (Intersection)
+				// Meta Query for Gender (Intersection).
 				if ( ! empty( $recipient_gender ) && 'all' !== $recipient_gender ) {
 					$query_args['meta_query'][] = array(
 						'key'   => '_dame_sexe',
@@ -416,7 +418,7 @@ class Utils {
 			foreach ( $adherent_ids as $adherent_id ) {
 				$adherent_id = absint( $adherent_id );
 
-				// Prioritize legal representatives' emails and names
+				// Prioritize legal representatives' emails and names.
 				for ( $i = 1; $i <= 2; $i++ ) {
 					$rep_email         = get_post_meta( $adherent_id, "_dame_legal_rep_{$i}_email", true );
 					$rep_refuses_comms = get_post_meta( $adherent_id, "_dame_legal_rep_{$i}_email_refuses_comms", true );
@@ -430,7 +432,7 @@ class Utils {
 					}
 				}
 
-				// Add adherent's email if not already present
+				// Add adherent's email if not already present.
 				$member_email         = get_post_meta( $adherent_id, '_dame_email', true );
 				$member_refuses_comms = get_post_meta( $adherent_id, '_dame_email_refuses_comms', true );
 
@@ -539,14 +541,14 @@ class Utils {
 			return $licenses;
 		}
 
-		// 1. Match FFE license pattern (1 letter + 5 digits, e.g. W55619, K68043)
+		// 1. Match FFE license pattern (1 letter + 5 digits, e.g. W55619, K68043).
 		if ( preg_match_all( '/\b([A-Za-z]\d{5})\b/u', $text, $matches_ffe ) ) {
 			foreach ( $matches_ffe[1] as $ffe_code ) {
 				$licenses[] = mb_strtoupper( trim( $ffe_code ), 'UTF-8' );
 			}
 		}
 
-		// 2. Match FIDE / numeric license pattern (6 to 9 consecutive digits, e.g. 652009327)
+		// 2. Match FIDE / numeric license pattern (6 to 9 consecutive digits, e.g. 652009327).
 		if ( preg_match_all( '/\b(\d{6,9})\b/u', $text, $matches_fide ) ) {
 			foreach ( $matches_fide[1] as $fide_code ) {
 				$licenses[] = trim( $fide_code );

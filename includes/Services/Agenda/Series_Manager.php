@@ -59,9 +59,8 @@ class Series_Manager {
 			)
 		);
 
-		/** @var array<int> $ids */
-		$ids = $query->posts;
-		return $ids;
+		$raw_ids = is_array( $query->posts ) ? $query->posts : array();
+		return array_values( array_map( static fn( $p ) => is_numeric( $p ) ? (int) $p : ( $p instanceof \WP_Post ? $p->ID : 0 ), $raw_ids ) );
 	}
 
 	/**
@@ -110,7 +109,7 @@ class Series_Manager {
 			}
 
 			if ( false !== $res && null !== $res ) {
-				$deleted_count++;
+				++$deleted_count;
 			}
 		}
 
@@ -136,7 +135,7 @@ class Series_Manager {
 			}
 
 			if ( false !== $res && null !== $res ) {
-				$deleted_count++;
+				++$deleted_count;
 			}
 		}
 

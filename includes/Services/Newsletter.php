@@ -50,7 +50,7 @@ class Newsletter {
 		$options      = get_option( 'dame_options', array() );
 		$contact_type = isset( $options['newsletter_contact_type'] ) ? absint( $options['newsletter_contact_type'] ) : 0;
 
-		// 1. Check if email is already in adherents or legal representatives
+		// 1. Check if email is already in adherents or legal representatives.
 		$adherent_id = $this->find_adherent_by_email( $email );
 		if ( $adherent_id > 0 ) {
 			return array(
@@ -59,7 +59,7 @@ class Newsletter {
 			);
 		}
 
-		// 2. Check if contact already exists and is already in the newsletter group
+		// 2. Check if contact already exists and is already in the newsletter group.
 		if ( $contact_type > 0 && $this->is_contact_subscribed( $email, $contact_type ) ) {
 			return array(
 				'success' => true,
@@ -147,7 +147,8 @@ class Newsletter {
 		);
 
 		if ( ! empty( $query->posts ) ) {
-			return (int) $query->posts[0];
+			$post = $query->posts[0];
+			return $post instanceof \WP_Post ? $post->ID : (int) $post;
 		}
 
 		return 0;
@@ -192,7 +193,8 @@ class Newsletter {
 
 		$query = new WP_Query( $args );
 		if ( ! empty( $query->posts ) ) {
-			$contact_id = (int) $query->posts[0];
+			$post       = $query->posts[0];
+			$contact_id = $post instanceof \WP_Post ? $post->ID : (int) $post;
 			$no_emails  = get_post_meta( $contact_id, '_dame_contact_no_emails', true );
 			return '1' !== $no_emails;
 		}
@@ -299,7 +301,8 @@ class Newsletter {
 
 		$post_id = 0;
 		if ( ! empty( $existing->posts ) ) {
-			$post_id = absint( $existing->posts[0] );
+			$post    = $existing->posts[0];
+			$post_id = $post instanceof \WP_Post ? $post->ID : (int) $post;
 
 			$curr_fn = (string) get_post_meta( $post_id, '_dame_contact_first_name', true );
 			$curr_ln = (string) get_post_meta( $post_id, '_dame_contact_last_name', true );
@@ -399,7 +402,7 @@ class Newsletter {
 		$options = get_option( 'dame_options', array() );
 
 		if ( 'success' === $status ) {
-			$msg = ! empty( $options['newsletter_success_message'] )
+			$msg   = ! empty( $options['newsletter_success_message'] )
 				? (string) $options['newsletter_success_message']
 				: __( 'Votre inscription à la newsletter a bien été confirmée. Merci !', 'dame' );
 			$class = 'dame-nl-notice--success';
