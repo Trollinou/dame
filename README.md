@@ -71,6 +71,7 @@ Chaque fiche membre centralise :
 *   **Calendrier Interactif :** Gestion des événements, compétitions et entraînements.
 *   **Assignation des Participants :** Sélection rapide des adhérents participants avec tri automatique des membres sélectionnés en haut de liste et champ de recherche instantané insensible à la casse et aux accents (Unicode NFD).
 *   **Flux ICS Magiques :** Abonnement direct sur iPhone, Android ou Mac avec gestion intelligente des fuseaux horaires (plus de décalage été/hiver).
+*   **Export Excel / CSV :** Export complet des événements au format Excel Français (séparateur `;`, UTF-8 BOM, formats de dates/nombres adaptés) avec prise en compte des filtres actifs (catégorie, période).
 
 ### Préinscriptions en Ligne
 *   **Zéro Saisie Manuelle :** Formulaire public générant des fiches de préinscription.
@@ -82,7 +83,7 @@ Chaque fiche membre centralise :
 *   **FIDE ID :** Récupération automatique des identifiants FIDE manquants via scraping sécurisé.
 
 ## Portabilité & Sauvegarde
-*   **Exports CSV :** Formats optimisés pour les imports fédéraux (FFE) ou le secrétariat.
+*   **Exports CSV :** Formats optimisés pour les imports fédéraux (FFE), le secrétariat, les adhérents, les contacts et l'agenda des événements.
 *   **Sauvegardes JSON compressées :** Sauvegardes journalières automatiques par email couvrant les Adhérents, l'Agenda et le Contenu du site (Articles, Pages, Menus). Le système force la restauration des IDs originaux pour préserver parfaitement les relations, les liens de menus et la hiérarchie des pages.
 
 ## Dépendances

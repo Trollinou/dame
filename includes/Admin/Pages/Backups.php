@@ -151,11 +151,22 @@ endif;
 			<div class="dame-backup-restore-wrapper" style="display:flex; gap: 20px;">
 				<div class="dame-backup-section" style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
 					<h3><?php esc_html_e( "Sauvegarder les données de l'agenda", 'dame' ); ?></h3>
-					<form method="post" action="">
-						<?php wp_nonce_field( 'dame_agenda_backup_nonce_action', 'dame_agenda_backup_nonce' ); ?>
-						<input type="hidden" name="dame_agenda_backup_action" value="1">
-						<?php submit_button( __( "Télécharger la sauvegarde de l'agenda (.json.gz)", 'dame' ), 'primary', 'submit', false ); ?>
-					</form>
+					<div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+						<h4><?php esc_html_e( 'Sauvegarde complète (.json.gz)', 'dame' ); ?></h4>
+						<form method="post" action="">
+							<?php wp_nonce_field( 'dame_agenda_backup_nonce_action', 'dame_agenda_backup_nonce' ); ?>
+							<input type="hidden" name="dame_agenda_backup_action" value="1">
+							<?php submit_button( __( "Télécharger la sauvegarde de l'agenda (.json.gz)", 'dame' ), 'primary', 'submit', false ); ?>
+						</form>
+					</div>
+					<div>
+						<h4><?php esc_html_e( 'Exporter les événements (CSV)', 'dame' ); ?></h4>
+						<form method="post" action="">
+							<?php wp_nonce_field( 'dame_export_agenda_csv_post_nonce_action', 'dame_export_agenda_csv_post_nonce' ); ?>
+							<input type="hidden" name="dame_export_agenda_csv_post_action" value="1">
+							<?php submit_button( __( 'Exporter les événements (CSV)', 'dame' ), 'secondary', 'submit', false ); ?>
+						</form>
+					</div>
 				</div>
 
 				<div class="dame-restore-section" style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04); border-left: 4px solid #dc3232;">

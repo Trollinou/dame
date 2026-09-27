@@ -41,6 +41,17 @@ Lors de la création d'un nouvel événement (`DAME > Agenda > Ajouter un évén
 6. **Suppression de série :**
    - En éditant un événement appartenant à une série, vous disposez d'un bouton **« Supprimer cet événement et les suivants »** (si déclenché sur le 1er événement, supprime toute la série ; si déclenché en cours d'année, supprime les séances restantes en conservant l'historique des séances passées).
 
+### e. Export des événements au format Excel (CSV)
+Vous pouvez exporter les données complètes de vos événements sous forme de fichier tableur directement ouvrable dans Microsoft Excel :
+1. **Depuis la liste des événements (`DAME > Agenda`) :**
+   - Utilisez les filtres de catégories et de période (mois/année début à fin) selon vos besoins.
+   - Cliquez sur le bouton **« Exporter (Excel) »** situé dans la barre de filtres. Le fichier CSV généré respecte automatiquement les filtres appliqués à l'écran.
+2. **Depuis l'écran Sauvegardes (`DAME > Sauvegardes et Restaurations`) :**
+   - Dans le bloc **Agenda**, cliquez sur **« Exporter les événements (CSV) »** pour obtenir l'intégralité des événements du club.
+3. **Format et données incluses :**
+   - Fichier encodé en UTF-8 avec BOM et séparateur point-virgule (`;`) pour une compatibilité native Excel.
+   - Inclus toutes les informations utiles : dates et horaires formatés en français, coordonnées et adresse du lieu, type/niveau de compétition, distance calculée, description sans balises HTML, nombre et liste détaillée des participants.
+
 
 ## 3. Appels à Bénévoles (Bénévolat)
 

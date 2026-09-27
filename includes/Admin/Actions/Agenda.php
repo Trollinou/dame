@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace DAME\Admin\Actions;
 
+use DAME\Services\Agenda\Export as AgendaExport;
+
 /**
  * Class Agenda
  * Manages custom actions for the Agenda CPT.
@@ -20,6 +22,28 @@ class Agenda {
 	 */
 	public function init(): void {
 		add_action( 'admin_action_dame_duplicate_event', array( $this, 'duplicate_event' ) );
+		add_action( 'admin_action_dame_export_agenda_csv', array( $this, 'export_csv' ) );
+	}
+
+	/**
+	 * Handles the event CSV export action.
+	 */
+	public function export_csv(): void {
+		if ( ! isset( $_GET['dame_export_agenda_csv_nonce'] ) ) {
+			wp_die( esc_html__( 'Jeton de sécurité manquant.', 'dame' ) );
+		}
+
+		$nonce = sanitize_key( wp_unslash( $_GET['dame_export_agenda_csv_nonce'] ) );
+		if ( ! wp_verify_nonce( $nonce, 'dame_export_agenda_csv_action' ) ) {
+			wp_die( esc_html__( 'La vérification de sécurité a échoué.', 'dame' ) );
+		}
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_die( esc_html__( 'Vous n\'avez pas les permissions requises pour exporter les événements.', 'dame' ) );
+		}
+
+		$export_service = new AgendaExport();
+		$export_service->export_csv( $_GET );
 	}
 
 	/**

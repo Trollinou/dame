@@ -91,6 +91,11 @@ class Backup {
 			$this->export_json_agenda();
 		}
 
+		// 5b. Export CSV Agenda.
+		if ( isset( $_POST['dame_export_agenda_csv_post_action'], $_POST['dame_export_agenda_csv_post_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_export_agenda_csv_post_nonce'] ) ), 'dame_export_agenda_csv_post_nonce_action' ) ) {
+			( new \DAME\Services\Agenda\Export() )->export_csv();
+		}
+
 		// 6. Import JSON Agenda.
 		if ( isset( $_POST['dame_agenda_restore_action'], $_POST['dame_agenda_restore_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['dame_agenda_restore_nonce'] ) ), 'dame_agenda_restore_nonce_action' ) ) {
 			$this->import_json_agenda();

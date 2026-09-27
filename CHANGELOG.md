@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Agenda & Événements
+- **Export des événements au format Excel Français (`DAME\Services\Agenda\Export`)** :
+  - **Format Excel Français** : Génération de fichiers CSV compatibles Microsoft Excel avec encodage UTF-8 et BOM (`\xEF\xBB\xBF`), séparateur point-virgule (`;`), formatage des dates (`JJ/MM/AAAA`), des heures (`HH:MM`) et des décimales avec virgule (distances kilométriques).
+  - **Sécurité anti-injection de formules** : Neutralisation systématique des cellules débutant par des caractères de commande (`=`, `+`, `-`, `@`).
+  - **Données complètes exportées** : ID, Titre, Statut, Catégories, Date et heure de début/fin, Journée entière, Type et niveau de compétition, Intitulé et adresse complète du lieu (avec code postal et ville), Coordonnées GPS (Latitude/Longitude), Distance (km) et temps de trajet, Description nettoyée de balises HTML, Nombre et noms des participants inscrits, Indicateur de série récurrente et Auteur.
+  - **Export dynamique depuis la liste d'administration (`includes/Admin/ListTables/Agenda.php`, `includes/Admin/Actions/Agenda.php`)** : Bouton « Exporter (Excel) » intégré à la barre d'outils et de filtres avec prise en compte instantanée des critères de sélection actifs (catégorie, plage mensuelle début et fin).
+  - **Export global depuis la page Sauvegardes (`includes/Admin/Pages/Backups.php`, `includes/Services/Backup.php`)** : Ajout du formulaire d'export CSV dans la section Agenda.
+
 ### Préinscriptions & Adhésions
 - **Calcul automatique des champs Département et Région (`_dame_department`, `_dame_region`)** :
   - **Validation & Basculement (`includes/Metaboxes/PreInscription/Actions.php`)** : Lors du basculement d'une préinscription en adhésion (création ou mise à jour), les champs département et région sont désormais automatiquement calculés et enregistrés sur la fiche adhérent à partir du code postal.

@@ -254,6 +254,24 @@ class Agenda {
 			<?php endforeach; ?>
 		</select>
 		<?php
+		$export_url = add_query_arg(
+			array(
+				'action'                       => 'dame_export_agenda_csv',
+				'dame_agenda_category'         => $selected_category,
+				'dame_start_month'             => $start_month,
+				'dame_start_year'              => $start_year,
+				'dame_end_month'               => $end_month,
+				'dame_end_year'                => $end_year,
+				'dame_export_agenda_csv_nonce' => wp_create_nonce( 'dame_export_agenda_csv_action' ),
+			),
+			admin_url( 'admin.php' )
+		);
+		?>
+		<a href="<?php echo esc_url( $export_url ); ?>" class="button button-secondary" style="margin-left: 4px; display: inline-flex; align-items: center; gap: 4px;" title="<?php esc_attr_e( 'Exporter les événements au format Excel (CSV)', 'dame' ); ?>">
+			<span class="dashicons dashicons-download" style="font-size: 16px; width: 16px; height: 16px; line-height: 16px;"></span>
+			<span><?php esc_html_e( 'Exporter (Excel)', 'dame' ); ?></span>
+		</a>
+		<?php
 	}
 
 	/**
