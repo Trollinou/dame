@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DAME\Metaboxes\PreInscription;
 
 use DAME\Services\Adherent_Matcher;
+use DAME\Services\Data_Provider;
 use DAME\Services\Document_Storage;
 
 /**
@@ -172,6 +173,29 @@ class Actions {
 
 					if ( isset( $adherent_meta['_dame_signature_date'] ) && $season_suffix ) {
 						$adherent_meta[ '_dame_signature_date' . $season_suffix ] = $adherent_meta['_dame_signature_date'];
+					}
+
+					// Recalculate department and region based on postal code.
+					$matched_adherent_id = isset( $_POST['dame_matched_adherent_id'] ) ? absint( $_POST['dame_matched_adherent_id'] ) : 0;
+					$postal_code         = isset( $adherent_meta['_dame_postal_code'] ) ? (string) $adherent_meta['_dame_postal_code'] : '';
+					if ( empty( $postal_code ) && $matched_adherent_id > 0 ) {
+						$postal_code = (string) get_post_meta( $matched_adherent_id, '_dame_postal_code', true );
+					}
+
+					if ( ! empty( $postal_code ) ) {
+						$dept_code = Data_Provider::get_department_from_postal_code( $postal_code );
+						if ( $dept_code ) {
+							$adherent_meta['_dame_department'] = $dept_code;
+							$region_code                       = Data_Provider::get_region_for_department( $dept_code );
+							if ( $region_code ) {
+								$adherent_meta['_dame_region'] = $region_code;
+							}
+						}
+					} elseif ( ! empty( $adherent_meta['_dame_department'] ) && empty( $adherent_meta['_dame_region'] ) ) {
+						$region_code = Data_Provider::get_region_for_department( (string) $adherent_meta['_dame_department'] );
+						if ( $region_code ) {
+							$adherent_meta['_dame_region'] = $region_code;
+						}
 					}
 
 					$post_title       = get_the_title( $post_id );

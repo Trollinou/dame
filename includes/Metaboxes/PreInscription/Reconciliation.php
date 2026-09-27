@@ -107,7 +107,6 @@ class Reconciliation {
 			),
 		);
 		?>
-		?>
 		<p>
 		<?php
 			echo wp_kses(

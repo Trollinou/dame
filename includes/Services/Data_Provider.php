@@ -342,6 +342,62 @@ class Data_Provider {
 	}
 
 	/**
+	 * Extracts the French department code from a postal code.
+	 *
+	 * @param string $postal_code The postal code.
+	 * @return string|null The 2 or 3 character department code, or null if not resolved.
+	 */
+	public static function get_department_from_postal_code( string $postal_code ): ?string {
+		$postal_code = trim( $postal_code );
+		if ( strlen( $postal_code ) < 2 ) {
+			return null;
+		}
+
+		$dept_code = substr( $postal_code, 0, 2 );
+		if ( strlen( $postal_code ) >= 3 ) {
+			if ( strpos( $postal_code, '20' ) === 0 ) {
+				$dept_code = ( (int) substr( $postal_code, 2, 1 ) <= 1 ) ? '2A' : '2B';
+			} elseif ( strpos( $postal_code, '97' ) === 0 || strpos( $postal_code, '988' ) === 0 ) {
+				$dept_code = substr( $postal_code, 0, 3 );
+			} elseif ( strpos( $postal_code, '980' ) === 0 ) {
+				$dept_code = '06';
+			}
+		}
+
+		$departments = self::get_departments();
+		if ( isset( $departments[ $dept_code ] ) ) {
+			return (string) $dept_code;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the region code associated with a department code.
+	 *
+	 * @param string $department_code The department code.
+	 * @return string|null The region code, or null if not found.
+	 */
+	public static function get_region_for_department( string $department_code ): ?string {
+		$mapping = self::get_department_region_mapping();
+		return $mapping[ $department_code ] ?? null;
+	}
+
+	/**
+	 * Returns the region code associated with a postal code.
+	 *
+	 * @param string $postal_code The postal code.
+	 * @return string|null The region code, or null if not found.
+	 */
+	public static function get_region_from_postal_code( string $postal_code ): ?string {
+		$dept_code = self::get_department_from_postal_code( $postal_code );
+		if ( ! $dept_code ) {
+			return null;
+		}
+		return self::get_region_for_department( $dept_code );
+	}
+
+	/**
 	 * Returns a list of French school academies.
 	 *
 	 * @return array<string, string>

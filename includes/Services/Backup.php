@@ -380,19 +380,13 @@ class Backup {
 				update_post_meta( $post_id, '_dame_contact_city', $city );
 
 				// Enrichment: Dept & Region.
-				$dept_code = substr( $postcode, 0, 2 );
-				if ( strlen( $postcode ) >= 3 ) {
-					if ( strpos( $postcode, '20' ) === 0 ) {
-						$dept_code = (int) substr( $postcode, 2, 1 ) <= 1 ? '2A' : '2B';
-					} elseif ( strpos( $postcode, '97' ) === 0 || strpos( $postcode, '988' ) === 0 ) {
-						$dept_code = substr( $postcode, 0, 3 );
-					} elseif ( strpos( $postcode, '980' ) === 0 ) {
-						$dept_code = '06';
+				$dept_code = Data_Provider::get_department_from_postal_code( $postcode );
+				if ( $dept_code ) {
+					update_post_meta( $post_id, '_dame_contact_department', $dept_code );
+					$region_code = Data_Provider::get_region_for_department( $dept_code );
+					if ( $region_code ) {
+						update_post_meta( $post_id, '_dame_contact_region', $region_code );
 					}
-				}
-				update_post_meta( $post_id, '_dame_contact_department', $dept_code );
-				if ( isset( $dept_mapping[ $dept_code ] ) ) {
-					update_post_meta( $post_id, '_dame_contact_region', $dept_mapping[ $dept_code ] );
 				}
 
 				// Assign Taxonomy.
@@ -1417,21 +1411,14 @@ class Backup {
 				if ( ! empty( $postal_code ) ) {
 					update_post_meta( $post_id, '_dame_country', 'FR' );
 
-					$department_code = substr( $postal_code, 0, 2 );
-					if ( strlen( $postal_code ) >= 3 ) {
-						if ( strpos( $postal_code, '20' ) === 0 ) {
-							$department_code = intval( substr( $postal_code, 2, 1 ) ) <= 1 ? '2A' : '2B';
-						} elseif ( strpos( $postal_code, '97' ) === 0 || strpos( $postal_code, '988' ) === 0 ) {
-							$department_code = substr( $postal_code, 0, 3 );
-						} elseif ( strpos( $postal_code, '980' ) === 0 ) {
-							$department_code = '06';
+					$department_code = Data_Provider::get_department_from_postal_code( $postal_code );
+					if ( $department_code ) {
+						update_post_meta( $post_id, '_dame_department', $department_code );
+
+						$region_code = Data_Provider::get_region_for_department( $department_code );
+						if ( $region_code ) {
+							update_post_meta( $post_id, '_dame_region', $region_code );
 						}
-					}
-
-					update_post_meta( $post_id, '_dame_department', $department_code );
-
-					if ( isset( $department_region_mapping[ $department_code ] ) ) {
-						update_post_meta( $post_id, '_dame_region', $department_region_mapping[ $department_code ] );
 					}
 				}
 

@@ -740,6 +740,24 @@ class PreInscription {
 			$meta_insert_placeholders[] = '(%d, %s, %s)';
 		}
 
+		if ( ! empty( $sanitized_data['dame_postal_code'] ) ) {
+			$dept_code = Data_Provider::get_department_from_postal_code( (string) $sanitized_data['dame_postal_code'] );
+			if ( $dept_code ) {
+				$meta_insert_values[]       = $post_id;
+				$meta_insert_values[]       = '_dame_department';
+				$meta_insert_values[]       = $dept_code;
+				$meta_insert_placeholders[] = '(%d, %s, %s)';
+
+				$region_code = Data_Provider::get_region_for_department( $dept_code );
+				if ( $region_code ) {
+					$meta_insert_values[]       = $post_id;
+					$meta_insert_values[]       = '_dame_region';
+					$meta_insert_values[]       = $region_code;
+					$meta_insert_placeholders[] = '(%d, %s, %s)';
+				}
+			}
+		}
+
 		if ( ! $adherent_id && $existing_post ) {
 			$existing_adh_id = (int) get_post_meta( $existing_post->ID, '_dame_adherent_id', true );
 			if ( $existing_adh_id > 0 ) {

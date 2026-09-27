@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Préinscriptions & Adhésions
+- **Calcul automatique des champs Département et Région (`_dame_department`, `_dame_region`)** :
+  - **Validation & Basculement (`includes/Metaboxes/PreInscription/Actions.php`)** : Lors du basculement d'une préinscription en adhésion (création ou mise à jour), les champs département et région sont désormais automatiquement calculés et enregistrés sur la fiche adhérent à partir du code postal.
+  - **Helpers centralisés (`includes/Services/Data_Provider.php`)** : Ajout des méthodes `get_department_from_postal_code()`, `get_region_for_department()` et `get_region_from_postal_code()` pour résoudre les codes départements (avec prise en charge des spécificités 2A/2B pour la Corse, 97X/988 pour l'Outre-mer et 06 pour Monaco) et leurs régions associées.
+  - **Enregistrement & API REST (`includes/API/REST/PreInscription.php`, `includes/Metaboxes/PreInscription/Details.php`)** : Enrichissement automatique des métadonnées de préinscription dès la soumission via l'API REST ou l'enregistrement dans le back-office.
+  - **Refactorisation des imports (`includes/Services/Backup.php`)** : Réutilisation des helpers `Data_Provider` pour l'enrichissement des contacts et adhérents importés via CSV.
+  - **Nettoyage (`includes/Metaboxes/PreInscription/Reconciliation.php`)** : Suppression d'une balise fermante PHP superflue.
+
 ### Migration WordPress 7.1 & Qualité PHP 8.4 Strict
 - **Passage aux Prérequis WordPress 7.1 & PHP 8.4 Strict (`dame.php`, `phpcs.xml`, `phpstan.neon`)** :
   - Rehaussement du prérequis WordPress à la version 7.1 (`Requires at least: 7.1` et `minimum_wp_version: 7.1`).

@@ -463,5 +463,17 @@ class Details {
 				update_post_meta( $post_id, '_' . $key, $value );
 			}
 		}
+
+		if ( isset( $_POST['dame_postal_code'] ) ) {
+			$postal_code = sanitize_text_field( wp_unslash( $_POST['dame_postal_code'] ) );
+			$dept_code   = Data_Provider::get_department_from_postal_code( $postal_code );
+			if ( $dept_code ) {
+				update_post_meta( $post_id, '_dame_department', $dept_code );
+				$region_code = Data_Provider::get_region_for_department( $dept_code );
+				if ( $region_code ) {
+					update_post_meta( $post_id, '_dame_region', $region_code );
+				}
+			}
+		}
 	}
 }
