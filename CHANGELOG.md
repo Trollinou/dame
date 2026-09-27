@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.5.0] - 2026-09-27
+
 ### Agenda & Événements
 - **Export des événements au format Excel Français (`DAME\Services\Agenda\Export`)** :
   - **Format Excel Français** : Génération de fichiers CSV compatibles Microsoft Excel avec encodage UTF-8 et BOM (`\xEF\xBB\xBF`), séparateur point-virgule (`;`), formatage des dates (`JJ/MM/AAAA`), des heures (`HH:MM`) et des décimales avec virgule (distances kilométriques).
