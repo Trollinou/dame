@@ -198,3 +198,9 @@ Le shortcode `[dame_fiche_inscription]` permet aux futurs adhérents de saisir l
    - **Lors de la validation :** Les documents signés de la préinscription sont physiquement dupliqués sous un nom dédié à l'adhérent et à la saison en cours (`_dame_doc_health_attestation_path_{season_id}`).
    - **Nettoyage automatique de la préinscription :** La préinscription d'origine est ensuite supprimée avec ses fichiers temporaires initiaux, laissant l'adhérent avec ses propres documents autonomes et pérennes.
    - Si une préinscription sans suite est supprimée manuellement par l'administrateur, ses documents associés sont automatiquement détruits du serveur (conformité RGPD).
+5. **Confirmation automatique par courriel & Pièces jointes :**
+   - Dès la soumission (sur le site WordPress via le shortcode ou via l'application PWA), un e-mail de confirmation est expédié à l'adhérent et à ses représentants légaux.
+   - L'e-mail intègre les balises de personnalisation (`[NOM]`, `[PRENOM]`, `[CIVILITE]`), le lien de paiement HelloAsso configuré et rappelle que l'adhésion sera traitée dès réception du règlement.
+   - La copie des documents signés (attestation de santé, autorisation parentale) est jointe automatiquement au courriel.
+   - Les envois sont pris en charge par la file d'attente régulée FIFO (`BatchSender`) pour respecter le quota horaire/minute sans blocage SMTP.
+

@@ -20,6 +20,7 @@ use DAME\Services\PDF_Generator;
 use DAME\Core\Utils;
 use DAME\Services\Data_Provider;
 use DAME\Services\Document_Storage;
+use DAME\Services\PreInscription_Mailer;
 
 /**
  * Class PreInscription
@@ -859,6 +860,9 @@ class PreInscription {
 		}
 		$headers = array( 'From: ' . $recipient_email );
 		wp_mail( $recipient_email, $subject, $body, $headers );
+
+		// Send Confirmation Email to Adherent and Legal Representatives with signed PDFs.
+		PreInscription_Mailer::send_adherent_confirmation( $post_id, $sanitized_data, $is_update );
 
 		$payment_url  = isset( $options['payment_url'] ) ? $options['payment_url'] : '';
 		$sender_email = isset( $options['sender_email'] ) && ! empty( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );

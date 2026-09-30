@@ -11,6 +11,7 @@ namespace DAME\Shortcodes;
 
 use DateTime;
 use DAME\Services\Data_Provider;
+use DAME\Services\PreInscription_Mailer;
 
 /**
  * Class RegistrationForm
@@ -574,6 +575,9 @@ class RegistrationForm {
 		$headers = array( 'From: ' . $recipient_email );
 
 		wp_mail( $recipient_email, $subject, $body, $headers );
+
+		// Send Confirmation Email to Adherent and Legal Representatives with signed PDFs.
+		PreInscription_Mailer::send_adherent_confirmation( $post_id, $sanitized_data );
 
 		// 7. Return Success Message.
 		$options      = get_option( 'dame_options' );

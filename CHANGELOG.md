@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Préinscriptions & Notifications par Courriel
+- **Confirmation par e-mail avec pièces jointes signées et régulation FIFO (`DAME\Services\PreInscription_Mailer`, `DAME\Services\BatchSender`, `includes/API/REST/PreInscription.php`, `includes/Shortcodes/RegistrationForm.php`, `DAME\CPT\Message`)** :
+  - **Accusé de réception automatique** : Envoi d'un courriel de confirmation aux adresses e-mails de l'adhérent et de ses représentants légaux (dédoublonnage automatique) lors de la soumission d'une préinscription (nouvelle ou mise à jour), que celle-ci provienne de l'API REST (PWA) ou du shortcode Web `[dame_fiche_inscription]`.
+  - **Pièces jointes sécurisées** : Rattachement automatique de la copie des documents PDF complétés et signés électroniquement (attestation de santé FFE et/ou autorisation parentale).
+  - **Régulation et file d'attente FIFO** : Injection des courriels de confirmation dans la file d'attente globale de `BatchSender` (`wp_dame_message_opens`) respectant le quota de cadence d'envois par minute (`smtp_batch_size`) avec exécution d'arrière-plan immédiate via WP-Cron (`dame_cron_process_queue`).
+  - **Personnalisation standardisée** : Application des balises `[NOM]`, `[PRENOM]`, `[CIVILITE]` et `[AGE]` dans le sujet et le corps du message.
+  - **Isolation d'administration (`DAME\CPT\Message`)** : Filtrage automatique sur `pre_get_posts` pour masquer ces messages transactionnels automatisés de la liste d'administration des messages de publipostage.
+
 ## [5.5.0] - 2026-09-27
 
 ### Agenda & Événements

@@ -103,7 +103,17 @@ class BatchSender {
 				"From: {$from_name} <{$from_email}>",
 			);
 			$attachment  = get_post_meta( $mid, '_dame_message_attachment', true );
-			$attachments = ! empty( $attachment ) ? array( $attachment ) : array();
+			$attachments = ! empty( $attachment ) && is_string( $attachment ) && file_exists( $attachment ) ? array( $attachment ) : array();
+
+			// Also support multiple attachments via _dame_message_attachments array.
+			$multi_attachments = get_post_meta( $mid, '_dame_message_attachments', true );
+			if ( ! empty( $multi_attachments ) && is_array( $multi_attachments ) ) {
+				foreach ( $multi_attachments as $att_path ) {
+					if ( is_string( $att_path ) && file_exists( $att_path ) && ! in_array( $att_path, $attachments, true ) ) {
+						$attachments[] = $att_path;
+					}
+				}
+			}
 
 			foreach ( $rows as $row ) {
 				$email = $row['recipient_email'];
@@ -117,7 +127,7 @@ class BatchSender {
 				$age    = '';
 
 				$type = get_post_type( $rid );
-				if ( 'adherent' === $type ) {
+				if ( 'adherent' === $type || 'dame_pre_inscription' === $type ) {
 					// Check if email matches adherent or one of their reps.
 					$adherent_email = get_post_meta( $rid, '_dame_email', true );
 					if ( strtolower( trim( (string) $adherent_email ) ) === strtolower( trim( (string) $email ) ) ) {
@@ -264,6 +274,15 @@ class BatchSender {
 		$attachment_path = get_post_meta( $message_id, '_dame_message_attachment', true );
 		if ( ! empty( $attachment_path ) && is_string( $attachment_path ) && file_exists( $attachment_path ) ) {
 			$attachments[] = $attachment_path;
+		}
+
+		$multi_attachments = get_post_meta( $message_id, '_dame_message_attachments', true );
+		if ( ! empty( $multi_attachments ) && is_array( $multi_attachments ) ) {
+			foreach ( $multi_attachments as $att_path ) {
+				if ( is_string( $att_path ) && file_exists( $att_path ) && ! in_array( $att_path, $attachments, true ) ) {
+					$attachments[] = $att_path;
+				}
+			}
 		}
 
 		$failed_emails = array();

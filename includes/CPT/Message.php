@@ -23,6 +23,7 @@ class Message {
 		add_action( 'admin_notices', array( $this, 'display_reset_notice' ) );
 		if ( is_admin() ) {
 			add_action( 'admin_init', array( $this, 'save_last_list_url' ) );
+			add_action( 'pre_get_posts', array( $this, 'filter_admin_messages_list' ) );
 		}
 	}
 
@@ -145,5 +146,37 @@ class Message {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Filters admin query to exclude automated transactional messages from the standard messages list.
+	 *
+	 * @param \WP_Query $query The current query.
+	 */
+	public function filter_admin_messages_list( \WP_Query $query ): void {
+		global $pagenow;
+		if ( ! is_admin() || ! $query->is_main_query() || 'edit.php' !== $pagenow || 'dame_message' !== $query->get( 'post_type' ) ) {
+			return;
+		}
+
+		$meta_query = $query->get( 'meta_query' );
+		if ( ! is_array( $meta_query ) ) {
+			$meta_query = array();
+		}
+
+		$meta_query[] = array(
+			'relation' => 'OR',
+			array(
+				'key'     => '_dame_message_type',
+				'compare' => 'NOT EXISTS',
+			),
+			array(
+				'key'     => '_dame_message_type',
+				'value'   => 'pre_inscription_confirmation',
+				'compare' => '!=',
+			),
+		);
+
+		$query->set( 'meta_query', $meta_query );
 	}
 }
