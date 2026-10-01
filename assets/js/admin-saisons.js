@@ -1,1 +1,0 @@
-document.addEventListener("DOMContentLoaded",function(){const e=document.getElementById("dame_annual_reset");e&&e.addEventListener("click",function(n){confirm(dame_saisons_data.confirm_reset)?setTimeout(function(){e.disabled=!0},0):n.preventDefault()})});

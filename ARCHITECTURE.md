@@ -29,8 +29,8 @@
 | **PHP** | **8.4** | **ZERO COMPOSER EN PROD**. **STRICT_TYPES=1 OBLIGATOIRE**. Utiliser un autoloader natif SPL. Typage strict, Enums, Readonly classes, Constructor Promotion, New Fetch in array, etc. |
 | **Node.js** | **20 LTS** | **DEV ONLY**. Sert uniquement à compiler les assets (Build step). |
 | **Styles** | **SCSS** | Préprocesseur obligatoire + Convention BEM. |
-| **Standards** | **ES2021** | Syntaxe JS moderne obligatoire. |
-| **Livrable** | **Zip Autonome** | Le plugin final ne contient ni `node_modules`, ni `vendor`, ni fichiers sources `.scss`/`.jsx`. |
+| **Scripts** | **TypeScript Strict (ES2021)** | Typage strict (`strict: true`), sources `.ts` dans `src/js/`, types partagés dans `src/types/` (exportés pour la PWA via `dame-types`). Compilation via `esbuild` vers `assets/js/`. |
+| **Livrable** | **Zip Autonome** | Le plugin final ne contient ni `node_modules`, ni `vendor` dev, ni fichiers sources `.scss`/`.ts`. |
 
 ---
 
@@ -85,14 +85,13 @@ Le projet doit respecter cette structure stricte. L'agent doit placer les fichie
 ```
 
 wp-content/plugins/[SLUG]/
-├─ build/               # [PROD](GÉNÉRÉ) JS/CSS compilés des Blocs Gutenberg
-├─ src/                 # [DEV] (SOURCES) Code Source (JS, SCSS, Blocs)
-│  ├─ blocks/           # [DEV] Un sous-dossier par bloc
-│  ├─ js/               # [DEV] Sources Javascript (Admin \& Front)
-│  └─ scss/             # [DEV] Sources SCSS (Admin \& Front)
+├─ src/                 # [DEV] (SOURCES) Code Source (TS, SCSS, Types)
+│  ├─ js/               # [DEV] Sources TypeScript (.ts) (Admin & Front)
+│  ├─ scss/             # [DEV] Sources SCSS (Admin & Front)
+│  └─ types/            # [DEV] Contrats & Interfaces partagés (Agenda, DTOs, Enums)
 ├─ assets/              # [PROD] Assets compilés et médias
 │  ├─ css/              # [PROD] (GÉNÉRÉ) CSS compilé et minifié
-│  ├─ js/               # [PROD] (GÉNÉRÉ) JS minifié
+│  ├─ js/               # [PROD] (GÉNÉRÉ) JS minifié via esbuild
 │  └─ ...
 ├─ includes/            # [PROD] Logique PHP (Namespace: [NAMESPACE])
 │  ├─ Core/             # Chargement, I18n, Plugin_Loader

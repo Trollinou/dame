@@ -17,10 +17,10 @@ Le plugin est structuré autour d'une architecture moderne (POO) garantissant pe
 ## Développement & Architecture
 DAME utilise un workflow de développement professionnel pour garantir la performance et la maintenabilité :
 *   **Architecture PHP 8.4 :** Typage strict (`strict_types=1`), DTOs `readonly`, Énumérations typées (Enums), couche d'accès aux données (Repositories) et découpage modulaire par responsabilités (Façade & Composants).
-*   **Sources & Front-end :** Code source JavaScript Vanilla moderne (ES2021, sans dépendance jQuery) et styles SCSS situés dans `src/`.
-*   **Build Pipeline :** Les fichiers de production (minifiés et optimisés) sont générés dans `assets/` via `npm run build`.
-*   **Dépendances :** Gestion rigoureuse via Composer (librairies tierces) et npm (outils de développement).
-*   **Qualité :** Analyse statique PHP via PHPStan (Level 7) et linting JS via WP-Scripts / ESLint.
+*   **TypeScript & Front-end :** Code source en TypeScript strict (`strict: true`, ES2021 Vanilla sans dépendance jQuery) dans `src/js/` et modélisation des contrats d'API partagés avec la PWA dans `src/types/`. Styles SCSS dans `src/scss/`.
+*   **Build Pipeline :** Compilation rapide via `esbuild` générant les bundles minifiés dans `assets/js/` et Sass dans `assets/css/` via `npm run build`. Vérification des types via `npm run typecheck`.
+*   **Dépendances :** Gestion rigoureuse via Composer (librairies tierces) et npm (TypeScript, esbuild, linters).
+*   **Qualité :** Analyse statique PHP via PHPStan (Level 7) et vérification des types TypeScript (`tsc --noEmit`).
 
 ## Fonctionnalités Cœurs : Gestion des Adhésions
 

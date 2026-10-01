@@ -1,1 +1,0 @@
-document.addEventListener("DOMContentLoaded",function(){const e=document.getElementById("dame_birth_name"),t=document.getElementById("dame_last_name");e&&t&&e.addEventListener("blur",function(){this.value&&!t.value&&(t.value=this.value)})});
