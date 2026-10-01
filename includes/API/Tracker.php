@@ -66,24 +66,10 @@ class Tracker {
 			$this->send_pixel_response( 400 );
 		}
 
-		$table_name = $wpdb->prefix . 'dame_message_opens';
 		$user_ip    = $this->get_user_ip();
 		$now        = current_time( 'mysql', true );
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$updated = $wpdb->query(
-			$wpdb->prepare(
-				'UPDATE %i SET opened_at = %s, user_ip = %s WHERE message_id = %d AND email_hash = %s',
-				$table_name,
-				$now,
-				$user_ip,
-				$message_id,
-				$email_hash
-			)
-		);
-
-		// Fallback: If no rows were updated (e.g. log missing but pixel hit),.
-		// we could insert a generic row, but it's better to log only known recipients.
+		$repository = new \DAME\Repositories\TrackingRepository();
+		$repository->record_open( $message_id, $email_hash, $user_ip, $now );
 
 		// Serve a 1x1 transparent GIF image.
 		$this->send_pixel_response();

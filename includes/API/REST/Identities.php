@@ -560,11 +560,13 @@ class Identities {
 	 * @return string
 	 */
 	private function get_firstname( int $post_id ): string {
-		$firstname = get_post_meta( $post_id, '_dame_first_name', true );
-		if ( empty( $firstname ) ) {
-			$parts     = explode( ' ', get_the_title( $post_id ) );
-			$firstname = ( count( $parts ) > 1 ) ? implode( ' ', array_slice( $parts, 1 ) ) : $parts[0];
+		$dto = \DAME\DTO\MemberProfileDTO::from_post( $post_id );
+		if ( $dto && ! empty( $dto->first_name ) ) {
+			return $dto->first_name;
 		}
-		return (string) $firstname;
+
+		$title = get_the_title( $post_id );
+		$parts = explode( ' ', $title );
+		return ( count( $parts ) > 1 ) ? implode( ' ', array_slice( $parts, 1 ) ) : (string) ( $parts[0] ?? '' );
 	}
 }

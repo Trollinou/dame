@@ -38,7 +38,7 @@ class Assets {
 			wp_enqueue_script(
 				'dame-public-single-event',
 				\DAME_PLUGIN_URL . 'assets/js/public-single-event.js',
-				array( 'jquery' ),
+				array(),
 				\DAME_VERSION,
 				true
 			);

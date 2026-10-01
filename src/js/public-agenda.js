@@ -1,24 +1,31 @@
-jQuery(document).ready(function ($) {
-	const wrapper = $('#dame-agenda-wrapper');
-	if (wrapper.length === 0) {
+document.addEventListener('DOMContentLoaded', () => {
+	const wrapper = document.getElementById('dame-agenda-wrapper');
+	if (!wrapper) {
 		return;
 	}
 
-	const calendarGrid = $('#dame-calendar-grid');
-	const weekdaysContainer = $('.dame-calendar-weekdays');
-	const currentMonthDisplay = $('#dame-agenda-current-month');
-	const prevMonthBtn = $('#dame-agenda-prev-month');
-	const nextMonthBtn = $('#dame-agenda-next-month');
-	const todayBtn = $('#dame-agenda-today');
-	const filterToggleBtn = $('#dame-agenda-filter-toggle');
-	const filterPanel = $('#dame-agenda-filter-panel');
-	const searchInput = $('#dame-agenda-search-input');
-	const tooltip = $('#dame-event-tooltip');
-	const monthYearPicker = $('#dame-month-year-selector');
-	const monthPickerToggle = $('.dame-agenda-month-picker-toggle');
+	const calendarGrid = document.getElementById('dame-calendar-grid');
+	const weekdaysContainer = wrapper.querySelector('.dame-calendar-weekdays');
+	const currentMonthDisplay = document.getElementById(
+		'dame-agenda-current-month'
+	);
+	const prevMonthBtn = document.getElementById('dame-agenda-prev-month');
+	const nextMonthBtn = document.getElementById('dame-agenda-next-month');
+	const todayBtn = document.getElementById('dame-agenda-today');
+	const filterToggleBtn = document.getElementById(
+		'dame-agenda-filter-toggle'
+	);
+	const filterPanel = document.getElementById('dame-agenda-filter-panel');
+	const searchInput = document.getElementById('dame-agenda-search-input');
+	const tooltip = document.getElementById('dame-event-tooltip');
+	const monthYearPicker = document.getElementById('dame-month-year-selector');
+	const monthPickerToggle = wrapper.querySelector(
+		'.dame-agenda-month-picker-toggle'
+	);
 
 	let currentDate = new Date();
 	let searchTimeout;
+	const eventsMap = new Map();
 
 	function updateURL(date) {
 		const year = date.getFullYear();
@@ -35,7 +42,7 @@ jQuery(document).ready(function ($) {
 		return `${y}-${m}-${d}`;
 	}
 
-	function fetchAndRenderCalendar() {
+	async function fetchAndRenderCalendar() {
 		const year = currentDate.getFullYear();
 		const month = currentDate.getMonth();
 
@@ -43,7 +50,10 @@ jQuery(document).ready(function ($) {
 		const lastDayOfMonth = new Date(year, month + 1, 0);
 		const daysInMonth = lastDayOfMonth.getDate();
 		const startDayOfWeek =
-			(firstDayOfMonth.getDay() - dame_agenda_ajax.start_of_week + 7) % 7;
+			(firstDayOfMonth.getDay() -
+				Number(dame_agenda_ajax.start_of_week) +
+				7) %
+			7;
 
 		const gridStartDate = new Date(firstDayOfMonth);
 		gridStartDate.setDate(gridStartDate.getDate() - startDayOfWeek);
@@ -58,92 +68,111 @@ jQuery(document).ready(function ($) {
 		const gridEndDate = new Date(gridStartDate);
 		gridEndDate.setDate(gridEndDate.getDate() + totalGridDays - 1);
 
-		const categories = $('.dame-agenda-cat-filter:checked')
-			.map(function () {
-				return $(this).val();
-			})
-			.get();
-		const unchecked_categories = $('.dame-agenda-cat-filter:not(:checked)')
-			.map(function () {
-				return $(this).val();
-			})
-			.get();
-		const searchTerm = searchInput.val();
+		const checkedCategories = Array.from(
+			wrapper.querySelectorAll('.dame-agenda-cat-filter:checked')
+		).map((el) => el.value);
 
-		calendarGrid.css('opacity', 0.5);
+		const uncheckedCategories = Array.from(
+			wrapper.querySelectorAll('.dame-agenda-cat-filter:not(:checked)')
+		).map((el) => el.value);
 
-		$.ajax({
-			url: dame_agenda_ajax.ajax_url,
-			type: 'POST',
-			data: {
-				action: 'dame_get_agenda_events',
-				nonce: dame_agenda_ajax.nonce,
-				start_date: formatDate(gridStartDate),
-				end_date: formatDate(gridEndDate),
-				categories,
-				unchecked_categories,
-				search: searchTerm,
-			},
-			success(response) {
-				if (response.success) {
-					renderCalendar(year, month, response.data);
-				} else {
-					calendarGrid.html('<p>Error loading events.</p>');
-				}
-				calendarGrid.css('opacity', 1);
-			},
-			error() {
-				calendarGrid.html('<p>Error loading events.</p>');
-				calendarGrid.css('opacity', 1);
-			},
+		const searchTerm = searchInput ? searchInput.value : '';
+
+		if (calendarGrid) {
+			calendarGrid.style.opacity = '0.5';
+		}
+
+		const formData = new FormData();
+		formData.append('action', 'dame_get_agenda_events');
+		formData.append('nonce', dame_agenda_ajax.nonce);
+		formData.append('start_date', formatDate(gridStartDate));
+		formData.append('end_date', formatDate(gridEndDate));
+		formData.append('search', searchTerm);
+
+		checkedCategories.forEach((cat) => {
+			formData.append('categories[]', cat);
 		});
+		uncheckedCategories.forEach((cat) => {
+			formData.append('unchecked_categories[]', cat);
+		});
+
+		try {
+			const response = await fetch(dame_agenda_ajax.ajax_url, {
+				method: 'POST',
+				body: formData,
+			});
+			const result = await response.json();
+
+			if (result.success) {
+				renderCalendar(year, month, result.data);
+			} else if (calendarGrid) {
+				calendarGrid.innerHTML = '<p>Error loading events.</p>';
+			}
+		} catch {
+			if (calendarGrid) {
+				calendarGrid.innerHTML = '<p>Error loading events.</p>';
+			}
+		} finally {
+			if (calendarGrid) {
+				calendarGrid.style.opacity = '1';
+			}
+		}
 	}
 
 	function renderCalendar(year, month, events) {
-		currentMonthDisplay.text(
-			dame_agenda_ajax.i18n.months[month] + ' ' + year
-		);
-		calendarGrid.empty();
-		weekdaysContainer.empty();
-
-		dame_agenda_ajax.i18n.weekdays_short.forEach((day) => {
-			weekdaysContainer.append(`<div>${day}</div>`);
-		});
+		if (currentMonthDisplay) {
+			currentMonthDisplay.textContent = `${dame_agenda_ajax.i18n.months[month]} ${year}`;
+		}
+		if (calendarGrid) {
+			calendarGrid.innerHTML = '';
+		}
+		if (weekdaysContainer) {
+			weekdaysContainer.innerHTML = '';
+			dame_agenda_ajax.i18n.weekdays_short.forEach((day) => {
+				const div = document.createElement('div');
+				div.textContent = day;
+				weekdaysContainer.appendChild(div);
+			});
+		}
 
 		const firstDayOfMonth = new Date(year, month, 1);
 		const lastDayOfMonth = new Date(year, month + 1, 0);
 		const daysInMonth = lastDayOfMonth.getDate();
 		const startDayOfWeek =
-			(firstDayOfMonth.getDay() - dame_agenda_ajax.start_of_week + 7) % 7;
+			(firstDayOfMonth.getDay() -
+				Number(dame_agenda_ajax.start_of_week) +
+				7) %
+			7;
 
 		const prevMonthDate = new Date(year, month, 0);
 		const prevYear = prevMonthDate.getFullYear();
 		const prevMonth = prevMonthDate.getMonth();
 		const prevLastDay = prevMonthDate.getDate();
+
 		for (let i = startDayOfWeek; i > 0; i--) {
 			const day = prevLastDay - i + 1;
-			const dateStr = `${prevYear}-${String(prevMonth + 1).padStart(
-				2,
-				'0'
-			)}-${String(day).padStart(2, '0')}`;
-			calendarGrid.append(
-				`<div class="dame-calendar-day other-month" data-date="${dateStr}"><div class="day-number">${day}</div><div class="events-container"></div></div>`
-			);
+			const dateStr = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+			if (calendarGrid) {
+				const cell = document.createElement('div');
+				cell.className = 'dame-calendar-day other-month';
+				cell.dataset.date = dateStr;
+				cell.innerHTML = `<div class="day-number">${day}</div><div class="events-container"></div>`;
+				calendarGrid.appendChild(cell);
+			}
 		}
 
 		for (let day = 1; day <= daysInMonth; day++) {
-			const dateStr = `${year}-${String(month + 1).padStart(
-				2,
-				'0'
-			)}-${String(day).padStart(2, '0')}`;
+			const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 			const isToday =
 				new Date().toDateString() ===
 				new Date(year, month, day).toDateString();
-			calendarGrid.append(
-				`<div class="dame-calendar-day ${
-					isToday ? 'today' : ''
-				}" data-date="${dateStr}"><div class="day-number">${day}</div><div class="events-container"></div></div>`
-			);
+			if (calendarGrid) {
+				const cell = document.createElement('div');
+				cell.className = `dame-calendar-day ${isToday ? 'today' : ''}`;
+				cell.dataset.date = dateStr;
+				cell.innerHTML = `<div class="day-number">${day}</div><div class="events-container"></div>`;
+				calendarGrid.appendChild(cell);
+			}
 		}
 
 		const nextMonthDate = new Date(year, month + 1, 1);
@@ -151,14 +180,16 @@ jQuery(document).ready(function ($) {
 		const nextMonth = nextMonthDate.getMonth();
 		const totalCells = startDayOfWeek + daysInMonth;
 		const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+
 		for (let day = 1; day <= remainingCells; day++) {
-			const dateStr = `${nextYear}-${String(nextMonth + 1).padStart(
-				2,
-				'0'
-			)}-${String(day).padStart(2, '0')}`;
-			calendarGrid.append(
-				`<div class="dame-calendar-day other-month" data-date="${dateStr}"><div class="day-number">${day}</div><div class="events-container"></div></div>`
-			);
+			const dateStr = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+			if (calendarGrid) {
+				const cell = document.createElement('div');
+				cell.className = 'dame-calendar-day other-month';
+				cell.dataset.date = dateStr;
+				cell.innerHTML = `<div class="day-number">${day}</div><div class="events-container"></div>`;
+				calendarGrid.appendChild(cell);
+			}
 		}
 
 		renderEvents(events);
@@ -170,7 +201,12 @@ jQuery(document).ready(function ($) {
 	}
 
 	function adjustRowHeights() {
-		const dayCells = calendarGrid.find('.dame-calendar-day');
+		if (!calendarGrid) {
+			return;
+		}
+		const dayCells = Array.from(
+			calendarGrid.querySelectorAll('.dame-calendar-day')
+		);
 		if (dayCells.length === 0) {
 			return;
 		}
@@ -184,28 +220,28 @@ jQuery(document).ready(function ($) {
 			const weekCells = dayCells.slice(i * 7, (i + 1) * 7);
 			let maxContentHeight = 0;
 
-			weekCells.each(function () {
-				const dayCell = $(this);
+			weekCells.forEach((dayCell) => {
 				let requiredContentHeight = 0;
-				const ponctuelContainer = dayCell.find(
+				const ponctuelContainer = dayCell.querySelector(
 					'.ponctuel-events-container'
 				);
 
-				if (ponctuelContainer.length > 0) {
+				if (ponctuelContainer) {
 					requiredContentHeight =
-						ponctuelContainer.position().top +
-						ponctuelContainer.outerHeight(true);
+						ponctuelContainer.offsetTop +
+						ponctuelContainer.offsetHeight;
 				} else {
 					let maxMultiDayBottom = 0;
-					dayCell.find('.dame-event-duree').each(function () {
-						const eventEl = $(this);
-						const eventBottom =
-							eventEl.position().top + eventEl.outerHeight(true);
-						maxMultiDayBottom = Math.max(
-							maxMultiDayBottom,
-							eventBottom
-						);
-					});
+					dayCell
+						.querySelectorAll('.dame-event-duree')
+						.forEach((eventEl) => {
+							const eventBottom =
+								eventEl.offsetTop + eventEl.offsetHeight;
+							maxMultiDayBottom = Math.max(
+								maxMultiDayBottom,
+								eventBottom
+							);
+						});
 					requiredContentHeight = maxMultiDayBottom;
 				}
 				maxContentHeight = Math.max(
@@ -218,16 +254,24 @@ jQuery(document).ready(function ($) {
 				MIN_CELL_HEIGHT,
 				maxContentHeight + DAY_NUMBER_HEIGHT
 			);
-			weekCells.css('height', `${finalHeight}px`);
+			weekCells.forEach((cell) => {
+				cell.style.height = `${finalHeight}px`;
+			});
 		}
 	}
 
 	function renderEvents(events) {
-		// Reset heights before rendering to ensure accurate calculations
-		calendarGrid.find('.dame-calendar-day').css('height', '');
+		eventsMap.clear();
+
+		if (calendarGrid) {
+			calendarGrid
+				.querySelectorAll('.dame-calendar-day')
+				.forEach((cell) => {
+					cell.style.height = '';
+				});
+		}
 
 		const isMobile = window.innerWidth < 768;
-		// On mobile, event height is dot (12px) + top/bottom margin (2*2px) = 16px
 		const EVENT_HEIGHT = isMobile ? 16 : 32;
 		const EVENT_SPACING = 2;
 		const wp_sow = parseInt(dame_agenda_ajax.start_of_week, 10);
@@ -270,7 +314,10 @@ jQuery(document).ready(function ($) {
 
 		const dayLanes = new Map();
 
-		events.forEach((event) => {
+		events.forEach((event, eventIdx) => {
+			const eventId = event.id || `evt_${eventIdx}`;
+			eventsMap.set(String(eventId), event);
+
 			const startDate = parseDateAsLocal(event.start_date);
 			const endDate = parseDateAsLocal(event.end_date);
 			const isMultiDay = endDate.getTime() > startDate.getTime();
@@ -314,13 +361,11 @@ jQuery(document).ready(function ($) {
 							laneIndex++;
 						}
 						const segmentDateStr = formatDate(segmentStartDate);
-						const dayCell = $(
+						const dayCell = calendarGrid?.querySelector(
 							`.dame-calendar-day[data-date="${segmentDateStr}"]`
 						);
-						if (dayCell.length) {
-							const width = `calc(${span * 100}% + ${
-								span - 1
-							}px)`;
+						if (dayCell) {
+							const width = `calc(${span * 100}% + ${span - 1}px)`;
 							const top =
 								laneIndex * (EVENT_HEIGHT + EVENT_SPACING);
 							const isSegmentEnd =
@@ -345,10 +390,17 @@ jQuery(document).ready(function ($) {
 								styleAttr += ` color: ${event.text_color};`;
 							}
 
-							const eventHtml = `<a href="${event.url}" class="dame-event-link"><div class="${classList}" style="${styleAttr}">${event.title}</div></a>`;
-							dayCell
-								.find('.events-container')
-								.append($(eventHtml).data('event', event));
+							const container =
+								dayCell.querySelector('.events-container');
+							if (container) {
+								const link = document.createElement('a');
+								link.href = event.url;
+								link.className = 'dame-event-link';
+								link.dataset.eventId = String(eventId);
+								link.innerHTML = `<div class="${classList}" style="${styleAttr}">${event.title}</div>`;
+								container.appendChild(link);
+							}
+
 							for (let i = 0; i < span; i++) {
 								const occupiedDate = new Date(segmentStartDate);
 								occupiedDate.setDate(
@@ -373,28 +425,29 @@ jQuery(document).ready(function ($) {
 				}
 			} else {
 				const dateStr = formatDate(startDate);
-				const dayCell = $(`.dame-calendar-day[data-date="${dateStr}"]`);
-				if (dayCell.length) {
+				const dayCell = calendarGrid?.querySelector(
+					`.dame-calendar-day[data-date="${dateStr}"]`
+				);
+				if (dayCell) {
 					const occupiedLanesCount = dayLanes.has(dateStr)
 						? dayLanes.get(dateStr).size
 						: 0;
 					const topPosition =
 						occupiedLanesCount * (EVENT_HEIGHT + EVENT_SPACING);
-					let ponctuelContainer = dayCell.find(
+					let ponctuelContainer = dayCell.querySelector(
 						'.ponctuel-events-container'
 					);
-					if (ponctuelContainer.length === 0) {
-						ponctuelContainer = $(
-							'<div class="ponctuel-events-container"></div>'
-						).css({
-							position: 'absolute',
-							top: `${topPosition}px`,
-							left: '5px',
-							right: '5px',
-						});
+					if (!ponctuelContainer) {
+						ponctuelContainer = document.createElement('div');
+						ponctuelContainer.className =
+							'ponctuel-events-container';
+						ponctuelContainer.style.position = 'absolute';
+						ponctuelContainer.style.top = `${topPosition}px`;
+						ponctuelContainer.style.left = '5px';
+						ponctuelContainer.style.right = '5px';
 						dayCell
-							.find('.events-container')
-							.append(ponctuelContainer);
+							.querySelector('.events-container')
+							?.appendChild(ponctuelContainer);
 					}
 					const timeText =
 						event.all_day === '1'
@@ -406,13 +459,18 @@ jQuery(document).ready(function ($) {
 					} else if (event.background_color) {
 						styleAttr += ` background-color: ${event.background_color};`;
 					}
-					const eventHtml = `<a href="${event.url}" class="dame-event-link">
-                        <div class="dame-event dame-event-ponctuel" style="${styleAttr}">
-                            <div class="event-time">${timeText}</div>
-                            <div class="event-title">${event.title}</div>
-                        </div>
-                    </a>`;
-					ponctuelContainer.append($(eventHtml).data('event', event));
+
+					const link = document.createElement('a');
+					link.href = event.url;
+					link.className = 'dame-event-link';
+					link.dataset.eventId = String(eventId);
+					link.innerHTML = `
+						<div class="dame-event dame-event-ponctuel" style="${styleAttr}">
+							<div class="event-time">${timeText}</div>
+							<div class="event-title">${event.title}</div>
+						</div>
+					`;
+					ponctuelContainer.appendChild(link);
 				}
 			}
 		});
@@ -421,52 +479,91 @@ jQuery(document).ready(function ($) {
 	}
 
 	// Event Handlers
-	prevMonthBtn.on('click', function () {
-		currentDate.setMonth(currentDate.getMonth() - 1);
-		updateURL(currentDate);
-		fetchAndRenderCalendar();
-	});
+	if (prevMonthBtn) {
+		prevMonthBtn.addEventListener('click', () => {
+			currentDate.setMonth(currentDate.getMonth() - 1);
+			updateURL(currentDate);
+			fetchAndRenderCalendar();
+		});
+	}
 
-	nextMonthBtn.on('click', function () {
-		currentDate.setMonth(currentDate.getMonth() + 1);
-		updateURL(currentDate);
-		fetchAndRenderCalendar();
-	});
+	if (nextMonthBtn) {
+		nextMonthBtn.addEventListener('click', () => {
+			currentDate.setMonth(currentDate.getMonth() + 1);
+			updateURL(currentDate);
+			fetchAndRenderCalendar();
+		});
+	}
 
-	todayBtn.on('click', function () {
-		currentDate = new Date();
-		updateURL(currentDate);
-		fetchAndRenderCalendar();
-	});
+	if (todayBtn) {
+		todayBtn.addEventListener('click', () => {
+			currentDate = new Date();
+			updateURL(currentDate);
+			fetchAndRenderCalendar();
+		});
+	}
 
-	filterToggleBtn.on('click', function (e) {
-		e.stopPropagation();
-		filterPanel.toggle();
-	});
+	if (filterToggleBtn && filterPanel) {
+		filterToggleBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			filterPanel.style.display =
+				filterPanel.style.display === 'none' ||
+				!filterPanel.style.display
+					? 'block'
+					: 'none';
+		});
+	}
 
-	$(document).on('click', function (e) {
+	document.addEventListener('click', (e) => {
 		if (
-			!filterPanel.is(e.target) &&
-			filterPanel.has(e.target).length === 0 &&
-			!filterToggleBtn.is(e.target)
+			filterPanel &&
+			filterToggleBtn &&
+			!filterPanel.contains(e.target) &&
+			!filterToggleBtn.contains(e.target)
 		) {
-			filterPanel.hide();
+			filterPanel.style.display = 'none';
 		}
 	});
 
-	filterPanel.on('change', '.dame-agenda-cat-filter', fetchAndRenderCalendar);
+	if (filterPanel) {
+		filterPanel.addEventListener('change', (e) => {
+			if (e.target.classList.contains('dame-agenda-cat-filter')) {
+				const isChecked = e.target.checked;
+				const parentLi = e.target.closest('li');
+				if (parentLi) {
+					parentLi
+						.querySelectorAll('ul input.dame-agenda-cat-filter')
+						.forEach((childInput) => {
+							childInput.checked = isChecked;
+						});
+				}
+				fetchAndRenderCalendar();
+			}
+		});
+	}
 
-	searchInput.on('keyup input', function () {
-		clearTimeout(searchTimeout);
-		searchTimeout = setTimeout(fetchAndRenderCalendar, 500);
-	});
+	if (searchInput) {
+		const onSearch = () => {
+			clearTimeout(searchTimeout);
+			searchTimeout = setTimeout(fetchAndRenderCalendar, 500);
+		};
+		searchInput.addEventListener('keyup', onSearch);
+		searchInput.addEventListener('input', onSearch);
+	}
 
-	calendarGrid
-		.on('mouseenter', '.dame-event', function (e) {
+	// Tooltip
+	if (calendarGrid && tooltip) {
+		calendarGrid.addEventListener('mouseover', (e) => {
 			if (window.innerWidth < 768) {
 				return;
 			}
-			const eventData = $(this).closest('.dame-event-link').data('event');
+			const eventEl = e.target.closest('.dame-event');
+			if (!eventEl) {
+				return;
+			}
+			const link = eventEl.closest('.dame-event-link');
+			const eventId = link?.dataset.eventId;
+			const eventData = eventId ? eventsMap.get(eventId) : null;
 			if (!eventData) {
 				return;
 			}
@@ -483,62 +580,95 @@ jQuery(document).ready(function ($) {
 			}
 			tooltipHtml += `<div class="tooltip-description">${eventData.description}</div>`;
 
-			tooltip.html(tooltipHtml).show();
-
-			// Position tooltip
-			const top = e.pageY + 10;
-			const left = e.pageX + 10;
-			tooltip.css({ top: top + 'px', left: left + 'px' });
-		})
-		.on('mouseleave', '.dame-event', function () {
-			tooltip.hide();
+			tooltip.innerHTML = tooltipHtml;
+			tooltip.style.display = 'block';
+			tooltip.style.top = `${e.pageY + 10}px`;
+			tooltip.style.left = `${e.pageX + 10}px`;
 		});
+
+		calendarGrid.addEventListener('mousemove', (e) => {
+			if (window.innerWidth < 768 || tooltip.style.display === 'none') {
+				return;
+			}
+			tooltip.style.top = `${e.pageY + 10}px`;
+			tooltip.style.left = `${e.pageX + 10}px`;
+		});
+
+		calendarGrid.addEventListener('mouseout', (e) => {
+			const eventEl = e.target.closest('.dame-event');
+			if (eventEl && !eventEl.contains(e.relatedTarget)) {
+				tooltip.style.display = 'none';
+			}
+		});
+	}
 
 	// Month/Year Picker
 	function renderMonthPicker() {
 		const year = currentDate.getFullYear();
-		$('#dame-selector-year').text(year);
-		const monthGrid = $('.dame-month-grid');
-		monthGrid.empty();
+		const yearEl = document.getElementById('dame-selector-year');
+		if (yearEl) {
+			yearEl.textContent = String(year);
+		}
+		const monthGrid = wrapper.querySelector('.dame-month-grid');
+		if (!monthGrid) {
+			return;
+		}
+		monthGrid.innerHTML = '';
 		const currentMonth = currentDate.getMonth();
 
 		dame_agenda_ajax.i18n.months.forEach((monthName, index) => {
-			const monthEl = $(`<span>${monthName}</span>`);
+			const monthEl = document.createElement('span');
+			monthEl.textContent = monthName;
 			if (index === currentMonth) {
-				monthEl.addClass('selected');
+				monthEl.classList.add('selected');
 			}
-			monthEl.on('click', function () {
+			monthEl.addEventListener('click', () => {
 				currentDate.setMonth(index);
 				fetchAndRenderCalendar();
-				monthYearPicker.hide();
+				if (monthYearPicker) {
+					monthYearPicker.style.display = 'none';
+				}
 			});
-			monthGrid.append(monthEl);
+			monthGrid.appendChild(monthEl);
 		});
 	}
 
-	monthPickerToggle.on('click', function (e) {
-		e.stopPropagation();
-		renderMonthPicker();
-		monthYearPicker.toggle();
-	});
+	if (monthPickerToggle && monthYearPicker) {
+		monthPickerToggle.addEventListener('click', (e) => {
+			e.stopPropagation();
+			renderMonthPicker();
+			monthYearPicker.style.display =
+				monthYearPicker.style.display === 'none' ||
+				!monthYearPicker.style.display
+					? 'block'
+					: 'none';
+		});
+	}
 
-	$('#dame-selector-prev-year').on('click', function () {
-		currentDate.setFullYear(currentDate.getFullYear() - 1);
-		renderMonthPicker();
-	});
+	const prevYearBtn = document.getElementById('dame-selector-prev-year');
+	if (prevYearBtn) {
+		prevYearBtn.addEventListener('click', () => {
+			currentDate.setFullYear(currentDate.getFullYear() - 1);
+			renderMonthPicker();
+		});
+	}
 
-	$('#dame-selector-next-year').on('click', function () {
-		currentDate.setFullYear(currentDate.getFullYear() + 1);
-		renderMonthPicker();
-	});
+	const nextYearBtn = document.getElementById('dame-selector-next-year');
+	if (nextYearBtn) {
+		nextYearBtn.addEventListener('click', () => {
+			currentDate.setFullYear(currentDate.getFullYear() + 1);
+			renderMonthPicker();
+		});
+	}
 
-	$(document).on('click', function (e) {
+	document.addEventListener('click', (e) => {
 		if (
-			!monthYearPicker.is(e.target) &&
-			monthYearPicker.has(e.target).length === 0 &&
-			!monthPickerToggle.is(e.target)
+			monthYearPicker &&
+			monthPickerToggle &&
+			!monthYearPicker.contains(e.target) &&
+			!monthPickerToggle.contains(e.target)
 		) {
-			monthYearPicker.hide();
+			monthYearPicker.style.display = 'none';
 		}
 	});
 
@@ -556,21 +686,5 @@ jQuery(document).ready(function ($) {
 	}
 
 	window.addEventListener('popstate', handleHistoryChange);
-
-	// Initial Load
 	handleHistoryChange();
-});
-
-jQuery(document).ready(function ($) {
-	$('.dame-agenda-cat-filter').on('change', function () {
-		const isChecked = $(this).prop('checked');
-		// Check/uncheck all children inputs
-		$(this)
-			.closest('li')
-			.find('ul input.dame-agenda-cat-filter')
-			.prop('checked', isChecked);
-
-		// Trigger reload of events (assuming main script listens to change on these inputs)
-		// The main script should bind to '.dame-agenda-cat-filter' change event.
-	});
 });

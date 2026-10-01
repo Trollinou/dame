@@ -34,6 +34,8 @@ $post_types = array(
 	'dame_message',
 	'dame_agenda',
 	'dame_ical_feed',
+	'benevolat',
+	'benevolat_reponse',
 	'sondage',
 	'sondage_reponse',
 );
@@ -78,9 +80,12 @@ foreach ( $taxonomies as $tax_name ) {
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.NotPrepared
 $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}dame_message_opens" );
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.NotPrepared
+$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}dame_benevolat_votes" );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.NotPrepared
 $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}dame_poll_votes" );
 
 // Delete the custom roles as a fallback.
 // They are normally removed on deactivation, but this is a failsafe.
 remove_role( 'membre' );
+remove_role( 'staff' );
 remove_role( 'entraineur' );

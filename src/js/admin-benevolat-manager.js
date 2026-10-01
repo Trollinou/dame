@@ -1,106 +1,104 @@
-jQuery(document).ready(function ($) {
+document.addEventListener('DOMContentLoaded', () => {
+	const wrapper = document.getElementById('benevolat-dates-wrapper');
+	if (!wrapper) {
+		return;
+	}
+
 	// Add Date
-	$('#add-benevolat-date').on('click', function () {
-		const dateIndex = $(
-			'#benevolat-dates-wrapper .benevolat-date-group'
-		).length;
-		const newDateGroup =
-			`
-			<div class="benevolat-date-group">
+	const addDateBtn = document.getElementById('add-benevolat-date');
+	if (addDateBtn) {
+		addDateBtn.addEventListener('click', () => {
+			const dateIndex = wrapper.querySelectorAll(
+				'.benevolat-date-group'
+			).length;
+			const newDateGroup = document.createElement('div');
+			newDateGroup.className = 'benevolat-date-group';
+			newDateGroup.innerHTML = `
 				<hr>
-				<h4>Date ` +
-			(dateIndex + 1) +
-			`</h4>
+				<h4>Date ${dateIndex + 1}</h4>
 				<p>
-					<label for="benevolat_date_` +
-			dateIndex +
-			`">Date:</label>
-					<input type="date" id="benevolat_date_` +
-			dateIndex +
-			`" name="_dame_benevolat_data[` +
-			dateIndex +
-			`][date]" value="" class="benevolat-date-input">
+					<label for="benevolat_date_${dateIndex}">Date:</label>
+					<input type="date" id="benevolat_date_${dateIndex}" name="_dame_benevolat_data[${dateIndex}][date]" value="" class="benevolat-date-input">
 					<button type="button" class="button remove-benevolat-date">Supprimer cette date</button>
 				</p>
-				<div class="benevolat-time-slots-wrapper">
-				</div>
+				<div class="benevolat-time-slots-wrapper"></div>
 				<button type="button" class="button add-benevolat-time-slot">Ajouter une plage horaire</button>
-			</div>
-		`;
-		$('#benevolat-dates-wrapper').append(newDateGroup);
-	});
+			`;
+			wrapper.appendChild(newDateGroup);
+		});
+	}
 
-	// Remove Date
-	$('#benevolat-dates-wrapper').on(
-		'click',
-		'.remove-benevolat-date',
-		function () {
-			$(this).closest('.benevolat-date-group').remove();
-			// Re-index h4 titles
-			$('#benevolat-dates-wrapper .benevolat-date-group').each(
-				function (index) {
-					$(this)
-						.find('h4')
-						.text('Date ' + (index + 1));
-				}
-			);
+	// Event Delegation
+	wrapper.addEventListener('click', (e) => {
+		// Remove Date
+		if (e.target.closest('.remove-benevolat-date')) {
+			const group = e.target.closest('.benevolat-date-group');
+			if (group) {
+				group.remove();
+				// Re-index h4 titles
+				wrapper
+					.querySelectorAll('.benevolat-date-group')
+					.forEach((dateGroup, index) => {
+						const title = dateGroup.querySelector('h4');
+						if (title) {
+							title.textContent = `Date ${index + 1}`;
+						}
+					});
+			}
+			return;
 		}
-	);
 
-	// Add Time Slot
-	$('#benevolat-dates-wrapper').on(
-		'click',
-		'.add-benevolat-time-slot',
-		function () {
-			const dateGroup = $(this).closest('.benevolat-date-group');
-			const dateIndex = dateGroup.index();
-			const timeSlotsWrapper = dateGroup.find(
+		// Add Time Slot
+		if (e.target.closest('.add-benevolat-time-slot')) {
+			const dateGroup = e.target.closest('.benevolat-date-group');
+			if (!dateGroup) {
+				return;
+			}
+			const groups = Array.from(
+				wrapper.querySelectorAll('.benevolat-date-group')
+			);
+			const dateIndex = groups.indexOf(dateGroup);
+			const timeSlotsWrapper = dateGroup.querySelector(
 				'.benevolat-time-slots-wrapper'
 			);
-			const timeIndex = timeSlotsWrapper.find(
+			if (!timeSlotsWrapper) {
+				return;
+			}
+
+			const slots = timeSlotsWrapper.querySelectorAll(
 				'.benevolat-time-slot-group'
-			).length;
+			);
+			const timeIndex = slots.length;
 
 			let previousEndTime = '';
 			if (timeIndex > 0) {
-				previousEndTime = timeSlotsWrapper
-					.find('.benevolat-time-slot-group')
-					.last()
-					.find('input[type="time"]')
-					.eq(1)
-					.val();
+				const lastSlot = slots[slots.length - 1];
+				const timeInputs =
+					lastSlot.querySelectorAll('input[type="time"]');
+				if (timeInputs.length >= 2) {
+					previousEndTime = timeInputs[1].value;
+				}
 			}
 
-			const newTimeSlot =
-				`
-			<div class="benevolat-time-slot-group">
+			const newTimeSlot = document.createElement('div');
+			newTimeSlot.className = 'benevolat-time-slot-group';
+			newTimeSlot.innerHTML = `
 				<label>Plage horaire:</label>
-				<input type="time" name="_dame_benevolat_data[` +
-				dateIndex +
-				`][time_slots][` +
-				timeIndex +
-				`][start]" value="` +
-				previousEndTime +
-				`" step="900">
+				<input type="time" name="_dame_benevolat_data[${dateIndex}][time_slots][${timeIndex}][start]" value="${previousEndTime}" step="900">
 				<span>-</span>
-				<input type="time" name="_dame_benevolat_data[` +
-				dateIndex +
-				`][time_slots][` +
-				timeIndex +
-				`][end]" value="" step="900">
+				<input type="time" name="_dame_benevolat_data[${dateIndex}][time_slots][${timeIndex}][end]" value="" step="900">
 				<button type="button" class="button remove-benevolat-time-slot">Supprimer</button>
-			</div>
-		`;
-			timeSlotsWrapper.append(newTimeSlot);
+			`;
+			timeSlotsWrapper.appendChild(newTimeSlot);
+			return;
 		}
-	);
 
-	// Remove Time Slot
-	$('#benevolat-dates-wrapper').on(
-		'click',
-		'.remove-benevolat-time-slot',
-		function () {
-			$(this).closest('.benevolat-time-slot-group').remove();
+		// Remove Time Slot
+		if (e.target.closest('.remove-benevolat-time-slot')) {
+			const slot = e.target.closest('.benevolat-time-slot-group');
+			if (slot) {
+				slot.remove();
+			}
 		}
-	);
+	});
 });

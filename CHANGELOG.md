@@ -7,8 +7,64 @@
   - **Accusé de réception automatique** : Envoi d'un courriel de confirmation aux adresses e-mails de l'adhérent et de ses représentants légaux (dédoublonnage automatique) lors de la soumission d'une préinscription (nouvelle ou mise à jour), que celle-ci provienne de l'API REST (PWA) ou du shortcode Web `[dame_fiche_inscription]`.
   - **Pièces jointes sécurisées** : Rattachement automatique de la copie des documents PDF complétés et signés électroniquement (attestation de santé FFE et/ou autorisation parentale).
   - **Régulation et file d'attente FIFO** : Injection des courriels de confirmation dans la file d'attente globale de `BatchSender` (`wp_dame_message_opens`) respectant le quota de cadence d'envois par minute (`smtp_batch_size`) avec exécution d'arrière-plan immédiate via WP-Cron (`dame_cron_process_queue`).
-  - **Personnalisation standardisée** : Application des balises `[NOM]`, `[PRENOM]`, `[CIVILITE]` et `[AGE]` dans le sujet et le corps du message.
-  - **Isolation d'administration (`DAME\CPT\Message`)** : Filtrage automatique sur `pre_get_posts` pour masquer ces messages transactionnels automatisés de la liste d'administration des messages de publipostage.
+### Découpage Modulaire & Séparation des Responsabilités
+- **Refactorisation et modularisation des composants à forte complexité** :
+  - **Service de Sauvegarde (`includes/Services/Backup/`)** :
+    - `ContactBackup` (`includes/Services/Backup/ContactBackup.php`) : Export et import CSV des contacts, import HelloAsso avec réconciliation multi-critères, indexation et suppression des doublons.
+    - `AdherentBackup` (`includes/Services/Backup/AdherentBackup.php`) : Export et import CSV adhérents, sauvegarde et restauration JSON intégrale.
+    - `AgendaBackup` (`includes/Services/Backup/AgendaBackup.php`) : Sauvegarde et restauration JSON des événements, catégories et votes de bénévolat.
+    - `SiteBackup` (`includes/Services/Backup/SiteBackup.php`) : Sauvegarde et restauration JSON du contenu du site et exécution de la sauvegarde journalière planifiée.
+    - `NoticeTrait` (`includes/Services/Backup/NoticeTrait.php`) : Trait partagé pour la gestion standardisée des notifications d'administration.
+    - `Backup` (`includes/Services/Backup.php`) : Façade orchestratrice allégée (~160 lignes).
+  - **Module d'Envoi de Courriels & Campagnes (`includes/Admin/Pages/Mailing/`)** :
+    - `RecipientResolver` (`includes/Admin/Pages/Mailing/RecipientResolver.php`) : Résolution des adhérents/contacts, filtrage incrémental, dédoublonnage et priorisation des adresses, enregistrement du tracking SQL.
+    - `AttachmentHandler` (`includes/Admin/Pages/Mailing/AttachmentHandler.php`) : Validation MIME stricte et traitement des téléversements de pièces jointes.
+    - `FormRenderer` (`includes/Admin/Pages/Mailing/FormRenderer.php`) : Rendu HTML de l'interface d'envoi en deux colonnes et listes avec filtres de recherche instantanée.
+    - `Processor` (`includes/Admin/Pages/Mailing/Processor.php`) : Traitement de la soumission POST, gestion du state transient et mise en file d'attente WP-Cron.
+    - `Mailing` (`includes/Admin/Pages/Mailing.php`) : Façade allégée (~100 lignes).
+  - **Métaboxes de l'Agenda (`includes/Metaboxes/Agenda/`)** :
+    - `DescriptionMetabox` (`includes/Metaboxes/Agenda/DescriptionMetabox.php`) : Rendu de la description et des paramètres de compétition.
+    - `DetailsMetabox` (`includes/Metaboxes/Agenda/DetailsMetabox.php`) : Rendu des dates, horaires, lieux et calcul d'itinéraire/géolocalisation.
+    - `ParticipantsMetabox` (`includes/Metaboxes/Agenda/ParticipantsMetabox.php`) : Rendu de la sélection filtrable des participants de la saison active.
+    - `SaveHandler` (`includes/Metaboxes/Agenda/SaveHandler.php`) : Validation, assainissement des métadonnées, assignation des participants et génération des séries récurrentes.
+    - `SeriesActions` (`includes/Metaboxes/Agenda/SeriesActions.php`) : Suppression ciblée ou intégrale de séries et messages d'administration.
+    - `Manager` (`includes/Metaboxes/Agenda/Manager.php`) : Façade d'enregistrement et d'orchestration (~180 lignes).
+  - **Formulaire Public de Préinscription (`includes/Shortcodes/RegistrationForm/`)** :
+    - `FormView` (`includes/Shortcodes/RegistrationForm/FormView.php`) : Rendu HTML complet du formulaire (adulte, mineur, représentants, signature électronique, questionnaire de santé).
+    - `SubmissionValidator` (`includes/Shortcodes/RegistrationForm/SubmissionValidator.php`) : Validation stricte des règles de saisie et des contraintes conditionnelles.
+    - `SubmissionHandler` (`includes/Shortcodes/RegistrationForm/SubmissionHandler.php`) : Assainissement, création du post, métadonnées, génération des PDFs signés et notifications e-mails.
+    - `RegistrationForm` (`includes/Shortcodes/RegistrationForm.php`) : Contrôleur et façade du shortcode (`[dame_fiche_inscription]`).
+
+### Modernisation JavaScript ES2021 Vanilla (Suppression de la dépendance jQuery)
+- **Migration intégrale vers ES2021 Vanilla (`src/js/public-agenda.js`, `src/js/public-single-event.js`, `src/js/admin-agenda-manager.js`, `src/js/admin-benevolat.js`, `src/js/admin-anniversaires.js`, `src/js/admin-test-send.js`)** :
+  - Remplacement complet de jQuery (`$`, `$.ajax`, `$.post`, sélecteurs et manipulation DOM) par les APIs natives JavaScript standards (`fetch`, `FormData`, `querySelector`, `addEventListener`, `dataset`, `classList`, `Map`).
+  - Suppression de la dépendance `jquery` dans les déclarations `wp_enqueue_script` PHP associées (`includes/Frontend/Assets.php`, `includes/Shortcodes/Agenda.php`, `includes/Shortcodes/Contact.php`, `includes/Metaboxes/Agenda/Manager.php`, `includes/Metaboxes/Benevolat/Manager.php`, `includes/Metaboxes/Message/TestSend.php`, `includes/Admin/Settings/Tabs/Anniversaires.php`, `includes/Admin/Pages/Mailing.php`).
+  - Validation stricte ESLint WP / Prettier et régénération des fichiers minifiés dans `assets/js/`.
+
+### Couche d'Accès aux Données & Repositories (`includes/Repositories/`)
+- **Création et intégration du pattern Repository (`DAME\Repositories\`)** :
+  - **`BenevolatRepository`** : Abstraction et centralisation des accès SQL à la table `{$wpdb->prefix}dame_benevolat_votes` (comptage distinct des inscrits, sauvegarde et suppression des choix), injecté dans l'API REST `Benevolat` et la liste d'administration `Admin\ListTables\Benevolat`.
+  - **`TrackingRepository`** : Abstraction des accès à la table de suivi `{$wpdb->prefix}dame_message_opens` (enregistrement des pixels d'ouverture, statistiques uniques et cartographie d'ouvertures), injecté dans l'API REST `Tracker` et la page d'administration `MessageReport`.
+  - **`AgendaRepository`** : Abstraction des requêtes SQL de relations de séries récurrentes (`_dame_recurrence_group_id`), injecté dans le service `Series_Manager`.
+  - **`MemberRepository`** : Requêtes ciblées de résolution d'adhérents (recherche par code FFE, comptage par saison).
+
+### Enums & DTOs PHP 8.4 (`includes/Enums/`, `includes/DTO/`)
+- **Énumérations typées (Backed Enums)** :
+  - **`Gender`** (`M`, `F`, `Autre`) : Gestion et normalisation de la civilité et du sexe.
+  - **`HealthDocumentStatus`** (`none`, `attestation`, `certificate`) : Statut des attestations et certificats médicaux, intégré dans l'API REST `PreInscription` et la soumission du formulaire public.
+  - **`CompetitionType`** (`non`, `individuel`, `equipe`) : Type de compétition d'agenda.
+  - **`CompetitionLevel`** (`departemental`, `regional`, `national`, `international`) : Niveaux de compétition.
+  - **`RecurrenceFrequency`** (`weekly`, `monthly`) : Fréquence de récurrence d'agenda.
+- **Data Transfer Objects (`readonly class`) & Sérialisation** :
+  - **`MemberProfileDTO`** : Encapsulation immuable et typée d'une fiche adhérent avec résolveur statique `from_post()` et méthode `to_array()`, intégré dans l'endpoint REST `Identities`.
+  - **`AgendaEventDTO`** : Encapsulation immuable des événements d'agenda avec typage strict (coordonnées GPS, dates, Enums associés), méthode `to_array()`, intégré dans le contrôleur AJAX de l'Agenda `Shortcodes\Agenda`.
+  - **`PreInscriptionDTO`** : Encapsulation immuable d'un dossier de préinscription avec méthode `to_array()`.
+
+### Désinstallation & Cohérence des Données
+- **Nettoyage complet à la désinstallation (`uninstall.php`, `includes/Admin/ListTables/Benevolat.php`)** :
+  - Prise en compte des CPT `benevolat` et `benevolat_reponse` ainsi que de la table SQL `{$wpdb->prefix}dame_benevolat_votes` lors du nettoyage optionnel des données.
+  - Suppression automatique du rôle personnalisé `staff` lors de la désinstallation (en complément de `membre` et `entraineur`).
+  - Harmonisation des clés de colonnes dans la table d'administration du Bénévolat (`benevolat_votes`, `benevolat_shortcode`).
 
 ## [5.5.0] - 2026-09-27
 

@@ -41,7 +41,7 @@ class Agenda {
 		$plugin_url = plugin_dir_url( dirname( __DIR__, 2 ) . '/index.php' );
 
 		wp_enqueue_style( 'dame-public-agenda', \DAME_PLUGIN_URL . 'assets/css/public-agenda.css', array(), \DAME_VERSION );
-		wp_enqueue_script( 'dame-public-agenda', \DAME_PLUGIN_URL . 'assets/js/public-agenda.js', array( 'jquery' ), \DAME_VERSION, true );
+		wp_enqueue_script( 'dame-public-agenda', \DAME_PLUGIN_URL . 'assets/js/public-agenda.js', array(), \DAME_VERSION, true );
 
 		// Get WordPress's start_of_week option.
 		$start_of_week = intval( get_option( 'start_of_week', 1 ) ); // Default to Monday.
@@ -303,35 +303,40 @@ class Agenda {
 				if ( ! $post_id ) {
 					continue;
 				}
-				$terms   = get_the_terms( $post_id, 'dame_agenda_category' );
-				$term    = ( is_array( $terms ) && ! empty( $terms ) ) ? reset( $terms ) : null;
-				$term_id = $term ? $term->term_id : 0;
-				$term_meta = get_option( "taxonomy_$term_id" );
-				$color     = ( is_array( $term_meta ) && ! empty( $term_meta['color'] ) ) ? $term_meta['color'] : '#ccc';
 
-				$start_date = get_post_meta( $post_id, '_dame_start_date', true );
-				$end_date   = get_post_meta( $post_id, '_dame_end_date', true );
-				$status     = (string) get_post_status( $post_id );
+				$dto = \DAME\DTO\AgendaEventDTO::from_post( $post_id );
+				if ( ! $dto ) {
+					continue;
+				}
+
+				$terms     = get_the_terms( $post_id, 'dame_agenda_category' );
+				$term      = ( is_array( $terms ) && ! empty( $terms ) ) ? reset( $terms ) : null;
+				$term_id   = $term ? $term->term_id : 0;
+				$term_meta = get_option( "taxonomy_$term_id" );
+				$color     = ( is_array( $term_meta ) && ! empty( $term_meta['color'] ) ) ? (string) $term_meta['color'] : '#ccc';
+				$status    = (string) get_post_status( $post_id );
 
 				$event_data = array(
-					'id'          => $post_id,
-					'title'       => get_the_title(),
-					'status'      => $status,
-					'url'         => get_permalink(),
-					'start_date'  => $start_date,
-					'start_time'  => get_post_meta( $post_id, '_dame_start_time', true ),
-					'end_date'    => $end_date,
-					'end_time'    => get_post_meta( $post_id, '_dame_end_time', true ),
-					'all_day'     => get_post_meta( $post_id, '_dame_all_day', true ),
-					'location'    => get_post_meta( $post_id, '_dame_location_name', true ),
-					'description' => get_post_meta( $post_id, '_dame_agenda_description', true ),
-					'color'       => $color,
-					'category'    => $term ? $term->name : '',
+					'id'                => $dto->id,
+					'title'             => $dto->title,
+					'status'            => $status,
+					'url'               => get_permalink( $dto->id ),
+					'start_date'        => $dto->start_date,
+					'start_time'        => $dto->start_time,
+					'end_date'          => $dto->end_date,
+					'end_time'          => $dto->end_time,
+					'all_day'           => $dto->all_day ? 1 : 0,
+					'location'          => $dto->location,
+					'description'       => get_post_meta( $dto->id, '_dame_agenda_description', true ),
+					'competition_type'  => $dto->competition_type->value,
+					'competition_level' => $dto->competition_level?->value,
+					'color'             => $color,
+					'category'          => $term ? $term->name : '',
 				);
 
 				$bg_color = $color;
 				// If single-day public event, lighten the background color.
-				if ( $start_date === $end_date && 'private' !== $status ) {
+				if ( $dto->start_date === $dto->end_date && 'private' !== $status ) {
 					$bg_color = \DAME\Core\Utils::lighten_color( $color, 0.75 );
 				}
 				$event_data['background_color'] = $bg_color;

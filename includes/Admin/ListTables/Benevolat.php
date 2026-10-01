@@ -34,8 +34,8 @@ class Benevolat {
 		foreach ( $columns as $key => $title ) {
 			$new_columns[ $key ] = $title;
 			if ( 'title' === $key ) {
-				$new_columns['poll_votes']     = __( 'Inscrits', 'dame' );
-				$new_columns['poll_shortcode'] = __( 'Shortcode', 'dame' );
+				$new_columns['benevolat_votes']     = __( 'Inscrits', 'dame' );
+				$new_columns['benevolat_shortcode'] = __( 'Shortcode', 'dame' );
 			}
 		}
 		return $new_columns;
@@ -49,20 +49,12 @@ class Benevolat {
 	 */
 	public function display_columns( $column, $post_id ): void {
 		switch ( $column ) {
-			case 'poll_votes':
-				global $wpdb;
-				$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$total = $wpdb->get_var(
-					$wpdb->prepare(
-						"SELECT COUNT(DISTINCT v.recipient_id) FROM {$table_votes} v INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID WHERE v.poll_id = %d AND p.post_status = 'publish'", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-						$post_id
-					)
-				);
-				echo (int) $total;
+			case 'benevolat_votes':
+				$repository = new \DAME\Repositories\BenevolatRepository();
+				echo $repository->get_distinct_voter_count( $post_id );
 				break;
 
-			case 'poll_shortcode':
+			case 'benevolat_shortcode':
 				$slug = get_post_field( 'post_name', $post_id );
 				echo '<input type="text" readonly value="[dame_benevolat slug=&quot;' . esc_attr( (string) $slug ) . '&quot;]" class="large-text code" onclick="this.select()">';
 				break;

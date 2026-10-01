@@ -127,20 +127,10 @@ class Benevolat {
 		}
 
 		$response_id = (int) $existing_vote[0];
+		$repository  = new \DAME\Repositories\BenevolatRepository();
+		$choices     = $repository->get_choices_by_response( $response_id );
 
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'dame_benevolat_votes';
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$choices = $wpdb->get_col(
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$wpdb->prepare(
-				"SELECT choice_key FROM {$table_name} WHERE recipient_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$response_id
-			)
-		);
-
-		return rest_ensure_response( array( 'choices' => ! empty( $choices ) ? $choices : array() ) );
+		return rest_ensure_response( array( 'choices' => $choices ) );
 	}
 
 	/**
@@ -179,8 +169,7 @@ class Benevolat {
 		}
 
 		$current_user = wp_get_current_user();
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'dame_benevolat_votes';
+		$repository   = new \DAME\Repositories\BenevolatRepository();
 
 		// 2. Check for existing vote.
 		$existing_vote = get_posts(
@@ -200,13 +189,7 @@ class Benevolat {
 			$response_id = (int) $existing_vote[0];
 
 			// Get existing choices to preserve historical data.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$old_choices = $wpdb->get_col(
-				$wpdb->prepare(
-					"SELECT choice_key FROM {$table_name} WHERE recipient_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$response_id
-				)
-			);
+			$old_choices = $repository->get_choices_by_response( $response_id );
 
 			foreach ( $old_choices as $old_key ) {
 				$parts      = explode( '_', (string) $old_key );
@@ -217,8 +200,7 @@ class Benevolat {
 			}
 
 			// Delete existing choices for this response.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->delete( $table_name, array( 'recipient_id' => $response_id ), array( '%d' ) );
+			$repository->delete_choices_by_response( $response_id );
 		} else {
 			// CREATE MODE.
 			$response_id = wp_insert_post(
@@ -267,17 +249,7 @@ class Benevolat {
 		update_post_meta( $response_id, '_dame_benevolat_responses', $meta_responses );
 
 		// 5. Insertion SQL des nouveaux choix.
-		foreach ( $final_choices as $choice_key ) {
-			$wpdb->insert(
-				$table_name,
-				array(
-					'poll_id'      => $benevolat_id,
-					'recipient_id' => $response_id,
-					'choice_key'   => sanitize_text_field( (string) $choice_key ),
-				),
-				array( '%d', '%d', '%s' )
-			);
-		}
+		$repository->save_choices( $benevolat_id, $response_id, $final_choices );
 
 		return rest_ensure_response(
 			array(

@@ -50,35 +50,13 @@ class MessageReport {
 			return;
 		}
 
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'dame_message_opens';
-
 		// 1. Get all recipients for this message.
 		$recipients = $this->get_formatted_recipients( $message_id );
 
-		// 2. Get unique opens count (by email hash).
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$unique_opens = (int) $wpdb->get_var(
-			$wpdb->prepare(
-				'SELECT COUNT(DISTINCT email_hash) FROM %i WHERE message_id = %d AND opened_at IS NOT NULL',
-				$table_name,
-				$message_id
-			)
-		);
-
-		// 3. Get all open data to mark individual recipients.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$opens_data = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT recipient_id, opened_at FROM {$table_name} WHERE message_id = %d AND opened_at IS NOT NULL", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$message_id
-			)
-		);
-
-		$opened_recipients = array();
-		foreach ( $opens_data as $open ) {
-			$opened_recipients[ (int) $open->recipient_id ] = $open->opened_at;
-		}
+		// 2. Get unique opens count and open data via Repository.
+		$tracking_repo     = new \DAME\Repositories\TrackingRepository();
+		$unique_opens      = $tracking_repo->get_unique_opens_count( $message_id );
+		$opened_recipients = $tracking_repo->get_opened_recipients_map( $message_id );
 
 		$message = get_post( $message_id );
 		?>

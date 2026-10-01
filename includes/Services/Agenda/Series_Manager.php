@@ -30,37 +30,8 @@ class Series_Manager {
 			return array();
 		}
 
-		$meta_query = array(
-			array(
-				'key'     => '_dame_recurrence_group_id',
-				'value'   => $group_id,
-				'compare' => '=',
-			),
-		);
-
-		if ( ! empty( $from_date ) ) {
-			$meta_query[] = array(
-				'key'     => '_dame_start_date',
-				'value'   => $from_date,
-				'compare' => '>=',
-				'type'    => 'DATE',
-			);
-		}
-
-		$query = new WP_Query(
-			array(
-				'post_type'              => 'dame_agenda',
-				'post_status'            => 'any',
-				'posts_per_page'         => -1,
-				'fields'                 => 'ids',
-				'meta_query'             => $meta_query,
-				'no_found_rows'          => true,
-				'update_post_term_cache' => false,
-			)
-		);
-
-		$raw_ids = is_array( $query->posts ) ? $query->posts : array();
-		return array_values( array_map( static fn( $p ) => is_numeric( $p ) ? (int) $p : ( $p instanceof \WP_Post ? $p->ID : 0 ), $raw_ids ) );
+		$repository = new \DAME\Repositories\AgendaRepository();
+		return $repository->get_series_event_ids( $group_id, $from_date );
 	}
 
 	/**

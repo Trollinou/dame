@@ -1,9 +1,13 @@
-jQuery(document).ready(function ($) {
+document.addEventListener('DOMContentLoaded', () => {
 	// Handler for the "Open in GPS" button
-	$(document).on('click', '#dame-open-gps', function () {
-		const button = $(this);
-		const lat = button.data('lat');
-		const lng = button.data('lng');
+	document.addEventListener('click', (e) => {
+		const button = e.target.closest('#dame-open-gps');
+		if (!button) {
+			return;
+		}
+
+		const lat = button.dataset.lat;
+		const lng = button.dataset.lng;
 
 		if (!lat || !lng) {
 			return;

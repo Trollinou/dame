@@ -1,7 +1,13 @@
-jQuery(document).ready(function ($) {
-	$('#dame_send_test_btn').on('click', function () {
-		const email = $('#dame_test_email').val();
-		const post_id = dame_test_send_data.post_id;
+document.addEventListener('DOMContentLoaded', () => {
+	const sendBtn = document.getElementById('dame_send_test_btn');
+	if (!sendBtn) {
+		return;
+	}
+
+	sendBtn.addEventListener('click', () => {
+		const emailInput = document.getElementById('dame_test_email');
+		const email = emailInput ? emailInput.value : '';
+		const postId = dame_test_send_data.post_id;
 		const nonce = dame_test_send_data.nonce;
 
 		if (!email) {
@@ -9,26 +15,36 @@ jQuery(document).ready(function ($) {
 			return;
 		}
 
-		$('#dame_test_spinner').addClass('is-active');
-		$('#dame_test_result').html('');
+		const spinner = document.getElementById('dame_test_spinner');
+		if (spinner) {
+			spinner.classList.add('is-active');
+		}
 
-		const form = $(
-			'<form action="' +
-				dame_test_send_data.admin_url +
-				'" method="post">' +
-				'<input type="hidden" name="action" value="dame_send_test_email">' +
-				'<input type="hidden" name="post_ID" value="' +
-				post_id +
-				'">' +
-				'<input type="hidden" name="test_email" value="' +
-				email +
-				'">' +
-				'<input type="hidden" name="_wpnonce" value="' +
-				nonce +
-				'">' +
-				'</form>'
-		);
-		$('body').append(form);
+		const resultEl = document.getElementById('dame_test_result');
+		if (resultEl) {
+			resultEl.innerHTML = '';
+		}
+
+		const form = document.createElement('form');
+		form.action = dame_test_send_data.admin_url;
+		form.method = 'post';
+
+		const fields = {
+			action: 'dame_send_test_email',
+			post_ID: postId,
+			test_email: email,
+			_wpnonce: nonce,
+		};
+
+		for (const [key, value] of Object.entries(fields)) {
+			const hidden = document.createElement('input');
+			hidden.type = 'hidden';
+			hidden.name = key;
+			hidden.value = value;
+			form.appendChild(hidden);
+		}
+
+		document.body.appendChild(form);
 		form.submit();
 	});
 });

@@ -720,12 +720,12 @@ class PreInscription {
 			$meta_insert_placeholders[] = '(%d, %s, %s)';
 		}
 
-		$health_document_status = 'none';
+		$health_document_status = \DAME\Enums\HealthDocumentStatus::NONE->value;
 		if ( isset( $sanitized_data['dame_health_questionnaire'] ) ) {
 			if ( 'oui' === $sanitized_data['dame_health_questionnaire'] ) {
-				$health_document_status = 'certificate';
+				$health_document_status = \DAME\Enums\HealthDocumentStatus::CERTIFICATE->value;
 			} elseif ( 'non' === $sanitized_data['dame_health_questionnaire'] ) {
-				$health_document_status = 'attestation';
+				$health_document_status = \DAME\Enums\HealthDocumentStatus::ATTESTATION->value;
 			}
 		}
 

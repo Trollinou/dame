@@ -46,7 +46,7 @@ class TestSend {
 			return;
 		}
 
-		wp_enqueue_script( 'dame-admin-test-send', \DAME_PLUGIN_URL . 'assets/js/admin-test-send.js', array( 'jquery' ), \DAME_VERSION, true );
+		wp_enqueue_script( 'dame-admin-test-send', \DAME_PLUGIN_URL . 'assets/js/admin-test-send.js', array(), \DAME_VERSION, true );
 		wp_localize_script(
 			'dame-admin-test-send',
 			'dame_test_send_data',
