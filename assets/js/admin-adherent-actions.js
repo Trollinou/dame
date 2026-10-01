@@ -1,1 +1,0 @@
-document.addEventListener("DOMContentLoaded",function(){const e=document.querySelector('button[name="dame_revert_to_pre_inscription"]');e&&e.addEventListener("click",function(e){confirm(dame_adherent_actions_data.confirm_revert)||e.preventDefault()})});

@@ -8,7 +8,7 @@
 - **Plugin** : `DAME` | Slug: `dame` | Prefix: `dame_` | Namespace: `DAME\` | Table: `{$wpdb->prefix}dame_`
 - **WordPress** : 7.1 (Interactivity API, Transients).
 - **PHP** : 8.4 avec `declare(strict_types=1);`. Composer AUTORISÉ en prod (`composer install --no-dev --optimize-autoloader`). Inclure `vendor/autoload.php` + Autoloader SPL natif fallback dans `dame.php`.
-- **JS / CSS** : ES2021 Vanilla (pas de jQuery), SCSS avec BEM. Sources dans `src/`, compilés dans `build/` et `assets/`.
+- **JS / CSS** : TypeScript Strict (`strict: true`, ES2021 Vanilla, pas de jQuery), SCSS avec BEM. Sources dans `src/js/*.ts` et types dans `src/types/`, compilés dans `assets/js/*.js` via `esbuild`. Typage exposé pour la PWA via `dame-types`.
 
 ## 3. Architecture & Structure
 - **PSR-4 / Namespaces** : Sous-dossiers dans `includes/` en PascalCase (`includes/Admin/`, `includes/CPT/`, `includes/DTO/`). Fichiers/classes en PascalCase.

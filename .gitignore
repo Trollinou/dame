@@ -8,3 +8,7 @@ gha-creds-*.json
 node_modules/
 /.antigravitycli
 *.zip
+*.tsbuildinfo
+dist-temp/
+scratch/
+/assets/js/

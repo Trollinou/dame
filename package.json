@@ -2,22 +2,46 @@
   "name": "dame",
   "version": "5.5.0",
   "description": "Dossier Administratif des Membres Échiquéens",
+  "types": "./src/types/index.ts",
+  "main": "./src/types/index.ts",
+  "module": "./src/types/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/types/index.ts",
+      "import": "./src/types/index.ts",
+      "default": "./src/types/index.ts"
+    },
+    "./types": {
+      "types": "./src/types/index.ts",
+      "import": "./src/types/index.ts",
+      "default": "./src/types/index.ts"
+    },
+    "./*": {
+      "types": "./src/types/*.ts",
+      "import": "./src/types/*.ts",
+      "default": "./src/types/*.ts"
+    }
+  },
   "scripts": {
     "build:css": "sass src/scss/:assets/css/ --style=compressed --no-source-map",
-    "build:js": "node minify-js.js",
+    "build:js": "node build-js.js",
     "build": "npm run build:css && npm run build:js",
+    "typecheck": "tsc --noEmit",
     "lint:js": "eslint src/js/",
     "package": "node script/package.cjs",
     "version-sync": "node scripts/version-sync.cjs",
     "watch": "sass --watch src/scss/:assets/css/"
   },
   "devDependencies": {
+    "@types/node": "^26.6.3",
     "@wordpress/eslint-plugin": "^25.9.0",
     "adm-zip": "^0.6.1",
+    "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
     "minimatch": "^10.2.6",
-    "sass": "^1.104.1",
-    "terser": "^5.51.2"
+    "sass": "^1.105.1",
+    "terser": "^5.51.2",
+    "typescript": "^6.0.3"
   },
   "allowScripts": {
     "fsevents@2.3.3": true,
@@ -25,7 +49,8 @@
     "unrs-resolver@1.12.2": true,
     "core-js@3.50.0": true,
     "core-js-pure@3.50.0": true,
-    "@parcel/watcher@2.6.0": true
+    "@parcel/watcher@2.6.0": true,
+    "esbuild@0.28.2": true
   },
   "overrides": {
     "react": "^18.3.1",
