@@ -15,4 +15,14 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			}
 		});
 	}
+
+	const selectAllDuplicates = document.getElementById('cb-select-all-duplicates') as HTMLInputElement | null;
+	if (selectAllDuplicates) {
+		selectAllDuplicates.addEventListener('change', (): void => {
+			const checkboxes = document.querySelectorAll<HTMLInputElement>('.dame-duplicate-cb');
+			checkboxes.forEach((cb: HTMLInputElement): void => {
+				cb.checked = selectAllDuplicates.checked;
+			});
+		});
+	}
 });

@@ -631,9 +631,44 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		});
 	}
 
+	// --- 5. Generic Confirmation Handler (data-confirm) ---
+	function initDataConfirm(): void {
+		document.addEventListener('click', (e: MouseEvent): void => {
+			const target = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-confirm]');
+			if (!target) {
+				return;
+			}
+			const message = target.getAttribute('data-confirm');
+			if (message && !window.confirm(message)) {
+				e.preventDefault();
+				e.stopPropagation();
+			}
+		});
+	}
+
+	// --- 6. Generic Auto-Select Inputs (.dame-auto-select) ---
+	function initAutoSelect(): void {
+		document.addEventListener('focusin', (e: FocusEvent): void => {
+			const target = e.target;
+			if (target instanceof HTMLInputElement && target.classList.contains('dame-auto-select')) {
+				target.select();
+			}
+		});
+
+		document.addEventListener('click', (e: MouseEvent): void => {
+			const target = e.target;
+			if (target instanceof HTMLInputElement && target.classList.contains('dame-auto-select')) {
+				target.select();
+			}
+		});
+	}
+
 	// Initialize all
 	initAddressFields();
 	initBirthCityFields();
 	initRegionSync();
 	initRouteCalculation();
+	initDataConfirm();
+	initAutoSelect();
 });
+

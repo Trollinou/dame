@@ -56,7 +56,7 @@ class Benevolat {
 
 			case 'benevolat_shortcode':
 				$slug = get_post_field( 'post_name', $post_id );
-				echo '<input type="text" readonly value="[dame_benevolat slug=&quot;' . esc_attr( (string) $slug ) . '&quot;]" class="large-text code" onclick="this.select()">';
+				echo '<input type="text" readonly value="[dame_benevolat slug=&quot;' . esc_attr( (string) $slug ) . '&quot;]" class="large-text code dame-auto-select">';
 				break;
 		}
 	}

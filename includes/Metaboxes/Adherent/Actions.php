@@ -113,7 +113,7 @@ class Actions {
 		?>
 		<hr>
 		<p class="description"><?php esc_html_e( 'Crée une fiche Contact avec les informations de cet adhérent et met la fiche adhérent à la corbeille.', 'dame' ); ?></p>
-		<a href="<?php echo esc_url( $transform_url ); ?>" class="button button-secondary" style="width: 100%; text-align: center;" onclick="return confirm('<?php echo esc_js( __( 'Voulez-vous vraiment transformer cet adhérent en contact ? La fiche adhérent actuelle sera mise à la corbeille.', 'dame' ) ); ?>');">
+		<a href="<?php echo esc_url( $transform_url ); ?>" class="button button-secondary" style="width: 100%; text-align: center;" data-confirm="<?php esc_attr_e( 'Voulez-vous vraiment transformer cet adhérent en contact ? La fiche adhérent actuelle sera mise à la corbeille.', 'dame' ); ?>">
 			<?php esc_html_e( 'Transformer en Contact', 'dame' ); ?>
 		</a>
 		<?php

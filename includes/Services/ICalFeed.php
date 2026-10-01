@@ -241,7 +241,7 @@ class ICalFeed {
 		foreach ( $default_feeds as $feed ) {
 			echo '<tr>';
 			echo '<td><strong>' . esc_html( $feed['title'] ) . '</strong></td>';
-			echo '<td><input type="text" value="' . esc_attr( $feed['url'] ) . '" readonly onfocus="this.select();" style="width: 100%;"></td>';
+			echo '<td><input type="text" value="' . esc_attr( $feed['url'] ) . '" readonly class="dame-auto-select" style="width: 100%;"></td>';
 			echo '<td>' . esc_html( $feed['description'] ) . '</td>';
 			echo '</tr>';
 		}

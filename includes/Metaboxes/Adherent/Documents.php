@@ -31,6 +31,19 @@ class Documents {
 			'side',
 			'default'
 		);
+
+		add_action( 'post_edit_form_tag', array( $this, 'enable_multipart_form' ) );
+	}
+
+	/**
+	 * Enable multipart/form-data on adherent post edit form.
+	 *
+	 * @param WP_Post|null $post Post object.
+	 */
+	public function enable_multipart_form( ?WP_Post $post = null ): void {
+		if ( $post && 'adherent' === $post->post_type ) {
+			echo ' enctype="multipart/form-data"';
+		}
 	}
 
 	/**
@@ -141,14 +154,6 @@ class Documents {
 				</div>
 			<?php endif; ?>
 		</div>
-		<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			var form = document.getElementById('post');
-			if (form) {
-				form.setAttribute('enctype', 'multipart/form-data');
-			}
-		});
-		</script>
 		<?php
 	}
 

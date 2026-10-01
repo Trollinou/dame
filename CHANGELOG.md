@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Conformité CSP & Élimination du JavaScript Inline
+- **Élimination intégrale du code JavaScript inline (balises `<script>` et attributs `on*`)** :
+  - **Délégation d'événements globale (`src/js/admin-common.ts`)** :
+    - Gestionnaire universel `[data-confirm]` pour intercepter et sécuriser les demandes de confirmation sans attributs `onclick`.
+    - Gestionnaire universel `.dame-auto-select` pour la sélection automatique des champs au focus/clic sans attributs `onclick` / `onfocus`.
+  - **Gestionnaires dédiés par composant** :
+    - Déportation de la gestion de sélection multiple des doublons dans `src/js/admin-backups-adherent.ts`.
+    - Déportation de la fermeture de notice de confirmation dans `src/js/public-newsletter.ts`.
+  - **Sécurisation & Hooks PHP natifs** :
+    - Remplacement de la balise `<script>` d'injection `enctype="multipart/form-data"` dans `DAME\Metaboxes\Adherent\Documents` par le hook WordPress natif `add_action('post_edit_form_tag', ...)`.
+    - Remplacement de tous les attributs `onclick` et `onfocus` dans les métaboxes, colonnes, tableaux et pages d'administration (`includes/Admin/Actions/Message.php`, `includes/Taxonomies/Group.php`, `includes/Metaboxes/Benevolat/Manager.php`, `includes/Metaboxes/Adherent/Actions.php`, `includes/Admin/Pages/ImportFFE.php`, `includes/Admin/ListTables/Benevolat.php`, `includes/Admin/Columns/ICalFeed.php`, `includes/Services/ICalFeed.php`, `includes/Metaboxes/ICalFeed/Info.php`, `includes/Services/Newsletter.php`).
+
 ## [5.5.1] - 2026-10-01
 
 ### Migration TypeScript Strict & Typage Partagé (DAME ↔ PWA)

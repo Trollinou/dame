@@ -52,7 +52,7 @@ class Info {
 			$feed_url = home_url( '/feed/agenda/' . $feed_slug . '.ics' );
 
 			echo '<p><strong>' . esc_html__( 'URL de ce flux :', 'dame' ) . '</strong></p>';
-			echo '<input type="text" value="' . esc_url( $feed_url ) . '" class="widefat" readonly onclick="this.select();">';
+			echo '<input type="text" value="' . esc_url( $feed_url ) . '" class="widefat dame-auto-select" readonly>';
 			echo '<p class="description">' . esc_html__( 'Copiez cette URL pour vous abonner à ce flux personnalisé dans votre agenda (le nom du calendrier correspond au titre du flux).', 'dame' ) . '</p>';
 		}
 
@@ -61,10 +61,10 @@ class Info {
 		echo '<p><strong>' . esc_html__( 'Flux Globaux :', 'dame' ) . '</strong></p>';
 
 		echo '<label>' . esc_html__( 'Flux Public :', 'dame' ) . '</label>';
-		echo '<input type="text" value="' . esc_url( home_url( '/feed/agenda/public.ics' ) ) . '" class="widefat" readonly onclick="this.select();" style="margin-bottom: 10px;">';
+		echo '<input type="text" value="' . esc_url( home_url( '/feed/agenda/public.ics' ) ) . '" class="widefat dame-auto-select" readonly style="margin-bottom: 10px;">';
 
 		echo '<label>' . esc_html__( 'Flux Privé :', 'dame' ) . '</label>';
-		echo '<input type="text" value="' . esc_url( home_url( '/feed/agenda/prive.ics' ) ) . '" class="widefat" readonly onclick="this.select();">';
+		echo '<input type="text" value="' . esc_url( home_url( '/feed/agenda/prive.ics' ) ) . '" class="widefat dame-auto-select" readonly>';
 		echo '<p class="description">' . esc_html__( 'Le flux privé nécessite une authentification.', 'dame' ) . '</p>';
 	}
 }

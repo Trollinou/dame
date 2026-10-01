@@ -213,4 +213,13 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				});
 		});
 	});
+
+	// 5. Confirmation Notice Overlay Close
+	document.addEventListener('click', (e: MouseEvent): void => {
+		const target = e.target as HTMLElement | null;
+		if (target?.closest('.dame-nl-notice-close')) {
+			const overlay = document.getElementById('dame-newsletter-notice-overlay');
+			overlay?.remove();
+		}
+	});
 });

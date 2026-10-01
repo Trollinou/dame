@@ -369,7 +369,7 @@ class Manager {
 						<tr>
 							<td><?php echo esc_html( $response->post_title ); ?></td>
 							<td>
-								<a href="<?php echo esc_url( $delete_url ); ?>" class="button button-small button-danger" onclick="return confirm('<?php esc_attr_e( 'Êtes-vous sûr de vouloir supprimer cette réponse ?', 'dame' ); ?>');">
+								<a href="<?php echo esc_url( $delete_url ); ?>" class="button button-small button-danger" data-confirm="<?php esc_attr_e( 'Êtes-vous sûr de vouloir supprimer cette réponse ?', 'dame' ); ?>">
 									<?php esc_html_e( 'Supprimer', 'dame' ); ?>
 								</a>
 							</td>

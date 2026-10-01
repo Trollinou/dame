@@ -189,9 +189,9 @@ class Group {
 		);
 
 		$actions['reset'] = sprintf(
-			'<a href="%s" onclick="return confirm(\'%s\');">%s</a>',
+			'<a href="%s" data-confirm="%s">%s</a>',
 			esc_url( $reset_url ),
-			esc_js( __( 'Êtes-vous sûr de vouloir réinitialiser ce groupe ? Tous les adhérents seront retirés de ce groupe.', 'dame' ) ),
+			esc_attr__( 'Êtes-vous sûr de vouloir réinitialiser ce groupe ? Tous les adhérents seront retirés de ce groupe.', 'dame' ),
 			esc_html__( 'Réinitialiser', 'dame' )
 		);
 

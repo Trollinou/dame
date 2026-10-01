@@ -108,9 +108,9 @@ class Message {
 		);
 
 		$actions['reset_send'] = sprintf(
-			'<a href="%s" class="dame-reset-send" onclick="return confirm(\'%s\');" style="color: #d63638;">%s</a>',
+			'<a href="%s" class="dame-reset-send" data-confirm="%s" style="color: #d63638;">%s</a>',
 			esc_url( $url ),
-			esc_js( __( 'Êtes-vous sûr de vouloir réinitialiser l\'envoi de ce message ? Cela effacera l\'historique des destinataires pour ce message (permettant un renvoi complet) et remettra les compteurs à zéro.', 'dame' ) ),
+			esc_attr__( 'Êtes-vous sûr de vouloir réinitialiser l\'envoi de ce message ? Cela effacera l\'historique des destinataires pour ce message (permettant un renvoi complet) et remettra les compteurs à zéro.', 'dame' ),
 			esc_html__( 'Reset envoi', 'dame' )
 		);
 

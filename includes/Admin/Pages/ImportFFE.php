@@ -205,7 +205,7 @@ endif;
 							<thead>
 								<tr>
 									<td id="cb" class="manage-column column-cb check-column" style="width: 35px;">
-										<input id="cb-select-all-duplicates" type="checkbox" onclick="document.querySelectorAll('.dame-duplicate-cb').forEach(cb => cb.checked = this.checked);">
+										<input id="cb-select-all-duplicates" type="checkbox">
 									</td>
 									<th scope="col" style="font-weight: 600;"><?php esc_html_e( 'Contact externe', 'dame' ); ?></th>
 									<th scope="col" style="font-weight: 600;"><?php esc_html_e( 'Email contact', 'dame' ); ?></th>
@@ -255,7 +255,7 @@ endif;
 							'submit',
 							false,
 							array(
-								'onclick' => 'return confirm("' . esc_js( __( 'Êtes-vous sûr de vouloir supprimer définitivement les contacts sélectionnés ? Cette action est irréversible.', 'dame' ) ) . '");',
+								'data-confirm' => __( 'Êtes-vous sûr de vouloir supprimer définitivement les contacts sélectionnés ? Cette action est irréversible.', 'dame' ),
 							)
 						);
 						?>

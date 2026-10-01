@@ -424,7 +424,7 @@ class Newsletter {
 					<h3 id="dame-nl-notice-title" class="dame-nl-notice-heading"><?php esc_html_e( 'Inscription Newsletter', 'dame' ); ?></h3>
 					<p class="dame-nl-notice-message"><?php echo esc_html( $msg ); ?></p>
 				</div>
-				<button type="button" class="dame-nl-notice-close" onclick="document.getElementById('dame-newsletter-notice-overlay').remove();" aria-label="<?php esc_attr_e( 'Fermer', 'dame' ); ?>">&times;</button>
+				<button type="button" class="dame-nl-notice-close" aria-label="<?php esc_attr_e( 'Fermer', 'dame' ); ?>">&times;</button>
 			</div>
 		</div>
 		<?php

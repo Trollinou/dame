@@ -63,7 +63,7 @@ class ICalFeed {
 				}
 
 				$feed_url = home_url( '/feed/agenda/' . $post->post_name . '.ics' );
-				echo '<input type="text" value="' . esc_url( $feed_url ) . '" readonly onfocus="this.select();" class="widefat" style="width: 100%; max-width: 450px;">';
+				echo '<input type="text" value="' . esc_url( $feed_url ) . '" readonly class="widefat dame-auto-select" style="width: 100%; max-width: 450px;">';
 				break;
 
 			case 'categories':
