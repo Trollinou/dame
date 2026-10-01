@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.5.1] - 2026-10-01
+
 ### Migration TypeScript Strict & Typage Partagé (DAME ↔ PWA)
 - **Conversion intégrale des scripts vers TypeScript en mode strict (`strict: true`, ES2021)** :
   - **Migration des 21 scripts du plugin (`src/js/*.ts`)** : Conversion et typage strict des scripts publics et d'administration (`admin-common.ts`, `admin-main.ts`, `admin-agenda-manager.ts`, `admin-mailing.ts`, `admin-adherent.ts`, `admin-benevolat.ts`, `public-agenda.ts`, `public-pre-inscription-form.ts`, `public-newsletter.ts`, `public-contact-form.ts`, `public-ign-autocomplete.ts`, `public-geo-autocomplete.ts`, `public-single-event.ts`, etc.) sans aucune dépendance jQuery.
