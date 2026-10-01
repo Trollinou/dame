@@ -3,15 +3,23 @@
   "version": "5.5.0",
   "description": "Dossier Administratif des Membres Échiquéens",
   "types": "./src/types/index.ts",
+  "main": "./src/types/index.ts",
+  "module": "./src/types/index.ts",
   "exports": {
     ".": {
-      "types": "./src/types/index.ts"
+      "types": "./src/types/index.ts",
+      "import": "./src/types/index.ts",
+      "default": "./src/types/index.ts"
     },
     "./types": {
-      "types": "./src/types/index.ts"
+      "types": "./src/types/index.ts",
+      "import": "./src/types/index.ts",
+      "default": "./src/types/index.ts"
     },
     "./*": {
-      "types": "./src/types/*.ts"
+      "types": "./src/types/*.ts",
+      "import": "./src/types/*.ts",
+      "default": "./src/types/*.ts"
     }
   },
   "scripts": {

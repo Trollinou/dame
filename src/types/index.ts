@@ -9,4 +9,4 @@ export * from './api/adherent';
 export * from './api/pre-inscription';
 export * from './api/benevolat';
 export * from './api/tracker';
-export * from './globals';
+export type * from './globals';

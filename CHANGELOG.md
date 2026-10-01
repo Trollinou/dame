@@ -5,8 +5,8 @@
 ### Migration TypeScript Strict & Typage Partagé (DAME ↔ PWA)
 - **Conversion intégrale des scripts vers TypeScript en mode strict (`strict: true`, ES2021)** :
   - **Migration des 21 scripts du plugin (`src/js/*.ts`)** : Conversion et typage strict des scripts publics et d'administration (`admin-common.ts`, `admin-main.ts`, `admin-agenda-manager.ts`, `admin-mailing.ts`, `admin-adherent.ts`, `admin-benevolat.ts`, `public-agenda.ts`, `public-pre-inscription-form.ts`, `public-newsletter.ts`, `public-contact-form.ts`, `public-ign-autocomplete.ts`, `public-geo-autocomplete.ts`, `public-single-event.ts`, etc.) sans aucune dépendance jQuery.
-  - **Modélisation et Contrats de Données (`src/types/`)** : Définition des DTOs et interfaces partagées en miroir du backend PHP 8.4 (`AgendaEvent`, `MemberProfileDTOData`, `PreInscriptionDTOData`, `BenevolatMission`, `Tracker`, `Enums`, `globals.d.ts`).
-  - **Exposition et intégration PWA** : Export des définitions TypeScript via `package.json` (`"types": "./src/types/index.ts"`) et consommation directe dans la PWA (`dame-pwa`) via `dame-types: file:../dame`.
+  - **Modélisation et Contrats de Données (`src/types/`)** : Définition des DTOs et interfaces partagées en miroir du backend PHP 8.4 (`AgendaEvent`, `MemberProfileDTOData`, `PreInscriptionDTOData`, `PreInscriptionFormData`, `Benevolat`, `BenevolatDay`, `BenevolatTimeSlot`, `BenevolatReponse`, `BenevolatMission`, `BenevolatPresence`, `Tracker`, `Enums`, `globals.d.ts`).
+  - **Exposition et intégration PWA** : Export des définitions TypeScript via `package.json` (`"types"`, `"import"`, `"default"`) avec export de type pur des déclarations globales (`export type * from './globals'`) et consommation directe dans la PWA (`dame-pwa`) via `dame-types: file:../dame`.
   - **Pipeline de Build & Packaging (`build-js.js`)** : Compilation et minification ultra-rapides via `esbuild` vers `assets/js/*.js`, exclusion des artefacts compilés de Git (`.gitignore`) et synchronisation de `.distignore`.
 
 ### Préinscriptions & Notifications par Courriel
