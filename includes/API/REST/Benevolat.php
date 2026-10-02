@@ -55,16 +55,15 @@ class Benevolat {
 					'permission_callback' => array( $this, 'check_vote_permissions' ),
 					'args'                => array(
 						'id'      => array(
-							'validate_callback' => function ( $param ) {
-								return is_numeric( $param );
-							},
+							'type'              => 'integer',
 							'required'          => true,
+							'sanitize_callback' => 'absint',
+							'validate_callback' => static fn( $param ) => is_numeric( $param ) && (int) $param > 0,
 						),
 						'choices' => array(
-							'validate_callback' => function ( $param ) {
-								return is_array( $param );
-							},
+							'type'              => 'array',
 							'required'          => true,
+							'validate_callback' => static fn( $param ) => is_array( $param ),
 						),
 					),
 				),
@@ -81,10 +80,10 @@ class Benevolat {
 					'permission_callback' => array( $this, 'check_vote_permissions' ),
 					'args'                => array(
 						'id' => array(
-							'validate_callback' => function ( $param ) {
-								return is_numeric( $param );
-							},
+							'type'              => 'integer',
 							'required'          => true,
+							'sanitize_callback' => 'absint',
+							'validate_callback' => static fn( $param ) => is_numeric( $param ) && (int) $param > 0,
 						),
 					),
 				),
