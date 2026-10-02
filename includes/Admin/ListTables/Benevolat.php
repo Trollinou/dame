@@ -51,7 +51,7 @@ class Benevolat {
 		switch ( $column ) {
 			case 'benevolat_votes':
 				$repository = new \DAME\Repositories\BenevolatRepository();
-				echo $repository->get_distinct_voter_count( $post_id );
+				echo esc_html( (string) $repository->get_distinct_voter_count( $post_id ) );
 				break;
 
 			case 'benevolat_shortcode':

@@ -66,20 +66,42 @@ readonly class MemberProfileDTO {
 
 		$id = $post_obj->ID;
 
+		$birth_name = (string) get_post_meta( $id, '_dame_birth_name', true );
+		$birth_date = (string) get_post_meta( $id, '_dame_birth_date', true );
+		$email      = (string) get_post_meta( $id, '_dame_email', true );
+		$phone      = (string) get_post_meta( $id, '_dame_phone_number', true );
+		if ( empty( $phone ) ) {
+			$phone = (string) get_post_meta( $id, '_dame_phone', true );
+		}
+		$mobile_phone = (string) get_post_meta( $id, '_dame_autre_telephone', true );
+		if ( empty( $mobile_phone ) ) {
+			$mobile_phone = (string) get_post_meta( $id, '_dame_mobile_phone', true );
+		}
+		$address = (string) get_post_meta( $id, '_dame_address_1', true );
+		if ( empty( $address ) ) {
+			$address = (string) get_post_meta( $id, '_dame_address', true );
+		}
+		$postal_code = (string) get_post_meta( $id, '_dame_postal_code', true );
+		$city        = (string) get_post_meta( $id, '_dame_city', true );
+		$ffe_id      = (string) get_post_meta( $id, '_dame_license_number', true );
+		if ( empty( $ffe_id ) ) {
+			$ffe_id = (string) get_post_meta( $id, '_dame_ffe_id', true );
+		}
+
 		return new self(
 			id: $id,
 			first_name: (string) get_post_meta( $id, '_dame_first_name', true ),
 			last_name: (string) get_post_meta( $id, '_dame_last_name', true ),
-			birth_name: get_post_meta( $id, '_dame_birth_name', true ) ?: null,
-			birth_date: get_post_meta( $id, '_dame_birth_date', true ) ?: null,
+			birth_name: ! empty( $birth_name ) ? $birth_name : null,
+			birth_date: ! empty( $birth_date ) ? $birth_date : null,
 			gender: Gender::from_raw( (string) get_post_meta( $id, '_dame_sexe', true ) ),
-			email: get_post_meta( $id, '_dame_email', true ) ?: null,
-			phone: get_post_meta( $id, '_dame_phone_number', true ) ?: ( get_post_meta( $id, '_dame_phone', true ) ?: null ),
-			mobile_phone: get_post_meta( $id, '_dame_autre_telephone', true ) ?: ( get_post_meta( $id, '_dame_mobile_phone', true ) ?: null ),
-			address: get_post_meta( $id, '_dame_address_1', true ) ?: ( get_post_meta( $id, '_dame_address', true ) ?: null ),
-			postal_code: get_post_meta( $id, '_dame_postal_code', true ) ?: null,
-			city: get_post_meta( $id, '_dame_city', true ) ?: null,
-			ffe_id: get_post_meta( $id, '_dame_license_number', true ) ?: ( get_post_meta( $id, '_dame_ffe_id', true ) ?: null ),
+			email: ! empty( $email ) ? $email : null,
+			phone: ! empty( $phone ) ? $phone : null,
+			mobile_phone: ! empty( $mobile_phone ) ? $mobile_phone : null,
+			address: ! empty( $address ) ? $address : null,
+			postal_code: ! empty( $postal_code ) ? $postal_code : null,
+			city: ! empty( $city ) ? $city : null,
+			ffe_id: ! empty( $ffe_id ) ? $ffe_id : null,
 			elo: is_numeric( get_post_meta( $id, '_dame_elo', true ) ) ? (int) get_post_meta( $id, '_dame_elo', true ) : null,
 		);
 	}

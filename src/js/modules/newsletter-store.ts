@@ -37,12 +37,12 @@ export const newsletterStore = store('dame/newsletter', {
 
 		async submitForm(event: Event): Promise<void> {
 			event.preventDefault();
-			const ctx = getContext<NewsletterContext>();
 			const form = event.target as HTMLFormElement;
 			if (!form) {
 				return;
 			}
 
+			const ctx = getContext<NewsletterContext>();
 			ctx.isSubmitting = true;
 			ctx.message = '';
 
@@ -59,13 +59,15 @@ export const newsletterStore = store('dame/newsletter', {
 				const result = await response.json();
 				if (result.success) {
 					ctx.status = 'success';
-					ctx.message = result.data?.message || 'Inscription réussie !';
+					ctx.message =
+						result.data?.message || 'Inscription réussie !';
 					form.reset();
 				} else {
 					ctx.status = 'error';
-					ctx.message = result.data?.message || 'Une erreur est survenue.';
+					ctx.message =
+						result.data?.message || 'Une erreur est survenue.';
 				}
-			} catch (err) {
+			} catch {
 				ctx.status = 'error';
 				ctx.message = 'Erreur de connexion au serveur.';
 			} finally {

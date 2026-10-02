@@ -24,30 +24,32 @@ export const benevolatStore = store('dame/benevolat', {
 	},
 	actions: {
 		toggleSlot(event: Event): void {
-			const ctx = getContext<BenevolatContext>();
 			const target = event.target as HTMLInputElement;
 			if (!target) {
 				return;
 			}
 
+			const ctx = getContext<BenevolatContext>();
 			const slotId = target.value;
 			if (target.checked) {
 				if (!ctx.selectedSlots.includes(slotId)) {
 					ctx.selectedSlots.push(slotId);
 				}
 			} else {
-				ctx.selectedSlots = ctx.selectedSlots.filter(s => s !== slotId);
+				ctx.selectedSlots = ctx.selectedSlots.filter(
+					(s: string) => s !== slotId
+				);
 			}
 		},
 
 		async submitResponse(event: Event): Promise<void> {
 			event.preventDefault();
-			const ctx = getContext<BenevolatContext>();
 			const form = event.target as HTMLFormElement;
 			if (!form) {
 				return;
 			}
 
+			const ctx = getContext<BenevolatContext>();
 			ctx.isSubmitting = true;
 			ctx.message = '';
 
@@ -61,12 +63,14 @@ export const benevolatStore = store('dame/benevolat', {
 
 				if (response.ok) {
 					ctx.status = 'success';
-					ctx.message = 'Votre réponse a bien été enregistrée. Merci !';
+					ctx.message =
+						'Votre réponse a bien été enregistrée. Merci !';
 				} else {
 					ctx.status = 'error';
-					ctx.message = 'Erreur lors de l\'enregistrement de votre réponse.';
+					ctx.message =
+						"Erreur lors de l'enregistrement de votre réponse.";
 				}
-			} catch (err) {
+			} catch {
 				ctx.status = 'error';
 				ctx.message = 'Erreur de communication avec le serveur.';
 			} finally {

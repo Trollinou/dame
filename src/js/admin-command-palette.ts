@@ -24,7 +24,9 @@ function initDAMECommands(): void {
 	const register = wpObj.commands.registerCommand;
 	const getUrl = (path: string): string => {
 		const base = window.dameAdminCommands?.adminUrl || 'admin.php';
-		return base.endsWith('/') ? `${base}${path}` : `${base.replace(/[^/]+$/, '')}${path}`;
+		return base.endsWith('/')
+			? `${base}${path}`
+			: `${base.replace(/[^/]+$/, '')}${path}`;
 	};
 
 	const commands: CommandConfig[] = [
@@ -33,7 +35,9 @@ function initDAMECommands(): void {
 			label: 'DAME : Ajouter un nouvel adhérent',
 			icon: 'groups',
 			callback: () => {
-				window.location.href = getUrl('post-new.php?post_type=adherent');
+				window.location.href = getUrl(
+					'post-new.php?post_type=adherent'
+				);
 			},
 		},
 		{
@@ -41,7 +45,9 @@ function initDAMECommands(): void {
 			label: 'DAME : Créer un événement / tournoi',
 			icon: 'calendar-alt',
 			callback: () => {
-				window.location.href = getUrl('post-new.php?post_type=dame_agenda');
+				window.location.href = getUrl(
+					'post-new.php?post_type=dame_agenda'
+				);
 			},
 		},
 		{
@@ -49,7 +55,9 @@ function initDAMECommands(): void {
 			label: 'DAME : Créer un appel à bénévolat',
 			icon: 'chart-bar',
 			callback: () => {
-				window.location.href = getUrl('post-new.php?post_type=benevolat');
+				window.location.href = getUrl(
+					'post-new.php?post_type=benevolat'
+				);
 			},
 		},
 		{
@@ -78,10 +86,10 @@ function initDAMECommands(): void {
 		},
 	];
 
-	commands.forEach(cmd => {
+	commands.forEach((cmd) => {
 		try {
 			register(cmd);
-		} catch (e) {
+		} catch {
 			// Silently handle if command is already registered.
 		}
 	});

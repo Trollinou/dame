@@ -69,22 +69,43 @@ readonly class PreInscriptionDTO {
 
 		$id = $post_obj->ID;
 
+		$birth_date = (string) get_post_meta( $id, '_dame_birth_date', true );
+		$email      = (string) get_post_meta( $id, '_dame_email', true );
+		$phone      = (string) get_post_meta( $id, '_dame_phone_number', true );
+		if ( empty( $phone ) ) {
+			$phone = (string) get_post_meta( $id, '_dame_phone', true );
+		}
+		$address = (string) get_post_meta( $id, '_dame_address_1', true );
+		if ( empty( $address ) ) {
+			$address = (string) get_post_meta( $id, '_dame_address', true );
+		}
+		$postal_code = (string) get_post_meta( $id, '_dame_postal_code', true );
+		$city        = (string) get_post_meta( $id, '_dame_city', true );
+		$department  = (string) get_post_meta( $id, '_dame_department', true );
+		$region      = (string) get_post_meta( $id, '_dame_region', true );
+		$health_doc  = (string) get_post_meta( $id, '_dame_health_document', true );
+		if ( empty( $health_doc ) ) {
+			$health_doc = (string) get_post_meta( $id, '_dame_health_document_status', true );
+		}
+		$ffe_id      = (string) get_post_meta( $id, '_dame_ffe_id', true );
+		$club_origin = (string) get_post_meta( $id, '_dame_club_origin', true );
+
 		return new self(
 			id: $id,
 			first_name: (string) get_post_meta( $id, '_dame_first_name', true ),
 			last_name: (string) get_post_meta( $id, '_dame_last_name', true ),
-			birth_date: get_post_meta( $id, '_dame_birth_date', true ) ?: null,
+			birth_date: ! empty( $birth_date ) ? $birth_date : null,
 			gender: Gender::from_raw( (string) get_post_meta( $id, '_dame_sexe', true ) ),
-			email: get_post_meta( $id, '_dame_email', true ) ?: null,
-			phone: ( get_post_meta( $id, '_dame_phone_number', true ) ?: get_post_meta( $id, '_dame_phone', true ) ) ?: null,
-			address: ( get_post_meta( $id, '_dame_address_1', true ) ?: get_post_meta( $id, '_dame_address', true ) ) ?: null,
-			postal_code: get_post_meta( $id, '_dame_postal_code', true ) ?: null,
-			city: get_post_meta( $id, '_dame_city', true ) ?: null,
-			department: get_post_meta( $id, '_dame_department', true ) ?: null,
-			region: get_post_meta( $id, '_dame_region', true ) ?: null,
-			health_status: HealthDocumentStatus::from_raw( (string) ( get_post_meta( $id, '_dame_health_document', true ) ?: get_post_meta( $id, '_dame_health_document_status', true ) ) ),
-			ffe_id: get_post_meta( $id, '_dame_ffe_id', true ) ?: null,
-			club_origin: get_post_meta( $id, '_dame_club_origin', true ) ?: null,
+			email: ! empty( $email ) ? $email : null,
+			phone: ! empty( $phone ) ? $phone : null,
+			address: ! empty( $address ) ? $address : null,
+			postal_code: ! empty( $postal_code ) ? $postal_code : null,
+			city: ! empty( $city ) ? $city : null,
+			department: ! empty( $department ) ? $department : null,
+			region: ! empty( $region ) ? $region : null,
+			health_status: HealthDocumentStatus::from_raw( $health_doc ),
+			ffe_id: ! empty( $ffe_id ) ? $ffe_id : null,
+			club_origin: ! empty( $club_origin ) ? $club_origin : null,
 		);
 	}
 

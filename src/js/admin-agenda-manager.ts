@@ -16,29 +16,41 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 	toggleCompetitionLevel();
 	document
-		.querySelectorAll<HTMLInputElement>('input[name="dame_competition_type"]')
+		.querySelectorAll<HTMLInputElement>(
+			'input[name="dame_competition_type"]'
+		)
 		.forEach((radio: HTMLInputElement): void => {
 			radio.addEventListener('change', toggleCompetitionLevel);
 		});
 
 	// Time fields toggle
 	function toggleTimeFields(): void {
-		const allDay = document.getElementById('dame_all_day') as HTMLInputElement | null;
+		const allDay = document.getElementById(
+			'dame_all_day'
+		) as HTMLInputElement | null;
 		const isChecked = allDay ? allDay.checked : false;
-		document.querySelectorAll<HTMLElement>('.dame-time-fields').forEach((el: HTMLElement): void => {
-			el.style.display = isChecked ? 'none' : '';
-		});
+		document
+			.querySelectorAll<HTMLElement>('.dame-time-fields')
+			.forEach((el: HTMLElement): void => {
+				el.style.display = isChecked ? 'none' : '';
+			});
 	}
 
 	toggleTimeFields();
-	const allDayCheckbox = document.getElementById('dame_all_day') as HTMLInputElement | null;
+	const allDayCheckbox = document.getElementById(
+		'dame_all_day'
+	) as HTMLInputElement | null;
 	if (allDayCheckbox) {
 		allDayCheckbox.addEventListener('change', toggleTimeFields);
 	}
 
 	// UX: Copy start date to end date on blur if end date is empty
-	const startDateInput = document.getElementById('dame_start_date') as HTMLInputElement | null;
-	const endDateInput = document.getElementById('dame_end_date') as HTMLInputElement | null;
+	const startDateInput = document.getElementById(
+		'dame_start_date'
+	) as HTMLInputElement | null;
+	const endDateInput = document.getElementById(
+		'dame_end_date'
+	) as HTMLInputElement | null;
 	if (startDateInput && endDateInput) {
 		startDateInput.addEventListener('blur', (): void => {
 			const startDate = startDateInput.value;
@@ -60,15 +72,20 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				const checkedCount =
 					categoryChecklist.querySelectorAll('input:checked').length;
 				if (checkedCount === 0) {
-					alert(dame_agenda_manager_data.alert_category || 'Veuillez sélectionner au moins une catégorie.');
+					alert(
+						dame_agenda_manager_data.alert_category ||
+							'Veuillez sélectionner au moins une catégorie.'
+					);
 					e.preventDefault();
 					const publishBtn = document.getElementById('publish');
 					if (publishBtn) {
 						publishBtn.classList.remove('disabled');
 					}
-					document.querySelectorAll('.spinner').forEach((spinner: Element): void => {
-						spinner.classList.remove('is-active');
-					});
+					document
+						.querySelectorAll('.spinner')
+						.forEach((spinner: Element): void => {
+							spinner.classList.remove('is-active');
+						});
 					return false;
 				}
 			}
@@ -90,9 +107,11 @@ document.addEventListener('DOMContentLoaded', (): void => {
 					if (publishBtn) {
 						publishBtn.classList.remove('disabled');
 					}
-					document.querySelectorAll('.spinner').forEach((spinner: Element): void => {
-						spinner.classList.remove('is-active');
-					});
+					document
+						.querySelectorAll('.spinner')
+						.forEach((spinner: Element): void => {
+							spinner.classList.remove('is-active');
+						});
 					return false;
 				}
 			}
@@ -144,7 +163,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	}
 
 	function toggleRecurrenceFrequency(): void {
-		const freqSelect = document.getElementById('dame_recurrence_frequency') as HTMLSelectElement | null;
+		const freqSelect = document.getElementById(
+			'dame_recurrence_frequency'
+		) as HTMLSelectElement | null;
 		const freq = freqSelect ? freqSelect.value : '';
 		const weeklyRow = document.getElementById('dame_recurrence_weekly_row');
 		const monthlyRow = document.getElementById(
@@ -212,7 +233,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		if (!target) {
 			return;
 		}
-		const deleteSeriesBtn = target.closest<HTMLElement>('.dame-js-delete-series-from');
+		const deleteSeriesBtn = target.closest<HTMLElement>(
+			'.dame-js-delete-series-from'
+		);
 		if (deleteSeriesBtn) {
 			const count = deleteSeriesBtn.dataset.count || '1';
 			const isParent =

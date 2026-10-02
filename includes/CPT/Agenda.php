@@ -108,21 +108,21 @@ class Agenda {
 	 */
 	private function register_meta_fields(): void {
 		$meta_keys = array(
-			'_dame_start_date'          => 'string',
-			'_dame_end_date'            => 'string',
-			'_dame_start_time'          => 'string',
-			'_dame_end_time'            => 'string',
-			'_dame_all_day'             => 'string',
-			'_dame_location_name'       => 'string',
-			'_dame_location_address'    => 'string',
-			'_dame_agenda_description'  => 'string',
-			'_dame_competition_type'    => 'string',
-			'_dame_competition_level'   => 'string',
-			'_dame_event_url'           => 'string',
-			'_dame_registration_url'    => 'string',
-			'_dame_contact_name'        => 'string',
-			'_dame_contact_email'       => 'string',
-			'_dame_contact_phone'       => 'string',
+			'_dame_start_date'         => 'string',
+			'_dame_end_date'           => 'string',
+			'_dame_start_time'         => 'string',
+			'_dame_end_time'           => 'string',
+			'_dame_all_day'            => 'string',
+			'_dame_location_name'      => 'string',
+			'_dame_location_address'   => 'string',
+			'_dame_agenda_description' => 'string',
+			'_dame_competition_type'   => 'string',
+			'_dame_competition_level'  => 'string',
+			'_dame_event_url'          => 'string',
+			'_dame_registration_url'   => 'string',
+			'_dame_contact_name'       => 'string',
+			'_dame_contact_email'      => 'string',
+			'_dame_contact_phone'      => 'string',
 		);
 
 		foreach ( $meta_keys as $key => $type ) {

@@ -29,7 +29,8 @@ interface ItineraireAdminResponse {
 document.addEventListener('DOMContentLoaded', (): void => {
 	// --- 1. Address Autocomplete ---
 	function initAddressFields(): void {
-		const addressInputs = document.querySelectorAll<HTMLInputElement>('.dame-js-address');
+		const addressInputs =
+			document.querySelectorAll<HTMLInputElement>('.dame-js-address');
 		addressInputs.forEach((addressInput: HTMLInputElement): void => {
 			const group = addressInput.dataset.group;
 			if (!group) {
@@ -55,7 +56,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				`.dame-js-time[data-group="${group}"]`
 			);
 
-			const wrapper = addressInput.closest<HTMLElement>('.dame-autocomplete-wrapper');
+			const wrapper = addressInput.closest<HTMLElement>(
+				'.dame-autocomplete-wrapper'
+			);
 
 			if (wrapper) {
 				const resultsContainer = document.createElement('div');
@@ -66,111 +69,139 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 				let highlightedIndex = -1;
 
-				addressInput.addEventListener('keyup', function (this: HTMLInputElement, e: KeyboardEvent): void {
-					if (
-						['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(
-							e.key
-						)
-					) {
-						return;
-					}
-
-					if (debounceTimer) {
-						clearTimeout(debounceTimer);
-					}
-					const query = this.value;
-
-					if (query.length < 5) {
-						resultsContainer.innerHTML = '';
-						resultsContainer.style.display = 'none';
-						highlightedIndex = -1;
-						return;
-					}
-
-					debounceTimer = setTimeout((): void => {
-						fetch(
-							`https://data.geopf.fr/geocodage/completion?text=${encodeURIComponent(
-								query
-							)}&type=StreetAddress`
-						)
-							.then((response: Response) => response.json() as Promise<IgnAddressResponse>)
-							.then((data: IgnAddressResponse): void => {
-								resultsContainer.innerHTML = '';
-								highlightedIndex = -1;
-								if (data.results && data.results.length > 0) {
-									resultsContainer.style.display = 'block';
-									data.results.forEach((result: IgnAddressResult): void => {
-										const suggestionDiv =
-											document.createElement('div');
-										suggestionDiv.classList.add(
-											'dame-suggestion-item'
-										);
-										suggestionDiv.textContent =
-											result.fulltext;
-										suggestionDiv.dataset.feature =
-											JSON.stringify(result);
-										resultsContainer.appendChild(
-											suggestionDiv
-										);
-									});
-								} else {
-									resultsContainer.style.display = 'none';
-								}
-							})
-							.catch((error: unknown): void => {
-								console.error(
-									'Error fetching address suggestions:',
-									error
-								);
-								resultsContainer.style.display = 'none';
-							});
-					}, 250);
-				});
-
-				addressInput.addEventListener('keydown', (e: KeyboardEvent): void => {
-					const suggestions = resultsContainer.querySelectorAll<HTMLElement>(
-						'.dame-suggestion-item'
-					);
-					if (suggestions.length === 0) {
-						return;
-					}
-
-					if (e.key === 'ArrowDown') {
-						e.preventDefault();
-						highlightedIndex++;
-						if (highlightedIndex >= suggestions.length) {
-							highlightedIndex = 0;
-						}
-						updateHighlight(suggestions, highlightedIndex);
-					} else if (e.key === 'ArrowUp') {
-						e.preventDefault();
-						highlightedIndex--;
-						if (highlightedIndex < 0) {
-							highlightedIndex = suggestions.length - 1;
-						}
-						updateHighlight(suggestions, highlightedIndex);
-					} else if (e.key === 'Enter') {
-						e.preventDefault();
+				addressInput.addEventListener(
+					'keyup',
+					function (this: HTMLInputElement, e: KeyboardEvent): void {
 						if (
-							highlightedIndex > -1 &&
-							suggestions[highlightedIndex]
+							[
+								'ArrowDown',
+								'ArrowUp',
+								'Enter',
+								'Escape',
+							].includes(e.key)
 						) {
-							selectSuggestion(suggestions[highlightedIndex]);
+							return;
 						}
-					} else if (e.key === 'Escape') {
-						resultsContainer.style.display = 'none';
-						highlightedIndex = -1;
-					}
-				});
 
-				function updateHighlight(suggestions: NodeListOf<HTMLElement>, index: number): void {
-					suggestions.forEach((suggestion: HTMLElement, i: number): void => {
-						if (i === index) {
-							suggestion.classList.add('highlighted');
-						} else {
-							suggestion.classList.remove('highlighted');
+						if (debounceTimer) {
+							clearTimeout(debounceTimer);
 						}
-					});
+						const query = this.value;
+
+						if (query.length < 5) {
+							resultsContainer.innerHTML = '';
+							resultsContainer.style.display = 'none';
+							highlightedIndex = -1;
+							return;
+						}
+
+						debounceTimer = setTimeout((): void => {
+							fetch(
+								`https://data.geopf.fr/geocodage/completion?text=${encodeURIComponent(
+									query
+								)}&type=StreetAddress`
+							)
+								.then(
+									(response: Response) =>
+										response.json() as Promise<IgnAddressResponse>
+								)
+								.then((data: IgnAddressResponse): void => {
+									resultsContainer.innerHTML = '';
+									highlightedIndex = -1;
+									if (
+										data.results &&
+										data.results.length > 0
+									) {
+										resultsContainer.style.display =
+											'block';
+										data.results.forEach(
+											(
+												result: IgnAddressResult
+											): void => {
+												const suggestionDiv =
+													document.createElement(
+														'div'
+													);
+												suggestionDiv.classList.add(
+													'dame-suggestion-item'
+												);
+												suggestionDiv.textContent =
+													result.fulltext;
+												suggestionDiv.dataset.feature =
+													JSON.stringify(result);
+												resultsContainer.appendChild(
+													suggestionDiv
+												);
+											}
+										);
+									} else {
+										resultsContainer.style.display = 'none';
+									}
+								})
+								.catch((error: unknown): void => {
+									console.error(
+										'Error fetching address suggestions:',
+										error
+									);
+									resultsContainer.style.display = 'none';
+								});
+						}, 250);
+					}
+				);
+
+				addressInput.addEventListener(
+					'keydown',
+					(e: KeyboardEvent): void => {
+						const suggestions =
+							resultsContainer.querySelectorAll<HTMLElement>(
+								'.dame-suggestion-item'
+							);
+						if (suggestions.length === 0) {
+							return;
+						}
+
+						if (e.key === 'ArrowDown') {
+							e.preventDefault();
+							highlightedIndex++;
+							if (highlightedIndex >= suggestions.length) {
+								highlightedIndex = 0;
+							}
+							updateHighlight(suggestions, highlightedIndex);
+						} else if (e.key === 'ArrowUp') {
+							e.preventDefault();
+							highlightedIndex--;
+							if (highlightedIndex < 0) {
+								highlightedIndex = suggestions.length - 1;
+							}
+							updateHighlight(suggestions, highlightedIndex);
+						} else if (e.key === 'Enter') {
+							e.preventDefault();
+							if (
+								highlightedIndex > -1 &&
+								suggestions[highlightedIndex]
+							) {
+								selectSuggestion(suggestions[highlightedIndex]);
+							}
+						} else if (e.key === 'Escape') {
+							resultsContainer.style.display = 'none';
+							highlightedIndex = -1;
+						}
+					}
+				);
+
+				function updateHighlight(
+					suggestions: NodeListOf<HTMLElement>,
+					index: number
+				): void {
+					suggestions.forEach(
+						(suggestion: HTMLElement, i: number): void => {
+							if (i === index) {
+								suggestion.classList.add('highlighted');
+							} else {
+								suggestion.classList.remove('highlighted');
+							}
+						}
+					);
 				}
 
 				function selectSuggestion(suggestion: HTMLElement): void {
@@ -220,12 +251,17 @@ document.addEventListener('DOMContentLoaded', (): void => {
 					highlightedIndex = -1;
 				}
 
-				resultsContainer.addEventListener('click', (e: MouseEvent): void => {
-					const target = e.target as HTMLElement | null;
-					if (target?.classList.contains('dame-suggestion-item')) {
-						selectSuggestion(target);
+				resultsContainer.addEventListener(
+					'click',
+					(e: MouseEvent): void => {
+						const target = e.target as HTMLElement | null;
+						if (
+							target?.classList.contains('dame-suggestion-item')
+						) {
+							selectSuggestion(target);
+						}
 					}
-				});
+				);
 
 				document.addEventListener('click', (e: MouseEvent): void => {
 					if (!wrapper.contains(e.target as Node)) {
@@ -321,9 +357,13 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 	// --- 2. Birth City Autocomplete ---
 	function initBirthCityFields(): void {
-		const cityInputs = document.querySelectorAll<HTMLInputElement>('.dame-js-birth-city');
+		const cityInputs = document.querySelectorAll<HTMLInputElement>(
+			'.dame-js-birth-city'
+		);
 		cityInputs.forEach((cityInput: HTMLInputElement): void => {
-			const wrapper = cityInput.closest<HTMLElement>('.dame-autocomplete-wrapper');
+			const wrapper = cityInput.closest<HTMLElement>(
+				'.dame-autocomplete-wrapper'
+			);
 			if (!wrapper) {
 				return;
 			}
@@ -336,66 +376,81 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 			let highlightedIndex = -1;
 
-			cityInput.addEventListener('keyup', function (this: HTMLInputElement, e: KeyboardEvent): void {
-				if (
-					['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)
-				) {
-					return;
+			cityInput.addEventListener(
+				'keyup',
+				function (this: HTMLInputElement, e: KeyboardEvent): void {
+					if (
+						['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(
+							e.key
+						)
+					) {
+						return;
+					}
+					if (debounceTimer) {
+						clearTimeout(debounceTimer);
+					}
+					const query = this.value;
+					if (query.length < 3) {
+						resultsContainer.style.display = 'none';
+						return;
+					}
+					debounceTimer = setTimeout((): void => {
+						fetch(
+							`https://geo.api.gouv.fr/communes?fields=nom,codesPostaux&nom=${encodeURIComponent(
+								query
+							)}`
+						)
+							.then(
+								(response: Response) =>
+									response.json() as Promise<
+										GeoCommuneAdmin[]
+									>
+							)
+							.then((data: GeoCommuneAdmin[]): void => {
+								resultsContainer.innerHTML = '';
+								highlightedIndex = -1;
+								if (data && data.length > 0) {
+									resultsContainer.style.display = 'block';
+									data.slice(0, 10).forEach(
+										(commune: GeoCommuneAdmin): void => {
+											if (
+												commune.codesPostaux &&
+												commune.codesPostaux.length > 0
+											) {
+												const suggestionDiv =
+													document.createElement(
+														'div'
+													);
+												suggestionDiv.classList.add(
+													'dame-suggestion-item'
+												);
+												const suggestionText = `${commune.nom} (${commune.codesPostaux[0]})`;
+												suggestionDiv.textContent =
+													suggestionText;
+												suggestionDiv.dataset.value =
+													suggestionText;
+												resultsContainer.appendChild(
+													suggestionDiv
+												);
+											}
+										}
+									);
+								} else {
+									resultsContainer.style.display = 'none';
+								}
+							})
+							.catch((error: unknown): void =>
+								console.error('Error fetching cities:', error)
+							);
+					}, 250);
 				}
-				if (debounceTimer) {
-					clearTimeout(debounceTimer);
-				}
-				const query = this.value;
-				if (query.length < 3) {
-					resultsContainer.style.display = 'none';
-					return;
-				}
-				debounceTimer = setTimeout((): void => {
-					fetch(
-						`https://geo.api.gouv.fr/communes?fields=nom,codesPostaux&nom=${encodeURIComponent(
-							query
-						)}`
-					)
-						.then((response: Response) => response.json() as Promise<GeoCommuneAdmin[]>)
-						.then((data: GeoCommuneAdmin[]): void => {
-							resultsContainer.innerHTML = '';
-							highlightedIndex = -1;
-							if (data && data.length > 0) {
-								resultsContainer.style.display = 'block';
-								data.slice(0, 10).forEach((commune: GeoCommuneAdmin): void => {
-									if (
-										commune.codesPostaux &&
-										commune.codesPostaux.length > 0
-									) {
-										const suggestionDiv =
-											document.createElement('div');
-										suggestionDiv.classList.add(
-											'dame-suggestion-item'
-										);
-										const suggestionText = `${commune.nom} (${commune.codesPostaux[0]})`;
-										suggestionDiv.textContent =
-											suggestionText;
-										suggestionDiv.dataset.value =
-											suggestionText;
-										resultsContainer.appendChild(
-											suggestionDiv
-										);
-									}
-								});
-							} else {
-								resultsContainer.style.display = 'none';
-							}
-						})
-						.catch((error: unknown): void =>
-							console.error('Error fetching cities:', error)
-						);
-				}, 250);
-			});
+			);
 
 			cityInput.addEventListener('keydown', (e: KeyboardEvent): void => {
-				const suggestions = resultsContainer.querySelectorAll<HTMLElement>(
-					'.dame-suggestion-item'
-				);
+				const suggestions =
+					resultsContainer.querySelectorAll<HTMLElement>(
+						'.dame-suggestion-item'
+					);
 				if (suggestions.length === 0) {
 					return;
 				}
@@ -428,23 +483,31 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				}
 			});
 
-			function updateHighlight(suggestions: NodeListOf<HTMLElement>, index: number): void {
-				suggestions.forEach((suggestion: HTMLElement, i: number): void => {
-					if (i === index) {
-						suggestion.classList.add('highlighted');
-					} else {
-						suggestion.classList.remove('highlighted');
+			function updateHighlight(
+				suggestions: NodeListOf<HTMLElement>,
+				index: number
+			): void {
+				suggestions.forEach(
+					(suggestion: HTMLElement, i: number): void => {
+						if (i === index) {
+							suggestion.classList.add('highlighted');
+						} else {
+							suggestion.classList.remove('highlighted');
+						}
 					}
-				});
+				);
 			}
 
-			resultsContainer.addEventListener('click', (e: MouseEvent): void => {
-				const target = e.target as HTMLElement | null;
-				if (target?.classList.contains('dame-suggestion-item')) {
-					cityInput.value = target.dataset.value || '';
-					resultsContainer.style.display = 'none';
+			resultsContainer.addEventListener(
+				'click',
+				(e: MouseEvent): void => {
+					const target = e.target as HTMLElement | null;
+					if (target?.classList.contains('dame-suggestion-item')) {
+						cityInput.value = target.dataset.value || '';
+						resultsContainer.style.display = 'none';
+					}
 				}
-			});
+			);
 			document.addEventListener('click', (e: MouseEvent): void => {
 				if (!wrapper.contains(e.target as Node)) {
 					resultsContainer.style.display = 'none';
@@ -456,7 +519,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	// --- 3. Postal Code -> Department -> Region ---
 	function initRegionSync(): void {
 		// Zip -> Dept
-		const zipInputs = document.querySelectorAll<HTMLInputElement>('.dame-js-zip');
+		const zipInputs =
+			document.querySelectorAll<HTMLInputElement>('.dame-js-zip');
 		zipInputs.forEach((zipInput: HTMLInputElement): void => {
 			const group = zipInput.dataset.group;
 			if (!group) {
@@ -466,27 +530,36 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				`.dame-js-dept[data-group="${group}"]`
 			);
 			if (deptInput) {
-				zipInput.addEventListener('keyup', function (this: HTMLInputElement): void {
-					const postalCode = this.value;
-					if (postalCode.length >= 2) {
-						const departmentCode = postalCode.substring(0, 2);
-						if (departmentCode === '20') {
-							return;
-						} // Corse
-						for (let i = 0; i < deptInput.options.length; i++) {
-							if (deptInput.options[i].value === departmentCode) {
-								deptInput.value = departmentCode;
-								deptInput.dispatchEvent(new Event('change'));
-								break;
+				zipInput.addEventListener(
+					'keyup',
+					function (this: HTMLInputElement): void {
+						const postalCode = this.value;
+						if (postalCode.length >= 2) {
+							const departmentCode = postalCode.substring(0, 2);
+							if (departmentCode === '20') {
+								return;
+							} // Corse
+							for (let i = 0; i < deptInput.options.length; i++) {
+								if (
+									deptInput.options[i].value ===
+									departmentCode
+								) {
+									deptInput.value = departmentCode;
+									deptInput.dispatchEvent(
+										new Event('change')
+									);
+									break;
+								}
 							}
 						}
 					}
-				});
+				);
 			}
 		});
 
 		// Dept -> Region
-		const deptInputs = document.querySelectorAll<HTMLSelectElement>('.dame-js-dept');
+		const deptInputs =
+			document.querySelectorAll<HTMLSelectElement>('.dame-js-dept');
 		deptInputs.forEach((deptInput: HTMLSelectElement): void => {
 			const group = deptInput.dataset.group;
 			if (!group) {
@@ -501,14 +574,19 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				dame_admin_data &&
 				dame_admin_data.dept_region_map
 			) {
-				deptInput.addEventListener('change', function (this: HTMLSelectElement): void {
-					const selectedDept = this.value;
-					const mapping = dame_admin_data.dept_region_map;
-					const regionCode = mapping ? mapping[selectedDept] : undefined;
-					if (regionCode) {
-						regionInput.value = regionCode;
+				deptInput.addEventListener(
+					'change',
+					function (this: HTMLSelectElement): void {
+						const selectedDept = this.value;
+						const mapping = dame_admin_data.dept_region_map;
+						const regionCode = mapping
+							? mapping[selectedDept]
+							: undefined;
+						if (regionCode) {
+							regionInput.value = regionCode;
+						}
 					}
-				});
+				);
 			}
 		});
 	}
@@ -525,31 +603,52 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				const addressInput =
 					document.querySelector<HTMLInputElement>(
 						`.dame-js-address[data-group="${group}"]`
-					) || (document.getElementById('dame_address_1') as HTMLInputElement | null);
+					) ||
+					(document.getElementById(
+						'dame_address_1'
+					) as HTMLInputElement | null);
 				const postalCodeInput =
 					document.querySelector<HTMLInputElement>(
 						`.dame-js-zip[data-group="${group}"]`
-					) || (document.getElementById('dame_postal_code') as HTMLInputElement | null);
+					) ||
+					(document.getElementById(
+						'dame_postal_code'
+					) as HTMLInputElement | null);
 				const cityInput =
 					document.querySelector<HTMLInputElement>(
 						`.dame-js-city[data-group="${group}"]`
-					) || (document.getElementById('dame_city') as HTMLInputElement | null);
+					) ||
+					(document.getElementById(
+						'dame_city'
+					) as HTMLInputElement | null);
 				const latitudeInput =
 					document.querySelector<HTMLInputElement>(
 						`.dame-js-lat[data-group="${group}"]`
-					) || (document.getElementById('dame_latitude') as HTMLInputElement | null);
+					) ||
+					(document.getElementById(
+						'dame_latitude'
+					) as HTMLInputElement | null);
 				const longitudeInput =
 					document.querySelector<HTMLInputElement>(
 						`.dame-js-long[data-group="${group}"], .dame-js-lng[data-group="${group}"]`
-					) || (document.getElementById('dame_longitude') as HTMLInputElement | null);
+					) ||
+					(document.getElementById(
+						'dame_longitude'
+					) as HTMLInputElement | null);
 				const distanceInput =
 					document.querySelector<HTMLInputElement>(
 						`.dame-js-dist[data-group="${group}"]`
-					) || (document.getElementById('dame_distance') as HTMLInputElement | null);
+					) ||
+					(document.getElementById(
+						'dame_distance'
+					) as HTMLInputElement | null);
 				const travelTimeInput =
 					document.querySelector<HTMLInputElement>(
 						`.dame-js-time[data-group="${group}"]`
-					) || (document.getElementById('dame_travel_time') as HTMLInputElement | null);
+					) ||
+					(document.getElementById(
+						'dame_travel_time'
+					) as HTMLInputElement | null);
 
 				const lat = latitudeInput ? latitudeInput.value.trim() : '';
 				const lng = longitudeInput ? longitudeInput.value.trim() : '';
@@ -589,7 +688,10 @@ document.addEventListener('DOMContentLoaded', (): void => {
 						addressQuery
 					)}&type=StreetAddress`
 				)
-					.then((response: Response) => response.json() as Promise<IgnAddressResponse>)
+					.then(
+						(response: Response) =>
+							response.json() as Promise<IgnAddressResponse>
+					)
 					.then((data: IgnAddressResponse): void => {
 						if (data.results && data.results.length > 0) {
 							const result = data.results[0];
@@ -599,7 +701,10 @@ document.addEventListener('DOMContentLoaded', (): void => {
 							if (longitudeInput && result.x !== undefined) {
 								longitudeInput.value = String(result.x);
 							}
-							if (result.y !== undefined && result.x !== undefined) {
+							if (
+								result.y !== undefined &&
+								result.x !== undefined
+							) {
 								calculateRoute(
 									result.y,
 									result.x,
@@ -634,7 +739,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	// --- 5. Generic Confirmation Handler (data-confirm) ---
 	function initDataConfirm(): void {
 		document.addEventListener('click', (e: MouseEvent): void => {
-			const target = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-confirm]');
+			const target = (
+				e.target as HTMLElement | null
+			)?.closest<HTMLElement>('[data-confirm]');
 			if (!target) {
 				return;
 			}
@@ -650,14 +757,20 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	function initAutoSelect(): void {
 		document.addEventListener('focusin', (e: FocusEvent): void => {
 			const target = e.target;
-			if (target instanceof HTMLInputElement && target.classList.contains('dame-auto-select')) {
+			if (
+				target instanceof HTMLInputElement &&
+				target.classList.contains('dame-auto-select')
+			) {
 				target.select();
 			}
 		});
 
 		document.addEventListener('click', (e: MouseEvent): void => {
 			const target = e.target;
-			if (target instanceof HTMLInputElement && target.classList.contains('dame-auto-select')) {
+			if (
+				target instanceof HTMLInputElement &&
+				target.classList.contains('dame-auto-select')
+			) {
 				target.select();
 			}
 		});
@@ -671,4 +784,3 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	initDataConfirm();
 	initAutoSelect();
 });
-

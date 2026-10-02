@@ -16,12 +16,19 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	});
 
 	// 1. Modal Trigger & Management
-	const triggers = document.querySelectorAll<HTMLElement>('.dame-nl-btn-trigger');
+	const triggers = document.querySelectorAll<HTMLElement>(
+		'.dame-nl-btn-trigger'
+	);
 
 	/**
 	 * Open a specific modal dialog
+	 * @param modal
+	 * @param triggerBtn
 	 */
-	function openModal(modal: ModalWithTrigger | null, triggerBtn: HTMLElement | null = null): void {
+	function openModal(
+		modal: ModalWithTrigger | null,
+		triggerBtn: HTMLElement | null = null
+	): void {
 		if (!modal) {
 			return;
 		}
@@ -45,6 +52,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 	/**
 	 * Close a specific modal dialog
+	 * @param modal
 	 */
 	function closeModal(modal: ModalWithTrigger | null): void {
 		if (!modal) {
@@ -66,7 +74,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			e.preventDefault();
 			const targetId = btn.getAttribute('data-dame-modal-target');
 			if (targetId) {
-				const modal = document.getElementById(targetId) as ModalWithTrigger | null;
+				const modal = document.getElementById(
+					targetId
+				) as ModalWithTrigger | null;
 				if (modal) {
 					openModal(modal, btn);
 				}
@@ -77,10 +87,13 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	// Attach close events on close buttons and backdrops
 	document.addEventListener('click', (e: MouseEvent): void => {
 		const target = e.target as HTMLElement | null;
-		const closeTarget = target?.closest<HTMLElement>('[data-dame-modal-close]');
+		const closeTarget = target?.closest<HTMLElement>(
+			'[data-dame-modal-close]'
+		);
 		if (closeTarget) {
 			e.preventDefault();
-			const modal = closeTarget.closest<ModalWithTrigger>('.dame-nl-modal');
+			const modal =
+				closeTarget.closest<ModalWithTrigger>('.dame-nl-modal');
 			if (modal) {
 				closeModal(modal);
 			}
@@ -106,8 +119,12 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		form.addEventListener('submit', (e: Event): void => {
 			e.preventDefault();
 
-			const feedbackBox = form.querySelector<HTMLElement>('.dame-nl-form__feedback');
-			const submitBtn = form.querySelector<HTMLButtonElement>('.dame-nl-form__submit');
+			const feedbackBox = form.querySelector<HTMLElement>(
+				'.dame-nl-form__feedback'
+			);
+			const submitBtn = form.querySelector<HTMLButtonElement>(
+				'.dame-nl-form__submit'
+			);
 
 			if (!feedbackBox || !submitBtn) {
 				return;
@@ -140,8 +157,12 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				return;
 			}
 
-			const submitText = form.querySelector<HTMLElement>('.dame-nl-form__submit-text');
-			const spinner = form.querySelector<HTMLElement>('.dame-nl-form__spinner');
+			const submitText = form.querySelector<HTMLElement>(
+				'.dame-nl-form__submit-text'
+			);
+			const spinner = form.querySelector<HTMLElement>(
+				'.dame-nl-form__spinner'
+			);
 			const originalText = submitText ? submitText.textContent || '' : '';
 
 			// UI loading state
@@ -157,7 +178,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 			const formData = new FormData(form);
 			const ajaxUrl =
-				typeof dameNewsletterData !== 'undefined' && dameNewsletterData?.ajaxUrl
+				typeof dameNewsletterData !== 'undefined' &&
+				dameNewsletterData?.ajaxUrl
 					? dameNewsletterData.ajaxUrl
 					: '/wp-admin/admin-ajax.php';
 
@@ -168,7 +190,13 @@ document.addEventListener('DOMContentLoaded', (): void => {
 					'X-Requested-With': 'XMLHttpRequest',
 				},
 			})
-				.then((response: Response) => response.json() as Promise<{ success: boolean; data?: { message?: string } }>)
+				.then(
+					(response: Response) =>
+						response.json() as Promise<{
+							success: boolean;
+							data?: { message?: string };
+						}>
+				)
 				.then((result) => {
 					feedbackBox.style.display = 'block';
 					if (result.success) {
@@ -218,7 +246,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	document.addEventListener('click', (e: MouseEvent): void => {
 		const target = e.target as HTMLElement | null;
 		if (target?.closest('.dame-nl-notice-close')) {
-			const overlay = document.getElementById('dame-newsletter-notice-overlay');
+			const overlay = document.getElementById(
+				'dame-newsletter-notice-overlay'
+			);
 			overlay?.remove();
 		}
 	});

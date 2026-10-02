@@ -35,6 +35,7 @@ class AttachmentHandler {
 	 * @return bool True if upload succeeded or no file provided, false on upload error.
 	 */
 	public function handle_upload( int $message_id ): bool {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce is verified in calling save/submission flow.
 		if ( ! isset( $_FILES['dame_message_attachment']['error'] ) || empty( $_FILES['dame_message_attachment']['name'] ) || UPLOAD_ERR_NO_FILE === $_FILES['dame_message_attachment']['error'] ) {
 			delete_post_meta( $message_id, '_dame_message_attachment' );
 			return true;
@@ -57,9 +58,11 @@ class AttachmentHandler {
 
 		if ( isset( $upload['file'] ) && ! isset( $upload['error'] ) ) {
 			update_post_meta( $message_id, '_dame_message_attachment', sanitize_text_field( (string) $upload['file'] ) );
+			// phpcs:enable WordPress.Security.NonceVerification.Missing
 			return true;
 		}
 
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		return false;
 	}
 }

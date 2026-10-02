@@ -55,7 +55,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 		// Add Time Slot
 		if (target.closest('.add-benevolat-time-slot')) {
-			const dateGroup = target.closest<HTMLElement>('.benevolat-date-group');
+			const dateGroup = target.closest<HTMLElement>(
+				'.benevolat-date-group'
+			);
 			if (!dateGroup) {
 				return;
 			}
@@ -79,7 +81,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			if (timeIndex > 0) {
 				const lastSlot = slots[slots.length - 1];
 				const timeInputs =
-					lastSlot.querySelectorAll<HTMLInputElement>('input[type="time"]');
+					lastSlot.querySelectorAll<HTMLInputElement>(
+						'input[type="time"]'
+					);
 				if (timeInputs.length >= 2) {
 					previousEndTime = timeInputs[1].value;
 				}

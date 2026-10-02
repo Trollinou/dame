@@ -1,6 +1,10 @@
 document.addEventListener('DOMContentLoaded', (): void => {
-	const form = document.getElementById('dame-contact-form') as HTMLFormElement | null;
-	const feedback = document.getElementById('dame-contact-feedback') as HTMLElement | null;
+	const form = document.getElementById(
+		'dame-contact-form'
+	) as HTMLFormElement | null;
+	const feedback = document.getElementById(
+		'dame-contact-feedback'
+	) as HTMLElement | null;
 
 	if (form && feedback) {
 		form.addEventListener('submit', (e: Event): void => {
@@ -20,7 +24,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				formData.append('action', 'dame_submit_contact_form');
 			}
 
-			const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+			const submitBtn = form.querySelector<HTMLButtonElement>(
+				'button[type="submit"]'
+			);
 			const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
 
 			if (submitBtn) {
@@ -39,13 +45,19 @@ document.addEventListener('DOMContentLoaded', (): void => {
 							'Erreur réseau (' + response.status + ')'
 						);
 					}
-					return response.json() as Promise<{ success: boolean; data: { message?: string } | string }>;
+					return response.json() as Promise<{
+						success: boolean;
+						data: { message?: string } | string;
+					}>;
 				})
 				.then((data) => {
 					feedback.style.display = 'block';
-					const message = typeof data.data === 'object' && data.data !== null && data.data.message
-						? data.data.message
-						: String(data.data);
+					const message =
+						typeof data.data === 'object' &&
+						data.data !== null &&
+						data.data.message
+							? data.data.message
+							: String(data.data);
 
 					if (data.success) {
 						feedback.innerHTML =

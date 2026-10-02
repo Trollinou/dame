@@ -481,7 +481,7 @@ class BatchSender {
 			}
 
 			// Ensure all <img> tags have responsive constraints in email clients.
-			$updated_html = $processor->get_updated_html();
+			$updated_html  = $processor->get_updated_html();
 			$img_processor = new \WP_HTML_Tag_Processor( $updated_html );
 			while ( $img_processor->next_tag( array( 'tag_name' => 'img' ) ) ) {
 				$style = (string) $img_processor->get_attribute( 'style' );

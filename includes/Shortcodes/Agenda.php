@@ -31,10 +31,11 @@ class Agenda {
 	/**
 	 * Renders the [dame_agenda] shortcode.
 	 *
-	 * @param array<string, mixed> $atts Shortcode attributes.
+	 * @param array<string, mixed>|string $atts Shortcode attributes.
 	 * @return string The shortcode output.
 	 */
-	public function render_agenda( $atts ) {
+	public function render_agenda( $atts = array() ) {
+		$atts = shortcode_atts( array(), (array) $atts, 'dame_agenda' );
 		// Enqueue scripts and styles (using legacy paths as requested if files haven't moved).
 		// Assuming files are in assets/css and assets/js relative to plugin root.
 		// Since this class is in includes/Shortcodes, dirname(__DIR__, 2) gets to root.
@@ -107,8 +108,8 @@ class Agenda {
 		);
 
 		$interactivity_context = array(
-			'currentYear'        => (int) date( 'Y' ),
-			'currentMonth'       => (int) date( 'n' ) - 1,
+			'currentYear'        => (int) gmdate( 'Y' ),
+			'currentMonth'       => (int) gmdate( 'n' ) - 1,
 			'monthTitle'         => '',
 			'startOfWeek'        => $start_of_week,
 			'searchTerm'         => '',

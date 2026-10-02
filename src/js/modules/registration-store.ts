@@ -28,12 +28,12 @@ export const registrationStore = store('dame/registration', {
 	},
 	actions: {
 		onBirthDateChange(event: Event): void {
-			const ctx = getContext<RegistrationContext>();
 			const target = event.target as HTMLInputElement;
 			if (!target || !target.value) {
 				return;
 			}
 
+			const ctx = getContext<RegistrationContext>();
 			const birthDate = new Date(target.value);
 			const today = new Date();
 			let age = today.getFullYear() - birthDate.getFullYear();
@@ -52,12 +52,12 @@ export const registrationStore = store('dame/registration', {
 
 		async submitForm(event: Event): Promise<void> {
 			event.preventDefault();
-			const ctx = getContext<RegistrationContext>();
 			const form = event.target as HTMLFormElement;
 			if (!form) {
 				return;
 			}
 
+			const ctx = getContext<RegistrationContext>();
 			ctx.isSubmitting = true;
 			ctx.message = '';
 
@@ -73,13 +73,17 @@ export const registrationStore = store('dame/registration', {
 				const result = await response.json();
 				if (result.success) {
 					ctx.status = 'success';
-					ctx.message = result.data?.message || 'Votre fiche d\'inscription a bien été transmise.';
+					ctx.message =
+						result.data?.message ||
+						"Votre fiche d'inscription a bien été transmise.";
 					form.reset();
 				} else {
 					ctx.status = 'error';
-					ctx.message = result.data?.message || 'Erreur lors de l\'enregistrement de la fiche.';
+					ctx.message =
+						result.data?.message ||
+						"Erreur lors de l'enregistrement de la fiche.";
 				}
-			} catch (err) {
+			} catch {
 				ctx.status = 'error';
 				ctx.message = 'Erreur de communication avec le serveur.';
 			} finally {

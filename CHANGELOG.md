@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+### Modernisation WordPress 7.x & Script Modules (Interactivity API)
+- **Migration vers l'Interactivity API et les Script Modules ESM (`@wordpress/interactivity`)** :
+  - **Stores réactifs d'état (`src/js/modules/`)** :
+    - `agenda-store.ts` : Navigation fluide par mois, filtrage instantané par catégorie/recherche et ouverture de modale d'événement via signaux réactifs (`dame/agenda`).
+    - `benevolat-store.ts` : Sélection réactive des créneaux et soumission asynchrone des disponibilités sans rechargement (`dame/benevolat`).
+    - `contact-store.ts` : Soumission de message en temps réel avec indicateur d'état et validation (`dame/contact`).
+    - `newsletter-store.ts` : Contrôle réactif de la modale d'inscription et intégration du cycle double opt-in (`dame/newsletter`).
+    - `registration-store.ts` : Calcul dynamique de minorité à la saisie de la date de naissance et bascule des représentants légaux (`dame/registration`).
+  - **Enregistrement des Script Modules ESM** : Déclaration via `wp_register_script_module()` et injection ciblée dans les 6 shortcodes (`dame_agenda`, `dame_liste_agenda`, `dame_fiche_inscription`, `dame_contact`, `dame_newsletter`, `dame_benevolat`).
+  - **Types TypeScript Ambiants (`src/types/interactivity.d.ts`)** : Contrat de typage pour `store()`, `getContext()` et `getElement()` assurant la compatibilité `tsc --noEmit`.
+
+### Blocs Gutenberg & Block Bindings API
+- **Block Bindings API (`DAME\Blocks\Manager`)** :
+  - Sources de données déclarées pour lier les attributs de blocs natifs (titres, paragraphes, boutons) aux métadonnées des CPTs DAME (`dame/agenda-data`, `dame/adherent-data`).
+- **Enregistrement des blocs natifs hybrides (`blocks/`)** :
+  - Blocs conformes `block.json` pour tous les composants publics avec catégorie Gutenberg dédiée `dame`.
+- **Modèles FSE (`templates/`)** :
+  - Gabarits de blocs `single-dame_agenda.html` et `archive-dame_agenda.html`.
+
+### Palette de Commandes WordPress (Ctrl+K / Cmd+K)
+- **Intégration Command Palette (`src/js/admin-command-palette.ts`)** :
+  - Raccourcis d'administration rapides pour la création d'adhérents, événements, appels à bénévolat, envoi de mailings, synchronisation FFE et accès aux réglages.
+
+### Contrôles Qualité & Conformité (PHPStan, WPCS & ESLint)
+- **PHPStan Level 7** : Résolution intégrale de toutes les alertes (122 fichiers vérifiés, 0 erreur).
+- **PHP CodeSniffer / WPCS** : Résolution de l'intégralité des 101 erreurs de standards (remplacement des ternaires courts, échappements stricts `esc_html`, `gmdate`, validation nonces).
+- **ESLint & TypeScript** : Nettoyage et formatage strict Prettier/WordPress, élimination des variables d'exceptions inutilisées et réorganisation séquentielle des affectations de contexte.
+
 ### Conformité CSP & Élimination du JavaScript Inline
 - **Élimination intégrale du code JavaScript inline (balises `<script>` et attributs `on*`)** :
   - **Délégation d'événements globale (`src/js/admin-common.ts`)** :

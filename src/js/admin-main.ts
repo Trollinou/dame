@@ -5,123 +5,174 @@ interface ArticleItem {
 
 document.addEventListener('DOMContentLoaded', (): void => {
 	const isNewPost = document.body.classList.contains('post-new-php');
-	const postType = document.getElementById('post_type') as HTMLInputElement | null;
+	const postType = document.getElementById(
+		'post_type'
+	) as HTMLInputElement | null;
 
 	if (isNewPost && postType && postType.value === 'adherent') {
 		// Mettre le focus sur le champ Prénom
-		const firstNameInput = document.getElementById('dame_first_name') as HTMLInputElement | null;
+		const firstNameInput = document.getElementById(
+			'dame_first_name'
+		) as HTMLInputElement | null;
 		if (firstNameInput) {
 			firstNameInput.focus();
 		}
 	}
 
 	// Auto-select department from postal code
-	const postalCodeInput = document.getElementById('dame_postal_code') as HTMLInputElement | null;
-	const departmentSelect = document.getElementById('dame_department') as HTMLSelectElement | null;
+	const postalCodeInput = document.getElementById(
+		'dame_postal_code'
+	) as HTMLInputElement | null;
+	const departmentSelect = document.getElementById(
+		'dame_department'
+	) as HTMLSelectElement | null;
 
 	if (postalCodeInput && departmentSelect) {
-		postalCodeInput.addEventListener('keyup', function (this: HTMLInputElement): void {
-			const postalCode = this.value;
-			if (postalCode.length >= 2) {
-				let departmentCode = postalCode.substring(0, 2);
+		postalCodeInput.addEventListener(
+			'keyup',
+			function (this: HTMLInputElement): void {
+				const postalCode = this.value;
+				if (postalCode.length >= 2) {
+					let departmentCode = postalCode.substring(0, 2);
 
-				// Handle Corsica postal codes (20) which can be 2A or 2B
-				if (postalCode.length >= 3 && postalCode.startsWith('20')) {
-					const thirdDigit = parseInt(postalCode.substring(2, 3), 10);
-					if (!isNaN(thirdDigit)) {
-						if (thirdDigit <= 1) {
-							// 200xx, 201xx
-							departmentCode = '2A';
-						} else {
-							// 202xx and above
-							departmentCode = '2B';
+					// Handle Corsica postal codes (20) which can be 2A or 2B
+					if (postalCode.length >= 3 && postalCode.startsWith('20')) {
+						const thirdDigit = parseInt(
+							postalCode.substring(2, 3),
+							10
+						);
+						if (!isNaN(thirdDigit)) {
+							if (thirdDigit <= 1) {
+								// 200xx, 201xx
+								departmentCode = '2A';
+							} else {
+								// 202xx and above
+								departmentCode = '2B';
+							}
+						}
+					} else if (
+						departmentCode === '97' ||
+						postalCode.startsWith('988')
+					) {
+						// Handle overseas departments (97x and 988)
+						if (postalCode.length >= 3) {
+							departmentCode = postalCode.substring(0, 3);
+						}
+					} else if (postalCode.startsWith('980')) {
+						// Handle Monaco (98000 -> 06)
+						departmentCode = '06';
+					}
+
+					let departmentChanged = false;
+					for (let i = 0; i < departmentSelect.options.length; i++) {
+						const option = departmentSelect.options[i];
+						if (option.value === departmentCode) {
+							if (departmentSelect.value !== departmentCode) {
+								departmentSelect.value = departmentCode;
+								departmentChanged = true;
+							}
+							break;
 						}
 					}
-				} else if (
-					departmentCode === '97' ||
-					postalCode.startsWith('988')
-				) {
-					// Handle overseas departments (97x and 988)
-					if (postalCode.length >= 3) {
-						departmentCode = postalCode.substring(0, 3);
-					}
-				} else if (postalCode.startsWith('980')) {
-					// Handle Monaco (98000 -> 06)
-					departmentCode = '06';
-				}
 
-				let departmentChanged = false;
-				for (let i = 0; i < departmentSelect.options.length; i++) {
-					const option = departmentSelect.options[i];
-					if (option.value === departmentCode) {
-						if (departmentSelect.value !== departmentCode) {
-							departmentSelect.value = departmentCode;
-							departmentChanged = true;
-						}
-						break;
+					// If the department was changed, trigger the change event to update the region
+					if (departmentChanged) {
+						departmentSelect.dispatchEvent(new Event('change'));
 					}
-				}
-
-				// If the department was changed, trigger the change event to update the region
-				if (departmentChanged) {
-					departmentSelect.dispatchEvent(new Event('change'));
 				}
 			}
-		});
+		);
 	}
 
 	// Auto-set membership status to 'Active' when date is entered
-	const membershipDateInput = document.getElementById('dame_membership_date') as HTMLInputElement | null;
+	const membershipDateInput = document.getElementById(
+		'dame_membership_date'
+	) as HTMLInputElement | null;
 	const membershipStatusSelect = document.getElementById(
 		'dame_membership_status'
 	) as HTMLSelectElement | null;
 	if (membershipDateInput && membershipStatusSelect) {
-		membershipDateInput.addEventListener('change', function (this: HTMLInputElement): void {
-			if (this.value && membershipStatusSelect.value !== 'A') {
-				membershipStatusSelect.value = 'A';
+		membershipDateInput.addEventListener(
+			'change',
+			function (this: HTMLInputElement): void {
+				if (this.value && membershipStatusSelect.value !== 'A') {
+					membershipStatusSelect.value = 'A';
+				}
 			}
-		});
+		);
 	}
 
 	// Department -> Region auto-selection
-	const departmentSelectForRegion =
-		document.getElementById('dame_department') as HTMLSelectElement | null;
-	const regionSelect = document.getElementById('dame_region') as HTMLSelectElement | null;
+	const departmentSelectForRegion = document.getElementById(
+		'dame_department'
+	) as HTMLSelectElement | null;
+	const regionSelect = document.getElementById(
+		'dame_region'
+	) as HTMLSelectElement | null;
 
 	if (
 		departmentSelectForRegion &&
 		regionSelect &&
 		typeof dame_admin_data !== 'undefined'
 	) {
-		departmentSelectForRegion.addEventListener('change', function (this: HTMLSelectElement): void {
-			const departmentCode = this.value;
-			const mapping = dame_admin_data.department_region_mapping;
-			const regionCode = mapping ? mapping[departmentCode] : undefined;
-			if (regionCode) {
-				regionSelect.value = regionCode;
-			} else {
-				regionSelect.value = 'NA'; // Default to N/A if not found
+		departmentSelectForRegion.addEventListener(
+			'change',
+			function (this: HTMLSelectElement): void {
+				const departmentCode = this.value;
+				const mapping = dame_admin_data.department_region_mapping;
+				const regionCode = mapping
+					? mapping[departmentCode]
+					: undefined;
+				if (regionCode) {
+					regionSelect.value = regionCode;
+				} else {
+					regionSelect.value = 'NA'; // Default to N/A if not found
+				}
 			}
-		});
+		);
 	}
 
 	// Minor auto-population logic
-	const birthDateInput = document.getElementById('dame_birth_date') as HTMLInputElement | null;
-	const adherentPhone = document.getElementById('dame_phone_number') as HTMLInputElement | null;
-	const adherentEmail = document.getElementById('dame_email') as HTMLInputElement | null;
-	const adherentAddress1 = document.getElementById('dame_address_1') as HTMLInputElement | null;
-	const adherentAddress2 = document.getElementById('dame_address_2') as HTMLInputElement | null;
-	const adherentPostalCode = document.getElementById('dame_postal_code') as HTMLInputElement | null;
-	const adherentCity = document.getElementById('dame_city') as HTMLInputElement | null;
+	const birthDateInput = document.getElementById(
+		'dame_birth_date'
+	) as HTMLInputElement | null;
+	const adherentPhone = document.getElementById(
+		'dame_phone_number'
+	) as HTMLInputElement | null;
+	const adherentEmail = document.getElementById(
+		'dame_email'
+	) as HTMLInputElement | null;
+	const adherentAddress1 = document.getElementById(
+		'dame_address_1'
+	) as HTMLInputElement | null;
+	const adherentAddress2 = document.getElementById(
+		'dame_address_2'
+	) as HTMLInputElement | null;
+	const adherentPostalCode = document.getElementById(
+		'dame_postal_code'
+	) as HTMLInputElement | null;
+	const adherentCity = document.getElementById(
+		'dame_city'
+	) as HTMLInputElement | null;
 
-	const rep1Phone = document.getElementById('dame_legal_rep_1_phone') as HTMLInputElement | null;
-	const rep1Email = document.getElementById('dame_legal_rep_1_email') as HTMLInputElement | null;
-	const rep1Address1 = document.getElementById('dame_legal_rep_1_address_1') as HTMLInputElement | null;
-	const rep1Address2 = document.getElementById('dame_legal_rep_1_address_2') as HTMLInputElement | null;
+	const rep1Phone = document.getElementById(
+		'dame_legal_rep_1_phone'
+	) as HTMLInputElement | null;
+	const rep1Email = document.getElementById(
+		'dame_legal_rep_1_email'
+	) as HTMLInputElement | null;
+	const rep1Address1 = document.getElementById(
+		'dame_legal_rep_1_address_1'
+	) as HTMLInputElement | null;
+	const rep1Address2 = document.getElementById(
+		'dame_legal_rep_1_address_2'
+	) as HTMLInputElement | null;
 	const rep1PostalCode = document.getElementById(
 		'dame_legal_rep_1_postal_code'
 	) as HTMLInputElement | null;
-	const rep1City = document.getElementById('dame_legal_rep_1_city') as HTMLInputElement | null;
+	const rep1City = document.getElementById(
+		'dame_legal_rep_1_city'
+	) as HTMLInputElement | null;
 
 	function isMinor(): boolean {
 		if (!birthDateInput || !birthDateInput.value) {
@@ -214,7 +265,13 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				method: 'POST',
 				body: data,
 			})
-				.then((response: Response) => response.json() as Promise<{ success: boolean; data: ArticleItem[] & { message?: string } }>)
+				.then(
+					(response: Response) =>
+						response.json() as Promise<{
+							success: boolean;
+							data: ArticleItem[] & { message?: string };
+						}>
+				)
 				.then((response) => {
 					articlesContainer.style.opacity = '1';
 					articlesContainer.innerHTML = ''; // Clear previous content
@@ -238,7 +295,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 						} else {
 							const noResult = document.createElement('p');
 							noResult.textContent =
-								dame_mailing_data.no_articles_found || 'Aucun article trouvé.';
+								dame_mailing_data.no_articles_found ||
+								'Aucun article trouvé.';
 							articlesContainer.appendChild(noResult);
 						}
 					} else {
@@ -246,7 +304,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 						errorMsg.style.color = 'red';
 						errorMsg.textContent =
 							(response.data as { message?: string })?.message ||
-							dame_mailing_data.generic_error || 'Une erreur est survenue.';
+							dame_mailing_data.generic_error ||
+							'Une erreur est survenue.';
 						articlesContainer.appendChild(errorMsg);
 					}
 				})
@@ -254,7 +313,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 					articlesContainer.style.opacity = '1';
 					const errorMsg = document.createElement('p');
 					errorMsg.style.color = 'red';
-					errorMsg.textContent = dame_mailing_data.generic_error || 'Une erreur est survenue.';
+					errorMsg.textContent =
+						dame_mailing_data.generic_error ||
+						'Une erreur est survenue.';
 					articlesContainer.innerHTML = '';
 					articlesContainer.appendChild(errorMsg);
 
@@ -265,8 +326,13 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		function loadInitialState(): void {
 			try {
 				const savedRaw = localStorage.getItem(storageKey);
-				const savedCategories: string[] = savedRaw ? JSON.parse(savedRaw) : [];
-				if (Array.isArray(savedCategories) && savedCategories.length > 0) {
+				const savedCategories: string[] = savedRaw
+					? JSON.parse(savedRaw)
+					: [];
+				if (
+					Array.isArray(savedCategories) &&
+					savedCategories.length > 0
+				) {
 					checkboxes.forEach((cb: HTMLInputElement): void => {
 						if (savedCategories.includes(cb.value)) {
 							cb.checked = true;
@@ -296,28 +362,42 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 	// Auto-copy start date to end date for agenda events
 	if (document.body.classList.contains('post-type-dame_agenda')) {
-		const startDateInput = document.getElementById('dame_start_date') as HTMLInputElement | null;
-		const endDateInput = document.getElementById('dame_end_date') as HTMLInputElement | null;
+		const startDateInput = document.getElementById(
+			'dame_start_date'
+		) as HTMLInputElement | null;
+		const endDateInput = document.getElementById(
+			'dame_end_date'
+		) as HTMLInputElement | null;
 
 		if (startDateInput && endDateInput) {
-			startDateInput.addEventListener('blur', function (this: HTMLInputElement): void {
-				if (this.value && !endDateInput.value) {
-					endDateInput.value = this.value;
+			startDateInput.addEventListener(
+				'blur',
+				function (this: HTMLInputElement): void {
+					if (this.value && !endDateInput.value) {
+						endDateInput.value = this.value;
+					}
 				}
-			});
+			);
 		}
 
 		// Form validation for required fields
-		const postForm = document.getElementById('post') as HTMLFormElement | null;
+		const postForm = document.getElementById(
+			'post'
+		) as HTMLFormElement | null;
 		if (postForm) {
 			postForm.addEventListener('submit', function (e: Event): void {
-				const startDateEl = document.getElementById('dame_start_date') as HTMLInputElement | null;
-				const endDateEl = document.getElementById('dame_end_date') as HTMLInputElement | null;
+				const startDateEl = document.getElementById(
+					'dame_start_date'
+				) as HTMLInputElement | null;
+				const endDateEl = document.getElementById(
+					'dame_end_date'
+				) as HTMLInputElement | null;
 				const startDate = startDateEl ? startDateEl.value : '';
 				const endDate = endDateEl ? endDateEl.value : '';
-				const categoryCheckboxes = document.querySelectorAll<HTMLInputElement>(
-					'#dame_agenda_categorychecklist input[type="checkbox"]'
-				);
+				const categoryCheckboxes =
+					document.querySelectorAll<HTMLInputElement>(
+						'#dame_agenda_categorychecklist input[type="checkbox"]'
+					);
 				let categoryChecked = false;
 
 				for (let i = 0; i < categoryCheckboxes.length; i++) {

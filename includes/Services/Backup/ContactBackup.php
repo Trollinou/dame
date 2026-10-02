@@ -583,7 +583,7 @@ class ContactBackup {
 
 		// Read headers.
 		$headers = fgetcsv( $handle, 0, ';', '"', '\\' );
-		if ( ! headers ) {
+		if ( ! $headers ) {
 			$this->add_admin_notice( __( 'Impossible de lire l\'en-tête du fichier CSV HelloAsso.', 'dame' ), 'error' );
 			fclose( $handle );
 			return;

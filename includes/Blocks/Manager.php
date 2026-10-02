@@ -35,9 +35,10 @@ class Manager {
 	 * Registers the custom DAME block category in the Gutenberg inserter.
 	 *
 	 * @param array<int, array<string, string>> $categories Existing block categories.
+	 * @param \WP_Block_Editor_Context|null     $block_editor_context Context for the block editor.
 	 * @return array<int, array<string, string>> Filtered categories with DAME prepended.
 	 */
-	public function register_block_category( array $categories ): array {
+	public function register_block_category( array $categories, ?\WP_Block_Editor_Context $block_editor_context = null ): array {
 		return array_merge(
 			array(
 				array(
@@ -112,7 +113,7 @@ class Manager {
 	 * Resolves dynamic values for the dame/agenda-data block binding source.
 	 *
 	 * @param array<string, mixed> $source_args Arguments defined on the binding.
-	 * @param \WP_Block             $block_instance Current block instance.
+	 * @param \WP_Block            $block_instance Current block instance.
 	 * @return string|null Formatted string or null.
 	 */
 	public function get_agenda_binding_value( array $source_args, $block_instance ): ?string {
@@ -181,7 +182,7 @@ class Manager {
 	 * Resolves dynamic values for the dame/adherent-data block binding source.
 	 *
 	 * @param array<string, mixed> $source_args Arguments defined on the binding.
-	 * @param \WP_Block             $block_instance Current block instance.
+	 * @param \WP_Block            $block_instance Current block instance.
 	 * @return string|null Formatted string or null.
 	 */
 	public function get_adherent_binding_value( array $source_args, $block_instance ): ?string {

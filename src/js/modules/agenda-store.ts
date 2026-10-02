@@ -24,15 +24,28 @@ export interface AgendaContext {
 }
 
 const MONTH_NAMES = [
-	'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-	'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+	'Janvier',
+	'Février',
+	'Mars',
+	'Avril',
+	'Mai',
+	'Juin',
+	'Juillet',
+	'Août',
+	'Septembre',
+	'Octobre',
+	'Novembre',
+	'Décembre',
 ];
 
 export const agendaStore = store('dame/agenda', {
 	state: {
 		get isFilterActive(): boolean {
 			const ctx = getContext<AgendaContext>();
-			return ctx.selectedCategories.length > 0 || ctx.searchTerm.trim().length > 0;
+			return (
+				ctx.selectedCategories.length > 0 ||
+				ctx.searchTerm.trim().length > 0
+			);
 		},
 		get currentMonthDisplay(): string {
 			const ctx = getContext<AgendaContext>();
@@ -79,19 +92,21 @@ export const agendaStore = store('dame/agenda', {
 		},
 
 		onCategoryToggle(event: Event): void {
-			const ctx = getContext<AgendaContext>();
 			const target = event.target as HTMLInputElement;
 			if (!target) {
 				return;
 			}
 
+			const ctx = getContext<AgendaContext>();
 			const val = target.value;
 			if (target.checked) {
 				if (!ctx.selectedCategories.includes(val)) {
 					ctx.selectedCategories.push(val);
 				}
 			} else {
-				ctx.selectedCategories = ctx.selectedCategories.filter(c => c !== val);
+				ctx.selectedCategories = ctx.selectedCategories.filter(
+					(c: string) => c !== val
+				);
 			}
 			agendaStore.actions.fetchEvents();
 		},
@@ -123,7 +138,11 @@ export const agendaStore = store('dame/agenda', {
 
 			try {
 				const startMonth = `${ctx.currentYear}-${String(ctx.currentMonth + 1).padStart(2, '0')}-01`;
-				const endDay = new Date(ctx.currentYear, ctx.currentMonth + 1, 0).getDate();
+				const endDay = new Date(
+					ctx.currentYear,
+					ctx.currentMonth + 1,
+					0
+				).getDate();
 				const endMonth = `${ctx.currentYear}-${String(ctx.currentMonth + 1).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`;
 
 				const params = new URLSearchParams({
@@ -134,7 +153,10 @@ export const agendaStore = store('dame/agenda', {
 				});
 
 				if (ctx.selectedCategories.length > 0) {
-					params.append('categories', ctx.selectedCategories.join(','));
+					params.append(
+						'categories',
+						ctx.selectedCategories.join(',')
+					);
 				}
 
 				if (ctx.searchTerm) {
@@ -146,7 +168,9 @@ export const agendaStore = store('dame/agenda', {
 					const data = await res.json();
 					if (data.success && Array.isArray(data.data)) {
 						// Custom event dispatch or state update
-						const event = new CustomEvent('dame:agenda:updated', { detail: data.data });
+						const event = new CustomEvent('dame:agenda:updated', {
+							detail: data.data,
+						});
 						document.dispatchEvent(event);
 					}
 				}

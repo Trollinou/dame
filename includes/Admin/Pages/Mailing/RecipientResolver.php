@@ -297,7 +297,7 @@ class RecipientResolver {
 	/**
 	 * Pre-registers message opens tracking records.
 	 *
-	 * @param int                                                                                   $message_id Message post ID.
+	 * @param int                                                                               $message_id Message post ID.
 	 * @param array<string, array{id: int, names: array<string>, prio: int, raw_email: string}> $email_data Email recipient data.
 	 */
 	public function register_tracking_records( int $message_id, array $email_data ): void {

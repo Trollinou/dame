@@ -52,6 +52,11 @@ class Assets {
 			)
 		);
 
+		$is_adherent_cpt        = 'adherent' === $screen->post_type || 'dame_adherent' === $screen->post_type;
+		$is_pre_inscription_cpt = 'dame_pre_inscription' === $screen->post_type;
+		$is_contact_cpt         = 'dame_contact' === $screen->post_type;
+		$is_settings_page       = false !== strpos( (string) $screen->id, 'dame' );
+
 		// Sortie prématurée si nous ne sommes pas sur un écran géré par le plugin pour les styles/scripts lourds.
 		if ( ! $is_adherent_cpt && ! $is_settings_page && ! $is_pre_inscription_cpt && ! $is_contact_cpt ) {
 			return;

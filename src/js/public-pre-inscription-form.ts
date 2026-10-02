@@ -29,7 +29,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		window.initBirthCityAutocomplete('dame_legal_rep_2_commune_naissance');
 	}
 
-	const birthDateInput = document.getElementById('dame_birth_date') as HTMLInputElement | null;
+	const birthDateInput = document.getElementById(
+		'dame_birth_date'
+	) as HTMLInputElement | null;
 	if (!birthDateInput) {
 		return;
 	}
@@ -50,11 +52,15 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	const majeurPDF = pdfBaseUrl + 'questionnaire_sante_majeur.pdf';
 
 	// Adherent fields
-	const birthCityInput = document.getElementById('dame_birth_city') as HTMLInputElement | null;
+	const birthCityInput = document.getElementById(
+		'dame_birth_city'
+	) as HTMLInputElement | null;
 	const birthCityRequiredIndicator = document.getElementById(
 		'dame_birth_city_required_indicator'
 	);
-	const lastNameInput = document.getElementById('dame_last_name') as HTMLInputElement | null;
+	const lastNameInput = document.getElementById(
+		'dame_last_name'
+	) as HTMLInputElement | null;
 
 	// Rep 1 fields
 	const rep1RequiredIndicators = document.querySelectorAll<HTMLElement>(
@@ -66,12 +72,18 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	const rep1LastNameInput = document.getElementById(
 		'dame_legal_rep_1_last_name'
 	) as HTMLInputElement | null;
-	const rep1EmailInput = document.getElementById('dame_legal_rep_1_email') as HTMLInputElement | null;
-	const rep1PhoneInput = document.getElementById('dame_legal_rep_1_phone') as HTMLInputElement | null;
+	const rep1EmailInput = document.getElementById(
+		'dame_legal_rep_1_email'
+	) as HTMLInputElement | null;
+	const rep1PhoneInput = document.getElementById(
+		'dame_legal_rep_1_phone'
+	) as HTMLInputElement | null;
 	const rep1Address1Input = document.getElementById(
 		'dame_legal_rep_1_address_1'
 	) as HTMLInputElement | null;
-	const rep1CityInput = document.getElementById('dame_legal_rep_1_city') as HTMLInputElement | null;
+	const rep1CityInput = document.getElementById(
+		'dame_legal_rep_1_city'
+	) as HTMLInputElement | null;
 	const rep1RequiredInputs: (HTMLInputElement | null)[] = [
 		rep1FirstNameInput,
 		rep1LastNameInput,
@@ -81,114 +93,128 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		rep1CityInput,
 	];
 
-	birthDateInput.addEventListener('change', function (this: HTMLInputElement): void {
-		const birthDate = new Date(this.value);
-		if (isNaN(birthDate.getTime())) {
+	birthDateInput.addEventListener(
+		'change',
+		function (this: HTMLInputElement): void {
+			const birthDate = new Date(this.value);
+			if (isNaN(birthDate.getTime())) {
+				if (dynamicFields) {
+					dynamicFields.style.display = 'none';
+				}
+				if (healthQuestionnaireLinkContainer) {
+					healthQuestionnaireLinkContainer.style.display = 'none';
+				}
+				return;
+			}
+
+			const today = new Date();
+			let age = today.getFullYear() - birthDate.getFullYear();
+			const m = today.getMonth() - birthDate.getMonth();
+			if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+				age--;
+			}
+
 			if (dynamicFields) {
-				dynamicFields.style.display = 'none';
-			}
-			if (healthQuestionnaireLinkContainer) {
-				healthQuestionnaireLinkContainer.style.display = 'none';
-			}
-			return;
-		}
-
-		const today = new Date();
-		let age = today.getFullYear() - birthDate.getFullYear();
-		const m = today.getMonth() - birthDate.getMonth();
-		if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-			age--;
-		}
-
-		if (dynamicFields) {
-			dynamicFields.style.display = 'block';
-		}
-
-		if (age >= 18) {
-			if (majeurFields) {
-				majeurFields.style.display = 'block';
-			}
-			if (mineurFields) {
-				mineurFields.style.display = 'none';
+				dynamicFields.style.display = 'block';
 			}
 
-			// For adults, birth city is required.
-			if (birthCityInput) {
-				birthCityInput.required = true;
-			}
-			if (birthCityRequiredIndicator) {
-				birthCityRequiredIndicator.style.display = 'inline';
-			}
-
-			// Clear all inputs within the minor fields container to prevent submission of hidden data
-			if (mineurFields) {
-				const minorInputs = mineurFields.querySelectorAll<HTMLInputElement>('input');
-				minorInputs.forEach((input: HTMLInputElement): void => {
-					input.value = '';
-				});
-			}
-			// Make rep 1 fields not required and hide indicators
-			rep1RequiredInputs.forEach((input: HTMLInputElement | null): void => {
-				if (input) {
-					input.required = false;
+			if (age >= 18) {
+				if (majeurFields) {
+					majeurFields.style.display = 'block';
 				}
-			});
-			rep1RequiredIndicators.forEach(
-				(indicator: HTMLElement): void => {
-					indicator.style.display = 'none';
+				if (mineurFields) {
+					mineurFields.style.display = 'none';
 				}
-			);
 
-			if (healthQuestionnaireLink) {
-				healthQuestionnaireLink.href = majeurPDF;
-				healthQuestionnaireLink.textContent =
-					'Consulter le questionnaire pour Majeur';
-			}
-			if (healthQuestionnaireLinkContainer) {
-				healthQuestionnaireLinkContainer.style.display = 'inline';
-			}
-		} else {
-			if (majeurFields) {
-				majeurFields.style.display = 'none';
-			}
-			if (mineurFields) {
-				mineurFields.style.display = 'block';
-			}
-
-			// For minors, birth city is not required.
-			if (birthCityInput) {
-				birthCityInput.required = false;
-			}
-			if (birthCityRequiredIndicator) {
-				birthCityRequiredIndicator.style.display = 'none';
-			}
-
-			// Make rep 1 fields required and show indicators
-			rep1RequiredInputs.forEach((input: HTMLInputElement | null): void => {
-				if (input) {
-					input.required = true;
+				// For adults, birth city is required.
+				if (birthCityInput) {
+					birthCityInput.required = true;
 				}
-			});
-			rep1RequiredIndicators.forEach(
-				(indicator: HTMLElement): void => {
-					indicator.style.display = 'inline';
+				if (birthCityRequiredIndicator) {
+					birthCityRequiredIndicator.style.display = 'inline';
 				}
-			);
 
-			if (healthQuestionnaireLink) {
-				healthQuestionnaireLink.href = mineurPDF;
-				healthQuestionnaireLink.textContent =
-					'Consulter le questionnaire pour Mineur';
-			}
-			if (healthQuestionnaireLinkContainer) {
-				healthQuestionnaireLinkContainer.style.display = 'inline';
+				// Clear all inputs within the minor fields container to prevent submission of hidden data
+				if (mineurFields) {
+					const minorInputs =
+						mineurFields.querySelectorAll<HTMLInputElement>(
+							'input'
+						);
+					minorInputs.forEach((input: HTMLInputElement): void => {
+						input.value = '';
+					});
+				}
+				// Make rep 1 fields not required and hide indicators
+				rep1RequiredInputs.forEach(
+					(input: HTMLInputElement | null): void => {
+						if (input) {
+							input.required = false;
+						}
+					}
+				);
+				rep1RequiredIndicators.forEach(
+					(indicator: HTMLElement): void => {
+						indicator.style.display = 'none';
+					}
+				);
+
+				if (healthQuestionnaireLink) {
+					healthQuestionnaireLink.href = majeurPDF;
+					healthQuestionnaireLink.textContent =
+						'Consulter le questionnaire pour Majeur';
+				}
+				if (healthQuestionnaireLinkContainer) {
+					healthQuestionnaireLinkContainer.style.display = 'inline';
+				}
+			} else {
+				if (majeurFields) {
+					majeurFields.style.display = 'none';
+				}
+				if (mineurFields) {
+					mineurFields.style.display = 'block';
+				}
+
+				// For minors, birth city is not required.
+				if (birthCityInput) {
+					birthCityInput.required = false;
+				}
+				if (birthCityRequiredIndicator) {
+					birthCityRequiredIndicator.style.display = 'none';
+				}
+
+				// Make rep 1 fields required and show indicators
+				rep1RequiredInputs.forEach(
+					(input: HTMLInputElement | null): void => {
+						if (input) {
+							input.required = true;
+						}
+					}
+				);
+				rep1RequiredIndicators.forEach(
+					(indicator: HTMLElement): void => {
+						indicator.style.display = 'inline';
+					}
+				);
+
+				if (healthQuestionnaireLink) {
+					healthQuestionnaireLink.href = mineurPDF;
+					healthQuestionnaireLink.textContent =
+						'Consulter le questionnaire pour Mineur';
+				}
+				if (healthQuestionnaireLinkContainer) {
+					healthQuestionnaireLinkContainer.style.display = 'inline';
+				}
 			}
 		}
-	});
+	);
 
 	// Add live formatting for name fields
-	const firstNameInput = document.getElementById('dame_first_name') as HTMLInputElement | null;
-	const birthNameInput = document.getElementById('dame_birth_name') as HTMLInputElement | null;
+	const firstNameInput = document.getElementById(
+		'dame_first_name'
+	) as HTMLInputElement | null;
+	const birthNameInput = document.getElementById(
+		'dame_birth_name'
+	) as HTMLInputElement | null;
 	const rep2FirstNameInput = document.getElementById(
 		'dame_legal_rep_2_first_name'
 	) as HTMLInputElement | null;
@@ -219,17 +245,25 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	}
 
 	// Form and submit elements
-	const form = document.getElementById('dame-pre-inscription-form') as HTMLFormElement | null;
-	const consentCheckbox = document.getElementById('dame_consent_checkbox') as HTMLInputElement | null;
+	const form = document.getElementById(
+		'dame-pre-inscription-form'
+	) as HTMLFormElement | null;
+	const consentCheckbox = document.getElementById(
+		'dame_consent_checkbox'
+	) as HTMLInputElement | null;
 	const submitButtonInForm = form
 		? form.querySelector<HTMLButtonElement>('button[type="submit"]')
 		: null;
 
 	// Signature Canvas & Validation Logic
 	const signatureSection = document.getElementById('dame-signature-section');
-	const signatureCanvas = document.getElementById('dame-signature-canvas') as HTMLCanvasElement | null;
+	const signatureCanvas = document.getElementById(
+		'dame-signature-canvas'
+	) as HTMLCanvasElement | null;
 	const clearSignatureBtn = document.getElementById('dame-clear-signature');
-	const signatureImageInput = document.getElementById('dame_signature_image') as HTMLInputElement | null;
+	const signatureImageInput = document.getElementById(
+		'dame_signature_image'
+	) as HTMLInputElement | null;
 	const healthAttestationConsent = document.getElementById(
 		'dame_health_attestation_consent'
 	) as HTMLInputElement | null;
@@ -322,29 +356,35 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	};
 
 	if (signatureCanvas) {
-		signatureCanvas.addEventListener('pointerdown', (e: PointerEvent): void => {
-			if (!signatureCtx) {
-				setupCanvas();
+		signatureCanvas.addEventListener(
+			'pointerdown',
+			(e: PointerEvent): void => {
+				if (!signatureCtx) {
+					setupCanvas();
+				}
+				signatureCanvas.setPointerCapture(e.pointerId);
+				isDrawing = true;
+				const pos = getPointerPos(e);
+				if (signatureCtx) {
+					signatureCtx.beginPath();
+					signatureCtx.moveTo(pos.x, pos.y);
+				}
 			}
-			signatureCanvas.setPointerCapture(e.pointerId);
-			isDrawing = true;
-			const pos = getPointerPos(e);
-			if (signatureCtx) {
-				signatureCtx.beginPath();
-				signatureCtx.moveTo(pos.x, pos.y);
-			}
-		});
+		);
 
-		signatureCanvas.addEventListener('pointermove', (e: PointerEvent): void => {
-			if (!isDrawing || !signatureCtx) {
-				return;
+		signatureCanvas.addEventListener(
+			'pointermove',
+			(e: PointerEvent): void => {
+				if (!isDrawing || !signatureCtx) {
+					return;
+				}
+				const pos = getPointerPos(e);
+				signatureCtx.lineTo(pos.x, pos.y);
+				signatureCtx.stroke();
+				hasSignature = true;
+				checkSubmitState();
 			}
-			const pos = getPointerPos(e);
-			signatureCtx.lineTo(pos.x, pos.y);
-			signatureCtx.stroke();
-			hasSignature = true;
-			checkSubmitState();
-		});
+		);
 
 		const stopDrawing = (e: PointerEvent): void => {
 			if (!isDrawing) {
@@ -420,7 +460,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	};
 
 	const healthRadios = form
-		? form.querySelectorAll<HTMLInputElement>('input[name="dame_health_questionnaire"]')
+		? form.querySelectorAll<HTMLInputElement>(
+				'input[name="dame_health_questionnaire"]'
+			)
 		: [];
 	healthRadios.forEach((radio: HTMLInputElement): void => {
 		radio.addEventListener('change', updateHealthAndSignatureState);
@@ -471,8 +513,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				const m = today.getMonth() - birthDate.getMonth();
 				if (
 					m < 0 ||
-					(m === 0 && today.getDate() < birthDate.getDate()))
-				{
+					(m === 0 && today.getDate() < birthDate.getDate())
+				) {
 					age--;
 				}
 				isMinor = age < 18;
@@ -519,7 +561,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 			// Custom client-side validation
 			let firstInvalidField: HTMLElement | null = null;
-			const requiredFields = form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('[required]');
+			const requiredFields = form.querySelectorAll<
+				HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+			>('[required]');
 
 			requiredFields.forEach((field) => {
 				// Check if the field is visible
@@ -581,7 +625,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			const formData = new FormData(form);
 			formData.append('action', 'dame_submit_pre_inscription');
 
-			const submitButton = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+			const submitButton = form.querySelector<HTMLButtonElement>(
+				'button[type="submit"]'
+			);
 			if (submitButton) {
 				submitButton.disabled = true;
 				submitButton.textContent = 'Envoi en cours...';
@@ -589,9 +635,14 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 			fetch(dame_pre_inscription_ajax.ajax_url, {
 				method: 'POST',
-				body: new URLSearchParams(formData as unknown as Record<string, string>),
+				body: new URLSearchParams(
+					formData as unknown as Record<string, string>
+				),
 			})
-				.then((response: Response) => response.json() as Promise<PreInscriptionSubmissionResponse>)
+				.then(
+					(response: Response) =>
+						response.json() as Promise<PreInscriptionSubmissionResponse>
+				)
 				.then((data: PreInscriptionSubmissionResponse): void => {
 					if (data.success) {
 						messagesDiv.style.color = 'green';
@@ -721,23 +772,46 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				e.preventDefault();
 
 				// Fields to clear for the new adhesion
-				const fName = document.getElementById('dame_first_name') as HTMLInputElement | null;
-				const lName = document.getElementById('dame_last_name') as HTMLInputElement | null;
-				const bName = document.getElementById('dame_birth_name') as HTMLInputElement | null;
-				const bDate = document.getElementById('dame_birth_date') as HTMLInputElement | null;
-				const bCity = document.getElementById('dame_birth_city') as HTMLInputElement | null;
+				const fName = document.getElementById(
+					'dame_first_name'
+				) as HTMLInputElement | null;
+				const lName = document.getElementById(
+					'dame_last_name'
+				) as HTMLInputElement | null;
+				const bName = document.getElementById(
+					'dame_birth_name'
+				) as HTMLInputElement | null;
+				const bDate = document.getElementById(
+					'dame_birth_date'
+				) as HTMLInputElement | null;
+				const bCity = document.getElementById(
+					'dame_birth_city'
+				) as HTMLInputElement | null;
 
-				if (fName) fName.value = '';
-				if (lName) lName.value = '';
-				if (bName) bName.value = '';
-				if (bDate) bDate.value = '';
-				if (bCity) bCity.value = '';
+				if (fName) {
+					fName.value = '';
+				}
+				if (lName) {
+					lName.value = '';
+				}
+				if (bName) {
+					bName.value = '';
+				}
+				if (bDate) {
+					bDate.value = '';
+				}
+				if (bCity) {
+					bCity.value = '';
+				}
 
 				// Also clear radio buttons for health questionnaire
-				const healthRadiosToClear = form.querySelectorAll<HTMLInputElement>(
-					'input[name="dame_health_questionnaire"]'
+				const healthRadiosToClear =
+					form.querySelectorAll<HTMLInputElement>(
+						'input[name="dame_health_questionnaire"]'
+					);
+				healthRadiosToClear.forEach(
+					(radio: HTMLInputElement) => (radio.checked = false)
 				);
-				healthRadiosToClear.forEach((radio: HTMLInputElement) => (radio.checked = false));
 
 				// Clear signature & checkboxes
 				clearSignature();
@@ -759,8 +833,12 @@ document.addEventListener('DOMContentLoaded', (): void => {
 					dynamicFields.style.display = 'none';
 					// Clear all inputs within the dynamic sections as well
 					const dynamicInputs =
-						dynamicFields.querySelectorAll<HTMLInputElement>('input');
-					dynamicInputs.forEach((input: HTMLInputElement) => (input.value = ''));
+						dynamicFields.querySelectorAll<HTMLInputElement>(
+							'input'
+						);
+					dynamicInputs.forEach(
+						(input: HTMLInputElement) => (input.value = '')
+					);
 				}
 
 				// Hide the success message area
@@ -777,7 +855,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	}
 
 	// Add event listeners for copy buttons
-	const copyButtons = document.querySelectorAll<HTMLElement>('.dame-copy-button');
+	const copyButtons =
+		document.querySelectorAll<HTMLElement>('.dame-copy-button');
 	copyButtons.forEach((button: HTMLElement): void => {
 		button.addEventListener('click', function (this: HTMLElement): void {
 			const repId = this.getAttribute('data-rep-id');
@@ -790,13 +869,27 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 function copyAdherentData(repId: string | number): void {
 	// Adherent fields
-	const birthNameInput = document.getElementById('dame_birth_name') as HTMLInputElement | null;
-	const emailInput = document.getElementById('dame_email') as HTMLInputElement | null;
-	const phoneInput = document.getElementById('dame_phone_number') as HTMLInputElement | null;
-	const address1Input = document.getElementById('dame_address_1') as HTMLInputElement | null;
-	const address2Input = document.getElementById('dame_address_2') as HTMLInputElement | null;
-	const postalCodeInput = document.getElementById('dame_postal_code') as HTMLInputElement | null;
-	const cityInput = document.getElementById('dame_city') as HTMLInputElement | null;
+	const birthNameInput = document.getElementById(
+		'dame_birth_name'
+	) as HTMLInputElement | null;
+	const emailInput = document.getElementById(
+		'dame_email'
+	) as HTMLInputElement | null;
+	const phoneInput = document.getElementById(
+		'dame_phone_number'
+	) as HTMLInputElement | null;
+	const address1Input = document.getElementById(
+		'dame_address_1'
+	) as HTMLInputElement | null;
+	const address2Input = document.getElementById(
+		'dame_address_2'
+	) as HTMLInputElement | null;
+	const postalCodeInput = document.getElementById(
+		'dame_postal_code'
+	) as HTMLInputElement | null;
+	const cityInput = document.getElementById(
+		'dame_city'
+	) as HTMLInputElement | null;
 
 	// Rep fields
 	const repLastNameInput = document.getElementById(
@@ -850,6 +943,7 @@ function copyAdherentData(repId: string | number): void {
 /**
  * Formats a string to Mixed Case.
  * Capitalizes the first letter of each word separated by a space or a hyphen.
+ * @param str
  */
 function formatToMixedCase(str: string): string {
 	if (!str) {
@@ -862,6 +956,7 @@ function formatToMixedCase(str: string): string {
 
 /**
  * Formats the input value of a first name field to Mixed Case.
+ * @param event
  */
 function formatFirstNameInput(event: Event): void {
 	const input = event.target as HTMLInputElement;
@@ -881,6 +976,7 @@ function formatFirstNameInput(event: Event): void {
 
 /**
  * Formats the input value of a last name field to uppercase.
+ * @param event
  */
 function formatLastNameInput(event: Event): void {
 	const input = event.target as HTMLInputElement;
