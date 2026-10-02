@@ -55,6 +55,20 @@ class Assets {
 				array( '@wordpress/interactivity' ),
 				\DAME_VERSION
 			);
+
+			wp_register_script_module(
+				'dame/contact',
+				\DAME_PLUGIN_URL . 'assets/js/modules/contact-store.js',
+				array( '@wordpress/interactivity' ),
+				\DAME_VERSION
+			);
+
+			wp_register_script_module(
+				'dame/registration',
+				\DAME_PLUGIN_URL . 'assets/js/modules/registration-store.js',
+				array( '@wordpress/interactivity' ),
+				\DAME_VERSION
+			);
 		}
 
 		// Enqueue the single event script on single event pages for the GPS button functionality.

@@ -573,14 +573,19 @@ class Agenda {
 
 		$read_more_link = '&nbsp;<a href="' . esc_url( $permalink ) . '" class="dame-read-more">...</a>';
 
-		$first_p_closing_pos = strpos( $html, '</p>' );
-		if ( false !== $first_p_closing_pos ) {
-			$first_p = substr( $html, 0, $first_p_closing_pos );
-			$rest    = trim( substr( $html, $first_p_closing_pos + 4 ) );
-			if ( '' !== $rest ) {
-				return $first_p . $read_more_link . '</p>';
+		if ( class_exists( '\WP_HTML_Tag_Processor' ) ) {
+			$processor = new \WP_HTML_Tag_Processor( $html );
+			if ( $processor->next_tag( array( 'tag_name' => 'p' ) ) ) {
+				$first_p_closing_pos = strpos( $html, '</p>' );
+				if ( false !== $first_p_closing_pos ) {
+					$first_p = substr( $html, 0, $first_p_closing_pos );
+					$rest    = trim( substr( $html, $first_p_closing_pos + 4 ) );
+					if ( '' !== $rest ) {
+						return $first_p . $read_more_link . '</p>';
+					}
+					return $html;
+				}
 			}
-			return $html;
 		}
 
 		$lines = explode( "\n", $html, 2 );

@@ -34,7 +34,11 @@ class Contact {
 	 * @return string The HTML output of the contact form.
 	 */
 	public function render( $atts ) {
-		// Enqueue the script using the global constant.
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( 'dame/contact' );
+		}
+
+		// Enqueue the script using the global constant (fallback).
 		wp_enqueue_script( 'dame-public-contact-form', \DAME_PLUGIN_URL . 'assets/js/public-contact-form.js', array(), \DAME_VERSION, true );
 
 		// Localize the script with required data.
@@ -47,10 +51,22 @@ class Contact {
 			)
 		);
 
+		$contact_context = array(
+			'isSubmitting' => false,
+			'status'       => 'idle',
+			'message'      => '',
+			'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+			'nonce'        => wp_create_nonce( 'dame_contact_nonce' ),
+		);
+
+		$context_attr = function_exists( 'wp_interactivity_data_wp_context' )
+			? wp_interactivity_data_wp_context( $contact_context )
+			: 'data-wp-context=\'' . wp_json_encode( $contact_context ) . '\'';
+
 		ob_start();
 		?>
-		<div id="dame-public-contact-form-wrapper">
-			<form id="dame-public-contact-form" class="dame-form" novalidate>
+		<div id="dame-public-contact-form-wrapper" data-wp-interactive="dame/contact" <?php echo $context_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<form id="dame-public-contact-form" class="dame-form" novalidate data-wp-on--submit="actions.submitForm">
 
 				<?php wp_nonce_field( 'dame_contact_nonce', 'dame_contact_nonce_field' ); ?>
 

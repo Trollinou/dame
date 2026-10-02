@@ -25,6 +25,10 @@ class FormView {
 	public function render( array $atts = array() ): string {
 		wp_enqueue_style( 'dame-public-styles', DAME_PLUGIN_URL . 'assets/css/public-styles.css', array(), DAME_VERSION );
 
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( 'dame/registration' );
+		}
+
 		wp_enqueue_script( 'dame-public-geo-autocomplete', DAME_PLUGIN_URL . 'assets/js/public-geo-autocomplete.js', array(), DAME_VERSION, true );
 		wp_enqueue_script( 'dame-public-ign-autocomplete', DAME_PLUGIN_URL . 'assets/js/public-ign-autocomplete.js', array(), DAME_VERSION, true );
 		wp_enqueue_script( 'dame-public-pre-inscription', DAME_PLUGIN_URL . 'assets/js/public-pre-inscription-form.js', array( 'dame-public-geo-autocomplete', 'dame-public-ign-autocomplete' ), DAME_VERSION, true );
@@ -37,11 +41,24 @@ class FormView {
 			)
 		);
 
+		$registration_context = array(
+			'isMinor'      => false,
+			'hasSecondRep' => false,
+			'isSubmitting' => false,
+			'status'       => 'idle',
+			'message'      => '',
+			'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+		);
+
+		$context_attr = function_exists( 'wp_interactivity_data_wp_context' )
+			? wp_interactivity_data_wp_context( $registration_context )
+			: 'data-wp-context=\'' . wp_json_encode( $registration_context ) . '\'';
+
 		ob_start();
 		?>
-		<div id="dame-pre-inscription-form-wrapper">
+		<div id="dame-pre-inscription-form-wrapper" data-wp-interactive="dame/registration" <?php echo $context_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<div id="dame-form-messages" style="display:none; padding: 1em; margin-bottom: 1em;"></div>
-			<form id="dame-pre-inscription-form" class="dame-form" novalidate>
+			<form id="dame-pre-inscription-form" class="dame-form" novalidate data-wp-on--submit="actions.submitForm">
 
 				<?php wp_nonce_field( 'dame_pre_inscription_nonce', 'dame_nonce' ); ?>
 
