@@ -81,6 +81,51 @@ class Adherent {
 		);
 
 		register_post_type( 'adherent', $args );
+		$this->register_meta_fields();
+	}
+
+	/**
+	 * Registers post meta fields for adherent CPT to support REST API and Block Bindings.
+	 */
+	private function register_meta_fields(): void {
+		$meta_keys = array(
+			'_dame_first_name'        => 'string',
+			'_dame_last_name'         => 'string',
+			'_dame_birth_name'        => 'string',
+			'_dame_sexe'              => 'string',
+			'_dame_birth_date'        => 'string',
+			'_dame_birth_city'        => 'string',
+			'_dame_birth_country'     => 'string',
+			'_dame_phone_number'      => 'string',
+			'_dame_mobile_phone'      => 'string',
+			'_dame_email'             => 'string',
+			'_dame_profession'        => 'string',
+			'_dame_address_1'         => 'string',
+			'_dame_address_2'         => 'string',
+			'_dame_zip_code'          => 'string',
+			'_dame_city'              => 'string',
+			'_dame_ffe_licence'       => 'string',
+			'_dame_category'          => 'string',
+			'_dame_rating_elo'        => 'string',
+			'_dame_rating_fide'       => 'string',
+			'_dame_status'            => 'string',
+			'_dame_medical_cert_date' => 'string',
+		);
+
+		foreach ( $meta_keys as $key => $type ) {
+			register_post_meta(
+				'adherent',
+				$key,
+				array(
+					'show_in_rest'  => true,
+					'single'        => true,
+					'type'          => $type,
+					'auth_callback' => static function () {
+						return current_user_can( 'edit_posts' );
+					},
+				)
+			);
+		}
 	}
 
 	/**

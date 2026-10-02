@@ -100,6 +100,45 @@ class Agenda {
 		);
 
 		register_post_type( 'dame_agenda', $args );
+		$this->register_meta_fields();
+	}
+
+	/**
+	 * Registers post meta fields for dame_agenda CPT to support REST API and Block Bindings.
+	 */
+	private function register_meta_fields(): void {
+		$meta_keys = array(
+			'_dame_start_date'          => 'string',
+			'_dame_end_date'            => 'string',
+			'_dame_start_time'          => 'string',
+			'_dame_end_time'            => 'string',
+			'_dame_all_day'             => 'string',
+			'_dame_location_name'       => 'string',
+			'_dame_location_address'    => 'string',
+			'_dame_agenda_description'  => 'string',
+			'_dame_competition_type'    => 'string',
+			'_dame_competition_level'   => 'string',
+			'_dame_event_url'           => 'string',
+			'_dame_registration_url'    => 'string',
+			'_dame_contact_name'        => 'string',
+			'_dame_contact_email'       => 'string',
+			'_dame_contact_phone'       => 'string',
+		);
+
+		foreach ( $meta_keys as $key => $type ) {
+			register_post_meta(
+				'dame_agenda',
+				$key,
+				array(
+					'show_in_rest'  => true,
+					'single'        => true,
+					'type'          => $type,
+					'auth_callback' => static function () {
+						return current_user_can( 'edit_posts' );
+					},
+				)
+			);
+		}
 	}
 
 	/**
