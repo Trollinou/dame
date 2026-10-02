@@ -4,7 +4,7 @@
 	"name": "dame/benevolat",
 	"version": "5.5.1",
 	"title": "Appel à Bénévolat",
-	"category": "widgets",
+	"category": "dame",
 	"icon": "chart-bar",
 	"description": "Tableau interactif d'inscription aux créneaux bénévoles.",
 	"keywords": ["bénévolat", "créneaux", "aide", "dame"],

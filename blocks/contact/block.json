@@ -4,7 +4,7 @@
 	"name": "dame/contact",
 	"version": "5.5.1",
 	"title": "Formulaire de Contact",
-	"category": "widgets",
+	"category": "dame",
 	"icon": "feedback",
 	"description": "Formulaire de contact réactif avec validation en temps réel.",
 	"keywords": ["contact", "message", "formulaire", "dame"],

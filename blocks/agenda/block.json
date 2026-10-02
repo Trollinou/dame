@@ -4,7 +4,7 @@
 	"name": "dame/agenda",
 	"version": "5.5.1",
 	"title": "Agenda Échiquéen",
-	"category": "widgets",
+	"category": "dame",
 	"icon": "calendar-alt",
 	"description": "Affiche le calendrier interactif des événements et tournois du club d'échecs.",
 	"keywords": ["agenda", "calendrier", "échecs", "tournois", "dame"],

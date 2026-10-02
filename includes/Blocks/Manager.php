@@ -28,6 +28,26 @@ class Manager {
 	public function init(): void {
 		add_action( 'init', array( $this, 'register_blocks' ) );
 		add_action( 'init', array( $this, 'register_block_bindings' ) );
+		add_filter( 'block_categories_all', array( $this, 'register_block_category' ), 10, 2 );
+	}
+
+	/**
+	 * Registers the custom DAME block category in the Gutenberg inserter.
+	 *
+	 * @param array<int, array<string, string>> $categories Existing block categories.
+	 * @return array<int, array<string, string>> Filtered categories with DAME prepended.
+	 */
+	public function register_block_category( array $categories ): array {
+		return array_merge(
+			array(
+				array(
+					'slug'  => 'dame',
+					'title' => __( 'DAME — Gestion Club Échecs', 'dame' ),
+					'icon'  => 'groups',
+				),
+			),
+			$categories
+		);
 	}
 
 	/**
