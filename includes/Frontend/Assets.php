@@ -33,6 +33,14 @@ class Assets {
 			\DAME_VERSION
 		);
 
+		// Register the agenda stylesheet for block and template dependencies.
+		wp_register_style(
+			'dame-public-agenda',
+			\DAME_PLUGIN_URL . 'assets/css/public-agenda.css',
+			array( 'dame-public-styles' ),
+			\DAME_VERSION
+		);
+
 		// Register the modern Interactivity API Script Modules (WordPress 6.5+ / 7.x).
 		if ( function_exists( 'wp_register_script_module' ) ) {
 			wp_register_script_module(

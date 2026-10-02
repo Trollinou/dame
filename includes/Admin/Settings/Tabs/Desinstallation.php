@@ -50,7 +50,7 @@ class Desinstallation {
 		$options = get_option( 'dame_options' );
 		$checked = isset( $options['delete_on_uninstall'] ) && $options['delete_on_uninstall'] ? 'checked' : '';
 		echo '<input type="checkbox" name="dame_options[delete_on_uninstall]" value="1" ' . esc_attr( $checked ) . ' /> ' . esc_html__( 'Supprimer toutes les données lors de la désinstallation du plugin.', 'dame' );
-		echo '<p class="description" style="color:red;">' . esc_html__( 'Attention : Cette action est irréversible. Toutes les tables et options seront supprimées.', 'dame' ) . '</p>';
+		echo '<p class="description dame-status-badge--error">' . esc_html__( 'Attention : Cette action est irréversible. Toutes les tables et options seront supprimées.', 'dame' ) . '</p>';
 	}
 
 	/**

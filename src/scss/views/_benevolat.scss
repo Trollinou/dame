@@ -1,0 +1,76 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Public Benevolat Shortcode & Block View
+ */
+
+.dame-benevolat-wrapper {
+    border: 1px solid var(--dame-theme-border);
+    padding: 24px;
+    margin: 24px 0;
+    border-radius: var(--dame-theme-radius);
+    background-color: var(--dame-theme-bg);
+    color: var(--dame-theme-text);
+    box-shadow: $dame-shadow-sm;
+
+    h3 {
+        margin-top: 0;
+        font-family: var(--dame-theme-font-heading);
+        font-size: 1.4em;
+        color: var(--dame-theme-text);
+    }
+
+    .benevolat-description {
+        margin-bottom: 20px;
+        color: var(--dame-theme-muted);
+        line-height: 1.5;
+    }
+}
+
+.dame-benevolat-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 14px;
+
+    th,
+    td {
+        border: 1px solid var(--dame-theme-border);
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        background-color: var(--dame-theme-surface);
+        font-weight: 600;
+        color: var(--dame-theme-text);
+    }
+
+    .benevolat-date-row.is-past {
+        background-color: #fffbe5;
+        opacity: 0.75;
+    }
+}
+
+.benevolat-timeslot-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-weight: normal;
+    cursor: pointer;
+    font-size: 13.5px;
+    color: var(--dame-theme-text);
+
+    &.is-past {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    input[type="checkbox"] {
+        margin: 0;
+        cursor: inherit;
+    }
+}

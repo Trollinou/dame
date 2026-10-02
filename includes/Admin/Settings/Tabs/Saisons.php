@@ -207,8 +207,8 @@ class Saisons {
 					<input type="hidden" name="dame_action" value="update_current_season">
 					<?php wp_nonce_field( 'dame_season_management_nonce', 'dame_season_management_nonce_field' ); ?>
 
-					<label for="dame_current_season_selector" style="font-weight: bold;"><?php esc_html_e( 'Saison active :', 'dame' ); ?></label>
-					<select id="dame_current_season_selector" name="dame_current_season_selector" style="margin-right: 10px;">
+					<label for="dame_current_season_selector"><strong><?php esc_html_e( 'Saison active :', 'dame' ); ?></strong></label>
+					<select id="dame_current_season_selector" name="dame_current_season_selector">
 						<?php if ( ! empty( $seasons ) && ! is_wp_error( $seasons ) ) : ?>
 							<?php foreach ( $seasons as $season ) : ?>
 								<option value="<?php echo esc_attr( (string) $season->term_id ); ?>" <?php selected( $season->term_id, $current_season_tag_id ); ?>>
@@ -223,7 +223,7 @@ class Saisons {
 				</form>
 			</div>
 
-			<hr style="margin: 20px 0;">
+			<hr class="wp-header-end">
 
 			<div>
 				<h3><?php esc_html_e( 'Nouvelle Saison', 'dame' ); ?></h3>

@@ -1,0 +1,42 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Reconciliation & Differences Table
+ */
+
+.dame-reconciliation-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+        padding: 10px;
+        border: 1px solid $dame-admin-border;
+        text-align: left;
+    }
+
+    tr.dame-highlight-diff {
+        background-color: #fffbe5 !important;
+        border-left: 4px solid #ffc107;
+    }
+}
+
+.dame-actions-wrapper {
+    .button-large {
+        width: 100%;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+}
+
+.dame-delete-button {
+    color: $dame-admin-danger;
+    border-color: $dame-admin-danger;
+
+    &:hover {
+        background: $dame-admin-danger;
+        color: #ffffff;
+        border-color: $dame-admin-danger;
+    }
+}

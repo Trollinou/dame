@@ -77,13 +77,13 @@ class Backups {
 			<h1><?php esc_html_e( 'Sauvegardes et Restaurations', 'dame' ); ?></h1>
 
 			<h2><?php esc_html_e( 'Adhérents, Contacts et Préinscription', 'dame' ); ?></h2>
-			<div class="dame-import-export-wrapper" style="display:flex; gap: 20px; align-items: stretch;">
+			<div class="dame-import-export-wrapper">
 				
 				<!-- COLONNE GAUCHE : SAUVEGARDE ET EXPORT -->
-				<div class="dame-export-section" style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+				<div class="dame-export-section">
 					<h3><?php esc_html_e( 'Sauvegarde et Export', 'dame' ); ?></h3>
 					
-					<div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+					<div class="dame-backup-card-group">
 						<h4><?php esc_html_e( 'Sauvegarde complète (.json.gz)', 'dame' ); ?></h4>
 						<form method="post" action="">
 							<?php wp_nonce_field( 'dame_export_nonce_action', 'dame_export_nonce' ); ?>
@@ -92,7 +92,7 @@ class Backups {
 						</form>
 					</div>
 
-					<div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+					<div class="dame-backup-card-group">
 						<h4><?php esc_html_e( 'Exporter les adhérents (CSV)', 'dame' ); ?></h4>
 						<form method="post" action="">
 							<?php wp_nonce_field( 'dame_export_csv_nonce_action', 'dame_export_csv_nonce' ); ?>
@@ -108,7 +108,7 @@ class Backups {
 							<input type="hidden" name="dame_export_contacts_csv_action" value="1">
 							<p>
 								<label for="dame_contact_type_export"><strong><?php esc_html_e( 'Type de contact :', 'dame' ); ?></strong></label><br>
-								<select name="contact_type" id="dame_contact_type_export" required style="width: 100%; max-width: 300px; margin-top: 5px;">
+								<select name="contact_type" id="dame_contact_type_export" required class="regular-text">
 									<option value=""><?php esc_html_e( '-- Sélectionner un type --', 'dame' ); ?></option>
 									<?php
 									if ( ! is_wp_error( $contact_types ) ) :
@@ -127,19 +127,19 @@ endif;
 				</div>
 
 				<!-- COLONNE DROITE : RESTAURATION -->
-				<div class="dame-import-section" style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04); border-left: 4px solid #dc3232;">
+				<div class="dame-import-section">
 					<h3><?php esc_html_e( 'Restauration', 'dame' ); ?></h3>
 
 					<div>
 						<h4><?php esc_html_e( 'Restauration complète (.json.gz)', 'dame' ); ?></h4>
-						<p style="color: #666; font-size: 13px;">
+						<p class="dame-backup-desc">
 							<?php esc_html_e( 'Restaure l\'intégralité des adhérents, contacts, saisons et configurations à partir d\'une archive de sauvegarde DAME.', 'dame' ); ?>
 						</p>
 						<form method="post" enctype="multipart/form-data" id="dame-import-form" action="">
 							<?php wp_nonce_field( 'dame_import_nonce_action', 'dame_import_nonce' ); ?>
 							<p>
 								<label for="dame_import_file"><strong><?php esc_html_e( 'Fichier de sauvegarde :', 'dame' ); ?></strong></label><br>
-								<input type="file" id="dame_import_file" name="dame_import_file" accept=".gz" required style="margin-top: 5px;">
+								<input type="file" id="dame_import_file" name="dame_import_file" accept=".gz" required>
 							</p>
 							<?php submit_button( __( 'Restaurer la base de données', 'dame' ), 'delete', 'dame_import', false ); ?>
 						</form>
@@ -147,11 +147,11 @@ endif;
 				</div>
 			</div>
 
-			<h2 style="margin-top: 40px;"><?php esc_html_e( 'Agenda', 'dame' ); ?></h2>
-			<div class="dame-backup-restore-wrapper" style="display:flex; gap: 20px;">
-				<div class="dame-backup-section" style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+			<h2 class="dame-backup-section-title"><?php esc_html_e( 'Agenda', 'dame' ); ?></h2>
+			<div class="dame-backup-restore-wrapper">
+				<div class="dame-backup-section">
 					<h3><?php esc_html_e( "Sauvegarder les données de l'agenda", 'dame' ); ?></h3>
-					<div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+					<div class="dame-backup-card-group">
 						<h4><?php esc_html_e( 'Sauvegarde complète (.json.gz)', 'dame' ); ?></h4>
 						<form method="post" action="">
 							<?php wp_nonce_field( 'dame_agenda_backup_nonce_action', 'dame_agenda_backup_nonce' ); ?>
@@ -169,13 +169,13 @@ endif;
 					</div>
 				</div>
 
-				<div class="dame-restore-section" style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04); border-left: 4px solid #dc3232;">
+				<div class="dame-restore-section">
 					<h3><?php esc_html_e( "Restaurer les données de l'agenda", 'dame' ); ?></h3>
 					<form method="post" enctype="multipart/form-data" id="dame-agenda-restore-form" action="">
 						<?php wp_nonce_field( 'dame_agenda_restore_nonce_action', 'dame_agenda_restore_nonce' ); ?>
 						<p>
 							<label for="dame_agenda_restore_file"><strong><?php esc_html_e( 'Fichier de sauvegarde (.json.gz) :', 'dame' ); ?></strong></label><br>
-							<input type="file" id="dame_agenda_restore_file" name="dame_agenda_restore_file" accept=".gz" required style="margin-top: 5px;">
+							<input type="file" id="dame_agenda_restore_file" name="dame_agenda_restore_file" accept=".gz" required>
 						</p>
 						<?php submit_button( __( "Restaurer la base de données de l'agenda", 'dame' ), 'delete', 'dame_agenda_restore_action', false ); ?>
 					</form>

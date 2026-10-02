@@ -33,15 +33,6 @@ class ViewAdherent {
 			'dame-view-adherent',
 			array( $this, 'render' )
 		);
-
-		add_action( 'admin_head', array( $this, 'hide_menu_link' ) );
-	}
-
-	/**
-	 * Hides the menu link via CSS.
-	 */
-	public function hide_menu_link(): void {
-		echo '<style>a[href="admin.php?page=dame-view-adherent"] { display: none !important; }</style>';
 	}
 
 	/**
@@ -68,24 +59,17 @@ class ViewAdherent {
 
 		$post_id = $adherent->ID;
 		?>
-		<div class="wrap">
+		<div class="wrap dame-view-adherent">
 			<h1>
 				<?php echo esc_html( __( 'Fiche de l\'adhérent : ', 'dame' ) . get_the_title( $post_id ) ); ?>
 				<a href="edit.php?post_type=adherent" class="page-title-action"><?php esc_html_e( 'Retour à la liste', 'dame' ); ?></a>
 			</h1>
 
-			<style>
-				.form-table th, .form-table td {
-					padding-top: 5px;
-					padding-bottom: 5px;
-				}
-			</style>
-
 			<?php if ( current_user_can( 'edit_post', $post_id ) ) : ?>
-				<a href="<?php echo esc_url( get_edit_post_link( $post_id ) ); ?>" class="button button-primary" style="margin-bottom:20px;"><?php esc_html_e( 'Modifier cet adhérent', 'dame' ); ?></a>
+				<a href="<?php echo esc_url( get_edit_post_link( $post_id ) ); ?>" class="button button-primary dame-action-btn-top"><?php esc_html_e( 'Modifier cet adhérent', 'dame' ); ?></a>
 			<?php endif; ?>
 
-			<div id="poststuff" style="margin-top: 20px;">
+			<div id="poststuff">
 				<div id="post-body" class="metabox-holder columns-2">
 					<div id="post-body-content">
 						<div class="postbox">

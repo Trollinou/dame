@@ -1,0 +1,56 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * DAME Reports & Tracking View
+ */
+
+.dame-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: $dame-radius-sm;
+    font-size: 0.9em;
+    font-weight: 600;
+
+    &--active,
+    &--read,
+    &--opened {
+        color: $dame-admin-success;
+    }
+
+    &--unread {
+        color: #888888;
+    }
+
+    &--pending {
+        color: $dame-admin-danger;
+        font-style: italic;
+    }
+
+    &--season {
+        background-color: #e0e0e0;
+        color: #333333;
+        margin: 2px;
+        font-weight: normal;
+    }
+
+    &--error {
+        color: $dame-admin-danger;
+    }
+}
+
+.dame-action-reset-send {
+    color: $dame-admin-danger;
+
+    &:hover {
+        color: $dame-admin-danger-hover;
+    }
+}
+
+.dame-action-link-primary {
+    color: $dame-admin-primary;
+
+    &:hover {
+        color: $dame-admin-primary-hover;
+    }
+}

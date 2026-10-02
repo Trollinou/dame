@@ -1,0 +1,27 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Public Pre-inscription Registration Form View
+ */
+
+.dame-registration-form-wrapper {
+    max-width: 800px;
+    margin: 2em auto;
+    background-color: var(--dame-theme-bg);
+    border: 1px solid var(--dame-theme-border);
+    border-radius: var(--dame-theme-radius);
+    padding: 24px;
+    box-shadow: $dame-shadow-sm;
+
+    @include mobile {
+        padding: 16px;
+    }
+
+    #health-questionnaire-link:hover {
+        background-color: var(--dame-theme-surface, #3ec0f0);
+        border-radius: 3px;
+        padding: 2px 4px;
+        text-decoration: none;
+    }
+}

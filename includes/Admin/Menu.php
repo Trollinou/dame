@@ -310,27 +310,27 @@ class Menu {
 			<h1><?php esc_html_e( 'Tableau de Bord DAME', 'dame' ); ?></h1>
 			<p><?php esc_html_e( 'Bienvenue dans l\'espace de gestion de votre club.', 'dame' ); ?></p>
 
-			<div class="postbox" style="padding: 20px; margin-bottom: 20px;">
-				<h2 style="margin-top: 0;"><?php esc_html_e( 'Vue d\'ensemble - Saison active :', 'dame' ); ?> <strong><?php echo esc_html( $season_name ); ?></strong></h2>
-				<div style="display: flex; gap: 20px; margin-top: 20px;">
-					<div style="flex: 1; background: #fff; padding: 15px; border: 1px solid #ccd0d4; border-left: 4px solid #2271b1; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
-						<h3 style="margin-top: 0;"><?php esc_html_e( 'Total Adhérents', 'dame' ); ?></h3>
-						<p style="font-size: 24px; font-weight: bold; margin: 0;"><?php echo intval( $total_adherents ); ?></p>
+			<div class="postbox dame-dashboard-summary-box">
+				<h2><?php esc_html_e( 'Vue d\'ensemble - Saison active :', 'dame' ); ?> <strong><?php echo esc_html( $season_name ); ?></strong></h2>
+				<div class="dame-dashboard-cards">
+					<div class="dame-dashboard-card">
+						<h3><?php esc_html_e( 'Total Adhérents', 'dame' ); ?></h3>
+						<p class="dame-dashboard-card-value"><?php echo intval( $total_adherents ); ?></p>
 						<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=adherent' ) ); ?>"><?php esc_html_e( 'Voir tout', 'dame' ); ?></a>
 					</div>
-					<div style="flex: 1; background: #fff; padding: 15px; border: 1px solid #ccd0d4; border-left: 4px solid #d63638; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
-						<h3 style="margin-top: 0;"><?php esc_html_e( 'Préinscriptions en attente', 'dame' ); ?></h3>
-						<p style="font-size: 24px; font-weight: bold; margin: 0;"><?php echo intval( $pending_preinscriptions ); ?></p>
+					<div class="dame-dashboard-card dame-dashboard-card--alert">
+						<h3><?php esc_html_e( 'Préinscriptions en attente', 'dame' ); ?></h3>
+						<p class="dame-dashboard-card-value"><?php echo intval( $pending_preinscriptions ); ?></p>
 						<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=dame_pre_inscription' ) ); ?>"><?php esc_html_e( 'Voir tout', 'dame' ); ?></a>
 					</div>
 				</div>
 			</div>
 
 			<div id="dashboard-widgets-wrap">
-				<div id="dashboard-widgets" class="metabox-holder">
+				<div id="dashboard-widgets" class="metabox-holder dame-dashboard-columns">
 
 					<!-- Colonne Gauche -->
-					<div class="postbox-container" style="width: 49%; float: left; margin-right: 2%;">
+					<div class="postbox-container dame-dashboard-column">
 
 						<div class="postbox">
 							<h2 class="hndle"><span><?php esc_html_e( '5 derniers adhérents enregistrés', 'dame' ); ?></span></h2>
@@ -344,7 +344,7 @@ class Menu {
 												<a href="<?php echo esc_url( get_edit_post_link( $adherent->ID ) ); ?>">
 													<?php echo esc_html( get_the_title( $adherent->ID ) ); ?>
 												</a>
-												- <span style="color: #666; font-size: 0.9em;"><?php echo esc_html( (string) get_the_date( '', $adherent->ID ) ); ?></span>
+												- <span class="dame-dashboard-meta"><?php echo esc_html( (string) get_the_date( '', $adherent->ID ) ); ?></span>
 											</li>
 										<?php endforeach; ?>
 									</ul>
@@ -421,7 +421,7 @@ class Menu {
 					</div>
 
 					<!-- Colonne Droite -->
-					<div class="postbox-container" style="width: 49%; float: left;">
+					<div class="postbox-container dame-dashboard-column">
 
 						<div class="postbox">
 							<h2 class="hndle"><span><?php esc_html_e( '5 prochains événements (Agenda)', 'dame' ); ?></span></h2>
@@ -478,7 +478,7 @@ class Menu {
 												<a href="<?php echo esc_url( get_edit_post_link( $benevolat['ID'] ) ); ?>">
 													<?php echo esc_html( $benevolat['title'] ); ?>
 												</a>
-												- <span style="color: #666; font-size: 0.9em;"><?php echo intval( $benevolat['responses_count'] ); ?> <?php echo esc_html( _n( 'réponse', 'réponses', $benevolat['responses_count'], 'dame' ) ); ?></span>
+												- <span class="dame-dashboard-meta"><?php echo intval( $benevolat['responses_count'] ); ?> <?php echo esc_html( _n( 'réponse', 'réponses', $benevolat['responses_count'], 'dame' ) ); ?></span>
 											</li>
 										<?php endforeach; ?>
 									</ul>

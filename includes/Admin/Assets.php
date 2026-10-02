@@ -55,14 +55,25 @@ class Assets {
 		$is_adherent_cpt        = 'adherent' === $screen->post_type || 'dame_adherent' === $screen->post_type;
 		$is_pre_inscription_cpt = 'dame_pre_inscription' === $screen->post_type;
 		$is_contact_cpt         = 'dame_contact' === $screen->post_type;
+		$is_agenda_cpt          = 'dame_agenda' === $screen->post_type;
+		$is_benevolat_cpt       = 'benevolat' === $screen->post_type || 'dame_benevolat' === $screen->post_type;
+		$is_message_cpt         = 'dame_message' === $screen->post_type;
 		$is_settings_page       = false !== strpos( (string) $screen->id, 'dame' );
 
 		// Sortie prématurée si nous ne sommes pas sur un écran géré par le plugin pour les styles/scripts lourds.
-		if ( ! $is_adherent_cpt && ! $is_settings_page && ! $is_pre_inscription_cpt && ! $is_contact_cpt ) {
+		if ( ! $is_adherent_cpt && ! $is_settings_page && ! $is_pre_inscription_cpt && ! $is_contact_cpt && ! $is_agenda_cpt && ! $is_benevolat_cpt && ! $is_message_cpt ) {
 			return;
 		}
 
 		// --- Shared Assets (Common JS & CSS) ---.
+
+		// Enqueue Admin Styles across all DAME screens.
+		wp_enqueue_style(
+			'dame-admin-styles',
+			\DAME_PLUGIN_URL . 'assets/css/admin-styles.css',
+			array(),
+			\DAME_VERSION
+		);
 
 		// Register Common JS.
 		wp_register_script(
@@ -76,7 +87,7 @@ class Assets {
 		// Enqueue Common CSS (Autocomplete styles).
 		wp_enqueue_style(
 			'dame-admin-common-css',
-			\DAME_PLUGIN_URL . 'assets/css/admin-common.css', // Using existing file as common CSS.
+			\DAME_PLUGIN_URL . 'assets/css/admin-common.css',
 			array(),
 			\DAME_VERSION
 		);
@@ -107,15 +118,6 @@ class Assets {
 				array( 'dame-admin-common' ), // Depends on common.
 				\DAME_VERSION,
 				true
-			);
-		}
-
-		if ( $is_pre_inscription_cpt ) {
-			wp_enqueue_style(
-				'dame-admin-styles',
-				\DAME_PLUGIN_URL . 'assets/css/admin-styles.css',
-				array(),
-				\DAME_VERSION
 			);
 		}
 	}

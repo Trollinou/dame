@@ -1,0 +1,445 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Public Agenda & Calendar View (Theme Adaptable)
+ */
+
+#dame-agenda-wrapper {
+    max-width: 1000px;
+    margin: 2em auto;
+    font-family: var(--dame-theme-font-body);
+    color: var(--dame-theme-text);
+}
+
+.dame-agenda-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5em;
+    flex-wrap: wrap;
+    gap: 1em;
+}
+
+.dame-agenda-primary-controls {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    flex-grow: 1;
+}
+
+.dame-agenda-month-display {
+    position: relative;
+    flex-grow: 1;
+    text-align: left;
+
+    h2 {
+        margin: 0;
+        font-family: var(--dame-theme-font-heading);
+        font-size: 1.5em;
+        cursor: pointer;
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--dame-theme-text);
+
+        &::after {
+            content: "▼";
+            font-size: 0.55em;
+            color: var(--dame-theme-muted);
+            transition: transform $dame-transition-fast;
+        }
+    }
+}
+
+.dame-agenda-nav-buttons {
+    display: flex;
+
+    .button {
+        border: 1px solid var(--dame-theme-border);
+        background-color: var(--dame-theme-surface);
+        color: var(--dame-theme-text);
+        padding: 0.5em 1em;
+        margin: 0;
+        border-right-width: 0;
+        border-radius: 0;
+        cursor: pointer;
+        font-size: 14px;
+        font-family: inherit;
+        transition: background-color $dame-transition-fast, color $dame-transition-fast;
+
+        &:first-child {
+            border-top-left-radius: var(--dame-theme-btn-radius);
+            border-bottom-left-radius: var(--dame-theme-btn-radius);
+        }
+
+        &:last-child {
+            border-right-width: 1px;
+            border-top-right-radius: var(--dame-theme-btn-radius);
+            border-bottom-right-radius: var(--dame-theme-btn-radius);
+        }
+
+        &:hover {
+            background-color: var(--dame-theme-border);
+            color: var(--dame-theme-text);
+        }
+    }
+}
+
+.dame-mobile-text {
+    display: none;
+}
+
+.dame-agenda-nav {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+}
+
+.dame-agenda-secondary-controls {
+    display: flex;
+    gap: 1em;
+    position: relative;
+}
+
+#dame-agenda-search-input {
+    padding: 0.55em 0.85em;
+    border: 1px solid var(--dame-theme-border);
+    border-radius: var(--dame-theme-radius);
+    background-color: var(--dame-theme-bg);
+    color: var(--dame-theme-text);
+    font-size: 14px;
+
+    &:focus {
+        @include focus-ring(var(--dame-theme-primary));
+    }
+}
+
+#dame-agenda-filter-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--dame-theme-bg);
+    border: 1px solid var(--dame-theme-border);
+    border-radius: var(--dame-theme-radius);
+    padding: 1.25em;
+    box-shadow: $dame-shadow-lg;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25em;
+    width: 280px;
+}
+
+.dame-agenda-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+
+    h3 {
+        margin: 0;
+        font-size: 0.95em;
+        font-weight: 700;
+        color: var(--dame-theme-text);
+    }
+
+    label {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        font-size: 0.9em;
+        color: var(--dame-theme-text);
+        cursor: pointer;
+    }
+}
+
+.dame-agenda-date-picker {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: var(--dame-theme-bg);
+    border: 1px solid var(--dame-theme-border);
+    border-radius: var(--dame-theme-radius);
+    padding: 1em;
+    box-shadow: $dame-shadow-lg;
+    z-index: 100;
+}
+
+.dame-agenda-date-picker select {
+    margin-right: 0.5em;
+    padding: 0.4em 0.6em;
+    border: 1px solid var(--dame-theme-border);
+    border-radius: var(--dame-theme-radius);
+    background-color: var(--dame-theme-bg);
+    color: var(--dame-theme-text);
+}
+
+.dame-agenda-grid-container {
+    border: 1px solid var(--dame-theme-border);
+    border-radius: var(--dame-theme-radius);
+    overflow: hidden;
+}
+
+.dame-agenda-grid-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background-color: var(--dame-theme-surface);
+    text-align: center;
+    font-weight: 600;
+    border-bottom: 1px solid var(--dame-theme-border);
+}
+
+.dame-agenda-day-name {
+    padding: 0.75em 0.5em;
+    font-size: 0.9em;
+    color: var(--dame-theme-text);
+}
+
+.dame-agenda-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.dame-agenda-day-cell {
+    border-right: 1px solid var(--dame-theme-border);
+    border-bottom: 1px solid var(--dame-theme-border);
+    min-height: 120px;
+    padding: 0.5em;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--dame-theme-bg);
+
+    &:nth-child(7n) {
+        border-right: none;
+    }
+
+    &.dame-other-month {
+        background-color: var(--dame-theme-surface);
+        opacity: 0.6;
+    }
+
+    &.dame-today {
+        background-color: var(--dame-theme-surface);
+        border-top: 2px solid var(--dame-theme-primary);
+    }
+}
+
+.dame-day-number {
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-bottom: 0.5em;
+    align-self: flex-start;
+    color: var(--dame-theme-muted);
+}
+
+.dame-agenda-event-card {
+    background-color: var(--dame-theme-surface);
+    border-left: 3px solid var(--dame-theme-primary);
+    padding: 4px 6px;
+    margin-bottom: 4px;
+    border-radius: var(--dame-theme-radius);
+    font-size: 0.8em;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: background-color $dame-transition-fast, transform $dame-transition-fast;
+
+    &:hover {
+        background-color: var(--dame-theme-border);
+        transform: translateY(-1px);
+    }
+}
+
+.dame-agenda-event-card-title {
+    font-weight: 600;
+    color: var(--dame-theme-text);
+}
+
+.dame-agenda-event-card-time {
+    font-size: 0.9em;
+    color: var(--dame-theme-muted);
+}
+
+/* Event Details Overlay Drawer */
+#dame-agenda-event-details-drawer {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 400px;
+    max-width: 90vw;
+    height: 100vh;
+    background-color: var(--dame-theme-bg);
+    box-shadow: $dame-shadow-modal;
+    z-index: 1000;
+    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    border-left: 1px solid var(--dame-theme-border);
+
+    &.open {
+        right: 0;
+    }
+}
+
+.dame-agenda-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25em;
+    border-bottom: 1px solid var(--dame-theme-border);
+    background-color: var(--dame-theme-surface);
+
+    h3 {
+        margin: 0;
+        font-family: var(--dame-theme-font-heading);
+        font-size: 1.2em;
+        color: var(--dame-theme-text);
+    }
+
+    button {
+        background: none;
+        border: none;
+        font-size: 1.5em;
+        cursor: pointer;
+        color: var(--dame-theme-muted);
+        line-height: 1;
+
+        &:hover {
+            color: var(--dame-theme-text);
+        }
+    }
+}
+
+.dame-agenda-drawer-content {
+    padding: 1.25em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    font-size: 0.95em;
+    line-height: 1.5;
+    color: var(--dame-theme-text);
+}
+
+.dame-agenda-drawer-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75em;
+
+    .dashicons {
+        color: var(--dame-theme-primary);
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+}
+
+/* Agenda List View */
+.dame-agenda-list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.dame-agenda-list-item {
+    display: flex;
+    gap: 1.25em;
+    padding: 1.25em;
+    border: 1px solid var(--dame-theme-border);
+    border-radius: var(--dame-theme-radius);
+    background-color: var(--dame-theme-bg);
+    align-items: center;
+    transition: border-color $dame-transition-fast, box-shadow $dame-transition-fast;
+
+    &:hover {
+        border-color: var(--dame-theme-primary);
+        box-shadow: $dame-shadow-sm;
+    }
+
+    @include mobile {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.dame-agenda-list-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75em 1.25em;
+    background-color: var(--dame-theme-surface);
+    border-radius: var(--dame-theme-radius);
+    min-width: 60px;
+    text-align: center;
+    flex-shrink: 0;
+
+    .dame-date-day {
+        font-size: 1.5em;
+        font-weight: 700;
+        color: var(--dame-theme-primary);
+        line-height: 1;
+    }
+
+    .dame-date-month {
+        font-size: 0.8em;
+        text-transform: uppercase;
+        color: var(--dame-theme-muted);
+        margin-top: 4px;
+    }
+}
+
+.dame-agenda-list-details {
+    flex: 1;
+
+    h4 {
+        margin: 0 0 6px 0;
+        font-size: 1.1em;
+        color: var(--dame-theme-text);
+    }
+
+    p {
+        margin: 0;
+        font-size: 0.9em;
+        color: var(--dame-theme-muted);
+    }
+}
+
+/* Category Badges */
+.dame-category-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: var(--dame-theme-btn-radius);
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Responsive Rules for Agenda */
+@include tablet {
+    .dame-agenda-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dame-agenda-primary-controls,
+    .dame-agenda-secondary-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .dame-desktop-text {
+        display: none;
+    }
+
+    .dame-mobile-text {
+        display: inline;
+    }
+
+    .dame-agenda-day-cell {
+        min-height: 80px;
+    }
+}

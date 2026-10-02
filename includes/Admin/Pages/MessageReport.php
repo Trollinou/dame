@@ -18,21 +18,6 @@ class MessageReport {
 	 * Initialize the page.
 	 */
 	public function init(): void {
-
-		add_action( 'admin_head', array( $this, 'hide_menu_link' ) );
-	}
-
-
-	/**
-	 * Hide the menu link via CSS.
-	 */
-	public function hide_menu_link(): void {
-		echo '<style>
-			a[href="admin.php?page=dame-message-report"],
-			li:has(> a[href="admin.php?page=dame-message-report"]) {
-				display: none !important;
-			}
-		</style>';
 	}
 
 	/**
@@ -126,7 +111,7 @@ class MessageReport {
 								</td>
 								<td>
 									<?php if ( ! empty( $opened_at ) ) : ?>
-										<span style="color: green; font-weight: bold;">
+										<span class="dame-status-badge dame-status-badge--read">
 											<?php
 											$timestamp = strtotime( $opened_at . ' UTC' );
 											$date_fmt  = false !== $timestamp ? (string) wp_date( (string) get_option( 'date_format' ) . ' ' . (string) get_option( 'time_format' ), $timestamp ) : '';
@@ -135,9 +120,9 @@ class MessageReport {
 											?>
 										</span>
 									<?php elseif ( ! empty( $sent_at ) ) : ?>
-										<span style="color: #888;"><?php esc_html_e( 'Non lu', 'dame' ); ?></span>
+										<span class="dame-status-badge dame-status-badge--unread"><?php esc_html_e( 'Non lu', 'dame' ); ?></span>
 									<?php else : ?>
-										<span style="color: #d63638; font-style: italic;"><?php esc_html_e( 'En attente d\'envoi', 'dame' ); ?></span>
+										<span class="dame-status-badge dame-status-badge--pending"><?php esc_html_e( 'En attente d\'envoi', 'dame' ); ?></span>
 									<?php endif; ?>
 								</td>
 							</tr>

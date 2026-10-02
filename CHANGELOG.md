@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Architecture SCSS Modulaire & Uniformisation Thème WordPress (FSE & Blocksy)
+- **Architecture SCSS Modulaire (`src/scss/`)** :
+  - Découpage en sous-dossiers thématiques : `abstracts/` (`_variables`, `_mixins`, `_wp-theme`), `components/` (`_buttons`, `_forms`, `_tables`, `_modal`, `_notices`, `_autocomplete`, `_signature`), `views/` (`_agenda`, `_single-event`, `_benevolat`, `_newsletter`, `_registration`), et `admin/` (`_dashboard`, `_metaboxes`, `_mailing`, `_backups`, `_view-adherent`, `_reports`, `_reconciliation`, `_hidden-menus`).
+  - Compilation Dart Sass optimisée vers `assets/css/` (`admin-styles.css`, `admin-common.css`, `public-styles.css`, `public-agenda.css`).
+- **Harmonisation avec le Thème Actif & WordPress Standards (Blocksy & Block Themes)** :
+  - Utilisation des CSS Custom Properties WordPress et thèmes (`--wp--preset--color--*`, `--wp--preset--font-*`, `--theme-palette-color-*`, `--theme-button-*`) avec fallbacks fluides.
+  - Adaptation native des formulaires (inputs, selects, textareas), boutons (`.dame-btn`, `.nav-button`), modales, tableaux et badges de statut au thème actif.
+- **Éradication Totale du CSS Inline (`<style>` et attributs `style="..."`)** :
+  - Suppression de l'intégralité des balises `<style>` dans les fichiers PHP (`MessageReport`, `ViewAdherent`, shortcode `Benevolat`, métaboxes `Contact`, `Adherent`, `Benevolat`, `Message`, `Agenda`).
+  - Remplacement de tous les attributs `style="..."` résiduels par des classes BEM et utilitaires CSS (`_dashboard.scss`, `_backups.scss`, `_metaboxes.scss`, `_reports.scss`).
+  - Enqueue et enregistrement centralisés des feuilles de styles dans `Admin\Assets` et `Frontend\Assets`.
+
 ### Modernisation WordPress 7.x & Script Modules (Interactivity API)
 - **Migration vers l'Interactivity API et les Script Modules ESM (`@wordpress/interactivity`)** :
   - **Stores réactifs d'état (`src/js/modules/`)** :

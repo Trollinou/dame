@@ -141,7 +141,7 @@ class Adherent {
 			case 'dame_membership_status':
 				$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
 				if ( $current_season_tag_id && has_term( $current_season_tag_id, 'dame_saison_adhesion', $post_id ) ) {
-					echo '<span style="color: green; font-weight: bold;">' . esc_html__( 'Actif', 'dame' ) . '</span>';
+					echo '<span class="dame-status-badge dame-status-badge--active">' . esc_html__( 'Actif', 'dame' ) . '</span>';
 				} else {
 					echo esc_html__( 'Non adhérent', 'dame' );
 				}
@@ -152,7 +152,7 @@ class Adherent {
 				if ( ! empty( $saisons ) && ! is_wp_error( $saisons ) ) {
 					$saison_names = array();
 					foreach ( $saisons as $saison ) {
-						$saison_names[] = '<span style="display: inline-block; background-color: #e0e0e0; color: #333; padding: 2px 8px; margin: 2px; border-radius: 4px; font-size: 0.9em;">' . esc_html( $saison->name ) . '</span>';
+						$saison_names[] = '<span class="dame-status-badge dame-status-badge--season">' . esc_html( $saison->name ) . '</span>';
 					}
 					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					echo implode( ' ', $saison_names );

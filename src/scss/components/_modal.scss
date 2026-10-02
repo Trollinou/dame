@@ -1,0 +1,103 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Standard Modal & Overlay Component
+ */
+
+body.dame-modal-active {
+    overflow: hidden !important;
+}
+
+.dame-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999999 !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 30px 16px;
+    box-sizing: border-box;
+
+    &.is-open,
+    &--open {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &__backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(15, 23, 42, 0.75) !important;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 1;
+    }
+
+    &__dialog {
+        position: relative;
+        z-index: 2 !important;
+        background: var(--dame-theme-bg, #ffffff) !important;
+        color: var(--dame-theme-text, #0f172a);
+        opacity: 1 !important;
+        border-radius: var(--dame-theme-radius, 12px);
+        border: 1px solid var(--dame-theme-border, #cbd5e1);
+        width: 100%;
+        max-width: 500px;
+        margin: auto;
+        box-shadow: $dame-shadow-modal;
+        padding: 32px 28px;
+        box-sizing: border-box;
+        animation: dameModalFadeIn $dame-transition-normal;
+
+        @include mobile {
+            padding: 24px 18px;
+        }
+    }
+
+    &__close {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: transparent;
+        border: none;
+        font-size: 24px;
+        line-height: 1;
+        color: var(--dame-theme-muted, #64748b);
+        cursor: pointer;
+        padding: 6px;
+        border-radius: var(--dame-theme-radius, 4px);
+        transition: color $dame-transition-fast, background-color $dame-transition-fast;
+
+        &:hover {
+            color: var(--dame-theme-text, #0f172a);
+            background-color: var(--dame-theme-surface, #f1f5f9);
+        }
+
+        &:focus-visible {
+            @include focus-ring;
+        }
+    }
+}
+
+@keyframes dameModalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

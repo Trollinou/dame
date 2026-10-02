@@ -1,0 +1,143 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Standard Notices & Feedback Alerts Component
+ */
+
+.dame-feedback {
+    padding: 12px 16px;
+    border-radius: var(--dame-theme-radius, #{$dame-radius-md});
+    font-size: 14px;
+    margin-bottom: 16px;
+    line-height: 1.45;
+    border: 1px solid transparent;
+
+    &--success {
+        background-color: #ecfdf5;
+        color: #065f46;
+        border-color: #a7f3d0;
+    }
+
+    &--error {
+        background-color: #fef2f2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+
+    &--warning {
+        background-color: #fffbeb;
+        color: #92400e;
+        border-color: #fde68a;
+    }
+
+    &--info {
+        background-color: #eff6ff;
+        color: #1e40af;
+        border-color: #bfdbfe;
+    }
+}
+
+// Notice Toast Overlay (e.g. Newsletter toast notifications)
+.dame-notice-overlay {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 999999;
+    max-width: 420px;
+    width: calc(100% - 48px);
+    animation: dameNoticeSlideIn 0.3s ease-out;
+}
+
+@keyframes dameNoticeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dame-notice-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--dame-theme-bg, #ffffff);
+    border-radius: var(--dame-theme-radius, #{$dame-radius-md});
+    padding: 16px 18px;
+    box-shadow: $dame-shadow-lg;
+    border-left: 4px solid var(--dame-theme-primary);
+
+    &--success {
+        border-left-color: #10b981;
+
+        .dame-notice-icon {
+            color: #10b981;
+            background: #d1fae5;
+        }
+    }
+
+    &--warning {
+        border-left-color: #f59e0b;
+
+        .dame-notice-icon {
+            color: #f59e0b;
+            background: #fef3c7;
+        }
+    }
+
+    &--error {
+        border-left-color: #ef4444;
+
+        .dame-notice-icon {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+    }
+
+    .dame-notice-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .dame-notice-content {
+        flex: 1;
+    }
+
+    .dame-notice-heading {
+        margin: 0 0 4px 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--dame-theme-text, #0f172a);
+    }
+
+    .dame-notice-message {
+        margin: 0;
+        font-size: 13.5px;
+        color: var(--dame-theme-muted, #475569);
+        line-height: 1.4;
+    }
+
+    .dame-notice-close {
+        background: transparent;
+        border: none;
+        font-size: 18px;
+        color: var(--dame-theme-muted, #94a3b8);
+        cursor: pointer;
+        padding: 0 4px;
+        line-height: 1;
+
+        &:hover {
+            color: var(--dame-theme-text, #334155);
+        }
+    }
+}

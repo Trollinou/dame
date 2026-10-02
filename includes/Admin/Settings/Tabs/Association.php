@@ -85,7 +85,7 @@ class Association {
 			$type  = 'number';
 			$class = 'small-text';
 		} elseif ( 'assoc_address_1' === $key ) {
-			$wrapper_start = '<div class="dame-autocomplete-wrapper" style="position: relative;">';
+			$wrapper_start = '<div class="dame-autocomplete-wrapper">';
 			$wrapper_end   = '</div>';
 			$extra_attr    = 'autocomplete="off"';
 			$class        .= ' dame-js-address';

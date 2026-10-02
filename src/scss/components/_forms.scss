@@ -1,0 +1,92 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Standard WordPress & Theme Compatible Forms
+ */
+
+.dame-form {
+    font-family: var(--dame-theme-font-body);
+    color: var(--dame-theme-text);
+
+    p {
+        margin-bottom: 1.25em;
+    }
+
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.35em;
+        color: var(--dame-theme-text);
+        font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="number"],
+    input[type="search"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 9px 12px;
+        box-sizing: border-box;
+        border: 1px solid var(--dame-theme-border);
+        border-radius: var(--dame-theme-radius);
+        background-color: var(--dame-theme-bg);
+        color: var(--dame-theme-text);
+        font-family: inherit;
+        font-size: 14px;
+        line-height: 1.5;
+        transition: border-color $dame-transition-fast, box-shadow $dame-transition-fast;
+
+        &:focus {
+            @include focus-ring(var(--dame-theme-primary));
+        }
+
+        &::placeholder {
+            color: var(--dame-theme-muted);
+            opacity: 0.8;
+        }
+
+        &:disabled {
+            background-color: var(--dame-theme-surface);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+    }
+
+    select {
+        cursor: pointer;
+    }
+
+    .required,
+    .dame-required {
+        color: #dc2626;
+        margin-left: 2px;
+    }
+
+    .dame-form-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 1.25em;
+
+        @include mobile {
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .dame-form-group {
+            flex: 1;
+            min-width: 0;
+        }
+    }
+
+    .dame-form-help {
+        font-size: 12.5px;
+        color: var(--dame-theme-muted);
+        margin-top: 4px;
+        line-height: 1.4;
+    }
+}

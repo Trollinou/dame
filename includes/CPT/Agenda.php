@@ -288,7 +288,7 @@ class Agenda {
 				if ( ! empty( $latitude ) && ! empty( $longitude ) ) {
 					$details_html .= '<div class="map-container">';
 					// Embed map.
-					$details_html .= '<iframe src="https://maps.google.com/maps?q=' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '&hl=es;z=14&amp;output=embed" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"></iframe>';
+					$details_html .= '<iframe src="https://maps.google.com/maps?q=' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '&hl=es;z=14&amp;output=embed" width="100%" height="300" allowfullscreen="" loading="lazy"></iframe>';
 
 					// Navigation buttons.
 					$details_html .= '<div class="nav-buttons">';

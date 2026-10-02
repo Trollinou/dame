@@ -1,0 +1,29 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Single Event Details View
+ */
+
+.dame-single-event {
+    font-family: var(--dame-theme-font-body);
+    color: var(--dame-theme-text);
+    margin: 2em 0;
+
+    .map-container,
+    .dame-map-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 20px 0;
+        border-radius: var(--dame-theme-radius);
+        overflow: hidden;
+        border: 1px solid var(--dame-theme-border);
+        box-shadow: $dame-shadow-sm;
+
+        iframe {
+            border: 0;
+            display: block;
+            width: 100%;
+        }
+    }
+}

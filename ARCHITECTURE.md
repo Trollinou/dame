@@ -230,15 +230,18 @@ Pour les fonctionnalités à multiples facettes (ex: une page d'options à ongle
 - **I18n** : Utiliser `wp.i18n` pour toutes les chaînes.
 
 ### Styles & SCSS
-- **Préprocesseur** : SCSS (`.scss`) obligatoire pour tous les styles.
-- **Architecture** :
-  - **Global/Admin** : Sources dans `assets/scss/` -> Compilés vers `assets/css/`.
-  - **Blocs** : Sources dans `src/blocks/` (`style.scss`, `editor.scss`) -> Compilés dans `build/`.
-- **Méthodologie** : Respecter la convention **BEM** (Block Element Modifier).
-- **Bonnes pratiques** :
-  - Utiliser des variables CSS (Custom Properties) pour les couleurs/fonts.
-  - Éviter le nesting excessif (max 3 niveaux).
-  - Mobile-first (Media Queries).
+- **Préprocesseur** : SCSS (`.scss`) modulaire obligatoire pour tous les styles (`src/scss/` compilé vers `assets/css/`).
+- **Architecture Modulaire (`src/scss/`)** :
+  - `abstracts/` : Variables (`_variables.scss`), mixins (`_mixins.scss`), et tokens d'adaptation au thème WordPress / Blocksy / FSE (`_wp-theme.scss`).
+  - `components/` : Boutons (`_buttons.scss`), formulaires (`_forms.scss`), tables (`_tables.scss`), modales (`_modal.scss`), alertes (`_notices.scss`), autocomplétion (`_autocomplete.scss`), signature (`_signature.scss`).
+  - `views/` : Agenda (`_agenda.scss`), événement unique (`_single-event.scss`), bénévolat (`_benevolat.scss`), newsletter (`_newsletter.scss`), pré-inscription (`_registration.scss`).
+  - `admin/` : Dashboard (`_dashboard.scss`), métaboxes (`_metaboxes.scss`), mailing (`_mailing.scss`), sauvegardes (`_backups.scss`), fiche adhérent (`_view-adherent.scss`), rapports (`_reports.scss`), réconciliation (`_reconciliation.scss`), menus masqués (`_hidden-menus.scss`).
+- **Harmonisation Thème WordPress (FSE & Blocksy)** :
+  - Utilisation systématique des CSS Custom Properties (`--wp--preset--color--*`, `--wp--preset--font-*`, `--theme-palette-color-*`) avec fallbacks fluides.
+  - Adaptation native des polices (`inherit`), bordures, boutons et formulaires au design du thème actif sans surcharge agressive.
+- **Interdiction du CSS Inline** :
+  - **Zéro balise `<style>`** et **zéro attribut `style="..."`** dans les fichiers PHP (conformité stricte CSP). Tout le style doit être externalisé sous `src/scss/`.
+- **Méthodologie** : Respecter la convention **BEM** (Block Element Modifier). Mobile-first et nesting limité (max 3 niveaux).
 
 ### Sécurité & Performance
 - **Nonces & Caps** : Obligatoire pour toute action d'écriture (Formulaires, AJAX, REST).

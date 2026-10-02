@@ -137,15 +137,6 @@ class Benevolat {
 
 		ob_start();
 		?>
-		<style>
-			.dame-benevolat-wrapper { margin: 20px 0; }
-			.dame-benevolat-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-			.dame-benevolat-table th, .dame-benevolat-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-			.dame-benevolat-table th { background-color: #f2f2f2; }
-			.benevolat-timeslot-label { display: block; margin-bottom: 5px; }
-			.benevolat-date-row.is-past { background-color: #fcf8e3; opacity: 0.7; }
-			.benevolat-timeslot-label.is-past { cursor: not-allowed; }
-		</style>
 		<div class="dame-benevolat-wrapper" data-wp-interactive="dame/benevolat" <?php echo $context_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<h3><?php echo esc_html( (string) $benevolat->post_title ); ?></h3>
 			<?php if ( ! empty( $benevolat->post_content ) ) : ?>

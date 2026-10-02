@@ -105,52 +105,52 @@ class Documents {
 		?>
 		<div class="dame-adherent-docs-container">
 			<?php if ( ! empty( $sig_date ) ) : ?>
-				<p style="font-size: 0.9em; color: #555; margin-bottom: 12px;">
+				<p class="dame-doc-date">
 					ℹ️ <?php esc_html_e( 'Signé le :', 'dame' ); ?> <strong><?php echo esc_html( $sig_date ); ?></strong>
 				</p>
 			<?php endif; ?>
 
 			<!-- Attestation de santé -->
-			<div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #ddd;">
-				<p style="margin: 0 0 6px 0;"><strong><?php esc_html_e( 'Attestation de santé :', 'dame' ); ?></strong></p>
+			<div class="dame-doc-item">
+				<p><strong><?php esc_html_e( 'Attestation de santé :', 'dame' ); ?></strong></p>
 				<?php if ( ! empty( $health_doc ) ) : ?>
-					<p style="margin: 0 0 8px 0;">
-						<span class="dashicons dashicons-yes-alt" style="color: green;"></span>
+					<p>
+						<span class="dashicons dashicons-yes-alt"></span>
 						<a href="<?php echo esc_url( $health_url ); ?>" class="button button-small" target="_blank">
 							<?php esc_html_e( 'Voir le document', 'dame' ); ?>
 						</a>
 					</p>
 				<?php else : ?>
-					<p style="margin: 0 0 8px 0; color: #d63638; font-size: 0.9em;">
+					<p class="dame-doc-missing">
 						<span class="dashicons dashicons-warning"></span> <?php esc_html_e( 'Non renseignée pour cette saison', 'dame' ); ?>
 					</p>
 				<?php endif; ?>
-				<label style="font-size: 0.85em; color: #666; display: block; margin-bottom: 4px;">
+				<label class="dame-doc-label">
 					<?php esc_html_e( 'Importer / Remplacer (PDF, JPG, PNG) :', 'dame' ); ?>
 				</label>
-				<input type="file" name="dame_upload_health_doc" accept=".pdf,image/jpeg,image/png" style="max-width: 100%;" />
+				<input type="file" name="dame_upload_health_doc" accept=".pdf,image/jpeg,image/png" />
 			</div>
 
 			<!-- Autorisation parentale (si mineur) -->
 			<?php if ( $is_minor ) : ?>
-				<div style="margin-bottom: 10px;">
-					<p style="margin: 0 0 6px 0;"><strong><?php esc_html_e( 'Autorisation parentale :', 'dame' ); ?></strong></p>
+				<div class="dame-doc-item">
+					<p><strong><?php esc_html_e( 'Autorisation parentale :', 'dame' ); ?></strong></p>
 					<?php if ( ! empty( $parental_doc ) ) : ?>
-						<p style="margin: 0 0 8px 0;">
-							<span class="dashicons dashicons-yes-alt" style="color: green;"></span>
+						<p>
+							<span class="dashicons dashicons-yes-alt"></span>
 							<a href="<?php echo esc_url( $parental_url ); ?>" class="button button-small" target="_blank">
 								<?php esc_html_e( 'Voir le document', 'dame' ); ?>
 							</a>
 						</p>
 					<?php else : ?>
-						<p style="margin: 0 0 8px 0; color: #d63638; font-size: 0.9em;">
+						<p class="dame-doc-missing">
 							<span class="dashicons dashicons-warning"></span> <?php esc_html_e( 'Non renseignée pour cette saison', 'dame' ); ?>
 						</p>
 					<?php endif; ?>
-					<label style="font-size: 0.85em; color: #666; display: block; margin-bottom: 4px;">
+					<label class="dame-doc-label">
 						<?php esc_html_e( 'Importer / Remplacer (PDF, JPG, PNG) :', 'dame' ); ?>
 					</label>
-					<input type="file" name="dame_upload_parental_doc" accept=".pdf,image/jpeg,image/png" style="max-width: 100%;" />
+					<input type="file" name="dame_upload_parental_doc" accept=".pdf,image/jpeg,image/png" />
 				</div>
 			<?php endif; ?>
 		</div>

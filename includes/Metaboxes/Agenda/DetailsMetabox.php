@@ -88,7 +88,7 @@ class DetailsMetabox {
 			<tr>
 				<th><label for="dame_address_1"><?php esc_html_e( 'Adresse', 'dame' ); ?></label></th>
 				<td>
-					<div class="dame-autocomplete-wrapper" style="position: relative;">
+					<div class="dame-autocomplete-wrapper">
 						<input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text dame-js-address" data-group="event_location" autocomplete="off" />
 					</div>
 				</td>
@@ -126,9 +126,6 @@ class DetailsMetabox {
 				</td>
 			</tr>
 		</table>
-		<style>
-			.dame-time-fields.hidden { display: none; }
-		</style>
 		<?php
 	}
 }

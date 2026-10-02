@@ -1,0 +1,44 @@
+// Breakpoints
+$breakpoint-sm: 480px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1200px;
+
+// Fallback Colors (if not defined by WordPress theme)
+$dame-fallback-primary: #2563eb;
+$dame-fallback-primary-hover: #1d4ed8;
+$dame-fallback-contrast: #0f172a;
+$dame-fallback-base: #ffffff;
+$dame-fallback-secondary: #64748b;
+$dame-fallback-border: #cbd5e1;
+$dame-fallback-surface: #f8fafc;
+$dame-fallback-surface-alt: #f1f5f9;
+
+// Admin UI Colors (WordPress Core standard palette)
+$dame-admin-primary: #2271b1;
+$dame-admin-primary-hover: #135e96;
+$dame-admin-text: #3c434a;
+$dame-admin-text-dark: #1d2327;
+$dame-admin-border: #ccd0d4;
+$dame-admin-border-subtle: #dcdcde;
+$dame-admin-bg: #f0f0f1;
+$dame-admin-card-bg: #ffffff;
+$dame-admin-success: #00a32a;
+$dame-admin-warning: #dba617;
+$dame-admin-danger: #d63638;
+$dame-admin-danger-hover: #b32d2e;
+
+// Radii & Shadows
+$dame-radius-sm: 4px;
+$dame-radius-md: 6px;
+$dame-radius-lg: 10px;
+$dame-radius-full: 9999px;
+
+$dame-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$dame-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$dame-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$dame-shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+
+// Transitions
+$dame-transition-fast: 0.15s ease-in-out;
+$dame-transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);

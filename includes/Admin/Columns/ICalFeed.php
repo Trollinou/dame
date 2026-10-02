@@ -63,13 +63,13 @@ class ICalFeed {
 				}
 
 				$feed_url = home_url( '/feed/agenda/' . $post->post_name . '.ics' );
-				echo '<input type="text" value="' . esc_url( $feed_url ) . '" readonly class="widefat dame-auto-select" style="width: 100%; max-width: 450px;">';
+				echo '<input type="text" value="' . esc_url( $feed_url ) . '" readonly class="widefat dame-auto-select">';
 				break;
 
 			case 'categories':
 				$selected_categories = get_post_meta( $post_id, '_dame_ical_feed_categories', true );
 				if ( ! is_array( $selected_categories ) || empty( $selected_categories ) ) {
-					echo '<span style="color: #d63638;">' . esc_html__( 'Aucune catégorie (flux vide)', 'dame' ) . '</span>';
+					echo '<span class="dame-status-badge dame-status-badge--error">' . esc_html__( 'Aucune catégorie (flux vide)', 'dame' ) . '</span>';
 					return;
 				}
 

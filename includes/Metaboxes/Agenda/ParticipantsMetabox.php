@@ -65,8 +65,8 @@ class ParticipantsMetabox {
 		}
 		$sorted_adherents = array_merge( $selected_list, $unselected_list );
 		?>
-		<input type="text" id="dame_participant_filter" placeholder="<?php esc_attr_e( 'Filtrer par nom...', 'dame' ); ?>" style="width: 100%; margin-bottom: 5px;">
-		<div class="dame-participants-checklist" style="max-height: 250px; overflow-y: auto;">
+		<input type="text" id="dame_participant_filter" placeholder="<?php esc_attr_e( 'Filtrer par nom...', 'dame' ); ?>" class="widefat">
+		<div class="dame-participants-checklist">
 			<ul id="dame_participants_list">
 				<?php
 				foreach ( $sorted_adherents as $adherent ) {
