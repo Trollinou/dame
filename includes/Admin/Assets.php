@@ -35,13 +35,24 @@ class Assets {
 			return;
 		}
 
-		// Détection des écrans autorisés : Adhérents, Pré-inscriptions, Réglages et Contacts.
-		$is_adherent_cpt        = 'adherent' === $screen->post_type;
-		$is_pre_inscription_cpt = 'dame_pre_inscription' === $screen->post_type;
-		$is_contact_cpt         = 'dame_contact' === $screen->post_type; // Nouveau CPT Contact.
-		$is_settings_page       = $screen->id && strpos( $screen->id, 'dame-settings' ) !== false;
+		// Enqueue Command Palette integration across WP Admin (WordPress 6.3+ / 7.x).
+		wp_enqueue_script(
+			'dame-admin-command-palette',
+			\DAME_PLUGIN_URL . 'assets/js/admin-command-palette.js',
+			array( 'wp-commands', 'wp-data' ),
+			\DAME_VERSION,
+			true
+		);
 
-		// Sortie prématurée si nous ne sommes pas sur un écran géré par le plugin.
+		wp_localize_script(
+			'dame-admin-command-palette',
+			'dameAdminCommands',
+			array(
+				'adminUrl' => admin_url(),
+			)
+		);
+
+		// Sortie prématurée si nous ne sommes pas sur un écran géré par le plugin pour les styles/scripts lourds.
 		if ( ! $is_adherent_cpt && ! $is_settings_page && ! $is_pre_inscription_cpt && ! $is_contact_cpt ) {
 			return;
 		}
