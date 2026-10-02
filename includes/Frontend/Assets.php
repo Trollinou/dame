@@ -33,11 +33,25 @@ class Assets {
 			\DAME_VERSION
 		);
 
-		// Register the modern Interactivity API Script Module (WordPress 6.5+ / 7.x).
+		// Register the modern Interactivity API Script Modules (WordPress 6.5+ / 7.x).
 		if ( function_exists( 'wp_register_script_module' ) ) {
 			wp_register_script_module(
 				'dame/agenda',
 				\DAME_PLUGIN_URL . 'assets/js/modules/agenda-store.js',
+				array( '@wordpress/interactivity' ),
+				\DAME_VERSION
+			);
+
+			wp_register_script_module(
+				'dame/newsletter',
+				\DAME_PLUGIN_URL . 'assets/js/modules/newsletter-store.js',
+				array( '@wordpress/interactivity' ),
+				\DAME_VERSION
+			);
+
+			wp_register_script_module(
+				'dame/benevolat',
+				\DAME_PLUGIN_URL . 'assets/js/modules/benevolat-store.js',
 				array( '@wordpress/interactivity' ),
 				\DAME_VERSION
 			);

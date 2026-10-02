@@ -79,7 +79,12 @@ class Newsletter {
 			'dame_newsletter'
 		);
 
-		// Enqueue the public newsletter script.
+		// Enqueue the modern Script Module (WordPress 6.5+ / 7.x).
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( 'dame/newsletter' );
+		}
+
+		// Enqueue the public newsletter script (fallback).
 		wp_enqueue_script(
 			'dame-public-newsletter',
 			\DAME_PLUGIN_URL . 'assets/js/public-newsletter.js',

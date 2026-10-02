@@ -118,6 +118,23 @@ class Benevolat {
 
 		$today = wp_date( 'Y-m-d' );
 
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( 'dame/benevolat' );
+		}
+
+		$benevolat_context = array(
+			'selectedSlots' => array(),
+			'isSubmitting'  => false,
+			'status'        => 'idle',
+			'message'       => '',
+			'ajaxUrl'       => admin_url( 'admin-post.php' ),
+			'nonce'         => wp_create_nonce( 'dame_submit_benevolat_response_' . $benevolat->ID ),
+		);
+
+		$context_attr = function_exists( 'wp_interactivity_data_wp_context' )
+			? wp_interactivity_data_wp_context( $benevolat_context )
+			: 'data-wp-context=\'' . wp_json_encode( $benevolat_context ) . '\'';
+
 		ob_start();
 		?>
 		<style>
@@ -129,7 +146,7 @@ class Benevolat {
 			.benevolat-date-row.is-past { background-color: #fcf8e3; opacity: 0.7; }
 			.benevolat-timeslot-label.is-past { cursor: not-allowed; }
 		</style>
-		<div class="dame-benevolat-wrapper">
+		<div class="dame-benevolat-wrapper" data-wp-interactive="dame/benevolat" <?php echo $context_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<h3><?php echo esc_html( (string) $benevolat->post_title ); ?></h3>
 			<?php if ( ! empty( $benevolat->post_content ) ) : ?>
 				<div class="benevolat-description">
@@ -137,7 +154,7 @@ class Benevolat {
 				</div>
 			<?php endif; ?>
 
-			<form id="dame-benevolat-form-<?php echo esc_attr( (string) $benevolat->ID ); ?>" class="dame-benevolat-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<form id="dame-benevolat-form-<?php echo esc_attr( (string) $benevolat->ID ); ?>" class="dame-benevolat-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" data-wp-on--submit="actions.submitResponse">
 				<input type="hidden" name="action" value="dame_submit_benevolat">
 				<input type="hidden" name="benevolat_id" value="<?php echo esc_attr( (string) $benevolat->ID ); ?>">
 				<?php // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized ?>
