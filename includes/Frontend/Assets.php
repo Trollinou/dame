@@ -33,6 +33,16 @@ class Assets {
 			\DAME_VERSION
 		);
 
+		// Register the modern Interactivity API Script Module (WordPress 6.5+ / 7.x).
+		if ( function_exists( 'wp_register_script_module' ) ) {
+			wp_register_script_module(
+				'dame/agenda',
+				\DAME_PLUGIN_URL . 'assets/js/modules/agenda-store.js',
+				array( '@wordpress/interactivity' ),
+				\DAME_VERSION
+			);
+		}
+
 		// Enqueue the single event script on single event pages for the GPS button functionality.
 		if ( is_singular( 'dame_agenda' ) ) {
 			wp_enqueue_script(
