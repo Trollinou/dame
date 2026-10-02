@@ -219,6 +219,10 @@ class Plugin {
 		$frontend_assets = new \DAME\Frontend\Assets();
 		$frontend_assets->init();
 
+		// Initialize Gutenberg Blocks & Block Bindings API.
+		$blocks_manager = new \DAME\Blocks\Manager();
+		$blocks_manager->init();
+
 		// Initialize Metaboxes & Admin-only logic.
 		if ( is_admin() ) {
 			$admin_menu = new \DAME\Admin\Menu();
