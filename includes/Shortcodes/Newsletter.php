@@ -82,31 +82,31 @@ class Newsletter {
 		// Enqueue the modern Script Module (WordPress 6.5+ / 7.x).
 		if ( function_exists( 'wp_enqueue_script_module' ) ) {
 			wp_enqueue_script_module( 'dame/newsletter' );
+		} else {
+			// Enqueue the public newsletter script (fallback).
+			wp_enqueue_script(
+				'dame-public-newsletter',
+				\DAME_PLUGIN_URL . 'assets/js/public-newsletter.js',
+				array(),
+				\DAME_VERSION,
+				true
+			);
+
+			// Localize script.
+			wp_localize_script(
+				'dame-public-newsletter',
+				'dameNewsletterData',
+				array(
+					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+					'nonce'   => wp_create_nonce( 'dame_newsletter_nonce' ),
+					'i18n'    => array(
+						'submitting'    => __( 'Inscription en cours...', 'dame' ),
+						'submitSuccess' => __( 'Inscription réussie !', 'dame' ),
+						'genericError'  => __( 'Une erreur est survenue. Veuillez réessayer.', 'dame' ),
+					),
+				)
+			);
 		}
-
-		// Enqueue the public newsletter script (fallback).
-		wp_enqueue_script(
-			'dame-public-newsletter',
-			\DAME_PLUGIN_URL . 'assets/js/public-newsletter.js',
-			array(),
-			\DAME_VERSION,
-			true
-		);
-
-		// Localize script.
-		wp_localize_script(
-			'dame-public-newsletter',
-			'dameNewsletterData',
-			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'dame_newsletter_nonce' ),
-				'i18n'    => array(
-					'submitting'    => __( 'Inscription en cours...', 'dame' ),
-					'submitSuccess' => __( 'Inscription réussie !', 'dame' ),
-					'genericError'  => __( 'Une erreur est survenue. Veuillez réessayer.', 'dame' ),
-				),
-			)
-		);
 
 		// Enqueue public styles.
 		wp_enqueue_style(

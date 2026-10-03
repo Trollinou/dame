@@ -44,20 +44,20 @@ class Contact {
 
 		if ( function_exists( 'wp_enqueue_script_module' ) ) {
 			wp_enqueue_script_module( 'dame/contact' );
+		} else {
+			// Enqueue the script using the global constant (fallback).
+			wp_enqueue_script( 'dame-public-contact-form', \DAME_PLUGIN_URL . 'assets/js/public-contact-form.js', array(), \DAME_VERSION, true );
+
+			// Localize the script with required data.
+			wp_localize_script(
+				'dame-public-contact-form',
+				'dame_contact_ajax',
+				array(
+					'ajax_url' => admin_url( 'admin-ajax.php' ),
+					'nonce'    => wp_create_nonce( 'dame_contact_nonce' ),
+				)
+			);
 		}
-
-		// Enqueue the script using the global constant (fallback).
-		wp_enqueue_script( 'dame-public-contact-form', \DAME_PLUGIN_URL . 'assets/js/public-contact-form.js', array(), \DAME_VERSION, true );
-
-		// Localize the script with required data.
-		wp_localize_script(
-			'dame-public-contact-form',
-			'dame_contact_ajax',
-			array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce'    => wp_create_nonce( 'dame_contact_nonce' ),
-			)
-		);
 
 		$contact_context = array(
 			'isSubmitting' => false,
@@ -183,11 +183,12 @@ class Contact {
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$message = isset( $_POST['dame_contact_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['dame_contact_message'] ) ) : '';
 
-		// 4. Idempotency lock (15s) to avoid duplicate email sending on double-clicks.
+		// 4. Idempotency lock (15s) to avoid duplicate email sending on double-clicks or concurrent requests.
 		$lock_key = 'dame_contact_lock_' . md5( strtolower( $name . $email . $subject . $message ) );
-		if ( get_transient( $lock_key ) ) {
+		if ( false !== get_transient( $lock_key ) ) {
 			wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
 		}
+		set_transient( $lock_key, '1', 15 );
 
 		$options = get_option( 'dame_options' );
 		$to      = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
@@ -205,9 +206,9 @@ class Contact {
 		$sent = wp_mail( $to, $email_subject, $body, $headers );
 
 		if ( $sent ) {
-			set_transient( $lock_key, '1', 15 );
 			wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
 		} else {
+			delete_transient( $lock_key );
 			wp_send_json_error( array( 'message' => __( "Une erreur s'est produite lors de l'envoi du message.", 'dame' ) ) );
 		}
 	}

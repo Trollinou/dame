@@ -116,6 +116,14 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	const forms = document.querySelectorAll<HTMLFormElement>('.dame-nl-form');
 
 	forms.forEach((form: HTMLFormElement): void => {
+		// Do not attach legacy listener if Interactivity API manages this form.
+		if (
+			form.hasAttribute('data-wp-on--submit') ||
+			form.closest('[data-wp-interactive]')
+		) {
+			return;
+		}
+
 		form.addEventListener('submit', (e: Event): void => {
 			e.preventDefault();
 

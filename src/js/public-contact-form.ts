@@ -6,6 +6,14 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	) as HTMLElement | null;
 
 	if (form && feedback) {
+		// Do not attach legacy listener if Interactivity API manages this form.
+		if (
+			form.hasAttribute('data-wp-on--submit') ||
+			form.closest('[data-wp-interactive]')
+		) {
+			return;
+		}
+
 		form.addEventListener('submit', (e: Event): void => {
 			if (e.defaultPrevented) {
 				return;
