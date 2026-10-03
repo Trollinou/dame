@@ -23,9 +23,11 @@
   - Application des règles de rendu virtuel et INP (`content-visibility: auto; contain-intrinsic-size: auto 65px;`) sur les listes d'événements (`src/scss/views/_agenda.scss`).
   - Enregistrement des feuilles de style via `wp_register_style()` dans `DAME\Frontend\Assets` et chargement conditionnel de `dame-public-styles` sur les vues de CPT et pages pertinentes.
   - Suppression définitive du script classique redondant `src/js/public-contact-form.ts` et allègement du shortcode `[dame_contact]`.
-  - **Restauration de l'agencement vertical des disponibilités & Assets (`dame_benevolat`)** :
+  - **Modernisation UI & Restauration de l'agencement vertical (`dame_benevolat`)** :
+    - Suppression du conteneur fermé à fond gris et bordures lourdes (`.dame-benevolat-wrapper`) pour une intégration native et transparente dans le thème actif.
+    - Épuration du tableau de disponibilités (`.dame-benevolat-table`) avec séparateurs horizontaux légers, colonnes harmonisées et intégration des styles de boutons standards (`.dame-btn--primary`).
     - Enqueue explicite de la feuille de style `dame-public-styles` lors du rendu de `[dame_benevolat]` dans `DAME\Shortcodes\Benevolat`.
-    - Encapsulation des créneaux horaires dans un conteneur dédié `.benevolat-timeslots-list` avec disposition flexbox en colonne (`flex-direction: column; gap: 8px;`) dans `src/scss/views/_benevolat.scss`, restaurant l'affichage vertical lisible des choix par date.
+    - Encapsulation des créneaux horaires dans un conteneur dédié `.benevolat-timeslots-list` avec disposition flexbox en colonne (`flex-direction: column; gap: 8px;`) dans `src/scss/views/_benevolat.scss`, restaurant l'affichage vertical fluide des choix par date.
 - **Conformité & Contrôle Qualité (QA)** :
   - Correction de l'utilisation de mots-clés réservés PHP en noms de paramètres (`$default` $\rightarrow$ `$default_value`) dans `Metaboxes/Adherent/Legal.php` et `Metaboxes/Agenda/DetailsMetabox.php`.
   - Résolution de l'ensemble des 16 avertissements ESLint sur les modules TypeScript (0 erreur, 0 warning).

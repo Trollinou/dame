@@ -191,7 +191,7 @@ class Benevolat {
 								$is_locked      = $date_info['date'] < $today;
 							?>
 							<tr class="benevolat-date-row <?php echo $is_locked ? 'is-past' : ''; ?>">
-								<td>
+								<td class="benevolat-date-col">
 									<?php echo esc_html( $formatted_date ); ?>
 									<?php if ( $is_locked ) : ?>
 										<br><small style="color: #d63638; font-style: italic;"><?php esc_html_e( '(Verrouillé)', 'dame' ); ?></small>
@@ -229,8 +229,8 @@ class Benevolat {
 					</tbody>
 				</table>
 
-				<p>
-					<input type="submit" name="submit_benevolat" value="<?php echo esc_attr( $user_has_voted ? __( 'Mettre à jour', 'dame' ) : __( 'S\'inscrire', 'dame' ) ); ?>" data-wp-bind--disabled="context.isSubmitting">
+				<p class="benevolat-actions-row">
+					<input type="submit" name="submit_benevolat" value="<?php echo esc_attr( $user_has_voted ? __( 'Mettre à jour', 'dame' ) : __( 'S\'inscrire', 'dame' ) ); ?>" class="dame-btn dame-btn--primary" data-wp-bind--disabled="context.isSubmitting">
 					<span class="benevolat-message-inline" data-wp-bind--hidden="!context.message" data-wp-text="context.message" style="margin-left: 10px;"></span>
 					<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 					<?php if ( isset( $_GET['vote'] ) && 'success' === $_GET['vote'] ) : ?>

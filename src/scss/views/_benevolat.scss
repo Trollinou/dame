@@ -6,51 +6,99 @@
  */
 
 .dame-benevolat-wrapper {
-    border: 1px solid var(--dame-theme-border);
-    padding: 24px;
-    margin: 24px 0;
-    border-radius: var(--dame-theme-radius);
-    background-color: var(--dame-theme-bg);
+    margin: 1.5em 0 2em;
     color: var(--dame-theme-text);
-    box-shadow: $dame-shadow-sm;
 
     h3 {
         margin-top: 0;
+        margin-bottom: 0.5em;
         font-family: var(--dame-theme-font-heading);
         font-size: 1.4em;
         color: var(--dame-theme-text);
     }
 
     .benevolat-description {
-        margin-bottom: 20px;
+        margin-bottom: 1.5em;
         color: var(--dame-theme-muted);
-        line-height: 1.5;
+        line-height: 1.6;
+    }
+
+    .dame-benevolat-form {
+        margin-top: 1em;
+
+        p {
+            margin-bottom: 1.25em;
+        }
+
+        label[for="benevolat_name"] {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4em;
+            color: var(--dame-theme-text);
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            max-width: 480px;
+            padding: 9px 12px;
+            border: 1px solid var(--dame-theme-border);
+            border-radius: var(--dame-theme-radius);
+            background-color: var(--dame-theme-bg);
+            color: var(--dame-theme-text);
+            font-size: 14px;
+            transition: border-color $dame-transition-fast, box-shadow $dame-transition-fast;
+
+            &:focus {
+                @include focus-ring(var(--dame-theme-primary));
+            }
+        }
     }
 }
 
 .dame-benevolat-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 18px 0;
+    margin: 1.5em 0;
     font-size: 14px;
+    background-color: transparent;
 
     th,
     td {
-        border: 1px solid var(--dame-theme-border);
-        padding: 10px 12px;
+        padding: 12px 16px;
         text-align: left;
         vertical-align: top;
+        border: none;
+        border-bottom: 1px solid var(--dame-theme-border);
     }
 
-    th {
-        background-color: var(--dame-theme-surface);
+    thead th {
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--dame-theme-muted);
+        border-bottom: 2px solid var(--dame-theme-border);
+        background-color: transparent;
+    }
+
+    tbody tr {
+        transition: background-color $dame-transition-fast;
+
+        &:hover {
+            background-color: var(--dame-theme-surface);
+        }
+
+        &.is-past {
+            opacity: 0.55;
+            background-color: transparent;
+        }
+    }
+
+    .benevolat-date-col {
         font-weight: 600;
         color: var(--dame-theme-text);
-    }
-
-    .benevolat-date-row.is-past {
-        background-color: #fffbe5;
-        opacity: 0.75;
+        width: 35%;
     }
 }
 
@@ -63,19 +111,29 @@
 }
 
 .benevolat-timeslot-label {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
     margin: 0;
+    padding: 3px 6px;
+    border-radius: var(--dame-theme-radius);
     font-weight: normal;
     cursor: pointer;
     font-size: 13.5px;
     color: var(--dame-theme-text);
-    width: 100%;
+    transition: background-color $dame-transition-fast;
+
+    &:hover {
+        background-color: var(--dame-theme-surface);
+    }
 
     &.is-past {
         cursor: not-allowed;
         opacity: 0.6;
+
+        &:hover {
+            background-color: transparent;
+        }
     }
 
     input[type="checkbox"] {
