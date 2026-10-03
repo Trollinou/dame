@@ -166,6 +166,12 @@
         list-style: none;
         padding: 0;
         margin: 0;
+
+        /* Indentation for nested sub-categories */
+        ul {
+            margin-left: 20px;
+            margin-top: 5px;
+        }
     }
 
     li {
