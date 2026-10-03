@@ -470,8 +470,8 @@
 }
 
 .dame-liste-agenda-date-icon .date-circle {
-    width: 50px;
-    height: 50px;
+    width: 58px;
+    height: 58px;
     border-radius: 50%;
     background-color: #ffcd00;
     display: flex;
@@ -481,17 +481,19 @@
     font-weight: bold;
     line-height: 1;
     flex-shrink: 0;
+    box-sizing: border-box;
+    padding: 4px;
 
     .day-of-week,
     .month-abbr {
-        font-size: 0.58rem;
+        font-size: 0.56rem;
         color: #555555;
-        letter-spacing: 0.02em;
+        letter-spacing: 0.03em;
         line-height: 1;
     }
 
     .day-number {
-        font-size: 1.15rem;
+        font-size: 1.2rem;
         color: #222222;
         margin: 2px 0;
         text-align: center;
