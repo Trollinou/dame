@@ -120,6 +120,14 @@ class Benevolat {
 
 		$today = wp_date( 'Y-m-d' );
 
+		// Enqueue public styles.
+		wp_enqueue_style(
+			'dame-public-styles',
+			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
+			array(),
+			\DAME_VERSION
+		);
+
 		if ( function_exists( 'wp_enqueue_script_module' ) ) {
 			wp_enqueue_script_module( 'dame/benevolat' );
 		}
@@ -191,23 +199,27 @@ class Benevolat {
 								</td>
 								<td>
 									<?php if ( ! empty( $date_info['time_slots'] ) ) : ?>
-										<?php foreach ( $date_info['time_slots'] as $time_index => $time_slot ) : ?>
-											<?php
-											$checked = '';
-											if ( isset( $user_responses[ $date_index ][ $time_index ] ) && '1' === (string) $user_responses[ $date_index ][ $time_index ] ) {
-												$checked = 'checked';
-											}
-											$count = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
-											?>
-											<label class="benevolat-timeslot-label <?php echo $is_locked ? 'is-past' : ''; ?>">
-												<input type="checkbox" name="benevolat_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?> <?php disabled( $is_locked ); ?>>
+										<div class="benevolat-timeslots-list">
+											<?php foreach ( $date_info['time_slots'] as $time_index => $time_slot ) : ?>
 												<?php
-												echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ) . ' ';
-												/* translators: %d: number of registered volunteers */
-												echo esc_html( sprintf( _n( '(%d inscrit)', '(%d inscrits)', $count, 'dame' ), $count ) );
+												$checked = '';
+												if ( isset( $user_responses[ $date_index ][ $time_index ] ) && '1' === (string) $user_responses[ $date_index ][ $time_index ] ) {
+													$checked = 'checked';
+												}
+												$count = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
 												?>
-											</label>
-										<?php endforeach; ?>
+												<label class="benevolat-timeslot-label <?php echo $is_locked ? 'is-past' : ''; ?>">
+													<input type="checkbox" name="benevolat_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?> <?php disabled( $is_locked ); ?>>
+													<span>
+														<?php
+														echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ) . ' ';
+														/* translators: %d: number of registered volunteers */
+														echo esc_html( sprintf( _n( '(%d inscrit)', '(%d inscrits)', $count, 'dame' ), $count ) );
+														?>
+													</span>
+												</label>
+											<?php endforeach; ?>
+										</div>
 									<?php else : ?>
 										<?php esc_html_e( 'Aucune plage horaire définie pour cette date.', 'dame' ); ?>
 									<?php endif; ?>
