@@ -5,7 +5,7 @@ interface CalendarEvent {
 	end_date: string;
 	start_time?: string;
 	end_time?: string;
-	all_day?: boolean | string;
+	all_day?: boolean | string | number;
 	color?: string;
 	background_color?: string;
 	text_color?: string;
@@ -244,8 +244,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 		const isMobile = window.innerWidth < 768;
 		const weekCount = Math.ceil(dayCells.length / 7);
-		const DAY_NUMBER_HEIGHT = isMobile ? 30 : 40;
-		const MIN_CELL_HEIGHT = isMobile ? 40 : 120;
+		const DAY_NUMBER_HEIGHT = isMobile ? 30 : 35;
+		const MIN_CELL_HEIGHT = isMobile ? 40 : 110;
 
 		for (let i = 0; i < weekCount; i++) {
 			const weekCells = dayCells.slice(i * 7, (i + 1) * 7);
@@ -487,10 +487,21 @@ document.addEventListener('DOMContentLoaded', (): void => {
 							?.appendChild(ponctuelContainer);
 					}
 					const isAllDay =
-						event.all_day === '1' || event.all_day === true;
-					const timeText = isAllDay
-						? dame_agenda_ajax.i18n.all_day
-						: `${event.start_time || ''} - ${event.end_time || ''}`;
+						event.all_day === true ||
+						event.all_day === '1' ||
+						event.all_day === 1 ||
+						(!event.start_time && !event.end_time);
+					let timeText = '';
+					if (isAllDay) {
+						timeText =
+							dame_agenda_ajax.i18n.all_day || 'Toute la journée';
+					} else if (event.start_time && event.end_time) {
+						timeText = `${event.start_time} - ${event.end_time}`;
+					} else if (event.start_time) {
+						timeText = event.start_time;
+					} else if (event.end_time) {
+						timeText = event.end_time;
+					}
 					const eventColor = event.color || '#3788d8';
 					let styleAttr = `--event-color: ${eventColor}; border-left-color: ${eventColor};`;
 					if (event.status === 'private') {
@@ -617,10 +628,20 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			}
 
 			const isAllDay =
-				eventData.all_day === '1' || eventData.all_day === true;
-			const timeText = isAllDay
-				? dame_agenda_ajax.i18n.all_day
-				: `${eventData.start_time || ''} - ${eventData.end_time || ''}`;
+				eventData.all_day === true ||
+				eventData.all_day === '1' ||
+				eventData.all_day === 1 ||
+				(!eventData.start_time && !eventData.end_time);
+			let timeText = '';
+			if (isAllDay) {
+				timeText = dame_agenda_ajax.i18n.all_day || 'Toute la journée';
+			} else if (eventData.start_time && eventData.end_time) {
+				timeText = `${eventData.start_time} - ${eventData.end_time}`;
+			} else if (eventData.start_time) {
+				timeText = eventData.start_time;
+			} else if (eventData.end_time) {
+				timeText = eventData.end_time;
+			}
 
 			let tooltipHtml = `<h4>${eventData.title}</h4>`;
 			tooltipHtml += `<p>${timeText}</p>`;

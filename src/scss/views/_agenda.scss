@@ -289,10 +289,10 @@
 }
 
 .dame-calendar-day {
-    min-height: 95px;
+    min-height: 110px;
     border-right: 1px solid var(--dame-theme-border, #ddd);
     border-top: 1px solid var(--dame-theme-border, #ddd);
-    padding: 4px;
+    padding: 5px;
     position: relative;
     background-color: #ffffff !important;
     box-sizing: border-box;
@@ -314,9 +314,9 @@
         background-color: #dc2626;
         color: #ffffff;
         border-radius: 50%;
-        width: 1.7em;
-        height: 1.7em;
-        line-height: 1.7em;
+        width: 1.8em;
+        height: 1.8em;
+        line-height: 1.8em;
         text-align: center;
         float: right;
         font-weight: 700;
@@ -325,8 +325,8 @@
 }
 
 .day-number {
-    font-size: 0.85em;
-    margin-bottom: 3px;
+    font-size: 0.9em;
+    margin-bottom: 4px;
     text-align: right;
     color: var(--dame-theme-text, #1e293b);
     font-weight: 500;
@@ -346,8 +346,8 @@
 
 .dame-event {
     margin-bottom: 2px;
-    padding-left: 4px;
-    font-size: 0.76em;
+    padding-left: 5px;
+    font-size: 0.80em;
     font-weight: 600;
     cursor: pointer;
     border-radius: 2px;
@@ -356,7 +356,7 @@
 
 .dame-event-ponctuel {
     border-left: 3px solid;
-    padding: 1px 4px;
+    padding: 2px 5px;
     background: rgba(0, 0, 0, 0.04);
     border-radius: 2px;
     transition: background-color $dame-transition-fast;
@@ -366,17 +366,17 @@
     }
 
     .event-time {
-        font-size: 0.7em;
+        font-size: 0.72em;
         font-weight: 500;
-        color: var(--dame-theme-muted, rgba(0, 0, 0, 0.6));
+        color: var(--dame-theme-muted, rgba(0, 0, 0, 0.55));
         display: block;
         line-height: 1.2;
     }
 
     .event-title {
-        font-size: 0.84em;
+        font-size: 0.9em;
         font-weight: 600;
-        color: var(--dame-theme-text, rgba(0, 0, 0, 0.9));
+        color: var(--dame-theme-text, rgba(0, 0, 0, 0.85));
         display: block;
         line-height: 1.25;
     }
@@ -398,14 +398,14 @@
     box-sizing: border-box;
 
     &.start {
-        border-top-left-radius: 6px;
-        border-bottom-left-radius: 6px;
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
         margin-left: 0;
     }
 
     &.end {
-        border-top-right-radius: 6px;
-        border-bottom-right-radius: 6px;
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
         margin-right: 0;
     }
 
