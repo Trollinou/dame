@@ -530,30 +530,22 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				`.dame-js-dept[data-group="${group}"]`
 			);
 			if (deptInput) {
-				zipInput.addEventListener(
-					'keyup',
-					function (this: HTMLInputElement): void {
-						const postalCode = this.value;
-						if (postalCode.length >= 2) {
-							const departmentCode = postalCode.substring(0, 2);
-							if (departmentCode === '20') {
-								return;
-							} // Corse
-							for (let i = 0; i < deptInput.options.length; i++) {
-								if (
-									deptInput.options[i].value ===
-									departmentCode
-								) {
-									deptInput.value = departmentCode;
-									deptInput.dispatchEvent(
-										new Event('change')
-									);
-									break;
-								}
+				zipInput.addEventListener('keyup', (): void => {
+					const postalCode = zipInput.value;
+					if (postalCode.length >= 2) {
+						const departmentCode = postalCode.substring(0, 2);
+						if (departmentCode === '20') {
+							return;
+						} // Corse
+						for (let i = 0; i < deptInput.options.length; i++) {
+							if (deptInput.options[i].value === departmentCode) {
+								deptInput.value = departmentCode;
+								deptInput.dispatchEvent(new Event('change'));
+								break;
 							}
 						}
 					}
-				);
+				});
 			}
 		});
 
@@ -574,19 +566,16 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				dame_admin_data &&
 				dame_admin_data.dept_region_map
 			) {
-				deptInput.addEventListener(
-					'change',
-					function (this: HTMLSelectElement): void {
-						const selectedDept = this.value;
-						const mapping = dame_admin_data.dept_region_map;
-						const regionCode = mapping
-							? mapping[selectedDept]
-							: undefined;
-						if (regionCode) {
-							regionInput.value = regionCode;
-						}
+				deptInput.addEventListener('change', (): void => {
+					const selectedDept = deptInput.value;
+					const mapping = dame_admin_data.dept_region_map;
+					const regionCode = mapping
+						? mapping[selectedDept]
+						: undefined;
+					if (regionCode) {
+						regionInput.value = regionCode;
 					}
-				);
+				});
 			}
 		});
 	}

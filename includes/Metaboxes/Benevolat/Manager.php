@@ -464,7 +464,7 @@ class Manager {
 	 * @return array<string, mixed>
 	 */
 	public function admin_notices( array $messages ): array {
-
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['message'] ) && '101' === $_GET['message'] ) {
 			$messages['post'][101] = __( 'Réponse supprimée.', 'dame' );
 		}

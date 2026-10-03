@@ -19,6 +19,8 @@ class Adherent {
 	 */
 	public function init(): void {
 		add_action( 'init', array( $this, 'register_post_type' ), 0 );
+		add_action( 'save_post_adherent', array( \DAME\Repositories\MemberRepository::class, 'invalidate_member_cache' ) );
+		add_action( 'deleted_post', array( \DAME\Repositories\MemberRepository::class, 'invalidate_member_cache' ) );
 		if ( is_admin() ) {
 			add_action( 'admin_init', array( $this, 'save_last_list_url' ) );
 		}

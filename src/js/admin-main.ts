@@ -28,60 +28,54 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	) as HTMLSelectElement | null;
 
 	if (postalCodeInput && departmentSelect) {
-		postalCodeInput.addEventListener(
-			'keyup',
-			function (this: HTMLInputElement): void {
-				const postalCode = this.value;
-				if (postalCode.length >= 2) {
-					let departmentCode = postalCode.substring(0, 2);
+		postalCodeInput.addEventListener('keyup', (): void => {
+			const postalCode = postalCodeInput.value;
+			if (postalCode.length >= 2) {
+				let departmentCode = postalCode.substring(0, 2);
 
-					// Handle Corsica postal codes (20) which can be 2A or 2B
-					if (postalCode.length >= 3 && postalCode.startsWith('20')) {
-						const thirdDigit = parseInt(
-							postalCode.substring(2, 3),
-							10
-						);
-						if (!isNaN(thirdDigit)) {
-							if (thirdDigit <= 1) {
-								// 200xx, 201xx
-								departmentCode = '2A';
-							} else {
-								// 202xx and above
-								departmentCode = '2B';
-							}
-						}
-					} else if (
-						departmentCode === '97' ||
-						postalCode.startsWith('988')
-					) {
-						// Handle overseas departments (97x and 988)
-						if (postalCode.length >= 3) {
-							departmentCode = postalCode.substring(0, 3);
-						}
-					} else if (postalCode.startsWith('980')) {
-						// Handle Monaco (98000 -> 06)
-						departmentCode = '06';
-					}
-
-					let departmentChanged = false;
-					for (let i = 0; i < departmentSelect.options.length; i++) {
-						const option = departmentSelect.options[i];
-						if (option.value === departmentCode) {
-							if (departmentSelect.value !== departmentCode) {
-								departmentSelect.value = departmentCode;
-								departmentChanged = true;
-							}
-							break;
+				// Handle Corsica postal codes (20) which can be 2A or 2B
+				if (postalCode.length >= 3 && postalCode.startsWith('20')) {
+					const thirdDigit = parseInt(postalCode.substring(2, 3), 10);
+					if (!isNaN(thirdDigit)) {
+						if (thirdDigit <= 1) {
+							// 200xx, 201xx
+							departmentCode = '2A';
+						} else {
+							// 202xx and above
+							departmentCode = '2B';
 						}
 					}
+				} else if (
+					departmentCode === '97' ||
+					postalCode.startsWith('988')
+				) {
+					// Handle overseas departments (97x and 988)
+					if (postalCode.length >= 3) {
+						departmentCode = postalCode.substring(0, 3);
+					}
+				} else if (postalCode.startsWith('980')) {
+					// Handle Monaco (98000 -> 06)
+					departmentCode = '06';
+				}
 
-					// If the department was changed, trigger the change event to update the region
-					if (departmentChanged) {
-						departmentSelect.dispatchEvent(new Event('change'));
+				let departmentChanged = false;
+				for (let i = 0; i < departmentSelect.options.length; i++) {
+					const option = departmentSelect.options[i];
+					if (option.value === departmentCode) {
+						if (departmentSelect.value !== departmentCode) {
+							departmentSelect.value = departmentCode;
+							departmentChanged = true;
+						}
+						break;
 					}
 				}
+
+				// If the department was changed, trigger the change event to update the region
+				if (departmentChanged) {
+					departmentSelect.dispatchEvent(new Event('change'));
+				}
 			}
-		);
+		});
 	}
 
 	// Auto-set membership status to 'Active' when date is entered
@@ -92,14 +86,14 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		'dame_membership_status'
 	) as HTMLSelectElement | null;
 	if (membershipDateInput && membershipStatusSelect) {
-		membershipDateInput.addEventListener(
-			'change',
-			function (this: HTMLInputElement): void {
-				if (this.value && membershipStatusSelect.value !== 'A') {
-					membershipStatusSelect.value = 'A';
-				}
+		membershipDateInput.addEventListener('change', (): void => {
+			if (
+				membershipDateInput.value &&
+				membershipStatusSelect.value !== 'A'
+			) {
+				membershipStatusSelect.value = 'A';
 			}
-		);
+		});
 	}
 
 	// Department -> Region auto-selection
@@ -115,21 +109,16 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		regionSelect &&
 		typeof dame_admin_data !== 'undefined'
 	) {
-		departmentSelectForRegion.addEventListener(
-			'change',
-			function (this: HTMLSelectElement): void {
-				const departmentCode = this.value;
-				const mapping = dame_admin_data.department_region_mapping;
-				const regionCode = mapping
-					? mapping[departmentCode]
-					: undefined;
-				if (regionCode) {
-					regionSelect.value = regionCode;
-				} else {
-					regionSelect.value = 'NA'; // Default to N/A if not found
-				}
+		departmentSelectForRegion.addEventListener('change', (): void => {
+			const departmentCode = departmentSelectForRegion.value;
+			const mapping = dame_admin_data.department_region_mapping;
+			const regionCode = mapping ? mapping[departmentCode] : undefined;
+			if (regionCode) {
+				regionSelect.value = regionCode;
+			} else {
+				regionSelect.value = 'NA'; // Default to N/A if not found
 			}
-		);
+		});
 	}
 
 	// Minor auto-population logic
@@ -370,14 +359,11 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		) as HTMLInputElement | null;
 
 		if (startDateInput && endDateInput) {
-			startDateInput.addEventListener(
-				'blur',
-				function (this: HTMLInputElement): void {
-					if (this.value && !endDateInput.value) {
-						endDateInput.value = this.value;
-					}
+			startDateInput.addEventListener('blur', (): void => {
+				if (startDateInput.value && !endDateInput.value) {
+					endDateInput.value = startDateInput.value;
 				}
-			);
+			});
 		}
 
 		// Form validation for required fields

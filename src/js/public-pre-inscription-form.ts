@@ -75,120 +75,111 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		rep1CityInput,
 	];
 
-	birthDateInput.addEventListener(
-		'change',
-		function (this: HTMLInputElement): void {
-			const birthDate = new Date(this.value);
-			if (isNaN(birthDate.getTime())) {
-				if (dynamicFields) {
-					dynamicFields.style.display = 'none';
-				}
-				if (healthQuestionnaireLinkContainer) {
-					healthQuestionnaireLinkContainer.style.display = 'none';
-				}
-				return;
-			}
-
-			const today = new Date();
-			let age = today.getFullYear() - birthDate.getFullYear();
-			const m = today.getMonth() - birthDate.getMonth();
-			if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-				age--;
-			}
-
+	birthDateInput.addEventListener('change', (): void => {
+		const birthDate = new Date(birthDateInput.value);
+		if (isNaN(birthDate.getTime())) {
 			if (dynamicFields) {
-				dynamicFields.style.display = 'block';
+				dynamicFields.style.display = 'none';
+			}
+			if (healthQuestionnaireLinkContainer) {
+				healthQuestionnaireLinkContainer.style.display = 'none';
+			}
+			return;
+		}
+
+		const today = new Date();
+		let age = today.getFullYear() - birthDate.getFullYear();
+		const m = today.getMonth() - birthDate.getMonth();
+		if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+			age--;
+		}
+
+		if (dynamicFields) {
+			dynamicFields.style.display = 'block';
+		}
+
+		if (age >= 18) {
+			if (majeurFields) {
+				majeurFields.style.display = 'block';
+			}
+			if (mineurFields) {
+				mineurFields.style.display = 'none';
 			}
 
-			if (age >= 18) {
-				if (majeurFields) {
-					majeurFields.style.display = 'block';
-				}
-				if (mineurFields) {
-					mineurFields.style.display = 'none';
-				}
+			// For adults, birth city is required.
+			if (birthCityInput) {
+				birthCityInput.required = true;
+			}
+			if (birthCityRequiredIndicator) {
+				birthCityRequiredIndicator.style.display = 'inline';
+			}
 
-				// For adults, birth city is required.
-				if (birthCityInput) {
-					birthCityInput.required = true;
-				}
-				if (birthCityRequiredIndicator) {
-					birthCityRequiredIndicator.style.display = 'inline';
-				}
-
-				// Clear all inputs within the minor fields container to prevent submission of hidden data
-				if (mineurFields) {
-					const minorInputs =
-						mineurFields.querySelectorAll<HTMLInputElement>(
-							'input'
-						);
-					minorInputs.forEach((input: HTMLInputElement): void => {
-						input.value = '';
-					});
-				}
-				// Make rep 1 fields not required and hide indicators
-				rep1RequiredInputs.forEach(
-					(input: HTMLInputElement | null): void => {
-						if (input) {
-							input.required = false;
-						}
+			// Clear all inputs within the minor fields container to prevent submission of hidden data
+			if (mineurFields) {
+				const minorInputs =
+					mineurFields.querySelectorAll<HTMLInputElement>('input');
+				minorInputs.forEach((input: HTMLInputElement): void => {
+					input.value = '';
+				});
+			}
+			// Make rep 1 fields not required and hide indicators
+			rep1RequiredInputs.forEach(
+				(input: HTMLInputElement | null): void => {
+					if (input) {
+						input.required = false;
 					}
-				);
-				rep1RequiredIndicators.forEach(
-					(indicator: HTMLElement): void => {
-						indicator.style.display = 'none';
+				}
+			);
+			rep1RequiredIndicators.forEach((indicator: HTMLElement): void => {
+				indicator.style.display = 'none';
+			});
+
+			if (healthQuestionnaireLink) {
+				healthQuestionnaireLink.href = majeurPDF;
+				healthQuestionnaireLink.textContent =
+					'Consulter le questionnaire pour Majeur';
+			}
+			if (healthQuestionnaireLinkContainer) {
+				healthQuestionnaireLinkContainer.style.display = 'inline';
+			}
+		} else {
+			if (majeurFields) {
+				majeurFields.style.display = 'none';
+			}
+			if (mineurFields) {
+				mineurFields.style.display = 'block';
+			}
+
+			// For minors, birth city is not required.
+			if (birthCityInput) {
+				birthCityInput.required = false;
+			}
+			if (birthCityRequiredIndicator) {
+				birthCityRequiredIndicator.style.display = 'none';
+			}
+
+			// Make rep 1 fields required and show indicators
+			rep1RequiredInputs.forEach(
+				(input: HTMLInputElement | null): void => {
+					if (input) {
+						input.required = true;
 					}
-				);
+				}
+			);
+			rep1RequiredIndicators.forEach((indicator: HTMLElement): void => {
+				indicator.style.display = 'inline';
+			});
 
-				if (healthQuestionnaireLink) {
-					healthQuestionnaireLink.href = majeurPDF;
-					healthQuestionnaireLink.textContent =
-						'Consulter le questionnaire pour Majeur';
-				}
-				if (healthQuestionnaireLinkContainer) {
-					healthQuestionnaireLinkContainer.style.display = 'inline';
-				}
-			} else {
-				if (majeurFields) {
-					majeurFields.style.display = 'none';
-				}
-				if (mineurFields) {
-					mineurFields.style.display = 'block';
-				}
-
-				// For minors, birth city is not required.
-				if (birthCityInput) {
-					birthCityInput.required = false;
-				}
-				if (birthCityRequiredIndicator) {
-					birthCityRequiredIndicator.style.display = 'none';
-				}
-
-				// Make rep 1 fields required and show indicators
-				rep1RequiredInputs.forEach(
-					(input: HTMLInputElement | null): void => {
-						if (input) {
-							input.required = true;
-						}
-					}
-				);
-				rep1RequiredIndicators.forEach(
-					(indicator: HTMLElement): void => {
-						indicator.style.display = 'inline';
-					}
-				);
-
-				if (healthQuestionnaireLink) {
-					healthQuestionnaireLink.href = mineurPDF;
-					healthQuestionnaireLink.textContent =
-						'Consulter le questionnaire pour Mineur';
-				}
-				if (healthQuestionnaireLinkContainer) {
-					healthQuestionnaireLinkContainer.style.display = 'inline';
-				}
+			if (healthQuestionnaireLink) {
+				healthQuestionnaireLink.href = mineurPDF;
+				healthQuestionnaireLink.textContent =
+					'Consulter le questionnaire pour Mineur';
+			}
+			if (healthQuestionnaireLinkContainer) {
+				healthQuestionnaireLinkContainer.style.display = 'inline';
 			}
 		}
-	);
+	});
 
 	// Add live formatting for name fields
 	const firstNameInput = document.getElementById(
@@ -535,8 +526,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	const copyButtons =
 		document.querySelectorAll<HTMLElement>('.dame-copy-button');
 	copyButtons.forEach((button: HTMLElement): void => {
-		button.addEventListener('click', function (this: HTMLElement): void {
-			const repId = this.getAttribute('data-rep-id');
+		button.addEventListener('click', (): void => {
+			const repId = button.getAttribute('data-rep-id');
 			if (repId) {
 				copyAdherentData(repId);
 			}

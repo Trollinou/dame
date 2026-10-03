@@ -28,7 +28,35 @@ class Manager {
 	public function init(): void {
 		add_action( 'init', array( $this, 'register_blocks' ) );
 		add_action( 'init', array( $this, 'register_block_bindings' ) );
+		add_action( 'init', array( $this, 'register_fse_templates' ) );
 		add_filter( 'block_categories_all', array( $this, 'register_block_category' ), 10, 2 );
+	}
+
+	/**
+	 * Formally registers FSE block templates (WordPress 6.7+ / 7.x).
+	 */
+	public function register_fse_templates(): void {
+		if ( ! function_exists( 'register_block_template' ) ) {
+			return;
+		}
+
+		register_block_template(
+			'dame//single-dame_agenda',
+			array(
+				'title'       => __( 'Événement Agenda DAME', 'dame' ),
+				'description' => __( 'Modèle FSE pour l\'affichage d\'un événement individuel de l\'agenda DAME.', 'dame' ),
+				'post_types'  => array( 'dame_agenda' ),
+			)
+		);
+
+		register_block_template(
+			'dame//archive-dame_agenda',
+			array(
+				'title'       => __( 'Archives Agenda DAME', 'dame' ),
+				'description' => __( 'Modèle FSE pour l\'archive et le calendrier des événements DAME.', 'dame' ),
+				'post_types'  => array( 'dame_agenda' ),
+			)
+		);
 	}
 
 	/**

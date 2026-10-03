@@ -74,12 +74,15 @@ class SeriesActions {
 	 * Display admin notices for series deletion.
 	 */
 	public function display_admin_notices(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( ! isset( $_GET['dame_msg'] ) ) {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$count = isset( $_GET['count'] ) ? (int) $_GET['count'] : 0;
-		$msg   = sanitize_key( wp_unslash( $_GET['dame_msg'] ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$msg = sanitize_key( wp_unslash( $_GET['dame_msg'] ) );
 
 		if ( 'series_deleted' === $msg ) {
 			/* translators: %d: nombre d'événements supprimés */

@@ -78,7 +78,7 @@ class TestSend {
 	 *
 	 * @param \WP_Post $post The post object.
 	 */
-	public function render( $post ): void {
+	public function render( $post ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 		$current_user_email = wp_get_current_user()->user_email;
 		?>
 		<p class="description">

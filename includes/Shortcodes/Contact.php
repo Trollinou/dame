@@ -44,19 +44,6 @@ class Contact {
 
 		if ( function_exists( 'wp_enqueue_script_module' ) ) {
 			wp_enqueue_script_module( 'dame/contact' );
-		} else {
-			// Enqueue the script using the global constant (fallback).
-			wp_enqueue_script( 'dame-public-contact-form', \DAME_PLUGIN_URL . 'assets/js/public-contact-form.js', array(), \DAME_VERSION, true );
-
-			// Localize the script with required data.
-			wp_localize_script(
-				'dame-public-contact-form',
-				'dame_contact_ajax',
-				array(
-					'ajax_url' => admin_url( 'admin-ajax.php' ),
-					'nonce'    => wp_create_nonce( 'dame_contact_nonce' ),
-				)
-			);
 		}
 
 		$contact_context = array(

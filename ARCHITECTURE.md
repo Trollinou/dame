@@ -25,11 +25,11 @@
 ### Versions Cibles (Stack Technique)
 | Outil | Version Requise | Impact sur le code |
 | :--- | :--- | :--- |
-| **WordPress** | **6.9.1** | Utiliser les API récentes (**Interactivity API**, Block Bindings) plutôt que jQuery. Transients API pour le cache. |
-| **PHP** | **8.4** | **ZERO COMPOSER EN PROD**. **STRICT_TYPES=1 OBLIGATOIRE**. Utiliser un autoloader natif SPL. Typage strict, Enums, Readonly classes, Constructor Promotion, New Fetch in array, etc. |
-| **Node.js** | **20 LTS** | **DEV ONLY**. Sert uniquement à compiler les assets (Build step). |
-| **Styles** | **SCSS** | Préprocesseur obligatoire + Convention BEM. |
-| **Scripts** | **TypeScript Strict (ES2021)** | Typage strict (`strict: true`), sources `.ts` dans `src/js/`, types partagés dans `src/types/` (exportés pour la PWA via `dame-types`). Compilation via `esbuild` vers `assets/js/`. |
+| **WordPress** | **7.1** | Utiliser les API récentes (**Interactivity API**, Script Modules, Block Bindings, Template Registration API, HTML API). Options API avec `'autoload' => false`. Transients & Object Cache (`wp_cache_*`) pour le cache. |
+| **PHP** | **8.4** | **STRICT_TYPES=1 OBLIGATOIRE**. Composer supporté (`vendor/autoload.php`) avec autoloader natif SPL en fallback. Typage strict, Enums, Readonly classes, Constructor Promotion, etc. |
+| **Node.js** | **20 LTS** | **DEV ONLY**. Sert uniquement à compiler les assets (Build step asynchrone). |
+| **Styles** | **SCSS** | Préprocesseur obligatoire + Convention BEM. Rendu optimisé (`content-visibility: auto`). |
+| **Scripts** | **TypeScript Strict (ES2021)** | Typage strict (`strict: true`), sources `.ts` dans `src/js/`, Script Modules dans `src/js/modules/`, types partagés dans `src/types/` (exportés pour la PWA via `dame-types`). Compilation via `esbuild` vers `assets/js/`. |
 | **Livrable** | **Zip Autonome** | Le plugin final ne contient ni `node_modules`, ni `vendor` dev, ni fichiers sources `.scss`/`.ts`. |
 
 ---
@@ -47,7 +47,7 @@ L'agent endosse les rôles suivants :
 1.  **Architecte** : Garant de la structure modulaire définie ci-après.
 2.  **Développeur Full-Stack** : Expert PHP 8.4 (POO stricte), JS (ES2021) et SCSS/CSS moderne.
 3.  **Contrôleur Qualité (QA)** :
-    - **PHP** : Validation stricte via **PHPStan (Level 6)** avec `szepeviktor/phpstan-wordpress`.
+    - **PHP** : Validation stricte via **PHPStan (Level 7)** avec `szepeviktor/phpstan-wordpress` et PHPCS / PHPCBF.
     - **JS** : Validation stricte **ESLint (Standard WordPress + ES2021)**.
     - **Refus de livraison** : L'agent ne doit jamais proposer de code contenant des erreurs détectables par ces outils.
 4. **Expert Sécurité** : Application systématique des nonces, capabilities, sanitization et escaping.

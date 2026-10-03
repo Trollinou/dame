@@ -25,13 +25,18 @@ class Assets {
 	 * Enqueues front-end scripts and styles.
 	 */
 	public function enqueue_styles_scripts(): void {
-		// Enqueue the public-facing stylesheet.
-		wp_enqueue_style(
+		// Register the public-facing stylesheet (auto-enqueued by blocks and shortcodes when rendered).
+		wp_register_style(
 			'dame-public-styles',
 			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
 			array(),
 			\DAME_VERSION
 		);
+
+		// Enqueue public stylesheet on singular DAME CPTs.
+		if ( is_singular( array( 'adherent', 'dame_agenda', 'dame_benevolat', 'dame_contact', 'dame_pre_inscription' ) ) ) {
+			wp_enqueue_style( 'dame-public-styles' );
+		}
 
 		// Register the agenda stylesheet for block and template dependencies.
 		wp_register_style(

@@ -1,24 +1,29 @@
 {
-	"$schema": "https://schemas.wp.org/trunk/block.json",
-	"apiVersion": 3,
-	"name": "dame/benevolat",
-	"version": "5.5.1",
-	"title": "Appel à Bénévolat",
-	"category": "dame",
-	"icon": "chart-bar",
-	"description": "Tableau interactif d'inscription aux créneaux bénévoles.",
-	"keywords": ["bénévolat", "créneaux", "aide", "dame"],
-	"supports": {
-		"html": false,
-		"interactivity": true
-	},
-	"attributes": {
-		"slug": {
-			"type": "string",
-			"default": ""
-		}
-	},
-	"textdomain": "dame",
-	"style": "dame-public-styles",
-	"viewScriptModule": "dame/benevolat"
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "dame/benevolat",
+  "version": "5.5.2",
+  "title": "Appel à Bénévolat",
+  "category": "dame",
+  "icon": "chart-bar",
+  "description": "Tableau interactif d'inscription aux créneaux bénévoles.",
+  "keywords": [
+    "bénévolat",
+    "créneaux",
+    "aide",
+    "dame"
+  ],
+  "supports": {
+    "html": false,
+    "interactivity": true
+  },
+  "attributes": {
+    "slug": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "textdomain": "dame",
+  "style": "dame-public-styles",
+  "viewScriptModule": "dame/benevolat"
 }

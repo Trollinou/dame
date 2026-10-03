@@ -28,7 +28,7 @@
     "build": "npm run build:css && npm run build:js",
     "typecheck": "tsc --noEmit",
     "lint:js": "eslint src/js/",
-    "package": "node script/package.cjs",
+    "package": "node scripts/package.cjs",
     "version-sync": "node scripts/version-sync.cjs",
     "watch": "sass --watch src/scss/:assets/css/"
   },

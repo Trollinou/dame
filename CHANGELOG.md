@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+### Modernisation Architecture, Performance & Standards (WordPress 7.1 & PHP 8.4)
+- **Pipeline de Build & Consolidation des Scripts** :
+  - Parallélisation asynchrone de la compilation TypeScript / esbuild dans `build-js.js` via `Promise.all` et l'API `esbuild.build` (temps de compilation réduit à ~24ms).
+  - Consolidation de tous les scripts d'outillage dans le dossier `scripts/` (déplacement de `scripts/package.cjs` et suppression du répertoire `script/`).
+  - Ajout d'une étape de validation QA automatique (`typecheck`, `lint:js`, `phpstan`) dans le script de release `scripts/package.cjs` avant toute génération d'archive de distribution.
+- **Autoloading PSR-4 & Composer** :
+  - Déclaration de l'espace de noms `"autoload": { "psr-4": { "DAME\\": "includes/" } }` dans `composer.json` et génération de la classmap optimisée via `composer dump-autoload -o`.
+- **Cycle de Vie Événementiel & Lazy Loading REST / Admin** :
+  - Encapsulation de l'instanciation des contrôleurs de routes REST (`Data_Endpoints`, `Identities`, `Benevolat_REST`, `PreInscription_REST`, `Tracker`) dans le hook `rest_api_init` au sein de `DAME\Core\Plugin`, allégeant significativement le bootstrap sur chaque requête HTTP frontend.
+  - Isolation du service d'administration `Backup` sous la condition `if ( is_admin() )`.
+- **Options API & Autoload (WP 7.1)** :
+  - Spécification explicite du paramètre `'autoload' => false` lors de l'enregistrement de l'option de configuration principale (`register_setting`) dans `DAME\Admin\Settings\Main` pour préserver la mémoire système.
+- **Repositories, Object Cache (`wp_cache_*`) & Invalidation Déterministe** :
+  - Intégration de l'Object Cache WordPress avec mise en cache mémoire des résultats SQL complexes (`dame_members`, `dame_agenda`) dans `DAME\Repositories\MemberRepository` et `DAME\Repositories\AgendaRepository`.
+  - Invalidation atomique du cache (`wp_cache_delete`) via les méthodes `invalidate_member_cache()` et `invalidate_agenda_cache()` branchées sur les hooks de mutation (`save_post_dame_adherent`, `save_post_dame_agenda`, `deleted_post`, `set_object_terms`).
+- **Templates FSE & Template Registration API (WP 7.1)** :
+  - Déclaration et enregistrement formels des modèles de blocs FSE `single-dame_agenda` et `archive-dame_agenda` via `register_block_template()` dans `DAME\Blocks\Manager`.
+- **Performance Frontend, Web Vitals & Assets** :
+  - Application des règles de rendu virtuel et INP (`content-visibility: auto; contain-intrinsic-size: auto 65px;`) sur les listes d'événements (`src/scss/views/_agenda.scss`).
+  - Enregistrement des feuilles de style via `wp_register_style()` dans `DAME\Frontend\Assets` et chargement conditionnel de `dame-public-styles` sur les vues de CPT et pages pertinentes.
+  - Suppression définitive du script classique redondant `src/js/public-contact-form.ts` et allègement du shortcode `[dame_contact]`.
+- **Conformité & Contrôle Qualité (QA)** :
+  - Correction de l'utilisation de mots-clés réservés PHP en noms de paramètres (`$default` $\rightarrow$ `$default_value`) dans `Metaboxes/Adherent/Legal.php` et `Metaboxes/Agenda/DetailsMetabox.php`.
+  - Résolution de l'ensemble des 16 avertissements ESLint sur les modules TypeScript (0 erreur, 0 warning).
+  - Ajout du fichier de configuration des tests unitaires `phpunit.xml.dist` et exclusion du cache `.phpunit.cache` dans `.gitignore`.
+  - Mise à jour et formalisation des règles de l'art dans `AGENTS.md` et `ARCHITECTURE.md`.
+
+## [5.5.2] - 2026-10-03
+
 ### Formulaire de Préinscription (`dame_fiche_inscription`) & Interactivity API
 - **Modernisation & Unification de la soumission Interactivity API (`dame/registration`)** :
   - Centralisation de la soumission dans le module TypeScript réactif `src/js/modules/registration-store.ts` avec gestion des données de retour (`fullName`, `healthQuestionnaire`, `hasSignedHealth`, `hasSignedParental`, `postId`, `nonce`, `parentalAuthNonce`, `paymentUrl`, `senderEmail`).

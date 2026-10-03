@@ -22,6 +22,8 @@ class Agenda {
 	 */
 	public function init(): void {
 		add_action( 'init', array( $this, 'register' ), 0 );
+		add_action( 'save_post_dame_agenda', array( \DAME\Repositories\AgendaRepository::class, 'invalidate_agenda_cache' ) );
+		add_action( 'deleted_post', array( \DAME\Repositories\AgendaRepository::class, 'invalidate_agenda_cache' ) );
 		add_filter( 'the_content', array( $this, 'display_event_details' ) );
 		add_filter( 'use_block_editor_for_post_type', array( $this, 'disable_block_editor' ), 10, 2 );
 		if ( is_admin() ) {

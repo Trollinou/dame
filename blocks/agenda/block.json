@@ -1,19 +1,28 @@
 {
-	"$schema": "https://schemas.wp.org/trunk/block.json",
-	"apiVersion": 3,
-	"name": "dame/agenda",
-	"version": "5.5.1",
-	"title": "Agenda Échiquéen",
-	"category": "dame",
-	"icon": "calendar-alt",
-	"description": "Affiche le calendrier interactif des événements et tournois du club d'échecs.",
-	"keywords": ["agenda", "calendrier", "échecs", "tournois", "dame"],
-	"supports": {
-		"html": false,
-		"interactivity": true,
-		"align": ["wide", "full"]
-	},
-	"textdomain": "dame",
-	"style": "dame-public-agenda",
-	"viewScriptModule": "dame/agenda"
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "dame/agenda",
+  "version": "5.5.2",
+  "title": "Agenda Échiquéen",
+  "category": "dame",
+  "icon": "calendar-alt",
+  "description": "Affiche le calendrier interactif des événements et tournois du club d'échecs.",
+  "keywords": [
+    "agenda",
+    "calendrier",
+    "échecs",
+    "tournois",
+    "dame"
+  ],
+  "supports": {
+    "html": false,
+    "interactivity": true,
+    "align": [
+      "wide",
+      "full"
+    ]
+  },
+  "textdomain": "dame",
+  "style": "dame-public-agenda",
+  "viewScriptModule": "dame/agenda"
 }

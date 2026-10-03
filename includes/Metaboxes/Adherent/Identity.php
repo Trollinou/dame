@@ -41,9 +41,10 @@ class Identity {
 		$transient_data = get_transient( 'dame_post_data_' . $post->ID );
 
 		$get_value = function ( $field_name, $default_val = '' ) use ( $post, $transient_data ) {
-			return isset( $transient_data[ $field_name ] )
+			$val = isset( $transient_data[ $field_name ] )
 				? $transient_data[ $field_name ]
 				: get_post_meta( $post->ID, '_' . $field_name, true );
+			return '' !== $val && false !== $val ? $val : $default_val;
 		};
 
 		// Retrieve values using the helper function.

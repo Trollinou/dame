@@ -9,13 +9,10 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	) as HTMLInputElement | null;
 
 	if (birthNameInput && lastNameInput) {
-		birthNameInput.addEventListener(
-			'blur',
-			function (this: HTMLInputElement): void {
-				if (this.value && !lastNameInput.value) {
-					lastNameInput.value = this.value;
-				}
+		birthNameInput.addEventListener('blur', (): void => {
+			if (birthNameInput.value && !lastNameInput.value) {
+				lastNameInput.value = birthNameInput.value;
 			}
-		);
+		});
 	}
 });

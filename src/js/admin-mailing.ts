@@ -18,18 +18,15 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 	if (adMethodRadios.length > 0 && adGroupWrap && adManualWrap) {
 		adMethodRadios.forEach((radio: HTMLInputElement): void => {
-			radio.addEventListener(
-				'change',
-				function (this: HTMLInputElement): void {
-					if (this.value === 'group') {
-						adGroupWrap.classList.remove('dame-hidden');
-						adManualWrap.classList.add('dame-hidden');
-					} else {
-						adGroupWrap.classList.add('dame-hidden');
-						adManualWrap.classList.remove('dame-hidden');
-					}
+			radio.addEventListener('change', (): void => {
+				if (radio.value === 'group') {
+					adGroupWrap.classList.remove('dame-hidden');
+					adManualWrap.classList.add('dame-hidden');
+				} else {
+					adGroupWrap.classList.add('dame-hidden');
+					adManualWrap.classList.remove('dame-hidden');
 				}
-			);
+			});
 		});
 	}
 
@@ -57,66 +54,63 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			: 'group';
 
 		contactMethodRadios.forEach((radio: HTMLInputElement): void => {
-			radio.addEventListener(
-				'change',
-				function (this: HTMLInputElement): void {
-					const newMethod = this.value;
+			radio.addEventListener('change', (): void => {
+				const newMethod = radio.value;
 
-					// Confirmation lors du retour au mode Critères depuis Manuel
+				// Confirmation lors du retour au mode Critères depuis Manuel
+				if (
+					currentContactMethod === 'manual' &&
+					newMethod === 'group'
+				) {
 					if (
-						currentContactMethod === 'manual' &&
-						newMethod === 'group'
+						confirm(
+							'Souhaitez-vous vraiment revenir à la sélection par critères ? Vos filtres actuels et votre sélection manuelle seront réinitialisés.'
+						)
 					) {
-						if (
-							confirm(
-								'Souhaitez-vous vraiment revenir à la sélection par critères ? Vos filtres actuels et votre sélection manuelle seront réinitialisés.'
-							)
-						) {
-							resetContactCriteria();
-						} else {
-							// Annulation : on restaure le bouton radio Manuel
-							const manualRadio =
-								document.querySelector<HTMLInputElement>(
-									'input[name="dame_contact_method"][value="manual"]'
-								);
-							if (manualRadio) {
-								manualRadio.checked = true;
-							}
-							return;
-						}
-					}
-
-					currentContactMethod = newMethod;
-
-					if (newMethod === 'group') {
-						contactGroupWrap.classList.remove('dame-hidden');
-						contactManualWrap.classList.add('dame-hidden');
-
-						// Reset manual selection when going back to Criteria
-						contactManualWrap
-							.querySelectorAll<HTMLInputElement>(
-								'input[type="checkbox"]'
-							)
-							.forEach(
-								(cb: HTMLInputElement) => (cb.checked = false)
-							);
-						const manualList =
-							contactManualWrap.querySelector<HTMLElement>(
-								'.dame-checkbox-list'
-							);
-						if (manualList) {
-							reorderList(manualList);
-							updateSelectionCount(manualList);
-						}
+						resetContactCriteria();
 					} else {
-						contactGroupWrap.classList.add('dame-hidden');
-						contactManualWrap.classList.remove('dame-hidden');
-
-						// MAGIC: Pre-check based on criteria
-						performContactPrecheck();
+						// Annulation : on restaure le bouton radio Manuel
+						const manualRadio =
+							document.querySelector<HTMLInputElement>(
+								'input[name="dame_contact_method"][value="manual"]'
+							);
+						if (manualRadio) {
+							manualRadio.checked = true;
+						}
+						return;
 					}
 				}
-			);
+
+				currentContactMethod = newMethod;
+
+				if (newMethod === 'group') {
+					contactGroupWrap.classList.remove('dame-hidden');
+					contactManualWrap.classList.add('dame-hidden');
+
+					// Reset manual selection when going back to Criteria
+					contactManualWrap
+						.querySelectorAll<HTMLInputElement>(
+							'input[type="checkbox"]'
+						)
+						.forEach(
+							(cb: HTMLInputElement) => (cb.checked = false)
+						);
+					const manualList =
+						contactManualWrap.querySelector<HTMLElement>(
+							'.dame-checkbox-list'
+						);
+					if (manualList) {
+						reorderList(manualList);
+						updateSelectionCount(manualList);
+					}
+				} else {
+					contactGroupWrap.classList.add('dame-hidden');
+					contactManualWrap.classList.remove('dame-hidden');
+
+					// MAGIC: Pre-check based on criteria
+					performContactPrecheck();
+				}
+			});
 		});
 	}
 
@@ -344,32 +338,29 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	}
 
 	searchInputs.forEach((input: HTMLInputElement): void => {
-		input.addEventListener(
-			'keyup',
-			function (this: HTMLInputElement): void {
-				const wrapper = this.closest<HTMLElement>(
-					'.dame-searchable-list-wrapper'
-				);
-				const list = wrapper
-					? wrapper.querySelector<HTMLElement>('.dame-checkbox-list')
-					: null;
-				if (!list) {
-					return;
-				}
-
-				const filter = normalizeText(this.value);
-
-				const labels = list.querySelectorAll<HTMLLabelElement>('label');
-				labels.forEach((label: HTMLLabelElement): void => {
-					const text = normalizeText(label.textContent);
-					if (text.indexOf(filter) > -1) {
-						label.style.display = 'block';
-					} else {
-						label.style.display = 'none';
-					}
-				});
+		input.addEventListener('keyup', (): void => {
+			const wrapper = input.closest<HTMLElement>(
+				'.dame-searchable-list-wrapper'
+			);
+			const list = wrapper
+				? wrapper.querySelector<HTMLElement>('.dame-checkbox-list')
+				: null;
+			if (!list) {
+				return;
 			}
-		);
+
+			const filter = normalizeText(input.value);
+
+			const labels = list.querySelectorAll<HTMLLabelElement>('label');
+			labels.forEach((label: HTMLLabelElement): void => {
+				const text = normalizeText(label.textContent);
+				if (text.indexOf(filter) > -1) {
+					label.style.display = 'block';
+				} else {
+					label.style.display = 'none';
+				}
+			});
+		});
 	});
 
 	// 4. Already sent warning logic
@@ -381,40 +372,38 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	) as HTMLElement | null;
 
 	if (messageSelect && warningDiv) {
-		messageSelect.addEventListener(
-			'change',
-			function (this: HTMLSelectElement): void {
-				const selectedOption = this.options[this.selectedIndex];
-				const status = selectedOption
-					? selectedOption.getAttribute('data-status')
-					: null;
-				const submitBtn = document.querySelector<HTMLInputElement>(
-					'input[type="submit"]'
-				);
+		messageSelect.addEventListener('change', (): void => {
+			const selectedOption =
+				messageSelect.options[messageSelect.selectedIndex];
+			const status = selectedOption
+				? selectedOption.getAttribute('data-status')
+				: null;
+			const submitBtn = document.querySelector<HTMLInputElement>(
+				'input[type="submit"]'
+			);
 
-				if (status === 'scheduled') {
-					warningDiv.style.display = 'block';
-					warningDiv.style.color = '#d63638';
-					warningDiv.textContent =
-						"Ce message est actuellement en cours d'envoi. Veuillez attendre la fin du traitement.";
-					if (submitBtn) {
-						submitBtn.disabled = true;
-					}
-				} else if (status === 'sent') {
-					warningDiv.style.display = 'block';
-					warningDiv.style.color = '#2271b1';
-					warningDiv.textContent =
-						"Ce message a déjà été expédié. Tout nouvel envoi sera incrémental : les personnes l'ayant déjà reçu seront automatiquement ignorées.";
-					if (submitBtn) {
-						submitBtn.disabled = false;
-					}
-				} else {
-					warningDiv.style.display = 'none';
-					if (submitBtn) {
-						submitBtn.disabled = false;
-					}
+			if (status === 'scheduled') {
+				warningDiv.style.display = 'block';
+				warningDiv.style.color = '#d63638';
+				warningDiv.textContent =
+					"Ce message est actuellement en cours d'envoi. Veuillez attendre la fin du traitement.";
+				if (submitBtn) {
+					submitBtn.disabled = true;
+				}
+			} else if (status === 'sent') {
+				warningDiv.style.display = 'block';
+				warningDiv.style.color = '#2271b1';
+				warningDiv.textContent =
+					"Ce message a déjà été expédié. Tout nouvel envoi sera incrémental : les personnes l'ayant déjà reçu seront automatiquement ignorées.";
+				if (submitBtn) {
+					submitBtn.disabled = false;
+				}
+			} else {
+				warningDiv.style.display = 'none';
+				if (submitBtn) {
+					submitBtn.disabled = false;
 				}
 			}
-		);
+		});
 	}
 });

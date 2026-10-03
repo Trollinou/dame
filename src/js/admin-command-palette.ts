@@ -12,6 +12,7 @@ interface CommandConfig {
 }
 
 interface WPCommandsAPI {
+	// eslint-disable-next-line no-unused-vars
 	registerCommand: (config: CommandConfig) => void;
 }
 

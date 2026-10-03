@@ -28,6 +28,20 @@ console.log(`ℹ️  Version détectée : ${version}`);
 const zipName = `${pluginSlug}-v${version}.zip`;
 const tempDestDir = path.join(buildDir, pluginSlug);
 
+console.log('🧪 Exécution de la suite de validation Qualité (QA)...');
+try {
+    console.log('  → Typecheck TypeScript (tsc)...');
+    execSync('npm run typecheck', { cwd: rootDir, stdio: 'inherit' });
+    console.log('  → Linting JavaScript/TypeScript (eslint)...');
+    execSync('npm run lint:js', { cwd: rootDir, stdio: 'inherit' });
+    console.log('  → Analyse statique PHPStan (Level 7)...');
+    execSync('./vendor/bin/phpstan analyze --debug --memory-limit=2G', { cwd: rootDir, stdio: 'inherit' });
+    console.log('✔ Contrôles Qualité (QA) validés avec succès.\n');
+} catch (error) {
+    console.error('❌ Erreur : Un contrôle QA a échoué. Packaging annulé.');
+    process.exit(1);
+}
+
 console.log('🏗️  Compilation des assets locaux (Production)...');
 try {
     execSync('npm run build', { cwd: rootDir, stdio: 'inherit' });

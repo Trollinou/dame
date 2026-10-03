@@ -29,12 +29,12 @@ class DetailsMetabox {
 			delete_transient( 'dame_agenda_post_data_' . $post->ID );
 		}
 
-		$get_value = function ( string $field_name, string $default = '' ) use ( $post, $transient_data ): string {
+		$get_value = function ( string $field_name, string $default_value = '' ) use ( $post, $transient_data ): string {
 			if ( is_array( $transient_data ) && isset( $transient_data[ $field_name ] ) ) {
 				return esc_attr( (string) $transient_data[ $field_name ] );
 			}
 			$val = (string) get_post_meta( $post->ID, '_' . $field_name, true );
-			return '' !== $val ? $val : $default;
+			return '' !== $val ? $val : $default_value;
 		};
 
 		$start_date    = $get_value( 'dame_start_date' );

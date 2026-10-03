@@ -385,43 +385,39 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		'dame_department'
 	) as HTMLSelectElement | null;
 	if (mainPostalCodeField && departmentSelect) {
-		mainPostalCodeField.addEventListener(
-			'keyup',
-			function (this: HTMLInputElement): void {
-				const postalCode = this.value;
-				if (postalCode.length >= 2) {
-					let departmentCode = postalCode.substring(0, 2);
-					if (departmentCode === '20') {
-						return;
-					}
-					if (
-						(departmentCode === '97' ||
-							postalCode.startsWith('988')) &&
-						postalCode.length >= 3
-					) {
-						departmentCode = postalCode.substring(0, 3);
-					} else if (postalCode.startsWith('980')) {
-						departmentCode = '06';
-					}
+		mainPostalCodeField.addEventListener('keyup', (): void => {
+			const postalCode = mainPostalCodeField.value;
+			if (postalCode.length >= 2) {
+				let departmentCode = postalCode.substring(0, 2);
+				if (departmentCode === '20') {
+					return;
+				}
+				if (
+					(departmentCode === '97' || postalCode.startsWith('988')) &&
+					postalCode.length >= 3
+				) {
+					departmentCode = postalCode.substring(0, 3);
+				} else if (postalCode.startsWith('980')) {
+					departmentCode = '06';
+				}
 
-					let departmentChanged = false;
-					for (let i = 0; i < departmentSelect.options.length; i++) {
-						const option = departmentSelect.options[i];
-						if (option.value === departmentCode) {
-							if (departmentSelect.value !== departmentCode) {
-								departmentSelect.value = departmentCode;
-								departmentChanged = true;
-							}
-							break;
+				let departmentChanged = false;
+				for (let i = 0; i < departmentSelect.options.length; i++) {
+					const option = departmentSelect.options[i];
+					if (option.value === departmentCode) {
+						if (departmentSelect.value !== departmentCode) {
+							departmentSelect.value = departmentCode;
+							departmentChanged = true;
 						}
-					}
-
-					if (departmentChanged) {
-						departmentSelect.dispatchEvent(new Event('change'));
+						break;
 					}
 				}
+
+				if (departmentChanged) {
+					departmentSelect.dispatchEvent(new Event('change'));
+				}
 			}
-		);
+		});
 	}
 
 	/**
@@ -434,13 +430,10 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		'dame_membership_status'
 	) as HTMLSelectElement | null;
 	if (membershipDateInput && membershipStatusSelect) {
-		membershipDateInput.addEventListener(
-			'change',
-			function (this: HTMLInputElement): void {
-				if (this.value) {
-					membershipStatusSelect.value = 'A';
-				}
+		membershipDateInput.addEventListener('change', (): void => {
+			if (membershipDateInput.value) {
+				membershipStatusSelect.value = 'A';
 			}
-		);
+		});
 	}
 });
