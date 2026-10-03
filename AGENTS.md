@@ -22,6 +22,12 @@
 
 ## 4. Règles Code & Sécurité
 - **PHP 8.4** : Promoted properties, Enums typés, DTO `readonly`, strict return types. `$wpdb->prepare` obligatoire.
+- **Requêtes BDD (`$wpdb`)** : Lors de l'utilisation de `$wpdb->insert()` ou `$wpdb->update()`, veiller à la stricte parité entre le nombre d'éléments du tableau `$data` et les spécificateurs du tableau `$format` (un écart entraîne un échec silencieux renvoyant `false`).
+- **Formulaires, Interactivity API & Idempotence** :
+  - **Unicité du gestionnaire** : Un formulaire ne doit avoir qu'un seul point d'entrée de soumission (ne jamais cumuler un écouteur JS classique et une directive `data-wp-on--submit`).
+  - **Anti-rebond Client** : Vérifier un verrou synchrone (`if (ctx.isSubmitting) return;`), stopper la propagation (`event.stopPropagation()`) et désactiver immédiatement le bouton submit dans le DOM.
+  - **Idempotence Serveur** : Poser un verrou transient court (10 à 15s) sur l'empreinte de la soumission pour garantir l'unicité du traitement et des e-mails en cas de requêtes concurrentes.
+- **Files d'attente & WP-Cron** : Respecter l'architecture asynchrone des services (ex: `BatchSender`). Ne pas forcer d'exécution synchrone en contournement sans avoir préalablement vérifié l'intégrité de l'insertion en base de données.
 - **HTML API** : Utiliser `WP_HTML_Tag_Processor` / `WP_HTML_Processor` pour toute manipulation ou injection dans le HTML (e-mails, tracking, wrappers) au lieu de regex.
 - **Sécurité WP** : Nonce + Capability checks (`manage_options`, `edit_posts`) systématiques. Input sanitization + Output escaping (`esc_html`, `esc_attr`).
 - **Post Meta** : Attribut `name` HTML sans `_`, mais enregistrement meta BDD avec `_` (ex: `_dame_identity_name`). Déclaration systématique avec `register_post_meta()` et `show_in_rest => true` pour Block Bindings & REST API.
