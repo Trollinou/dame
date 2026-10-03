@@ -77,18 +77,21 @@ export const benevolatStore = store('dame/benevolat', {
 			}
 
 			try {
-				const response = await fetch(form.action || ctx.ajaxUrl, {
+				const response = await fetch(ctx.ajaxUrl || form.action, {
 					method: 'POST',
 					body: formData,
 				});
 
-				if (response.ok) {
+				const result = await response.json();
+				if (result.success) {
 					ctx.status = 'success';
 					ctx.message =
+						result.data?.message ||
 						'Votre réponse a bien été enregistrée. Merci !';
 				} else {
 					ctx.status = 'error';
 					ctx.message =
+						result.data?.message ||
 						"Erreur lors de l'enregistrement de votre réponse.";
 				}
 			} catch {

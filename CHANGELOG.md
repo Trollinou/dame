@@ -28,6 +28,11 @@
   - Optimisations Safari / WebKit : déplacement du honeypot anti-spam en fin de formulaire avec `display: none !important;` et désactivation de l'autocorrection / autocomplétion intempestive.
 
 ### Inscription Newsletter (`dame_newsletter`) & Bénévolat (`dame_benevolat`)
+- **Appels à Bénévoles (`dame_benevolat`) — Correction de l'enregistrement et persistance des votes** :
+  - **Correction du verrouillage des dates du jour (`$info['date'] < $today`)** : Remplacement de la comparaison `<=` par `< $today` dans l'affichage du shortcode et le traitement backend `handle_submission()` dans `DAME\Shortcodes\Benevolat`. Les événements ayant lieu le jour même restent sélectionnables et leurs votes ne sont plus filtrés ni ignorés.
+  - **Unification AJAX & Interactivity API (`dame/benevolat`)** : Enregistrement des hooks `wp_ajax_dame_submit_benevolat` et `wp_ajax_nopriv_dame_submit_benevolat` dans `DAME\Shortcodes\Benevolat` avec réponses JSON normalisées (`wp_send_json_success()`, `wp_send_json_error()`), résolvant le blocage des soumissions pour les visiteurs non connectés.
+  - **Décodage JSON réactif frontend (`src/js/modules/benevolat-store.ts`)** : Prise en charge des réponses JSON dans le store Interactivity API et affichage immédiat du message de confirmation serveur via les directives `data-wp-text` et `data-wp-bind--hidden`.
+  - **Intégrité de la persistance SQL (`{$wpdb->prefix}dame_benevolat_votes`)** : Spécification stricte des formats `$format` sur `$wpdb->insert()` et `$wpdb->delete()` dans `DAME\Shortcodes\Benevolat` et ajout du champ horodaté `voted_at` dans `DAME\Repositories\BenevolatRepository::save_choice()` garantissant la stricte conformité au schéma de table MySQL.
 - **Sécurisation Anti-Rebond & Idempotence des Formulaires Publics** :
   - `dame/newsletter` (`src/js/modules/newsletter-store.ts`, `DAME\Services\Newsletter`) : verrou synchrone client, garde anti-doublon dans `public-newsletter.ts`, désactivation immédiate du bouton submit et verrou d'idempotence serveur immédiat par transient (15 secondes) sur `handle_subscription()`.
   - `dame/benevolat` (`src/js/modules/benevolat-store.ts`, `DAME\Shortcodes\Benevolat`) : verrou synchrone client, désactivation immédiate du bouton de soumission et verrou d'idempotence serveur par transient (15 secondes) sur `handle_submission()`.
