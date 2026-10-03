@@ -30,10 +30,18 @@ class Contact {
 	/**
 	 * Renders the shortcode.
 	 *
-	 * @param array<string, mixed> $atts Shortcode attributes.
+	 * @param array<string, mixed>|string $atts Shortcode attributes.
 	 * @return string The HTML output of the contact form.
 	 */
-	public function render( $atts ) {
+	public function render( $atts = array() ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+		// Enqueue public styles.
+		wp_enqueue_style(
+			'dame-public-styles',
+			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
+			array(),
+			\DAME_VERSION
+		);
+
 		if ( function_exists( 'wp_enqueue_script_module' ) ) {
 			wp_enqueue_script_module( 'dame/contact' );
 		}
@@ -65,45 +73,56 @@ class Contact {
 
 		ob_start();
 		?>
-		<div id="dame-public-contact-form-wrapper" data-wp-interactive="dame/contact" <?php echo $context_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-			<form id="dame-public-contact-form" class="dame-form" novalidate data-wp-on--submit="actions.submitForm">
+		<div id="dame-public-contact-form-wrapper" class="dame-contact-wrapper" data-wp-interactive="dame/contact" <?php echo $context_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<div
+				id="dame-contact-feedback"
+				class="dame-feedback"
+				role="alert"
+				data-wp-bind--hidden="!state.hasMessage"
+				data-wp-class--dame-feedback--success="state.isSuccess"
+				data-wp-class--dame-feedback--error="state.isError"
+				data-wp-text="context.message"
+				hidden
+			></div>
+
+			<form id="dame-public-contact-form" class="dame-form dame-contact-form" novalidate data-wp-on--submit="actions.submitForm">
 
 				<?php wp_nonce_field( 'dame_contact_nonce', 'dame_contact_nonce_field' ); ?>
 
 				<!-- Action -->
 				<input type="hidden" name="action" value="dame_submit_contact_form">
 
-				<!-- Honeypot -->
-				<div style="display:none;">
-					<label for="dame_contact_hp"><?php esc_html_e( 'Laissez ce champ vide', 'dame' ); ?></label>
-					<input type="text" id="dame_contact_hp" name="dame_contact_hp" value="">
-				</div>
-
 				<p>
 					<label for="dame_contact_name"><?php esc_html_e( 'Nom', 'dame' ); ?> <span class="required">*</span></label>
-					<input type="text" id="dame_contact_name" name="dame_contact_name" required>
+					<input type="text" id="dame_contact_name" name="dame_contact_name" required autocomplete="off" autocorrect="off">
 				</p>
 
 				<p>
 					<label for="dame_contact_email"><?php esc_html_e( 'Courriel', 'dame' ); ?> <span class="required">*</span></label>
-					<input type="email" id="dame_contact_email" name="dame_contact_email" required>
+					<input type="email" id="dame_contact_email" name="dame_contact_email" required autocomplete="off" autocapitalize="off" autocorrect="off">
 				</p>
 
 				<p>
 					<label for="dame_contact_subject"><?php esc_html_e( 'Sujet', 'dame' ); ?> <span class="required">*</span></label>
-					<input type="text" id="dame_contact_subject" name="dame_contact_subject" required>
+					<input type="text" id="dame_contact_subject" name="dame_contact_subject" required autocomplete="off" autocorrect="off">
 				</p>
 
 				<p>
 					<label for="dame_contact_message"><?php esc_html_e( 'Message', 'dame' ); ?> <span class="required">*</span></label>
-					<textarea id="dame_contact_message" name="dame_contact_message" rows="5" required></textarea>
+					<textarea id="dame_contact_message" name="dame_contact_message" rows="5" required spellcheck="true"></textarea>
 				</p>
+
+				<!-- Anti-spam honeypot -->
+				<div class="dame-contact-hp" aria-hidden="true" style="display:none !important;">
+					<label for="dame_contact_hp"><?php esc_html_e( 'Laissez ce champ vide', 'dame' ); ?></label>
+					<input type="text" id="dame_contact_hp" name="dame_contact_hp" value="" tabindex="-1" autocomplete="new-password">
+				</div>
 
 				<p>
-					<button type="submit"><?php esc_html_e( 'Envoyer', 'dame' ); ?></button>
+					<button type="submit" class="dame-btn dame-btn--primary" data-wp-bind--disabled="state.isBusy">
+						<?php esc_html_e( 'Envoyer', 'dame' ); ?>
+					</button>
 				</p>
-
-				<div id="dame-contact-feedback" style="display:none;"></div>
 
 			</form>
 		</div>

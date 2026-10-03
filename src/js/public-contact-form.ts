@@ -1,13 +1,15 @@
 document.addEventListener('DOMContentLoaded', (): void => {
-	const form = document.getElementById(
-		'dame-contact-form'
-	) as HTMLFormElement | null;
+	const form = (document.getElementById('dame-public-contact-form') ||
+		document.getElementById('dame-contact-form')) as HTMLFormElement | null;
 	const feedback = document.getElementById(
 		'dame-contact-feedback'
 	) as HTMLElement | null;
 
 	if (form && feedback) {
 		form.addEventListener('submit', (e: Event): void => {
+			if (e.defaultPrevented) {
+				return;
+			}
 			e.preventDefault();
 
 			// Validation HTML5 basique
@@ -16,10 +18,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				return;
 			}
 
-			// Récupération des données du formulaire (incluant le champ caché 'action')
+			// Récupération des données du formulaire (incluant le champ action)
 			const formData = new FormData(form);
-
-			// Sécurité : si le JS n'avait pas le champ action, on le force au cas où
 			if (!formData.has('action')) {
 				formData.append('action', 'dame_submit_contact_form');
 			}
@@ -34,8 +34,14 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				submitBtn.innerHTML = 'Envoi en cours...';
 			}
 
+			const ajaxUrl =
+				typeof dame_contact_ajax !== 'undefined' &&
+				dame_contact_ajax.ajax_url
+					? dame_contact_ajax.ajax_url
+					: '/wp-admin/admin-ajax.php';
+
 			// Requête AJAX
-			fetch(dame_contact_ajax.ajax_url, {
+			fetch(ajaxUrl, {
 				method: 'POST',
 				body: formData,
 			})
@@ -52,6 +58,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				})
 				.then((data) => {
 					feedback.style.display = 'block';
+					feedback.removeAttribute('hidden');
 					const message =
 						typeof data.data === 'object' &&
 						data.data !== null &&
@@ -60,22 +67,22 @@ document.addEventListener('DOMContentLoaded', (): void => {
 							: String(data.data);
 
 					if (data.success) {
-						feedback.innerHTML =
-							'<div class="notice notice-success" style="color: green; padding: 10px; border: 1px solid green; margin-top: 15px;">' +
-							message +
-							'</div>';
+						feedback.className =
+							'dame-feedback dame-feedback--success';
+						feedback.textContent = message;
 						form.reset();
 					} else {
-						feedback.innerHTML =
-							'<div class="notice notice-error" style="color: red; padding: 10px; border: 1px solid red; margin-top: 15px;">' +
-							message +
-							'</div>';
+						feedback.className =
+							'dame-feedback dame-feedback--error';
+						feedback.textContent = message;
 					}
 				})
 				.catch((error: unknown) => {
 					feedback.style.display = 'block';
-					feedback.innerHTML =
-						'<div class="notice notice-error" style="color: red; padding: 10px; border: 1px solid red; margin-top: 15px;">Erreur de connexion au serveur. Veuillez réessayer.</div>';
+					feedback.removeAttribute('hidden');
+					feedback.className = 'dame-feedback dame-feedback--error';
+					feedback.textContent =
+						'Erreur de connexion au serveur. Veuillez réessayer.';
 					console.error('Erreur AJAX Contact:', error);
 				})
 				.finally(() => {

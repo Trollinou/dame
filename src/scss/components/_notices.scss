@@ -12,29 +12,34 @@
     margin-bottom: 16px;
     line-height: 1.45;
     border: 1px solid transparent;
+    box-sizing: border-box;
+
+    &[hidden] {
+        display: none !important;
+    }
 
     &--success {
-        background-color: #ecfdf5;
-        color: #065f46;
-        border-color: #a7f3d0;
+        background-color: #ecfdf5 !important;
+        color: #065f46 !important;
+        border-color: #a7f3d0 !important;
     }
 
     &--error {
-        background-color: #fef2f2;
-        color: #991b1b;
-        border-color: #fecaca;
+        background-color: #fef2f2 !important;
+        color: #991b1b !important;
+        border-color: #fecaca !important;
     }
 
     &--warning {
-        background-color: #fffbeb;
-        color: #92400e;
-        border-color: #fde68a;
+        background-color: #fffbeb !important;
+        color: #92400e !important;
+        border-color: #fde68a !important;
     }
 
     &--info {
-        background-color: #eff6ff;
-        color: #1e40af;
-        border-color: #bfdbfe;
+        background-color: #eff6ff !important;
+        color: #1e40af !important;
+        border-color: #bfdbfe !important;
     }
 }
 

@@ -20,6 +20,18 @@ export const contactStore = store('dame/contact', {
 			const ctx = getContext<ContactContext>();
 			return ctx.isSubmitting;
 		},
+		get hasMessage(): boolean {
+			const ctx = getContext<ContactContext>();
+			return Boolean(ctx.message && ctx.message.trim().length > 0);
+		},
+		get isSuccess(): boolean {
+			const ctx = getContext<ContactContext>();
+			return ctx.status === 'success';
+		},
+		get isError(): boolean {
+			const ctx = getContext<ContactContext>();
+			return ctx.status === 'error';
+		},
 	},
 	actions: {
 		async submitForm(event: Event): Promise<void> {
@@ -29,12 +41,21 @@ export const contactStore = store('dame/contact', {
 				return;
 			}
 
+			// HTML5 native validation
+			if (!form.checkValidity()) {
+				form.reportValidity();
+				return;
+			}
+
 			const ctx = getContext<ContactContext>();
 			ctx.isSubmitting = true;
+			ctx.status = 'idle';
 			ctx.message = '';
 
 			const formData = new FormData(form);
-			formData.append('action', 'dame_submit_contact_form');
+			if (!formData.has('action')) {
+				formData.append('action', 'dame_submit_contact_form');
+			}
 
 			try {
 				const response = await fetch(ctx.ajaxUrl, {
@@ -57,7 +78,8 @@ export const contactStore = store('dame/contact', {
 				}
 			} catch {
 				ctx.status = 'error';
-				ctx.message = 'Erreur de connexion au serveur.';
+				ctx.message =
+					'Erreur de connexion au serveur. Veuillez réessayer.';
 			} finally {
 				ctx.isSubmitting = false;
 			}

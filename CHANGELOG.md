@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Formulaire de Contact (`dame_contact`) & Retours Utilisateur (Feedback)
+- **Restauration de l'affichage du feedback & Interactivity API (`dame/contact`)** :
+  - Ajout des directives réactives `data-wp-bind--hidden`, `data-wp-class--dame-feedback--*`, `data-wp-text` et `data-wp-bind--disabled` sur le conteneur de message et le bouton d'envoi dans `DAME\Shortcodes\Contact`.
+  - Implémentation des getters d'état réactifs (`hasMessage`, `isSuccess`, `isError`, `isBusy`) dans `src/js/modules/contact-store.ts`.
+  - Harmonisation du script de fallback `src/js/public-contact-form.ts` avec support des identifiants `dame-public-contact-form` et `dame-contact-form`.
+  - Enqueue systématique de la feuille de styles `dame-public-styles` lors du rendu du shortcode de contact.
+  - Renforcement du contraste et de la spécificité des classes BEM `.dame-feedback` (`--success`, `--error`) dans `src/scss/components/_notices.scss` et styles de boutons dans `src/scss/components/_forms.scss` pour garantir une lisibilité optimale sur tous les thèmes (Blocksy, FSE).
+  - Optimisations Safari / WebKit : déplacement du honeypot anti-spam en fin de formulaire avec `display: none !important;` et désactivation de l'autocorrection / autocomplétion intempestive.
+
 ### Administration & Navigation
 - **Masquage du sous-menu Rapport de message** :
   - Enregistrement de la page de rapport d'ouverture et d'envoi (`dame-message-report`) avec un slug parent vide (`''`) dans `DAME\Admin\Menu` pour éviter l'apparition d'une entrée orpheline dans le menu latéral d'administration tout en conservant l'accès direct via les statistiques de la liste des messages.
