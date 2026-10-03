@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Formulaire de Préinscription (`dame_fiche_inscription`) & Interactivity API
+- **Modernisation & Unification de la soumission Interactivity API (`dame/registration`)** :
+  - Centralisation de la soumission dans le module TypeScript réactif `src/js/modules/registration-store.ts` avec gestion des données de retour (`fullName`, `healthQuestionnaire`, `hasSignedHealth`, `hasSignedParental`, `postId`, `nonce`, `parentalAuthNonce`, `paymentUrl`, `senderEmail`).
+  - Suppression de l'écouteur `submit` redondant et de la requête AJAX concurrente dans le script classique `src/js/public-pre-inscription-form.ts` (éliminant la double expédition d'e-mails).
+  - Ajout d'une protection synchrone anti double-clic (`if (ctx.isSubmitting) return;` + désactivation immédiate du bouton DOM + `event.stopPropagation()`).
+  - Ajout d'un verrou d'idempotence serveur par transient (15 secondes) dans `DAME\Shortcodes\RegistrationForm\SubmissionHandler` pour garantir l'unicité de la création de fiche et des e-mails lors de requêtes concurrentes.
+  - Déclaration réactive de l'écran de succès et des liens de téléchargement de documents signés (`data-wp-bind--hidden`, `data-wp-text`) dans `DAME\Shortcodes\RegistrationForm\FormView`.
+- **Correction de la file d'attente d'expédition des e-mails (`DAME\Services\PreInscription_Mailer`)** :
+  - Alignement strict du nombre de colonnes avec les spécificateurs de format dans `$wpdb->insert()` au sein de `PreInscription_Mailer` (résolution de l'échec d'insertion silencieux dans `wp_dame_message_opens` qui empêchait l'expédition du mail de confirmation adhérent par `BatchSender` via WP-Cron).
+
 ### Formulaire de Contact (`dame_contact`) & Retours Utilisateur (Feedback)
 - **Restauration de l'affichage du feedback & Interactivity API (`dame/contact`)** :
   - Ajout des directives réactives `data-wp-bind--hidden`, `data-wp-class--dame-feedback--*`, `data-wp-text` et `data-wp-bind--disabled` sur le conteneur de message et le bouton d'envoi dans `DAME\Shortcodes\Contact`.

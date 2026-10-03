@@ -60,12 +60,20 @@ class SubmissionHandler {
 			}
 		}
 
-		// Create Pre-inscription Post.
 		$first_name          = $sanitized_data['dame_first_name'] ?? '';
 		$last_name           = $sanitized_data['dame_last_name'] ?? '';
 		$birth_name          = $sanitized_data['dame_birth_name'] ?? '';
 		$effective_last_name = ! empty( $last_name ) ? $last_name : $birth_name;
-		$post_title          = Utils::format_lastname( (string) $effective_last_name ) . ' ' . Utils::format_firstname( (string) $first_name );
+
+		// Idempotency lock: avoid duplicate submissions within 15 seconds.
+		$lock_key        = 'dame_pre_lock_' . md5( strtolower( (string) $first_name . (string) $effective_last_name . ( $sanitized_data['dame_birth_date'] ?? '' ) . ( $sanitized_data['dame_email'] ?? '' ) ) );
+		$cached_response = get_transient( $lock_key );
+		if ( is_array( $cached_response ) ) {
+			wp_send_json_success( $cached_response );
+		}
+
+		// Create Pre-inscription Post.
+		$post_title = Utils::format_lastname( (string) $effective_last_name ) . ' ' . Utils::format_firstname( (string) $first_name );
 
 		$post_data = array(
 			'post_title'  => $post_title,
@@ -172,6 +180,8 @@ class SubmissionHandler {
 		if ( $is_minor ) {
 			$response_data['parental_auth_nonce'] = wp_create_nonce( 'dame_generate_parental_auth_' . $post_id );
 		}
+
+		set_transient( $lock_key, $response_data, 15 );
 
 		wp_send_json_success( $response_data );
 	}

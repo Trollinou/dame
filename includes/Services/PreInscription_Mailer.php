@@ -152,7 +152,6 @@ class PreInscription_Mailer {
 					'recipient_name'  => $label,
 					'recipient_email' => $recipient_email,
 					'email_hash'      => $hash,
-					'sent_at'         => null,
 				),
 				array( '%d', '%d', '%s', '%s', '%s' )
 			);
