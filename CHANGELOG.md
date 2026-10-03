@@ -35,7 +35,7 @@
 
 ### Architecture SCSS Modulaire & Uniformisation Thème WordPress (FSE & Blocksy)
 - **Ajustements Visuels du Shortcode Liste Agenda (`dame_liste_agenda`)** :
-  - Ajustement de la taille du macaron circulaire de date (`.date-circle`) à 58px de diamètre avec espacement interne (`padding: 4px`) et typographie équilibrée (`day-of-week` et `month-abbr` à 0.56rem, `day-number` à 1.2rem) pour assurer une marge respirante avec les bords du cercle tout en s'alignant sur les 3 lignes de texte.
+  - Ajustement de la taille du macaron circulaire de date (`.date-circle`) à 58px de diamètre avec espacement interne (`padding: 4px`) et typographie équilibrée (`day-of-week` et `month-abbr` à 0.56rem, `day-number` à 1.2rem avec `font-weight: 700` pour accentuer le contraste du chiffre) pour assurer une marge respirante avec les bords du cercle tout en s'alignant sur les 3 lignes de texte.
 - **Architecture SCSS Modulaire (`src/scss/`)** :
   - Découpage en sous-dossiers thématiques : `abstracts/` (`_variables`, `_mixins`, `_wp-theme`), `components/` (`_buttons`, `_forms`, `_tables`, `_modal`, `_notices`, `_autocomplete`, `_signature`), `views/` (`_agenda`, `_single-event`, `_benevolat`, `_newsletter`, `_registration`), et `admin/` (`_dashboard`, `_metaboxes`, `_mailing`, `_backups`, `_view-adherent`, `_reports`, `_reconciliation`, `_hidden-menus`).
   - Compilation Dart Sass optimisée vers `assets/css/` (`admin-styles.css`, `admin-common.css`, `public-styles.css`, `public-agenda.css`).
