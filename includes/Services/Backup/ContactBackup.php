@@ -583,8 +583,9 @@ class ContactBackup {
 
 		// Read headers.
 		$headers = fgetcsv( $handle, 0, ';', '"', '\\' );
-		if ( ! $headers ) {
+		if ( false === $headers ) {
 			$this->add_admin_notice( __( 'Impossible de lire l\'en-tête du fichier CSV HelloAsso.', 'dame' ), 'error' );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Local CSV import file handle.
 			fclose( $handle );
 			return;
 		}
