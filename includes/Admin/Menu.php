@@ -90,7 +90,7 @@ class Menu {
 
 		// Page cachée : Rapport détaillé d'un message.
 		add_submenu_page(
-			'dame-admin',
+			'',
 			__( 'Rapport du message', 'dame' ),
 			__( 'Rapport', 'dame' ),
 			'edit_dame_messages',

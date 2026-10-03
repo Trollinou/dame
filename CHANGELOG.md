@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Administration & Navigation
+- **Masquage du sous-menu Rapport de message** :
+  - Enregistrement de la page de rapport d'ouverture et d'envoi (`dame-message-report`) avec un slug parent vide (`''`) dans `DAME\Admin\Menu` pour éviter l'apparition d'une entrée orpheline dans le menu latéral d'administration tout en conservant l'accès direct via les statistiques de la liste des messages.
+
 ### Architecture SCSS Modulaire & Uniformisation Thème WordPress (FSE & Blocksy)
 - **Architecture SCSS Modulaire (`src/scss/`)** :
   - Découpage en sous-dossiers thématiques : `abstracts/` (`_variables`, `_mixins`, `_wp-theme`), `components/` (`_buttons`, `_forms`, `_tables`, `_modal`, `_notices`, `_autocomplete`, `_signature`), `views/` (`_agenda`, `_single-event`, `_benevolat`, `_newsletter`, `_registration`), et `admin/` (`_dashboard`, `_metaboxes`, `_mailing`, `_backups`, `_view-adherent`, `_reports`, `_reconciliation`, `_hidden-menus`).
