@@ -215,14 +215,14 @@ class Newsletter {
 					<label for="<?php echo esc_attr( $form_id ); ?>-last-name" class="dame-nl-form__label">
 						<?php esc_html_e( 'Nom', 'dame' ); ?> <span class="dame-nl-form__required" aria-hidden="true">*</span>
 					</label>
-					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-last-name" name="dame_newsletter_last_name" class="dame-nl-form__input" required autocomplete="family-name" spellcheck="false">
+					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-last-name" name="dame_newsletter_last_name" class="dame-nl-form__input" required autocomplete="family-name" spellcheck="false" autocorrect="off">
 				</div>
 
 				<div class="dame-nl-form__group">
 					<label for="<?php echo esc_attr( $form_id ); ?>-first-name" class="dame-nl-form__label">
 						<?php esc_html_e( 'Prénom', 'dame' ); ?> <span class="dame-nl-form__required" aria-hidden="true">*</span>
 					</label>
-					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-first-name" name="dame_newsletter_first_name" class="dame-nl-form__input" required autocomplete="given-name" spellcheck="false">
+					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-first-name" name="dame_newsletter_first_name" class="dame-nl-form__input" required autocomplete="given-name" spellcheck="false" autocorrect="off">
 				</div>
 			</div>
 
@@ -230,7 +230,7 @@ class Newsletter {
 				<label for="<?php echo esc_attr( $form_id ); ?>-email" class="dame-nl-form__label">
 					<?php esc_html_e( 'Adresse email', 'dame' ); ?> <span class="dame-nl-form__required" aria-hidden="true">*</span>
 				</label>
-				<input type="email" id="<?php echo esc_attr( $form_id ); ?>-email" name="dame_newsletter_email" class="dame-nl-form__input" required autocomplete="email" spellcheck="false">
+				<input type="email" id="<?php echo esc_attr( $form_id ); ?>-email" name="dame_newsletter_email" class="dame-nl-form__input" required autocomplete="email" spellcheck="false" autocapitalize="off" autocorrect="off">
 			</div>
 
 			<div class="dame-nl-form__feedback" role="alert" style="display:none;"></div>
