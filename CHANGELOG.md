@@ -16,9 +16,10 @@
 - **Restauration de l'affichage du feedback & Interactivity API (`dame/contact`)** :
   - Ajout des directives réactives `data-wp-bind--hidden`, `data-wp-class--dame-feedback--*`, `data-wp-text` et `data-wp-bind--disabled` sur le conteneur de message et le bouton d'envoi dans `DAME\Shortcodes\Contact`.
   - Implémentation des getters d'état réactifs (`hasMessage`, `isSuccess`, `isError`, `isBusy`) dans `src/js/modules/contact-store.ts`.
-  - Unicité stricte du gestionnaire de soumission : chargement conditionnel du script classique `src/js/public-contact-form.ts` en pur repli (`else`), et garde frontale empêchant l'attachement d'un écouteur `submit` doublon si l'Interactivity API est active sur le formulaire.
+  - Unicité stricte du gestionnaire de soumission : neutralisation totale du script classique `src/js/public-contact-form.ts` en simple espace réservé inerte, et suppression de tout écouteur doublon.
   - Verrouillage anti-rebond client (`if (ctx.isSubmitting) return;` + désactivation immédiate du bouton submit DOM + `event.stopPropagation()`).
-  - Verrou d'idempotence serveur immédiat (*in-flight transient lock* de 15 secondes posé dès la réception avant l'exécution de `wp_mail`) dans `DAME\Shortcodes\Contact` pour neutraliser toute requête concurrente.
+  - Verrouillage atomique serveur MySQL (`GET_LOCK(..., 0)`) couplé à un transient d'idempotence de 15 secondes dans `DAME\Shortcodes\Contact` pour neutraliser immédiatement toute concurrence au niveau du moteur de base de données avant l'appel à `wp_mail`.
+  - Normalisation de l'en-tête de courriel `Reply-To:` pour assurer la conformité SPF/DKIM et la compatibilité avec les serveurs SMTP stricts.
   - Enqueue systématique de la feuille de styles `dame-public-styles` lors du rendu du shortcode de contact.
   - Renforcement du contraste et de la spécificité des classes BEM `.dame-feedback` (`--success`, `--error`) dans `src/scss/components/_notices.scss` et styles de boutons dans `src/scss/components/_forms.scss` pour garantir une lisibilité optimale sur tous les thèmes (Blocksy, FSE).
   - Optimisations Safari / WebKit : déplacement du honeypot anti-spam en fin de formulaire avec `display: none !important;` et désactivation de l'autocorrection / autocomplétion intempestive.

@@ -183,33 +183,57 @@ class Contact {
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$message = isset( $_POST['dame_contact_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['dame_contact_message'] ) ) : '';
 
-		// 4. Idempotency lock (15s) to avoid duplicate email sending on double-clicks or concurrent requests.
-		$lock_key = 'dame_contact_lock_' . md5( strtolower( $name . $email . $subject . $message ) );
+		// 4. Atomic Lock & Idempotency: prevent any concurrent execution and double-dispatch.
+		global $wpdb;
+		$fingerprint = md5( strtolower( $name . $email . $subject . $message ) );
+		$lock_name   = 'dame_c_' . $fingerprint;
+		$lock_key    = 'dame_contact_lock_' . $fingerprint;
+
+		// Check 15-second transient debounce window first.
 		if ( false !== get_transient( $lock_key ) ) {
 			wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
 		}
-		set_transient( $lock_key, '1', 15 );
 
-		$options = get_option( 'dame_options' );
-		$to      = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
-
-		$email_subject = 'Formulaire de contact - ' . $subject;
-
-		$body  = "Vous avez reçu un nouveau message depuis le formulaire de contact de votre site.\r\n\r\n";
-		$body .= 'Nom: ' . $name . "\r\n";
-		$body .= 'Courriel: ' . $email . "\r\n";
-		$body .= 'Sujet: ' . $subject . "\r\n";
-		$body .= "Message:\r\n" . $message . "\r\n";
-
-		$headers = array( 'From: ' . $name . ' <' . $email . '>' );
-
-		$sent = wp_mail( $to, $email_subject, $body, $headers );
-
-		if ( $sent ) {
+		// Acquire MySQL named lock with 0s timeout (fails immediately if another process is currently executing).
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$acquired = $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, 0)', $lock_name ) );
+		if ( '1' !== (string) $acquired ) {
 			wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
-		} else {
-			delete_transient( $lock_key );
-			wp_send_json_error( array( 'message' => __( "Une erreur s'est produite lors de l'envoi du message.", 'dame' ) ) );
+		}
+
+		try {
+			// Re-check transient once inside the critical section.
+			if ( false !== get_transient( $lock_key ) ) {
+				wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
+			}
+			set_transient( $lock_key, '1', 15 );
+
+			$options = get_option( 'dame_options' );
+			$to      = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+
+			$email_subject = 'Formulaire de contact - ' . $subject;
+
+			$body  = "Vous avez reçu un nouveau message depuis le formulaire de contact de votre site.\r\n\r\n";
+			$body .= 'Nom: ' . $name . "\r\n";
+			$body .= 'Courriel: ' . $email . "\r\n";
+			$body .= 'Sujet: ' . $subject . "\r\n";
+			$body .= "Message:\r\n" . $message . "\r\n";
+
+			$headers = array(
+				'Reply-To: ' . $name . ' <' . $email . '>',
+			);
+
+			$sent = wp_mail( $to, $email_subject, $body, $headers );
+
+			if ( $sent ) {
+				wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
+			} else {
+				delete_transient( $lock_key );
+				wp_send_json_error( array( 'message' => __( "Une erreur s'est produite lors de l'envoi du message.", 'dame' ) ) );
+			}
+		} finally {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $lock_name ) );
 		}
 	}
 }
