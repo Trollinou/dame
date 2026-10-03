@@ -314,6 +314,13 @@ class SubmissionHandler {
 		$meta_insert_values[]       = $health_document_status;
 		$meta_insert_placeholders[] = '(%d, %s, %s)';
 
+		if ( isset( $sanitized_data['dame_health_questionnaire'] ) ) {
+			$meta_insert_values[]       = $post_id;
+			$meta_insert_values[]       = '_dame_health_questionnaire';
+			$meta_insert_values[]       = $sanitized_data['dame_health_questionnaire'];
+			$meta_insert_placeholders[] = '(%d, %s, %s)';
+		}
+
 		$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );

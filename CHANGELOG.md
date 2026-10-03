@@ -11,6 +11,9 @@
   - Déclaration réactive de l'écran de succès et des liens de téléchargement de documents signés (`data-wp-bind--hidden`, `data-wp-text`) dans `DAME\Shortcodes\RegistrationForm\FormView`.
 - **Correction de la file d'attente d'expédition des e-mails (`DAME\Services\PreInscription_Mailer`)** :
   - Alignement strict du nombre de colonnes avec les spécificateurs de format dans `$wpdb->insert()` au sein de `PreInscription_Mailer` (résolution de l'échec d'insertion silencieux dans `wp_dame_message_opens` qui empêchait l'expédition du mail de confirmation adhérent par `BatchSender` via WP-Cron).
+- **Rappel du certificat médical & règlement dans le courriel de confirmation (`DAME\Services\PreInscription_Mailer`)** :
+  - Conditionnement du message selon la réponse au questionnaire de santé : en cas de réponse « OUI », le courriel rappelle explicitement que l'adhésion ne pourra être définitivement validée qu'après obtention conjointe du certificat médical et du règlement.
+  - Enregistrement systématique de la métadonnée `_dame_health_questionnaire` dans `DAME\Shortcodes\RegistrationForm\SubmissionHandler` pour assurer la persistance et l'alignement avec l'API REST.
 
 ### Formulaire de Contact (`dame_contact`) & Retours Utilisateur (Feedback)
 - **Restauration de l'affichage du feedback & Interactivity API (`dame/contact`)** :
