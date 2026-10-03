@@ -9,7 +9,7 @@
 
 #dame-agenda-wrapper {
     max-width: 1000px;
-    margin: 2em auto;
+    margin: 1.25em auto;
     font-family: var(--dame-theme-font-body, inherit);
     color: var(--dame-theme-text, #1e293b);
 }
@@ -19,9 +19,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.25em;
+    margin-bottom: 0.85em;
     flex-wrap: wrap;
-    gap: 1em;
+    gap: 0.75em;
 }
 
 .dame-agenda-primary-controls {
@@ -63,34 +63,35 @@
     display: flex;
 
     .button {
-        border: 1px solid var(--dame-theme-border, #ccd0d4);
-        background-color: var(--dame-theme-surface, #f0f0f1);
-        color: var(--dame-theme-text, #1e293b);
-        padding: 0.5em 1em;
+        border: 1px solid #c3c4c7;
+        background-color: #f0f0f1;
+        color: #2c3338;
+        padding: 0.45em 0.9em;
         margin: 0;
         border-right-width: 0;
         border-radius: 0;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 13.5px;
         font-weight: 500;
         font-family: inherit;
         line-height: normal;
-        transition: background-color $dame-transition-fast, color $dame-transition-fast;
+        transition: background-color $dame-transition-fast, color $dame-transition-fast, border-color $dame-transition-fast;
 
         &:first-child {
-            border-top-left-radius: var(--dame-theme-btn-radius, 4px);
-            border-bottom-left-radius: var(--dame-theme-btn-radius, 4px);
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
         }
 
         &:last-child {
             border-right-width: 1px;
-            border-top-right-radius: var(--dame-theme-btn-radius, 4px);
-            border-bottom-right-radius: var(--dame-theme-btn-radius, 4px);
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
         }
 
         &:hover {
-            background-color: var(--dame-theme-border, #dcdcde);
-            color: var(--dame-theme-text, #1e293b);
+            background-color: #e0e0e1;
+            color: #1d2327;
+            border-color: #8c8f94;
         }
     }
 }
@@ -107,18 +108,18 @@
 
 .dame-agenda-secondary-controls {
     display: flex;
-    gap: 1em;
+    gap: 0.75em;
     position: relative;
     align-items: center;
 }
 
 #dame-agenda-search-input {
-    padding: 0.55em 0.85em;
-    border: 1px solid var(--dame-theme-border, #ccd0d4);
-    border-radius: var(--dame-theme-radius, 4px);
+    padding: 0.45em 0.75em;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
     background-color: var(--dame-theme-bg, #ffffff);
     color: var(--dame-theme-text, #1e293b);
-    font-size: 14px;
+    font-size: 13.5px;
     box-sizing: border-box;
 
     &:focus {
@@ -127,18 +128,20 @@
 }
 
 #dame-agenda-filter-toggle {
-    background-color: var(--dame-theme-surface, #f0f0f1);
-    border: 1px solid var(--dame-theme-border, #ccd0d4);
-    color: var(--dame-theme-text, #1e293b);
-    padding: 0.55em 1.1em;
+    background-color: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    color: #2c3338;
+    padding: 0.45em 1em;
     cursor: pointer;
-    border-radius: var(--dame-theme-btn-radius, 4px);
-    font-size: 14px;
+    border-radius: 4px;
+    font-size: 13.5px;
     font-weight: 500;
-    transition: background-color $dame-transition-fast;
+    transition: background-color $dame-transition-fast, border-color $dame-transition-fast;
 
     &:hover {
-        background-color: var(--dame-theme-border, #dcdcde);
+        background-color: #e0e0e1;
+        color: #1d2327;
+        border-color: #8c8f94;
     }
 }
 
@@ -278,50 +281,52 @@
 .dame-calendar-weekdays div {
     text-align: center;
     font-weight: 700;
-    padding: 0.6em 0.5em;
-    background: var(--dame-theme-surface, #f7f7f7);
+    padding: 0.35em 0.5em;
+    background: #f6f7f7;
     border-bottom: 1px solid var(--dame-theme-border, #ddd);
     color: var(--dame-theme-text, #1e293b);
-    font-size: 0.9em;
+    font-size: 0.88em;
 }
 
 .dame-calendar-day {
-    min-height: 120px;
+    min-height: 95px;
     border-right: 1px solid var(--dame-theme-border, #ddd);
     border-top: 1px solid var(--dame-theme-border, #ddd);
-    padding: 6px;
+    padding: 4px;
     position: relative;
     background: var(--dame-theme-bg, #ffffff);
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
 
     &:nth-child(7n) {
         border-right: none;
     }
 
     &.other-month {
-        background-color: var(--dame-theme-surface, #f9f9f9);
-        color: var(--dame-theme-muted, #aaa);
-        opacity: 0.65;
+        background-color: #f6f7f9 !important;
+        color: #94a3b8;
+
+        .day-number {
+            color: #94a3b8;
+        }
     }
 
     &.today .day-number {
         background-color: #dc2626;
         color: #ffffff;
         border-radius: 50%;
-        width: 1.8em;
-        height: 1.8em;
-        line-height: 1.8em;
+        width: 1.7em;
+        height: 1.7em;
+        line-height: 1.7em;
         text-align: center;
         float: right;
         font-weight: 700;
+        margin-bottom: 2px;
     }
 }
 
 .day-number {
-    font-size: 0.9em;
-    margin-bottom: 5px;
+    font-size: 0.85em;
+    margin-bottom: 3px;
     text-align: right;
     color: var(--dame-theme-text, #1e293b);
     font-weight: 500;
@@ -330,7 +335,6 @@
 .events-container {
     position: relative;
     clear: both;
-    flex: 1;
 }
 
 .dame-event-link,
@@ -341,17 +345,18 @@
 }
 
 .dame-event {
-    margin-bottom: 3px;
-    padding-left: 5px;
-    font-size: 0.8em;
+    margin-bottom: 2px;
+    padding-left: 4px;
+    font-size: 0.76em;
     font-weight: 600;
     cursor: pointer;
     border-radius: 2px;
+    line-height: 1.25;
 }
 
 .dame-event-ponctuel {
     border-left: 3px solid;
-    padding: 3px 6px;
+    padding: 1px 4px;
     background: rgba(0, 0, 0, 0.04);
     border-radius: 2px;
     transition: background-color $dame-transition-fast;
@@ -361,17 +366,19 @@
     }
 
     .event-time {
-        font-size: 0.72em;
+        font-size: 0.7em;
         font-weight: 500;
         color: var(--dame-theme-muted, rgba(0, 0, 0, 0.6));
         display: block;
+        line-height: 1.2;
     }
 
     .event-title {
-        font-size: 0.9em;
+        font-size: 0.84em;
         font-weight: 600;
         color: var(--dame-theme-text, rgba(0, 0, 0, 0.9));
         display: block;
+        line-height: 1.25;
     }
 }
 
@@ -380,22 +387,23 @@
     z-index: 10;
     background-color: var(--event-color, #ccc);
     color: #ffffff;
-    padding: 3px 8px;
+    padding: 2px 6px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 0.85em;
+    font-size: 0.8em;
     font-weight: 600;
+    line-height: 1.25;
 
     &.start {
-        border-top-left-radius: 8px;
-        border-bottom-left-radius: 8px;
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
         margin-left: 0;
     }
 
     &.end {
-        border-top-right-radius: 8px;
-        border-bottom-right-radius: 8px;
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
         margin-right: 0;
     }
 
