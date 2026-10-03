@@ -22,11 +22,11 @@
         )
     );
 
-    // Text / Contrast Color
+    // Text / Contrast Color (Blocksy palette color 3 is dark text, color 8 is white)
     --dame-theme-text: var(
         --wp--preset--color--contrast,
         var(
-            --theme-palette-color-8,
+            --theme-palette-color-3,
             var(--theme-text-color, #{$dame-fallback-contrast})
         )
     );
@@ -44,7 +44,7 @@
     --dame-theme-muted: var(
         --wp--preset--color--secondary,
         var(
-            --theme-palette-color-7,
+            --theme-palette-color-4,
             var(--theme-text-color-muted, #{$dame-fallback-secondary})
         )
     );
@@ -58,11 +58,11 @@
         )
     );
 
-    // Surface / Card background
+    // Surface / Card background (Blocksy palette color 7 is subtle surface)
     --dame-theme-surface: var(
         --wp--preset--color--base-subtle,
         var(
-            --theme-palette-color-6,
+            --theme-palette-color-7,
             var(--theme-surface-color, #{$dame-fallback-surface})
         )
     );

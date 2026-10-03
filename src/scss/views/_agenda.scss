@@ -3,20 +3,23 @@
 
 /**
  * Public Agenda & Calendar View (Theme Adaptable)
+ *
+ * Targets the exact DOM selectors rendered by DAME\Shortcodes\Agenda and public-agenda.ts
  */
 
 #dame-agenda-wrapper {
     max-width: 1000px;
     margin: 2em auto;
-    font-family: var(--dame-theme-font-body);
-    color: var(--dame-theme-text);
+    font-family: var(--dame-theme-font-body, inherit);
+    color: var(--dame-theme-text, #1e293b);
 }
 
+/* Header & Controls */
 .dame-agenda-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5em;
+    margin-bottom: 1.25em;
     flex-wrap: wrap;
     gap: 1em;
 }
@@ -35,20 +38,23 @@
 
     h2 {
         margin: 0;
-        font-family: var(--dame-theme-font-heading);
-        font-size: 1.5em;
+        font-family: var(--dame-theme-font-heading, inherit);
+        font-size: 1.6em;
+        font-weight: 700;
         cursor: pointer;
         position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--dame-theme-text);
+        display: inline-block;
+        padding-right: 22px;
+        color: var(--dame-theme-text, #1e293b);
 
         &::after {
             content: "▼";
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
             font-size: 0.55em;
-            color: var(--dame-theme-muted);
-            transition: transform $dame-transition-fast;
+            color: var(--dame-theme-text, #1e293b);
         }
     }
 }
@@ -57,32 +63,34 @@
     display: flex;
 
     .button {
-        border: 1px solid var(--dame-theme-border);
-        background-color: var(--dame-theme-surface);
-        color: var(--dame-theme-text);
+        border: 1px solid var(--dame-theme-border, #ccd0d4);
+        background-color: var(--dame-theme-surface, #f0f0f1);
+        color: var(--dame-theme-text, #1e293b);
         padding: 0.5em 1em;
         margin: 0;
         border-right-width: 0;
         border-radius: 0;
         cursor: pointer;
         font-size: 14px;
+        font-weight: 500;
         font-family: inherit;
+        line-height: normal;
         transition: background-color $dame-transition-fast, color $dame-transition-fast;
 
         &:first-child {
-            border-top-left-radius: var(--dame-theme-btn-radius);
-            border-bottom-left-radius: var(--dame-theme-btn-radius);
+            border-top-left-radius: var(--dame-theme-btn-radius, 4px);
+            border-bottom-left-radius: var(--dame-theme-btn-radius, 4px);
         }
 
         &:last-child {
             border-right-width: 1px;
-            border-top-right-radius: var(--dame-theme-btn-radius);
-            border-bottom-right-radius: var(--dame-theme-btn-radius);
+            border-top-right-radius: var(--dame-theme-btn-radius, 4px);
+            border-bottom-right-radius: var(--dame-theme-btn-radius, 4px);
         }
 
         &:hover {
-            background-color: var(--dame-theme-border);
-            color: var(--dame-theme-text);
+            background-color: var(--dame-theme-border, #dcdcde);
+            color: var(--dame-theme-text, #1e293b);
         }
     }
 }
@@ -101,18 +109,36 @@
     display: flex;
     gap: 1em;
     position: relative;
+    align-items: center;
 }
 
 #dame-agenda-search-input {
     padding: 0.55em 0.85em;
-    border: 1px solid var(--dame-theme-border);
-    border-radius: var(--dame-theme-radius);
-    background-color: var(--dame-theme-bg);
-    color: var(--dame-theme-text);
+    border: 1px solid var(--dame-theme-border, #ccd0d4);
+    border-radius: var(--dame-theme-radius, 4px);
+    background-color: var(--dame-theme-bg, #ffffff);
+    color: var(--dame-theme-text, #1e293b);
     font-size: 14px;
+    box-sizing: border-box;
 
     &:focus {
         @include focus-ring(var(--dame-theme-primary));
+    }
+}
+
+#dame-agenda-filter-toggle {
+    background-color: var(--dame-theme-surface, #f0f0f1);
+    border: 1px solid var(--dame-theme-border, #ccd0d4);
+    color: var(--dame-theme-text, #1e293b);
+    padding: 0.55em 1.1em;
+    cursor: pointer;
+    border-radius: var(--dame-theme-btn-radius, 4px);
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color $dame-transition-fast;
+
+    &:hover {
+        background-color: var(--dame-theme-border, #dcdcde);
     }
 }
 
@@ -120,306 +146,462 @@
     position: absolute;
     top: 100%;
     right: 0;
-    background-color: var(--dame-theme-bg);
-    border: 1px solid var(--dame-theme-border);
-    border-radius: var(--dame-theme-radius);
-    padding: 1.25em;
+    background: var(--dame-theme-bg, #ffffff);
+    border: 1px solid var(--dame-theme-border, #ccd0d4);
+    border-radius: var(--dame-theme-radius, 4px);
     box-shadow: $dame-shadow-lg;
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25em;
-    width: 280px;
-}
+    z-index: 1000;
+    padding: 1.25em;
+    min-width: 220px;
+    margin-top: 5px;
 
-.dame-agenda-filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em;
-
-    h3 {
-        margin: 0;
+    h5 {
+        margin: 0 0 0.75em 0;
         font-size: 0.95em;
         font-weight: 700;
-        color: var(--dame-theme-text);
+        color: var(--dame-theme-text, #1e293b);
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    li {
+        margin-bottom: 0.5em;
     }
 
     label {
         display: flex;
         align-items: center;
         gap: 0.5em;
-        font-size: 0.9em;
-        color: var(--dame-theme-text);
         cursor: pointer;
+        color: var(--dame-theme-text, #1e293b);
+        font-size: 13.5px;
     }
 }
 
-.dame-agenda-date-picker {
+.dame-agenda-cat-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* Month/Year Popup Selector */
+#dame-month-year-selector {
     position: absolute;
     top: 100%;
     left: 0;
-    background-color: var(--dame-theme-bg);
-    border: 1px solid var(--dame-theme-border);
-    border-radius: var(--dame-theme-radius);
-    padding: 1em;
+    background: var(--dame-theme-bg, #ffffff);
+    border: 1px solid var(--dame-theme-border, #ccd0d4);
     box-shadow: $dame-shadow-lg;
-    z-index: 100;
-}
-
-.dame-agenda-date-picker select {
-    margin-right: 0.5em;
-    padding: 0.4em 0.6em;
-    border: 1px solid var(--dame-theme-border);
-    border-radius: var(--dame-theme-radius);
-    background-color: var(--dame-theme-bg);
-    color: var(--dame-theme-text);
-}
-
-.dame-agenda-grid-container {
-    border: 1px solid var(--dame-theme-border);
-    border-radius: var(--dame-theme-radius);
+    z-index: 1000;
+    margin-top: 5px;
+    border-radius: var(--dame-theme-radius, 4px);
     overflow: hidden;
 }
 
-.dame-agenda-grid-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    background-color: var(--dame-theme-surface);
-    text-align: center;
+.dame-month-year-selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--dame-theme-surface, #f0f0f1);
+    border-bottom: 1px solid var(--dame-theme-border, #ccd0d4);
     font-weight: 600;
-    border-bottom: 1px solid var(--dame-theme-border);
+    color: var(--dame-theme-text, #1e293b);
+
+    button {
+        background: var(--dame-theme-bg, #ffffff);
+        border: 1px solid var(--dame-theme-border, #ccd0d4);
+        padding: 2px 8px;
+        cursor: pointer;
+        border-radius: 3px;
+        color: var(--dame-theme-text, #1e293b);
+
+        &:hover {
+            background: var(--dame-theme-border, #dcdcde);
+        }
+    }
 }
 
-.dame-agenda-day-name {
-    padding: 0.75em 0.5em;
-    font-size: 0.9em;
-    color: var(--dame-theme-text);
+.dame-month-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 8px;
+    gap: 4px;
+
+    span {
+        text-align: center;
+        padding: 8px 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+        border-radius: 3px;
+        color: var(--dame-theme-text, #1e293b);
+        transition: background-color $dame-transition-fast;
+
+        &:hover {
+            background: var(--dame-theme-surface, #f0f0f1);
+        }
+
+        &.selected {
+            background: var(--dame-theme-primary, #2271b1);
+            color: #ffffff;
+            font-weight: 600;
+        }
+    }
 }
 
-.dame-agenda-grid {
+/* Calendar Container & Grid */
+#dame-calendar-container {
+    border: 1px solid var(--dame-theme-border, #ddd);
+    border-radius: var(--dame-theme-radius, 4px);
+    overflow: hidden;
+    background: var(--dame-theme-bg, #ffffff);
+}
+
+.dame-calendar-weekdays,
+#dame-calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
 }
 
-.dame-agenda-day-cell {
-    border-right: 1px solid var(--dame-theme-border);
-    border-bottom: 1px solid var(--dame-theme-border);
+.dame-calendar-weekdays div {
+    text-align: center;
+    font-weight: 700;
+    padding: 0.6em 0.5em;
+    background: var(--dame-theme-surface, #f7f7f7);
+    border-bottom: 1px solid var(--dame-theme-border, #ddd);
+    color: var(--dame-theme-text, #1e293b);
+    font-size: 0.9em;
+}
+
+.dame-calendar-day {
     min-height: 120px;
-    padding: 0.5em;
+    border-right: 1px solid var(--dame-theme-border, #ddd);
+    border-top: 1px solid var(--dame-theme-border, #ddd);
+    padding: 6px;
+    position: relative;
+    background: var(--dame-theme-bg, #ffffff);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    background-color: var(--dame-theme-bg);
 
     &:nth-child(7n) {
         border-right: none;
     }
 
-    &.dame-other-month {
-        background-color: var(--dame-theme-surface);
-        opacity: 0.6;
+    &.other-month {
+        background-color: var(--dame-theme-surface, #f9f9f9);
+        color: var(--dame-theme-muted, #aaa);
+        opacity: 0.65;
     }
 
-    &.dame-today {
-        background-color: var(--dame-theme-surface);
-        border-top: 2px solid var(--dame-theme-primary);
+    &.today .day-number {
+        background-color: #dc2626;
+        color: #ffffff;
+        border-radius: 50%;
+        width: 1.8em;
+        height: 1.8em;
+        line-height: 1.8em;
+        text-align: center;
+        float: right;
+        font-weight: 700;
     }
 }
 
-.dame-day-number {
-    font-size: 0.85em;
-    font-weight: 600;
-    margin-bottom: 0.5em;
-    align-self: flex-start;
-    color: var(--dame-theme-muted);
+.day-number {
+    font-size: 0.9em;
+    margin-bottom: 5px;
+    text-align: right;
+    color: var(--dame-theme-text, #1e293b);
+    font-weight: 500;
 }
 
-.dame-agenda-event-card {
-    background-color: var(--dame-theme-surface);
-    border-left: 3px solid var(--dame-theme-primary);
-    padding: 4px 6px;
-    margin-bottom: 4px;
-    border-radius: var(--dame-theme-radius);
+.events-container {
+    position: relative;
+    clear: both;
+    flex: 1;
+}
+
+.dame-event-link,
+.dame-event-link:hover {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.dame-event {
+    margin-bottom: 3px;
+    padding-left: 5px;
     font-size: 0.8em;
+    font-weight: 600;
     cursor: pointer;
+    border-radius: 2px;
+}
+
+.dame-event-ponctuel {
+    border-left: 3px solid;
+    padding: 3px 6px;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 2px;
+    transition: background-color $dame-transition-fast;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.08);
+    }
+
+    .event-time {
+        font-size: 0.72em;
+        font-weight: 500;
+        color: var(--dame-theme-muted, rgba(0, 0, 0, 0.6));
+        display: block;
+    }
+
+    .event-title {
+        font-size: 0.9em;
+        font-weight: 600;
+        color: var(--dame-theme-text, rgba(0, 0, 0, 0.9));
+        display: block;
+    }
+}
+
+.dame-event-duree {
+    position: absolute;
+    z-index: 10;
+    background-color: var(--event-color, #ccc);
+    color: #ffffff;
+    padding: 3px 8px;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    transition: background-color $dame-transition-fast, transform $dame-transition-fast;
-
-    &:hover {
-        background-color: var(--dame-theme-border);
-        transform: translateY(-1px);
-    }
-}
-
-.dame-agenda-event-card-title {
+    font-size: 0.85em;
     font-weight: 600;
-    color: var(--dame-theme-text);
+
+    &.start {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+        margin-left: 0;
+    }
+
+    &.end {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+        margin-right: 0;
+    }
+
+    &.middle {
+        border-radius: 0;
+    }
 }
 
-.dame-agenda-event-card-time {
+/* Tooltip */
+#dame-event-tooltip {
+    position: absolute;
+    background: #ffc936;
+    color: #2c2c2c;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 1001;
+    max-width: 250px;
+    pointer-events: none;
     font-size: 0.9em;
-    color: var(--dame-theme-muted);
-}
-
-/* Event Details Overlay Drawer */
-#dame-agenda-event-details-drawer {
-    position: fixed;
-    top: 0;
-    right: -420px;
-    width: 400px;
-    max-width: 90vw;
-    height: 100vh;
-    background-color: var(--dame-theme-bg);
-    box-shadow: $dame-shadow-modal;
-    z-index: 1000;
-    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    border-left: 1px solid var(--dame-theme-border);
-
-    &.open {
-        right: 0;
-    }
-}
-
-.dame-agenda-drawer-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25em;
-    border-bottom: 1px solid var(--dame-theme-border);
-    background-color: var(--dame-theme-surface);
-
-    h3 {
-        margin: 0;
-        font-family: var(--dame-theme-font-heading);
-        font-size: 1.2em;
-        color: var(--dame-theme-text);
-    }
-
-    button {
-        background: none;
-        border: none;
-        font-size: 1.5em;
-        cursor: pointer;
-        color: var(--dame-theme-muted);
-        line-height: 1;
-
-        &:hover {
-            color: var(--dame-theme-text);
-        }
-    }
-}
-
-.dame-agenda-drawer-content {
-    padding: 1.25em;
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    font-size: 0.95em;
-    line-height: 1.5;
-    color: var(--dame-theme-text);
-}
-
-.dame-agenda-drawer-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75em;
-
-    .dashicons {
-        color: var(--dame-theme-primary);
-        margin-top: 2px;
-        flex-shrink: 0;
-    }
-}
-
-/* Agenda List View */
-.dame-agenda-list-view {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-}
-
-.dame-agenda-list-item {
-    display: flex;
-    gap: 1.25em;
-    padding: 1.25em;
-    border: 1px solid var(--dame-theme-border);
-    border-radius: var(--dame-theme-radius);
-    background-color: var(--dame-theme-bg);
-    align-items: center;
-    transition: border-color $dame-transition-fast, box-shadow $dame-transition-fast;
-
-    &:hover {
-        border-color: var(--dame-theme-primary);
-        box-shadow: $dame-shadow-sm;
-    }
-
-    @include mobile {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
-.dame-agenda-list-date {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75em 1.25em;
-    background-color: var(--dame-theme-surface);
-    border-radius: var(--dame-theme-radius);
-    min-width: 60px;
-    text-align: center;
-    flex-shrink: 0;
-
-    .dame-date-day {
-        font-size: 1.5em;
-        font-weight: 700;
-        color: var(--dame-theme-primary);
-        line-height: 1;
-    }
-
-    .dame-date-month {
-        font-size: 0.8em;
-        text-transform: uppercase;
-        color: var(--dame-theme-muted);
-        margin-top: 4px;
-    }
-}
-
-.dame-agenda-list-details {
-    flex: 1;
+    box-shadow: $dame-shadow-md;
 
     h4 {
-        margin: 0 0 6px 0;
-        font-size: 1.1em;
-        color: var(--dame-theme-text);
+        margin: 0 0 4px;
+        font-size: 0.95em;
+        color: #2c2c2c;
+        font-weight: 700;
     }
 
     p {
-        margin: 0;
-        font-size: 0.9em;
-        color: var(--dame-theme-muted);
+        margin: 0 0 3px;
+        font-size: 0.85em;
+        color: #333333;
+    }
+
+    .tooltip-description {
+        border-top: 1px solid rgba(0, 0, 0, 0.2);
+        margin-top: 6px;
+        padding-top: 6px;
+        font-size: 0.85em;
+        font-weight: 500;
     }
 }
 
-/* Category Badges */
-.dame-category-badge {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: var(--dame-theme-btn-radius);
-    font-size: 0.75em;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+/* DAME Liste Agenda Shortcode Styles */
+.dame-liste-agenda-wrapper {
+    margin: 2em 0;
 }
 
-/* Responsive Rules for Agenda */
-@include tablet {
+.dame-liste-agenda-item {
+    display: flex;
+    gap: 0.75em;
+    margin-bottom: 0.75em;
+    padding-bottom: 0.75em;
+    align-items: flex-start;
+
+    &:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+}
+
+.dame-liste-agenda-date-icon .date-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: #ffcd00;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    line-height: 1;
+    flex-shrink: 0;
+
+    .day-of-week,
+    .month-abbr {
+        font-size: 0.8em;
+        color: #555555;
+    }
+
+    .day-number {
+        font-size: 1.5em;
+        color: #222222;
+        margin: 0;
+        text-align: center;
+    }
+}
+
+.dame-liste-agenda-details {
+    flex-grow: 1;
+    line-height: 1.2;
+
+    h4.event-title {
+        margin: 0 0 0.2em;
+        font-size: 0.95em;
+        font-weight: bold;
+
+        a {
+            color: #ff121c;
+            text-decoration: none;
+            font-weight: bold;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    p {
+        margin: 0 0 0.2em;
+        color: var(--dame-theme-muted, rgba(0, 0, 0, 0.6));
+        font-size: 0.85em;
+    }
+
+    p.event-time {
+        font-style: italic;
+        font-size: 0.78em;
+    }
+
+    .event-description,
+    .event-description p {
+        color: var(--dame-theme-text, #444444);
+    }
+}
+
+.dame-liste-agenda-icon {
+    font-size: 1.5em;
+    color: #cccccc;
+}
+
+/* Single Event Page Details */
+.dame-event-details-wrapper {
+    margin: 2em 0;
+    padding: 1.5em;
+    border: 1px solid var(--dame-theme-border, #eee);
+    border-left-width: 5px;
+    border-left-color: #ffc107;
+    background: var(--dame-theme-surface, #f9f9f9);
+    border-radius: var(--dame-theme-radius, 4px);
+}
+
+.dame-event-detail-item {
+    margin-bottom: 1.5em;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    h4 {
+        margin-top: 0;
+        margin-bottom: 0.5em;
+        font-size: 1.2em;
+        color: var(--dame-theme-text, #333333);
+    }
+
+    p {
+        margin-top: 0;
+        margin-bottom: 0;
+        font-size: 1em;
+        color: var(--dame-theme-text, #444444);
+    }
+}
+
+/* Mobile Responsive */
+@media screen and (max-width: 768px) {
+    .dame-calendar-day {
+        min-height: 40px;
+        font-size: 0.8em;
+        padding: 2px;
+    }
+
+    .ponctuel-events-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .dame-event-link {
+        padding: 2px;
+    }
+
+    .dame-event-ponctuel {
+        padding: 0;
+        border: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--event-color) !important;
+        margin: 0;
+    }
+
+    .dame-event-ponctuel .event-time,
+    .dame-event-ponctuel .event-title {
+        display: none;
+    }
+
+    .dame-event-duree {
+        height: 12px;
+        font-size: 0;
+        box-sizing: border-box;
+    }
+
+    .dame-event-duree.start {
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+    }
+
+    .dame-event-duree.end {
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
+    }
+
     .dame-agenda-header {
         flex-direction: column;
         align-items: stretch;
@@ -437,9 +619,5 @@
 
     .dame-mobile-text {
         display: inline;
-    }
-
-    .dame-agenda-day-cell {
-        min-height: 80px;
     }
 }
