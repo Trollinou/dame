@@ -71,7 +71,7 @@ class Newsletter {
 				'button_class' => '',
 				'class'        => '',
 				'show_icon'    => 'true',
-				'layout'       => 'button', // 'button' or 'inline'
+				'layout'       => 'button', // Options: 'button' or 'inline'.
 				'title'        => __( 'Inscription à la newsletter', 'dame' ),
 				'subtitle'     => __( 'Recevez régulièrement nos actualités et informations.', 'dame' ),
 			),
@@ -82,37 +82,38 @@ class Newsletter {
 		// Enqueue the modern Script Module (WordPress 6.5+ / 7.x).
 		if ( function_exists( 'wp_enqueue_script_module' ) ) {
 			wp_enqueue_script_module( 'dame/newsletter' );
-		} else {
-			// Enqueue the public newsletter script (fallback).
-			wp_enqueue_script(
-				'dame-public-newsletter',
-				\DAME_PLUGIN_URL . 'assets/js/public-newsletter.js',
-				array(),
-				\DAME_VERSION,
-				true
-			);
-
-			// Localize script.
-			wp_localize_script(
-				'dame-public-newsletter',
-				'dameNewsletterData',
-				array(
-					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-					'nonce'   => wp_create_nonce( 'dame_newsletter_nonce' ),
-					'i18n'    => array(
-						'submitting'    => __( 'Inscription en cours...', 'dame' ),
-						'submitSuccess' => __( 'Inscription réussie !', 'dame' ),
-						'genericError'  => __( 'Une erreur est survenue. Veuillez réessayer.', 'dame' ),
-					),
-				)
-			);
 		}
 
-		// Enqueue public styles.
+		// Enqueue the public newsletter script.
+		wp_enqueue_script(
+			'dame-public-newsletter',
+			\DAME_PLUGIN_URL . 'assets/js/public-newsletter.js',
+			array(),
+			\DAME_VERSION,
+			true
+		);
+
+		// Localize script.
+		wp_localize_script(
+			'dame-public-newsletter',
+			'dameNewsletterData',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'dame_newsletter_nonce' ),
+				'i18n'    => array(
+					'submitting'    => __( 'Inscription en cours...', 'dame' ),
+					'submitSuccess' => __( 'Inscription réussie !', 'dame' ),
+					'genericError'  => __( 'Une erreur est survenue. Veuillez réessayer.', 'dame' ),
+				),
+			)
+		);
+
+		// Enqueue Dashicons and public styles.
+		wp_enqueue_style( 'dashicons' );
 		wp_enqueue_style(
 			'dame-public-styles',
 			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
-			array(),
+			array( 'dashicons' ),
 			\DAME_VERSION
 		);
 

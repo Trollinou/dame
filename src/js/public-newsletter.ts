@@ -15,11 +15,6 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		}
 	});
 
-	// 1. Modal Trigger & Management
-	const triggers = document.querySelectorAll<HTMLElement>(
-		'.dame-nl-btn-trigger'
-	);
-
 	/**
 	 * Open a specific modal dialog
 	 * @param modal
@@ -31,6 +26,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	): void {
 		if (!modal) {
 			return;
+		}
+		if (modal.parentElement !== document.body) {
+			document.body.appendChild(modal);
 		}
 		modal.classList.add('dame-nl-modal--open');
 		modal.setAttribute('aria-hidden', 'false');
@@ -46,7 +44,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		if (firstInput) {
 			setTimeout((): void => {
 				firstInput.focus();
-			}, 80);
+			}, 220);
 		}
 	}
 
@@ -68,25 +66,27 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		}
 	}
 
-	// Attach click events on triggers
-	triggers.forEach((btn: HTMLElement): void => {
-		btn.addEventListener('click', (e: MouseEvent): void => {
+	// Attach delegated click events for triggers, close buttons, and backdrops
+	document.addEventListener('click', (e: MouseEvent): void => {
+		const target = e.target as HTMLElement | null;
+
+		// 1. Trigger button clicked
+		const triggerBtn = target?.closest<HTMLElement>('.dame-nl-btn-trigger');
+		if (triggerBtn) {
 			e.preventDefault();
-			const targetId = btn.getAttribute('data-dame-modal-target');
+			const targetId = triggerBtn.getAttribute('data-dame-modal-target');
 			if (targetId) {
 				const modal = document.getElementById(
 					targetId
 				) as ModalWithTrigger | null;
 				if (modal) {
-					openModal(modal, btn);
+					openModal(modal, triggerBtn);
 				}
 			}
-		});
-	});
+			return;
+		}
 
-	// Attach close events on close buttons and backdrops
-	document.addEventListener('click', (e: MouseEvent): void => {
-		const target = e.target as HTMLElement | null;
+		// 2. Close button or backdrop clicked
 		const closeTarget = target?.closest<HTMLElement>(
 			'[data-dame-modal-close]'
 		);
