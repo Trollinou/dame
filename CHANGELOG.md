@@ -39,6 +39,7 @@
 - **Architecture SCSS Modulaire (`src/scss/`)** :
   - Découpage en sous-dossiers thématiques : `abstracts/` (`_variables`, `_mixins`, `_wp-theme`), `components/` (`_buttons`, `_forms`, `_tables`, `_modal`, `_notices`, `_autocomplete`, `_signature`), `views/` (`_agenda`, `_single-event`, `_benevolat`, `_newsletter`, `_registration`), et `admin/` (`_dashboard`, `_metaboxes`, `_mailing`, `_backups`, `_view-adherent`, `_reports`, `_reconciliation`, `_hidden-menus`).
   - Compilation Dart Sass optimisée vers `assets/css/` (`admin-styles.css`, `admin-common.css`, `public-styles.css`, `public-agenda.css`).
+  - Harmonisation du suivi Git des assets compilés : exclusion de `/assets/css/` dans `.gitignore` (au même titre que `/assets/js/`), les styles étant compilés dynamiquement à partir des sources `src/scss/`.
 - **Harmonisation avec le Thème Actif & WordPress Standards (Blocksy & Block Themes)** :
   - Utilisation des CSS Custom Properties WordPress et thèmes (`--wp--preset--color--*`, `--wp--preset--font-*`, `--theme-palette-color-*`, `--theme-button-*`) avec fallbacks fluides.
   - Adaptation native des formulaires (inputs, selects, textareas), boutons (`.dame-btn`, `.nav-button`), modales, tableaux et badges de statut au thème actif.
