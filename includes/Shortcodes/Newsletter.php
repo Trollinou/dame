@@ -209,14 +209,14 @@ class Newsletter {
 					<label for="<?php echo esc_attr( $form_id ); ?>-last-name" class="dame-nl-form__label">
 						<?php esc_html_e( 'Nom', 'dame' ); ?> <span class="dame-nl-form__required" aria-hidden="true">*</span>
 					</label>
-					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-last-name" name="dame_newsletter_last_name" class="dame-nl-form__input" required autocomplete="off" spellcheck="false" autocorrect="off">
+					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-last-name" name="dame_newsletter_last_name" class="dame-nl-form__input" required autocomplete="off" autocorrect="off">
 				</div>
 
 				<div class="dame-nl-form__group">
 					<label for="<?php echo esc_attr( $form_id ); ?>-first-name" class="dame-nl-form__label">
 						<?php esc_html_e( 'Prénom', 'dame' ); ?> <span class="dame-nl-form__required" aria-hidden="true">*</span>
 					</label>
-					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-first-name" name="dame_newsletter_first_name" class="dame-nl-form__input" required autocomplete="off" spellcheck="false" autocorrect="off">
+					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-first-name" name="dame_newsletter_first_name" class="dame-nl-form__input" required autocomplete="off" autocorrect="off">
 				</div>
 			</div>
 
@@ -224,7 +224,7 @@ class Newsletter {
 				<label for="<?php echo esc_attr( $form_id ); ?>-email" class="dame-nl-form__label">
 					<?php esc_html_e( 'Adresse email', 'dame' ); ?> <span class="dame-nl-form__required" aria-hidden="true">*</span>
 				</label>
-				<input type="email" id="<?php echo esc_attr( $form_id ); ?>-email" name="dame_newsletter_email" class="dame-nl-form__input" required autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off">
+				<input type="email" id="<?php echo esc_attr( $form_id ); ?>-email" name="dame_newsletter_email" class="dame-nl-form__input" required autocomplete="off" autocapitalize="off" autocorrect="off">
 			</div>
 
 			<!-- Anti-spam honeypot -->
