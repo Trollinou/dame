@@ -278,6 +278,16 @@ class Benevolat {
 		$existing_response_id = 0;
 		$previous_meta        = array();
 
+		// Idempotency lock to prevent double submissions.
+		$lock_key = 'dame_benevolat_lock_' . md5( (string) $benevolat_id . '_' . (string) $user_id . '_' . $name . '_' . wp_json_encode( $sanitized_responses ) );
+		if ( get_transient( $lock_key ) ) {
+			$referer      = isset( $_POST['_wp_http_referer'] ) ? esc_url_raw( wp_unslash( $_POST['_wp_http_referer'] ) ) : wp_get_referer();
+			$redirect_url = add_query_arg( 'vote', 'success', $referer );
+			wp_safe_redirect( $redirect_url );
+			exit;
+		}
+		set_transient( $lock_key, true, 15 );
+
 		if ( $user_id ) {
 			$existing_responses = get_posts(
 				array(

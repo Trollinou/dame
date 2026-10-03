@@ -47,6 +47,13 @@ class Newsletter {
 			);
 		}
 
+		// Idempotency lock (15s) to avoid duplicate double opt-in emails on rapid clicks.
+		$lock_key = 'dame_nl_sub_lock_' . md5( strtolower( $first_name . $last_name . $email ) );
+		$cached   = get_transient( $lock_key );
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
 		$options      = get_option( 'dame_options', array() );
 		$contact_type = isset( $options['newsletter_contact_type'] ) ? absint( $options['newsletter_contact_type'] ) : 0;
 
@@ -95,10 +102,12 @@ class Newsletter {
 		$sent = $this->send_confirmation_email( $first_name, $last_name, $email, $contact_type );
 
 		if ( $sent ) {
-			return array(
+			$success_res = array(
 				'success' => true,
 				'message' => __( 'Un email de confirmation vous a été envoyé. Veuillez cliquer sur le lien qu\'il contient pour valider votre inscription.', 'dame' ),
 			);
+			set_transient( $lock_key, $success_res, 15 );
+			return $success_res;
 		}
 
 		return array(

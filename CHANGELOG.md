@@ -16,10 +16,17 @@
 - **Restauration de l'affichage du feedback & Interactivity API (`dame/contact`)** :
   - Ajout des directives réactives `data-wp-bind--hidden`, `data-wp-class--dame-feedback--*`, `data-wp-text` et `data-wp-bind--disabled` sur le conteneur de message et le bouton d'envoi dans `DAME\Shortcodes\Contact`.
   - Implémentation des getters d'état réactifs (`hasMessage`, `isSuccess`, `isError`, `isBusy`) dans `src/js/modules/contact-store.ts`.
+  - Verrouillage anti-rebond client (`if (ctx.isSubmitting) return;` + désactivation immédiate du bouton submit DOM + `event.stopPropagation()`).
+  - Verrou d'idempotence serveur par transient (15 secondes) dans `DAME\Shortcodes\Contact` pour éliminer les doublons d'envoi lors de clics répétés.
   - Harmonisation du script de fallback `src/js/public-contact-form.ts` avec support des identifiants `dame-public-contact-form` et `dame-contact-form`.
   - Enqueue systématique de la feuille de styles `dame-public-styles` lors du rendu du shortcode de contact.
   - Renforcement du contraste et de la spécificité des classes BEM `.dame-feedback` (`--success`, `--error`) dans `src/scss/components/_notices.scss` et styles de boutons dans `src/scss/components/_forms.scss` pour garantir une lisibilité optimale sur tous les thèmes (Blocksy, FSE).
   - Optimisations Safari / WebKit : déplacement du honeypot anti-spam en fin de formulaire avec `display: none !important;` et désactivation de l'autocorrection / autocomplétion intempestive.
+
+### Inscription Newsletter (`dame_newsletter`) & Bénévolat (`dame_benevolat`)
+- **Sécurisation Anti-Rebond & Idempotence des Formulaires Publics** :
+  - `dame/newsletter` (`src/js/modules/newsletter-store.ts`, `DAME\Services\Newsletter`) : verrou synchrone client, désactivation immédiate du bouton submit et verrou d'idempotence serveur par transient (15 secondes) sur `handle_subscription()`.
+  - `dame/benevolat` (`src/js/modules/benevolat-store.ts`, `DAME\Shortcodes\Benevolat`) : verrou synchrone client, désactivation immédiate du bouton de soumission et verrou d'idempotence serveur par transient (15 secondes) sur `handle_submission()`.
 
 ### Administration & Navigation
 - **Masquage du sous-menu Rapport de message** :

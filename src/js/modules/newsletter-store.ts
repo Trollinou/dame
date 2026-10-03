@@ -37,14 +37,26 @@ export const newsletterStore = store('dame/newsletter', {
 
 		async submitForm(event: Event): Promise<void> {
 			event.preventDefault();
+			event.stopPropagation();
 			const form = event.target as HTMLFormElement;
 			if (!form) {
 				return;
 			}
 
 			const ctx = getContext<NewsletterContext>();
+			if (ctx.isSubmitting) {
+				return;
+			}
 			ctx.isSubmitting = true;
+			ctx.status = 'idle';
 			ctx.message = '';
+
+			const submitBtn = form.querySelector<HTMLButtonElement>(
+				'button[type="submit"]'
+			);
+			if (submitBtn) {
+				submitBtn.disabled = true;
+			}
 
 			const formData = new FormData(form);
 			formData.append('action', 'dame_submit_newsletter');

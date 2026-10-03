@@ -44,16 +44,37 @@ export const benevolatStore = store('dame/benevolat', {
 
 		async submitResponse(event: Event): Promise<void> {
 			event.preventDefault();
+			event.stopPropagation();
 			const form = event.target as HTMLFormElement;
 			if (!form) {
 				return;
 			}
 
+			// HTML5 native validation
+			if (!form.checkValidity()) {
+				form.reportValidity();
+				return;
+			}
+
 			const ctx = getContext<BenevolatContext>();
+			if (ctx.isSubmitting) {
+				return;
+			}
 			ctx.isSubmitting = true;
+			ctx.status = 'idle';
 			ctx.message = '';
 
+			const submitBtn = form.querySelector<
+				HTMLButtonElement | HTMLInputElement
+			>('button[type="submit"], input[type="submit"]');
+			if (submitBtn) {
+				submitBtn.disabled = true;
+			}
+
 			const formData = new FormData(form);
+			if (!formData.has('submit_benevolat')) {
+				formData.append('submit_benevolat', '1');
+			}
 
 			try {
 				const response = await fetch(form.action || ctx.ajaxUrl, {
@@ -75,6 +96,9 @@ export const benevolatStore = store('dame/benevolat', {
 				ctx.message = 'Erreur de communication avec le serveur.';
 			} finally {
 				ctx.isSubmitting = false;
+				if (submitBtn) {
+					submitBtn.disabled = false;
+				}
 			}
 		},
 	},

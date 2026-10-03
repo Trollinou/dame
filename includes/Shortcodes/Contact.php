@@ -183,7 +183,12 @@ class Contact {
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$message = isset( $_POST['dame_contact_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['dame_contact_message'] ) ) : '';
 
-		// 4. Send Email.
+		// 4. Idempotency lock (15s) to avoid duplicate email sending on double-clicks.
+		$lock_key = 'dame_contact_lock_' . md5( strtolower( $name . $email . $subject . $message ) );
+		if ( get_transient( $lock_key ) ) {
+			wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
+		}
+
 		$options = get_option( 'dame_options' );
 		$to      = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
 
@@ -200,6 +205,7 @@ class Contact {
 		$sent = wp_mail( $to, $email_subject, $body, $headers );
 
 		if ( $sent ) {
+			set_transient( $lock_key, '1', 15 );
 			wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
 		} else {
 			wp_send_json_error( array( 'message' => __( "Une erreur s'est produite lors de l'envoi du message.", 'dame' ) ) );

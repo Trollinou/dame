@@ -36,6 +36,7 @@ export const contactStore = store('dame/contact', {
 	actions: {
 		async submitForm(event: Event): Promise<void> {
 			event.preventDefault();
+			event.stopPropagation();
 			const form = event.target as HTMLFormElement;
 			if (!form) {
 				return;
@@ -48,9 +49,19 @@ export const contactStore = store('dame/contact', {
 			}
 
 			const ctx = getContext<ContactContext>();
+			if (ctx.isSubmitting) {
+				return;
+			}
 			ctx.isSubmitting = true;
 			ctx.status = 'idle';
 			ctx.message = '';
+
+			const submitBtn = form.querySelector<HTMLButtonElement>(
+				'button[type="submit"]'
+			);
+			if (submitBtn) {
+				submitBtn.disabled = true;
+			}
 
 			const formData = new FormData(form);
 			if (!formData.has('action')) {
