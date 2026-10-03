@@ -303,8 +303,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		}
 
 		const isMobile = window.innerWidth < 768;
-		const EVENT_HEIGHT = isMobile ? 16 : 28;
-		const EVENT_SPACING = 3;
+		const EVENT_HEIGHT = isMobile ? 14 : 24;
+		const EVENT_SPACING = 4;
 		const wp_sow = parseInt(
 			String(dame_agenda_ajax.start_of_week || 0),
 			10
