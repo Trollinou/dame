@@ -196,12 +196,6 @@ class Newsletter {
 			<input type="hidden" name="action" value="dame_submit_newsletter">
 			<?php wp_nonce_field( 'dame_newsletter_nonce', 'dame_newsletter_nonce_field' ); ?>
 
-			<!-- Anti-spam honeypot -->
-			<div class="dame-nl-hp" aria-hidden="true" style="display:none !important; visibility:hidden !important; position:absolute; left:-9999px;">
-				<label for="<?php echo esc_attr( $form_id ); ?>-hp"><?php esc_html_e( 'Ne pas remplir ce champ', 'dame' ); ?></label>
-				<input type="text" id="<?php echo esc_attr( $form_id ); ?>-hp" name="dame_newsletter_hp" tabindex="-1" autocomplete="off">
-			</div>
-
 			<?php if ( ! empty( $title ) ) : ?>
 				<h3 <?php echo ! empty( $title_id ) ? 'id="' . esc_attr( $title_id ) . '"' : ''; ?> class="dame-nl-form__title"><?php echo esc_html( $title ); ?></h3>
 			<?php endif; ?>
@@ -215,14 +209,14 @@ class Newsletter {
 					<label for="<?php echo esc_attr( $form_id ); ?>-last-name" class="dame-nl-form__label">
 						<?php esc_html_e( 'Nom', 'dame' ); ?> <span class="dame-nl-form__required" aria-hidden="true">*</span>
 					</label>
-					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-last-name" name="dame_newsletter_last_name" class="dame-nl-form__input" required autocomplete="family-name" spellcheck="false" autocorrect="off">
+					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-last-name" name="dame_newsletter_last_name" class="dame-nl-form__input" required autocomplete="off" spellcheck="false" autocorrect="off">
 				</div>
 
 				<div class="dame-nl-form__group">
 					<label for="<?php echo esc_attr( $form_id ); ?>-first-name" class="dame-nl-form__label">
 						<?php esc_html_e( 'Prénom', 'dame' ); ?> <span class="dame-nl-form__required" aria-hidden="true">*</span>
 					</label>
-					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-first-name" name="dame_newsletter_first_name" class="dame-nl-form__input" required autocomplete="given-name" spellcheck="false" autocorrect="off">
+					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-first-name" name="dame_newsletter_first_name" class="dame-nl-form__input" required autocomplete="off" spellcheck="false" autocorrect="off">
 				</div>
 			</div>
 
@@ -230,7 +224,13 @@ class Newsletter {
 				<label for="<?php echo esc_attr( $form_id ); ?>-email" class="dame-nl-form__label">
 					<?php esc_html_e( 'Adresse email', 'dame' ); ?> <span class="dame-nl-form__required" aria-hidden="true">*</span>
 				</label>
-				<input type="email" id="<?php echo esc_attr( $form_id ); ?>-email" name="dame_newsletter_email" class="dame-nl-form__input" required autocomplete="email" spellcheck="false" autocapitalize="off" autocorrect="off">
+				<input type="email" id="<?php echo esc_attr( $form_id ); ?>-email" name="dame_newsletter_email" class="dame-nl-form__input" required autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off">
+			</div>
+
+			<!-- Anti-spam honeypot -->
+			<div class="dame-nl-hp" aria-hidden="true" style="display:none !important;">
+				<label for="<?php echo esc_attr( $form_id ); ?>-hp"><?php esc_html_e( 'Ne pas remplir ce champ', 'dame' ); ?></label>
+				<input type="text" id="<?php echo esc_attr( $form_id ); ?>-hp" name="dame_newsletter_hp" tabindex="-1" autocomplete="new-password">
 			</div>
 
 			<div class="dame-nl-form__feedback" role="alert" style="display:none;"></div>
