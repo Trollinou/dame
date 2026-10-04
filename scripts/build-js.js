@@ -2,8 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const esbuild = require('esbuild');
 
-const srcDir = path.join(__dirname, 'src/js');
-const distDir = path.join(__dirname, 'assets/js');
+const rootDir = path.resolve(__dirname, '..');
+const srcDir = path.join(rootDir, 'src/js');
+const distDir = path.join(rootDir, 'assets/js');
 const srcModulesDir = path.join(srcDir, 'modules');
 const distModulesDir = path.join(distDir, 'modules');
 
