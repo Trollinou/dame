@@ -69,22 +69,41 @@ readonly class AgendaEventDTO {
 
 		$id = $post_obj->ID;
 
+		$start_date = (string) get_post_meta( $id, '_dame_start_date', true );
+		$end_date   = (string) get_post_meta( $id, '_dame_end_date', true );
+		if ( empty( $end_date ) ) {
+			$end_date = $start_date;
+		}
+
+		$start_time = (string) get_post_meta( $id, '_dame_start_time', true );
+		$end_time   = (string) get_post_meta( $id, '_dame_end_time', true );
+		$location   = (string) get_post_meta( $id, '_dame_location_name', true );
+		if ( empty( $location ) ) {
+			$location = (string) get_post_meta( $id, '_dame_location', true );
+		}
+		$address = (string) get_post_meta( $id, '_dame_address_1', true );
+		if ( empty( $address ) ) {
+			$address = (string) get_post_meta( $id, '_dame_address', true );
+		}
+		$color     = (string) get_post_meta( $id, '_dame_color', true );
+		$series_id = (string) get_post_meta( $id, '_dame_recurrence_group_id', true );
+
 		return new self(
 			id: $id,
 			title: $post_obj->post_title,
-			start_date: (string) get_post_meta( $id, '_dame_start_date', true ),
-			end_date: (string) ( get_post_meta( $id, '_dame_end_date', true ) ?: get_post_meta( $id, '_dame_start_date', true ) ),
+			start_date: $start_date,
+			end_date: $end_date,
 			all_day: '1' === (string) get_post_meta( $id, '_dame_all_day', true ),
-			start_time: get_post_meta( $id, '_dame_start_time', true ) ?: null,
-			end_time: get_post_meta( $id, '_dame_end_time', true ) ?: null,
-			location: get_post_meta( $id, '_dame_location_name', true ) ?: ( get_post_meta( $id, '_dame_location', true ) ?: null ),
-			address: get_post_meta( $id, '_dame_address_1', true ) ?: ( get_post_meta( $id, '_dame_address', true ) ?: null ),
+			start_time: ! empty( $start_time ) ? $start_time : null,
+			end_time: ! empty( $end_time ) ? $end_time : null,
+			location: ! empty( $location ) ? $location : null,
+			address: ! empty( $address ) ? $address : null,
 			latitude: is_numeric( get_post_meta( $id, '_dame_latitude', true ) ) ? (float) get_post_meta( $id, '_dame_latitude', true ) : null,
 			longitude: is_numeric( get_post_meta( $id, '_dame_longitude', true ) ) ? (float) get_post_meta( $id, '_dame_longitude', true ) : null,
 			competition_type: CompetitionType::from_raw( (string) get_post_meta( $id, '_dame_competition_type', true ) ),
 			competition_level: CompetitionLevel::from_raw( (string) get_post_meta( $id, '_dame_competition_level', true ) ),
-			color: get_post_meta( $id, '_dame_color', true ) ?: null,
-			series_id: get_post_meta( $id, '_dame_recurrence_group_id', true ) ?: null,
+			color: ! empty( $color ) ? $color : null,
+			series_id: ! empty( $series_id ) ? $series_id : null,
 		);
 	}
 

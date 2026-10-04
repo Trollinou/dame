@@ -1,0 +1,35 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Digital Signature Pad Component
+ */
+
+#dame-signature-section {
+    box-sizing: border-box;
+    transition: all $dame-transition-fast;
+    margin-top: 1.5em;
+
+    .dame-signature-wrapper {
+        box-sizing: border-box;
+        overflow: hidden;
+        border: 1px solid var(--dame-theme-border, #{$dame-fallback-border});
+        border-radius: var(--dame-theme-radius, #{$dame-radius-md});
+        background: var(--dame-theme-bg, #ffffff);
+
+        canvas {
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            display: block;
+            width: 100%;
+        }
+    }
+
+    .dame-signature-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        align-items: center;
+    }
+}

@@ -14,7 +14,12 @@
     "lint:php": "phpstan analyze --memory-limit=2G",
     "lint": "phpcs",
     "fix": "phpcbf"
- },
+  },
+  "autoload": {
+    "psr-4": {
+      "DAME\\": "includes/"
+    }
+  },
   "autoload-dev": {
     "psr-4": {
       "DAME\\Tests\\": "tests/"

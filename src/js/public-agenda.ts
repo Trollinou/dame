@@ -5,7 +5,7 @@ interface CalendarEvent {
 	end_date: string;
 	start_time?: string;
 	end_time?: string;
-	all_day?: boolean | string;
+	all_day?: boolean | string | number;
 	color?: string;
 	background_color?: string;
 	text_color?: string;
@@ -23,7 +23,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	}
 
 	const calendarGrid = document.getElementById('dame-calendar-grid');
-	const weekdaysContainer = wrapper.querySelector<HTMLElement>('.dame-calendar-weekdays');
+	const weekdaysContainer = wrapper.querySelector<HTMLElement>(
+		'.dame-calendar-weekdays'
+	);
 	const currentMonthDisplay = document.getElementById(
 		'dame-agenda-current-month'
 	);
@@ -34,7 +36,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		'dame-agenda-filter-toggle'
 	);
 	const filterPanel = document.getElementById('dame-agenda-filter-panel');
-	const searchInput = document.getElementById('dame-agenda-search-input') as HTMLInputElement | null;
+	const searchInput = document.getElementById(
+		'dame-agenda-search-input'
+	) as HTMLInputElement | null;
 	const tooltip = document.getElementById('dame-event-tooltip');
 	const monthYearPicker = document.getElementById('dame-month-year-selector');
 	const monthPickerToggle = wrapper.querySelector<HTMLElement>(
@@ -68,8 +72,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		const lastDayOfMonth = new Date(year, month + 1, 0);
 		const daysInMonth = lastDayOfMonth.getDate();
 		const startOfWeek = Number(dame_agenda_ajax.start_of_week || 0);
-		const startDayOfWeek =
-			(firstDayOfMonth.getDay() - startOfWeek + 7) % 7;
+		const startDayOfWeek = (firstDayOfMonth.getDay() - startOfWeek + 7) % 7;
 
 		const gridStartDate = new Date(firstDayOfMonth);
 		gridStartDate.setDate(gridStartDate.getDate() - startDayOfWeek);
@@ -85,11 +88,19 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		gridEndDate.setDate(gridEndDate.getDate() + totalGridDays - 1);
 
 		const checkedCategories = Array.from(
-			wrapper ? wrapper.querySelectorAll<HTMLInputElement>('.dame-agenda-cat-filter:checked') : []
+			wrapper
+				? wrapper.querySelectorAll<HTMLInputElement>(
+						'.dame-agenda-cat-filter:checked'
+					)
+				: []
 		).map((el: HTMLInputElement) => el.value);
 
 		const uncheckedCategories = Array.from(
-			wrapper ? wrapper.querySelectorAll<HTMLInputElement>('.dame-agenda-cat-filter:not(:checked)') : []
+			wrapper
+				? wrapper.querySelectorAll<HTMLInputElement>(
+						'.dame-agenda-cat-filter:not(:checked)'
+					)
+				: []
 		).map((el: HTMLInputElement) => el.value);
 
 		const searchTerm = searchInput ? searchInput.value : '';
@@ -117,7 +128,10 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				method: 'POST',
 				body: formData,
 			});
-			const result = (await response.json()) as { success: boolean; data: CalendarEvent[] };
+			const result = (await response.json()) as {
+				success: boolean;
+				data: CalendarEvent[];
+			};
 
 			if (result.success) {
 				renderCalendar(year, month, result.data);
@@ -135,7 +149,11 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		}
 	}
 
-	function renderCalendar(year: number, month: number, events: CalendarEvent[]): void {
+	function renderCalendar(
+		year: number,
+		month: number,
+		events: CalendarEvent[]
+	): void {
 		if (currentMonthDisplay) {
 			currentMonthDisplay.textContent = `${dame_agenda_ajax.i18n.months[month]} ${year}`;
 		}
@@ -155,8 +173,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		const lastDayOfMonth = new Date(year, month + 1, 0);
 		const daysInMonth = lastDayOfMonth.getDate();
 		const startOfWeek = Number(dame_agenda_ajax.start_of_week || 0);
-		const startDayOfWeek =
-			(firstDayOfMonth.getDay() - startOfWeek + 7) % 7;
+		const startDayOfWeek = (firstDayOfMonth.getDay() - startOfWeek + 7) % 7;
 
 		const prevMonthDate = new Date(year, month, 0);
 		const prevYear = prevMonthDate.getFullYear();
@@ -227,8 +244,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 		const isMobile = window.innerWidth < 768;
 		const weekCount = Math.ceil(dayCells.length / 7);
-		const DAY_NUMBER_HEIGHT = isMobile ? 30 : 40;
-		const MIN_CELL_HEIGHT = isMobile ? 40 : 120;
+		const DAY_NUMBER_HEIGHT = isMobile ? 30 : 35;
+		const MIN_CELL_HEIGHT = isMobile ? 40 : 110;
 
 		for (let i = 0; i < weekCount; i++) {
 			const weekCells = dayCells.slice(i * 7, (i + 1) * 7);
@@ -286,9 +303,12 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		}
 
 		const isMobile = window.innerWidth < 768;
-		const EVENT_HEIGHT = isMobile ? 16 : 32;
-		const EVENT_SPACING = 2;
-		const wp_sow = parseInt(String(dame_agenda_ajax.start_of_week || 0), 10);
+		const EVENT_HEIGHT = isMobile ? 14 : 24;
+		const EVENT_SPACING = 4;
+		const wp_sow = parseInt(
+			String(dame_agenda_ajax.start_of_week || 0),
+			10
+		);
 
 		events.sort((a, b) => {
 			const aStart = parseDateAsLocal(a.start_date);
@@ -364,10 +384,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 								checkDate.setDate(checkDate.getDate() + i);
 								const checkDateStr = formatDate(checkDate);
 								const laneSet = dayLanes.get(checkDateStr);
-								if (
-									laneSet &&
-									laneSet.has(laneIndex)
-								) {
+								if (laneSet && laneSet.has(laneIndex)) {
 									isLaneOccupied = true;
 									break;
 								}
@@ -378,9 +395,10 @@ document.addEventListener('DOMContentLoaded', (): void => {
 							laneIndex++;
 						}
 						const segmentDateStr = formatDate(segmentStartDate);
-						const dayCell = calendarGrid?.querySelector<HTMLElement>(
-							`.dame-calendar-day[data-date="${segmentDateStr}"]`
-						);
+						const dayCell =
+							calendarGrid?.querySelector<HTMLElement>(
+								`.dame-calendar-day[data-date="${segmentDateStr}"]`
+							);
 						if (dayCell) {
 							const width = `calc(${span * 100}% + ${span - 1}px)`;
 							const top =
@@ -462,16 +480,28 @@ document.addEventListener('DOMContentLoaded', (): void => {
 							'ponctuel-events-container';
 						ponctuelContainer.style.position = 'absolute';
 						ponctuelContainer.style.top = `${topPosition}px`;
-						ponctuelContainer.style.left = '5px';
-						ponctuelContainer.style.right = '5px';
+						ponctuelContainer.style.left = '0';
+						ponctuelContainer.style.right = '0';
 						dayCell
 							.querySelector('.events-container')
 							?.appendChild(ponctuelContainer);
 					}
-					const isAllDay = event.all_day === '1' || event.all_day === true;
-					const timeText = isAllDay
-						? dame_agenda_ajax.i18n.all_day
-						: `${event.start_time || ''} - ${event.end_time || ''}`;
+					const isAllDay =
+						event.all_day === true ||
+						event.all_day === '1' ||
+						event.all_day === 1 ||
+						(!event.start_time && !event.end_time);
+					let timeText = '';
+					if (isAllDay) {
+						timeText =
+							dame_agenda_ajax.i18n.all_day || 'Toute la journée';
+					} else if (event.start_time && event.end_time) {
+						timeText = `${event.start_time} - ${event.end_time}`;
+					} else if (event.start_time) {
+						timeText = event.start_time;
+					} else if (event.end_time) {
+						timeText = event.end_time;
+					}
 					const eventColor = event.color || '#3788d8';
 					let styleAttr = `--event-color: ${eventColor}; border-left-color: ${eventColor};`;
 					if (event.status === 'private') {
@@ -556,7 +586,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				const parentLi = checkbox.closest('li');
 				if (parentLi) {
 					parentLi
-						.querySelectorAll<HTMLInputElement>('ul input.dame-agenda-cat-filter')
+						.querySelectorAll<HTMLInputElement>(
+							'ul input.dame-agenda-cat-filter'
+						)
 						.forEach((childInput: HTMLInputElement) => {
 							childInput.checked = isChecked;
 						});
@@ -595,10 +627,21 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				return;
 			}
 
-			const isAllDay = eventData.all_day === '1' || eventData.all_day === true;
-			const timeText = isAllDay
-				? dame_agenda_ajax.i18n.all_day
-				: `${eventData.start_time || ''} - ${eventData.end_time || ''}`;
+			const isAllDay =
+				eventData.all_day === true ||
+				eventData.all_day === '1' ||
+				eventData.all_day === 1 ||
+				(!eventData.start_time && !eventData.end_time);
+			let timeText = '';
+			if (isAllDay) {
+				timeText = dame_agenda_ajax.i18n.all_day || 'Toute la journée';
+			} else if (eventData.start_time && eventData.end_time) {
+				timeText = `${eventData.start_time} - ${eventData.end_time}`;
+			} else if (eventData.start_time) {
+				timeText = eventData.start_time;
+			} else if (eventData.end_time) {
+				timeText = eventData.end_time;
+			}
 
 			let tooltipHtml = `<h4>${eventData.title}</h4>`;
 			tooltipHtml += `<p>${timeText}</p>`;
@@ -639,28 +682,31 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		if (yearEl) {
 			yearEl.textContent = String(year);
 		}
-		const monthGrid = wrapper?.querySelector<HTMLElement>('.dame-month-grid');
+		const monthGrid =
+			wrapper?.querySelector<HTMLElement>('.dame-month-grid');
 		if (!monthGrid) {
 			return;
 		}
 		monthGrid.innerHTML = '';
 		const currentMonth = currentDate.getMonth();
 
-		dame_agenda_ajax.i18n.months.forEach((monthName: string, index: number) => {
-			const monthEl = document.createElement('span');
-			monthEl.textContent = monthName;
-			if (index === currentMonth) {
-				monthEl.classList.add('selected');
-			}
-			monthEl.addEventListener('click', () => {
-				currentDate.setMonth(index);
-				fetchAndRenderCalendar();
-				if (monthYearPicker) {
-					monthYearPicker.style.display = 'none';
+		dame_agenda_ajax.i18n.months.forEach(
+			(monthName: string, index: number) => {
+				const monthEl = document.createElement('span');
+				monthEl.textContent = monthName;
+				if (index === currentMonth) {
+					monthEl.classList.add('selected');
 				}
-			});
-			monthGrid.appendChild(monthEl);
-		});
+				monthEl.addEventListener('click', () => {
+					currentDate.setMonth(index);
+					fetchAndRenderCalendar();
+					if (monthYearPicker) {
+						monthYearPicker.style.display = 'none';
+					}
+				});
+				monthGrid.appendChild(monthEl);
+			}
+		);
 	}
 
 	if (monthPickerToggle && monthYearPicker) {

@@ -17,8 +17,12 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 		// 1. Sort Date Groups by their date input value
 		groups.sort((a, b) => {
-			const inputA = a.querySelector<HTMLInputElement>('.benevolat-date-input');
-			const inputB = b.querySelector<HTMLInputElement>('.benevolat-date-input');
+			const inputA = a.querySelector<HTMLInputElement>(
+				'.benevolat-date-input'
+			);
+			const inputB = b.querySelector<HTMLInputElement>(
+				'.benevolat-date-input'
+			);
 			const dateA = inputA?.value || '9999-12-31';
 			const dateB = inputB?.value || '9999-12-31';
 			return dateA.localeCompare(dateB);
@@ -35,7 +39,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			}
 
 			// Update Date Input Name & ID
-			const dateInput = dateGroup.querySelector<HTMLInputElement>('.benevolat-date-input');
+			const dateInput = dateGroup.querySelector<HTMLInputElement>(
+				'.benevolat-date-input'
+			);
 			if (dateInput) {
 				dateInput.id = `benevolat_date_${dateIndex}`;
 				dateInput.name = `_dame_benevolat_data[${dateIndex}][date]`;
@@ -54,12 +60,16 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			);
 			if (slotsWrapper) {
 				const slots = Array.from(
-					slotsWrapper.querySelectorAll<HTMLElement>('.benevolat-time-slot-group')
+					slotsWrapper.querySelectorAll<HTMLElement>(
+						'.benevolat-time-slot-group'
+					)
 				);
 
 				slots.sort((a, b) => {
-					const firstInputA = a.querySelector<HTMLInputElement>('input[type="time"]');
-					const firstInputB = b.querySelector<HTMLInputElement>('input[type="time"]');
+					const firstInputA =
+						a.querySelector<HTMLInputElement>('input[type="time"]');
+					const firstInputB =
+						b.querySelector<HTMLInputElement>('input[type="time"]');
 					const timeA = firstInputA?.value || '23:59';
 					const timeB = firstInputB?.value || '23:59';
 					return timeA.localeCompare(timeB);
@@ -69,7 +79,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 					slotsWrapper.appendChild(slot);
 
 					const timeInputs =
-						slot.querySelectorAll<HTMLInputElement>('input[type="time"]');
+						slot.querySelectorAll<HTMLInputElement>(
+							'input[type="time"]'
+						);
 					if (timeInputs[0]) {
 						timeInputs[0].name = `_dame_benevolat_data[${dateIndex}][time_slots][${timeIndex}][start]`;
 					}
@@ -91,7 +103,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 			let defaultDate = '';
 			const dateInputs = Array.from(
-				wrapper.querySelectorAll<HTMLInputElement>('.benevolat-date-input')
+				wrapper.querySelectorAll<HTMLInputElement>(
+					'.benevolat-date-input'
+				)
 			);
 			if (dateInputs.length > 0) {
 				let maxDateVal = '';
@@ -172,7 +186,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 		// Add Time Slot
 		if (target.closest('.add-benevolat-time-slot')) {
-			const dateGroup = target.closest<HTMLElement>('.benevolat-date-group');
+			const dateGroup = target.closest<HTMLElement>(
+				'.benevolat-date-group'
+			);
 			if (!dateGroup) {
 				return;
 			}
@@ -197,7 +213,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			if (timeIndex > 0) {
 				const lastSlot = slots[slots.length - 1];
 				const timeInputs =
-					lastSlot.querySelectorAll<HTMLInputElement>('input[type="time"]');
+					lastSlot.querySelectorAll<HTMLInputElement>(
+						'input[type="time"]'
+					);
 				if (timeInputs.length >= 2) {
 					previousEndTime = timeInputs[1].value;
 				}

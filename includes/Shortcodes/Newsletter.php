@@ -71,13 +71,18 @@ class Newsletter {
 				'button_class' => '',
 				'class'        => '',
 				'show_icon'    => 'true',
-				'layout'       => 'button', // 'button' or 'inline'
+				'layout'       => 'button', // Options: 'button' or 'inline'.
 				'title'        => __( 'Inscription à la newsletter', 'dame' ),
 				'subtitle'     => __( 'Recevez régulièrement nos actualités et informations.', 'dame' ),
 			),
 			is_array( $atts ) ? $atts : array(),
 			'dame_newsletter'
 		);
+
+		// Enqueue the modern Script Module (WordPress 6.5+ / 7.x).
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( 'dame/newsletter' );
+		}
 
 		// Enqueue the public newsletter script.
 		wp_enqueue_script(
@@ -103,11 +108,12 @@ class Newsletter {
 			)
 		);
 
-		// Enqueue public styles.
+		// Enqueue Dashicons and public styles.
+		wp_enqueue_style( 'dashicons' );
 		wp_enqueue_style(
 			'dame-public-styles',
 			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
-			array(),
+			array( 'dashicons' ),
 			\DAME_VERSION
 		);
 

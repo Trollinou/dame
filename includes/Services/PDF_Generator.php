@@ -309,7 +309,7 @@ class PDF_Generator {
 		}
 		if ( ! empty( $rl1_birth_date ) ) {
 			$pdf->SetXY( 54, 270 );
-			$rl1_ts = strtotime( (string) $rl1_birth_date );
+			$rl1_ts             = strtotime( (string) $rl1_birth_date );
 			$rl1_date_formatted = false !== $rl1_ts ? (string) wp_date( 'd/m/Y', $rl1_ts, new \DateTimeZone( 'UTC' ) ) : '';
 			$pdf->Write( 0, mb_convert_encoding( $rl1_date_formatted, 'ISO-8859-1', 'UTF-8' ) );
 		}
@@ -333,7 +333,7 @@ class PDF_Generator {
 		}
 		if ( ! empty( $rl2_birth_date ) ) {
 			$pdf->SetXY( 154, 270 );
-			$rl2_ts = strtotime( (string) $rl2_birth_date );
+			$rl2_ts             = strtotime( (string) $rl2_birth_date );
 			$rl2_date_formatted = false !== $rl2_ts ? (string) wp_date( 'd/m/Y', $rl2_ts, new \DateTimeZone( 'UTC' ) ) : '';
 			$pdf->Write( 0, mb_convert_encoding( $rl2_date_formatted, 'ISO-8859-1', 'UTF-8' ) );
 		}

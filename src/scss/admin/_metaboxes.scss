@@ -1,0 +1,259 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * DAME Admin Metaboxes & Shared Elements
+ */
+
+.dame-back-link-wrapper {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid $dame-admin-border-subtle;
+}
+
+.dame-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #1e293b;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: $dame-radius-md;
+    padding: 8px 16px;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all $dame-transition-fast;
+    box-shadow: $dame-shadow-sm;
+
+    &:hover {
+        background-color: #f1f5f9;
+        border-color: #94a3b8;
+        color: #0f172a;
+
+        .dashicons {
+            transform: translateX(-3px);
+            color: #0f172a;
+        }
+    }
+
+    .dashicons {
+        transition: transform $dame-transition-fast;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        margin: 0;
+        color: #64748b;
+    }
+}
+
+.dame-radio-group {
+    display: flex;
+    gap: 1em;
+    margin-bottom: 0.5em;
+
+    label {
+        display: flex;
+        align-items: center;
+        gap: 0.35em;
+        cursor: pointer;
+    }
+}
+
+#dame_competition_level_wrapper {
+    margin-left: 1em;
+}
+
+.dame-time-fields.hidden {
+    display: none;
+}
+
+.dame-participants-checklist {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid $dame-admin-border;
+    padding: 8px;
+    background: #fff;
+    margin-top: 5px;
+}
+
+.benevolat-results-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+        border: 1px solid $dame-admin-border;
+        padding: 8px 10px;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        background-color: $dame-admin-bg;
+        font-weight: 600;
+    }
+
+    ul {
+        margin: 0;
+        padding-left: 15px;
+    }
+}
+
+/* Documents Metabox */
+.dame-adherent-docs-container {
+    .dame-doc-date {
+        font-size: 0.9em;
+        color: $dame-admin-text;
+        margin-bottom: 12px;
+    }
+
+    .dame-doc-item {
+        margin-bottom: 15px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid $dame-admin-border-subtle;
+
+        &:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        p {
+            margin: 0 0 6px 0;
+        }
+
+        .dashicons-yes-alt {
+            color: $dame-admin-success;
+        }
+
+        .dame-doc-missing {
+            color: $dame-admin-danger;
+            font-size: 0.9em;
+        }
+    }
+
+    .dame-doc-label {
+        font-size: 0.85em;
+        color: $dame-admin-text;
+        display: block;
+        margin-bottom: 4px;
+        opacity: 0.8;
+    }
+
+    input[type="file"] {
+        max-width: 100%;
+    }
+}
+
+/* Recurrence & Series Metabox */
+.dame-recurrence-container {
+    padding: 15px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: $dame-radius-md;
+    margin-top: 10px;
+
+    .form-table {
+        margin-top: 0;
+
+        th,
+        td {
+            padding: 8px 0;
+        }
+
+        th {
+            width: 160px;
+        }
+    }
+}
+
+.dame-days-checklist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 6px;
+
+    label {
+        cursor: pointer;
+    }
+}
+
+.dame-series-info-box {
+    padding: 14px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: $dame-radius-md;
+
+    .dame-series-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+
+        .dashicons {
+            color: #2563eb;
+        }
+    }
+
+    p {
+        margin: 0 0 10px 0;
+        color: #475569;
+        font-size: 13px;
+    }
+
+    .dame-series-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #e2e8f0;
+    }
+}
+
+.dame-info-callout {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #e0f2fe;
+    border-left: 4px solid #0284c7;
+    border-radius: $dame-radius-sm;
+    font-size: 13px;
+    color: #0369a1;
+
+    .dashicons {
+        font-size: 16px;
+        vertical-align: middle;
+        margin-right: 2px;
+    }
+}
+
+.dame-danger-delete-btn {
+    color: #b91c1c;
+    border-color: #fca5a5;
+
+    &:hover {
+        background-color: #fee2e2;
+        color: #991b1b;
+        border-color: #f87171;
+    }
+
+    .dashicons {
+        vertical-align: text-top;
+        font-size: 16px;
+        margin-right: 2px;
+    }
+}
+
+.dame-danger-link {
+    color: #991b1b;
+    text-decoration: underline;
+    font-size: 12px;
+    margin-left: 5px;
+
+    &:hover {
+        color: #7f1d1d;
+    }
+}

@@ -408,8 +408,8 @@ class Identities {
 					$matched_pre_ids[] = $matched_pre->ID;
 				}
 
-				$associated_members   = (array) $reps[ $rep_name ]['associated_members'];
-				$associated_members[] = array(
+				$associated_members                      = (array) $reps[ $rep_name ]['associated_members'];
+				$associated_members[]                    = array(
 					'firstname'           => $this->get_firstname( $adh->ID ),
 					'member_id'           => $adh->ID,
 					'elo_standard'        => ! empty( $elo_std ) ? $elo_std : 'NC',
@@ -462,10 +462,10 @@ class Identities {
 			// Add each unmatched pre-inscription to the representative's associated members.
 			$first_rep_key = (string) array_key_first( $reps );
 			foreach ( $unmatched_pres as $unmatched_pre ) {
-				$matched_pre_ids[]    = $unmatched_pre->ID;
-				$child_fname          = (string) get_post_meta( $unmatched_pre->ID, '_dame_first_name', true );
-				$first_rep_members   = (array) $reps[ $first_rep_key ]['associated_members'];
-				$first_rep_members[] = array(
+				$matched_pre_ids[]                            = $unmatched_pre->ID;
+				$child_fname                                  = (string) get_post_meta( $unmatched_pre->ID, '_dame_first_name', true );
+				$first_rep_members                            = (array) $reps[ $first_rep_key ]['associated_members'];
+				$first_rep_members[]                          = array(
 					'firstname'           => $child_fname,
 					'name'                => get_the_title( $unmatched_pre->ID ),
 					'member_id'           => 0,

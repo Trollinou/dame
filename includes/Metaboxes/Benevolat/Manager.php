@@ -120,45 +120,10 @@ class Manager {
 		}
 
 		?>
-		<style>
-			.dame-back-link {
-				display: inline-flex;
-				align-items: center;
-				gap: 8px;
-				text-decoration: none;
-				color: #1e293b;
-				background-color: #f8fafc;
-				border: 1px solid #cbd5e1;
-				border-radius: 6px;
-				padding: 8px 16px;
-				font-weight: 500;
-				font-size: 13px;
-				transition: all 0.15s ease-in-out;
-				box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-			}
-			.dame-back-link:hover {
-				background-color: #f1f5f9;
-				border-color: #94a3b8;
-				color: #0f172a;
-			}
-			.dame-back-link:hover .dashicons {
-				transform: translateX(-3px);
-				color: #0f172a;
-			}
-			.dame-back-link .dashicons {
-				font-size: 18px;
-				width: 18px;
-				height: 18px;
-				line-height: 18px;
-				margin: 0;
-				color: #64748b;
-				transition: transform 0.15s ease-in-out;
-			}
-		</style>
-		<div style="margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">
+		<div class="dame-back-link-wrapper">
 			<a href="<?php echo esc_url( $list_url ); ?>" class="dame-back-link">
 				<span class="dashicons dashicons-arrow-left-alt"></span>
-				<span style="line-height: 1;"><?php esc_html_e( 'Retour à la liste filtrée', 'dame' ); ?></span>
+				<span><?php esc_html_e( 'Retour à la liste filtrée', 'dame' ); ?></span>
 			</a>
 		</div>
 
@@ -295,12 +260,6 @@ class Manager {
 			$grouped_results[ $formatted_date ][ $details['start'] . ' - ' . $details['end'] ] = $details['names'];
 		}
 		?>
-		<style>
-			.benevolat-results-table { width: 100%; border-collapse: collapse; }
-			.benevolat-results-table th, .benevolat-results-table td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
-			.benevolat-results-table th { background-color: #f2f2f2; }
-			.benevolat-results-table ul { margin: 0; padding-left: 15px; }
-		</style>
 		<div class="benevolat-results-wrapper">
 			<h4><?php esc_html_e( 'Tableau récapitulatif', 'dame' ); ?></h4>
 			<table class="benevolat-results-table">
@@ -505,7 +464,7 @@ class Manager {
 	 * @return array<string, mixed>
 	 */
 	public function admin_notices( array $messages ): array {
-
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['message'] ) && '101' === $_GET['message'] ) {
 			$messages['post'][101] = __( 'Réponse supprimée.', 'dame' );
 		}

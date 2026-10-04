@@ -113,8 +113,9 @@ class BenevolatRepository {
 				'poll_id'      => $benevolat_id,
 				'recipient_id' => $response_id,
 				'choice_key'   => sanitize_text_field( $choice_key ),
+				'voted_at'     => current_time( 'mysql', true ),
 			),
-			array( '%d', '%d', '%s' )
+			array( '%d', '%d', '%s', '%s' )
 		);
 
 		return false !== $result;

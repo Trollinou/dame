@@ -60,12 +60,24 @@ class SubmissionHandler {
 			}
 		}
 
-		// Create Pre-inscription Post.
 		$first_name          = $sanitized_data['dame_first_name'] ?? '';
 		$last_name           = $sanitized_data['dame_last_name'] ?? '';
 		$birth_name          = $sanitized_data['dame_birth_name'] ?? '';
 		$effective_last_name = ! empty( $last_name ) ? $last_name : $birth_name;
-		$post_title          = Utils::format_lastname( (string) $effective_last_name ) . ' ' . Utils::format_firstname( (string) $first_name );
+
+		// Idempotency lock: avoid duplicate submissions within 15 seconds.
+		$lock_key        = 'dame_pre_lock_' . md5( strtolower( (string) $first_name . (string) $effective_last_name . ( $sanitized_data['dame_birth_date'] ?? '' ) . ( $sanitized_data['dame_email'] ?? '' ) ) );
+		$cached_response = get_transient( $lock_key );
+		if ( false !== $cached_response ) {
+			if ( is_array( $cached_response ) ) {
+				wp_send_json_success( $cached_response );
+			}
+			wp_send_json_success( array( 'message' => __( 'La préinscription a bien été enregistrée.', 'dame' ) ) );
+		}
+		set_transient( $lock_key, '1', 15 );
+
+		// Create Pre-inscription Post.
+		$post_title = Utils::format_lastname( (string) $effective_last_name ) . ' ' . Utils::format_firstname( (string) $first_name );
 
 		$post_data = array(
 			'post_title'  => $post_title,
@@ -75,6 +87,7 @@ class SubmissionHandler {
 		$post_id   = wp_insert_post( $post_data, true );
 
 		if ( is_wp_error( $post_id ) ) {
+			delete_transient( $lock_key );
 			wp_send_json_error( array( 'message' => __( 'Erreur lors de la création de la fiche de préinscription.', 'dame' ) . ' ' . $post_id->get_error_message() ) );
 		}
 
@@ -172,6 +185,8 @@ class SubmissionHandler {
 		if ( $is_minor ) {
 			$response_data['parental_auth_nonce'] = wp_create_nonce( 'dame_generate_parental_auth_' . $post_id );
 		}
+
+		set_transient( $lock_key, $response_data, 15 );
 
 		wp_send_json_success( $response_data );
 	}
@@ -298,6 +313,13 @@ class SubmissionHandler {
 		$meta_insert_values[]       = '_dame_health_document';
 		$meta_insert_values[]       = $health_document_status;
 		$meta_insert_placeholders[] = '(%d, %s, %s)';
+
+		if ( isset( $sanitized_data['dame_health_questionnaire'] ) ) {
+			$meta_insert_values[]       = $post_id;
+			$meta_insert_values[]       = '_dame_health_questionnaire';
+			$meta_insert_values[]       = $sanitized_data['dame_health_questionnaire'];
+			$meta_insert_placeholders[] = '(%d, %s, %s)';
+		}
 
 		$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared

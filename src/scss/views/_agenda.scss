@@ -1,0 +1,649 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Public Agenda & Calendar View (Theme Adaptable)
+ *
+ * Targets the exact DOM selectors rendered by DAME\Shortcodes\Agenda and public-agenda.ts
+ */
+
+#dame-agenda-wrapper {
+    max-width: 1000px;
+    margin: 1.25em auto;
+    font-family: var(--dame-theme-font-body, inherit);
+    color: var(--dame-theme-text, #1e293b);
+}
+
+/* Header & Controls */
+.dame-agenda-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.85em;
+    flex-wrap: wrap;
+    gap: 0.75em;
+}
+
+.dame-agenda-primary-controls {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    flex-grow: 1;
+}
+
+.dame-agenda-month-display {
+    position: relative;
+    flex-grow: 1;
+    text-align: left;
+
+    h2 {
+        margin: 0;
+        font-family: var(--dame-theme-font-heading, inherit);
+        font-size: 1.6em;
+        font-weight: 700;
+        cursor: pointer;
+        position: relative;
+        display: inline-block;
+        padding-right: 22px;
+        color: var(--dame-theme-text, #1e293b);
+
+        &::after {
+            content: "▼";
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.55em;
+            color: var(--dame-theme-text, #1e293b);
+        }
+    }
+}
+
+.dame-agenda-nav-buttons {
+    display: flex;
+
+    .button {
+        border: 1px solid #c3c4c7;
+        background-color: #f0f0f1;
+        color: #2c3338;
+        padding: 0.45em 0.9em;
+        margin: 0;
+        border-right-width: 0;
+        border-radius: 0;
+        cursor: pointer;
+        font-size: 13.5px;
+        font-weight: 500;
+        font-family: inherit;
+        line-height: normal;
+        transition: background-color $dame-transition-fast, color $dame-transition-fast, border-color $dame-transition-fast;
+
+        &:first-child {
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+
+        &:last-child {
+            border-right-width: 1px;
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+
+        &:hover {
+            background-color: #e0e0e1;
+            color: #1d2327;
+            border-color: #8c8f94;
+        }
+    }
+}
+
+.dame-mobile-text {
+    display: none;
+}
+
+.dame-agenda-nav {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+}
+
+.dame-agenda-secondary-controls {
+    display: flex;
+    gap: 0.75em;
+    position: relative;
+    align-items: center;
+}
+
+#dame-agenda-search-input {
+    padding: 0.45em 0.75em;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background-color: var(--dame-theme-bg, #ffffff);
+    color: var(--dame-theme-text, #1e293b);
+    font-size: 13.5px;
+    box-sizing: border-box;
+
+    &:focus {
+        @include focus-ring(var(--dame-theme-primary));
+    }
+}
+
+#dame-agenda-filter-toggle {
+    background-color: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    color: #2c3338;
+    padding: 0.45em 1em;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: background-color $dame-transition-fast, border-color $dame-transition-fast;
+
+    &:hover {
+        background-color: #e0e0e1;
+        color: #1d2327;
+        border-color: #8c8f94;
+    }
+}
+
+#dame-agenda-filter-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--dame-theme-bg, #ffffff);
+    border: 1px solid var(--dame-theme-border, #ccd0d4);
+    border-radius: var(--dame-theme-radius, 4px);
+    box-shadow: $dame-shadow-lg;
+    z-index: 1000;
+    padding: 1.25em;
+    min-width: 220px;
+    margin-top: 5px;
+
+    h5 {
+        margin: 0 0 0.75em 0;
+        font-size: 0.95em;
+        font-weight: 700;
+        color: var(--dame-theme-text, #1e293b);
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        /* Indentation for nested sub-categories */
+        ul {
+            margin-left: 20px;
+            margin-top: 5px;
+        }
+    }
+
+    li {
+        margin-bottom: 0.5em;
+    }
+
+    label {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        cursor: pointer;
+        color: var(--dame-theme-text, #1e293b);
+        font-size: 13.5px;
+    }
+}
+
+.dame-agenda-cat-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* Month/Year Popup Selector */
+#dame-month-year-selector {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--dame-theme-bg, #ffffff);
+    border: 1px solid var(--dame-theme-border, #ccd0d4);
+    box-shadow: $dame-shadow-lg;
+    z-index: 1000;
+    margin-top: 5px;
+    border-radius: var(--dame-theme-radius, 4px);
+    overflow: hidden;
+}
+
+.dame-month-year-selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--dame-theme-surface, #f0f0f1);
+    border-bottom: 1px solid var(--dame-theme-border, #ccd0d4);
+    font-weight: 600;
+    color: var(--dame-theme-text, #1e293b);
+
+    button {
+        background: var(--dame-theme-bg, #ffffff);
+        border: 1px solid var(--dame-theme-border, #ccd0d4);
+        padding: 2px 8px;
+        cursor: pointer;
+        border-radius: 3px;
+        color: var(--dame-theme-text, #1e293b);
+
+        &:hover {
+            background: var(--dame-theme-border, #dcdcde);
+        }
+    }
+}
+
+.dame-month-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 8px;
+    gap: 4px;
+
+    span {
+        text-align: center;
+        padding: 8px 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+        border-radius: 3px;
+        color: var(--dame-theme-text, #1e293b);
+        transition: background-color $dame-transition-fast;
+
+        &:hover {
+            background: var(--dame-theme-surface, #f0f0f1);
+        }
+
+        &.selected {
+            background: var(--dame-theme-primary, #2271b1);
+            color: #ffffff;
+            font-weight: 600;
+        }
+    }
+}
+
+/* Calendar Container & Grid */
+#dame-calendar-container {
+    border: 1px solid var(--dame-theme-border, #ddd);
+    border-radius: var(--dame-theme-radius, 4px);
+    overflow: hidden;
+    background: var(--dame-theme-bg, #ffffff);
+}
+
+.dame-calendar-weekdays,
+#dame-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.dame-calendar-weekdays div {
+    text-align: center;
+    font-weight: 700;
+    padding: 0.35em 0.5em;
+    background: #f6f7f7;
+    border-bottom: 1px solid var(--dame-theme-border, #ddd);
+    color: var(--dame-theme-text, #1e293b);
+    font-size: 0.88em;
+}
+
+.dame-calendar-day {
+    min-height: 120px;
+    border-right: 1px solid var(--dame-theme-border, #ddd);
+    border-top: 1px solid var(--dame-theme-border, #ddd);
+    padding: 6px;
+    position: relative;
+    background-color: #ffffff !important;
+    box-sizing: border-box;
+
+    &:nth-child(7n) {
+        border-right: none;
+    }
+
+    &.other-month {
+        background-color: #f0f2f5 !important;
+        color: #8c9ba5;
+
+        .day-number {
+            color: #8c9ba5;
+        }
+    }
+
+    &.today .day-number {
+        background-color: #dc2626;
+        color: #ffffff;
+        border-radius: 50%;
+        width: 1.9em;
+        height: 1.9em;
+        line-height: 1.9em;
+        text-align: center;
+        float: right;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+}
+
+.day-number {
+    font-size: 0.92em;
+    margin-bottom: 6px;
+    text-align: right;
+    color: var(--dame-theme-text, #1e293b);
+    font-weight: 500;
+}
+
+.events-container {
+    position: relative;
+    clear: both;
+}
+
+.dame-event-link,
+.dame-event-link:hover {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.dame-event {
+    margin-bottom: 4px;
+    padding-left: 6px;
+    font-size: 0.82em;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 3px;
+    line-height: 1.35;
+}
+
+.dame-event-ponctuel {
+    border-left: 4px solid;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 3px;
+    margin-bottom: 4px;
+    transition: background-color $dame-transition-fast;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.08);
+    }
+
+    .event-time {
+        font-size: 0.78em;
+        font-weight: 500;
+        color: var(--dame-theme-muted, rgba(0, 0, 0, 0.6));
+        display: block;
+        line-height: 1.3;
+        margin-bottom: 2px;
+    }
+
+    .event-title {
+        font-size: 0.92em;
+        font-weight: 600;
+        color: var(--dame-theme-text, rgba(0, 0, 0, 0.88));
+        display: block;
+        line-height: 1.35;
+    }
+}
+
+.dame-event-duree {
+    position: absolute;
+    z-index: 10;
+    background-color: var(--event-color, #ccc);
+    color: #ffffff;
+    height: 24px;
+    line-height: 24px;
+    padding: 0 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.80em;
+    font-weight: 600;
+    box-sizing: border-box;
+
+    &.start {
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+        margin-left: 0;
+    }
+
+    &.end {
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
+        margin-right: 0;
+    }
+
+    &.middle {
+        border-radius: 0;
+    }
+}
+
+/* Tooltip */
+#dame-event-tooltip {
+    position: absolute;
+    background: #ffc936;
+    color: #2c2c2c;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 1001;
+    max-width: 250px;
+    pointer-events: none;
+    font-size: 0.9em;
+    box-shadow: $dame-shadow-md;
+
+    h4 {
+        margin: 0 0 4px;
+        font-size: 0.95em;
+        color: #2c2c2c;
+        font-weight: 700;
+    }
+
+    p {
+        margin: 0 0 3px;
+        font-size: 0.85em;
+        color: #333333;
+    }
+
+    .tooltip-description {
+        border-top: 1px solid rgba(0, 0, 0, 0.2);
+        margin-top: 6px;
+        padding-top: 6px;
+        font-size: 0.85em;
+        font-weight: 500;
+    }
+}
+
+/* DAME Liste Agenda Shortcode Styles */
+.dame-liste-agenda-wrapper {
+    margin: 2em 0;
+}
+
+.dame-liste-agenda-item {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 65px;
+    display: flex;
+    gap: 0.75em;
+    margin-bottom: 0.75em;
+    padding-bottom: 0.75em;
+    align-items: flex-start;
+
+    &:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+}
+
+.dame-liste-agenda-date-icon .date-circle {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background-color: #ffcd00;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    line-height: 1;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    padding: 4px;
+
+    .day-of-week,
+    .month-abbr {
+        font-size: 0.56rem;
+        color: #555555;
+        letter-spacing: 0.03em;
+        line-height: 1;
+    }
+
+    .day-number {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #222222;
+        margin: 2px 0;
+        text-align: center;
+        line-height: 1;
+    }
+}
+
+.dame-liste-agenda-details {
+    flex-grow: 1;
+    line-height: 1.2;
+
+    h4.event-title {
+        margin: 0 0 0.2em;
+        font-size: 0.95em;
+        font-weight: bold;
+
+        a {
+            color: #ff121c;
+            text-decoration: none;
+            font-weight: bold;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    p {
+        margin: 0 0 0.2em;
+        color: var(--dame-theme-muted, rgba(0, 0, 0, 0.6));
+        font-size: 0.85em;
+    }
+
+    p.event-time {
+        font-style: italic;
+        font-size: 0.78em;
+    }
+
+    .event-description,
+    .event-description p {
+        color: var(--dame-theme-text, #444444);
+    }
+}
+
+.dame-liste-agenda-icon {
+    font-size: 1.5em;
+    color: #cccccc;
+}
+
+/* Single Event Page Details */
+.dame-event-details-wrapper {
+    margin: 2em 0;
+    padding: 1.5em;
+    border: 1px solid var(--dame-theme-border, #eee);
+    border-left-width: 5px;
+    border-left-color: #ffc107;
+    background: var(--dame-theme-surface, #f9f9f9);
+    border-radius: var(--dame-theme-radius, 4px);
+}
+
+.dame-event-detail-item {
+    margin-bottom: 1.5em;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    h4 {
+        margin-top: 0;
+        margin-bottom: 0.5em;
+        font-size: 1.2em;
+        color: var(--dame-theme-text, #333333);
+    }
+
+    p {
+        margin-top: 0;
+        margin-bottom: 0;
+        font-size: 1em;
+        color: var(--dame-theme-text, #444444);
+    }
+}
+
+/* Mobile Responsive */
+@media screen and (max-width: 768px) {
+    .dame-calendar-day {
+        min-height: 40px;
+        font-size: 0.8em;
+        padding: 2px;
+    }
+
+    .ponctuel-events-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .dame-event-link {
+        padding: 2px;
+    }
+
+    .dame-event-ponctuel {
+        padding: 0;
+        border: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--event-color) !important;
+        margin: 0;
+    }
+
+    .dame-event-ponctuel .event-time,
+    .dame-event-ponctuel .event-title {
+        display: none;
+    }
+
+    .dame-event-duree {
+        height: 12px;
+        font-size: 0;
+        box-sizing: border-box;
+    }
+
+    .dame-event-duree.start {
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+    }
+
+    .dame-event-duree.end {
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
+    }
+
+    .dame-agenda-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dame-agenda-primary-controls,
+    .dame-agenda-secondary-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .dame-desktop-text {
+        display: none;
+    }
+
+    .dame-mobile-text {
+        display: inline;
+    }
+}

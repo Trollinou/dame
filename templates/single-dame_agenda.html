@@ -1,0 +1,27 @@
+<!-- wp:group {"layout":{"type":"constrained"}} -->
+<div class="wp-block-group dame-single-event-template">
+	<!-- wp:post-title {"level":1} /-->
+
+	<!-- wp:group {"style":{"spacing":{"padding":{"top":"1.5rem","bottom":"1.5rem"},"margin":{"top":"1rem","bottom":"2rem"}},"border":{"radius":"8px"}},"backgroundColor":"light-gray","className":"dame-event-meta-card"} -->
+	<div class="wp-block-group dame-event-meta-card has-light-gray-background-color has-background" style="border-radius:8px;margin-top:1rem;margin-bottom:2rem;padding-top:1.5rem;padding-bottom:1.5rem">
+		<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"dame/agenda-data","args":{"key":"formatted_date"}}}},"style":{"typography":{"fontWeight":"600"}}} -->
+		<p style="font-weight:600">📅 Date de l'événement</p>
+		<!-- /wp:paragraph -->
+
+		<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"dame/agenda-data","args":{"key":"time_range"}}}}} -->
+		<p>⏰ Horaires</p>
+		<!-- /wp:paragraph -->
+
+		<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"dame/agenda-data","args":{"key":"location"}}}}} -->
+		<p>📍 Lieu de l'événement</p>
+		<!-- /wp:paragraph -->
+
+		<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"dame/agenda-data","args":{"key":"competition_badge"}}}}} -->
+		<p>🏆 Compétition</p>
+		<!-- /wp:paragraph -->
+	</div>
+	<!-- /wp:group -->
+
+	<!-- wp:post-content {"layout":{"type":"constrained"}} /-->
+</div>
+<!-- /wp:group -->

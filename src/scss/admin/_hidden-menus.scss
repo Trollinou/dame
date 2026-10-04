@@ -1,0 +1,14 @@
+/**
+ * Hidden Administrative Submenu Links
+ */
+
+a[href="admin.php?page=dame-message-report"],
+li:has(> a[href="admin.php?page=dame-message-report"]),
+a[href="admin.php?page=dame-view-adherent"],
+li:has(> a[href="admin.php?page=dame-view-adherent"]) {
+    display: none !important;
+}
+
+.dame-hidden {
+    display: none !important;
+}

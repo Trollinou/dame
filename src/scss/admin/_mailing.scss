@@ -1,0 +1,62 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Structure du module Mailing DAME
+ */
+
+.dame-searchable-list-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+
+    .dame-list-search {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+.dame-checkbox-list {
+    width: 100%;
+    box-sizing: border-box;
+
+    label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        padding: 4px 6px;
+        border-radius: $dame-radius-sm;
+
+        &:hover {
+            white-space: normal;
+            background: $dame-admin-bg;
+        }
+    }
+}
+
+.dame-mailing-columns {
+    display: flex;
+    gap: 2rem;
+    margin-top: 20px;
+
+    @include tablet {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .dame-mailing-col {
+        flex: 1;
+        min-width: 0;
+        background: $dame-admin-card-bg;
+        padding: 20px;
+        border: 1px solid $dame-admin-border;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+        border-radius: $dame-radius-sm;
+
+        h3 {
+            margin-top: 0;
+            border-bottom: 1px solid $dame-admin-border-subtle;
+            padding-bottom: 10px;
+        }
+    }
+}

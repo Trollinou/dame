@@ -1,11 +1,15 @@
 document.addEventListener('DOMContentLoaded', (): void => {
-	const sendBtn = document.getElementById('dame_send_test_btn') as HTMLButtonElement | null;
+	const sendBtn = document.getElementById(
+		'dame_send_test_btn'
+	) as HTMLButtonElement | null;
 	if (!sendBtn) {
 		return;
 	}
 
 	sendBtn.addEventListener('click', (): void => {
-		const emailInput = document.getElementById('dame_test_email') as HTMLInputElement | null;
+		const emailInput = document.getElementById(
+			'dame_test_email'
+		) as HTMLInputElement | null;
 		const email = emailInput ? emailInput.value : '';
 		const postId = dame_test_send_data.post_id;
 		const nonce = dame_test_send_data.nonce;

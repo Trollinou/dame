@@ -41,9 +41,10 @@ class Identity {
 		$transient_data = get_transient( 'dame_post_data_' . $post->ID );
 
 		$get_value = function ( $field_name, $default_val = '' ) use ( $post, $transient_data ) {
-			return isset( $transient_data[ $field_name ] )
+			$val = isset( $transient_data[ $field_name ] )
 				? $transient_data[ $field_name ]
 				: get_post_meta( $post->ID, '_' . $field_name, true );
+			return '' !== $val && false !== $val ? $val : $default_val;
 		};
 
 		// Retrieve values using the helper function.
@@ -92,9 +93,11 @@ class Identity {
 			<tr>
 				<th><?php esc_html_e( 'Sexe', 'dame' ); ?> <span class="description">(obligatoire)</span></th>
 				<td>
-					<label style="margin-right: 15px;"><input type="radio" name="dame_sexe" value="Masculin" <?php checked( $sexe, 'Masculin' ); ?> required="required"/> <?php esc_html_e( 'Masculin', 'dame' ); ?></label>
-					<label style="margin-right: 15px;"><input type="radio" name="dame_sexe" value="Féminin" <?php checked( $sexe, 'Féminin' ); ?> /> <?php esc_html_e( 'Féminin', 'dame' ); ?></label>
-					<label><input type="radio" name="dame_sexe" value="Non précisé" <?php checked( $sexe, 'Non précisé' ); ?> /> <?php esc_html_e( 'Non précisé', 'dame' ); ?></label>
+					<div class="dame-radio-group">
+						<label><input type="radio" name="dame_sexe" value="Masculin" <?php checked( $sexe, 'Masculin' ); ?> required="required"/> <?php esc_html_e( 'Masculin', 'dame' ); ?></label>
+						<label><input type="radio" name="dame_sexe" value="Féminin" <?php checked( $sexe, 'Féminin' ); ?> /> <?php esc_html_e( 'Féminin', 'dame' ); ?></label>
+						<label><input type="radio" name="dame_sexe" value="Non précisé" <?php checked( $sexe, 'Non précisé' ); ?> /> <?php esc_html_e( 'Non précisé', 'dame' ); ?></label>
+					</div>
 				</td>
 			</tr>
 			<tr>
@@ -130,7 +133,7 @@ class Identity {
 			<tr>
 				<th><label for="dame_address_1"><?php esc_html_e( 'Adresse', 'dame' ); ?></label></th>
 				<td>
-					<div class="dame-autocomplete-wrapper" style="position: relative;">
+					<div class="dame-autocomplete-wrapper">
 						<input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text dame-js-address" data-group="adherent" autocomplete="off" />
 					</div>
 				</td>

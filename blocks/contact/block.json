@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "dame/contact",
+  "version": "5.5.2",
+  "title": "Formulaire de Contact",
+  "category": "dame",
+  "icon": "feedback",
+  "description": "Formulaire de contact réactif avec validation en temps réel.",
+  "keywords": [
+    "contact",
+    "message",
+    "formulaire",
+    "dame"
+  ],
+  "supports": {
+    "html": false,
+    "interactivity": true
+  },
+  "textdomain": "dame",
+  "style": "dame-public-styles",
+  "viewScriptModule": "dame/contact"
+}

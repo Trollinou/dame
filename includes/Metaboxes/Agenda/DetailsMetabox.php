@@ -29,12 +29,12 @@ class DetailsMetabox {
 			delete_transient( 'dame_agenda_post_data_' . $post->ID );
 		}
 
-		$get_value = function ( string $field_name, string $default = '' ) use ( $post, $transient_data ): string {
+		$get_value = function ( string $field_name, string $default_value = '' ) use ( $post, $transient_data ): string {
 			if ( is_array( $transient_data ) && isset( $transient_data[ $field_name ] ) ) {
 				return esc_attr( (string) $transient_data[ $field_name ] );
 			}
 			$val = (string) get_post_meta( $post->ID, '_' . $field_name, true );
-			return '' !== $val ? $val : $default;
+			return '' !== $val ? $val : $default_value;
 		};
 
 		$start_date    = $get_value( 'dame_start_date' );
@@ -88,7 +88,7 @@ class DetailsMetabox {
 			<tr>
 				<th><label for="dame_address_1"><?php esc_html_e( 'Adresse', 'dame' ); ?></label></th>
 				<td>
-					<div class="dame-autocomplete-wrapper" style="position: relative;">
+					<div class="dame-autocomplete-wrapper">
 						<input type="text" id="dame_address_1" name="dame_address_1" value="<?php echo esc_attr( $address_1 ); ?>" class="regular-text dame-js-address" data-group="event_location" autocomplete="off" />
 					</div>
 				</td>
@@ -126,9 +126,6 @@ class DetailsMetabox {
 				</td>
 			</tr>
 		</table>
-		<style>
-			.dame-time-fields.hidden { display: none; }
-		</style>
 		<?php
 	}
 }

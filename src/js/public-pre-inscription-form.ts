@@ -2,24 +2,6 @@
  * Public Pre-Inscription Form Handling
  */
 
-interface PreInscriptionSubmissionResponse {
-	success: boolean;
-	data: {
-		message: string;
-		health_questionnaire?: string;
-		full_name?: string;
-		has_signed_health?: boolean;
-		has_signed_parental?: boolean;
-		post_id?: number | string;
-		nonce?: string;
-		parental_auth_nonce?: string;
-		is_minor?: boolean;
-		sender_email?: string;
-		payment_url?: string;
-		[key: string]: unknown;
-	};
-}
-
 document.addEventListener('DOMContentLoaded', (): void => {
 	// We call the autocomplete initializers here, as this script is loaded
 	// after dame-public-geo-autocomplete.js, ensuring the function is available.
@@ -29,7 +11,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		window.initBirthCityAutocomplete('dame_legal_rep_2_commune_naissance');
 	}
 
-	const birthDateInput = document.getElementById('dame_birth_date') as HTMLInputElement | null;
+	const birthDateInput = document.getElementById(
+		'dame_birth_date'
+	) as HTMLInputElement | null;
 	if (!birthDateInput) {
 		return;
 	}
@@ -50,11 +34,15 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	const majeurPDF = pdfBaseUrl + 'questionnaire_sante_majeur.pdf';
 
 	// Adherent fields
-	const birthCityInput = document.getElementById('dame_birth_city') as HTMLInputElement | null;
+	const birthCityInput = document.getElementById(
+		'dame_birth_city'
+	) as HTMLInputElement | null;
 	const birthCityRequiredIndicator = document.getElementById(
 		'dame_birth_city_required_indicator'
 	);
-	const lastNameInput = document.getElementById('dame_last_name') as HTMLInputElement | null;
+	const lastNameInput = document.getElementById(
+		'dame_last_name'
+	) as HTMLInputElement | null;
 
 	// Rep 1 fields
 	const rep1RequiredIndicators = document.querySelectorAll<HTMLElement>(
@@ -66,12 +54,18 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	const rep1LastNameInput = document.getElementById(
 		'dame_legal_rep_1_last_name'
 	) as HTMLInputElement | null;
-	const rep1EmailInput = document.getElementById('dame_legal_rep_1_email') as HTMLInputElement | null;
-	const rep1PhoneInput = document.getElementById('dame_legal_rep_1_phone') as HTMLInputElement | null;
+	const rep1EmailInput = document.getElementById(
+		'dame_legal_rep_1_email'
+	) as HTMLInputElement | null;
+	const rep1PhoneInput = document.getElementById(
+		'dame_legal_rep_1_phone'
+	) as HTMLInputElement | null;
 	const rep1Address1Input = document.getElementById(
 		'dame_legal_rep_1_address_1'
 	) as HTMLInputElement | null;
-	const rep1CityInput = document.getElementById('dame_legal_rep_1_city') as HTMLInputElement | null;
+	const rep1CityInput = document.getElementById(
+		'dame_legal_rep_1_city'
+	) as HTMLInputElement | null;
 	const rep1RequiredInputs: (HTMLInputElement | null)[] = [
 		rep1FirstNameInput,
 		rep1LastNameInput,
@@ -81,8 +75,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		rep1CityInput,
 	];
 
-	birthDateInput.addEventListener('change', function (this: HTMLInputElement): void {
-		const birthDate = new Date(this.value);
+	birthDateInput.addEventListener('change', (): void => {
+		const birthDate = new Date(birthDateInput.value);
 		if (isNaN(birthDate.getTime())) {
 			if (dynamicFields) {
 				dynamicFields.style.display = 'none';
@@ -122,22 +116,23 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 			// Clear all inputs within the minor fields container to prevent submission of hidden data
 			if (mineurFields) {
-				const minorInputs = mineurFields.querySelectorAll<HTMLInputElement>('input');
+				const minorInputs =
+					mineurFields.querySelectorAll<HTMLInputElement>('input');
 				minorInputs.forEach((input: HTMLInputElement): void => {
 					input.value = '';
 				});
 			}
 			// Make rep 1 fields not required and hide indicators
-			rep1RequiredInputs.forEach((input: HTMLInputElement | null): void => {
-				if (input) {
-					input.required = false;
-				}
-			});
-			rep1RequiredIndicators.forEach(
-				(indicator: HTMLElement): void => {
-					indicator.style.display = 'none';
+			rep1RequiredInputs.forEach(
+				(input: HTMLInputElement | null): void => {
+					if (input) {
+						input.required = false;
+					}
 				}
 			);
+			rep1RequiredIndicators.forEach((indicator: HTMLElement): void => {
+				indicator.style.display = 'none';
+			});
 
 			if (healthQuestionnaireLink) {
 				healthQuestionnaireLink.href = majeurPDF;
@@ -164,16 +159,16 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			}
 
 			// Make rep 1 fields required and show indicators
-			rep1RequiredInputs.forEach((input: HTMLInputElement | null): void => {
-				if (input) {
-					input.required = true;
-				}
-			});
-			rep1RequiredIndicators.forEach(
-				(indicator: HTMLElement): void => {
-					indicator.style.display = 'inline';
+			rep1RequiredInputs.forEach(
+				(input: HTMLInputElement | null): void => {
+					if (input) {
+						input.required = true;
+					}
 				}
 			);
+			rep1RequiredIndicators.forEach((indicator: HTMLElement): void => {
+				indicator.style.display = 'inline';
+			});
 
 			if (healthQuestionnaireLink) {
 				healthQuestionnaireLink.href = mineurPDF;
@@ -187,8 +182,12 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	});
 
 	// Add live formatting for name fields
-	const firstNameInput = document.getElementById('dame_first_name') as HTMLInputElement | null;
-	const birthNameInput = document.getElementById('dame_birth_name') as HTMLInputElement | null;
+	const firstNameInput = document.getElementById(
+		'dame_first_name'
+	) as HTMLInputElement | null;
+	const birthNameInput = document.getElementById(
+		'dame_birth_name'
+	) as HTMLInputElement | null;
 	const rep2FirstNameInput = document.getElementById(
 		'dame_legal_rep_2_first_name'
 	) as HTMLInputElement | null;
@@ -219,17 +218,25 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	}
 
 	// Form and submit elements
-	const form = document.getElementById('dame-pre-inscription-form') as HTMLFormElement | null;
-	const consentCheckbox = document.getElementById('dame_consent_checkbox') as HTMLInputElement | null;
+	const form = document.getElementById(
+		'dame-pre-inscription-form'
+	) as HTMLFormElement | null;
+	const consentCheckbox = document.getElementById(
+		'dame_consent_checkbox'
+	) as HTMLInputElement | null;
 	const submitButtonInForm = form
 		? form.querySelector<HTMLButtonElement>('button[type="submit"]')
 		: null;
 
 	// Signature Canvas & Validation Logic
 	const signatureSection = document.getElementById('dame-signature-section');
-	const signatureCanvas = document.getElementById('dame-signature-canvas') as HTMLCanvasElement | null;
+	const signatureCanvas = document.getElementById(
+		'dame-signature-canvas'
+	) as HTMLCanvasElement | null;
 	const clearSignatureBtn = document.getElementById('dame-clear-signature');
-	const signatureImageInput = document.getElementById('dame_signature_image') as HTMLInputElement | null;
+	const signatureImageInput = document.getElementById(
+		'dame_signature_image'
+	) as HTMLInputElement | null;
 	const healthAttestationConsent = document.getElementById(
 		'dame_health_attestation_consent'
 	) as HTMLInputElement | null;
@@ -322,29 +329,35 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	};
 
 	if (signatureCanvas) {
-		signatureCanvas.addEventListener('pointerdown', (e: PointerEvent): void => {
-			if (!signatureCtx) {
-				setupCanvas();
+		signatureCanvas.addEventListener(
+			'pointerdown',
+			(e: PointerEvent): void => {
+				if (!signatureCtx) {
+					setupCanvas();
+				}
+				signatureCanvas.setPointerCapture(e.pointerId);
+				isDrawing = true;
+				const pos = getPointerPos(e);
+				if (signatureCtx) {
+					signatureCtx.beginPath();
+					signatureCtx.moveTo(pos.x, pos.y);
+				}
 			}
-			signatureCanvas.setPointerCapture(e.pointerId);
-			isDrawing = true;
-			const pos = getPointerPos(e);
-			if (signatureCtx) {
-				signatureCtx.beginPath();
-				signatureCtx.moveTo(pos.x, pos.y);
-			}
-		});
+		);
 
-		signatureCanvas.addEventListener('pointermove', (e: PointerEvent): void => {
-			if (!isDrawing || !signatureCtx) {
-				return;
+		signatureCanvas.addEventListener(
+			'pointermove',
+			(e: PointerEvent): void => {
+				if (!isDrawing || !signatureCtx) {
+					return;
+				}
+				const pos = getPointerPos(e);
+				signatureCtx.lineTo(pos.x, pos.y);
+				signatureCtx.stroke();
+				hasSignature = true;
+				checkSubmitState();
 			}
-			const pos = getPointerPos(e);
-			signatureCtx.lineTo(pos.x, pos.y);
-			signatureCtx.stroke();
-			hasSignature = true;
-			checkSubmitState();
-		});
+		);
 
 		const stopDrawing = (e: PointerEvent): void => {
 			if (!isDrawing) {
@@ -420,7 +433,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	};
 
 	const healthRadios = form
-		? form.querySelectorAll<HTMLInputElement>('input[name="dame_health_questionnaire"]')
+		? form.querySelectorAll<HTMLInputElement>(
+				'input[name="dame_health_questionnaire"]'
+			)
 		: [];
 	healthRadios.forEach((radio: HTMLInputElement): void => {
 		radio.addEventListener('change', updateHealthAndSignatureState);
@@ -471,8 +486,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				const m = today.getMonth() - birthDate.getMonth();
 				if (
 					m < 0 ||
-					(m === 0 && today.getDate() < birthDate.getDate()))
-				{
+					(m === 0 && today.getDate() < birthDate.getDate())
+				) {
 					age--;
 				}
 				isMinor = age < 18;
@@ -507,280 +522,12 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		parentalAuthConsent.addEventListener('change', checkSubmitState);
 	}
 
-	const messagesDiv = document.getElementById('dame-form-messages');
-
-	if (form && messagesDiv) {
-		form.addEventListener('submit', (e: Event): void => {
-			e.preventDefault();
-
-			messagesDiv.style.display = 'none';
-			messagesDiv.innerHTML = '';
-			messagesDiv.style.color = 'red'; // Default to red for errors
-
-			// Custom client-side validation
-			let firstInvalidField: HTMLElement | null = null;
-			const requiredFields = form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('[required]');
-
-			requiredFields.forEach((field) => {
-				// Check if the field is visible
-				if (field.offsetParent !== null) {
-					if (field.type === 'radio' || field.type === 'checkbox') {
-						const fieldName = field.name;
-						if (
-							!form.querySelector(
-								`input[name="${fieldName}"]:checked`
-							)
-						) {
-							if (!firstInvalidField) {
-								firstInvalidField = field;
-							}
-						}
-					} else if (!field.value.trim()) {
-						if (!firstInvalidField) {
-							firstInvalidField = field;
-						}
-					}
-				}
-			});
-
-			if (firstInvalidField) {
-				messagesDiv.innerHTML =
-					"Veuillez remplir tous les champs obligatoires. Ils sont marqués d'un astérisque (*).";
-				messagesDiv.style.display = 'block';
-				(firstInvalidField as HTMLElement).focus();
-				messagesDiv.scrollIntoView({
-					behavior: 'smooth',
-					block: 'center',
-				});
-				return;
-			}
-
-			// Ensure signature is captured in hidden input if questionnaire is 'non'
-			const selectedHealthRadio = form.querySelector<HTMLInputElement>(
-				'input[name="dame_health_questionnaire"]:checked'
-			);
-			if (selectedHealthRadio && selectedHealthRadio.value === 'non') {
-				if (!hasSignature || !signatureCanvas) {
-					messagesDiv.innerHTML =
-						'Veuillez apposer votre signature électronique dans le cadre prévu.';
-					messagesDiv.style.display = 'block';
-					if (signatureCanvas) {
-						signatureCanvas.scrollIntoView({
-							behavior: 'smooth',
-							block: 'center',
-						});
-					}
-					return;
-				}
-				if (signatureImageInput) {
-					signatureImageInput.value =
-						signatureCanvas.toDataURL('image/png');
-				}
-			}
-
-			const formData = new FormData(form);
-			formData.append('action', 'dame_submit_pre_inscription');
-
-			const submitButton = form.querySelector<HTMLButtonElement>('button[type="submit"]');
-			if (submitButton) {
-				submitButton.disabled = true;
-				submitButton.textContent = 'Envoi en cours...';
-			}
-
-			fetch(dame_pre_inscription_ajax.ajax_url, {
-				method: 'POST',
-				body: new URLSearchParams(formData as unknown as Record<string, string>),
-			})
-				.then((response: Response) => response.json() as Promise<PreInscriptionSubmissionResponse>)
-				.then((data: PreInscriptionSubmissionResponse): void => {
-					if (data.success) {
-						messagesDiv.style.color = 'green';
-						let successHtml = `<p>${data.data.message}</p>`;
-
-						// 1. Handle health-related message
-						if (data.data.health_questionnaire === 'oui') {
-							successHtml += `
-                            <p style="font-weight: bold; color: red; margin-top: 1em;">
-                                Afin de valider votre inscription auprès de la FFE, vous devez nous remettre un certificat médical, daté de moins de 6 mois, déclarant <strong>${data.data.full_name || ''}</strong> apte à la pratique des échecs en et hors compétition.
-                            </p>`;
-						}
-
-						// 2. Check if documents were signed or need manual download
-						const hasSignedHealth = Boolean(
-							data.data.has_signed_health
-						);
-						const hasSignedParental = Boolean(
-							data.data.has_signed_parental
-						);
-
-						if (hasSignedHealth || hasSignedParental) {
-							successHtml += `
-							<p style="margin-top: 1.2em; font-weight: bold; color: #166534;">
-								&#x2705; Vos documents (attestation de santé${hasSignedParental ? ' et autorisation parentale' : ''}) ont été signés électroniquement avec succès et sont enregistrés.
-							</p>
-							<div style="margin: 1em 0 1.5em 0;">
-								<p style="margin-bottom: 0.5em; font-size: 0.95em;">Vous pouvez télécharger votre exemplaire signé ci-dessous :</p>`;
-
-							if (hasSignedHealth) {
-								successHtml += `
-								<a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" target="_blank" style="display: block; color: blue; text-decoration: underline; margin-bottom: 0.5em; margin-left: 1.5em;">
-									&#x1F4E5; Télécharger mon attestation de santé signée
-								</a>`;
-							}
-							if (
-								hasSignedParental &&
-								data.data.parental_auth_nonce
-							) {
-								successHtml += `
-								<a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}" target="_blank" style="display: block; color: blue; text-decoration: underline; margin-left: 1.5em;">
-									&#x1F4E5; Télécharger mon autorisation parentale signée
-								</a>`;
-							}
-							successHtml += `</div>`;
-						} else {
-							// Check if any unsigned download links are needed
-							const needsHealthAttestation =
-								data.data.health_questionnaire === 'non';
-							const needsParentalAuth = data.data.is_minor;
-							const hasDownloadLinks =
-								needsHealthAttestation || needsParentalAuth;
-
-							if (hasDownloadLinks) {
-								const senderEmail = data.data.sender_email;
-								const emailLink = senderEmail
-									? `<a href="mailto:${senderEmail}">${senderEmail}</a>`
-									: "l'email du club";
-								const messageText = `Vous trouverez ci-après le(s) document(s) à signer, puis à nous remettre en main propre ou à nous renvoyer à l’adresse ${emailLink}`;
-								successHtml += `<p style="margin-top: 1.5em;">${messageText}</p>`;
-
-								successHtml += `<div style="margin-bottom: 1.5em;">`;
-								if (needsHealthAttestation) {
-									successHtml += `
-									<a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_health_form&post_id=${data.data.post_id}&_wpnonce=${data.data.nonce}" style="display: block; color: blue; text-decoration: underline; margin-bottom: 0.5em; margin-left: 1.5em;">
-										&#x1F4E5; Télécharger mon attestation de santé à remettre signé
-									</a>`;
-								}
-								if (needsParentalAuth) {
-									successHtml += `
-									<a href="${dame_pre_inscription_ajax.ajax_url}?action=dame_generate_parental_auth&post_id=${data.data.post_id}&_wpnonce=${data.data.parental_auth_nonce}" style="display: block; color: blue; text-decoration: underline; margin-left: 1.5em;">
-										&#x1F4E5; Télécharger l'autorisation parentale a remettre signé
-									</a>`;
-								}
-								successHtml += `</div>`;
-							}
-						}
-
-						// 3. Add the action buttons
-						successHtml += `<div style="margin-top: 1em;">`;
-						successHtml += `
-                        <button id="dame-new-adhesion-button" type="button" class="button dame-button" style="background-color: #fe0007; color: white; border: none; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; display: block;">
-                            &#x1F501; Saisir une nouvelle adhésion
-                        </button>`;
-						if (data.data.payment_url) {
-							successHtml += `
-                            <a href="${data.data.payment_url}" target="_blank" class="button dame-button" style="text-decoration: none; padding: 10px 15px; font-size: 1.1em; border-radius: 8px; display: inline-block;">
-                                &#x1F4B3; Aller sur HelloAsso pour votre règlement &#x1F4B3;
-                            </a>`;
-						}
-						successHtml += `</div>`;
-
-						// Set the content once
-						messagesDiv.innerHTML = successHtml;
-
-						// Hide the form
-						form.style.display = 'none';
-						if (dynamicFields) {
-							dynamicFields.style.display = 'none';
-						}
-					} else {
-						messagesDiv.style.color = 'red';
-						messagesDiv.innerHTML = data.data.message;
-					}
-					messagesDiv.style.display = 'block';
-					// Scroll to top of the page to make the message visible
-					window.scrollTo({ top: 0, behavior: 'smooth' });
-				})
-				.catch((error: unknown): void => {
-					console.error('Error:', error);
-					messagesDiv.innerHTML =
-						'Une erreur inattendue est survenue.';
-					messagesDiv.style.display = 'block';
-				})
-				.finally((): void => {
-					if (submitButton) {
-						submitButton.disabled = false;
-						submitButton.textContent = 'Valider ma préinscription';
-					}
-				});
-		});
-
-		// Event delegation for the "Saisir une nouvelle adhésion" button
-		messagesDiv.addEventListener('click', (e: MouseEvent): void => {
-			const target = e.target as HTMLElement | null;
-			if (target && target.id === 'dame-new-adhesion-button') {
-				e.preventDefault();
-
-				// Fields to clear for the new adhesion
-				const fName = document.getElementById('dame_first_name') as HTMLInputElement | null;
-				const lName = document.getElementById('dame_last_name') as HTMLInputElement | null;
-				const bName = document.getElementById('dame_birth_name') as HTMLInputElement | null;
-				const bDate = document.getElementById('dame_birth_date') as HTMLInputElement | null;
-				const bCity = document.getElementById('dame_birth_city') as HTMLInputElement | null;
-
-				if (fName) fName.value = '';
-				if (lName) lName.value = '';
-				if (bName) bName.value = '';
-				if (bDate) bDate.value = '';
-				if (bCity) bCity.value = '';
-
-				// Also clear radio buttons for health questionnaire
-				const healthRadiosToClear = form.querySelectorAll<HTMLInputElement>(
-					'input[name="dame_health_questionnaire"]'
-				);
-				healthRadiosToClear.forEach((radio: HTMLInputElement) => (radio.checked = false));
-
-				// Clear signature & checkboxes
-				clearSignature();
-				if (healthAttestationConsent) {
-					healthAttestationConsent.checked = false;
-				}
-				if (parentalAuthConsent) {
-					parentalAuthConsent.checked = false;
-				}
-				if (consentCheckbox) {
-					consentCheckbox.checked = false;
-				}
-				if (signatureSection) {
-					signatureSection.style.display = 'none';
-				}
-
-				// Hide the dynamic fields section until a new birth date is entered
-				if (dynamicFields) {
-					dynamicFields.style.display = 'none';
-					// Clear all inputs within the dynamic sections as well
-					const dynamicInputs =
-						dynamicFields.querySelectorAll<HTMLInputElement>('input');
-					dynamicInputs.forEach((input: HTMLInputElement) => (input.value = ''));
-				}
-
-				// Hide the success message area
-				messagesDiv.style.display = 'none';
-				messagesDiv.innerHTML = '';
-
-				// Show the form again
-				form.style.display = 'block';
-
-				// Scroll back to the top of the form
-				form.scrollIntoView({ behavior: 'smooth' });
-			}
-		});
-	}
-
 	// Add event listeners for copy buttons
-	const copyButtons = document.querySelectorAll<HTMLElement>('.dame-copy-button');
+	const copyButtons =
+		document.querySelectorAll<HTMLElement>('.dame-copy-button');
 	copyButtons.forEach((button: HTMLElement): void => {
-		button.addEventListener('click', function (this: HTMLElement): void {
-			const repId = this.getAttribute('data-rep-id');
+		button.addEventListener('click', (): void => {
+			const repId = button.getAttribute('data-rep-id');
 			if (repId) {
 				copyAdherentData(repId);
 			}
@@ -790,13 +537,27 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 function copyAdherentData(repId: string | number): void {
 	// Adherent fields
-	const birthNameInput = document.getElementById('dame_birth_name') as HTMLInputElement | null;
-	const emailInput = document.getElementById('dame_email') as HTMLInputElement | null;
-	const phoneInput = document.getElementById('dame_phone_number') as HTMLInputElement | null;
-	const address1Input = document.getElementById('dame_address_1') as HTMLInputElement | null;
-	const address2Input = document.getElementById('dame_address_2') as HTMLInputElement | null;
-	const postalCodeInput = document.getElementById('dame_postal_code') as HTMLInputElement | null;
-	const cityInput = document.getElementById('dame_city') as HTMLInputElement | null;
+	const birthNameInput = document.getElementById(
+		'dame_birth_name'
+	) as HTMLInputElement | null;
+	const emailInput = document.getElementById(
+		'dame_email'
+	) as HTMLInputElement | null;
+	const phoneInput = document.getElementById(
+		'dame_phone_number'
+	) as HTMLInputElement | null;
+	const address1Input = document.getElementById(
+		'dame_address_1'
+	) as HTMLInputElement | null;
+	const address2Input = document.getElementById(
+		'dame_address_2'
+	) as HTMLInputElement | null;
+	const postalCodeInput = document.getElementById(
+		'dame_postal_code'
+	) as HTMLInputElement | null;
+	const cityInput = document.getElementById(
+		'dame_city'
+	) as HTMLInputElement | null;
 
 	// Rep fields
 	const repLastNameInput = document.getElementById(
@@ -850,6 +611,7 @@ function copyAdherentData(repId: string | number): void {
 /**
  * Formats a string to Mixed Case.
  * Capitalizes the first letter of each word separated by a space or a hyphen.
+ * @param str
  */
 function formatToMixedCase(str: string): string {
 	if (!str) {
@@ -862,6 +624,7 @@ function formatToMixedCase(str: string): string {
 
 /**
  * Formats the input value of a first name field to Mixed Case.
+ * @param event
  */
 function formatFirstNameInput(event: Event): void {
 	const input = event.target as HTMLInputElement;
@@ -881,6 +644,7 @@ function formatFirstNameInput(event: Event): void {
 
 /**
  * Formats the input value of a last name field to uppercase.
+ * @param event
  */
 function formatLastNameInput(event: Event): void {
 	const input = event.target as HTMLInputElement;

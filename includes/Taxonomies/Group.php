@@ -102,6 +102,9 @@ class Group {
 	 */
 	public function edit_form_fields( $term, $taxonomy ): void {
 		$group_type = get_term_meta( $term->term_id, '_dame_group_type', true );
+		if ( is_array( $group_type ) ) {
+			$group_type = reset( $group_type );
+		}
 		if ( empty( $group_type ) ) {
 			$group_type = 'saisonnier'; // Default value.
 		}
@@ -154,6 +157,9 @@ class Group {
 	public function render_type_column( $content, $column_name, $term_id ): string {
 		if ( 'group_type' === $column_name ) {
 			$group_type = get_term_meta( $term_id, '_dame_group_type', true );
+			if ( is_array( $group_type ) ) {
+				$group_type = reset( $group_type );
+			}
 			if ( 'permanent' === $group_type ) {
 				$content = __( 'Permanent', 'dame' );
 			} else {

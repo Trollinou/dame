@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "dame/newsletter",
+  "version": "5.5.2",
+  "title": "Inscription Newsletter",
+  "category": "dame",
+  "icon": "email-alt",
+  "description": "Formulaire d'inscription réactif à la newsletter du club.",
+  "keywords": [
+    "newsletter",
+    "email",
+    "inscription",
+    "dame"
+  ],
+  "supports": {
+    "html": false,
+    "interactivity": true
+  },
+  "textdomain": "dame",
+  "style": "dame-public-styles",
+  "viewScriptModule": "dame/newsletter"
+}

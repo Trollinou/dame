@@ -31,16 +31,22 @@ class Agenda {
 	/**
 	 * Renders the [dame_agenda] shortcode.
 	 *
-	 * @param array<string, mixed> $atts Shortcode attributes.
+	 * @param array<string, mixed>|string $atts Shortcode attributes.
 	 * @return string The shortcode output.
 	 */
-	public function render_agenda( $atts ) {
+	public function render_agenda( $atts = array() ) {
+		$atts = shortcode_atts( array(), (array) $atts, 'dame_agenda' );
 		// Enqueue scripts and styles (using legacy paths as requested if files haven't moved).
 		// Assuming files are in assets/css and assets/js relative to plugin root.
 		// Since this class is in includes/Shortcodes, dirname(__DIR__, 2) gets to root.
 		$plugin_url = plugin_dir_url( dirname( __DIR__, 2 ) . '/index.php' );
 
 		wp_enqueue_style( 'dame-public-agenda', \DAME_PLUGIN_URL . 'assets/css/public-agenda.css', array(), \DAME_VERSION );
+
+		// Load Interactivity API Script Module (WordPress 6.5+ / 7.x).
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( 'dame/agenda' );
+		}
 		wp_enqueue_script( 'dame-public-agenda', \DAME_PLUGIN_URL . 'assets/js/public-agenda.js', array(), \DAME_VERSION, true );
 
 		// Get WordPress's start_of_week option.
@@ -101,9 +107,28 @@ class Agenda {
 			)
 		);
 
+		$interactivity_context = array(
+			'currentYear'        => (int) gmdate( 'Y' ),
+			'currentMonth'       => (int) gmdate( 'n' ) - 1,
+			'monthTitle'         => '',
+			'startOfWeek'        => $start_of_week,
+			'searchTerm'         => '',
+			'selectedCategories' => array(),
+			'isFilterOpen'       => false,
+			'isLoading'          => false,
+			'activeEvent'        => null,
+			'isModalOpen'        => false,
+			'ajaxUrl'            => admin_url( 'admin-ajax.php' ),
+			'nonce'              => wp_create_nonce( 'dame_agenda_nonce' ),
+		);
+
+		$context_attr = function_exists( 'wp_interactivity_data_wp_context' )
+			? wp_interactivity_data_wp_context( $interactivity_context )
+			: 'data-wp-context=\'' . wp_json_encode( $interactivity_context ) . '\'';
+
 		ob_start();
 		?>
-		<div id="dame-agenda-wrapper">
+		<div id="dame-agenda-wrapper" data-wp-interactive="dame/agenda" <?php echo $context_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> data-wp-watch="callbacks.onInit">
 			<div class="dame-agenda-header">
 				<div class="dame-agenda-primary-controls">
 					<div class="dame-agenda-month-display">
@@ -118,12 +143,12 @@ class Agenda {
 						</div>
 					</div>
 					<div class="dame-agenda-nav-buttons">
-						<button id="dame-agenda-prev-month" class="button">&lt;</button>
-						<button id="dame-agenda-today" class="button">
+						<button id="dame-agenda-prev-month" class="button" data-wp-on--click="actions.prevMonth">&lt;</button>
+						<button id="dame-agenda-today" class="button" data-wp-on--click="actions.today">
 							<span class="dame-desktop-text"><?php esc_html_e( 'Aujourd\'hui', 'dame' ); ?></span>
 							<span class="dame-mobile-text"><?php esc_html_e( 'Auj.', 'dame' ); ?></span>
 						</button>
-						<button id="dame-agenda-next-month" class="button">&gt;</button>
+						<button id="dame-agenda-next-month" class="button" data-wp-on--click="actions.nextMonth">&gt;</button>
 					</div>
 				</div>
 
@@ -549,14 +574,19 @@ class Agenda {
 
 		$read_more_link = '&nbsp;<a href="' . esc_url( $permalink ) . '" class="dame-read-more">...</a>';
 
-		$first_p_closing_pos = strpos( $html, '</p>' );
-		if ( false !== $first_p_closing_pos ) {
-			$first_p = substr( $html, 0, $first_p_closing_pos );
-			$rest    = trim( substr( $html, $first_p_closing_pos + 4 ) );
-			if ( '' !== $rest ) {
-				return $first_p . $read_more_link . '</p>';
+		if ( class_exists( '\WP_HTML_Tag_Processor' ) ) {
+			$processor = new \WP_HTML_Tag_Processor( $html );
+			if ( $processor->next_tag( array( 'tag_name' => 'p' ) ) ) {
+				$first_p_closing_pos = strpos( $html, '</p>' );
+				if ( false !== $first_p_closing_pos ) {
+					$first_p = substr( $html, 0, $first_p_closing_pos );
+					$rest    = trim( substr( $html, $first_p_closing_pos + 4 ) );
+					if ( '' !== $rest ) {
+						return $first_p . $read_more_link . '</p>';
+					}
+					return $html;
+				}
 			}
-			return $html;
 		}
 
 		$lines = explode( "\n", $html, 2 );

@@ -108,6 +108,7 @@ class Benevolat {
 		);
 
 		register_post_type( 'benevolat', $benevolat_args );
+		$this->register_meta_fields();
 
 		$reponse_labels = array(
 			'name'          => _x( 'Réponses au bénévolat', 'post type general name', 'dame' ),
@@ -152,6 +153,33 @@ class Benevolat {
 					update_user_meta( $user_id, 'dame_last_benevolat_list_url', $path_query );
 				}
 			}
+		}
+	}
+
+	/**
+	 * Registers post meta fields for benevolat CPT to support REST API and Block Bindings.
+	 */
+	private function register_meta_fields(): void {
+		$meta_keys = array(
+			'_dame_benevolat_event_date'     => 'string',
+			'_dame_benevolat_event_end_date' => 'string',
+			'_dame_benevolat_event_location' => 'string',
+			'_dame_benevolat_status'         => 'string',
+		);
+
+		foreach ( $meta_keys as $key => $type ) {
+			register_post_meta(
+				'benevolat',
+				$key,
+				array(
+					'show_in_rest'  => true,
+					'single'        => true,
+					'type'          => $type,
+					'auth_callback' => static function () {
+						return current_user_can( 'edit_posts' );
+					},
+				)
+			);
 		}
 	}
 }

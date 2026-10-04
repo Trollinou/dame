@@ -91,6 +91,22 @@ class PreInscription_Mailer {
 			? sprintf( '[%s] Mise à jour de votre préinscription — [PRENOM] [NOM]', $sender_name )
 			: sprintf( '[%s] Confirmation de votre demande de préinscription — [PRENOM] [NOM]', $sender_name );
 
+		$health_q = '';
+		if ( isset( $sanitized_data['dame_health_questionnaire'] ) ) {
+			$health_q = (string) $sanitized_data['dame_health_questionnaire'];
+		} else {
+			$health_q = (string) get_post_meta( $post_id, '_dame_health_questionnaire', true );
+		}
+
+		if ( empty( $health_q ) ) {
+			$health_doc = (string) get_post_meta( $post_id, '_dame_health_document', true );
+			if ( 'certificate' === $health_doc ) {
+				$health_q = 'oui';
+			} elseif ( 'attestation' === $health_doc ) {
+				$health_q = 'non';
+			}
+		}
+
 		$body_lines   = array();
 		$body_lines[] = '<p>Bonjour [CIVILITE] [NOM],</p>';
 		if ( $is_update ) {
@@ -98,7 +114,12 @@ class PreInscription_Mailer {
 		} else {
 			$body_lines[] = '<p>Nous avons bien reçu votre demande de préinscription pour <strong>[PRENOM] [NOM]</strong>.</p>';
 		}
-		$body_lines[] = '<p><strong>IMPORTANT :</strong> Votre adhésion sera définitivement traitée et validée par le club dès la réception de votre règlement.</p>';
+
+		if ( 'oui' === strtolower( $health_q ) ) {
+			$body_lines[] = '<p><strong>IMPORTANT :</strong> Vous avez indiqué avoir répondu &laquo;&nbsp;OUI&nbsp;&raquo; au questionnaire de santé. Votre adhésion ne pourra être définitivement validée par le club qu\'après obtention de votre certificat médical (daté de moins de 6 mois attestant l\'aptitude à la pratique des échecs) ainsi que de votre règlement.</p>';
+		} else {
+			$body_lines[] = '<p><strong>IMPORTANT :</strong> Votre adhésion sera définitivement traitée et validée par le club dès la réception de votre règlement.</p>';
+		}
 
 		if ( ! empty( $payment_url ) ) {
 			$body_lines[] = '<p>Pour régler votre cotisation en ligne dès maintenant, vous pouvez utiliser notre plateforme de paiement sécurisée :<br><a href="' . esc_url( $payment_url ) . '">' . esc_html( $payment_url ) . '</a></p>';
@@ -152,7 +173,6 @@ class PreInscription_Mailer {
 					'recipient_name'  => $label,
 					'recipient_email' => $recipient_email,
 					'email_hash'      => $hash,
-					'sent_at'         => null,
 				),
 				array( '%d', '%d', '%s', '%s', '%s' )
 			);

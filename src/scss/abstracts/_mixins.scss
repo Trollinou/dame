@@ -1,0 +1,47 @@
+@use "variables" as *;
+
+// Responsive Mixins
+@mixin mobile {
+    @media (max-width: #{$breakpoint-sm}) {
+        @content;
+    }
+}
+
+@mixin tablet {
+    @media (max-width: #{$breakpoint-md}) {
+        @content;
+    }
+}
+
+@mixin desktop {
+    @media (min-width: #{$breakpoint-md + 1}) {
+        @content;
+    }
+}
+
+// Layout Mixins
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+// Focus ring compliant with accessibility & WP standards
+@mixin focus-ring($color: var(--dame-theme-primary, #{$dame-fallback-primary})) {
+    outline: none;
+    border-color: $color;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+// Truncate text with ellipsis
+@mixin text-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

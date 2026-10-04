@@ -22,8 +22,12 @@ class FormView {
 	 * @param array<string, mixed> $atts Shortcode attributes.
 	 * @return string HTML content.
 	 */
-	public function render( array $atts = array() ): string {
+	public function render( array $atts = array() ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 		wp_enqueue_style( 'dame-public-styles', DAME_PLUGIN_URL . 'assets/css/public-styles.css', array(), DAME_VERSION );
+
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( 'dame/registration' );
+		}
 
 		wp_enqueue_script( 'dame-public-geo-autocomplete', DAME_PLUGIN_URL . 'assets/js/public-geo-autocomplete.js', array(), DAME_VERSION, true );
 		wp_enqueue_script( 'dame-public-ign-autocomplete', DAME_PLUGIN_URL . 'assets/js/public-ign-autocomplete.js', array(), DAME_VERSION, true );
@@ -37,11 +41,41 @@ class FormView {
 			)
 		);
 
+		$registration_context = array(
+			'isMinor'             => false,
+			'hasSecondRep'        => false,
+			'isSubmitting'        => false,
+			'status'              => 'idle',
+			'message'             => '',
+			'ajaxUrl'             => admin_url( 'admin-ajax.php' ),
+			'fullName'            => '',
+			'healthQuestionnaire' => '',
+			'hasSignedHealth'     => false,
+			'hasSignedParental'   => false,
+			'postId'              => null,
+			'nonce'               => '',
+			'parentalAuthNonce'   => '',
+			'paymentUrl'          => '',
+			'senderEmail'         => '',
+		);
+
+		$context_attr = function_exists( 'wp_interactivity_data_wp_context' )
+			? wp_interactivity_data_wp_context( $registration_context )
+			: 'data-wp-context=\'' . wp_json_encode( $registration_context ) . '\'';
+
 		ob_start();
 		?>
-		<div id="dame-pre-inscription-form-wrapper">
-			<div id="dame-form-messages" style="display:none; padding: 1em; margin-bottom: 1em;"></div>
-			<form id="dame-pre-inscription-form" class="dame-form" novalidate>
+		<div id="dame-pre-inscription-form-wrapper" data-wp-interactive="dame/registration" <?php echo $context_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<div
+				id="dame-form-messages"
+				class="dame-feedback dame-feedback--error"
+				role="alert"
+				data-wp-bind--hidden="!state.isError"
+				data-wp-text="context.message"
+				style="padding: 1em; margin-bottom: 1em; background-color: #fee2e2; color: #dc2626; border-radius: 6px;"
+				hidden
+			></div>
+			<form id="dame-pre-inscription-form" class="dame-form" novalidate data-wp-bind--hidden="state.isSuccess" data-wp-on--submit="actions.submitForm">
 
 				<?php wp_nonce_field( 'dame_pre_inscription_nonce', 'dame_nonce' ); ?>
 
@@ -235,13 +269,65 @@ class FormView {
 				</p>
 
 				<p>
-					<button type="submit" id="dame_submit_button" disabled><?php esc_html_e( 'Valider ma préinscription', 'dame' ); ?></button>
+					<button type="submit" id="dame_submit_button" disabled data-wp-bind--disabled="state.isBusy">
+						<span data-wp-bind--hidden="state.isBusy"><?php esc_html_e( 'Valider ma préinscription', 'dame' ); ?></span>
+						<span data-wp-bind--hidden="!state.isBusy" hidden><?php esc_html_e( 'Envoi en cours...', 'dame' ); ?></span>
+					</button>
 				</p>
 				<p style="font-size: 0.85em; color: #666; margin-top: 10px; line-height: 1.4;">
 					<?php esc_html_e( "Les données collectées sur ce formulaire sont nécessaires à la gestion de votre adhésion. Pour en savoir plus sur l'utilisation de vos données, de nos outils de communication et pour exercer vos droits, consultez nos Mentions Légales.", 'dame' ); ?>
 				</p>
 
 			</form>
+
+			<div id="dame-registration-success-screen" data-wp-bind--hidden="!state.isSuccess" hidden style="margin-top: 1em;">
+				<p data-wp-text="context.message" style="font-weight: 500; font-size: 1.1em; color: #15803d;"></p>
+
+				<p data-wp-bind--hidden="!state.needsMedicalCertificate" hidden style="font-weight: bold; color: #dc2626; margin-top: 1em;">
+					<?php esc_html_e( 'Afin de valider votre inscription auprès de la FFE, vous devez nous remettre un certificat médical, daté de moins de 6 mois, déclarant ', 'dame' ); ?>
+					<strong data-wp-text="context.fullName"></strong>
+					<?php esc_html_e( ' apte à la pratique des échecs en et hors compétition.', 'dame' ); ?>
+				</p>
+
+				<div data-wp-bind--hidden="!state.hasSignedDocuments" hidden>
+					<p style="margin-top: 1.2em; font-weight: bold; color: #166534;">
+						✅ <?php esc_html_e( 'Vos documents ont été signés électroniquement avec succès et sont enregistrés.', 'dame' ); ?>
+					</p>
+					<div style="margin: 1em 0 1.5em 0;">
+						<p style="margin-bottom: 0.5em; font-size: 0.95em;"><?php esc_html_e( 'Vous pouvez télécharger votre exemplaire signé ci-dessous :', 'dame' ); ?></p>
+						<a data-wp-bind--hidden="!state.showSignedHealth" data-wp-bind--href="state.healthPdfUrl" target="_blank" style="display: block; color: #2563eb; text-decoration: underline; margin-bottom: 0.5em; margin-left: 1.5em;" hidden>
+							📩 <?php esc_html_e( 'Télécharger mon attestation de santé signée', 'dame' ); ?>
+						</a>
+						<a data-wp-bind--hidden="!state.showSignedParental" data-wp-bind--href="state.parentalPdfUrl" target="_blank" style="display: block; color: #2563eb; text-decoration: underline; margin-left: 1.5em;" hidden>
+							📩 <?php esc_html_e( 'Télécharger mon autorisation parentale signée', 'dame' ); ?>
+						</a>
+					</div>
+				</div>
+
+				<div data-wp-bind--hidden="!state.hasUnsignedDocuments" hidden>
+					<p style="margin-top: 1.5em;">
+						<?php esc_html_e( 'Vous trouverez ci-après le(s) document(s) à signer, puis à nous remettre en main propre ou à nous renvoyer à l’adresse ', 'dame' ); ?>
+						<a data-wp-bind--href="state.senderEmailMailto" data-wp-text="context.senderEmail"></a>
+					</p>
+					<div style="margin-bottom: 1.5em;">
+						<a data-wp-bind--hidden="!state.showUnsignedHealth" data-wp-bind--href="state.healthPdfUrl" style="display: block; color: #2563eb; text-decoration: underline; margin-bottom: 0.5em; margin-left: 1.5em;" hidden>
+							📩 <?php esc_html_e( 'Télécharger mon attestation de santé à remettre signé', 'dame' ); ?>
+						</a>
+						<a data-wp-bind--hidden="!state.showUnsignedParental" data-wp-bind--href="state.parentalPdfUrl" style="display: block; color: #2563eb; text-decoration: underline; margin-left: 1.5em;" hidden>
+							📩 <?php esc_html_e( 'Télécharger l\'autorisation parentale a remettre signé', 'dame' ); ?>
+						</a>
+					</div>
+				</div>
+
+				<div style="margin-top: 1.5em; display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
+					<button type="button" class="button dame-button" data-wp-on--click="actions.resetForm" style="background-color: #fe0007; color: white; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer;">
+						🔄 <?php esc_html_e( 'Saisir une nouvelle adhésion', 'dame' ); ?>
+					</button>
+					<a data-wp-bind--hidden="!state.hasPaymentUrl" data-wp-bind--href="context.paymentUrl" target="_blank" class="button dame-button" style="text-decoration: none; padding: 10px 15px; font-size: 1.1em; border-radius: 8px; display: inline-block; background-color: #f59e0b; color: #1e293b;" hidden>
+						💳 <?php esc_html_e( 'Aller sur HelloAsso pour votre règlement', 'dame' ); ?> 💳
+					</a>
+				</div>
+			</div>
 		</div>
 		<?php
 		$output = ob_get_clean();

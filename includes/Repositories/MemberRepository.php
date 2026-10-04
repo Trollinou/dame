@@ -45,7 +45,14 @@ class MemberRepository {
 			return null;
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$cache_key = 'ffe_' . md5( strtolower( $sanitized_ffe ) );
+		$cached    = wp_cache_get( $cache_key, 'dame_members' );
+
+		if ( false !== $cached ) {
+			return (int) $cached > 0 ? (int) $cached : null;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$id = $this->db->get_var(
 			$this->db->prepare(
 				"SELECT post_id FROM %i WHERE meta_key = '_dame_ffe_id' AND meta_value = %s LIMIT 1",
@@ -54,7 +61,10 @@ class MemberRepository {
 			)
 		);
 
-		return $id ? (int) $id : null;
+		$result_id = $id ? (int) $id : 0;
+		wp_cache_set( $cache_key, $result_id, 'dame_members', 3600 );
+
+		return $result_id > 0 ? $result_id : null;
 	}
 
 	/**
@@ -68,7 +78,14 @@ class MemberRepository {
 			return 0;
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$cache_key = 'count_season_' . $season_term_id;
+		$cached    = wp_cache_get( $cache_key, 'dame_members' );
+
+		if ( false !== $cached ) {
+			return (int) $cached;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$count = $this->db->get_var(
 			$this->db->prepare(
 				"SELECT COUNT(DISTINCT p.ID) FROM %i p
@@ -84,6 +101,28 @@ class MemberRepository {
 			)
 		);
 
-		return (int) $count;
+		$count_int = (int) $count;
+		wp_cache_set( $cache_key, $count_int, 'dame_members', 1800 );
+
+		return $count_int;
+	}
+
+	/**
+	 * Invalidates member repository caches upon mutation.
+	 *
+	 * @param int $post_id Post ID being mutated.
+	 */
+	public static function invalidate_member_cache( int $post_id ): void {
+		$ffe_id = get_post_meta( $post_id, '_dame_ffe_id', true );
+		if ( ! empty( $ffe_id ) && is_string( $ffe_id ) ) {
+			wp_cache_delete( 'ffe_' . md5( strtolower( trim( $ffe_id ) ) ), 'dame_members' );
+		}
+
+		$terms = wp_get_post_terms( $post_id, 'dame_season', array( 'fields' => 'ids' ) );
+		if ( ! is_wp_error( $terms ) && is_array( $terms ) ) {
+			foreach ( $terms as $term_id ) {
+				wp_cache_delete( 'count_season_' . (int) $term_id, 'dame_members' );
+			}
+		}
 	}
 }

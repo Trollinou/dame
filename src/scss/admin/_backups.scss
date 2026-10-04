@@ -1,0 +1,57 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * DAME Backups & Import/Export View
+ */
+
+.dame-import-export-wrapper,
+.dame-backup-restore-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+    margin-top: 20px;
+
+    @include tablet {
+        flex-direction: column;
+    }
+}
+
+.dame-export-section,
+.dame-import-section,
+.dame-backup-section,
+.dame-restore-section {
+    flex: 1;
+    padding: 20px;
+    background: $dame-admin-card-bg;
+    border: 1px solid $dame-admin-border;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    border-radius: $dame-radius-sm;
+
+    h3 {
+        margin-top: 0;
+        border-bottom: 1px solid $dame-admin-border-subtle;
+        padding-bottom: 10px;
+    }
+}
+
+.dame-import-section,
+.dame-restore-section {
+    border-left: 4px solid $dame-admin-danger;
+}
+
+.dame-backup-card-group {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid $dame-admin-border-subtle;
+}
+
+.dame-backup-desc {
+    color: $dame-admin-text;
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+.dame-backup-section-title {
+    margin-top: 40px;
+}

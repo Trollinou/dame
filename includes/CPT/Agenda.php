@@ -22,6 +22,8 @@ class Agenda {
 	 */
 	public function init(): void {
 		add_action( 'init', array( $this, 'register' ), 0 );
+		add_action( 'save_post_dame_agenda', array( \DAME\Repositories\AgendaRepository::class, 'invalidate_agenda_cache' ) );
+		add_action( 'deleted_post', array( \DAME\Repositories\AgendaRepository::class, 'invalidate_agenda_cache' ) );
 		add_filter( 'the_content', array( $this, 'display_event_details' ) );
 		add_filter( 'use_block_editor_for_post_type', array( $this, 'disable_block_editor' ), 10, 2 );
 		if ( is_admin() ) {
@@ -100,6 +102,45 @@ class Agenda {
 		);
 
 		register_post_type( 'dame_agenda', $args );
+		$this->register_meta_fields();
+	}
+
+	/**
+	 * Registers post meta fields for dame_agenda CPT to support REST API and Block Bindings.
+	 */
+	private function register_meta_fields(): void {
+		$meta_keys = array(
+			'_dame_start_date'         => 'string',
+			'_dame_end_date'           => 'string',
+			'_dame_start_time'         => 'string',
+			'_dame_end_time'           => 'string',
+			'_dame_all_day'            => 'string',
+			'_dame_location_name'      => 'string',
+			'_dame_location_address'   => 'string',
+			'_dame_agenda_description' => 'string',
+			'_dame_competition_type'   => 'string',
+			'_dame_competition_level'  => 'string',
+			'_dame_event_url'          => 'string',
+			'_dame_registration_url'   => 'string',
+			'_dame_contact_name'       => 'string',
+			'_dame_contact_email'      => 'string',
+			'_dame_contact_phone'      => 'string',
+		);
+
+		foreach ( $meta_keys as $key => $type ) {
+			register_post_meta(
+				'dame_agenda',
+				$key,
+				array(
+					'show_in_rest'  => true,
+					'single'        => true,
+					'type'          => $type,
+					'auth_callback' => static function () {
+						return current_user_can( 'edit_posts' );
+					},
+				)
+			);
+		}
 	}
 
 	/**
@@ -249,7 +290,7 @@ class Agenda {
 				if ( ! empty( $latitude ) && ! empty( $longitude ) ) {
 					$details_html .= '<div class="map-container">';
 					// Embed map.
-					$details_html .= '<iframe src="https://maps.google.com/maps?q=' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '&hl=es;z=14&amp;output=embed" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"></iframe>';
+					$details_html .= '<iframe src="https://maps.google.com/maps?q=' . esc_attr( $latitude ) . ',' . esc_attr( $longitude ) . '&hl=es;z=14&amp;output=embed" width="100%" height="300" allowfullscreen="" loading="lazy"></iframe>';
 
 					// Navigation buttons.
 					$details_html .= '<div class="nav-buttons">';

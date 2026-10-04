@@ -139,6 +139,7 @@ class SaveHandler {
 	 * @param int $post_id Post ID.
 	 */
 	private function handle_recurrence( int $post_id ): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce is verified in calling save() method.
 		$post_status    = get_post_status( $post_id );
 		$existing_group = get_post_meta( $post_id, '_dame_recurrence_group_id', true );
 
@@ -233,5 +234,6 @@ class SaveHandler {
 				}
 			}
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 }

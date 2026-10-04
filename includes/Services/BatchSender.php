@@ -184,8 +184,7 @@ class BatchSender {
 				$p_content = str_replace( $search, $replace, $content );
 
 				$tracking_url = Tracker::get_pixel_url( $mid, (string) $email );
-				$pixel_img    = '<img src="' . esc_url( $tracking_url ) . '" alt="" width="1" height="1" style="display:none; border:0;" />';
-				$message_body = '<div style="margin: 1cm;">' . $p_content . $pixel_img . '</div>';
+				$message_body = self::prepare_email_body( $p_content, $tracking_url );
 
 				$sent = wp_mail( (string) $email, (string) $p_subject, $message_body, $headers, $attachments );
 
@@ -379,8 +378,7 @@ class BatchSender {
 			}
 
 			$tracking_url = Tracker::get_pixel_url( $message_id, (string) $email );
-			$pixel_img    = '<img src="' . esc_url( $tracking_url ) . '" alt="" width="1" height="1" style="display:none; border:0;" />';
-			$message_body = '<div style="margin: 1cm;">' . $personalized_content . $pixel_img . '</div>';
+			$message_body = self::prepare_email_body( (string) $personalized_content, $tracking_url );
 
 			$sent = wp_mail( (string) $email, (string) $personalized_subject, $message_body, $headers, $attachments );
 			if ( ! $sent ) {
@@ -458,5 +456,47 @@ class BatchSender {
 				update_post_meta( $message_id, '_dame_message_status', 'sent' );
 			}
 		}
+	}
+
+	/**
+	 * Prepares the email HTML content using WP_HTML_Tag_Processor.
+	 *
+	 * Normalizes links, ensures safety attributes, and cleanly embeds the tracking pixel.
+	 *
+	 * @param string $content   HTML email content.
+	 * @param string $pixel_url Tracking pixel URL.
+	 * @return string Processed HTML message body.
+	 */
+	public static function prepare_email_body( string $content, string $pixel_url ): string {
+		$raw_html = '<div class="dame-mail-container" style="margin: 1cm;">' . $content . '</div>';
+
+		// Modern HTML processing with WP_HTML_Tag_Processor (WordPress 6.5+ / 7.x).
+		if ( class_exists( '\WP_HTML_Tag_Processor' ) ) {
+			$processor = new \WP_HTML_Tag_Processor( $raw_html );
+
+			// Ensure all <a> links have safe target and rel attributes.
+			while ( $processor->next_tag( array( 'tag_name' => 'a' ) ) ) {
+				$processor->set_attribute( 'target', '_blank' );
+				$processor->set_attribute( 'rel', 'noopener noreferrer' );
+			}
+
+			// Ensure all <img> tags have responsive constraints in email clients.
+			$updated_html  = $processor->get_updated_html();
+			$img_processor = new \WP_HTML_Tag_Processor( $updated_html );
+			while ( $img_processor->next_tag( array( 'tag_name' => 'img' ) ) ) {
+				$style = (string) $img_processor->get_attribute( 'style' );
+				if ( false === strpos( $style, 'max-width' ) ) {
+					$new_style = trim( $style . '; max-width: 100%; height: auto;', ';' );
+					$img_processor->set_attribute( 'style', $new_style );
+				}
+			}
+
+			$processed_html = $img_processor->get_updated_html();
+		} else {
+			$processed_html = $raw_html;
+		}
+
+		$pixel_img = '<img src="' . esc_url( $pixel_url ) . '" alt="" width="1" height="1" style="display:none; border:0;" />';
+		return $processed_html . $pixel_img;
 	}
 }

@@ -23,6 +23,8 @@ class Benevolat {
 		add_shortcode( 'dame_benevolat', array( $this, 'render' ) );
 		add_action( 'admin_post_nopriv_dame_submit_benevolat', array( $this, 'handle_submission' ) );
 		add_action( 'admin_post_dame_submit_benevolat', array( $this, 'handle_submission' ) );
+		add_action( 'wp_ajax_dame_submit_benevolat', array( $this, 'handle_submission' ) );
+		add_action( 'wp_ajax_nopriv_dame_submit_benevolat', array( $this, 'handle_submission' ) );
 	}
 
 	/**
@@ -118,18 +120,34 @@ class Benevolat {
 
 		$today = wp_date( 'Y-m-d' );
 
+		// Enqueue public styles.
+		wp_enqueue_style(
+			'dame-public-styles',
+			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
+			array(),
+			\DAME_VERSION
+		);
+
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( 'dame/benevolat' );
+		}
+
+		$benevolat_context = array(
+			'selectedSlots' => array(),
+			'isSubmitting'  => false,
+			'status'        => 'idle',
+			'message'       => '',
+			'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+			'nonce'         => wp_create_nonce( 'dame_submit_benevolat_response_' . $benevolat->ID ),
+		);
+
+		$context_attr = function_exists( 'wp_interactivity_data_wp_context' )
+			? wp_interactivity_data_wp_context( $benevolat_context )
+			: 'data-wp-context=\'' . wp_json_encode( $benevolat_context ) . '\'';
+
 		ob_start();
 		?>
-		<style>
-			.dame-benevolat-wrapper { margin: 20px 0; }
-			.dame-benevolat-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-			.dame-benevolat-table th, .dame-benevolat-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-			.dame-benevolat-table th { background-color: #f2f2f2; }
-			.benevolat-timeslot-label { display: block; margin-bottom: 5px; }
-			.benevolat-date-row.is-past { background-color: #fcf8e3; opacity: 0.7; }
-			.benevolat-timeslot-label.is-past { cursor: not-allowed; }
-		</style>
-		<div class="dame-benevolat-wrapper">
+		<div class="dame-benevolat-wrapper" data-wp-interactive="dame/benevolat" <?php echo $context_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<h3><?php echo esc_html( (string) $benevolat->post_title ); ?></h3>
 			<?php if ( ! empty( $benevolat->post_content ) ) : ?>
 				<div class="benevolat-description">
@@ -137,7 +155,7 @@ class Benevolat {
 				</div>
 			<?php endif; ?>
 
-			<form id="dame-benevolat-form-<?php echo esc_attr( (string) $benevolat->ID ); ?>" class="dame-benevolat-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<form id="dame-benevolat-form-<?php echo esc_attr( (string) $benevolat->ID ); ?>" class="dame-benevolat-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" data-wp-on--submit="actions.submitResponse">
 				<input type="hidden" name="action" value="dame_submit_benevolat">
 				<input type="hidden" name="benevolat_id" value="<?php echo esc_attr( (string) $benevolat->ID ); ?>">
 				<?php // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized ?>
@@ -170,10 +188,10 @@ class Benevolat {
 							<?php
 								$date_obj       = new DateTime( $date_info['date'] );
 								$formatted_date = date_i18n( 'l j F Y', $date_obj->getTimestamp() );
-								$is_locked      = $date_info['date'] <= $today;
+								$is_locked      = $date_info['date'] < $today;
 							?>
 							<tr class="benevolat-date-row <?php echo $is_locked ? 'is-past' : ''; ?>">
-								<td>
+								<td class="benevolat-date-col">
 									<?php echo esc_html( $formatted_date ); ?>
 									<?php if ( $is_locked ) : ?>
 										<br><small style="color: #d63638; font-style: italic;"><?php esc_html_e( '(Verrouillé)', 'dame' ); ?></small>
@@ -181,23 +199,27 @@ class Benevolat {
 								</td>
 								<td>
 									<?php if ( ! empty( $date_info['time_slots'] ) ) : ?>
-										<?php foreach ( $date_info['time_slots'] as $time_index => $time_slot ) : ?>
-											<?php
-											$checked = '';
-											if ( isset( $user_responses[ $date_index ][ $time_index ] ) && '1' === (string) $user_responses[ $date_index ][ $time_index ] ) {
-												$checked = 'checked';
-											}
-											$count = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
-											?>
-											<label class="benevolat-timeslot-label <?php echo $is_locked ? 'is-past' : ''; ?>">
-												<input type="checkbox" name="benevolat_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?> <?php disabled( $is_locked ); ?>>
+										<div class="benevolat-timeslots-list">
+											<?php foreach ( $date_info['time_slots'] as $time_index => $time_slot ) : ?>
 												<?php
-												echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ) . ' ';
-												/* translators: %d: number of registered volunteers */
-												echo esc_html( sprintf( _n( '(%d inscrit)', '(%d inscrits)', $count, 'dame' ), $count ) );
+												$checked = '';
+												if ( isset( $user_responses[ $date_index ][ $time_index ] ) && '1' === (string) $user_responses[ $date_index ][ $time_index ] ) {
+													$checked = 'checked';
+												}
+												$count = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
 												?>
-											</label>
-										<?php endforeach; ?>
+												<label class="benevolat-timeslot-label <?php echo $is_locked ? 'is-past' : ''; ?>">
+													<input type="checkbox" name="benevolat_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?> <?php disabled( $is_locked ); ?>>
+													<span>
+														<?php
+														echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ) . ' ';
+														/* translators: %d: number of registered volunteers */
+														echo esc_html( sprintf( _n( '(%d inscrit)', '(%d inscrits)', $count, 'dame' ), $count ) );
+														?>
+													</span>
+												</label>
+											<?php endforeach; ?>
+										</div>
 									<?php else : ?>
 										<?php esc_html_e( 'Aucune plage horaire définie pour cette date.', 'dame' ); ?>
 									<?php endif; ?>
@@ -207,11 +229,12 @@ class Benevolat {
 					</tbody>
 				</table>
 
-				<p>
-					<input type="submit" name="submit_benevolat" value="<?php echo esc_attr( $user_has_voted ? __( 'Mettre à jour', 'dame' ) : __( 'S\'inscrire', 'dame' ) ); ?>">
+				<p class="benevolat-actions-row">
+					<input type="submit" name="submit_benevolat" value="<?php echo esc_attr( $user_has_voted ? __( 'Mettre à jour', 'dame' ) : __( 'S\'inscrire', 'dame' ) ); ?>" class="dame-btn dame-btn--primary" data-wp-bind--disabled="context.isSubmitting">
+					<span class="benevolat-message-inline" data-wp-bind--hidden="!context.message" data-wp-text="context.message" style="margin-left: 10px;"></span>
 					<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 					<?php if ( isset( $_GET['vote'] ) && 'success' === $_GET['vote'] ) : ?>
-						<span class="benevolat-success-message-inline" style="margin-left: 10px; color: green;"><?php esc_html_e( 'Merci, votre réponse a été enregistrée.', 'dame' ); ?></span>
+						<span class="benevolat-success-message-inline" data-wp-bind--hidden="context.message" style="margin-left: 10px; color: green;"><?php esc_html_e( 'Merci, votre réponse a été enregistrée.', 'dame' ); ?></span>
 					<?php endif; ?>
 				</p>
 			</form>
@@ -224,20 +247,34 @@ class Benevolat {
 	 * Handle benevolat form submission.
 	 */
 	public function handle_submission(): void {
+		$is_ajax = wp_doing_ajax();
+
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$nonce = isset( $_POST['dame_benevolat_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_benevolat_nonce'] ) ) : '';
 		if ( ! isset( $_POST['submit_benevolat'] ) || ! $nonce ) {
+			if ( $is_ajax ) {
+				wp_send_json_error( array( 'message' => __( 'Données de formulaire manquantes.', 'dame' ) ), 400 );
+			}
 			return;
 		}
 
 		$benevolat_id = isset( $_POST['benevolat_id'] ) ? intval( $_POST['benevolat_id'] ) : 0;
 
 		if ( ! $benevolat_id || ! wp_verify_nonce( $nonce, 'dame_submit_benevolat_response_' . $benevolat_id ) ) {
-			wp_die( 'Invalid nonce.' );
+			if ( $is_ajax ) {
+				wp_send_json_error( array( 'message' => __( 'La session a expiré. Veuillez rafraîchir la page et réessayer.', 'dame' ) ), 403 );
+			}
+			wp_die( esc_html__( 'Invalid nonce.', 'dame' ) );
 		}
 
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$name = isset( $_POST['benevolat_name'] ) ? sanitize_text_field( wp_unslash( $_POST['benevolat_name'] ) ) : '';
+		if ( empty( $name ) ) {
+			if ( $is_ajax ) {
+				wp_send_json_error( array( 'message' => __( 'Veuillez saisir votre nom.', 'dame' ) ), 400 );
+			}
+		}
+
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$responses = isset( $_POST['benevolat_responses'] ) ? (array) wp_unslash( $_POST['benevolat_responses'] ) : array();
 
@@ -249,7 +286,7 @@ class Benevolat {
 		$today             = wp_date( 'Y-m-d' );
 		$past_date_indices = array();
 		foreach ( $benevolat_data as $idx => $info ) {
-			if ( $info['date'] <= $today ) {
+			if ( $info['date'] < $today ) {
 				$past_date_indices[] = (int) $idx;
 			}
 		}
@@ -269,6 +306,19 @@ class Benevolat {
 		$user_id              = get_current_user_id();
 		$existing_response_id = 0;
 		$previous_meta        = array();
+
+		// Idempotency lock to prevent double submissions.
+		$lock_key = 'dame_benevolat_lock_' . md5( (string) $benevolat_id . '_' . (string) $user_id . '_' . $name . '_' . wp_json_encode( $sanitized_responses ) );
+		if ( get_transient( $lock_key ) ) {
+			if ( $is_ajax ) {
+				wp_send_json_success( array( 'message' => __( 'Votre réponse a bien été enregistrée. Merci !', 'dame' ) ) );
+			}
+			$referer      = isset( $_POST['_wp_http_referer'] ) ? esc_url_raw( wp_unslash( $_POST['_wp_http_referer'] ) ) : wp_get_referer();
+			$redirect_url = add_query_arg( 'vote', 'success', $referer );
+			wp_safe_redirect( $redirect_url );
+			exit;
+		}
+		set_transient( $lock_key, true, 15 );
 
 		if ( $user_id ) {
 			$existing_responses = get_posts(
@@ -346,7 +396,8 @@ class Benevolat {
 				array(
 					'poll_id'      => $benevolat_id,
 					'recipient_id' => $response_id,
-				)
+				),
+				array( '%d', '%d' )
 			);
 
 			// 2. Insert new votes.
@@ -360,7 +411,8 @@ class Benevolat {
 							'recipient_id' => $response_id,
 							'choice_key'   => "{$date_index}_{$time_index}",
 							'voted_at'     => current_time( 'mysql', true ),
-						)
+						),
+						array( '%d', '%d', '%s', '%s' )
 					);
 				}
 			}
@@ -373,6 +425,10 @@ class Benevolat {
 				// Cookie is valid for 1 year.
 				setcookie( $cookie_name, $cookie_value, time() + YEAR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
 			}
+		}
+
+		if ( $is_ajax ) {
+			wp_send_json_success( array( 'message' => __( 'Votre réponse a bien été enregistrée. Merci !', 'dame' ) ) );
 		}
 
 		// Redirect to the same page with a success query arg.

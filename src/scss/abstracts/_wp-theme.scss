@@ -1,0 +1,91 @@
+@use "variables" as *;
+
+/**
+ * WordPress & Theme Integration (Supports FSE Blocks Themes & Blocksy)
+ */
+
+:root {
+    // Primary / Accent Color
+    --dame-theme-primary: var(
+        --wp--preset--color--primary,
+        var(
+            --theme-palette-color-1,
+            var(--theme-accent-color, #{$dame-fallback-primary})
+        )
+    );
+
+    --dame-theme-primary-hover: var(
+        --wp--preset--color--primary-hover,
+        var(
+            --theme-palette-color-2,
+            var(--theme-accent-color-hover, #{$dame-fallback-primary-hover})
+        )
+    );
+
+    // Text / Contrast Color (Blocksy palette color 3 is dark text, color 8 is white)
+    --dame-theme-text: var(
+        --wp--preset--color--contrast,
+        var(
+            --theme-palette-color-3,
+            var(--theme-text-color, #{$dame-fallback-contrast})
+        )
+    );
+
+    // Background / Base Color
+    --dame-theme-bg: var(
+        --wp--preset--color--base,
+        var(
+            --theme-palette-color-6,
+            var(--theme-background-color, #{$dame-fallback-base})
+        )
+    );
+
+    // Muted / Secondary Color
+    --dame-theme-muted: var(
+        --wp--preset--color--secondary,
+        var(
+            --theme-palette-color-4,
+            var(--theme-text-color-muted, #{$dame-fallback-secondary})
+        )
+    );
+
+    // Borders & Dividers
+    --dame-theme-border: var(
+        --wp--preset--color--contrast-subtle,
+        var(
+            --theme-palette-color-5,
+            var(--theme-border-color, #{$dame-fallback-border})
+        )
+    );
+
+    // Surface / Card background (Blocksy palette color 7 is subtle surface)
+    --dame-theme-surface: var(
+        --wp--preset--color--base-subtle,
+        var(
+            --theme-palette-color-7,
+            var(--theme-surface-color, #{$dame-fallback-surface})
+        )
+    );
+
+    // Fonts
+    --dame-theme-font-body: var(
+        --wp--preset--font-family--body,
+        var(--theme-font-family, inherit)
+    );
+
+    --dame-theme-font-heading: var(
+        --wp--preset--font-family--heading,
+        var(--theme-headings-font-family, inherit)
+    );
+
+    // Border Radius
+    --dame-theme-radius: var(
+        --wp--custom--border-radius,
+        var(--theme-border-radius, #{$dame-radius-md})
+    );
+
+    --dame-theme-btn-radius: var(
+        --wp--custom--button-border-radius,
+        var(--theme-button-border-radius, #{$dame-radius-md})
+    );
+}

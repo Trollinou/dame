@@ -59,16 +59,22 @@ class Registration {
 					'permission_callback' => '__return_true',
 					'args'                => array(
 						'username' => array(
+							'type'              => 'string',
 							'required'          => true,
-							'validate_callback' => fn( $param ) => is_string( $param ),
+							'sanitize_callback' => 'sanitize_user',
+							'validate_callback' => static fn( $param ) => is_string( $param ) && ! empty( trim( $param ) ),
 						),
 						'email'    => array(
+							'type'              => 'string',
+							'format'            => 'email',
 							'required'          => true,
-							'validate_callback' => fn( $param ) => is_email( (string) $param ),
+							'sanitize_callback' => 'sanitize_email',
+							'validate_callback' => static fn( $param ) => is_email( (string) $param ),
 						),
 						'password' => array(
+							'type'              => 'string',
 							'required'          => true,
-							'validate_callback' => fn( $param ) => is_string( $param ),
+							'validate_callback' => static fn( $param ) => is_string( $param ) && strlen( (string) $param ) >= 6,
 						),
 					),
 				),

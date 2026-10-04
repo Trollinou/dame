@@ -36,7 +36,7 @@ class Legal {
 	public function render( $post ): void {
 		$transient_data = get_transient( 'dame_post_data_' . $post->ID );
 
-		$get_value = function ( $field_name, $default = '' ) use ( $post, $transient_data ) {
+		$get_value = function ( $field_name ) use ( $post, $transient_data ) {
 			return isset( $transient_data[ $field_name ] )
 				? $transient_data[ $field_name ]
 				: get_post_meta( $post->ID, '_' . $field_name, true );

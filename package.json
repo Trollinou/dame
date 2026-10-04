@@ -1,6 +1,6 @@
 {
   "name": "dame",
-  "version": "5.5.1",
+  "version": "5.5.2",
   "description": "Dossier Administratif des Membres Échiquéens",
   "types": "./src/types/index.ts",
   "main": "./src/types/index.ts",
@@ -23,22 +23,24 @@
     }
   },
   "scripts": {
-    "build:css": "sass src/scss/:assets/css/ --style=compressed --no-source-map",
-    "build:js": "node build-js.js",
+    "build:css": "node scripts/build-css.js",
+    "build:js": "node scripts/build-js.js",
     "build": "npm run build:css && npm run build:js",
     "typecheck": "tsc --noEmit",
     "lint:js": "eslint src/js/",
-    "package": "node script/package.cjs",
+    "package": "node scripts/package.cjs",
     "version-sync": "node scripts/version-sync.cjs",
     "watch": "sass --watch src/scss/:assets/css/"
   },
   "devDependencies": {
     "@types/node": "^26.6.3",
     "@wordpress/eslint-plugin": "^25.9.0",
+    "@wordpress/interactivity": "^6.56.0",
     "adm-zip": "^0.6.1",
     "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
     "minimatch": "^10.2.6",
+    "rtlcss": "^4.3.0",
     "sass": "^1.105.1",
     "terser": "^5.51.2",
     "typescript": "^6.0.3"

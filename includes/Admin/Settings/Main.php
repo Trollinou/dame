@@ -57,8 +57,18 @@ class Main {
 	 * Register settings for all tabs.
 	 */
 	public function register_settings(): void {
-		// Register the main option group once.
-		register_setting( 'dame_options_group', 'dame_options', array( $this, 'sanitize_options' ) );
+		// Register the main option group once with explicit autoload => false.
+		register_setting(
+			'dame_options_group',
+			'dame_options',
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( $this, 'sanitize_options' ),
+				'default'           => array(),
+				'show_in_rest'      => false,
+				'autoload'          => false,
+			)
+		);
 
 		// Let each tab register its sections and fields.
 		foreach ( $this->tabs as $tab ) {

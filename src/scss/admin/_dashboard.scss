@@ -1,0 +1,77 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * DAME Admin Dashboard & Overview
+ */
+
+.dame-dashboard-summary-box {
+    padding: 20px;
+    margin-bottom: 20px;
+
+    h2 {
+        margin-top: 0;
+    }
+}
+
+.dame-dashboard-cards {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+
+    @include tablet {
+        flex-direction: column;
+    }
+}
+
+.dame-dashboard-card {
+    flex: 1;
+    background: $dame-admin-card-bg;
+    padding: 15px;
+    border: 1px solid $dame-admin-border;
+    border-left: 4px solid $dame-admin-primary;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    border-radius: $dame-radius-sm;
+
+    &--alert {
+        border-left-color: $dame-admin-danger;
+    }
+
+    h3 {
+        margin-top: 0;
+        font-size: 14px;
+        color: $dame-admin-text;
+    }
+
+    .dame-dashboard-card-value {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+        color: $dame-admin-text-dark;
+    }
+}
+
+.dame-dashboard-columns {
+    display: flex;
+    gap: 2%;
+    margin-top: 20px;
+
+    @include tablet {
+        flex-direction: column;
+    }
+
+    .dame-dashboard-column {
+        width: 49%;
+
+        @include tablet {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+    }
+}
+
+.dame-dashboard-meta {
+    color: $dame-admin-text;
+    font-size: 0.9em;
+    opacity: 0.8;
+}

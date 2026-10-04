@@ -9,13 +9,17 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	const adMethodRadios = document.querySelectorAll<HTMLInputElement>(
 		'input[name="dame_adherent_method"]'
 	);
-	const adGroupWrap = document.querySelector<HTMLElement>('.dame-adherent-group-wrap');
-	const adManualWrap = document.querySelector<HTMLElement>('.dame-adherent-manual-wrap');
+	const adGroupWrap = document.querySelector<HTMLElement>(
+		'.dame-adherent-group-wrap'
+	);
+	const adManualWrap = document.querySelector<HTMLElement>(
+		'.dame-adherent-manual-wrap'
+	);
 
 	if (adMethodRadios.length > 0 && adGroupWrap && adManualWrap) {
 		adMethodRadios.forEach((radio: HTMLInputElement): void => {
-			radio.addEventListener('change', function (this: HTMLInputElement): void {
-				if (this.value === 'group') {
+			radio.addEventListener('change', (): void => {
+				if (radio.value === 'group') {
 					adGroupWrap.classList.remove('dame-hidden');
 					adManualWrap.classList.add('dame-hidden');
 				} else {
@@ -30,7 +34,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	const contactMethodRadios = document.querySelectorAll<HTMLInputElement>(
 		'input[name="dame_contact_method"]'
 	);
-	const contactGroupWrap = document.querySelector<HTMLElement>('.dame-contact-group-wrap');
+	const contactGroupWrap = document.querySelector<HTMLElement>(
+		'.dame-contact-group-wrap'
+	);
 	const contactManualWrap = document.querySelector<HTMLElement>(
 		'.dame-contact-manual-wrap'
 	);
@@ -43,11 +49,13 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		const initialChecked = document.querySelector<HTMLInputElement>(
 			'input[name="dame_contact_method"]:checked'
 		);
-		let currentContactMethod = initialChecked ? initialChecked.value : 'group';
+		let currentContactMethod = initialChecked
+			? initialChecked.value
+			: 'group';
 
 		contactMethodRadios.forEach((radio: HTMLInputElement): void => {
-			radio.addEventListener('change', function (this: HTMLInputElement): void {
-				const newMethod = this.value;
+			radio.addEventListener('change', (): void => {
+				const newMethod = radio.value;
 
 				// Confirmation lors du retour au mode Critères depuis Manuel
 				if (
@@ -62,9 +70,10 @@ document.addEventListener('DOMContentLoaded', (): void => {
 						resetContactCriteria();
 					} else {
 						// Annulation : on restaure le bouton radio Manuel
-						const manualRadio = document.querySelector<HTMLInputElement>(
-							'input[name="dame_contact_method"][value="manual"]'
-						);
+						const manualRadio =
+							document.querySelector<HTMLInputElement>(
+								'input[name="dame_contact_method"][value="manual"]'
+							);
 						if (manualRadio) {
 							manualRadio.checked = true;
 						}
@@ -80,11 +89,16 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 					// Reset manual selection when going back to Criteria
 					contactManualWrap
-						.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
-						.forEach((cb: HTMLInputElement) => (cb.checked = false));
-					const manualList = contactManualWrap.querySelector<HTMLElement>(
-						'.dame-checkbox-list'
-					);
+						.querySelectorAll<HTMLInputElement>(
+							'input[type="checkbox"]'
+						)
+						.forEach(
+							(cb: HTMLInputElement) => (cb.checked = false)
+						);
+					const manualList =
+						contactManualWrap.querySelector<HTMLElement>(
+							'.dame-checkbox-list'
+						);
 					if (manualList) {
 						reorderList(manualList);
 						updateSelectionCount(manualList);
@@ -104,7 +118,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	document.addEventListener('change', (e: Event): void => {
 		const target = e.target as HTMLElement | null;
 		if (target?.matches('.dame-checkbox-list input[type="checkbox"]')) {
-			const listContainer = target.closest<HTMLElement>('.dame-checkbox-list');
+			const listContainer = target.closest<HTMLElement>(
+				'.dame-checkbox-list'
+			);
 			if (listContainer) {
 				reorderList(listContainer);
 				updateSelectionCount(listContainer);
@@ -113,9 +129,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 		// Logic for syncing Region -> Departments
 		if (
-			target?.matches(
-				'.dame-region-criteria-list input[type="checkbox"]'
-			)
+			target?.matches('.dame-region-criteria-list input[type="checkbox"]')
 		) {
 			const checkbox = target as HTMLInputElement;
 			const regionCode = checkbox.value;
@@ -150,13 +164,18 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 	/**
 	 * Updates the selection counter for a list.
+	 * @param listContainer
 	 */
 	function updateSelectionCount(listContainer: HTMLElement): void {
-		const wrapper = listContainer.closest<HTMLElement>('.dame-searchable-list-wrapper');
+		const wrapper = listContainer.closest<HTMLElement>(
+			'.dame-searchable-list-wrapper'
+		);
 		if (!wrapper) {
 			return;
 		}
-		const countSpan = wrapper.querySelector<HTMLElement>('.dame-selection-count');
+		const countSpan = wrapper.querySelector<HTMLElement>(
+			'.dame-selection-count'
+		);
 		if (countSpan) {
 			const checkedCount = listContainer.querySelectorAll(
 				'input[type="checkbox"]:checked'
@@ -167,9 +186,12 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 	/**
 	 * Reorders a list to move checked items to the top.
+	 * @param listContainer
 	 */
 	function reorderList(listContainer: HTMLElement): void {
-		const labels = Array.from(listContainer.querySelectorAll<HTMLLabelElement>('label'));
+		const labels = Array.from(
+			listContainer.querySelectorAll<HTMLLabelElement>('label')
+		);
 
 		// Sort labels: checked first, then alphabetical
 		labels.sort((a, b) => {
@@ -191,7 +213,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		});
 
 		// Append sorted elements back to container
-		labels.forEach((label: HTMLLabelElement) => listContainer.appendChild(label));
+		labels.forEach((label: HTMLLabelElement) =>
+			listContainer.appendChild(label)
+		);
 	}
 
 	/**
@@ -213,7 +237,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			container
 				.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
 				.forEach((cb: HTMLInputElement) => (cb.checked = false));
-			const list = container.querySelector<HTMLElement>('.dame-checkbox-list');
+			const list = container.querySelector<HTMLElement>(
+				'.dame-checkbox-list'
+			);
 			if (list) {
 				reorderList(list);
 				updateSelectionCount(list);
@@ -244,16 +270,19 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		const hasTypes = selectedTypes.length > 0;
 		const hasDepts = selectedDepts.length > 0;
 
-		const contactCheckboxes = contactManualWrap.querySelectorAll<HTMLInputElement>(
-			'input[type="checkbox"]'
-		);
+		const contactCheckboxes =
+			contactManualWrap.querySelectorAll<HTMLInputElement>(
+				'input[type="checkbox"]'
+			);
 
 		contactCheckboxes.forEach((cb: HTMLInputElement): void => {
 			const dept = cb.getAttribute('data-dept') || '';
 			const typesAttr = cb.getAttribute('data-types') || '';
 			const types = typesAttr.split(',');
 
-			const matchType = types.some((t: string) => selectedTypes.includes(t));
+			const matchType = types.some((t: string) =>
+				selectedTypes.includes(t)
+			);
 			const matchDept = selectedDepts.includes(dept);
 
 			let shouldCheck = false;
@@ -285,8 +314,11 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	}
 
 	// 3. Searchable Lists Logic (Universal)
-	const searchInputs = document.querySelectorAll<HTMLInputElement>('.dame-list-search');
-	const checkboxLists = document.querySelectorAll<HTMLElement>('.dame-checkbox-list');
+	const searchInputs =
+		document.querySelectorAll<HTMLInputElement>('.dame-list-search');
+	const checkboxLists = document.querySelectorAll<HTMLElement>(
+		'.dame-checkbox-list'
+	);
 
 	// Initial reorder and count update for all lists on page load
 	checkboxLists.forEach((list: HTMLElement): void => {
@@ -296,6 +328,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 	/**
 	 * Normalizes text by converting to lowercase and removing accents.
+	 * @param text
 	 */
 	function normalizeText(text: string | null | undefined): string {
 		return (text || '')
@@ -305,8 +338,10 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	}
 
 	searchInputs.forEach((input: HTMLInputElement): void => {
-		input.addEventListener('keyup', function (this: HTMLInputElement): void {
-			const wrapper = this.closest<HTMLElement>('.dame-searchable-list-wrapper');
+		input.addEventListener('keyup', (): void => {
+			const wrapper = input.closest<HTMLElement>(
+				'.dame-searchable-list-wrapper'
+			);
 			const list = wrapper
 				? wrapper.querySelector<HTMLElement>('.dame-checkbox-list')
 				: null;
@@ -314,7 +349,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				return;
 			}
 
-			const filter = normalizeText(this.value);
+			const filter = normalizeText(input.value);
 
 			const labels = list.querySelectorAll<HTMLLabelElement>('label');
 			labels.forEach((label: HTMLLabelElement): void => {
@@ -329,14 +364,23 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	});
 
 	// 4. Already sent warning logic
-	const messageSelect = document.getElementById('dame_message_to_send') as HTMLSelectElement | null;
-	const warningDiv = document.getElementById('dame_message_warning') as HTMLElement | null;
+	const messageSelect = document.getElementById(
+		'dame_message_to_send'
+	) as HTMLSelectElement | null;
+	const warningDiv = document.getElementById(
+		'dame_message_warning'
+	) as HTMLElement | null;
 
 	if (messageSelect && warningDiv) {
-		messageSelect.addEventListener('change', function (this: HTMLSelectElement): void {
-			const selectedOption = this.options[this.selectedIndex];
-			const status = selectedOption ? selectedOption.getAttribute('data-status') : null;
-			const submitBtn = document.querySelector<HTMLInputElement>('input[type="submit"]');
+		messageSelect.addEventListener('change', (): void => {
+			const selectedOption =
+				messageSelect.options[messageSelect.selectedIndex];
+			const status = selectedOption
+				? selectedOption.getAttribute('data-status')
+				: null;
+			const submitBtn = document.querySelector<HTMLInputElement>(
+				'input[type="submit"]'
+			);
 
 			if (status === 'scheduled') {
 				warningDiv.style.display = 'block';

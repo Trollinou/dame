@@ -169,6 +169,7 @@ declare global {
 		dame_agenda_ajax?: DameAgendaAjax;
 		dame_contact_ajax?: DameContactAjax;
 		dame_pre_inscription_ajax?: DamePreInscriptionAjax;
+		dameAdminCommands?: { adminUrl: string };
 		wp?: {
 			apiFetch?: (options: { path?: string; url?: string; method?: string; data?: unknown; headers?: Record<string, string> }) => Promise<unknown>;
 			i18n?: {

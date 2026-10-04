@@ -71,10 +71,10 @@ class Data_Endpoints {
 					'permission_callback' => array( $this, 'get_permissions_check' ),
 					'args'                => array(
 						'type' => array(
-							'validate_callback' => function ( $param ) {
-								return is_string( $param );
-							},
+							'type'              => 'string',
 							'required'          => true,
+							'sanitize_callback' => 'sanitize_key',
+							'validate_callback' => static fn( $param ) => is_string( $param ) && ! empty( $param ),
 						),
 					),
 				),
@@ -103,8 +103,10 @@ class Data_Endpoints {
 					'permission_callback' => array( $this, 'get_permissions_check' ),
 					'args'                => array(
 						'limit' => array(
+							'type'              => 'integer',
 							'default'           => 10,
 							'sanitize_callback' => 'absint',
+							'validate_callback' => static fn( $param ) => is_numeric( $param ) && (int) $param > 0,
 						),
 					),
 				),

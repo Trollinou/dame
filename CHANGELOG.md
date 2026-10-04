@@ -2,6 +2,128 @@
 
 ## [Unreleased]
 
+### Sauvegardes, Export/Import & Taxonomies
+- **Persistance et Restauration du Type de Groupe d'Adhérents (`_dame_group_type`)** :
+  - Correction de l'importation des métadonnées de taxonomie dans `DAME\Services\Backup\AdherentBackup` et `DAME\Services\Backup\SiteBackup` : déballage des tableaux de valeurs lors de la restauration pour éviter l'insertion de structures sérialisées en base de données `wp_termmeta`.
+  - Purge préalable des métadonnées existantes du terme (`$wpdb->delete`) pour garantir la cohérence et l'idempotence des restaurations successives.
+  - Ajout d'une tolérance d'auto-guérison dans `DAME\Taxonomies\Group` et `DAME\Admin\Pages\Mailing\FormRenderer` pour normaliser automatiquement les valeurs de `_dame_group_type` si elles ont été précédemment importées sous forme de tableau.
+
+### Modernisation Architecture, Performance & Standards (WordPress 7.1 & PHP 8.4)
+- **Pipeline de Build & Consolidation des Scripts** :
+  - Parallélisation asynchrone de la compilation TypeScript / esbuild dans `build-js.js` via `Promise.all` et l'API `esbuild.build` (temps de compilation réduit à ~24ms).
+  - Consolidation de tous les scripts d'outillage dans le dossier `scripts/` (déplacement de `scripts/package.cjs` et suppression du répertoire `script/`).
+  - Ajout d'une étape de validation QA automatique (`typecheck`, `lint:js`, `phpstan`) dans le script de release `scripts/package.cjs` avant toute génération d'archive de distribution.
+- **Autoloading PSR-4 & Composer** :
+  - Déclaration de l'espace de noms `"autoload": { "psr-4": { "DAME\\": "includes/" } }` dans `composer.json` et génération de la classmap optimisée via `composer dump-autoload -o`.
+- **Cycle de Vie Événementiel & Lazy Loading REST / Admin** :
+  - Encapsulation de l'instanciation des contrôleurs de routes REST (`Data_Endpoints`, `Identities`, `Benevolat_REST`, `PreInscription_REST`, `Tracker`) dans le hook `rest_api_init` au sein de `DAME\Core\Plugin`, allégeant significativement le bootstrap sur chaque requête HTTP frontend.
+  - Isolation du service d'administration `Backup` sous la condition `if ( is_admin() )`.
+- **Options API & Autoload (WP 7.1)** :
+  - Spécification explicite du paramètre `'autoload' => false` lors de l'enregistrement de l'option de configuration principale (`register_setting`) dans `DAME\Admin\Settings\Main` pour préserver la mémoire système.
+- **Repositories, Object Cache (`wp_cache_*`) & Invalidation Déterministe** :
+  - Intégration de l'Object Cache WordPress avec mise en cache mémoire des résultats SQL complexes (`dame_members`, `dame_agenda`) dans `DAME\Repositories\MemberRepository` et `DAME\Repositories\AgendaRepository`.
+  - Invalidation atomique du cache (`wp_cache_delete`) via les méthodes `invalidate_member_cache()` et `invalidate_agenda_cache()` branchées sur les hooks de mutation (`save_post_dame_adherent`, `save_post_dame_agenda`, `deleted_post`, `set_object_terms`).
+- **Templates FSE & Template Registration API (WP 7.1)** :
+  - Déclaration et enregistrement formels des modèles de blocs FSE `single-dame_agenda` et `archive-dame_agenda` via `register_block_template()` dans `DAME\Blocks\Manager`.
+- **Performance Frontend, Web Vitals & Assets** :
+  - Application des règles de rendu virtuel et INP (`content-visibility: auto; contain-intrinsic-size: auto 65px;`) sur les listes d'événements (`src/scss/views/_agenda.scss`).
+  - Enregistrement des feuilles de style via `wp_register_style()` dans `DAME\Frontend\Assets` et chargement conditionnel de `dame-public-styles` sur les vues de CPT et pages pertinentes.
+  - Suppression définitive du script classique redondant `src/js/public-contact-form.ts` et allègement du shortcode `[dame_contact]`.
+  - **Modernisation UI & Restauration de l'agencement vertical (`dame_benevolat`)** :
+    - Suppression du conteneur fermé à fond gris et bordures lourdes (`.dame-benevolat-wrapper`) pour une intégration native et transparente dans le thème actif.
+    - Épuration du tableau de disponibilités (`.dame-benevolat-table`) avec séparateurs horizontaux légers, colonnes harmonisées et intégration des styles de boutons standards (`.dame-btn--primary`).
+    - Enqueue explicite de la feuille de style `dame-public-styles` lors du rendu de `[dame_benevolat]` dans `DAME\Shortcodes\Benevolat`.
+    - Encapsulation des créneaux horaires dans un conteneur dédié `.benevolat-timeslots-list` avec disposition flexbox en colonne (`flex-direction: column; gap: 8px;`) dans `src/scss/views/_benevolat.scss`, restaurant l'affichage vertical fluide des choix par date.
+- **Conformité & Contrôle Qualité (QA)** :
+  - Correction de l'utilisation de mots-clés réservés PHP en noms de paramètres (`$default` $\rightarrow$ `$default_value`) dans `Metaboxes/Adherent/Legal.php` et `Metaboxes/Agenda/DetailsMetabox.php`.
+  - Résolution de l'ensemble des 16 avertissements ESLint sur les modules TypeScript (0 erreur, 0 warning).
+  - Ajout du fichier de configuration des tests unitaires `phpunit.xml.dist` et exclusion du cache `.phpunit.cache` dans `.gitignore`.
+  - Mise à jour et formalisation des règles de l'art dans `AGENTS.md` et `ARCHITECTURE.md`.
+
+## [5.5.2] - 2026-10-03
+
+### Formulaire de Préinscription (`dame_fiche_inscription`) & Interactivity API
+- **Modernisation & Unification de la soumission Interactivity API (`dame/registration`)** :
+  - Centralisation de la soumission dans le module TypeScript réactif `src/js/modules/registration-store.ts` avec gestion des données de retour (`fullName`, `healthQuestionnaire`, `hasSignedHealth`, `hasSignedParental`, `postId`, `nonce`, `parentalAuthNonce`, `paymentUrl`, `senderEmail`).
+  - Suppression de l'écouteur `submit` redondant et de la requête AJAX concurrente dans le script classique `src/js/public-pre-inscription-form.ts` (éliminant la double expédition d'e-mails).
+  - Ajout d'une protection synchrone anti double-clic (`if (ctx.isSubmitting) return;` + désactivation immédiate du bouton DOM + `event.stopPropagation()`).
+  - Ajout d'un verrou d'idempotence serveur par transient (15 secondes) dans `DAME\Shortcodes\RegistrationForm\SubmissionHandler` pour garantir l'unicité de la création de fiche et des e-mails lors de requêtes concurrentes.
+  - Déclaration réactive de l'écran de succès et des liens de téléchargement de documents signés (`data-wp-bind--hidden`, `data-wp-text`) dans `DAME\Shortcodes\RegistrationForm\FormView`.
+- **Correction de la file d'attente d'expédition des e-mails (`DAME\Services\PreInscription_Mailer`)** :
+  - Alignement strict du nombre de colonnes avec les spécificateurs de format dans `$wpdb->insert()` au sein de `PreInscription_Mailer` (résolution de l'échec d'insertion silencieux dans `wp_dame_message_opens` qui empêchait l'expédition du mail de confirmation adhérent par `BatchSender` via WP-Cron).
+- **Rappel du certificat médical & règlement dans le courriel de confirmation (`DAME\Services\PreInscription_Mailer`)** :
+  - Conditionnement du message selon la réponse au questionnaire de santé : en cas de réponse « OUI », le courriel rappelle explicitement que l'adhésion ne pourra être définitivement validée qu'après obtention conjointe du certificat médical et du règlement.
+  - Enregistrement systématique de la métadonnée `_dame_health_questionnaire` dans `DAME\Shortcodes\RegistrationForm\SubmissionHandler` pour assurer la persistance et l'alignement avec l'API REST.
+
+### Formulaire de Contact (`dame_contact`) & Retours Utilisateur (Feedback)
+- **Restauration de l'affichage du feedback & Interactivity API (`dame/contact`)** :
+  - Ajout des directives réactives `data-wp-bind--hidden`, `data-wp-class--dame-feedback--*`, `data-wp-text` et `data-wp-bind--disabled` sur le conteneur de message et le bouton d'envoi dans `DAME\Shortcodes\Contact`.
+  - Implémentation des getters d'état réactifs (`hasMessage`, `isSuccess`, `isError`, `isBusy`) dans `src/js/modules/contact-store.ts`.
+  - Unicité stricte du gestionnaire de soumission : neutralisation totale du script classique `src/js/public-contact-form.ts` en simple espace réservé inerte, et suppression de tout écouteur doublon.
+  - Verrouillage anti-rebond client (`if (ctx.isSubmitting) return;` + désactivation immédiate du bouton submit DOM + `event.stopPropagation()`).
+  - Verrouillage atomique serveur MySQL (`GET_LOCK(..., 0)`) couplé à un transient d'idempotence de 15 secondes dans `DAME\Shortcodes\Contact` pour neutraliser immédiatement toute concurrence au niveau du moteur de base de données avant l'appel à `wp_mail`.
+  - Normalisation de l'en-tête de courriel `Reply-To:` pour assurer la conformité SPF/DKIM et la compatibilité avec les serveurs SMTP stricts.
+  - Enqueue systématique de la feuille de styles `dame-public-styles` lors du rendu du shortcode de contact.
+  - Renforcement du contraste et de la spécificité des classes BEM `.dame-feedback` (`--success`, `--error`) dans `src/scss/components/_notices.scss` et styles de boutons dans `src/scss/components/_forms.scss` pour garantir une lisibilité optimale sur tous les thèmes (Blocksy, FSE).
+  - Optimisations Safari / WebKit : déplacement du honeypot anti-spam en fin de formulaire avec `display: none !important;` et désactivation de l'autocorrection / autocomplétion intempestive.
+
+### Inscription Newsletter (`dame_newsletter`) & Bénévolat (`dame_benevolat`)
+- **Appels à Bénévoles (`dame_benevolat`) — Correction de l'enregistrement et persistance des votes** :
+  - **Correction du verrouillage des dates du jour (`$info['date'] < $today`)** : Remplacement de la comparaison `<=` par `< $today` dans l'affichage du shortcode et le traitement backend `handle_submission()` dans `DAME\Shortcodes\Benevolat`. Les événements ayant lieu le jour même restent sélectionnables et leurs votes ne sont plus filtrés ni ignorés.
+  - **Unification AJAX & Interactivity API (`dame/benevolat`)** : Enregistrement des hooks `wp_ajax_dame_submit_benevolat` et `wp_ajax_nopriv_dame_submit_benevolat` dans `DAME\Shortcodes\Benevolat` avec réponses JSON normalisées (`wp_send_json_success()`, `wp_send_json_error()`), résolvant le blocage des soumissions pour les visiteurs non connectés.
+  - **Décodage JSON réactif frontend (`src/js/modules/benevolat-store.ts`)** : Prise en charge des réponses JSON dans le store Interactivity API et affichage immédiat du message de confirmation serveur via les directives `data-wp-text` et `data-wp-bind--hidden`.
+  - **Intégrité de la persistance SQL (`{$wpdb->prefix}dame_benevolat_votes`)** : Spécification stricte des formats `$format` sur `$wpdb->insert()` et `$wpdb->delete()` dans `DAME\Shortcodes\Benevolat` et ajout du champ horodaté `voted_at` dans `DAME\Repositories\BenevolatRepository::save_choice()` garantissant la stricte conformité au schéma de table MySQL.
+- **Sécurisation Anti-Rebond & Idempotence des Formulaires Publics** :
+  - `dame/newsletter` (`src/js/modules/newsletter-store.ts`, `DAME\Services\Newsletter`) : verrou synchrone client, garde anti-doublon dans `public-newsletter.ts`, désactivation immédiate du bouton submit et verrou d'idempotence serveur immédiat par transient (15 secondes) sur `handle_subscription()`.
+  - `dame/benevolat` (`src/js/modules/benevolat-store.ts`, `DAME\Shortcodes\Benevolat`) : verrou synchrone client, désactivation immédiate du bouton de soumission et verrou d'idempotence serveur par transient (15 secondes) sur `handle_submission()`.
+
+### Administration & Navigation
+- **Masquage du sous-menu Rapport de message** :
+  - Enregistrement de la page de rapport d'ouverture et d'envoi (`dame-message-report`) avec un slug parent vide (`''`) dans `DAME\Admin\Menu` pour éviter l'apparition d'une entrée orpheline dans le menu latéral d'administration tout en conservant l'accès direct via les statistiques de la liste des messages.
+
+### Architecture SCSS Modulaire & Uniformisation Thème WordPress (FSE & Blocksy)
+- **Ajustements Visuels du Shortcode Liste Agenda (`dame_liste_agenda`)** :
+  - Ajustement de la taille du macaron circulaire de date (`.date-circle`) à 58px de diamètre avec espacement interne (`padding: 4px`) et typographie équilibrée (`day-of-week` et `month-abbr` à 0.56rem, `day-number` à 1.2rem avec `font-weight: 700` pour accentuer le contraste du chiffre) pour assurer une marge respirante avec les bords du cercle tout en s'alignant sur les 3 lignes de texte.
+- **Architecture SCSS Modulaire (`src/scss/`)** :
+  - Découpage en sous-dossiers thématiques : `abstracts/` (`_variables`, `_mixins`, `_wp-theme`), `components/` (`_buttons`, `_forms`, `_tables`, `_modal`, `_notices`, `_autocomplete`, `_signature`), `views/` (`_agenda`, `_single-event`, `_benevolat`, `_newsletter`, `_registration`), et `admin/` (`_dashboard`, `_metaboxes`, `_mailing`, `_backups`, `_view-adherent`, `_reports`, `_reconciliation`, `_hidden-menus`).
+  - Compilation Dart Sass optimisée vers `assets/css/` (`admin-styles.css`, `admin-common.css`, `public-styles.css`, `public-agenda.css`).
+  - Harmonisation du suivi Git des assets compilés : exclusion de `/assets/css/` dans `.gitignore` (au même titre que `/assets/js/`), les styles étant compilés dynamiquement à partir des sources `src/scss/`.
+- **Harmonisation avec le Thème Actif & WordPress Standards (Blocksy & Block Themes)** :
+  - Utilisation des CSS Custom Properties WordPress et thèmes (`--wp--preset--color--*`, `--wp--preset--font-*`, `--theme-palette-color-*`, `--theme-button-*`) avec fallbacks fluides.
+  - Adaptation native des formulaires (inputs, selects, textareas), boutons (`.dame-btn`, `.nav-button`), modales, tableaux et badges de statut au thème actif.
+- **Éradication Totale du CSS Inline (`<style>` et attributs `style="..."`)** :
+  - Suppression de l'intégralité des balises `<style>` dans les fichiers PHP (`MessageReport`, `ViewAdherent`, shortcode `Benevolat`, métaboxes `Contact`, `Adherent`, `Benevolat`, `Message`, `Agenda`).
+  - Remplacement de tous les attributs `style="..."` résiduels par des classes BEM et utilitaires CSS (`_dashboard.scss`, `_backups.scss`, `_metaboxes.scss`, `_reports.scss`).
+  - Enqueue et enregistrement centralisés des feuilles de styles dans `Admin\Assets` et `Frontend\Assets`.
+
+### Modernisation WordPress 7.x & Script Modules (Interactivity API)
+- **Migration vers l'Interactivity API et les Script Modules ESM (`@wordpress/interactivity`)** :
+  - **Stores réactifs d'état (`src/js/modules/`)** :
+    - `agenda-store.ts` : Navigation fluide par mois, filtrage instantané par catégorie/recherche et ouverture de modale d'événement via signaux réactifs (`dame/agenda`).
+    - `benevolat-store.ts` : Sélection réactive des créneaux et soumission asynchrone des disponibilités sans rechargement (`dame/benevolat`).
+    - `contact-store.ts` : Soumission de message en temps réel avec indicateur d'état et validation (`dame/contact`).
+    - `newsletter-store.ts` : Contrôle réactif de la modale d'inscription et intégration du cycle double opt-in (`dame/newsletter`).
+    - `registration-store.ts` : Calcul dynamique de minorité à la saisie de la date de naissance et bascule des représentants légaux (`dame/registration`).
+  - **Enregistrement des Script Modules ESM** : Déclaration via `wp_register_script_module()` et injection ciblée dans les 6 shortcodes (`dame_agenda`, `dame_liste_agenda`, `dame_fiche_inscription`, `dame_contact`, `dame_newsletter`, `dame_benevolat`).
+  - **Types TypeScript Ambiants (`src/types/interactivity.d.ts`)** : Contrat de typage pour `store()`, `getContext()` et `getElement()` assurant la compatibilité `tsc --noEmit`.
+
+### Blocs Gutenberg & Block Bindings API
+- **Block Bindings API (`DAME\Blocks\Manager`)** :
+  - Sources de données déclarées pour lier les attributs de blocs natifs (titres, paragraphes, boutons) aux métadonnées des CPTs DAME (`dame/agenda-data`, `dame/adherent-data`).
+- **Enregistrement des blocs natifs hybrides (`blocks/`)** :
+  - Blocs conformes `block.json` pour tous les composants publics avec catégorie Gutenberg dédiée `dame`.
+- **Modèles FSE (`templates/`)** :
+  - Gabarits de blocs `single-dame_agenda.html` et `archive-dame_agenda.html`.
+
+### Palette de Commandes WordPress (Ctrl+K / Cmd+K)
+- **Intégration Command Palette (`src/js/admin-command-palette.ts`)** :
+  - Raccourcis d'administration rapides pour la création d'adhérents, événements, appels à bénévolat, envoi de mailings, synchronisation FFE et accès aux réglages.
+
+### Contrôles Qualité & Conformité (PHPStan, WPCS & ESLint)
+- **PHPStan Level 7** : Résolution intégrale de toutes les alertes (122 fichiers vérifiés, 0 erreur).
+- **PHP CodeSniffer / WPCS** : Résolution de l'intégralité des 101 erreurs de standards (remplacement des ternaires courts, échappements stricts `esc_html`, `gmdate`, validation nonces).
+- **ESLint & TypeScript** : Nettoyage et formatage strict Prettier/WordPress, élimination des variables d'exceptions inutilisées et réorganisation séquentielle des affectations de contexte.
+
 ### Conformité CSP & Élimination du JavaScript Inline
 - **Élimination intégrale du code JavaScript inline (balises `<script>` et attributs `on*`)** :
   - **Délégation d'événements globale (`src/js/admin-common.ts`)** :

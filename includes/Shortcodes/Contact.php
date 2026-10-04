@@ -30,64 +30,86 @@ class Contact {
 	/**
 	 * Renders the shortcode.
 	 *
-	 * @param array<string, mixed> $atts Shortcode attributes.
+	 * @param array<string, mixed>|string $atts Shortcode attributes.
 	 * @return string The HTML output of the contact form.
 	 */
-	public function render( $atts ) {
-		// Enqueue the script using the global constant.
-		wp_enqueue_script( 'dame-public-contact-form', \DAME_PLUGIN_URL . 'assets/js/public-contact-form.js', array(), \DAME_VERSION, true );
-
-		// Localize the script with required data.
-		wp_localize_script(
-			'dame-public-contact-form',
-			'dame_contact_ajax',
-			array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce'    => wp_create_nonce( 'dame_contact_nonce' ),
-			)
+	public function render( $atts = array() ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+		// Enqueue public styles.
+		wp_enqueue_style(
+			'dame-public-styles',
+			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
+			array(),
+			\DAME_VERSION
 		);
+
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( 'dame/contact' );
+		}
+
+		$contact_context = array(
+			'isSubmitting' => false,
+			'status'       => 'idle',
+			'message'      => '',
+			'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+			'nonce'        => wp_create_nonce( 'dame_contact_nonce' ),
+		);
+
+		$context_attr = function_exists( 'wp_interactivity_data_wp_context' )
+			? wp_interactivity_data_wp_context( $contact_context )
+			: 'data-wp-context=\'' . wp_json_encode( $contact_context ) . '\'';
 
 		ob_start();
 		?>
-		<div id="dame-public-contact-form-wrapper">
-			<form id="dame-public-contact-form" class="dame-form" novalidate>
+		<div id="dame-public-contact-form-wrapper" class="dame-contact-wrapper" data-wp-interactive="dame/contact" <?php echo $context_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<div
+				id="dame-contact-feedback"
+				class="dame-feedback"
+				role="alert"
+				data-wp-bind--hidden="!state.hasMessage"
+				data-wp-class--dame-feedback--success="state.isSuccess"
+				data-wp-class--dame-feedback--error="state.isError"
+				data-wp-text="context.message"
+				hidden
+			></div>
+
+			<form id="dame-public-contact-form" class="dame-form dame-contact-form" novalidate data-wp-on--submit="actions.submitForm">
 
 				<?php wp_nonce_field( 'dame_contact_nonce', 'dame_contact_nonce_field' ); ?>
 
 				<!-- Action -->
 				<input type="hidden" name="action" value="dame_submit_contact_form">
 
-				<!-- Honeypot -->
-				<div style="display:none;">
-					<label for="dame_contact_hp"><?php esc_html_e( 'Laissez ce champ vide', 'dame' ); ?></label>
-					<input type="text" id="dame_contact_hp" name="dame_contact_hp" value="">
-				</div>
-
 				<p>
 					<label for="dame_contact_name"><?php esc_html_e( 'Nom', 'dame' ); ?> <span class="required">*</span></label>
-					<input type="text" id="dame_contact_name" name="dame_contact_name" required>
+					<input type="text" id="dame_contact_name" name="dame_contact_name" required autocomplete="off" autocorrect="off">
 				</p>
 
 				<p>
 					<label for="dame_contact_email"><?php esc_html_e( 'Courriel', 'dame' ); ?> <span class="required">*</span></label>
-					<input type="email" id="dame_contact_email" name="dame_contact_email" required>
+					<input type="email" id="dame_contact_email" name="dame_contact_email" required autocomplete="off" autocapitalize="off" autocorrect="off">
 				</p>
 
 				<p>
 					<label for="dame_contact_subject"><?php esc_html_e( 'Sujet', 'dame' ); ?> <span class="required">*</span></label>
-					<input type="text" id="dame_contact_subject" name="dame_contact_subject" required>
+					<input type="text" id="dame_contact_subject" name="dame_contact_subject" required autocomplete="off" autocorrect="off">
 				</p>
 
 				<p>
 					<label for="dame_contact_message"><?php esc_html_e( 'Message', 'dame' ); ?> <span class="required">*</span></label>
-					<textarea id="dame_contact_message" name="dame_contact_message" rows="5" required></textarea>
+					<textarea id="dame_contact_message" name="dame_contact_message" rows="5" required spellcheck="true"></textarea>
 				</p>
+
+				<!-- Anti-spam honeypot -->
+				<div class="dame-contact-hp" aria-hidden="true" style="display:none !important;">
+					<label for="dame_contact_hp"><?php esc_html_e( 'Laissez ce champ vide', 'dame' ); ?></label>
+					<input type="text" id="dame_contact_hp" name="dame_contact_hp" value="" tabindex="-1" autocomplete="new-password">
+				</div>
 
 				<p>
-					<button type="submit"><?php esc_html_e( 'Envoyer', 'dame' ); ?></button>
+					<button type="submit" class="dame-btn dame-btn--primary" data-wp-bind--disabled="state.isBusy">
+						<?php esc_html_e( 'Envoyer', 'dame' ); ?>
+					</button>
 				</p>
-
-				<div id="dame-contact-feedback" style="display:none;"></div>
 
 			</form>
 		</div>
@@ -148,26 +170,57 @@ class Contact {
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 		$message = isset( $_POST['dame_contact_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['dame_contact_message'] ) ) : '';
 
-		// 4. Send Email.
-		$options = get_option( 'dame_options' );
-		$to      = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+		// 4. Atomic Lock & Idempotency: prevent any concurrent execution and double-dispatch.
+		global $wpdb;
+		$fingerprint = md5( strtolower( $name . $email . $subject . $message ) );
+		$lock_name   = 'dame_c_' . $fingerprint;
+		$lock_key    = 'dame_contact_lock_' . $fingerprint;
 
-		$email_subject = 'Formulaire de contact - ' . $subject;
-
-		$body  = "Vous avez reçu un nouveau message depuis le formulaire de contact de votre site.\r\n\r\n";
-		$body .= 'Nom: ' . $name . "\r\n";
-		$body .= 'Courriel: ' . $email . "\r\n";
-		$body .= 'Sujet: ' . $subject . "\r\n";
-		$body .= "Message:\r\n" . $message . "\r\n";
-
-		$headers = array( 'From: ' . $name . ' <' . $email . '>' );
-
-		$sent = wp_mail( $to, $email_subject, $body, $headers );
-
-		if ( $sent ) {
+		// Check 15-second transient debounce window first.
+		if ( false !== get_transient( $lock_key ) ) {
 			wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
-		} else {
-			wp_send_json_error( array( 'message' => __( "Une erreur s'est produite lors de l'envoi du message.", 'dame' ) ) );
+		}
+
+		// Acquire MySQL named lock with 0s timeout (fails immediately if another process is currently executing).
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$acquired = $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, 0)', $lock_name ) );
+		if ( '1' !== (string) $acquired ) {
+			wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
+		}
+
+		try {
+			// Re-check transient once inside the critical section.
+			if ( false !== get_transient( $lock_key ) ) {
+				wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
+			}
+			set_transient( $lock_key, '1', 15 );
+
+			$options = get_option( 'dame_options' );
+			$to      = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+
+			$email_subject = 'Formulaire de contact - ' . $subject;
+
+			$body  = "Vous avez reçu un nouveau message depuis le formulaire de contact de votre site.\r\n\r\n";
+			$body .= 'Nom: ' . $name . "\r\n";
+			$body .= 'Courriel: ' . $email . "\r\n";
+			$body .= 'Sujet: ' . $subject . "\r\n";
+			$body .= "Message:\r\n" . $message . "\r\n";
+
+			$headers = array(
+				'Reply-To: ' . $name . ' <' . $email . '>',
+			);
+
+			$sent = wp_mail( $to, $email_subject, $body, $headers );
+
+			if ( $sent ) {
+				wp_send_json_success( array( 'message' => __( 'Votre message a bien été envoyé.', 'dame' ) ) );
+			} else {
+				delete_transient( $lock_key );
+				wp_send_json_error( array( 'message' => __( "Une erreur s'est produite lors de l'envoi du message.", 'dame' ) ) );
+			}
+		} finally {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $lock_name ) );
 		}
 	}
 }

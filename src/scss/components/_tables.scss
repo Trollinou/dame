@@ -1,0 +1,44 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Standard WordPress & Theme Compatible Tables
+ */
+
+.dame-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5em 0;
+    font-size: 14px;
+    background-color: var(--dame-theme-bg);
+    color: var(--dame-theme-text);
+
+    th,
+    td {
+        border: 1px solid var(--dame-theme-border);
+        padding: 10px 14px;
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    th {
+        background-color: var(--dame-theme-surface);
+        font-weight: 600;
+        color: var(--dame-theme-text);
+    }
+
+    tr:nth-child(even) td {
+        background-color: var(--dame-theme-surface);
+    }
+
+    tr:hover td {
+        background-color: var(--dame-theme-border);
+    }
+
+    &--responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}

@@ -108,7 +108,7 @@ class Message {
 		);
 
 		$actions['reset_send'] = sprintf(
-			'<a href="%s" class="dame-reset-send" data-confirm="%s" style="color: #d63638;">%s</a>',
+			'<a href="%s" class="dame-reset-send dame-action-reset-send" data-confirm="%s">%s</a>',
 			esc_url( $url ),
 			esc_attr__( 'Êtes-vous sûr de vouloir réinitialiser l\'envoi de ce message ? Cela effacera l\'historique des destinataires pour ce message (permettant un renvoi complet) et remettra les compteurs à zéro.', 'dame' ),
 			esc_html__( 'Reset envoi', 'dame' )
@@ -269,7 +269,7 @@ class Message {
 		);
 
 		$actions['force_sent'] = sprintf(
-			'<a href="%s" style="color: #0073aa;">%s</a>',
+			'<a href="%s" class="dame-action-link-primary">%s</a>',
 			esc_url( $url ),
 			esc_html__( 'Terminer l\'envoi', 'dame' )
 		);

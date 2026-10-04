@@ -1,0 +1,24 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * DAME View Adherent Admin View
+ */
+
+.dame-view-adherent {
+    .form-table {
+        th,
+        td {
+            padding-top: 6px;
+            padding-bottom: 6px;
+        }
+    }
+
+    .dame-action-btn-top {
+        margin-bottom: 20px;
+    }
+
+    #poststuff {
+        margin-top: 20px;
+    }
+}

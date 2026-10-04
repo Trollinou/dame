@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "dame/registration",
+  "version": "5.5.2",
+  "title": "Fiche d'Inscription",
+  "category": "dame",
+  "icon": "forms",
+  "description": "Fiche complète d'inscription au club d'échecs.",
+  "keywords": [
+    "inscription",
+    "adhésion",
+    "adherent",
+    "dame"
+  ],
+  "supports": {
+    "html": false,
+    "interactivity": true
+  },
+  "textdomain": "dame",
+  "style": "dame-public-styles",
+  "viewScriptModule": "dame/registration"
+}

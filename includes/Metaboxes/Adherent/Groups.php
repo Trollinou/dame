@@ -60,7 +60,7 @@ class Groups {
 				<li class="tabs"><a href="#<?php echo esc_attr( $taxonomy ); ?>-all"><?php echo esc_html__( 'Tous les groupes', 'dame' ); ?></a></li>
 			</ul>
 
-			<div id="<?php echo esc_attr( $taxonomy ); ?>-all" class="tabs-panel" style="display: block;">
+			<div id="<?php echo esc_attr( $taxonomy ); ?>-all" class="tabs-panel">
 				<ul id="<?php echo esc_attr( $taxonomy ); ?>checklist" data-wp-lists="list:<?php echo esc_attr( $taxonomy ); ?>" class="categorychecklist form-no-clear">
 					<?php
 					wp_terms_checklist(
@@ -77,7 +77,7 @@ class Groups {
 			<?php
 			$tax_obj = get_taxonomy( $taxonomy );
 			if ( $tax_obj instanceof \WP_Taxonomy && current_user_can( $tax_obj->cap->manage_terms ) ) {
-				echo '<p style="margin-top:1em;"><a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . $taxonomy ) ) . '">' . esc_html( $tax_obj->labels->add_new_item ) . '</a></p>';
+				echo '<p class="dame-taxonomy-add-link"><a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . $taxonomy ) ) . '">' . esc_html( $tax_obj->labels->add_new_item ) . '</a></p>';
 			}
 			?>
 		</div>

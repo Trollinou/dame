@@ -136,29 +136,25 @@ class Plugin {
 		$birthday_service = new Birthday();
 		$birthday_service->init();
 
-		// Initialize REST Meta.
+		// Initialize REST Meta (registers post meta on init).
 		$rest_meta = new Post_Meta();
 		$rest_meta->init();
 
-		// Initialize custom REST endpoints.
-		$data_endpoints = new Data_Endpoints( $birthday_service );
-		$data_endpoints->init();
-
+		// Initialize Registration logic (auth hooks & token verification).
 		$registration = new Registration();
 		$registration->init();
 
-		$identities = new Identities();
-		$identities->init();
-
-		$benevolat_rest = new Benevolat_REST();
-		$benevolat_rest->init();
-
-		$pre_inscription_rest = new PreInscription_REST();
-		$pre_inscription_rest->init();
-
-		// Initialize API.
-		$tracker = new Tracker();
-		$tracker->init();
+		// Defer custom REST routes to rest_api_init hook (lazy loading).
+		add_action(
+			'rest_api_init',
+			static function () use ( $birthday_service ): void {
+				( new Data_Endpoints( $birthday_service ) )->register_routes();
+				( new Identities() )->register_routes();
+				( new Benevolat_REST() )->register_routes();
+				( new PreInscription_REST() )->register_routes();
+				( new Tracker() )->register_routes();
+			}
+		);
 
 		// Initialize Services.
 		$mailer = new Mailer();
@@ -172,9 +168,6 @@ class Plugin {
 
 		$ical_feed_service = new ICalFeedService();
 		$ical_feed_service->init();
-
-		$backup_service = new Backup();
-		$backup_service->init();
 
 		$newsletter_service = new NewsletterService();
 		$newsletter_service->init();
@@ -218,6 +211,10 @@ class Plugin {
 		// Initialize Frontend Assets.
 		$frontend_assets = new \DAME\Frontend\Assets();
 		$frontend_assets->init();
+
+		// Initialize Gutenberg Blocks & Block Bindings API.
+		$blocks_manager = new \DAME\Blocks\Manager();
+		$blocks_manager->init();
 
 		// Initialize Metaboxes & Admin-only logic.
 		if ( is_admin() ) {
@@ -299,8 +296,9 @@ class Plugin {
 			$agenda_actions = new AgendaActions();
 			$agenda_actions->init();
 
-			// Initialisation des pages de sauvegardes manuelles.
-
+			// Initialisation des pages et actions de sauvegardes/exports manuels.
+			$backup_service = new Backup();
+			$backup_service->init();
 		}
 	}
 }

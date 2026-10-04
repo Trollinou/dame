@@ -41,13 +41,28 @@ class FormRenderer {
 		$state_had_attachment    = ! empty( $saved_state['_had_attachment'] );
 
 		// Data fetching.
-		$raw_seasons   = get_terms( array( 'taxonomy' => 'dame_saison_adhesion', 'hide_empty' => false ) );
-		$seasons       = is_array( $raw_seasons ) ? $raw_seasons : array();
+		$raw_seasons = get_terms(
+			array(
+				'taxonomy'   => 'dame_saison_adhesion',
+				'hide_empty' => false,
+			)
+		);
+		$seasons     = is_array( $raw_seasons ) ? $raw_seasons : array();
 
-		$raw_groups    = get_terms( array( 'taxonomy' => 'dame_group', 'hide_empty' => false ) );
-		$all_groups    = is_array( $raw_groups ) ? $raw_groups : array();
+		$raw_groups = get_terms(
+			array(
+				'taxonomy'   => 'dame_group',
+				'hide_empty' => false,
+			)
+		);
+		$all_groups = is_array( $raw_groups ) ? $raw_groups : array();
 
-		$raw_contacts  = get_terms( array( 'taxonomy' => 'dame_contact_type', 'hide_empty' => false ) );
+		$raw_contacts  = get_terms(
+			array(
+				'taxonomy'   => 'dame_contact_type',
+				'hide_empty' => false,
+			)
+		);
 		$contact_types = is_array( $raw_contacts ) ? $raw_contacts : array();
 
 		$departments = Data_Provider::get_departments();
@@ -57,6 +72,9 @@ class FormRenderer {
 		$permanents  = array();
 		foreach ( $all_groups as $group ) {
 			$type = get_term_meta( $group->term_id, '_dame_group_type', true );
+			if ( is_array( $type ) ) {
+				$type = reset( $type );
+			}
 			if ( 'permanent' === $type ) {
 				$permanents[] = $group;
 			} else {
@@ -64,9 +82,33 @@ class FormRenderer {
 			}
 		}
 
-		$messages  = get_posts( array( 'post_type' => 'dame_message', 'post_status' => 'publish', 'posts_per_page' => -1, 'orderby' => 'date', 'order' => 'DESC' ) );
-		$adherents = get_posts( array( 'post_type' => 'adherent', 'posts_per_page' => -1, 'post_status' => 'publish', 'orderby' => 'title', 'order' => 'ASC' ) );
-		$contacts  = get_posts( array( 'post_type' => 'dame_contact', 'posts_per_page' => -1, 'post_status' => 'publish', 'orderby' => 'title', 'order' => 'ASC' ) );
+		$messages  = get_posts(
+			array(
+				'post_type'      => 'dame_message',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+			)
+		);
+		$adherents = get_posts(
+			array(
+				'post_type'      => 'adherent',
+				'posts_per_page' => -1,
+				'post_status'    => 'publish',
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+			)
+		);
+		$contacts  = get_posts(
+			array(
+				'post_type'      => 'dame_contact',
+				'posts_per_page' => -1,
+				'post_status'    => 'publish',
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+			)
+		);
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Envoyer un message', 'dame' ); ?></h1>

@@ -37,14 +37,9 @@ class DescriptionMetabox {
 		$competition_level = $get_value( 'competition_level', 'departementale' );
 		$description       = $get_value( 'agenda_description' );
 		?>
-		<style>
-			.dame-radio-group { display: flex; gap: 1em; margin-bottom: 0.5em; }
-			.dame-radio-group label { display: flex; align-items: center; gap: 0.2em; }
-			#dame_competition_level_wrapper { margin-left: 1em; }
-		</style>
 		<table class="form-table">
 			<tr>
-				<th><label><?php esc_html_e( 'Type de compétition', 'dame' ); ?> <span class="description" style="color: #d63638;">*</span></label></th>
+				<th><label><?php esc_html_e( 'Type de compétition', 'dame' ); ?> <span class="dame-required">*</span></label></th>
 				<td>
 					<div class="dame-radio-group">
 						<label><input type="radio" name="dame_competition_type" value="non" <?php checked( $competition_type, 'non' ); ?> required> <?php esc_html_e( 'Non', 'dame' ); ?></label>

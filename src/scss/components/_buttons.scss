@@ -1,0 +1,131 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Standard WordPress & Theme Compatible Buttons
+ */
+
+.dame-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    font-family: var(--dame-theme-font-body);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+    border-radius: var(--dame-theme-btn-radius);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color $dame-transition-fast, color $dame-transition-fast, transform 0.1s ease, box-shadow $dame-transition-fast;
+
+    &:disabled,
+    &.is-disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+
+    &:active:not(:disabled) {
+        transform: scale(0.98);
+    }
+
+    &--primary {
+        background-color: var(--dame-theme-primary);
+        color: #ffffff;
+
+        &:hover:not(:disabled) {
+            background-color: var(--dame-theme-primary-hover);
+            color: #ffffff;
+        }
+
+        &:focus-visible {
+            @include focus-ring(var(--dame-theme-primary));
+        }
+    }
+
+    &--secondary {
+        background-color: var(--dame-theme-surface);
+        color: var(--dame-theme-text);
+        border-color: var(--dame-theme-border);
+
+        &:hover:not(:disabled) {
+            background-color: var(--dame-theme-border);
+            color: var(--dame-theme-text);
+        }
+
+        &:focus-visible {
+            @include focus-ring(var(--dame-theme-border));
+        }
+    }
+
+    &--sm {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    &--full {
+        width: 100%;
+    }
+
+    .dashicons {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+    }
+}
+
+// Single Event Nav / Map & Add-To-Calendar Buttons
+.nav-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.nav-button {
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: var(--dame-theme-btn-radius);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 14px;
+    background-color: var(--dame-theme-surface);
+    color: var(--dame-theme-text);
+    border: 1px solid var(--dame-theme-border);
+    transition: all $dame-transition-fast;
+
+    &:hover {
+        background-color: var(--dame-theme-primary);
+        color: #ffffff;
+        border-color: var(--dame-theme-primary);
+    }
+}
+
+.dame-add-to-calendar-button {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    white-space: nowrap;
+    vertical-align: middle;
+    margin-left: 10px;
+    border-radius: var(--dame-theme-btn-radius);
+    background-color: var(--dame-theme-surface);
+    color: var(--dame-theme-text);
+    border: 1px solid var(--dame-theme-border);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all $dame-transition-fast;
+
+    &:hover {
+        background-color: var(--dame-theme-primary);
+        color: #ffffff;
+        border-color: var(--dame-theme-primary);
+    }
+}
