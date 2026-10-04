@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.6.0] - 2026-10-04
+
 ### Sauvegardes, Export/Import & Taxonomies
 - **Persistance et Restauration du Type de Groupe d'Adhérents (`_dame_group_type`)** :
   - Correction de l'importation des métadonnées de taxonomie dans `DAME\Services\Backup\AdherentBackup` et `DAME\Services\Backup\SiteBackup` : déballage des tableaux de valeurs lors de la restauration pour éviter l'insertion de structures sérialisées en base de données `wp_termmeta`.

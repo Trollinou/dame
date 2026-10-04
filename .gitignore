@@ -14,3 +14,8 @@ scratch/
 /assets/js/
 /assets/css/
 /.phpunit.cache/
+.phpunit.result.cache
+*.log
+.vscode/
+.idea/
+.env*
