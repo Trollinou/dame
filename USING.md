@@ -204,3 +204,16 @@ Le shortcode `[dame_fiche_inscription]` permet aux futurs adhérents de saisir l
    - La copie des documents signés (attestation de santé, autorisation parentale) est jointe automatiquement au courriel.
    - Les envois sont pris en charge par la file d'attente régulée FIFO (`BatchSender`) pour respecter le quota horaire/minute sans blocage SMTP.
 
+## 9. Groupes d'Adhérents & Sauvegardes
+
+### a. Types de Groupes d'Adhérents
+Lors de la création ou de la gestion de groupes (`DAME > Groupes d'Adhérent`), vous pouvez définir le type de chaque groupe :
+- **Saisonnier (Par défaut) :** Réservé aux membres et adhérents actifs du club au titre de la saison en cours (ex: *Cours Jeunes Débutants*, *Équipe Nationale 1*).
+- **Permanent :** Destiné aux contacts transversaux ou extérieurs (ex: *Bénévoles récurrents*, *Élus locaux*, *Presse*, *Partenaires*), permettant un ciblage précis dans les outils de mailing sans réinitialisation saisonnière.
+
+### b. Sauvegardes & Restauration Complète
+Depuis l'écran `DAME > Sauvegardes et Restaurations` :
+- **Sauvegarde complète (.json.gz) :** Archive compressée contenant l'ensemble des adhérents, contacts, préinscriptions, messages, taxonomies (saisons, groupes avec leurs métadonnées de type, types de contact) et configurations.
+- **Restauration :** Permet la réimportation intégrale sur un autre environnement ou en cas de sinistre, avec préservation stricte des identifiants, des relations de taxonomie et des métadonnées personnalisées.
+
+

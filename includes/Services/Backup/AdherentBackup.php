@@ -868,8 +868,16 @@ class AdherentBackup {
 				}
 
 				if ( ! empty( $t['meta_data'] ) ) {
-					foreach ( $t['meta_data'] as $k => $v ) {
-						update_term_meta( $term_id, $k, $v );
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- System restore purge term meta.
+					$wpdb->delete( $wpdb->termmeta, array( 'term_id' => $term_id ) );
+					foreach ( $t['meta_data'] as $k => $vals ) {
+						if ( is_array( $vals ) ) {
+							foreach ( $vals as $v ) {
+								add_term_meta( $term_id, $k, $v, false );
+							}
+						} else {
+							add_term_meta( $term_id, $k, $vals, false );
+						}
 					}
 				}
 			}

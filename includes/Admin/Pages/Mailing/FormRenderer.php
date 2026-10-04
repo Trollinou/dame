@@ -72,6 +72,9 @@ class FormRenderer {
 		$permanents  = array();
 		foreach ( $all_groups as $group ) {
 			$type = get_term_meta( $group->term_id, '_dame_group_type', true );
+			if ( is_array( $type ) ) {
+				$type = reset( $type );
+			}
 			if ( 'permanent' === $type ) {
 				$permanents[] = $group;
 			} else {

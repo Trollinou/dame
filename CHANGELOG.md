@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Sauvegardes, Export/Import & Taxonomies
+- **Persistance et Restauration du Type de Groupe d'Adhérents (`_dame_group_type`)** :
+  - Correction de l'importation des métadonnées de taxonomie dans `DAME\Services\Backup\AdherentBackup` et `DAME\Services\Backup\SiteBackup` : déballage des tableaux de valeurs lors de la restauration pour éviter l'insertion de structures sérialisées en base de données `wp_termmeta`.
+  - Purge préalable des métadonnées existantes du terme (`$wpdb->delete`) pour garantir la cohérence et l'idempotence des restaurations successives.
+  - Ajout d'une tolérance d'auto-guérison dans `DAME\Taxonomies\Group` et `DAME\Admin\Pages\Mailing\FormRenderer` pour normaliser automatiquement les valeurs de `_dame_group_type` si elles ont été précédemment importées sous forme de tableau.
+
 ### Modernisation Architecture, Performance & Standards (WordPress 7.1 & PHP 8.4)
 - **Pipeline de Build & Consolidation des Scripts** :
   - Parallélisation asynchrone de la compilation TypeScript / esbuild dans `build-js.js` via `Promise.all` et l'API `esbuild.build` (temps de compilation réduit à ~24ms).
