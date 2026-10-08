@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.6.1] - 2026-10-08
+
 ### Mailing, Suivi d'Ouverture & Filtrage Incrémental
 - **Fiabilisation du filtrage incrémental lors des renvois de messages (`DAME\Admin\Pages\Mailing\RecipientResolver`, `DAME\Admin\Pages\Mailing\Processor`)** :
   - Interrogation directe de la table de suivi SQL `{$wpdb->prefix}dame_message_opens` dans `RecipientResolver::filter_already_received` pour exclure automatiquement tout adhérent ou contact (`recipient_id`) ayant déjà reçu ou programmé le message, tout en conservant le repli sur les métadonnées postmeta existantes.
