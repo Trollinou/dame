@@ -93,7 +93,7 @@ class MessageReport {
 							$email     = $data['email'];
 							$sent_at   = $data['sent_at'];
 							$pid       = $data['recipient_id'];
-							$opened_at = isset( $opened_recipients[ $pid ] ) ? $opened_recipients[ $pid ] : null;
+							$opened_at = ! empty( $data['opened_at'] ) ? $data['opened_at'] : ( isset( $opened_recipients[ $pid ] ) ? $opened_recipients[ $pid ] : null );
 							?>
 							<tr>
 								<td><?php echo esc_html( $name ); ?></td>
@@ -160,7 +160,7 @@ class MessageReport {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
-				'SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at FROM %i WHERE message_id = %d',
+				'SELECT recipient_id, recipient_name as name, recipient_email as email, sent_at, opened_at FROM %i WHERE message_id = %d',
 				$table_name,
 				$message_id
 			),

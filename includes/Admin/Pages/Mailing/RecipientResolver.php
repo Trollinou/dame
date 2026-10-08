@@ -199,15 +199,73 @@ class RecipientResolver {
 	 * @return array<int> Filtered post IDs.
 	 */
 	public function filter_already_received( array $ids, int $message_id ): array {
+		if ( empty( $ids ) || ! $message_id ) {
+			return $ids;
+		}
+
+		global $wpdb;
+		$table_tracking = $wpdb->prefix . 'dame_message_opens';
+
+		// 1. Get all recipient IDs that already received or are scheduled for this message in SQL tracking table.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$existing_ids     = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT recipient_id FROM {$table_tracking} WHERE message_id = %d AND recipient_id > 0", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$message_id
+			)
+		);
+		$existing_ids_map = ! empty( $existing_ids ) ? array_fill_keys( array_map( 'intval', $existing_ids ), true ) : array();
+
 		return array_values(
 			array_filter(
 				$ids,
-				function ( int $id ) use ( $message_id ): bool {
+				function ( int $id ) use ( $message_id, $existing_ids_map ): bool {
+					if ( isset( $existing_ids_map[ $id ] ) ) {
+						return false;
+					}
+
+					// Fallback to legacy postmeta.
 					$received_messages = get_post_meta( $id, '_dame_message_received', false );
 					$received_ids      = array_map( 'strval', (array) $received_messages );
 					return ! in_array( (string) $message_id, $received_ids, true );
 				}
 			)
+		);
+	}
+
+	/**
+	 * Filters out email records that were already sent or scheduled for this message.
+	 *
+	 * @param array<string, array{id: int, names: array<string>, prio: int, raw_email: string}> $email_data Email recipient data.
+	 * @param int                                                                               $message_id The message post ID.
+	 * @return array<string, array{id: int, names: array<string>, prio: int, raw_email: string}> Filtered email recipient data.
+	 */
+	public function filter_already_sent_emails( array $email_data, int $message_id ): array {
+		if ( empty( $email_data ) || ! $message_id ) {
+			return $email_data;
+		}
+
+		global $wpdb;
+		$table_tracking = $wpdb->prefix . 'dame_message_opens';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$existing_emails = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT LOWER(recipient_email) FROM {$table_tracking} WHERE message_id = %d AND recipient_email != ''", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$message_id
+			)
+		);
+
+		if ( empty( $existing_emails ) ) {
+			return $email_data;
+		}
+
+		$existing_emails_map = array_fill_keys( array_map( 'strval', $existing_emails ), true );
+
+		return array_filter(
+			$email_data,
+			fn( string $email_key ): bool => ! isset( $existing_emails_map[ strtolower( $email_key ) ] ),
+			ARRAY_FILTER_USE_KEY
 		);
 	}
 
@@ -321,10 +379,11 @@ class RecipientResolver {
 
 		if ( ! empty( $values_sql ) ) {
 			$emails_to_insert = array_column( $email_data, 'raw_email' );
+			// Only delete pending (unsent) records for these emails, preserving already sent or opened historical records.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->query(
 				$wpdb->prepare(
-					"DELETE FROM {$table_tracking} WHERE message_id = %d AND recipient_email IN (" . implode( ',', array_fill( 0, count( $emails_to_insert ), '%s' ) ) . ')', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					"DELETE FROM {$table_tracking} WHERE message_id = %d AND sent_at IS NULL AND recipient_email IN (" . implode( ',', array_fill( 0, count( $emails_to_insert ), '%s' ) ) . ')', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					array_merge( array( $message_id ), $emails_to_insert )
 				)
 			);

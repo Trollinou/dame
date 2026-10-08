@@ -192,6 +192,13 @@ class BatchSender {
 					// Mark individual row as sent.
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 					$wpdb->update( $table_name, array( 'sent_at' => $sent_at_now ), array( 'id' => $row['id'] ) );
+
+					// Maintain legacy postmeta receipt markers and purge post_meta cache.
+					if ( $rid > 0 ) {
+						add_post_meta( $rid, '_dame_message_received', (string) $mid );
+						update_post_meta( $rid, "_dame_message_{$mid}_sent_at", $sent_at_now );
+						wp_cache_delete( $rid, 'post_meta' );
+					}
 				}
 			}
 

@@ -81,11 +81,17 @@ class Processor {
 		}
 
 		// Email collection and deduplication.
-		$email_data       = $resolver->collect_email_data( $adherent_ids, $contact_ids );
+		$email_data = $resolver->collect_email_data( $adherent_ids, $contact_ids );
+
+		// For group selections, also filter out any emails that were already sent/scheduled for this message.
+		if ( 'manual' !== $adherent_method && 'manual' !== $contact_method ) {
+			$email_data = $resolver->filter_already_sent_emails( $email_data, $message_id );
+		}
+
 		$recipient_emails = array_column( $email_data, 'raw_email' );
 
 		if ( empty( $recipient_emails ) ) {
-			$save_state_and_redirect( 'no_valid_emails' );
+			$save_state_and_redirect( 'all_already_received' );
 		}
 
 		// SQL tracking registration.

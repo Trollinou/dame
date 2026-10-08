@@ -216,4 +216,19 @@ Depuis l'écran `DAME > Sauvegardes et Restaurations` :
 - **Sauvegarde complète (.json.gz) :** Archive compressée contenant l'ensemble des adhérents, contacts, préinscriptions, messages, taxonomies (saisons, groupes avec leurs métadonnées de type, types de contact) et configurations.
 - **Restauration :** Permet la réimportation intégrale sur un autre environnement ou en cas de sinistre, avec préservation stricte des identifiants, des relations de taxonomie et des métadonnées personnalisées.
 
+## 10. Envoi de Messages & Mailing Incrémental
+
+Le module d'envoi de messages (`DAME > Envoyer un message`) permet de diffuser des communications ciblées aux adhérents et contacts du club.
+
+### a. Modes de sélection des destinataires
+- **Par critères (Recommandé pour les diffusions de groupe) :** Sélectionnez des critères (Saisons, Groupes saisonniers/permanents, Sexe, Types de contacts, Régions, Départements).
+- **Sélection manuelle :** Cochez individuellement les destinataires souhaités via les listes de recherche dynamiques.
+
+### b. Envois incrémentaux automatiques
+Lorsqu'un message a déjà été envoyé (statut *sent*) et que vous souhaitez l'adresser à un nouveau groupe de personnes :
+- **Filtrage automatique des doublons :** Le système détecte automatiquement les adhérents et contacts ayant déjà reçu ou programmé ce message, ainsi que leurs adresses e-mails associées, et les ignore lors de la nouvelle planification.
+- **Préservation des statistiques d'ouverture :** L'historique d'envoi et les dates d'ouverture (`opened_at`) des destinataires précédents restent strictement conservés et visibles dans le rapport d'ouverture (`DAME > Messages > Rapport d'ouverture`).
+- **Réinitialisation complète :** Si vous désirez renvoyer un message à l'intégralité d'un groupe (y compris ceux l'ayant déjà reçu), utilisez l'action **« Reset envoi »** depuis la liste des messages.
+
+
 

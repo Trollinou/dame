@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Mailing, Suivi d'Ouverture & Filtrage Incrémental
+- **Fiabilisation du filtrage incrémental lors des renvois de messages (`DAME\Admin\Pages\Mailing\RecipientResolver`, `DAME\Admin\Pages\Mailing\Processor`)** :
+  - Interrogation directe de la table de suivi SQL `{$wpdb->prefix}dame_message_opens` dans `RecipientResolver::filter_already_received` pour exclure automatiquement tout adhérent ou contact (`recipient_id`) ayant déjà reçu ou programmé le message, tout en conservant le repli sur les métadonnées postmeta existantes.
+  - Ajout de la méthode `RecipientResolver::filter_already_sent_emails` pour exclure les adresses e-mails déjà destinataires lors d'envois incrémentaux par critères (évite les réexpéditions intempestives sur les adresses partagées / représentants légaux de fratries).
+  - Préservation intégrale de l'historique et des dates de lecture (`opened_at`) dans `register_tracking_records` en restreignant la suppression préalable aux seuls enregistrements non expédiés (`sent_at IS NULL`).
+- **Synchronisation du Batch d'Envoi & Rapport de Message (`DAME\Services\BatchSender`, `DAME\Admin\Pages\MessageReport`)** :
+  - Maintien automatique du marqueur postmeta `_dame_message_received` et de l'horodatage `_dame_message_{id}_sent_at` avec invalidation de cache lors du traitement de la file d'attente par `BatchSender::process_queue`.
+  - Récupération directe du champ `opened_at` au niveau des lignes de destinataires dans `MessageReport::get_formatted_recipients` garantissant la cohérence des badges de statut de lecture (« Ouvert le... » / « Non lu »).
+
 ## [5.6.0] - 2026-10-04
 
 ### Sauvegardes, Export/Import & Taxonomies
