@@ -628,7 +628,22 @@ class PDF_Generator {
 		$pdf->SetAutoPageBreak( false );
 
 		$enc = static function ( string $text ): string {
-			return mb_convert_encoding( $text, 'ISO-8859-1', 'UTF-8' );
+			// Replace typographical characters with clean ASCII/Latin-1 equivalents before encoding.
+			$replacements = array(
+				'—' => '-',
+				'–' => '-',
+				'’' => "'",
+				'‘' => "'",
+				'“' => '"',
+				'”' => '"',
+				'…' => '...',
+				'•' => '*',
+				'€' => chr( 128 ), // FPDF standard cp1252 euro sign.
+			);
+
+			$clean_text = strtr( $text, $replacements );
+
+			return mb_convert_encoding( $clean_text, 'ISO-8859-1', 'UTF-8' );
 		};
 
 		// 1. Header (Logo on left, association info next to it or on right).
@@ -664,7 +679,7 @@ class PDF_Generator {
 			$legal_line .= 'RNA : ' . $assoc_rna;
 		}
 		if ( ! empty( $assoc_siren ) ) {
-			$legal_line .= ( ! empty( $legal_line ) ? '  —  ' : '' ) . 'SIREN : ' . $assoc_siren;
+			$legal_line .= ( ! empty( $legal_line ) ? '   |   ' : '' ) . 'SIREN : ' . $assoc_siren;
 		}
 		if ( ! empty( $legal_line ) ) {
 			$pdf->SetX( $text_x );
@@ -683,7 +698,7 @@ class PDF_Generator {
 			$contact_line .= 'Courriel : ' . $assoc_email;
 		}
 		if ( ! empty( $assoc_website ) ) {
-			$contact_line .= ( ! empty( $contact_line ) ? '  —  ' : '' ) . 'Site web : ' . $assoc_website;
+			$contact_line .= ( ! empty( $contact_line ) ? '   |   ' : '' ) . 'Site web : ' . $assoc_website;
 		}
 		if ( ! empty( $contact_line ) ) {
 			$pdf->SetX( $text_x );
