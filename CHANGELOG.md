@@ -32,6 +32,8 @@
   - Séparation stricte de l'adresse officielle du siège social (utilisée sur les documents légaux et attestations) et de l'adresse de la salle de jeu (utilisée pour les calculs d'itinéraires et temps de trajet des événements).
   - Ajout d'une case à cocher interactive *« La salle de jeu est située à la même adresse que le siège social »* avec synchronisation en temps réel dans `src/js/admin-association.ts`.
 
+## [5.6.1] - 2026-10-08
+
 ### Mailing, Suivi d'Ouverture & Filtrage Incrémental
 - **Fiabilisation du filtrage incrémental lors des renvois de messages (`DAME\Admin\Pages\Mailing\RecipientResolver`, `DAME\Admin\Pages\Mailing\Processor`)** :
   - Interrogation directe de la table de suivi SQL `{$wpdb->prefix}dame_message_opens` dans `RecipientResolver::filter_already_received` pour exclure automatiquement tout adhérent ou contact (`recipient_id`) ayant déjà reçu ou programmé le message, tout en conservant le repli sur les métadonnées postmeta existantes.
