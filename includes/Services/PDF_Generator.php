@@ -902,7 +902,7 @@ class PDF_Generator {
 		$pdf->SetTextColor( 100, 116, 139 );
 		$pdf->Cell( 85, 4.5, $enc( $assoc_rep_role ), 0, 1, 'L' );
 
-		// Incrustation cachet & signature.
+		// Incrustation cachet & signature (contrainte proportionnelle dans une boîte englobante max 60x35mm).
 		$stamp_id = ! empty( $options['assoc_stamp_signature_id'] ) ? (int) $options['assoc_stamp_signature_id'] : 0;
 		if ( $stamp_id > 0 ) {
 			$stamp_path = get_attached_file( $stamp_id );
@@ -910,7 +910,16 @@ class PDF_Generator {
 				// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 				$img_info = @getimagesize( $stamp_path );
 				if ( false !== $img_info && in_array( $img_info[2], array( IMAGETYPE_JPEG, IMAGETYPE_PNG ), true ) ) {
-					$pdf->Image( $stamp_path, 115, $footer_y + 20, 50 );
+					$stamp_orig_w = (float) $img_info[0];
+					$stamp_orig_h = (float) $img_info[1];
+					if ( $stamp_orig_w > 0.0 && $stamp_orig_h > 0.0 ) {
+						$max_stamp_w = 60.0;
+						$max_stamp_h = 35.0;
+						$ratio       = min( $max_stamp_w / $stamp_orig_w, $max_stamp_h / $stamp_orig_h );
+						$stamp_w     = round( $stamp_orig_w * $ratio, 2 );
+						$stamp_h     = round( $stamp_orig_h * $ratio, 2 );
+						$pdf->Image( $stamp_path, 115, $footer_y + 20, $stamp_w, $stamp_h );
+					}
 				}
 			}
 		}
