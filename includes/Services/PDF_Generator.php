@@ -35,6 +35,7 @@ class PDF_Generator {
 
 		add_action( 'wp_ajax_dame_download_attestation_pdf', array( $this, 'ajax_download_attestation_pdf' ) );
 		add_action( 'wp_ajax_dame_send_attestation_email', array( $this, 'ajax_send_attestation_email' ) );
+		add_action( 'wp_ajax_dame_get_attestation_data', array( $this, 'ajax_get_attestation_data' ) );
 	}
 
 	/**
@@ -1086,5 +1087,71 @@ class PDF_Generator {
 		} else {
 			wp_send_json_error( $result );
 		}
+	}
+
+	/**
+	 * AJAX endpoint to retrieve pre-filled attestation data for the modal.
+	 */
+	public function ajax_get_attestation_data(): void {
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Accès non autorisé.', 'dame' ) ), 403 );
+		}
+
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'dame_attestation_action' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Vérification de sécurité échouée.', 'dame' ) ), 403 );
+		}
+
+		$adherent_id = isset( $_GET['adherent_id'] ) ? absint( $_GET['adherent_id'] ) : 0;
+		if ( $adherent_id <= 0 ) {
+			wp_send_json_error( array( 'message' => __( 'Identifiant adhérent invalide.', 'dame' ) ), 400 );
+		}
+
+		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
+		$season_suffix         = $current_season_tag_id > 0 ? '_' . $current_season_tag_id : '';
+		$current_season_term   = $current_season_tag_id > 0 ? get_term( $current_season_tag_id, 'dame_saison_adhesion' ) : null;
+		$season_name           = ( $current_season_term && ! is_wp_error( $current_season_term ) ) ? (string) $current_season_term->name : '2026/2027';
+
+		$first_name = (string) get_post_meta( $adherent_id, '_dame_first_name', true );
+		$last_name  = (string) get_post_meta( $adherent_id, '_dame_last_name', true );
+
+		$status = (string) get_post_meta( $adherent_id, '_dame_payment_status' . $season_suffix, true );
+		if ( empty( $status ) ) {
+			$status = Data_Provider::is_adherent_renewal( $adherent_id, $current_season_tag_id ) ? 'renewal' : 'first_registration';
+		}
+
+		$saved_amount = get_post_meta( $adherent_id, '_dame_payment_amount' . $season_suffix, true );
+		if ( '' !== $saved_amount && false !== $saved_amount ) {
+			$amount = (float) $saved_amount;
+		} else {
+			$amount = Data_Provider::calculate_adherent_fee( $adherent_id, $current_season_tag_id, $status );
+		}
+
+		$payment_date = (string) get_post_meta( $adherent_id, '_dame_payment_date' . $season_suffix, true );
+		if ( empty( $payment_date ) ) {
+			$activation_date = (string) get_post_meta( $adherent_id, '_dame_season_activation_date' . $season_suffix, true );
+			$default_date    = wp_date( 'Y-m-d' );
+			$payment_date    = ! empty( $activation_date ) ? $activation_date : ( is_string( $default_date ) ? $default_date : '' );
+		}
+
+		$payment_method = (string) get_post_meta( $adherent_id, '_dame_payment_method' . $season_suffix, true );
+		if ( empty( $payment_method ) ) {
+			$payment_method = 'HelloAsso';
+		}
+
+		$emails = Data_Provider::get_emails_for_adherent( $adherent_id );
+
+		wp_send_json_success(
+			array(
+				'adherent_id'    => $adherent_id,
+				'adherent_name'  => Utils::format_lastname( $last_name ) . ' ' . Utils::format_firstname( $first_name ),
+				'season_name'    => $season_name,
+				'payment_status' => $status,
+				'payment_amount' => $amount,
+				'payment_date'   => $payment_date,
+				'payment_method' => $payment_method,
+				'emails'         => $emails,
+			)
+		);
 	}
 }

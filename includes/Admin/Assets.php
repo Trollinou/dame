@@ -111,13 +111,30 @@ class Assets {
 
 		// --- Adherent CPT Specific ---.
 
-		if ( $is_adherent_cpt ) {
+		if ( $is_adherent_cpt || 'dame-hidden_page_dame-view-adherent' === $screen->id ) {
 			wp_enqueue_script(
 				'dame-admin-adherent',
 				\DAME_PLUGIN_URL . 'assets/js/admin-adherent.js',
 				array( 'dame-admin-common' ), // Depends on common.
 				\DAME_VERSION,
 				true
+			);
+
+			wp_enqueue_script(
+				'dame-admin-attestation',
+				\DAME_PLUGIN_URL . 'assets/js/admin-attestation.js',
+				array(),
+				\DAME_VERSION,
+				true
+			);
+
+			wp_localize_script(
+				'dame-admin-attestation',
+				'dameAttestationData',
+				array(
+					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+					'nonce'   => wp_create_nonce( 'dame_attestation_action' ),
+				)
 			);
 		}
 	}

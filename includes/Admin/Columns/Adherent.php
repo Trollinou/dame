@@ -37,6 +37,8 @@ class Adherent {
 		// Search & Actions.
 		add_filter( 'posts_search', array( $this, 'extend_search' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'add_row_actions' ), 10, 2 );
+		add_filter( 'bulk_actions-edit-adherent', array( $this, 'register_bulk_actions' ) );
+		add_filter( 'handle_bulk_actions-edit-adherent', array( $this, 'handle_bulk_actions' ), 10, 3 );
 	}
 
 	/**
@@ -543,9 +545,87 @@ class Adherent {
 
 			$view_link = sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html__( 'Consulter', 'dame' ) );
 
-			// Add the 'Consulter' link before the 'Edit' link.
-			return array_merge( array( 'dame_view' => $view_link ), $actions );
+			$attestation_link = sprintf(
+				'<a href="#" class="dame-open-attestation-btn" data-adherent-id="%d">%s</a>',
+				$post->ID,
+				esc_html__( 'Attestation', 'dame' )
+			);
+
+			// Add 'Consulter' and 'Attestation' links before the 'Edit' link.
+			return array_merge(
+				array(
+					'dame_view'        => $view_link,
+					'dame_attestation' => $attestation_link,
+				),
+				$actions
+			);
 		}
 		return $actions;
 	}
+
+	/**
+	 * Registers custom bulk actions for the Adherent post type.
+	 *
+	 * @param array<string, string> $bulk_actions Existing bulk actions.
+	 * @return array<string, string>
+	 */
+	public function register_bulk_actions( array $bulk_actions ): array {
+		$bulk_actions['dame_bulk_attestation_pdf']   = __( 'Télécharger les attestations (PDF groupé)', 'dame' );
+		$bulk_actions['dame_bulk_attestation_email'] = __( 'Envoyer les attestations par e-mail', 'dame' );
+		return $bulk_actions;
+	}
+
+	/**
+	 * Handles custom bulk actions for the Adherent post type.
+	 *
+	 * @param string     $redirect_to Redirect URL.
+	 * @param string     $doaction    Action name.
+	 * @param array<int> $post_ids    Selected post IDs.
+	 * @return string
+	 */
+	public function handle_bulk_actions( string $redirect_to, string $doaction, array $post_ids ): string {
+		if ( empty( $post_ids ) ) {
+			return $redirect_to;
+		}
+
+		if ( 'dame_bulk_attestation_pdf' === $doaction ) {
+			$ids_str = implode( ',', array_map( 'absint', $post_ids ) );
+			$url     = add_query_arg(
+				array(
+					'action'       => 'dame_download_attestation_pdf',
+					'adherent_ids' => $ids_str,
+					'_wpnonce'     => wp_create_nonce( 'dame_attestation_action' ),
+				),
+				admin_url( 'admin-ajax.php' )
+			);
+			wp_safe_redirect( $url );
+			exit;
+		}
+
+		if ( 'dame_bulk_attestation_email' === $doaction ) {
+			$generator = new \DAME\Services\PDF_Generator();
+			$sent      = 0;
+			$failed    = 0;
+
+			foreach ( $post_ids as $id ) {
+				$res = $generator->send_attestation_email( (int) $id );
+				if ( $res['success'] ) {
+					++$sent;
+				} else {
+					++$failed;
+				}
+			}
+
+			return add_query_arg(
+				array(
+					'dame_bulk_emailed' => $sent,
+					'dame_bulk_failed'  => $failed,
+				),
+				$redirect_to
+			);
+		}
+
+		return $redirect_to;
+	}
 }
+
