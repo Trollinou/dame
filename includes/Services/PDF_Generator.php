@@ -663,10 +663,12 @@ class PDF_Generator {
 		};
 
 		// 1. Header (Logo on left, association info next to it or on right).
-		$header_y = 15.0;
-		$logo_id  = ! empty( $options['assoc_logo_id'] ) ? (int) $options['assoc_logo_id'] : 0;
-		$logo_x   = 15.0;
-		$text_x   = 15.0;
+		$header_top_y = 15.0;
+		$logo_id      = ! empty( $options['assoc_logo_id'] ) ? (int) $options['assoc_logo_id'] : 0;
+		$logo_x       = 15.0;
+		$logo_w       = 0.0;
+		$logo_h       = 0.0;
+		$has_logo     = false;
 
 		if ( $logo_id > 0 ) {
 			$logo_path = get_attached_file( $logo_id );
@@ -674,13 +676,47 @@ class PDF_Generator {
 				// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 				$img_info = @getimagesize( $logo_path );
 				if ( false !== $img_info && in_array( $img_info[2], array( IMAGETYPE_JPEG, IMAGETYPE_PNG ), true ) ) {
-					$pdf->Image( $logo_path, $logo_x, $header_y, 35 );
-					$text_x = 55.0;
+					$img_orig_w = (float) $img_info[0];
+					$img_orig_h = (float) $img_info[1];
+					if ( $img_orig_w > 0.0 && $img_orig_h > 0.0 ) {
+						$max_logo_w = 32.0;
+						$max_logo_h = 26.0;
+						$ratio      = min( $max_logo_w / $img_orig_w, $max_logo_h / $img_orig_h );
+						$logo_w     = round( $img_orig_w * $ratio, 2 );
+						$logo_h     = round( $img_orig_h * $ratio, 2 );
+						$has_logo   = true;
+					}
 				}
 			}
 		}
 
-		$pdf->SetXY( $text_x, $header_y );
+		$text_x = $has_logo ? ( $logo_x + $logo_w + 6.0 ) : 15.0;
+
+		// Calculate total height of text lines to vertically center text block with logo.
+		$has_legal   = ! empty( $assoc_rna ) || ! empty( $assoc_siren );
+		$has_address = ! empty( $assoc_address );
+		$has_contact = ! empty( $assoc_email ) || ! empty( $assoc_website );
+
+		$text_total_h = 5.5 + 4.5; // Title (5.5) + subtitle 1901 (4.5)
+		if ( $has_legal ) {
+			$text_total_h += 4.5;
+		}
+		if ( $has_address ) {
+			$text_total_h += 4.5;
+		}
+		if ( $has_contact ) {
+			$text_total_h += 4.5;
+		}
+
+		$header_height = max( $logo_h, $text_total_h );
+		$logo_y        = $header_top_y + ( ( $header_height - $logo_h ) / 2.0 );
+		$text_y        = $header_top_y + ( ( $header_height - $text_total_h ) / 2.0 );
+
+		if ( $has_logo && isset( $logo_path ) ) {
+			$pdf->Image( $logo_path, $logo_x, $logo_y, $logo_w, $logo_h );
+		}
+
+		$pdf->SetXY( $text_x, $text_y );
 		$pdf->SetFont( 'Helvetica', 'B', 12 );
 		$pdf->SetTextColor( 30, 41, 59 );
 		$pdf->Cell( 0, 5.5, $enc( $assoc_name ), 0, 1, 'L' );
@@ -722,24 +758,31 @@ class PDF_Generator {
 			$pdf->Cell( 0, 4.5, $enc( $contact_line ), 0, 1, 'L' );
 		}
 
-		// Divider under header.
-		$pdf->SetY( 48 );
+		// Divider under header placed dynamically with a clean margin.
+		$divider_y = max( $header_top_y + $header_height + 4.0, 45.0 );
 		$pdf->SetDrawColor( 226, 232, 240 );
 		$pdf->SetLineWidth( 0.4 );
-		$pdf->Line( 15, 48, 195, 48 );
+		$pdf->Line( 15, $divider_y, 195, $divider_y );
 
 		// 2. Title Box.
-		$pdf->SetY( 54 );
+		$title_y = $divider_y + 6.0;
+		$pdf->SetY( $title_y );
 		$pdf->SetFont( 'Helvetica', 'B', 15 );
 		$pdf->SetTextColor( 15, 23, 42 );
 		$pdf->Cell( 0, 7.5, $enc( "ATTESTATION D'ADHÉSION ET DE PAIEMENT" ), 0, 1, 'C' );
 
+		// Avoid duplicate "Saison" if $season_name already starts with "Saison".
+		$season_label = preg_match( '/^saison\s+/i', $season_name )
+			? 'Saison sportive ' . preg_replace( '/^saison\s+/i', '', $season_name )
+			: 'Saison sportive ' . $season_name;
+
 		$pdf->SetFont( 'Helvetica', 'B', 11 );
 		$pdf->SetTextColor( 37, 99, 235 );
-		$pdf->Cell( 0, 6, $enc( 'Saison sportive ' . $season_name ), 0, 1, 'C' );
+		$pdf->Cell( 0, 6, $enc( $season_label ), 0, 1, 'C' );
 
 		// 3. Declaration of representative.
-		$pdf->SetY( 73 );
+		$declaration_y = $title_y + 18.0;
+		$pdf->SetY( $declaration_y );
 		$pdf->SetFont( 'Helvetica', '', 10.5 );
 		$pdf->SetTextColor( 51, 65, 85 );
 

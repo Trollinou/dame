@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Attestations PDF & Mise en Page
+- **Harmonisation Visuelle de l'En-tête PDF (`DAME\Services\PDF_Generator`)** :
+  - Contrainte proportionnelle du logo dans une boîte englobante maximale (32 mm de large × 26 mm de haut) pour préserver strictement son ratio sans empiéter sur le document.
+  - Centrage vertical automatique du bloc textuel de l'association par rapport au logo.
+  - Positionnement dynamique de la ligne de séparation sous l'en-tête en fonction de la hauteur réelle du bloc ($Y = \text{max}(\text{fin\_logo}, \text{fin\_texte}) + 4\text{ mm}$) et ajustement fluide des sections subséquentes (titre et déclaration).
+  - Élimination automatique de la redondance « Saison » dans l'intitulé de saison sportive (« Saison sportive 2026/2027 » au lieu de « Saison sportive Saison 2026/2027 »).
+
 ## [5.6.2] - 2026-10-09
 
 ### Attestations d'Adhésion et de Paiement (PDF & Envoi par E-mail)
