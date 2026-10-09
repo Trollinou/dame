@@ -28,6 +28,160 @@ console.log(`ℹ️  Version détectée : ${version}`);
 const zipName = `${pluginSlug}-v${version}.zip`;
 const tempDestDir = path.join(buildDir, pluginSlug);
 
+// Fonction de résolution intelligente de PHP/Composer (notamment pour l'environnement LocalWP)
+function resolvePhpEnvironment() {
+    let hasGlobalPhp = false;
+    try {
+        execSync('php -v', { stdio: 'ignore' });
+        hasGlobalPhp = true;
+    } catch (e) {}
+
+    let hasGlobalComposer = false;
+    try {
+        execSync('composer --version', { stdio: 'ignore' });
+        hasGlobalComposer = true;
+    } catch (e) {}
+
+    const env = { ...process.env };
+
+    // 1. Si PHP et Composer sont tous deux globaux dans PATH
+    if (hasGlobalPhp && hasGlobalComposer) {
+        return {
+            phpCmd: 'php',
+            phpPrefix: 'php',
+            composerCmd: 'composer',
+            env,
+            options: { shell: true }
+        };
+    }
+
+    // 2. Recherche spécifique pour l'application "Local" sur Windows
+    if (process.platform === 'win32') {
+        const userProfile = process.env.USERPROFILE || process.env.HOMEPATH || '';
+        const appData = process.env.APPDATA || path.join(userProfile, 'AppData/Roaming');
+        const localAppData = process.env.LOCALAPPDATA || path.join(userProfile, 'AppData/Local');
+
+        const localComposerPhar = path.join(localAppData, 'Programs/Local/resources/extraResources/bin/composer/composer.phar');
+        const lightningServicesDir = path.join(appData, 'Local/lightning-services');
+        let phpExePath = null;
+        let phpExtPath = null;
+
+        if (fs.existsSync(lightningServicesDir)) {
+            const dirs = fs.readdirSync(lightningServicesDir);
+            const phpDirs = dirs.filter(d => d.startsWith('php-')).sort().reverse();
+            const php84Dir = phpDirs.find(d => d.startsWith('php-8.4'));
+            const chosenPhpDir = php84Dir || phpDirs[0];
+
+            if (chosenPhpDir) {
+                const testPath = path.join(lightningServicesDir, chosenPhpDir, 'bin/win64/php.exe');
+                const extPath = path.join(lightningServicesDir, chosenPhpDir, 'bin/win64/ext');
+                if (fs.existsSync(testPath)) {
+                    phpExePath = testPath;
+                    if (fs.existsSync(extPath)) {
+                        phpExtPath = extPath;
+                    }
+                }
+            }
+        }
+
+        if (phpExePath) {
+            console.log('💡 Environnement PHP LocalWP détecté !');
+            console.log(`   - PHP : ${phpExePath}`);
+            const phpDir = path.dirname(phpExePath);
+            env.PATH = `${phpDir};${env.PATH || ''}`;
+
+            let cliArgs = '';
+            if (phpExtPath) {
+                cliArgs = ` -d extension_dir="${phpExtPath}" -d extension=openssl -d extension=curl -d extension=mbstring`;
+            }
+
+            const phpPrefix = `"${phpExePath}"${cliArgs}`;
+            let composerCmd = null;
+            if (hasGlobalComposer) {
+                composerCmd = 'composer';
+            } else if (fs.existsSync(localComposerPhar)) {
+                composerCmd = `${phpPrefix} "${localComposerPhar}"`;
+                console.log(`   - Composer : ${localComposerPhar}`);
+            }
+
+            return {
+                phpCmd: phpExePath,
+                phpPrefix,
+                composerCmd,
+                env,
+                options: { shell: true }
+            };
+        }
+    }
+
+    // 3. Recherche spécifique pour l'application "Local" sur macOS
+    if (process.platform === 'darwin') {
+        const homeDir = process.env.HOME || '';
+        const localComposerPhar = '/Applications/Local.app/Contents/Resources/extraResources/bin/composer/composer.phar';
+        const lightningServicesDir = path.join(homeDir, 'Library/Application Support/Local/lightning-services');
+        let phpBinPath = null;
+
+        if (fs.existsSync(lightningServicesDir)) {
+            const dirs = fs.readdirSync(lightningServicesDir);
+            const phpDirs = dirs.filter(d => d.startsWith('php-')).sort().reverse();
+            const php84Dir = phpDirs.find(d => d.startsWith('php-8.4'));
+            const chosenPhpDir = php84Dir || phpDirs[0];
+
+            if (chosenPhpDir) {
+                const possiblePaths = [
+                    path.join(lightningServicesDir, chosenPhpDir, 'bin/sbin/php'),
+                    path.join(lightningServicesDir, chosenPhpDir, 'bin/bin/php'),
+                    path.join(lightningServicesDir, chosenPhpDir, 'bin/php')
+                ];
+                for (const p of possiblePaths) {
+                    if (fs.existsSync(p)) {
+                        phpBinPath = p;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (phpBinPath) {
+            console.log('💡 Environnement PHP LocalWP détecté !');
+            console.log(`   - PHP : ${phpBinPath}`);
+            const phpDir = path.dirname(phpBinPath);
+            env.PATH = `${phpDir}:${env.PATH || ''}`;
+
+            const phpPrefix = `"${phpBinPath}"`;
+            let composerCmd = null;
+            if (hasGlobalComposer) {
+                composerCmd = 'composer';
+            } else if (fs.existsSync(localComposerPhar)) {
+                composerCmd = `${phpPrefix} "${localComposerPhar}"`;
+                console.log(`   - Composer : ${localComposerPhar}`);
+            }
+
+            return {
+                phpCmd: phpBinPath,
+                phpPrefix,
+                composerCmd,
+                env,
+                options: { shell: true }
+            };
+        }
+    }
+
+    if (hasGlobalPhp) {
+        return {
+            phpCmd: 'php',
+            phpPrefix: 'php',
+            composerCmd: hasGlobalComposer ? 'composer' : null,
+            env,
+            options: { shell: true }
+        };
+    }
+
+    return null;
+}
+
+const phpEnv = resolvePhpEnvironment();
+
 console.log('🧪 Exécution de la suite de validation Qualité (QA)...');
 try {
     console.log('  → Typecheck TypeScript (tsc)...');
@@ -35,7 +189,15 @@ try {
     console.log('  → Linting JavaScript/TypeScript (eslint)...');
     execSync('npm run lint:js', { cwd: rootDir, stdio: 'inherit' });
     console.log('  → Analyse statique PHPStan (Level 7)...');
-    execSync('./vendor/bin/phpstan analyze --debug --memory-limit=2G', { cwd: rootDir, stdio: 'inherit' });
+    const phpstanBin = path.join(rootDir, 'vendor', 'bin', 'phpstan');
+    if (!phpEnv || !phpEnv.phpPrefix) {
+        throw new Error('PHP est introuvable sur le système pour exécuter PHPStan.');
+    }
+    execSync(`${phpEnv.phpPrefix} "${phpstanBin}" analyze --debug --memory-limit=2G`, {
+        cwd: rootDir,
+        stdio: 'inherit',
+        env: phpEnv.env
+    });
     console.log('✔ Contrôles Qualité (QA) validés avec succès.\n');
 } catch (error) {
     console.error('❌ Erreur : Un contrôle QA a échoué. Packaging annulé.');
@@ -55,7 +217,7 @@ if (fs.existsSync(path.join(rootDir, zipName))) {
     fs.unlinkSync(path.join(rootDir, zipName));
 }
 if (fs.existsSync(buildDir)) {
-    fs.rmSync(buildDir, { recursive: true, force: true });
+    fs.rmSync(buildDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 }
 fs.mkdirSync(tempDestDir, { recursive: true });
 
@@ -156,127 +318,27 @@ if (fs.existsSync(compLock)) {
     fs.copyFileSync(compLock, path.join(tempDestDir, 'composer.lock'));
 }
 
-// Fonction de résolution intelligente de PHP/Composer (notamment pour l'environnement LocalWP)
-function resolveComposerCommand() {
-    // 1. Essai de Composer global
-    try {
-        execSync('composer --version', { stdio: 'ignore' });
-        return { cmd: 'composer', options: { shell: true } };
-    } catch (e) {
-        // Non trouvé, on cherche LocalWP
-    }
-
-    // 2. Recherche spécifique pour l'application "Local" sur Windows
-    if (process.platform === 'win32') {
-        const userProfile = process.env.USERPROFILE || process.env.HOMEPATH || '';
-        const appData = process.env.APPDATA || path.join(userProfile, 'AppData/Roaming');
-        const localAppData = process.env.LOCALAPPDATA || path.join(userProfile, 'AppData/Local');
-
-        const localComposerPhar = path.join(localAppData, 'Programs/Local/resources/extraResources/bin/composer/composer.phar');
-        const lightningServicesDir = path.join(appData, 'Local/lightning-services');
-        let phpExePath = null;
-        let phpExtPath = null;
-
-        if (fs.existsSync(lightningServicesDir)) {
-            const dirs = fs.readdirSync(lightningServicesDir);
-            const phpDirs = dirs.filter(d => d.startsWith('php-')).sort().reverse();
-            const php84Dir = phpDirs.find(d => d.startsWith('php-8.4'));
-            const chosenPhpDir = php84Dir || phpDirs[0];
-
-            if (chosenPhpDir) {
-                const testPath = path.join(lightningServicesDir, chosenPhpDir, 'bin/win64/php.exe');
-                const extPath = path.join(lightningServicesDir, chosenPhpDir, 'bin/win64/ext');
-                if (fs.existsSync(testPath)) {
-                    phpExePath = testPath;
-                    if (fs.existsSync(extPath)) {
-                        phpExtPath = extPath;
-                    }
-                }
-            }
-        }
-
-        if (fs.existsSync(localComposerPhar) && phpExePath) {
-            console.log(`💡 Environnement LocalWP détecté !`);
-            console.log(`   - PHP : ${phpExePath}`);
-            console.log(`   - Composer : ${localComposerPhar}`);
-            
-            // Si le dossier d'extensions PHP de LocalWP existe, on active openssl/curl/mbstring via la ligne de commande CLI
-            let cliArgs = '';
-            if (phpExtPath) {
-                cliArgs = ` -d extension_dir="${phpExtPath}" -d extension=openssl -d extension=curl -d extension=mbstring`;
-            }
-            
-            return {
-                cmd: `"${phpExePath}"${cliArgs} "${localComposerPhar}"`,
-                options: { shell: true }
-            };
-        }
-    }
-
-    // 3. Recherche spécifique pour l'application "Local" sur macOS
-    if (process.platform === 'darwin') {
-        const homeDir = process.env.HOME || '';
-        const localComposerPhar = '/Applications/Local.app/Contents/Resources/extraResources/bin/composer/composer.phar';
-        const lightningServicesDir = path.join(homeDir, 'Library/Application Support/Local/lightning-services');
-        let phpBinPath = null;
-
-        if (fs.existsSync(lightningServicesDir)) {
-            const dirs = fs.readdirSync(lightningServicesDir);
-            const phpDirs = dirs.filter(d => d.startsWith('php-')).sort().reverse();
-            const php84Dir = phpDirs.find(d => d.startsWith('php-8.4'));
-            const chosenPhpDir = php84Dir || phpDirs[0];
-
-            if (chosenPhpDir) {
-                const possiblePaths = [
-                    path.join(lightningServicesDir, chosenPhpDir, 'bin/sbin/php'),
-                    path.join(lightningServicesDir, chosenPhpDir, 'bin/bin/php'),
-                    path.join(lightningServicesDir, chosenPhpDir, 'bin/php')
-                ];
-                for (const p of possiblePaths) {
-                    if (fs.existsSync(p)) {
-                        phpBinPath = p;
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (fs.existsSync(localComposerPhar) && phpBinPath) {
-            console.log(`💡 Environnement LocalWP détecté !`);
-            console.log(`   - PHP : ${phpBinPath}`);
-            console.log(`   - Composer : ${localComposerPhar}`);
-            return {
-                cmd: `"${phpBinPath}" "${localComposerPhar}"`,
-                options: { shell: true }
-            };
-        }
-    }
-
-    return null;
-}
-
 console.log('📦 Installation isolée des dépendances Composer (Production)...');
-const resolver = resolveComposerCommand();
-
-if (!resolver) {
+if (!phpEnv || !phpEnv.composerCmd) {
     console.error("\n❌ Erreur : Composer est introuvable sur le système.");
     console.error("1. Assurez-vous que PHP et Composer sont installés localement et accessibles dans votre PATH.");
     console.error("2. Si vous utilisez l'application 'Local', lancez ce script de packaging directement depuis le 'Site Shell' de l'application (bouton 'Open Site Shell' dans Local).\n");
-    fs.rmSync(buildDir, { recursive: true, force: true });
+    fs.rmSync(buildDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     process.exit(1);
 }
 
 try {
     // --ignore-platform-reqs permet d'éviter les erreurs de compatibilité si la version locale de PHP
     // diffère légèrement de celle attendue par le fichier composer.lock lors du packaging
-    execSync(`${resolver.cmd} install --no-dev --optimize-autoloader --no-interaction --quiet --ignore-platform-reqs`, {
+    execSync(`${phpEnv.composerCmd} install --no-dev --optimize-autoloader --no-interaction --quiet --ignore-platform-reqs`, {
         cwd: tempDestDir,
         stdio: 'inherit',
-        shell: resolver.options.shell
+        shell: phpEnv.options.shell,
+        env: phpEnv.env
     });
 } catch (error) {
     console.error("\n❌ Erreur : L'installation Composer a échoué dans le dossier temporaire.");
-    fs.rmSync(buildDir, { recursive: true, force: true });
+    fs.rmSync(buildDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     process.exit(1);
 }
 
@@ -306,11 +368,11 @@ try {
     zip.writeZip(path.join(rootDir, zipName));
 } catch (error) {
     console.error('❌ Erreur lors de la création du ZIP :', error);
-    fs.rmSync(buildDir, { recursive: true, force: true });
+    fs.rmSync(buildDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     process.exit(1);
 }
 
 // Nettoyage final
-fs.rmSync(buildDir, { recursive: true, force: true });
+fs.rmSync(buildDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 
 console.log(`✅ Package créé avec succès : ${zipName} (Environnement local préservé)`);
