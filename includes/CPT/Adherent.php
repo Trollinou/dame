@@ -112,6 +112,9 @@ class Adherent {
 			'_dame_rating_fide'       => 'string',
 			'_dame_status'            => 'string',
 			'_dame_medical_cert_date' => 'string',
+			'_dame_payment_amount'    => 'number',
+			'_dame_payment_date'      => 'string',
+			'_dame_payment_method'    => 'string',
 		);
 
 		foreach ( $meta_keys as $key => $type ) {
