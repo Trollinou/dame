@@ -1,50 +1,33 @@
-# Release Notes — DAME v5.6.1
+# Release Notes — DAME v5.6.2
 
-**Date :** 4 septembre 2026
+**Date :** 9 octobre 2026
 
 ## 🚀 Changements Majeurs
 
-### Préinscriptions & Responsables Légaux (Majeurs)
-- Prise en charge complète de la reprise et de la modification des préinscriptions pour les enfants atteignant la majorité (18 ans et plus).
-- Autorisation de reprise via la fiche adhérent existante et traçabilité du dépositaire via `_dame_submitted_by_email`.
+### 1. Attestations d'Adhésion & Paiement (PDF & Envoi par E-mail)
+- **Génération Dématérialisée PDF (`DAME\Services\PDF_Generator`)** :
+  - Reçus et attestations d'adhésion au format PDF conformes aux exigences administratives (CE, CSE, mutuelles santé, employeurs, Pass'Sport).
+  - Conversion automatique et normalisée des montants en toutes lettres en français (`DAME\Core\Utils::number_to_french_words`).
+  - Incrustation dynamique du logo du club, du cachet officiel, de la signature du représentant légal et des mentions légales obligatoires (RNA, SIREN, siège social).
+  - Encodage Windows-1252 (CP1252) pour FPDF avec support parfait du symbole euro `€` et des caractères accentués français.
+  - Prise en charge des téléchargements unitaires ou groupés multipages via les actions groupées de la liste des adhérents.
+- **Routage de l'Envoi par E-mail via la File d'Attente Globale (`DAME\Services\BatchSender`)** :
+  - Intégration directe dans la file d'attente FIFO asynchrone de `BatchSender` pour respecter rigoureusement les quotas SMTP (`smtp_batch_size`).
+  - Stockage persistant et sécurisé des PDFs dans `wp-content/uploads/dame-documents/` avec normalisation multi-plateforme des chemins (`wp_normalize_path`).
+  - Modèle d'e-mail personnalisable avec balises dynamiques dans les réglages.
+- **Modale Interactive & Actions d'Administration (`src/js/admin-attestation.ts`)** :
+  - Action de ligne et bouton « Attestation » ouvrant une modale interactive pré-remplie pour ajuster les modalités de paiement avant téléchargement ou envoi.
 
-### Imports & Contacts
-- **Menu unifié « Import Manuel »** :
-  - Renommage et réorganisation du menu *Import FFE* en *Import Manuel*.
-  - Centralisation de tous les outils d'importation CSV :
-    - Mise à jour FFE (Licences & ELO).
-    - Import CSV Adhérents.
-    - Import CSV Contacts standard.
-    - Import CSV HelloAsso avec matching multicritère.
-    - Outil de détection & nettoyage sélectif des doublons Contacts / Adhérents.
-- **Import HelloAsso des tournois (CSV)** :
-  - Support de l'import CSV HelloAsso avec attribution de catégorie.
-  - Détection multicritère (Email, Nom+Prénom normalisé, Licence FFE/FIDE) excluant automatiquement les adhérents et leurs représentants légaux.
-  - Conservation des catégories existantes pour les contacts multi-groupes.
-- **Outil de Détection & Nettoyage sélectif des Doublons** :
-  - Tableau interactif listant les fiches contacts correspondant à des adhérents enregistrés.
-  - Affichage précis de la source de correspondance (Adhérent / Représentant légal) avec lien direct vers la fiche.
-  - Suppression sélective avec confirmation.
-- **Simplification du menu « Sauvegardes et Restaurations »** :
-  - Recentrage de l'écran sur les sauvegardes complètes (`.json.gz`), restaurations globales, exports CSV et sauvegardes de modules.
+### 2. Tarification Simplifiée par Saison
+- **Configuration des Tarifs (`DAME\Services\Data_Provider`, `DAME\Taxonomies\Season`)** :
+  - Paramétrage direct des montants de base (Licence A, Licence B, réduction féminine, majoration première adhésion) dans chaque saison et dans l'onglet Saisons.
+  - Métaboxe de paiement par saison sur la fiche adhérent pour suivre le statut de règlement, la date, le montant effectif et le mode de paiement.
+  - Sauvegarde et restauration automatiques intégrées dans les archives JSON / GZ (`DAME\Services\Backup\AdherentBackup`).
 
-### Événements & Géolocalisation
-- **Calcul d'itinéraire et de distance dans l'Agenda** :
-  - Rétablissement de l'action du bouton « Calculer » dans la métaboxe Agenda.
-  - Prise en charge des itinéraires locaux à distance / durée nulles (`0.00 km`, `0 min`).
-  - Géocodage automatique à la volée en cas d'absence des coordonnées GPS lors du clic.
-
-## 📄 Fichiers Modifiés / Déploiement
-- `dame.php` (version 5.1.0 & constante `DAME_VERSION`)
-- `package.json` (version 5.1.0)
-- `includes/Admin/Menu.php`
-- `includes/Admin/Pages/ImportFFE.php`
-- `includes/Admin/Pages/Backups.php`
-- `includes/Core/Utils.php`
-- `includes/Metaboxes/Agenda/Manager.php`
-- `includes/Metaboxes/Adherent/Identity.php`
-- `src/js/admin-common.js`
-- `assets/js/admin-common.js`
-- `includes/Services/Backup.php`
-- `CHANGELOG.md`
-- `RELEASE.md`
+### 3. Refonte de l'Onglet Réglages « Association »
+- **Agencement en 4 Cartes Thématiques Délimitées (`DAME\Admin\Settings\Tabs\Association`)** :
+  - 1. *Identité légale & Contact* (Nom, ID FFE, RNA, SIRET, Email, Site web).
+  - 2. *Siège social* (Adresse officielle déclarée pour attestations et documents légaux).
+  - 3. *Salle de jeu* (Adresse pour calcul automatique des temps de trajet et distances).
+  - 4. *Représentant(e) & Cachet officiel* (Signataire, logo et cachet/signature).
+  - Ajout d'une case à cocher « La salle de jeu est située à la même adresse que le siège social » avec recopie dynamique en temps réel.

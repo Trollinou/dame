@@ -2,7 +2,35 @@
 
 ## [Unreleased]
 
-## [5.6.1] - 2026-10-08
+## [5.6.2] - 2026-10-09
+
+### Attestations d'Adhésion et de Paiement (PDF & Envoi par E-mail)
+- **Génération Dématérialisée PDF (`DAME\Services\PDF_Generator`)** :
+  - Génération conforme aux exigences administratives françaises des attestations d'adhésion et de paiement (pour comités d'entreprise, CSE, mutuelles santé, participation employeur, Pass'Sport).
+  - Conversion automatique et normalisée des montants en toutes lettres en français (`DAME\Core\Utils::number_to_french_words`) couverte par une suite de tests unitaires PHPUnit 11 (`tests/UtilsTest.php`).
+  - Incrustation dynamique du logo du club, du cachet officiel, de la signature du représentant légal, et des mentions légales obligatoires (RNA, SIREN, siège social).
+  - Encodage Windows-1252 (CP1252) pour FPDF assurant un affichage parfait du symbole euro `€` et des caractères accentués français, avec translittération des tirets cadratins et guillemets typographiques.
+  - Récupération prioritaire du numéro de licence officielle (`_dame_license_number`) avec repli défensif sur `_dame_ffe_licence`.
+  - Prise en charge des téléchargements unitaires ou groupés multipages (`generate_bulk_attestation_pdf`) via les actions groupées de la liste d'administration des adhérents.
+- **Routage de l'Envoi par E-mail via la File d'Attente Globale (`DAME\Services\BatchSender`)** :
+  - Intégration de l'envoi des attestations avec pièce jointe PDF dans la file d'attente FIFO asynchrone de `BatchSender` pour respecter rigoureusement le quota d'envoi par minute (`smtp_batch_size`).
+  - Stockage persistant et isolé des fichiers PDF générés dans `wp-content/uploads/dame-documents/` via `DAME\Services\Document_Storage`.
+  - Normalisation multi-plateforme des chemins de fichiers avec `wp_normalize_path` pour prévenir la perte des séparateurs Windows sous `update_post_meta`.
+  - Modèle de courriel personnalisable avec balises dynamiques (`{prenom}`, `{nom}`, `{saison}`, `{montant}`, `{date_paiement}`, `{mode_paiement}`, `{association}`, `{site_web}`) géré dans les réglages.
+- **Interface & Expérience Utilisateur (`src/js/admin-attestation.ts`, `_attestation-modal.scss`)** :
+  - Ajout d'une action de ligne « Attestation » et d'un bouton d'en-tête « Attestation » sur la vue détaillée de l'adhérent.
+  - Modale interactive accessible avec pré-remplissage AJAX (`dame_get_attestation_data`), permettant de vérifier ou d'ajuster le montant, la date, le statut et le mode de règlement avant génération ou expédition.
+  - Boutons distincts « Télécharger le PDF » et « Envoyer par e-mail » avec retours visuels immédiats et protection anti-rebond.
+- **Tarification Simplifiée des Saisons (`DAME\Services\Data_Provider`, `DAME\Taxonomies\Season`)** :
+  - Gestion des tarifs de référence (Licence A, Licence B, réduction féminine, majoration première inscription) directement dans les métadonnées de la taxonomie `dame_saison_adhesion` et dans l'onglet Saisons.
+  - Métaboxe de paiement dédiée par saison sur chaque fiche adhérent pour enregistrer et mémoriser le statut de règlement, la date, le montant effectif et le mode de paiement.
+  - Intégration complète dans les procédures de sauvegarde et restauration JSON / GZ (`DAME\Services\Backup\AdherentBackup`).
+
+### Refonte de l'Onglet Association (`DAME\Admin\Settings\Tabs\Association`, `_association.scss`)
+- **Agencement en 4 Cartes Thématiques Délimitées** :
+  - Restructuration visuelle de l'onglet Association en encadrés distincts avec en-têtes Dashicons : *1. Identité légale & Contact*, *2. Siège social (Documents & Attestations)*, *3. Salle de jeu (Trajets & Itinéraires)*, et *4. Représentant(e) & Cachet officiel*.
+  - Séparation stricte de l'adresse officielle du siège social (utilisée sur les documents légaux et attestations) et de l'adresse de la salle de jeu (utilisée pour les calculs d'itinéraires et temps de trajet des événements).
+  - Ajout d'une case à cocher interactive *« La salle de jeu est située à la même adresse que le siège social »* avec synchronisation en temps réel dans `src/js/admin-association.ts`.
 
 ### Mailing, Suivi d'Ouverture & Filtrage Incrémental
 - **Fiabilisation du filtrage incrémental lors des renvois de messages (`DAME\Admin\Pages\Mailing\RecipientResolver`, `DAME\Admin\Pages\Mailing\Processor`)** :

@@ -48,6 +48,21 @@ Chaque fiche membre centralise :
 *   **Filtres Avancés :** Retrouvez instantanément vos membres par saison, par groupe, par genre, par catégorie d'âge (calculée automatiquement en UTC) ou par type de licence.
 *   **Interopérabilité & Helper LMS :** Méthode statique optimisée `Group::get_groups_for_adherent(int $adherent_id): array` permettant aux extensions pédagogiques (comme ROI) d'interroger immédiatement les groupes d'entraînement rattachés à un adhérent.
 
+### 4. Attestations d'Adhésion & Paiement (PDF & Envoi par E-mail)
+*   **Génération Dématérialisée PDF :** Génération de reçus et attestations officielles (pour CE, CSE, mutuelles santé, employeurs, Pass'Sport) conformes aux exigences administratives françaises.
+    *   Montant en chiffres et conversion automatique en toutes lettres en français (`DAME\Core\Utils::number_to_french_words`).
+    *   Incrustation du logo, du cachet officiel, de la signature du représentant légal et des mentions légales (RNA, SIREN, siège social).
+*   **Téléchargement Unitaire ou Groupé :**
+    *   Bouton d'action directe et action de ligne « Attestation » dans la liste des adhérents avec modale interactive pré-remplie (ajustement du montant, date, mode de règlement).
+    *   Action groupée « Télécharger les attestations (PDF groupé) » pour imprimer ou archiver l'ensemble des attestations d'une sélection d'adhérents en un seul fichier PDF multipages.
+*   **Envoi Asynchrone par E-mail avec File d'Attente (BatchSender) :**
+    *   Envoi par e-mail en un clic avec pièce jointe PDF vers l'adhérent et/ou ses représentants légaux.
+    *   Intégration directe dans la file d'attente globale FIFO de `BatchSender` garantissant le respect strict des quotas d'envoi par minute de l'hébergeur (`smtp_batch_size`).
+    *   Modèle de courriel personnalisable avec balises dynamiques (`{prenom}`, `{nom}`, `{saison}`, `{montant}`, `{date_paiement}`, `{mode_paiement}`, `{association}`, `{site_web}`).
+*   **Tarification Simplifiée par Saison :**
+    *   Gestion fine des tarifs Licence A, Licence B, réduction féminine et majoration première adhésion directement dans l'édition de chaque saison (taxonomie `dame_saison_adhesion`) ou dans les réglages généraux.
+    *   Métabox de paiement par saison sur la fiche adhérent (statut réglé/en attente, date, montant, mode de règlement).
+
 ---
 
 ## Fonctionnalités Additionnelles
