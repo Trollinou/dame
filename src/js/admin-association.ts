@@ -123,4 +123,72 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			});
 		}
 	});
+
+	// --- 2. Copy Siege Social address to Salle de jeu when checked ---
+	const sameAddressCheckbox = document.querySelector<HTMLInputElement>(
+		'#dame_assoc_same_address'
+	);
+	const siegeAddr1 = document.querySelector<HTMLInputElement>(
+		'#dame_assoc_siege_address_1'
+	);
+	const siegeAddr2 = document.querySelector<HTMLInputElement>(
+		'#dame_assoc_siege_address_2'
+	);
+	const siegeZip = document.querySelector<HTMLInputElement>(
+		'#dame_assoc_siege_postal_code'
+	);
+	const siegeCity = document.querySelector<HTMLInputElement>(
+		'#dame_assoc_siege_city'
+	);
+
+	const salleAddr1 = document.querySelector<HTMLInputElement>(
+		'#dame_assoc_address_1'
+	);
+	const salleAddr2 = document.querySelector<HTMLInputElement>(
+		'#dame_assoc_address_2'
+	);
+	const salleZip = document.querySelector<HTMLInputElement>(
+		'#dame_assoc_postal_code'
+	);
+	const salleCity =
+		document.querySelector<HTMLInputElement>('#dame_assoc_city');
+
+	function syncSameAddress(): void {
+		if (!sameAddressCheckbox || !sameAddressCheckbox.checked) {
+			return;
+		}
+		if (salleAddr1 && siegeAddr1) {
+			salleAddr1.value = siegeAddr1.value;
+		}
+		if (salleAddr2 && siegeAddr2) {
+			salleAddr2.value = siegeAddr2.value;
+		}
+		if (salleZip && siegeZip) {
+			salleZip.value = siegeZip.value;
+		}
+		if (salleCity && siegeCity) {
+			salleCity.value = siegeCity.value;
+		}
+	}
+
+	if (sameAddressCheckbox) {
+		sameAddressCheckbox.addEventListener('change', (): void => {
+			if (sameAddressCheckbox.checked) {
+				syncSameAddress();
+			}
+		});
+
+		// Listen to changes on siege inputs if checked
+		[siegeAddr1, siegeAddr2, siegeZip, siegeCity].forEach(
+			(el: HTMLInputElement | null): void => {
+				if (el) {
+					el.addEventListener('input', (): void => {
+						if (sameAddressCheckbox.checked) {
+							syncSameAddress();
+						}
+					});
+				}
+			}
+		);
+	}
 });

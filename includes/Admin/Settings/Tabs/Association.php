@@ -29,44 +29,40 @@ class Association {
 	public function register(): void {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
+		// 1. Identité légale & Contact
 		add_settings_section(
-			'dame_association_section',
-			__( "Informations générales & Salle de jeu (Trajets)", 'dame' ),
-			array( $this, 'section_callback' ),
-			'dame_association_section_group'
+			'dame_association_identity_section',
+			__( 'Identité légale & Contact', 'dame' ),
+			array( $this, 'identity_section_callback' ),
+			'dame_association_identity_group'
 		);
 
-		$general_fields = array(
-			'assoc_name'        => __( "Nom de l'association", 'dame' ),
-			'assoc_ffe_id'      => __( 'Id de référence du club (FFE)', 'dame' ),
-			'assoc_rna'         => __( 'Numéro RNA', 'dame' ),
-			'assoc_siren'       => __( 'Numéro SIREN', 'dame' ),
-			'assoc_email'       => __( 'Courriel officiel', 'dame' ),
-			'assoc_website'     => __( 'Site web officiel', 'dame' ),
-			'assoc_address_1'   => __( 'Adresse de la salle de jeu', 'dame' ),
-			'assoc_address_2'   => __( 'Complément salle de jeu', 'dame' ),
-			'assoc_postal_code' => __( 'Code Postal salle de jeu', 'dame' ),
-			'assoc_city'        => __( 'Ville salle de jeu', 'dame' ),
-			'assoc_latitude'    => __( 'Latitude salle de jeu', 'dame' ),
-			'assoc_longitude'   => __( 'Longitude salle de jeu', 'dame' ),
+		$identity_fields = array(
+			'assoc_name'    => __( "Nom de l'association", 'dame' ),
+			'assoc_ffe_id'  => __( 'Id de référence du club (FFE)', 'dame' ),
+			'assoc_rna'     => __( 'Numéro RNA', 'dame' ),
+			'assoc_siren'   => __( 'Numéro SIREN', 'dame' ),
+			'assoc_email'   => __( 'Courriel officiel', 'dame' ),
+			'assoc_website' => __( 'Site web officiel', 'dame' ),
 		);
 
-		foreach ( $general_fields as $key => $label ) {
+		foreach ( $identity_fields as $key => $label ) {
 			add_settings_field(
 				'dame_' . $key,
 				$label,
 				array( $this, 'render_field' ),
-				'dame_association_section_group',
-				'dame_association_section',
+				'dame_association_identity_group',
+				'dame_association_identity_section',
 				array( 'key' => $key )
 			);
 		}
 
+		// 2. Siège social (Documents & Attestations)
 		add_settings_section(
 			'dame_association_siege_section',
 			__( 'Siège social (Documents & Attestations)', 'dame' ),
 			array( $this, 'siege_section_callback' ),
-			'dame_association_section_group'
+			'dame_association_siege_group'
 		);
 
 		$siege_fields = array(
@@ -81,17 +77,46 @@ class Association {
 				'dame_' . $key,
 				$label,
 				array( $this, 'render_field' ),
-				'dame_association_section_group',
+				'dame_association_siege_group',
 				'dame_association_siege_section',
 				array( 'key' => $key )
 			);
 		}
 
+		// 3. Salle de jeu (Trajets & Itinéraires)
+		add_settings_section(
+			'dame_association_salle_section',
+			__( 'Salle de jeu (Trajets & Itinéraires)', 'dame' ),
+			array( $this, 'salle_section_callback' ),
+			'dame_association_salle_group'
+		);
+
+		$salle_fields = array(
+			'assoc_address_1'   => __( 'Adresse de la salle de jeu', 'dame' ),
+			'assoc_address_2'   => __( 'Complément de la salle', 'dame' ),
+			'assoc_postal_code' => __( 'Code Postal de la salle', 'dame' ),
+			'assoc_city'        => __( 'Ville de la salle', 'dame' ),
+			'assoc_latitude'    => __( 'Latitude salle de jeu', 'dame' ),
+			'assoc_longitude'   => __( 'Longitude salle de jeu', 'dame' ),
+		);
+
+		foreach ( $salle_fields as $key => $label ) {
+			add_settings_field(
+				'dame_' . $key,
+				$label,
+				array( $this, 'render_field' ),
+				'dame_association_salle_group',
+				'dame_association_salle_section',
+				array( 'key' => $key )
+			);
+		}
+
+		// 4. Représentant(e) légal(e) & Cachet officiel
 		add_settings_section(
 			'dame_association_docs_section',
 			__( 'Représentant(e) & Cachet officiel', 'dame' ),
 			array( $this, 'docs_section_callback' ),
-			'dame_association_section_group'
+			'dame_association_docs_group'
 		);
 
 		$docs_fields = array(
@@ -106,7 +131,7 @@ class Association {
 				'dame_' . $key,
 				$label,
 				array( $this, 'render_field' ),
-				'dame_association_section_group',
+				'dame_association_docs_group',
 				'dame_association_docs_section',
 				array( 'key' => $key )
 			);
@@ -136,24 +161,31 @@ class Association {
 	}
 
 	/**
-	 * Section callback for general info.
+	 * Section callback for identity & contact.
 	 */
-	public function section_callback(): void {
-		echo '<p>' . esc_html__( "Saisir ici les informations administratives du club et l'adresse de la salle de jeu (utilisée pour le calcul automatique des distances et temps de trajet des événements).", 'dame' ) . '</p>';
+	public function identity_section_callback(): void {
+		echo '<p>' . esc_html__( "Renseignez les données officielles de l'association (nom déclaré, immatriculations RNA et SIRET, coordonnées de contact officiel).", 'dame' ) . '</p>';
 	}
 
 	/**
 	 * Section callback for siege social.
 	 */
 	public function siege_section_callback(): void {
-		echo '<p>' . esc_html__( "Saisir ici l'adresse officielle du siège social de l'association. Cette adresse figurera sur les attestations d'adhésion et de paiement ainsi que les documents légaux.", 'dame' ) . '</p>';
+		echo '<p>' . esc_html__( "Adresse officielle du siège social déclarée en préfecture. Cette adresse figurera sur les attestations d'adhésion et de paiement délivrées aux adhérents.", 'dame' ) . '</p>';
+	}
+
+	/**
+	 * Section callback for salle de jeu.
+	 */
+	public function salle_section_callback(): void {
+		echo '<p>' . esc_html__( "Adresse des locaux où se déroulent les entraînements et rencontres. Utilisée pour le calcul automatique des distances et temps de trajet des événements de l'agenda.", 'dame' ) . '</p>';
 	}
 
 	/**
 	 * Section callback for official documents.
 	 */
 	public function docs_section_callback(): void {
-		echo '<p>' . esc_html__( 'Ces informations (représentant légal, logo et signature/cachet) sont utilisées pour la génération des attestations de paiement et documents officiels du club.', 'dame' ) . '</p>';
+		echo '<p>' . esc_html__( 'Ces informations (signataire, logo du club et signature/cachet) sont apposées sur les documents officiels et attestations générés par le club.', 'dame' ) . '</p>';
 	}
 
 	/**
@@ -258,7 +290,71 @@ class Association {
 	 * Render the tab content.
 	 */
 	public function render(): void {
-		do_settings_sections( 'dame_association_section_group' );
+		echo '<div class="dame-association-cards">';
+
+		// Card 1 : Identité légale & Contact
+		echo '<div class="dame-association-card">';
+		echo '<div class="dame-card-header">';
+		echo '<h3><span class="dashicons dashicons-id-alt"></span> ' . esc_html__( '1. Identité légale & Contact', 'dame' ) . '</h3>';
+		echo '<p>' . esc_html__( "Nom officiel déclaré, identifiants administratifs (RNA, SIREN) et canaux de contact du club.", 'dame' ) . '</p>';
+		echo '</div>';
+		echo '<div class="dame-card-body">';
+		echo '<table class="form-table" role="presentation">';
+		do_settings_fields( 'dame_association_identity_group', 'dame_association_identity_section' );
+		echo '</table>';
+		echo '</div>';
+		echo '</div>';
+
+		// Card 2 : Siège social (Documents & Attestations)
+		echo '<div class="dame-association-card">';
+		echo '<div class="dame-card-header">';
+		echo '<h3><span class="dashicons dashicons-building"></span> ' . esc_html__( '2. Siège social (Documents & Attestations)', 'dame' ) . '</h3>';
+		echo '<p>' . esc_html__( "Adresse officielle du siège de l'association, reportée sur les attestations d'adhésion et pièces officielles.", 'dame' ) . '</p>';
+		echo '</div>';
+		echo '<div class="dame-card-body">';
+		echo '<table class="form-table" role="presentation">';
+		do_settings_fields( 'dame_association_siege_group', 'dame_association_siege_section' );
+		echo '</table>';
+		echo '</div>';
+		echo '</div>';
+
+		// Card 3 : Salle de jeu (Trajets & Itinéraires)
+		echo '<div class="dame-association-card">';
+		echo '<div class="dame-card-header">';
+		echo '<h3><span class="dashicons dashicons-location-alt"></span> ' . esc_html__( '3. Salle de jeu (Trajets & Itinéraires)', 'dame' ) . '</h3>';
+		echo '<p>' . esc_html__( "Local de pratique pour les entraînements et matchs. Sert de point de départ pour le calcul des itinéraires de l'agenda.", 'dame' ) . '</p>';
+		echo '</div>';
+		echo '<div class="dame-card-body">';
+
+		// Same address banner
+		echo '<div class="dame-same-address-banner">';
+		echo '<label for="dame_assoc_same_address">';
+		echo '<input type="checkbox" id="dame_assoc_same_address" name="dame_assoc_same_address" value="1" /> ';
+		echo esc_html__( 'La salle de jeu est située à la même adresse que le siège social', 'dame' );
+		echo '</label>';
+		echo '<p>' . esc_html__( 'Cocher cette case recopie automatiquement l\'adresse du siège social vers les champs de la salle de jeu.', 'dame' ) . '</p>';
+		echo '</div>';
+
+		echo '<table class="form-table" role="presentation">';
+		do_settings_fields( 'dame_association_salle_group', 'dame_association_salle_section' );
+		echo '</table>';
+		echo '</div>';
+		echo '</div>';
+
+		// Card 4 : Représentant(e) légal(e) & Cachet officiel
+		echo '<div class="dame-association-card">';
+		echo '<div class="dame-card-header">';
+		echo '<h3><span class="dashicons dashicons-awards"></span> ' . esc_html__( '4. Représentant(e) & Cachet officiel', 'dame' ) . '</h3>';
+		echo '<p>' . esc_html__( "Signataire habilité(e), logo et cachet/signature apposés sur les attestations d'adhésion et documents PDF.", 'dame' ) . '</p>';
+		echo '</div>';
+		echo '<div class="dame-card-body">';
+		echo '<table class="form-table" role="presentation">';
+		do_settings_fields( 'dame_association_docs_group', 'dame_association_docs_section' );
+		echo '</table>';
+		echo '</div>';
+		echo '</div>';
+
+		echo '</div>'; // .dame-association-cards
 	}
 
 	/**
