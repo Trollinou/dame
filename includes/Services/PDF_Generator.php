@@ -538,21 +538,34 @@ class PDF_Generator {
 		$assoc_siren    = ! empty( $options['assoc_siren'] ) ? (string) $options['assoc_siren'] : '';
 		$assoc_email    = ! empty( $options['assoc_email'] ) ? (string) $options['assoc_email'] : get_bloginfo( 'admin_email' );
 		$assoc_website  = ! empty( $options['assoc_website'] ) ? (string) $options['assoc_website'] : home_url();
-		$assoc_city     = ! empty( $options['assoc_city'] ) ? (string) $options['assoc_city'] : '';
+		$assoc_city     = ! empty( $options['assoc_siege_city'] )
+			? (string) $options['assoc_siege_city']
+			: ( ! empty( $options['assoc_city'] ) ? (string) $options['assoc_city'] : '' );
 		$assoc_rep_name = ! empty( $options['assoc_rep_name'] ) ? (string) $options['assoc_rep_name'] : '';
 		$assoc_rep_role = ! empty( $options['assoc_rep_role'] ) ? (string) $options['assoc_rep_role'] : __( 'Président(e)', 'dame' );
 
-		// Build address string.
+		// Build address string (Prioritize registered office / siège social, fallback to playing room / club address).
 		$addr_parts = array();
-		if ( ! empty( $options['assoc_address_1'] ) ) {
-			$addr_parts[] = (string) $options['assoc_address_1'];
-		}
-		if ( ! empty( $options['assoc_address_2'] ) ) {
-			$addr_parts[] = (string) $options['assoc_address_2'];
-		}
-		$city_line = trim( ( ! empty( $options['assoc_postal_code'] ) ? (string) $options['assoc_postal_code'] . ' ' : '' ) . $assoc_city );
-		if ( ! empty( $city_line ) ) {
-			$addr_parts[] = $city_line;
+		if ( ! empty( $options['assoc_siege_address_1'] ) ) {
+			$addr_parts[] = (string) $options['assoc_siege_address_1'];
+			if ( ! empty( $options['assoc_siege_address_2'] ) ) {
+				$addr_parts[] = (string) $options['assoc_siege_address_2'];
+			}
+			$siege_city_line = trim( ( ! empty( $options['assoc_siege_postal_code'] ) ? (string) $options['assoc_siege_postal_code'] . ' ' : '' ) . (string) ( $options['assoc_siege_city'] ?? '' ) );
+			if ( ! empty( $siege_city_line ) ) {
+				$addr_parts[] = $siege_city_line;
+			}
+		} else {
+			if ( ! empty( $options['assoc_address_1'] ) ) {
+				$addr_parts[] = (string) $options['assoc_address_1'];
+			}
+			if ( ! empty( $options['assoc_address_2'] ) ) {
+				$addr_parts[] = (string) $options['assoc_address_2'];
+			}
+			$city_line = trim( ( ! empty( $options['assoc_postal_code'] ) ? (string) $options['assoc_postal_code'] . ' ' : '' ) . ( ! empty( $options['assoc_city'] ) ? (string) $options['assoc_city'] : '' ) );
+			if ( ! empty( $city_line ) ) {
+				$addr_parts[] = $city_line;
+			}
 		}
 		$assoc_address = implode( ', ', $addr_parts );
 

@@ -31,7 +31,7 @@ class Association {
 
 		add_settings_section(
 			'dame_association_section',
-			__( "Informations de l'association", 'dame' ),
+			__( "Informations générales & Salle de jeu (Trajets)", 'dame' ),
 			array( $this, 'section_callback' ),
 			'dame_association_section_group'
 		);
@@ -43,12 +43,12 @@ class Association {
 			'assoc_siren'       => __( 'Numéro SIREN', 'dame' ),
 			'assoc_email'       => __( 'Courriel officiel', 'dame' ),
 			'assoc_website'     => __( 'Site web officiel', 'dame' ),
-			'assoc_address_1'   => __( 'Adresse', 'dame' ),
-			'assoc_address_2'   => __( 'Complément', 'dame' ),
-			'assoc_postal_code' => __( 'Code Postal', 'dame' ),
-			'assoc_city'        => __( 'Ville', 'dame' ),
-			'assoc_latitude'    => __( 'Latitude', 'dame' ),
-			'assoc_longitude'   => __( 'Longitude', 'dame' ),
+			'assoc_address_1'   => __( 'Adresse de la salle de jeu', 'dame' ),
+			'assoc_address_2'   => __( 'Complément salle de jeu', 'dame' ),
+			'assoc_postal_code' => __( 'Code Postal salle de jeu', 'dame' ),
+			'assoc_city'        => __( 'Ville salle de jeu', 'dame' ),
+			'assoc_latitude'    => __( 'Latitude salle de jeu', 'dame' ),
+			'assoc_longitude'   => __( 'Longitude salle de jeu', 'dame' ),
 		);
 
 		foreach ( $general_fields as $key => $label ) {
@@ -63,8 +63,33 @@ class Association {
 		}
 
 		add_settings_section(
+			'dame_association_siege_section',
+			__( 'Siège social (Documents & Attestations)', 'dame' ),
+			array( $this, 'siege_section_callback' ),
+			'dame_association_section_group'
+		);
+
+		$siege_fields = array(
+			'assoc_siege_address_1'   => __( 'Adresse du siège social', 'dame' ),
+			'assoc_siege_address_2'   => __( 'Complément d\'adresse', 'dame' ),
+			'assoc_siege_postal_code' => __( 'Code Postal du siège', 'dame' ),
+			'assoc_siege_city'        => __( 'Ville du siège social', 'dame' ),
+		);
+
+		foreach ( $siege_fields as $key => $label ) {
+			add_settings_field(
+				'dame_' . $key,
+				$label,
+				array( $this, 'render_field' ),
+				'dame_association_section_group',
+				'dame_association_siege_section',
+				array( 'key' => $key )
+			);
+		}
+
+		add_settings_section(
 			'dame_association_docs_section',
-			__( 'Documents officiels & Signataire (Attestations)', 'dame' ),
+			__( 'Représentant(e) & Cachet officiel', 'dame' ),
 			array( $this, 'docs_section_callback' ),
 			'dame_association_section_group'
 		);
@@ -114,7 +139,14 @@ class Association {
 	 * Section callback for general info.
 	 */
 	public function section_callback(): void {
-		echo '<p>' . esc_html__( "Saisir ici les informations administratives et de contact relatives à l'association. L'autocomplétion est activée sur le champ Adresse.", 'dame' ) . '</p>';
+		echo '<p>' . esc_html__( "Saisir ici les informations administratives du club et l'adresse de la salle de jeu (utilisée pour le calcul automatique des distances et temps de trajet des événements).", 'dame' ) . '</p>';
+	}
+
+	/**
+	 * Section callback for siege social.
+	 */
+	public function siege_section_callback(): void {
+		echo '<p>' . esc_html__( "Saisir ici l'adresse officielle du siège social de l'association. Cette adresse figurera sur les attestations d'adhésion et de paiement ainsi que les documents légaux.", 'dame' ) . '</p>';
 	}
 
 	/**
@@ -201,6 +233,20 @@ class Association {
 		} elseif ( 'assoc_longitude' === $key ) {
 			$readonly = 'readonly="readonly"';
 			$class   .= ' dame-js-long';
+		} elseif ( 'assoc_siege_address_1' === $key ) {
+			$wrapper_start = '<div class="dame-autocomplete-wrapper">';
+			$wrapper_end   = '</div>';
+			$extra_attr    = 'autocomplete="off"';
+			$class        .= ' dame-js-address';
+			$data_group    = 'data-group="siege"';
+		} elseif ( 'assoc_siege_postal_code' === $key ) {
+			$class     .= ' dame-js-zip';
+			$data_group = 'data-group="siege"';
+		} elseif ( 'assoc_siege_city' === $key ) {
+			$class     .= ' dame-js-city';
+			$data_group = 'data-group="siege"';
+		} elseif ( 'assoc_siege_address_2' === $key ) {
+			$data_group = 'data-group="siege"';
 		}
 
 		echo $wrapper_start; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -236,6 +282,10 @@ class Association {
 			'assoc_city'               => 'text',
 			'assoc_latitude'           => 'text',
 			'assoc_longitude'          => 'text',
+			'assoc_siege_address_1'    => 'text',
+			'assoc_siege_address_2'    => 'text',
+			'assoc_siege_postal_code'  => 'text',
+			'assoc_siege_city'         => 'text',
 			'assoc_rep_name'           => 'text',
 			'assoc_rep_role'           => 'text',
 			'assoc_logo_id'            => 'int',
