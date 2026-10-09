@@ -1,4 +1,4 @@
-# Release Notes — DAME v5.6.2
+# Release Notes — DAME v5.6.3
 
 **Date :** 9 octobre 2026
 

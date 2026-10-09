@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.6.3] - 2026-10-09
+
 ### Attestations PDF & Mise en Page
 - **Harmonisation Visuelle de l'En-tête PDF & Signatures (`DAME\Services\PDF_Generator`)** :
   - Contrainte proportionnelle du logo dans une boîte englobante maximale (32 mm de large × 26 mm de haut) pour préserver strictement son ratio sans empiéter sur le document.
