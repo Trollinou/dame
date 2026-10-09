@@ -641,7 +641,7 @@ class PDF_Generator {
 		$pdf->SetAutoPageBreak( false );
 
 		$enc = static function ( string $text ): string {
-			// Replace typographical characters with clean ASCII/Latin-1 equivalents before encoding.
+			// Replace typographical characters with clean ASCII equivalents.
 			$replacements = array(
 				'—' => '-',
 				'–' => '-',
@@ -651,12 +651,12 @@ class PDF_Generator {
 				'”' => '"',
 				'…' => '...',
 				'•' => '*',
-				'€' => chr( 128 ), // FPDF standard cp1252 euro sign.
 			);
 
 			$clean_text = strtr( $text, $replacements );
 
-			return mb_convert_encoding( $clean_text, 'ISO-8859-1', 'UTF-8' );
+			// Convert to Windows-1252 (CP1252) which maps the Euro sign '€' to byte 0x80 natively supported by FPDF core fonts.
+			return (string) mb_convert_encoding( $clean_text, 'windows-1252', 'UTF-8' );
 		};
 
 		// 1. Header (Logo on left, association info next to it or on right).
