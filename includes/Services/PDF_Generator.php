@@ -573,7 +573,10 @@ class PDF_Generator {
 		$first_name     = (string) get_post_meta( $adherent_id, '_dame_first_name', true );
 		$last_name      = (string) get_post_meta( $adherent_id, '_dame_last_name', true );
 		$birth_date_raw = (string) get_post_meta( $adherent_id, '_dame_birth_date', true );
-		$ffe_licence    = (string) get_post_meta( $adherent_id, '_dame_ffe_licence', true );
+		$ffe_licence    = (string) get_post_meta( $adherent_id, '_dame_license_number', true );
+		if ( empty( $ffe_licence ) ) {
+			$ffe_licence = (string) get_post_meta( $adherent_id, '_dame_ffe_licence', true );
+		}
 
 		if ( empty( $first_name ) || empty( $last_name ) ) {
 			throw new Exception( esc_html__( 'Nom ou prénom de l\'adhérent manquant.', 'dame' ) );
