@@ -103,14 +103,27 @@ class BatchSender {
 				"From: {$from_name} <{$from_email}>",
 			);
 			$attachment  = get_post_meta( $mid, '_dame_message_attachment', true );
-			$attachments = ! empty( $attachment ) && is_string( $attachment ) && file_exists( $attachment ) ? array( $attachment ) : array();
+			$attachments = array();
+			if ( ! empty( $attachment ) && is_string( $attachment ) ) {
+				$norm_att = wp_normalize_path( $attachment );
+				if ( file_exists( $norm_att ) ) {
+					$attachments[] = $norm_att;
+				} elseif ( file_exists( $attachment ) ) {
+					$attachments[] = $attachment;
+				}
+			}
 
 			// Also support multiple attachments via _dame_message_attachments array.
 			$multi_attachments = get_post_meta( $mid, '_dame_message_attachments', true );
 			if ( ! empty( $multi_attachments ) && is_array( $multi_attachments ) ) {
 				foreach ( $multi_attachments as $att_path ) {
-					if ( is_string( $att_path ) && file_exists( $att_path ) && ! in_array( $att_path, $attachments, true ) ) {
-						$attachments[] = $att_path;
+					if ( is_string( $att_path ) ) {
+						$norm_path = wp_normalize_path( $att_path );
+						if ( file_exists( $norm_path ) && ! in_array( $norm_path, $attachments, true ) ) {
+							$attachments[] = $norm_path;
+						} elseif ( file_exists( $att_path ) && ! in_array( $att_path, $attachments, true ) ) {
+							$attachments[] = $att_path;
+						}
 					}
 				}
 			}
@@ -278,15 +291,25 @@ class BatchSender {
 		// Gestion de la pièce jointe (Préparée une seule fois hors de la boucle).
 		$attachments     = array();
 		$attachment_path = get_post_meta( $message_id, '_dame_message_attachment', true );
-		if ( ! empty( $attachment_path ) && is_string( $attachment_path ) && file_exists( $attachment_path ) ) {
-			$attachments[] = $attachment_path;
+		if ( ! empty( $attachment_path ) && is_string( $attachment_path ) ) {
+			$norm_att = wp_normalize_path( $attachment_path );
+			if ( file_exists( $norm_att ) ) {
+				$attachments[] = $norm_att;
+			} elseif ( file_exists( $attachment_path ) ) {
+				$attachments[] = $attachment_path;
+			}
 		}
 
 		$multi_attachments = get_post_meta( $message_id, '_dame_message_attachments', true );
 		if ( ! empty( $multi_attachments ) && is_array( $multi_attachments ) ) {
 			foreach ( $multi_attachments as $att_path ) {
-				if ( is_string( $att_path ) && file_exists( $att_path ) && ! in_array( $att_path, $attachments, true ) ) {
-					$attachments[] = $att_path;
+				if ( is_string( $att_path ) ) {
+					$norm_path = wp_normalize_path( $att_path );
+					if ( file_exists( $norm_path ) && ! in_array( $norm_path, $attachments, true ) ) {
+						$attachments[] = $norm_path;
+					} elseif ( file_exists( $att_path ) && ! in_array( $att_path, $attachments, true ) ) {
+						$attachments[] = $att_path;
+					}
 				}
 			}
 		}

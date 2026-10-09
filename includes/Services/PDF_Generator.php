@@ -942,14 +942,15 @@ class PDF_Generator {
 
 		// Save generated PDF safely in documents storage for asynchronous sending.
 		$stored_filename = Document_Storage::save_file( $content, $filename );
-		$absolute_path   = Document_Storage::get_absolute_path( $stored_filename );
-		if ( ! $absolute_path || ! file_exists( $absolute_path ) ) {
+		$raw_path        = Document_Storage::get_absolute_path( $stored_filename );
+		if ( ! $raw_path || ! file_exists( $raw_path ) ) {
 			return array(
 				'success'    => false,
 				'message'    => __( 'Échec du stockage temporaire de l\'attestation PDF.', 'dame' ),
 				'recipients' => $recipients,
 			);
 		}
+		$absolute_path = wp_normalize_path( $raw_path );
 
 		// Prepare email placeholders.
 		$template_data         = Data_Provider::get_attestation_email_template();
