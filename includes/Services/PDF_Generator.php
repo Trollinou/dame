@@ -114,7 +114,11 @@ class PDF_Generator {
 		$current_date               = gmdate( 'd/m/Y' );
 
 		if ( ! class_exists( '\setasign\Fpdi\Fpdi' ) ) {
-			require_once DAME_PLUGIN_DIR . 'vendor/autoload.php';
+			if ( file_exists( DAME_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
+				require_once DAME_PLUGIN_DIR . 'vendor/autoload.php';
+			} else {
+				throw new Exception( esc_html__( 'Les dépendances PDF (FPDI/FPDF) sont introuvables. Veuillez exécuter "composer install".', 'dame' ) );
+			}
 		}
 
 		$template_path = DAME_PLUGIN_DIR . 'assets/pdf/ffe_attestation_sante.pdf';
@@ -252,7 +256,11 @@ class PDF_Generator {
 		$rl1_full_name                 = mb_convert_encoding( Utils::format_lastname( (string) $rl1_last_name ) . ' ' . Utils::format_firstname( (string) $rl1_first_name ), 'ISO-8859-1', 'UTF-8' );
 
 		if ( ! class_exists( '\setasign\Fpdi\Fpdi' ) ) {
-			require_once DAME_PLUGIN_DIR . 'vendor/autoload.php';
+			if ( file_exists( DAME_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
+				require_once DAME_PLUGIN_DIR . 'vendor/autoload.php';
+			} else {
+				throw new Exception( esc_html__( 'Les dépendances PDF (FPDI/FPDF) sont introuvables. Veuillez exécuter "composer install".', 'dame' ) );
+			}
 		}
 
 		$template_path = DAME_PLUGIN_DIR . 'assets/pdf/el_autorisation_parentale.pdf';
@@ -510,7 +518,11 @@ class PDF_Generator {
 	 */
 	public function build_attestation_pdf( int $adherent_id, array $custom_data = array(), ?Fpdi $pdf = null ): Fpdi {
 		if ( ! class_exists( '\setasign\Fpdi\Fpdi' ) ) {
-			require_once DAME_PLUGIN_DIR . 'vendor/autoload.php';
+			if ( file_exists( DAME_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
+				require_once DAME_PLUGIN_DIR . 'vendor/autoload.php';
+			} else {
+				throw new Exception( esc_html__( 'Les dépendances PDF (FPDI/FPDF) sont introuvables. Veuillez exécuter "composer install".', 'dame' ) );
+			}
 		}
 
 		$options               = get_option( 'dame_options', array() );
@@ -845,7 +857,11 @@ class PDF_Generator {
 		}
 
 		if ( ! class_exists( '\setasign\Fpdi\Fpdi' ) ) {
-			require_once DAME_PLUGIN_DIR . 'vendor/autoload.php';
+			if ( file_exists( DAME_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
+				require_once DAME_PLUGIN_DIR . 'vendor/autoload.php';
+			} else {
+				throw new Exception( esc_html__( 'Les dépendances PDF (FPDI/FPDF) sont introuvables. Veuillez exécuter "composer install".', 'dame' ) );
+			}
 		}
 
 		$pdf = new Fpdi();
