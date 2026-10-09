@@ -181,6 +181,34 @@ class Saisons {
 					}
 				}
 			}
+
+			if ( 'update_season_pricing' === $action ) {
+				if ( ! current_user_can( 'manage_options' ) ) {
+					return;
+				}
+				$pricing_season_id = isset( $_POST['dame_pricing_season_id'] ) ? absint( $_POST['dame_pricing_season_id'] ) : 0;
+				if ( $pricing_season_id > 0 ) {
+					$pricing = array(
+						'price_licence_a'       => isset( $_POST['dame_price_licence_a'] ) ? (float) $_POST['dame_price_licence_a'] : 140.0,
+						'price_licence_b'       => isset( $_POST['dame_price_licence_b'] ) ? (float) $_POST['dame_price_licence_b'] : 70.0,
+						'discount_female_a'     => isset( $_POST['dame_discount_female_a'] ) ? (float) $_POST['dame_discount_female_a'] : 10.0,
+						'surcharge_first_reg_a' => isset( $_POST['dame_surcharge_first_reg_a'] ) ? (float) $_POST['dame_surcharge_first_reg_a'] : 30.0,
+					);
+					\DAME\Services\Data_Provider::save_season_pricing( $pricing_season_id, $pricing );
+					$term        = get_term( $pricing_season_id, 'dame_saison_adhesion' );
+					$season_name = ( $term && ! is_wp_error( $term ) ) ? $term->name : '';
+					add_action(
+						'admin_notices',
+						function () use ( $season_name ) {
+							echo '<div class="updated"><p>' . sprintf(
+								/* translators: %s: Nom de la saison */
+								esc_html__( 'Les tarifs pour la %s ont été mis à jour avec succès.', 'dame' ),
+								'<strong>' . esc_html( $season_name ) . '</strong>'
+							) . '</p></div>';
+						}
+					);
+				}
+			}
 		}
 	}
 
@@ -253,6 +281,86 @@ class Saisons {
 						}
 						?>
 					</p>
+				</form>
+			</div>
+
+			<hr class="wp-header-end">
+
+			<div>
+				<h3><?php esc_html_e( 'Tarifs des cotisations par saison', 'dame' ); ?></h3>
+				<p><?php esc_html_e( 'Configurez les tarifs d\'adhésion et les règles d\'ajustement pour chaque saison. Ces montants sont utilisés pour le calcul automatique de la cotisation et la génération des attestations de paiement.', 'dame' ); ?></p>
+
+				<?php
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$pricing_season_id = isset( $_REQUEST['dame_pricing_season_id'] ) ? absint( $_REQUEST['dame_pricing_season_id'] ) : (int) $current_season_tag_id;
+				if ( ! $pricing_season_id && ! empty( $seasons ) && ! is_wp_error( $seasons ) ) {
+					$pricing_season_id = (int) $seasons[0]->term_id;
+				}
+
+				$current_pricing = \DAME\Services\Data_Provider::get_season_pricing( $pricing_season_id );
+				?>
+
+				<form method="post" style="max-width: 750px; background: #fff; border: 1px solid #ccd0d4; padding: 15px 20px; border-radius: 4px;">
+					<input type="hidden" name="dame_action" value="update_season_pricing" />
+					<?php wp_nonce_field( 'dame_season_management_nonce', 'dame_season_management_nonce_field' ); ?>
+
+					<p>
+						<label for="dame_pricing_season_id"><strong><?php esc_html_e( 'Saison à configurer :', 'dame' ); ?></strong></label><br>
+						<select id="dame_pricing_season_id" name="dame_pricing_season_id" onchange="this.form.submit();" style="min-width: 220px; margin-top: 5px;">
+							<?php if ( ! empty( $seasons ) && ! is_wp_error( $seasons ) ) : ?>
+								<?php foreach ( $seasons as $season ) : ?>
+									<option value="<?php echo esc_attr( (string) $season->term_id ); ?>" <?php selected( $season->term_id, $pricing_season_id ); ?>>
+										<?php echo esc_html( $season->name ); ?><?php echo ( (int) $season->term_id === (int) $current_season_tag_id ) ? ' ' . esc_html__( '(Saison active)', 'dame' ) : ''; ?>
+									</option>
+								<?php endforeach; ?>
+							<?php endif; ?>
+						</select>
+						<span class="description" style="margin-left: 10px;"><?php esc_html_e( 'Changer la sélection recharge les tarifs de la saison.', 'dame' ); ?></span>
+					</p>
+
+					<table class="form-table" style="margin-top: 0;">
+						<tr>
+							<th scope="row"><label for="dame_price_licence_a"><?php esc_html_e( 'Tarif de base Licence A (€)', 'dame' ); ?></label></th>
+							<td>
+								<input type="number" step="0.5" min="0" id="dame_price_licence_a" name="dame_price_licence_a" value="<?php echo esc_attr( (string) $current_pricing['price_licence_a'] ); ?>" class="small-text" required="required" />
+								<p class="description"><?php esc_html_e( 'Cours + Compétition (tarif plein adulte homme en renouvellement).', 'dame' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="dame_price_licence_b"><?php esc_html_e( 'Tarif de base Licence B (€)', 'dame' ); ?></label></th>
+							<td>
+								<input type="number" step="0.5" min="0" id="dame_price_licence_b" name="dame_price_licence_b" value="<?php echo esc_attr( (string) $current_pricing['price_licence_b'] ); ?>" class="small-text" required="required" />
+								<p class="description"><?php esc_html_e( 'Jeu libre (tarif fixe appliqué pour tous en Licence B).', 'dame' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="dame_discount_female_a"><?php esc_html_e( 'Remise féminine sur Licence A (€)', 'dame' ); ?></label></th>
+							<td>
+								<input type="number" step="0.5" min="0" id="dame_discount_female_a" name="dame_discount_female_a" value="<?php echo esc_attr( (string) $current_pricing['discount_female_a'] ); ?>" class="small-text" required="required" />
+								<p class="description"><?php esc_html_e( 'Montant déduit de la cotisation Licence A pour les féminines (ex: 10 €).', 'dame' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="dame_surcharge_first_reg_a"><?php esc_html_e( 'Surcoût 1ère adhésion sur Licence A (€)', 'dame' ); ?></label></th>
+							<td>
+								<input type="number" step="0.5" min="0" id="dame_surcharge_first_reg_a" name="dame_surcharge_first_reg_a" value="<?php echo esc_attr( (string) $current_pricing['surcharge_first_reg_a'] ); ?>" class="small-text" required="required" />
+								<p class="description"><?php esc_html_e( 'Montant ajouté à la 1ère adhésion Licence A pour financer le polo floqué (ex: 30 €).', 'dame' ); ?></p>
+							</td>
+						</tr>
+					</table>
+
+					<div style="background: #f0f6fc; border-left: 4px solid #72aee6; padding: 10px 15px; margin: 15px 0;">
+						<p style="margin: 0;"><strong><?php esc_html_e( 'Exemples calculés pour cette saison :', 'dame' ); ?></strong></p>
+						<ul style="margin: 5px 0 0 20px; list-style-type: disc;">
+							<li><?php esc_html_e( 'Licence A — Renouvellement Homme :', 'dame' ); ?> <strong><?php echo esc_html( number_format( $current_pricing['price_licence_a'], 2, ',', ' ' ) ); ?> €</strong></li>
+							<li><?php esc_html_e( 'Licence A — Renouvellement Femme :', 'dame' ); ?> <strong><?php echo esc_html( number_format( max( 0.0, $current_pricing['price_licence_a'] - $current_pricing['discount_female_a'] ), 2, ',', ' ' ) ); ?> €</strong></li>
+							<li><?php esc_html_e( 'Licence A — 1ère adhésion Homme (avec polo) :', 'dame' ); ?> <strong><?php echo esc_html( number_format( $current_pricing['price_licence_a'] + $current_pricing['surcharge_first_reg_a'], 2, ',', ' ' ) ); ?> €</strong></li>
+							<li><?php esc_html_e( 'Licence A — 1ère adhésion Femme (avec polo) :', 'dame' ); ?> <strong><?php echo esc_html( number_format( max( 0.0, $current_pricing['price_licence_a'] - $current_pricing['discount_female_a'] + $current_pricing['surcharge_first_reg_a'] ), 2, ',', ' ' ) ); ?> €</strong></li>
+							<li><?php esc_html_e( 'Licence B — Tout public :', 'dame' ); ?> <strong><?php echo esc_html( number_format( $current_pricing['price_licence_b'], 2, ',', ' ' ) ); ?> €</strong></li>
+						</ul>
+					</div>
+
+					<?php submit_button( __( 'Enregistrer les tarifs de cette saison', 'dame' ), 'primary', 'dame_save_pricing', false ); ?>
 				</form>
 			</div>
 		</div>
