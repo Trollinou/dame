@@ -67,6 +67,10 @@ class ViewAdherent {
 
 			<?php if ( current_user_can( 'edit_post', $post_id ) ) : ?>
 				<a href="<?php echo esc_url( get_edit_post_link( $post_id ) ); ?>" class="button button-primary dame-action-btn-top"><?php esc_html_e( 'Modifier cet adhérent', 'dame' ); ?></a>
+				<button type="button" class="button button-secondary dame-action-btn-top dame-open-attestation-btn" data-adherent-id="<?php echo esc_attr( (string) $post_id ); ?>">
+					<span class="dashicons dashicons-printer" style="vertical-align: middle; margin-top: -2px;"></span>
+					<?php esc_html_e( 'Attestation de paiement', 'dame' ); ?>
+				</button>
 			<?php endif; ?>
 
 			<div id="poststuff">

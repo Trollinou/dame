@@ -532,4 +532,183 @@ class Data_Provider {
 
 		return $emails;
 	}
+
+	/**
+	 * Default pricing configuration.
+	 *
+	 * @var array<string, float>
+	 */
+	public const DEFAULT_PRICING = array(
+		'price_licence_a'       => 140.0,
+		'price_licence_b'       => 70.0,
+		'discount_female_a'     => 10.0,
+		'surcharge_first_reg_a' => 30.0,
+	);
+
+	/**
+	 * Retrieves the pricing configuration for a given season.
+	 *
+	 * @param int $season_id The term ID of the season.
+	 * @return array{price_licence_a: float, price_licence_b: float, discount_female_a: float, surcharge_first_reg_a: float}
+	 */
+	public static function get_season_pricing( int $season_id ): array {
+		if ( $season_id <= 0 ) {
+			return self::DEFAULT_PRICING;
+		}
+
+		$options = get_option( 'dame_season_pricing_' . $season_id, null );
+		if ( ! is_array( $options ) ) {
+			return self::DEFAULT_PRICING;
+		}
+
+		return array(
+			'price_licence_a'       => isset( $options['price_licence_a'] ) ? (float) $options['price_licence_a'] : 140.0,
+			'price_licence_b'       => isset( $options['price_licence_b'] ) ? (float) $options['price_licence_b'] : 70.0,
+			'discount_female_a'     => isset( $options['discount_female_a'] ) ? (float) $options['discount_female_a'] : 10.0,
+			'surcharge_first_reg_a' => isset( $options['surcharge_first_reg_a'] ) ? (float) $options['surcharge_first_reg_a'] : 30.0,
+		);
+	}
+
+	/**
+	 * Saves the pricing configuration for a given season.
+	 *
+	 * @param int                  $season_id The term ID of the season.
+	 * @param array<string, mixed> $pricing   Pricing data array.
+	 */
+	public static function save_season_pricing( int $season_id, array $pricing ): void {
+		if ( $season_id <= 0 ) {
+			return;
+		}
+
+		$clean = array(
+			'price_licence_a'       => isset( $pricing['price_licence_a'] ) ? max( 0.0, (float) $pricing['price_licence_a'] ) : 140.0,
+			'price_licence_b'       => isset( $pricing['price_licence_b'] ) ? max( 0.0, (float) $pricing['price_licence_b'] ) : 70.0,
+			'discount_female_a'     => isset( $pricing['discount_female_a'] ) ? max( 0.0, (float) $pricing['discount_female_a'] ) : 10.0,
+			'surcharge_first_reg_a' => isset( $pricing['surcharge_first_reg_a'] ) ? max( 0.0, (float) $pricing['surcharge_first_reg_a'] ) : 30.0,
+		);
+
+		update_option( 'dame_season_pricing_' . $season_id, $clean, false );
+	}
+
+	/**
+	 * Determines whether an adherent is renewing their membership for the target season.
+	 *
+	 * An adherent is considered a renewal if they have historical membership terms
+	 * strictly prior to the target season.
+	 *
+	 * @param int $adherent_id      The post ID of the adherent.
+	 * @param int $target_season_id The term ID of the target season.
+	 * @return bool True if renewal, false if first registration.
+	 */
+	public static function is_adherent_renewal( int $adherent_id, int $target_season_id ): bool {
+		$target_term = get_term( $target_season_id, 'dame_saison_adhesion' );
+		$target_year = 0;
+		if ( $target_term && ! is_wp_error( $target_term ) ) {
+			if ( preg_match( '/(\d{4})/', $target_term->name, $matches ) ) {
+				$target_year = (int) $matches[1];
+			}
+		}
+
+		$terms = wp_get_post_terms( $adherent_id, 'dame_saison_adhesion' );
+		if ( empty( $terms ) || is_wp_error( $terms ) ) {
+			return false;
+		}
+
+		foreach ( $terms as $term ) {
+			if ( (int) $term->term_id === $target_season_id ) {
+				continue;
+			}
+
+			if ( $target_year > 0 ) {
+				if ( preg_match( '/(\d{4})/', $term->name, $matches ) ) {
+					$prev_year = (int) $matches[1];
+					if ( $prev_year < $target_year ) {
+						return true;
+					}
+				}
+			} else {
+				// Fallback if no year pattern detected: any other existing term indicates a prior membership.
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Calculates the membership fee for an adherent for a given season.
+	 *
+	 * Formula:
+	 * - Licence B: price_licence_b
+	 * - Licence A: price_licence_a
+	 *   - discount_female_a (if female)
+	 *   + surcharge_first_reg_a (if 1st registration / not renewal)
+	 *
+	 * @param int         $adherent_id   The adherent post ID.
+	 * @param int         $season_id     The season term ID.
+	 * @param string|null $force_status  Optional manual status override ('renewal' / 'first_registration').
+	 * @param string|null $force_license Optional manual license type override ('A' / 'B').
+	 * @param string|null $force_gender  Optional manual gender override ('Masculin' / 'Féminin').
+	 * @return float Total fee in euros.
+	 */
+	public static function calculate_adherent_fee(
+		int $adherent_id,
+		int $season_id,
+		?string $force_status = null,
+		?string $force_license = null,
+		?string $force_gender = null
+	): float {
+		$pricing = self::get_season_pricing( $season_id );
+
+		$license = $force_license ?? (string) get_post_meta( $adherent_id, '_dame_license_type', true );
+		$license = strtoupper( trim( $license ) );
+		if ( empty( $license ) || 'NON PRÉCISÉ' === $license ) {
+			$license = 'A';
+		}
+
+		$gender = $force_gender ?? (string) get_post_meta( $adherent_id, '_dame_sexe', true );
+
+		if ( null !== $force_status && '' !== $force_status ) {
+			$status_lower = strtolower( trim( $force_status ) );
+			$is_renewal   = in_array( $status_lower, array( 'renewal', 'renouvellement', 'actif' ), true );
+		} else {
+			$is_renewal = self::is_adherent_renewal( $adherent_id, $season_id );
+		}
+
+		if ( 'B' === $license ) {
+			return round( $pricing['price_licence_b'], 2 );
+		}
+
+		$total = $pricing['price_licence_a'];
+
+		if ( 'Féminin' === $gender || 'Feminin' === $gender ) {
+			$total -= $pricing['discount_female_a'];
+		}
+
+		if ( ! $is_renewal ) {
+			$total += $pricing['surcharge_first_reg_a'];
+		}
+
+		return max( 0.0, round( $total, 2 ) );
+	}
+
+	/**
+	 * Retrieves the attestation email subject and body template with defaults.
+	 *
+	 * @return array{subject: string, body: string}
+	 */
+	public static function get_attestation_email_template(): array {
+		$options = get_option( 'dame_options', array() );
+
+		$default_subject = __( 'Votre attestation d\'adhésion et de paiement - {saison}', 'dame' );
+		$default_body    = "Bonjour {prenom},\n\nNous vous prions de trouver ci-joint votre attestation d'adhésion et de paiement pour la {saison} au sein de l'association {association}.\n\nCe document atteste du règlement d'un montant de {montant} effectué le {date_paiement} par {mode_paiement}.\nIl peut être transmis à votre comité d'entreprise (CSE), mutuelle ou employeur pour faire valoir vos droits de participation ou de remboursement.\n\nBien cordialement,\nL'équipe de l'association {association}\n{site_web}";
+
+		$subject = ! empty( $options['attestation_email_subject'] ) ? (string) $options['attestation_email_subject'] : $default_subject;
+		$body    = ! empty( $options['attestation_email_body'] ) ? (string) $options['attestation_email_body'] : $default_body;
+
+		return array(
+			'subject' => $subject,
+			'body'    => $body,
+		);
+	}
 }

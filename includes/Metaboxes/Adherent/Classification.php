@@ -268,6 +268,10 @@ class Classification {
 					if ( ! has_term( (int) $current_season_id, 'dame_saison_adhesion', $post_id ) ) {
 						wp_set_object_terms( $post_id, array( (int) $current_season_id ), 'dame_saison_adhesion', true );
 					}
+					$existing_activation_date = get_post_meta( $post_id, '_dame_season_activation_date_' . $current_season_id, true );
+					if ( empty( $existing_activation_date ) ) {
+						update_post_meta( $post_id, '_dame_season_activation_date_' . $current_season_id, wp_date( 'Y-m-d' ) );
+					}
 				} elseif ( 'inactive' === $status_value ) {
 					wp_remove_object_terms( $post_id, (int) $current_season_id, 'dame_saison_adhesion' );
 				}

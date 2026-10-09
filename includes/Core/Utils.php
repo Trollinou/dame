@@ -557,4 +557,143 @@ class Utils {
 
 		return array_unique( $licenses );
 	}
+
+	/**
+	 * Converts an integer into French words.
+	 *
+	 * @param int $n The number to convert (0 to 999 999).
+	 * @return string The French word representation.
+	 */
+	public static function integer_to_french_words( int $n ): string {
+		if ( $n <= 0 ) {
+			return 'zéro';
+		}
+
+		$units = array(
+			0  => '',
+			1  => 'un',
+			2  => 'deux',
+			3  => 'trois',
+			4  => 'quatre',
+			5  => 'cinq',
+			6  => 'six',
+			7  => 'sept',
+			8  => 'huit',
+			9  => 'neuf',
+			10 => 'dix',
+			11 => 'onze',
+			12 => 'douze',
+			13 => 'treize',
+			14 => 'quatorze',
+			15 => 'quinze',
+			16 => 'seize',
+		);
+
+		$tens = array(
+			2 => 'vingt',
+			3 => 'trente',
+			4 => 'quarante',
+			5 => 'cinquante',
+			6 => 'soixante',
+		);
+
+		if ( $n < 17 ) {
+			return $units[ $n ];
+		}
+
+		if ( $n < 20 ) {
+			$unit_idx = $n - 10;
+			return 'dix-' . $units[ $unit_idx ];
+		}
+
+		if ( $n < 70 ) {
+			$ten     = (int) intdiv( $n, 10 );
+			$rem     = $n % 10;
+			$ten_str = $tens[ $ten ];
+			if ( 0 === $rem ) {
+				return $ten_str;
+			}
+			if ( 1 === $rem ) {
+				return $ten_str . ' et un';
+			}
+			return $ten_str . '-' . $units[ $rem ];
+		}
+
+		if ( $n < 80 ) {
+			$rem = $n - 60;
+			if ( 11 === $rem ) {
+				return 'soixante et onze';
+			}
+			return 'soixante-' . self::integer_to_french_words( $rem );
+		}
+
+		if ( $n < 100 ) {
+			if ( 80 === $n ) {
+				return 'quatre-vingts';
+			}
+			$rem = $n - 80;
+			return 'quatre-vingt-' . self::integer_to_french_words( $rem );
+		}
+
+		if ( $n < 1000 ) {
+			$hundreds = (int) intdiv( $n, 100 );
+			$rem      = $n % 100;
+			$unit_str = $units[ $hundreds ];
+			$prefix   = ( 1 === $hundreds ) ? 'cent' : $unit_str . ' cent';
+			if ( 0 === $rem ) {
+				return ( $hundreds > 1 ) ? $unit_str . ' cents' : 'cent';
+			}
+			return $prefix . ' ' . self::integer_to_french_words( $rem );
+		}
+
+		if ( $n < 1000000 ) {
+			$thousands = (int) intdiv( $n, 1000 );
+			$rem       = $n % 1000;
+			$prefix    = ( 1 === $thousands ) ? 'mille' : self::integer_to_french_words( $thousands ) . ' mille';
+			if ( 0 === $rem ) {
+				return $prefix;
+			}
+			return $prefix . ' ' . self::integer_to_french_words( $rem );
+		}
+
+		return (string) $n;
+	}
+
+	/**
+	 * Converts an amount in euros into French words.
+	 *
+	 * Example:
+	 * - 140.00 => "cent quarante euros"
+	 * - 140.50 => "cent quarante euros et cinquante centimes"
+	 * - 1.00   => "un euro"
+	 * - 0.00   => "zéro euro"
+	 *
+	 * @param float $amount The amount in euros.
+	 * @return string The formatted amount in French words.
+	 */
+	public static function number_to_french_words( float $amount ): string {
+		$rounded = round( max( 0.0, $amount ), 2 );
+		$euros   = (int) floor( $rounded );
+		$cents   = (int) round( ( $rounded - $euros ) * 100 );
+
+		if ( 0 === $euros && 0 === $cents ) {
+			return 'zéro euro';
+		}
+
+		$euros_words = self::integer_to_french_words( $euros );
+		$currency    = ( 1 === $euros || 0 === $euros ) ? 'euro' : 'euros';
+		$result      = trim( $euros_words . ' ' . $currency );
+
+		if ( $cents > 0 ) {
+			$cents_words = self::integer_to_french_words( $cents );
+			$cents_label = ( 1 === $cents ) ? 'centime' : 'centimes';
+			if ( 0 === $euros ) {
+				$result = $cents_words . ' ' . $cents_label;
+			} else {
+				$result .= ' et ' . $cents_words . ' ' . $cents_label;
+			}
+		}
+
+		return $result;
+	}
 }
