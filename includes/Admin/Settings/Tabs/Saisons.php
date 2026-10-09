@@ -182,7 +182,7 @@ class Saisons {
 				}
 			}
 
-			if ( 'update_season_pricing' === $action ) {
+			if ( 'update_season_pricing' === $action && isset( $_POST['dame_save_pricing'] ) ) {
 				if ( ! current_user_can( 'manage_options' ) ) {
 					return;
 				}
@@ -292,7 +292,7 @@ class Saisons {
 
 				<?php
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$pricing_season_id = isset( $_REQUEST['dame_pricing_season_id'] ) ? absint( $_REQUEST['dame_pricing_season_id'] ) : (int) $current_season_tag_id;
+				$pricing_season_id = isset( $_GET['pricing_season_id'] ) ? absint( $_GET['pricing_season_id'] ) : (int) $current_season_tag_id;
 				if ( ! $pricing_season_id && ! empty( $seasons ) && ! is_wp_error( $seasons ) ) {
 					$pricing_season_id = (int) $seasons[0]->term_id;
 				}
@@ -300,23 +300,24 @@ class Saisons {
 				$current_pricing = \DAME\Services\Data_Provider::get_season_pricing( $pricing_season_id );
 				?>
 
+				<div style="margin-bottom: 15px;">
+					<label for="dame_pricing_season_id"><strong><?php esc_html_e( 'Sélectionner la saison à configurer :', 'dame' ); ?></strong></label><br>
+					<select id="dame_pricing_season_id" style="min-width: 250px; margin-top: 5px;" onchange="window.location.href = '<?php echo esc_url( admin_url( 'admin.php?page=dame-settings&tab=saisons' ) ); ?>&pricing_season_id=' + this.value;">
+						<?php if ( ! empty( $seasons ) && ! is_wp_error( $seasons ) ) : ?>
+							<?php foreach ( $seasons as $season ) : ?>
+								<option value="<?php echo esc_attr( (string) $season->term_id ); ?>" <?php selected( $season->term_id, $pricing_season_id ); ?>>
+									<?php echo esc_html( $season->name ); ?><?php echo ( (int) $season->term_id === (int) $current_season_tag_id ) ? ' ' . esc_html__( '(Saison active)', 'dame' ) : ''; ?>
+								</option>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					</select>
+					<span class="description" style="margin-left: 10px;"><?php esc_html_e( 'Change la saison visualisée et charge ses tarifs.', 'dame' ); ?></span>
+				</div>
+
 				<form method="post" style="max-width: 750px; background: #fff; border: 1px solid #ccd0d4; padding: 15px 20px; border-radius: 4px;">
 					<input type="hidden" name="dame_action" value="update_season_pricing" />
+					<input type="hidden" name="dame_pricing_season_id" value="<?php echo esc_attr( (string) $pricing_season_id ); ?>" />
 					<?php wp_nonce_field( 'dame_season_management_nonce', 'dame_season_management_nonce_field' ); ?>
-
-					<p>
-						<label for="dame_pricing_season_id"><strong><?php esc_html_e( 'Saison à configurer :', 'dame' ); ?></strong></label><br>
-						<select id="dame_pricing_season_id" name="dame_pricing_season_id" onchange="this.form.submit();" style="min-width: 220px; margin-top: 5px;">
-							<?php if ( ! empty( $seasons ) && ! is_wp_error( $seasons ) ) : ?>
-								<?php foreach ( $seasons as $season ) : ?>
-									<option value="<?php echo esc_attr( (string) $season->term_id ); ?>" <?php selected( $season->term_id, $pricing_season_id ); ?>>
-										<?php echo esc_html( $season->name ); ?><?php echo ( (int) $season->term_id === (int) $current_season_tag_id ) ? ' ' . esc_html__( '(Saison active)', 'dame' ) : ''; ?>
-									</option>
-								<?php endforeach; ?>
-							<?php endif; ?>
-						</select>
-						<span class="description" style="margin-left: 10px;"><?php esc_html_e( 'Changer la sélection recharge les tarifs de la saison.', 'dame' ); ?></span>
-					</p>
 
 					<table class="form-table" style="margin-top: 0;">
 						<tr>
