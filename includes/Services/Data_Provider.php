@@ -691,4 +691,24 @@ class Data_Provider {
 
 		return max( 0.0, round( $total, 2 ) );
 	}
+
+	/**
+	 * Retrieves the attestation email subject and body template with defaults.
+	 *
+	 * @return array{subject: string, body: string}
+	 */
+	public static function get_attestation_email_template(): array {
+		$options = get_option( 'dame_options', array() );
+
+		$default_subject = __( 'Votre attestation d\'adhésion et de paiement - {saison}', 'dame' );
+		$default_body    = "Bonjour {prenom},\n\nNous vous prions de trouver ci-joint votre attestation d'adhésion et de paiement pour la {saison} au sein de l'association {association}.\n\nCe document atteste du règlement d'un montant de {montant} effectué le {date_paiement} par {mode_paiement}.\nIl peut être transmis à votre comité d'entreprise (CSE), mutuelle ou employeur pour faire valoir vos droits de participation ou de remboursement.\n\nBien cordialement,\nL'équipe de l'association {association}\n{site_web}";
+
+		$subject = ! empty( $options['attestation_email_subject'] ) ? (string) $options['attestation_email_subject'] : $default_subject;
+		$body    = ! empty( $options['attestation_email_body'] ) ? (string) $options['attestation_email_body'] : $default_body;
+
+		return array(
+			'subject' => $subject,
+			'body'    => $body,
+		);
+	}
 }

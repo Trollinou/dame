@@ -82,6 +82,30 @@ class Emails {
 				array( 'key' => $key )
 			);
 		}
+
+		// Section Attestation de paiement.
+		add_settings_section(
+			'dame_attestation_section',
+			__( 'Attestation d\'adhésion et de paiement', 'dame' ),
+			array( $this, 'render_attestation_section_description' ),
+			'dame_mailing_section_group'
+		);
+
+		$attestation_fields = array(
+			'attestation_email_subject' => __( 'Sujet de l\'email d\'attestation', 'dame' ),
+			'attestation_email_body'    => __( 'Contenu de l\'email d\'attestation', 'dame' ),
+		);
+
+		foreach ( $attestation_fields as $key => $label ) {
+			add_settings_field(
+				'dame_' . $key,
+				$label,
+				array( $this, 'render_field' ),
+				'dame_mailing_section_group',
+				'dame_attestation_section',
+				array( 'key' => $key )
+			);
+		}
 	}
 
 	/**
@@ -89,6 +113,13 @@ class Emails {
 	 */
 	public function render_newsletter_section_description(): void {
 		echo '<p class="description">' . esc_html__( 'Configurez les paramètres du formulaire d\'inscription à la newsletter (shortcode [dame_newsletter]). Vous pouvez personnaliser les textes par défaut.', 'dame' ) . '</p>';
+	}
+
+	/**
+	 * Render attestation section description.
+	 */
+	public function render_attestation_section_description(): void {
+		echo '<p class="description">' . esc_html__( 'Personnalisez le message électronique accompagnant l\'attestation de paiement transmise en pièce jointe PDF à l\'adhérent et à ses responsables légaux.', 'dame' ) . '</p>';
 	}
 
 	/**
@@ -169,6 +200,22 @@ class Emails {
 			return;
 		}
 
+		if ( 'attestation_email_subject' === $key ) {
+			$placeholder = __( 'Votre attestation d\'adhésion et de paiement - {saison}', 'dame' );
+			$display_val = ! empty( $value ) ? $value : '';
+			echo '<input type="text" name="dame_options[attestation_email_subject]" value="' . esc_attr( $display_val ) . '" placeholder="' . esc_attr( $placeholder ) . '" class="large-text" />';
+			echo '<p class="description">' . esc_html__( 'Laissez vide pour utiliser le sujet par défaut. Variables disponibles : {saison}, {prenom}, {nom}, {association}.', 'dame' ) . '</p>';
+			return;
+		}
+
+		if ( 'attestation_email_body' === $key ) {
+			$default_body = "Bonjour {prenom},\n\nNous vous prions de trouver ci-joint votre attestation d'adhésion et de paiement pour la {saison} au sein de l'association {association}.\n\nCe document atteste du règlement d'un montant de {montant} effectué le {date_paiement} par {mode_paiement}.\nIl peut être transmis à votre comité d'entreprise (CSE), mutuelle ou employeur pour faire valoir vos droits de participation ou de remboursement.\n\nBien cordialement,\nL'équipe de l'association {association}\n{site_web}";
+			$display_val  = ! empty( $value ) ? $value : '';
+			echo '<textarea name="dame_options[attestation_email_body]" rows="9" cols="60" class="large-text code" placeholder="' . esc_attr( $default_body ) . '">' . esc_textarea( $display_val ) . '</textarea>';
+			echo '<p class="description">' . esc_html__( 'Variables disponibles : {prenom}, {nom}, {saison}, {montant}, {mode_paiement}, {date_paiement}, {association}, {site_web}. Laissez vide pour utiliser le texte par défaut.', 'dame' ) . '</p>';
+			return;
+		}
+
 		$type = 'text';
 		if ( 'sender_email' === $key ) {
 			$type = 'email';
@@ -233,6 +280,14 @@ class Emails {
 		}
 		if ( isset( $input['newsletter_success_message'] ) ) {
 			$existing_options['newsletter_success_message'] = sanitize_text_field( $input['newsletter_success_message'] );
+		}
+
+		// Attestation settings sanitation.
+		if ( isset( $input['attestation_email_subject'] ) ) {
+			$existing_options['attestation_email_subject'] = sanitize_text_field( $input['attestation_email_subject'] );
+		}
+		if ( isset( $input['attestation_email_body'] ) ) {
+			$existing_options['attestation_email_body'] = sanitize_textarea_field( $input['attestation_email_body'] );
 		}
 
 		return $existing_options;
