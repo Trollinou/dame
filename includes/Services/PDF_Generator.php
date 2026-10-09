@@ -940,15 +940,16 @@ class PDF_Generator {
 		$last_name  = (string) get_post_meta( $adherent_id, '_dame_last_name', true );
 		$filename   = sanitize_file_name( 'attestation_paiement_' . $last_name . '_' . $first_name . '.pdf' );
 
-		// Create temp file in uploads scratch.
-		$upload_dir = wp_upload_dir();
-		$temp_dir   = trailingslashit( $upload_dir['basedir'] ) . 'dame-temp';
-		if ( ! file_exists( $temp_dir ) ) {
-			wp_mkdir_p( $temp_dir );
+		// Save generated PDF safely in documents storage for asynchronous sending.
+		$stored_filename = Document_Storage::save_file( $content, $filename );
+		$absolute_path   = Document_Storage::get_absolute_path( $stored_filename );
+		if ( ! $absolute_path || ! file_exists( $absolute_path ) ) {
+			return array(
+				'success'    => false,
+				'message'    => __( 'Échec du stockage temporaire de l\'attestation PDF.', 'dame' ),
+				'recipients' => $recipients,
+			);
 		}
-		$temp_file = trailingslashit( $temp_dir ) . wp_generate_password( 12, false ) . '_' . $filename;
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-		file_put_contents( $temp_file, $content );
 
 		// Prepare email placeholders.
 		$template_data         = Data_Provider::get_attestation_email_template();
@@ -995,29 +996,69 @@ class PDF_Generator {
 		$subject = str_replace( array_keys( $placeholders ), array_values( $placeholders ), $template_data['subject'] );
 		$body    = str_replace( array_keys( $placeholders ), array_values( $placeholders ), $template_data['body'] );
 
-		$headers     = array( 'Content-Type: text/plain; charset=UTF-8' );
-		$attachments = array( $temp_file );
+		// Convert plaintext template to clean paragraphs.
+		$body_html = wpautop( esc_html( $body ) );
 
-		$sent = wp_mail( $recipients, $subject, $body, $headers, $attachments );
+		// Create private dame_message post to route through the global BatchSender queue.
+		$message_id = wp_insert_post(
+			array(
+				'post_title'   => $subject,
+				'post_content' => $body_html,
+				'post_type'    => 'dame_message',
+				'post_status'  => 'private',
+			)
+		);
 
-		// Clean temp file.
-		if ( file_exists( $temp_file ) ) {
-			wp_delete_file( $temp_file );
-		}
-
-		if ( ! $sent ) {
+		if ( is_wp_error( $message_id ) || ! ( $message_id > 0 ) ) {
+			Document_Storage::delete_file( $stored_filename );
 			return array(
 				'success'    => false,
-				'message'    => __( 'Échec de l\'envoi de l\'e-mail par le serveur de messagerie.', 'dame' ),
+				'message'    => __( 'Impossible de planifier l\'envoi du message dans la file d\'attente.', 'dame' ),
 				'recipients' => $recipients,
 			);
+		}
+
+		update_post_meta( $message_id, '_dame_message_status', 'scheduled' );
+		update_post_meta( $message_id, '_dame_message_type', 'attestation_paiement' );
+		update_post_meta( $message_id, '_dame_message_recipients_count', count( $recipients ) );
+		update_post_meta( $message_id, '_dame_attestation_adherent_id', $adherent_id );
+		update_post_meta( $message_id, '_dame_message_attachments', array( $absolute_path ) );
+
+		// Insert recipients into global queue table dame_message_opens.
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'dame_message_opens';
+		$label      = Utils::format_firstname( $first_name ) . ' ' . Utils::format_lastname( $last_name );
+
+		foreach ( $recipients as $recipient_email ) {
+			$hash = md5( strtolower( trim( $recipient_email ) ) );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->insert(
+				$table_name,
+				array(
+					'message_id'      => $message_id,
+					'recipient_id'    => $adherent_id,
+					'recipient_name'  => $label,
+					'recipient_email' => $recipient_email,
+					'email_hash'      => $hash,
+				),
+				array( '%d', '%d', '%s', '%s', '%s' )
+			);
+		}
+
+		// Schedule immediate queue processing (respects smtp_batch_size per minute).
+		if ( ! wp_next_scheduled( 'dame_cron_process_queue' ) ) {
+			wp_schedule_single_event( time(), 'dame_cron_process_queue' );
+		}
+
+		if ( function_exists( 'spawn_cron' ) ) {
+			spawn_cron();
 		}
 
 		return array(
 			'success'    => true,
 			'message'    => sprintf(
 				/* translators: %s: liste des emails destinataires */
-				__( 'Attestation envoyée avec succès à : %s', 'dame' ),
+				__( 'Envoi de l\'attestation planifié avec succès dans la file d\'attente pour : %s', 'dame' ),
 				implode( ', ', $recipients )
 			),
 			'recipients' => $recipients,
