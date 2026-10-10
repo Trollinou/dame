@@ -253,8 +253,13 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 				if (emailsList) {
 					emailsList.innerHTML = '';
-					if (currentData.emails.length > 0) {
-						currentData.emails.forEach((email) => {
+					const emailsArray: string[] = Array.isArray(
+						currentData.emails
+					)
+						? currentData.emails
+						: Object.values(currentData.emails || {});
+					if (emailsArray.length > 0) {
+						emailsArray.forEach((email) => {
 							const li = document.createElement('li');
 							li.textContent = email;
 							emailsList.appendChild(li);

@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Correctifs & Robustesse
+- **Détection des Adresses E-mail pour les Attestations (`DAME\Services\Data_Provider`, `DAME\Core\Utils`, `src/js/admin-attestation.ts`)** :
+  - Réindexation systématique avec `array_values( array_unique(...) )` des listes d'e-mails d'adhérents et de représentants légaux dans `Data_Provider::get_emails_for_adherent` et `Utils::get_emails_for_adherent`.
+  - Résolution d'une anomalie où un adhérent partageant la même adresse e-mail qu'un représentant légal provoquait la sérialisation d'un objet JSON associatif (`{"0":"...", "2":"..."}`) au lieu d'un tableau indexé, causant l'affichage erroné « Aucune adresse enregistrée » dans la modale d'attestation.
+  - Normalisation défensive côté TypeScript dans `src/js/admin-attestation.ts` pour supporter indifféremment les structures sous forme de tableau ou de dictionnaire.
+
+
 ## [5.6.3] - 2026-10-09
 
 ### Attestations PDF & Mise en Page

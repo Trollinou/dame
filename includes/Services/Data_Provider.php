@@ -512,7 +512,7 @@ class Data_Provider {
 			$emails[] = $rep2_email;
 		}
 
-		return array_unique( $emails );
+		return array_values( array_unique( $emails ) );
 	}
 
 	/**

@@ -480,7 +480,7 @@ class Utils {
 			}
 		}
 
-		return array_unique( $emails );
+		return array_values( array_unique( $emails ) );
 	}
 
 	/**
@@ -555,7 +555,7 @@ class Utils {
 			}
 		}
 
-		return array_unique( $licenses );
+		return array_values( array_unique( $licenses ) );
 	}
 
 	/**
