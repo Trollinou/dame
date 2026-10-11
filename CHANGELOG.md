@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.6.4] - 2026-10-10
+
 ### Correctifs & Robustesse
 - **Détection des Adresses E-mail pour les Attestations (`DAME\Services\Data_Provider`, `DAME\Core\Utils`, `src/js/admin-attestation.ts`)** :
   - Réindexation systématique avec `array_values( array_unique(...) )` des listes d'e-mails d'adhérents et de représentants légaux dans `Data_Provider::get_emails_for_adherent` et `Utils::get_emails_for_adherent`.
