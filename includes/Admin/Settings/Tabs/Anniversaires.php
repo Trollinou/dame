@@ -72,7 +72,16 @@ class Anniversaires {
 			return;
 		}
 
-		wp_enqueue_script( 'dame-admin-anniversaires', \DAME_PLUGIN_URL . 'assets/js/admin-anniversaires.js', array(), \DAME_VERSION, true );
+		wp_enqueue_script(
+			'dame-admin-anniversaires',
+			\DAME_PLUGIN_URL . 'assets/js/admin-anniversaires.js',
+			array(),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
 	}
 
 	/**

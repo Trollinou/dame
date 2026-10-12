@@ -43,7 +43,16 @@ class Actions {
 			return;
 		}
 
-		wp_enqueue_script( 'dame-admin-pre-inscription-actions', \DAME_PLUGIN_URL . 'assets/js/admin-pre-inscription-actions.js', array(), \DAME_VERSION, true );
+		wp_enqueue_script(
+			'dame-admin-pre-inscription-actions',
+			\DAME_PLUGIN_URL . 'assets/js/admin-pre-inscription-actions.js',
+			array(),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
 		wp_localize_script(
 			'dame-admin-pre-inscription-actions',
 			'dame_pre_inscription_actions_data',

@@ -30,9 +30,16 @@
   - Sources Block Bindings déclarées dans `DAME\Blocks\Manager` avec `show_in_rest => true` pour supporter l'édition directe dans le canevas de l'éditeur.
   - Déclaration formelle des modèles FSE via `register_block_template()`.
 - **Exhaustivité des Shortcodes** : Toute évolution transverse doit couvrir l'intégralité des 6 shortcodes (`dame_agenda`, `dame_liste_agenda`, `dame_fiche_inscription`, `dame_contact`, `dame_newsletter`, `dame_benevolat`).
-- **Gestion Fine des Assets Frontend** :
-  - Enregistrement des feuilles de style via `wp_register_style()`. Ne charger `dame-public-styles` que sur les pages contenant des blocs, shortcodes ou CPT DAME (`is_singular(...)`) pour préserver les Web Vitals globaux.
-  - Unicité réactive : Tout composant géré par l'Interactivity API ne doit avoir aucun script JS classique résiduel en doublon.
+- **Gestion Fine des Assets & Performance (WordPress 7.1)** :
+  - **Séparation Stricte Enregistrement vs Mise en file d'attente** : Toujours pré-enregistrer les styles, scripts et script modules via `wp_register_style()`, `wp_register_script()` et `wp_register_script_module()` avant tout appel à `wp_enqueue_*()`. Interdiction formelle d'appeler `wp_enqueue_*()` de manière inconditionnelle ou globale sur les hooks `wp_enqueue_scripts` ou `admin_enqueue_scripts`.
+  - **Stratégie de Chargement Différée (`defer`)** : Utiliser impérativement le tableau d'arguments `array( 'strategy' => 'defer', 'in_footer' => true )` en 5ᵉ paramètre de `wp_register_script()` / `wp_enqueue_script()`. L'ancien booléen `$in_footer = true` est formellement interdit.
+  - **Script Modules ESM & Unicité Réactive** : Les Script Modules (`dame/*`) sont le standard natif par défaut pour l'Interactivity API. Tout composant interactif ne doit charger aucun script JS classique en doublon.
+  - **Chargement Contextuel Front-End** :
+    - N'enfiler les feuilles de style (`dame-public-styles`) et scripts spécifiques que sur les vues singulières pertinentes (`is_singular(...)`), lors du rendu effectif d'un shortcode (`render()`) ou via `block.json` (`style`, `viewScriptModule`).
+    - N'enfiler les dépendances tierces (ex: police d'icônes `dashicons`) que si le bloc/shortcode l'exige expressément (ex: bouton avec icône activée).
+  - **Isolation Back-End / Admin** :
+    - Filtrer strictement tout enqueue d'administration via `$hook_suffix` ou `get_current_screen()`.
+    - Isoler les scripts lourds (palette de commandes, autocomplétion IGN, coordonnées GPS) et la sérialisation des dictionnaires de données (`wp_localize_script`) aux seuls écrans et formulaires qui les consomment directement.
 - **Complexité = Sous-dossier** : Si > 300-400 lignes, découper la classe/module dans un sous-dossier thématique avec le pattern Manager/Components. Une classe = Un fichier.
 
 ## 4. Règles Code, Sécurité & Caching

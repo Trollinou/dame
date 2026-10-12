@@ -178,18 +178,7 @@
 
     &__input {
         width: 100%;
-        padding: 9px 12px;
-        border: 1px solid var(--dame-theme-border, #cbd5e1);
-        border-radius: var(--dame-theme-radius, #{$dame-radius-md});
-        background-color: var(--dame-theme-bg, #ffffff);
-        color: var(--dame-theme-text, #0f172a);
-        font-family: inherit;
-        font-size: 14px;
         box-sizing: border-box;
-
-        &:focus {
-            @include focus-ring(var(--dame-theme-primary));
-        }
     }
 
     &__feedback {
@@ -207,7 +196,7 @@
 
         &--error {
             background-color: #fef2f2;
-            color: #991b1b;
+            color: var(--theme-palette-color-8, #991b1b);
             border: 1px solid #fecaca;
         }
     }
@@ -222,34 +211,17 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        background-color: var(--dame-theme-primary, #2563eb);
-        color: #ffffff;
-        border: none;
-        border-radius: var(--dame-theme-btn-radius, #{$dame-radius-md});
-        padding: 11px 16px;
-        font-family: inherit;
-        font-size: 15px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background-color $dame-transition-fast;
-
-        &:hover {
-            background-color: var(--dame-theme-primary-hover, #1d4ed8);
-        }
-
-        &:disabled {
-            opacity: 0.65;
-            cursor: not-allowed;
-        }
     }
 
     &__spinner {
-        width: 16px;
-        height: 16px;
+        width: 1em;
+        height: 1em;
         border: 2px solid rgba(255, 255, 255, 0.4);
-        border-top-color: #ffffff;
+        border-top-color: currentColor;
         border-radius: 50%;
         animation: dameSpin 0.7s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
     }
 }
 

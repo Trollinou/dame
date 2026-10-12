@@ -33,7 +33,16 @@ class Backups {
 			return;
 		}
 
-		wp_enqueue_script( 'dame-admin-backups-adherent', \DAME_PLUGIN_URL . 'assets/js/admin-backups-adherent.js', array(), \DAME_VERSION, true );
+		wp_enqueue_script(
+			'dame-admin-backups-adherent',
+			\DAME_PLUGIN_URL . 'assets/js/admin-backups-adherent.js',
+			array(),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
 		wp_localize_script(
 			'dame-admin-backups-adherent',
 			'dame_backup_adherent_data',
@@ -42,7 +51,16 @@ class Backups {
 				'confirm_import_csv' => __( 'Êtes-vous sûr de vouloir importer ce fichier CSV ?', 'dame' ),
 			)
 		);
-		wp_enqueue_script( 'dame-admin-backups-agenda', \DAME_PLUGIN_URL . 'assets/js/admin-backups-agenda.js', array(), \DAME_VERSION, true );
+		wp_enqueue_script(
+			'dame-admin-backups-agenda',
+			\DAME_PLUGIN_URL . 'assets/js/admin-backups-agenda.js',
+			array(),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
 		wp_localize_script(
 			'dame-admin-backups-agenda',
 			'dame_backup_agenda_data',
@@ -51,7 +69,16 @@ class Backups {
 			)
 		);
 
-		wp_enqueue_script( 'dame-admin-backups-site', \DAME_PLUGIN_URL . 'assets/js/admin-backups-site.js', array(), \DAME_VERSION, true );
+		wp_enqueue_script(
+			'dame-admin-backups-site',
+			\DAME_PLUGIN_URL . 'assets/js/admin-backups-site.js',
+			array(),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
 		wp_localize_script(
 			'dame-admin-backups-site',
 			'dame_backup_site_data',

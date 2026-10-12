@@ -121,12 +121,7 @@ class Benevolat {
 		$today = wp_date( 'Y-m-d' );
 
 		// Enqueue public styles.
-		wp_enqueue_style(
-			'dame-public-styles',
-			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
-			array(),
-			\DAME_VERSION
-		);
+		wp_enqueue_style( 'dame-public-styles' );
 
 		if ( function_exists( 'wp_enqueue_script_module' ) ) {
 			wp_enqueue_script_module( 'dame/benevolat' );
@@ -162,7 +157,7 @@ class Benevolat {
 				<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) ); ?>">
 				<?php wp_nonce_field( 'dame_submit_benevolat_response_' . $benevolat->ID, 'dame_benevolat_nonce' ); ?>
 
-				<p>
+				<p class="form-row">
 					<label for="benevolat_name"><?php esc_html_e( 'Votre nom :', 'dame' ); ?></label>
 					<?php
 					$current_user = wp_get_current_user();
@@ -208,7 +203,7 @@ class Benevolat {
 												}
 												$count = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
 												?>
-												<label class="benevolat-timeslot-label <?php echo $is_locked ? 'is-past' : ''; ?>">
+												<label class="ct-checkbox-container benevolat-timeslot-label <?php echo $is_locked ? 'is-past' : ''; ?>">
 													<input type="checkbox" name="benevolat_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?> <?php disabled( $is_locked ); ?>>
 													<span>
 														<?php
@@ -229,8 +224,10 @@ class Benevolat {
 					</tbody>
 				</table>
 
-				<p class="benevolat-actions-row">
-					<input type="submit" name="submit_benevolat" value="<?php echo esc_attr( $user_has_voted ? __( 'Mettre à jour', 'dame' ) : __( 'S\'inscrire', 'dame' ) ); ?>" class="dame-btn dame-btn--primary" data-wp-bind--disabled="context.isSubmitting">
+				<p class="form-row benevolat-actions-row">
+					<button type="submit" name="submit_benevolat" value="1" class="ct-button" data-wp-bind--disabled="context.isSubmitting">
+						<?php echo esc_html( $user_has_voted ? __( 'Mettre à jour', 'dame' ) : __( 'S\'inscrire', 'dame' ) ); ?>
+					</button>
 					<span class="benevolat-message-inline" data-wp-bind--hidden="!context.message" data-wp-text="context.message" style="margin-left: 10px;"></span>
 					<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 					<?php if ( isset( $_GET['vote'] ) && 'success' === $_GET['vote'] ) : ?>

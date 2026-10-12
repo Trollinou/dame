@@ -156,7 +156,10 @@ class Association {
 			\DAME_PLUGIN_URL . 'assets/js/admin-association.js',
 			array(),
 			\DAME_VERSION,
-			true
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
 		);
 	}
 

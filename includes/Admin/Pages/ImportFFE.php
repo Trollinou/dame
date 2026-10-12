@@ -35,7 +35,16 @@ class ImportFFE {
 			return;
 		}
 
-		wp_enqueue_script( 'dame-admin-backups-adherent', \DAME_PLUGIN_URL . 'assets/js/admin-backups-adherent.js', array(), \DAME_VERSION, true );
+		wp_enqueue_script(
+			'dame-admin-backups-adherent',
+			\DAME_PLUGIN_URL . 'assets/js/admin-backups-adherent.js',
+			array(),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
 		wp_localize_script(
 			'dame-admin-backups-adherent',
 			'dame_backup_adherent_data',

@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace DAME\Metaboxes\Agenda;
 
 use WP_Post;
-use DAME\Services\Data_Provider;
 
 /**
  * Class Manager
@@ -47,40 +46,16 @@ class Manager {
 			return;
 		}
 
-		$plugin_url = plugin_dir_url( dirname( __DIR__, 3 ) . '/index.php' );
-
-		wp_register_script(
-			'dame-admin-common',
-			$plugin_url . 'assets/js/admin-common.js',
-			array(),
+		wp_enqueue_script(
+			'dame-admin-agenda-manager',
+			DAME_PLUGIN_URL . 'assets/js/admin-agenda-manager.js',
+			array( 'dame-admin-common' ),
 			DAME_VERSION,
-			true
-		);
-
-		$options         = get_option( 'dame_options', array() );
-		$assoc_latitude  = isset( $options['assoc_latitude'] ) ? $options['assoc_latitude'] : '';
-		$assoc_longitude = isset( $options['assoc_longitude'] ) ? $options['assoc_longitude'] : '';
-
-		wp_localize_script(
-			'dame-admin-common',
-			'dame_admin_data',
 			array(
-				'assoc_latitude'  => $assoc_latitude,
-				'assoc_longitude' => $assoc_longitude,
-				'dept_region_map' => Data_Provider::get_department_region_mapping(),
+				'strategy'  => 'defer',
+				'in_footer' => true,
 			)
 		);
-
-		wp_enqueue_script( 'dame-admin-common' );
-
-		wp_enqueue_style(
-			'dame-admin-common-css',
-			$plugin_url . 'assets/css/admin-common.css',
-			array(),
-			DAME_VERSION
-		);
-
-		wp_enqueue_script( 'dame-admin-agenda-manager', DAME_PLUGIN_URL . 'assets/js/admin-agenda-manager.js', array(), DAME_VERSION, true );
 		wp_localize_script(
 			'dame-admin-agenda-manager',
 			'dame_agenda_manager_data',

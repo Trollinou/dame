@@ -79,43 +79,34 @@ class Newsletter {
 			'dame_newsletter'
 		);
 
-		// Enqueue the modern Script Module (WordPress 6.5+ / 7.x).
-		if ( function_exists( 'wp_enqueue_script_module' ) ) {
-			wp_enqueue_script_module( 'dame/newsletter' );
+		// Enqueue public styles.
+		wp_enqueue_style( 'dame-public-styles' );
+
+		// Enqueue Dashicons only when the button icon is actually displayed.
+		$show_icon = filter_var( $attributes['show_icon'], FILTER_VALIDATE_BOOLEAN );
+		if ( 'inline' !== $attributes['layout'] && $show_icon ) {
+			wp_enqueue_style( 'dashicons' );
 		}
 
-		// Enqueue the public newsletter script.
-		wp_enqueue_script(
-			'dame-public-newsletter',
-			\DAME_PLUGIN_URL . 'assets/js/public-newsletter.js',
-			array(),
-			\DAME_VERSION,
-			true
-		);
-
-		// Localize script.
-		wp_localize_script(
-			'dame-public-newsletter',
-			'dameNewsletterData',
-			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'dame_newsletter_nonce' ),
-				'i18n'    => array(
-					'submitting'    => __( 'Inscription en cours...', 'dame' ),
-					'submitSuccess' => __( 'Inscription réussie !', 'dame' ),
-					'genericError'  => __( 'Une erreur est survenue. Veuillez réessayer.', 'dame' ),
-				),
-			)
-		);
-
-		// Enqueue Dashicons and public styles.
-		wp_enqueue_style( 'dashicons' );
-		wp_enqueue_style(
-			'dame-public-styles',
-			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
-			array( 'dashicons' ),
-			\DAME_VERSION
-		);
+		// Enqueue modern Script Module or fallback to classic script with localized data.
+		if ( function_exists( 'wp_enqueue_script_module' ) ) {
+			wp_enqueue_script_module( 'dame/newsletter' );
+		} else {
+			wp_enqueue_script( 'dame-public-newsletter' );
+			wp_localize_script(
+				'dame-public-newsletter',
+				'dameNewsletterData',
+				array(
+					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+					'nonce'   => wp_create_nonce( 'dame_newsletter_nonce' ),
+					'i18n'    => array(
+						'submitting'    => __( 'Inscription en cours...', 'dame' ),
+						'submitSuccess' => __( 'Inscription réussie !', 'dame' ),
+						'genericError'  => __( 'Une erreur est survenue. Veuillez réessayer.', 'dame' ),
+					),
+				)
+			);
+		}
 
 		ob_start();
 
@@ -135,7 +126,7 @@ class Newsletter {
 			);
 
 			$custom_classes = trim( (string) ( ! empty( $attributes['button_class'] ) ? $attributes['button_class'] : $attributes['class'] ) );
-			$btn_classes    = array( 'dame-nl-btn-trigger' );
+			$btn_classes    = array( 'ct-button', 'dame-nl-btn-trigger' );
 
 			if ( ! empty( $custom_classes ) ) {
 				$btn_classes[] = 'dame-nl-btn-trigger--custom';
@@ -211,14 +202,14 @@ class Newsletter {
 			<?php endif; ?>
 
 			<div class="dame-nl-form__row dame-nl-form__row--two-cols">
-				<div class="dame-nl-form__group">
+				<div class="form-row dame-nl-form__group">
 					<label for="<?php echo esc_attr( $form_id ); ?>-last-name" class="dame-nl-form__label">
 						<?php esc_html_e( 'Nom', 'dame' ); ?> <span class="dame-nl-form__required" aria-hidden="true">*</span>
 					</label>
 					<input type="text" id="<?php echo esc_attr( $form_id ); ?>-last-name" name="dame_newsletter_last_name" class="dame-nl-form__input" required autocomplete="off" autocorrect="off">
 				</div>
 
-				<div class="dame-nl-form__group">
+				<div class="form-row dame-nl-form__group">
 					<label for="<?php echo esc_attr( $form_id ); ?>-first-name" class="dame-nl-form__label">
 						<?php esc_html_e( 'Prénom', 'dame' ); ?> <span class="dame-nl-form__required" aria-hidden="true">*</span>
 					</label>
@@ -226,7 +217,7 @@ class Newsletter {
 				</div>
 			</div>
 
-			<div class="dame-nl-form__group">
+			<div class="form-row dame-nl-form__group">
 				<label for="<?php echo esc_attr( $form_id ); ?>-email" class="dame-nl-form__label">
 					<?php esc_html_e( 'Adresse email', 'dame' ); ?> <span class="dame-nl-form__required" aria-hidden="true">*</span>
 				</label>
@@ -241,8 +232,8 @@ class Newsletter {
 
 			<div class="dame-nl-form__feedback" role="alert" style="display:none;"></div>
 
-			<div class="dame-nl-form__actions">
-				<button type="submit" class="dame-nl-form__submit">
+			<div class="form-row dame-nl-form__actions">
+				<button type="submit" class="ct-button dame-nl-form__submit">
 					<span class="dame-nl-form__submit-text"><?php esc_html_e( 'Je m\'inscris', 'dame' ); ?></span>
 					<span class="dame-nl-form__spinner" aria-hidden="true" style="display:none;"></span>
 				</button>

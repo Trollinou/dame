@@ -35,12 +35,7 @@ class Contact {
 	 */
 	public function render( $atts = array() ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 		// Enqueue public styles.
-		wp_enqueue_style(
-			'dame-public-styles',
-			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
-			array(),
-			\DAME_VERSION
-		);
+		wp_enqueue_style( 'dame-public-styles' );
 
 		if ( function_exists( 'wp_enqueue_script_module' ) ) {
 			wp_enqueue_script_module( 'dame/contact' );
@@ -79,22 +74,22 @@ class Contact {
 				<!-- Action -->
 				<input type="hidden" name="action" value="dame_submit_contact_form">
 
-				<p>
+				<p class="form-row">
 					<label for="dame_contact_name"><?php esc_html_e( 'Nom', 'dame' ); ?> <span class="required">*</span></label>
 					<input type="text" id="dame_contact_name" name="dame_contact_name" required autocomplete="off" autocorrect="off">
 				</p>
 
-				<p>
+				<p class="form-row">
 					<label for="dame_contact_email"><?php esc_html_e( 'Courriel', 'dame' ); ?> <span class="required">*</span></label>
 					<input type="email" id="dame_contact_email" name="dame_contact_email" required autocomplete="off" autocapitalize="off" autocorrect="off">
 				</p>
 
-				<p>
+				<p class="form-row">
 					<label for="dame_contact_subject"><?php esc_html_e( 'Sujet', 'dame' ); ?> <span class="required">*</span></label>
 					<input type="text" id="dame_contact_subject" name="dame_contact_subject" required autocomplete="off" autocorrect="off">
 				</p>
 
-				<p>
+				<p class="form-row">
 					<label for="dame_contact_message"><?php esc_html_e( 'Message', 'dame' ); ?> <span class="required">*</span></label>
 					<textarea id="dame_contact_message" name="dame_contact_message" rows="5" required spellcheck="true"></textarea>
 				</p>
@@ -105,8 +100,8 @@ class Contact {
 					<input type="text" id="dame_contact_hp" name="dame_contact_hp" value="" tabindex="-1" autocomplete="new-password">
 				</div>
 
-				<p>
-					<button type="submit" class="dame-btn dame-btn--primary" data-wp-bind--disabled="state.isBusy">
+				<p class="form-row">
+					<button type="submit" class="ct-button" data-wp-bind--disabled="state.isBusy">
 						<?php esc_html_e( 'Envoyer', 'dame' ); ?>
 					</button>
 				</p>

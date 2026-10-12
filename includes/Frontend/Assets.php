@@ -18,14 +18,15 @@ class Assets {
 	 * Initializes the frontend assets class.
 	 */
 	public function init(): void {
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles_scripts' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ), 5 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_contextual_assets' ), 10 );
 	}
 
 	/**
-	 * Enqueues front-end scripts and styles.
+	 * Registers all frontend styles, scripts, and script modules (Register vs Enqueue separation).
 	 */
-	public function enqueue_styles_scripts(): void {
-		// Register the public-facing stylesheet (auto-enqueued by blocks and shortcodes when rendered).
+	public function register_assets(): void {
+		// Stylesheets.
 		wp_register_style(
 			'dame-public-styles',
 			\DAME_PLUGIN_URL . 'assets/css/public-styles.css',
@@ -33,12 +34,6 @@ class Assets {
 			\DAME_VERSION
 		);
 
-		// Enqueue public stylesheet on singular DAME CPTs.
-		if ( is_singular( array( 'adherent', 'dame_agenda', 'dame_benevolat', 'dame_contact', 'dame_pre_inscription' ) ) ) {
-			wp_enqueue_style( 'dame-public-styles' );
-		}
-
-		// Register the agenda stylesheet for block and template dependencies.
 		wp_register_style(
 			'dame-public-agenda',
 			\DAME_PLUGIN_URL . 'assets/css/public-agenda.css',
@@ -46,7 +41,74 @@ class Assets {
 			\DAME_VERSION
 		);
 
-		// Register the modern Interactivity API Script Modules (WordPress 6.5+ / 7.x).
+		// Classic scripts (WP 6.3+ loading strategy).
+		wp_register_script(
+			'dame-public-single-event',
+			\DAME_PLUGIN_URL . 'assets/js/public-single-event.js',
+			array(),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
+
+		wp_register_script(
+			'dame-public-geo-autocomplete',
+			\DAME_PLUGIN_URL . 'assets/js/public-geo-autocomplete.js',
+			array(),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
+
+		wp_register_script(
+			'dame-public-ign-autocomplete',
+			\DAME_PLUGIN_URL . 'assets/js/public-ign-autocomplete.js',
+			array(),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
+
+		wp_register_script(
+			'dame-public-pre-inscription',
+			\DAME_PLUGIN_URL . 'assets/js/public-pre-inscription-form.js',
+			array( 'dame-public-geo-autocomplete', 'dame-public-ign-autocomplete' ),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
+
+		wp_register_script(
+			'dame-public-agenda',
+			\DAME_PLUGIN_URL . 'assets/js/public-agenda.js',
+			array(),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
+
+		wp_register_script(
+			'dame-public-newsletter',
+			\DAME_PLUGIN_URL . 'assets/js/public-newsletter.js',
+			array(),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
+
+		// Modern Interactivity API Script Modules (WordPress 6.5+ / 7.x).
 		if ( function_exists( 'wp_register_script_module' ) ) {
 			wp_register_script_module(
 				'dame/agenda',
@@ -83,16 +145,20 @@ class Assets {
 				\DAME_VERSION
 			);
 		}
+	}
+
+	/**
+	 * Enqueues front-end scripts and styles contextually.
+	 */
+	public function enqueue_contextual_assets(): void {
+		// Enqueue public stylesheet on singular DAME CPTs.
+		if ( is_singular( array( 'adherent', 'dame_agenda', 'dame_benevolat', 'dame_contact', 'dame_pre_inscription' ) ) ) {
+			wp_enqueue_style( 'dame-public-styles' );
+		}
 
 		// Enqueue the single event script on single event pages for the GPS button functionality.
 		if ( is_singular( 'dame_agenda' ) ) {
-			wp_enqueue_script(
-				'dame-public-single-event',
-				\DAME_PLUGIN_URL . 'assets/js/public-single-event.js',
-				array(),
-				\DAME_VERSION,
-				true
-			);
+			wp_enqueue_script( 'dame-public-single-event' );
 		}
 	}
 }

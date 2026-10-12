@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+### Optimisations & Performance (WordPress 7.1)
+- **Séparation Stricte Enregistrement vs Mise en file d'attente (Register vs Enqueue)** :
+  - Pré-enregistrement centralisé des styles, scripts et Script Modules ESM dans `DAME\Frontend\Assets::register_assets` et `DAME\Admin\Assets::register_admin_assets` (priorité 5 sur `wp_enqueue_scripts` et `admin_enqueue_scripts`).
+  - Suppression de tout appel inconditionnel ou global à `wp_enqueue_*()`.
+- **Stratégie de Chargement Différée (`defer`)** :
+  - Remplacement systématique du paramètre booléen `$in_footer = true` par le tableau de configuration `array( 'strategy' => 'defer', 'in_footer' => true )` pour tous les scripts du plugin (front-end, pages d'administration, onglets de réglages et métaboxes) afin d'éliminer les ressources bloquantes au premier affichage (FCP / LCP).
+- **Chargement Contextuel Front-End & Élimination des Doublons Réactifs** :
+  - Feuilles de style `dame-public-styles` et script GPS `dame-public-single-event` chargés uniquement sur les vues singulières pertinentes (`is_singular(...)`).
+  - Résolution de l'unicité réactive pour les shortcodes `dame_agenda` et `dame_newsletter` : suppression du double chargement simultané du Script Module Interactivity API et du script classique JavaScript.
+  - Chargement conditionnel de la police d'icônes `dashicons` dans le shortcode `dame_newsletter` uniquement lorsque l'icône de bouton est expressément demandée (`show_icon => true`).
+  - Consommation exclusive des identifiants (handles) pré-enregistrés dans tous les shortcodes (`Agenda`, `Benevolat`, `Contact`, `Newsletter`, `RegistrationForm\FormView`).
+- **Isolation Back-End / Admin & Données Sérialisées** :
+  - Restriction de la palette de commandes (`dame-admin-command-palette`) aux seuls écrans du plugin exploitant l'API `wp-commands`.
+  - Chargement du script d'autocomplétion `dame-admin-common`, de ses styles et de la sérialisation volumineuse du dictionnaire des départements français (`dept_region_map`) strictement circonscrit aux formulaires d'édition comportant des champs d'adresses (`adherent`, `dame_agenda`, `dame_pre_inscription`, onglet `association`).
+  - Suppression des réinjections dupliquées de scripts et de données communes dans `DAME\Metaboxes\Agenda\Manager`.
+- **Intégration Thème Blocksy & Harmonisation Formulaires (`src/scss/`)** :
+  - Optimisation des styles SCSS pour les formulaires, cases à cocher / boutons radio natifs Blocksy (`.ct-checkbox-container`) et la boîte de signature électronique manuscrite.
+- **Directives Agents & Règles Projet (`AGENTS.md`)** :
+  - Formalisation des règles de performance et de cycle de vie des assets adaptées au socle minimal WordPress 7.1.
+
 ## [5.6.4] - 2026-10-10
 
 ### Correctifs & Robustesse

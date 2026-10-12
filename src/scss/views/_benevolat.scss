@@ -41,17 +41,7 @@
         input[type="text"] {
             width: 100%;
             max-width: 480px;
-            padding: 9px 12px;
-            border: 1px solid var(--dame-theme-border);
-            border-radius: var(--dame-theme-radius);
-            background-color: var(--dame-theme-bg);
-            color: var(--dame-theme-text);
-            font-size: 14px;
-            transition: border-color $dame-transition-fast, box-shadow $dame-transition-fast;
-
-            &:focus {
-                @include focus-ring(var(--dame-theme-primary));
-            }
+            box-sizing: border-box;
         }
     }
 }

@@ -42,7 +42,16 @@ class Manager {
 			return;
 		}
 
-		wp_enqueue_script( 'dame-admin-benevolat', \DAME_PLUGIN_URL . 'assets/js/admin-benevolat.js', array(), \DAME_VERSION, true );
+		wp_enqueue_script(
+			'dame-admin-benevolat',
+			\DAME_PLUGIN_URL . 'assets/js/admin-benevolat.js',
+			array(),
+			\DAME_VERSION,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
 	}
 
 	/**
