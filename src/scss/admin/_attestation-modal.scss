@@ -49,6 +49,11 @@
 
 				.dashicons {
 					color: #2563eb;
+					font-size: 20px;
+					width: 20px;
+					height: 20px;
+					line-height: 1;
+					margin: 0;
 				}
 			}
 
@@ -66,6 +71,14 @@
 				&:hover {
 					color: #0f172a;
 					background-color: #e2e8f0;
+				}
+
+				.dashicons {
+					font-size: 20px;
+					width: 20px;
+					height: 20px;
+					line-height: 1;
+					margin: 0;
 				}
 			}
 		}
@@ -178,7 +191,35 @@
 			.button {
 				display: inline-flex;
 				align-items: center;
-				gap: 4px;
+				justify-content: center;
+				gap: 6px;
+				line-height: normal;
+
+				.dashicons {
+					display: inline-flex;
+					align-items: center;
+					justify-content: center;
+					margin: 0 !important;
+					font-size: 18px;
+					width: 18px;
+					height: 18px;
+					line-height: 1;
+					vertical-align: middle;
+
+					&::before {
+						font-size: 18px;
+						width: 18px;
+						height: 18px;
+						line-height: 1;
+						vertical-align: middle;
+					}
+				}
+
+				.spinner {
+					margin: 0 !important;
+					float: none !important;
+					visibility: visible;
+				}
 			}
 		}
 	}

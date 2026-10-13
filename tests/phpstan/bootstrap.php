@@ -34,3 +34,34 @@ spl_autoload_register(
 		}
 	}
 );
+
+if ( ! function_exists( '__' ) ) {
+	function __( string $text, string $domain = 'default' ): string {
+		return $text;
+	}
+}
+
+if ( ! function_exists( 'trailingslashit' ) ) {
+	function trailingslashit( string $path ): string {
+		return rtrim( $path, '/\\' ) . '/';
+	}
+}
+
+if ( ! function_exists( 'untrailingslashit' ) ) {
+	function untrailingslashit( string $path ): string {
+		return rtrim( $path, '/\\' );
+	}
+}
+
+if ( ! function_exists( 'wp_upload_dir' ) ) {
+	function wp_upload_dir(): array {
+		return array( 'basedir' => sys_get_temp_dir() . '/wp-content/uploads' );
+	}
+}
+
+if ( ! function_exists( 'wp_mkdir_p' ) ) {
+	function wp_mkdir_p( string $dir ): bool {
+		return true;
+	}
+}
+

@@ -6,21 +6,19 @@
  */
 
 .dame-form {
-    font-family: var(--dame-theme-font-body);
-    color: var(--dame-theme-text);
-
+    .form-row,
     p {
         margin-bottom: 1.25em;
     }
 
-    label {
+    label,
+    .dame-field-label {
         display: block;
-        font-weight: 600;
         margin-bottom: 0.35em;
-        color: var(--dame-theme-text);
-        font-size: 14px;
+        font-weight: 600;
     }
 
+    // Champs standards : disposition structurelle uniquement (aucune surcharge cosmétique pour Blocksy)
     input[type="text"],
     input[type="email"],
     input[type="tel"],
@@ -30,69 +28,63 @@
     select,
     textarea {
         width: 100%;
-        padding: 9px 12px;
         box-sizing: border-box;
-        border: 1px solid var(--dame-theme-border);
-        border-radius: var(--dame-theme-radius);
-        background-color: var(--dame-theme-bg);
-        color: var(--dame-theme-text);
-        font-family: inherit;
-        font-size: 14px;
-        line-height: 1.5;
-        transition: border-color $dame-transition-fast, box-shadow $dame-transition-fast;
-
-        &:focus {
-            @include focus-ring(var(--dame-theme-primary));
-        }
-
-        &::placeholder {
-            color: var(--dame-theme-muted);
-            opacity: 0.8;
-        }
-
-        &:disabled {
-            background-color: var(--dame-theme-surface);
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
     }
 
     select {
         cursor: pointer;
     }
 
-    button[type="submit"]:not(.dame-btn),
-    input[type="submit"]:not(.dame-btn) {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px 18px;
-        font-family: inherit;
-        font-size: 15px;
-        font-weight: 600;
-        line-height: 1.4;
-        border-radius: var(--dame-theme-btn-radius, 6px);
-        border: 1px solid transparent;
-        background-color: var(--dame-theme-primary);
-        color: #ffffff;
-        cursor: pointer;
-        transition: background-color $dame-transition-fast;
-
-        &:hover:not(:disabled) {
-            background-color: var(--dame-theme-primary-hover);
-            color: #ffffff;
-        }
-
-        &:disabled {
-            opacity: 0.65;
-            cursor: not-allowed;
-        }
+    textarea {
+        resize: vertical;
     }
 
     .required,
     .dame-required {
-        color: #dc2626;
+        color: var(--theme-palette-color-8, #dc2626);
         margin-left: 2px;
+    }
+
+    // Alignement des groupes de boutons radio et cases à cocher Blocksy
+    .dame-radio-group {
+        margin-bottom: 1.25em;
+    }
+
+    .dame-radio-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: flex-start;
+        margin-top: 0.35em;
+
+        &--vertical {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+    }
+
+    // Support structurel du conteneur de puce Blocksy
+    .ct-checkbox-container {
+        display: inline-flex;
+        align-items: flex-start;
+        gap: 8px;
+        cursor: pointer;
+        user-select: none;
+        font-weight: normal;
+        margin-bottom: 0;
+
+        input[type="checkbox"],
+        input[type="radio"] {
+            margin: 0;
+            margin-top: 0.25em;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        span {
+            line-height: 1.4;
+        }
     }
 
     .dame-form-row {
@@ -111,9 +103,11 @@
         }
     }
 
-    .dame-form-help {
+    .dame-form-help,
+    .dame-help-text,
+    .dame-form-disclaimer {
         font-size: 12.5px;
-        color: var(--dame-theme-muted);
+        color: var(--dame-theme-muted, var(--theme-palette-color-4, #64748b));
         margin-top: 4px;
         line-height: 1.4;
     }

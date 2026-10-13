@@ -41,7 +41,10 @@ class Mailing {
 			DAME_PLUGIN_URL . 'assets/js/admin-mailing.js',
 			array(),
 			DAME_VERSION,
-			true
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
 		);
 
 		// Prepare Region -> Departments mapping for JS.
@@ -62,12 +65,7 @@ class Mailing {
 			)
 		);
 
-		wp_enqueue_style(
-			'dame-admin-styles',
-			DAME_PLUGIN_URL . 'assets/css/admin-styles.css',
-			array(),
-			DAME_VERSION
-		);
+		wp_enqueue_style( 'dame-admin-styles' );
 	}
 
 	/**

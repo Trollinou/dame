@@ -25,3 +25,76 @@
         text-decoration: none;
     }
 }
+
+// En-têtes de représentants légaux avec bouton d'action secondaire
+.dame-rep-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 1.5em;
+    margin-bottom: 0.85em;
+
+    .dame-copy-button {
+        font-size: 13px;
+        white-space: nowrap;
+    }
+}
+
+// Cadre de signature électronique
+.dame-signature-box {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid var(--dame-theme-border, #cbd5e1);
+    border-radius: var(--dame-theme-radius, 8px);
+    background-color: var(--dame-theme-surface, #f8fafc);
+
+    .dame-signature-title {
+        margin-top: 0;
+        margin-bottom: 6px;
+    }
+
+    .dame-signature-hint {
+        margin-bottom: 12px;
+        font-size: 0.9em;
+        color: var(--dame-theme-muted, #475569);
+    }
+
+    .dame-signature-wrapper {
+        position: relative;
+        border: 1px dashed var(--dame-theme-border, #94a3b8);
+        border-radius: var(--dame-theme-radius, 6px);
+        background-color: #ffffff;
+        margin-bottom: 10px;
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 160px;
+            touch-action: none;
+            cursor: crosshair;
+        }
+    }
+
+    .dame-signature-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .dame-signature-note {
+        font-size: 0.85em;
+        color: var(--dame-theme-muted, #64748b);
+    }
+}
+
+.dame-registration-success-actions {
+    margin-top: 1.5em;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+}
