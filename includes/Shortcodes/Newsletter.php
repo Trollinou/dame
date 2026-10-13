@@ -88,25 +88,26 @@ class Newsletter {
 			wp_enqueue_style( 'dashicons' );
 		}
 
-		// Enqueue modern Script Module or fallback to classic script with localized data.
+		// Enqueue modern Script Module if supported.
 		if ( function_exists( 'wp_enqueue_script_module' ) ) {
 			wp_enqueue_script_module( 'dame/newsletter' );
-		} else {
-			wp_enqueue_script( 'dame-public-newsletter' );
-			wp_localize_script(
-				'dame-public-newsletter',
-				'dameNewsletterData',
-				array(
-					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-					'nonce'   => wp_create_nonce( 'dame_newsletter_nonce' ),
-					'i18n'    => array(
-						'submitting'    => __( 'Inscription en cours...', 'dame' ),
-						'submitSuccess' => __( 'Inscription réussie !', 'dame' ),
-						'genericError'  => __( 'Une erreur est survenue. Veuillez réessayer.', 'dame' ),
-					),
-				)
-			);
 		}
+
+		// Enqueue the public newsletter script and localized data for modal display and AJAX.
+		wp_enqueue_script( 'dame-public-newsletter' );
+		wp_localize_script(
+			'dame-public-newsletter',
+			'dameNewsletterData',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'dame_newsletter_nonce' ),
+				'i18n'    => array(
+					'submitting'    => __( 'Inscription en cours...', 'dame' ),
+					'submitSuccess' => __( 'Inscription réussie !', 'dame' ),
+					'genericError'  => __( 'Une erreur est survenue. Veuillez réessayer.', 'dame' ),
+				),
+			)
+		);
 
 		ob_start();
 

@@ -24,7 +24,8 @@
   - Remplacement systématique du paramètre booléen `$in_footer = true` par le tableau de configuration `array( 'strategy' => 'defer', 'in_footer' => true )` pour tous les scripts du plugin (front-end, pages d'administration, onglets de réglages et métaboxes) afin d'éliminer les ressources bloquantes au premier affichage (FCP / LCP).
 - **Chargement Contextuel Front-End & Élimination des Doublons Réactifs** :
   - Feuilles de style `dame-public-styles` et script GPS `dame-public-single-event` chargés uniquement sur les vues singulières pertinentes (`is_singular(...)`).
-  - Résolution de l'unicité réactive pour les shortcodes `dame_agenda` et `dame_newsletter` : suppression du double chargement simultané du Script Module Interactivity API et du script classique JavaScript.
+  - Résolution de l'unicité réactive pour le shortcode `dame_agenda` : suppression du chargement simultané du Script Module Interactivity API et du script classique JavaScript.
+  - Rétablissement de la mise en file d'attente de `dame-public-newsletter` et de ses paramètres localisés (`dameNewsletterData`) dans le shortcode `dame_newsletter` pour garantir l'ouverture de la modale au clic, le piégeage du focus accessible et la soumission asynchrone AJAX.
   - Chargement conditionnel de la police d'icônes `dashicons` dans le shortcode `dame_newsletter` uniquement lorsque l'icône de bouton est expressément demandée (`show_icon => true`).
   - Consommation exclusive des identifiants (handles) pré-enregistrés dans tous les shortcodes (`Agenda`, `Benevolat`, `Contact`, `Newsletter`, `RegistrationForm\FormView`).
 - **Isolation Back-End / Admin & Données Sérialisées** :
