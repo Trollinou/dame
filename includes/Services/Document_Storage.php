@@ -164,4 +164,35 @@ class Document_Storage {
 
 		return @unlink( $path );
 	}
+
+	/**
+	 * Initialize hooks for document storage.
+	 */
+	public static function init(): void {
+		add_filter( 'eg_backup_registered_locations', array( self::class, 'register_backup_location' ) );
+	}
+
+	/**
+	 * Register DAME documents directory with EG Backup & Restore hook.
+	 *
+	 * @param array<string, array<string, mixed>> $locations Registered backup locations.
+	 * @return array<string, array<string, mixed>> Filtered backup locations.
+	 */
+	public static function register_backup_location( array $locations ): array {
+		$locations['dame_documents'] = array(
+			'id'          => 'dame_documents',
+			'label'       => __( 'Documents & Attestations Adhérents (Signatures & Justificatifs)', 'dame' ),
+			'plugin_name' => 'DAME',
+			'path'        => untrailingslashit( self::get_storage_dir() ),
+			'category'    => 'documents',
+			'recommended' => true,
+			'description' => __( 'Questionnaires de santé signés numériquement, autorisations parentales, certificats médicaux et pièces jointes des préinscriptions et adhérents.', 'dame' ),
+			'exclude'     => array(
+				'*.tmp',
+				'temp',
+			),
+		);
+
+		return $locations;
+	}
 }
