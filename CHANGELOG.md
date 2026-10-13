@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Sauvegarde & Intégration API Hooks EG Backup
+- **Référencement du Répertoire Documentaire (`DAME\Services\Document_Storage`)** :
+  - Déclaration officielle du répertoire des pièces jointes et justificatifs (`wp-content/uploads/dame-documents/`) via le filtre `eg_backup_registered_locations` de l'extension **EG Backup & Restore**.
+  - Enregistrement sous la catégorie `'documents'`, présélectionné par défaut (`'recommended' => true`), pour garantir la sauvegarde physique des questionnaires de santé signés numériquement, autorisations parentales, certificats médicaux et pièces téléversées manuellement.
+  - Exclusion préventive des fichiers temporaires (`*.tmp`, `temp`).
+- **Initialisation au Bootstrap (`DAME\Core\Plugin`)** :
+  - Connexion du service `Document_Storage::init()` au démarrage du plugin, assurant la prise en compte de l'emplacement lors des scans d'administration, requêtes AJAX et commandes WP-CLI (`wp eg-backup`).
+- **Interfaces d'Administration & Traçabilité (`DAME\Admin\Pages\Backups`, `DAME\Admin\Settings\Tabs\Sauvegarde`)** :
+  - Ajout d'une notice explicative dans la page Sauvegardes & Restaurations clarifiant le périmètre des exports de métadonnées internes (`.json.gz`) par rapport à la sauvegarde physique sur disque.
+  - Détection dynamique de l'extension EG Backup avec lien d'accès direct vers le module de création de sauvegarde.
+  - Note d'information dans l'onglet des réglages de sauvegarde.
+- **Couverture de Tests Unitaires (`tests/Unit/DocumentStorageTest.php`)** :
+  - Ajout d'un test validant la conformité du contrat de données selon la spécification de l'API de hooks.
+
 ### Optimisations & Performance (WordPress 7.1)
 - **Séparation Stricte Enregistrement vs Mise en file d'attente (Register vs Enqueue)** :
   - Pré-enregistrement centralisé des styles, scripts et Script Modules ESM dans `DAME\Frontend\Assets::register_assets` et `DAME\Admin\Assets::register_admin_assets` (priorité 5 sur `wp_enqueue_scripts` et `admin_enqueue_scripts`).
