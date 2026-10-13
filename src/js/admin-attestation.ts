@@ -108,12 +108,12 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			<div class="dame-attestation-modal-footer">
 				<button type="button" class="button button-secondary dame-modal-cancel-btn">Annuler</button>
 				<button type="button" class="button button-secondary dame-modal-download-btn">
-					<span class="dashicons dashicons-download"></span>
-					Télécharger le PDF
+					<span class="dashicons dashicons-download" aria-hidden="true"></span>
+					<span>Télécharger le PDF</span>
 				</button>
 				<button type="button" class="button button-primary dame-modal-send-btn">
-					<span class="dashicons dashicons-email-alt"></span>
-					Envoyer par e-mail
+					<span class="dashicons dashicons-email-alt" aria-hidden="true"></span>
+					<span>Envoyer par e-mail</span>
 				</button>
 			</div>
 		</div>
@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		sendBtn.disabled = true;
 		const originalText = sendBtn.innerHTML;
 		sendBtn.innerHTML =
-			'<span class="spinner is-active" style="float:none; margin:0 5px 0 0;"></span> Envoi en cours...';
+			'<span class="spinner is-active" style="float:none; margin:0;"></span> <span>Envoi en cours...</span>';
 
 		if (feedbackEl) {
 			feedbackEl.style.display = 'none';

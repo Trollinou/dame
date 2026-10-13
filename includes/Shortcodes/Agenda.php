@@ -38,12 +38,12 @@ class Agenda {
 		$atts = shortcode_atts( array(), (array) $atts, 'dame_agenda' );
 		wp_enqueue_style( 'dame-public-agenda' );
 
-		// Load Interactivity API Script Module (WordPress 6.5+ / 7.x) or fallback to classic script.
+		// Load Interactivity API Script Module (WordPress 6.5+ / 7.x).
 		if ( function_exists( 'wp_enqueue_script_module' ) ) {
 			wp_enqueue_script_module( 'dame/agenda' );
-		} else {
-			wp_enqueue_script( 'dame-public-agenda' );
 		}
+
+		wp_enqueue_script( 'dame-public-agenda' );
 
 		// Get WordPress's start_of_week option.
 		$start_of_week = intval( get_option( 'start_of_week', 1 ) ); // Default to Monday.
