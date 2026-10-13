@@ -230,7 +230,7 @@ class FormView {
 						<a href="#" id="health-questionnaire-link" target="_blank" style="font-size: initial; color: blue; text-decoration: underline;"></a>
 					</span>
 				</h4>
-				<div class="form-row dame-radio-options">
+				<div class="form-row dame-radio-options dame-radio-options--vertical">
 					<label class="ct-checkbox-container">
 						<input type="radio" name="dame_health_questionnaire" value="non" required>
 						<span><?php esc_html_e( 'J’ai répondu NON partout', 'dame' ); ?></span>
