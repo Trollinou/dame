@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.6.5] - 2026-10-13
+
 ### Sauvegarde & Intégration API Hooks EG Backup
 - **Référencement du Répertoire Documentaire (`DAME\Services\Document_Storage`)** :
   - Déclaration officielle du répertoire des pièces jointes et justificatifs (`wp-content/uploads/dame-documents/`) via le filtre `eg_backup_registered_locations` de l'extension **EG Backup & Restore**.
