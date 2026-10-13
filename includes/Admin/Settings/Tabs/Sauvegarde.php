@@ -57,6 +57,22 @@ class Sauvegarde {
 	 */
 	public function render(): void {
 		do_settings_sections( 'dame_backup_section_group' );
+		?>
+		<div class="notice notice-info inline" style="margin-top: 25px; padding: 12px 16px;">
+			<p>
+				<strong>ℹ️ <?php esc_html_e( 'Sauvegarde globale et fichiers signés (EG Backup & Restore) :', 'dame' ); ?></strong><br>
+				<?php esc_html_e( 'L\'heure de sauvegarde ci-dessus planifie l\'envoi quotidien par e-mail des données de la base (.json.gz). Pour une stratégie de sauvegarde complète incluant les pièces jointes, questionnaires de santé signés et la base de données, DAME est connecté à l\'extension', 'dame' ); ?>
+				<strong>EG Backup &amp; Restore</strong>.
+			</p>
+			<?php if ( defined( 'EG_BACKUP_VERSION' ) ) : ?>
+				<p>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=eg-backup' ) ); ?>" class="button button-secondary">
+						<?php esc_html_e( 'Accéder aux sauvegardes EG Backup', 'dame' ); ?>
+					</a>
+				</p>
+			<?php endif; ?>
+		</div>
+		<?php
 	}
 
 	/**

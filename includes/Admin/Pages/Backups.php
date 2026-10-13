@@ -103,6 +103,29 @@ class Backups {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Sauvegardes et Restaurations', 'dame' ); ?></h1>
 
+			<div class="notice notice-info" style="margin: 20px 0; padding: 12px 16px;">
+				<p>
+					<strong>ℹ️ <?php esc_html_e( 'Sauvegarde globale & Documents signés :', 'dame' ); ?></strong>
+					<?php esc_html_e( 'Les exports ci-dessous génèrent des archives de métadonnées (.json.gz ou .csv). Pour sauvegarder également les documents physiques (attestations de santé signées, autorisations parentales, justificatifs déposés dans', 'dame' ); ?>
+					<code>wp-content/uploads/dame-documents/</code>) <?php esc_html_e( 'avec l\'ensemble de la base de données, DAME est nativement synchronisé avec l\'extension', 'dame' ); ?>
+					<strong>EG Backup &amp; Restore</strong>.
+				</p>
+				<?php if ( defined( 'EG_BACKUP_VERSION' ) ) : ?>
+					<p>
+						<span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span>
+						<strong><?php esc_html_e( 'Extension EG Backup détectée :', 'dame' ); ?></strong>
+						<?php esc_html_e( 'Le dossier des documents DAME y est automatiquement enregistré sous la catégorie « Documents » et sélectionné par défaut.', 'dame' ); ?>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=eg-backup' ) ); ?>" class="button button-small" style="margin-left: 8px;">
+							<?php esc_html_e( 'Ouvrir EG Backup', 'dame' ); ?>
+						</a>
+					</p>
+				<?php else : ?>
+					<p style="color: #666; font-size: 13px; margin-bottom: 0;">
+						<?php esc_html_e( 'Astuce : L\'extension EG Backup & Restore permet d\'automatiser la sauvegarde complète de la base de données et de ces fichiers.', 'dame' ); ?>
+					</p>
+				<?php endif; ?>
+			</div>
+
 			<h2><?php esc_html_e( 'Adhérents, Contacts et Préinscription', 'dame' ); ?></h2>
 			<div class="dame-import-export-wrapper">
 				

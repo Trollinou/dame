@@ -37,6 +37,7 @@ use DAME\Metaboxes\ICalFeed\Settings as ICalFeedSettings;
 use DAME\Metaboxes\ICalFeed\Info as ICalFeedInfo;
 use DAME\Metaboxes\Benevolat\Manager as BenevolatMetaboxManager;
 use DAME\Services\PDF_Generator;
+use DAME\Services\Document_Storage;
 use DAME\Services\ICalFeed as ICalFeedService;
 use DAME\Services\Backup;
 use DAME\Services\Birthday;
@@ -165,6 +166,8 @@ class Plugin {
 
 		$pdf_generator = new PDF_Generator();
 		$pdf_generator->init();
+
+		Document_Storage::init();
 
 		$ical_feed_service = new ICalFeedService();
 		$ical_feed_service->init();
