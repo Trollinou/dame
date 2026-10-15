@@ -1,6 +1,5 @@
 .DS_Store
 .gemini/
-.github/
 /.sync.ffs_db
 /pwa/
 /vendor/

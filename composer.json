@@ -13,7 +13,8 @@
   "scripts": {
     "lint:php": "phpstan analyze --memory-limit=2G",
     "lint": "phpcs",
-    "fix": "phpcbf"
+    "fix": "phpcbf",
+    "test": "phpunit"
   },
   "autoload": {
     "psr-4": {
