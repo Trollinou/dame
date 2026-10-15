@@ -295,11 +295,11 @@ class Association {
 	public function render(): void {
 		echo '<div class="dame-association-cards">';
 
-		// Card 1 : Identité légale & Contact
+		// Card 1 : Identité légale & Contact.
 		echo '<div class="dame-association-card">';
 		echo '<div class="dame-card-header">';
 		echo '<h3><span class="dashicons dashicons-id-alt"></span> ' . esc_html__( '1. Identité légale & Contact', 'dame' ) . '</h3>';
-		echo '<p>' . esc_html__( "Nom officiel déclaré, identifiants administratifs (RNA, SIREN) et canaux de contact du club.", 'dame' ) . '</p>';
+		echo '<p>' . esc_html__( 'Nom officiel déclaré, identifiants administratifs (RNA, SIREN) et canaux de contact du club.', 'dame' ) . '</p>';
 		echo '</div>';
 		echo '<div class="dame-card-body">';
 		echo '<table class="form-table" role="presentation">';
@@ -308,7 +308,7 @@ class Association {
 		echo '</div>';
 		echo '</div>';
 
-		// Card 2 : Siège social (Documents & Attestations)
+		// Card 2 : Siège social (Documents & Attestations).
 		echo '<div class="dame-association-card">';
 		echo '<div class="dame-card-header">';
 		echo '<h3><span class="dashicons dashicons-building"></span> ' . esc_html__( '2. Siège social (Documents & Attestations)', 'dame' ) . '</h3>';
@@ -321,7 +321,7 @@ class Association {
 		echo '</div>';
 		echo '</div>';
 
-		// Card 3 : Salle de jeu (Trajets & Itinéraires)
+		// Card 3 : Salle de jeu (Trajets & Itinéraires).
 		echo '<div class="dame-association-card">';
 		echo '<div class="dame-card-header">';
 		echo '<h3><span class="dashicons dashicons-location-alt"></span> ' . esc_html__( '3. Salle de jeu (Trajets & Itinéraires)', 'dame' ) . '</h3>';
@@ -329,7 +329,7 @@ class Association {
 		echo '</div>';
 		echo '<div class="dame-card-body">';
 
-		// Same address banner
+		// Same address banner.
 		echo '<div class="dame-same-address-banner">';
 		echo '<label for="dame_assoc_same_address">';
 		echo '<input type="checkbox" id="dame_assoc_same_address" name="dame_assoc_same_address" value="1" /> ';
@@ -344,7 +344,7 @@ class Association {
 		echo '</div>';
 		echo '</div>';
 
-		// Card 4 : Représentant(e) légal(e) & Cachet officiel
+		// Card 4 : Représentant(e) légal(e) & Cachet officiel.
 		echo '<div class="dame-association-card">';
 		echo '<div class="dame-card-header">';
 		echo '<h3><span class="dashicons dashicons-awards"></span> ' . esc_html__( '4. Représentant(e) & Cachet officiel', 'dame' ) . '</h3>';

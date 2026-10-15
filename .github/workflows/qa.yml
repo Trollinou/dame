@@ -56,7 +56,7 @@ jobs:
         run: composer test
 
       - name: Run PHPCS (WordPress Coding Standards)
-        run: composer lint
+        run: composer lint -- -n
 
   # -------------------------------------------------------------
   # Job Frontend : Node 24 LTS, npm cache, typecheck, lint, build

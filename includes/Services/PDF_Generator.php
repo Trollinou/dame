@@ -697,7 +697,7 @@ class PDF_Generator {
 		$has_address = ! empty( $assoc_address );
 		$has_contact = ! empty( $assoc_email ) || ! empty( $assoc_website );
 
-		$text_total_h = 5.5 + 4.5; // Title (5.5) + subtitle 1901 (4.5)
+		$text_total_h = 5.5 + 4.5; // Title (5.5) + subtitle 1901 (4.5).
 		if ( $has_legal ) {
 			$text_total_h += 4.5;
 		}
