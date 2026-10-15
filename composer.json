@@ -12,7 +12,7 @@
     "dealerdirect/phpcodesniffer-composer-installer": "^1.2"
   },
   "scripts": {
-    "lint:php": "phpstan analyze --memory-limit=2G",
+    "lint:php": "phpstan analyze --debug --memory-limit=2G",
     "lint": "phpcs",
     "fix": "phpcbf",
     "test": "phpunit"

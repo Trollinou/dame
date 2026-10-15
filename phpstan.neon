@@ -14,7 +14,5 @@ parameters:
         - includes/lib/*
     bootstrapFiles:
         - tests/phpstan/bootstrap.php
-    scanFiles:
-        - dame.php
     ignoreErrors:
         - '#Path in require_once\(\) .*includes/lib/.* is not a file or it does not exist\.#'
