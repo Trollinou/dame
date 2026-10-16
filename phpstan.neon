@@ -16,7 +16,7 @@ parameters:
     # 2. GESTION DES ERREURS IGNORÉES
     # =========================================================================
     # Mettre à "true" une fois le Level 8 atteint pour nettoyer les vieux @phpstan-ignore inutiles
-    reportUnmatchedIgnoredErrors: false
+    reportUnmatchedIgnoredErrors: true
 
     # =========================================================================
     # 3. FICHIERS ET DOSSIERS À ANALYSER
@@ -30,6 +30,3 @@ parameters:
 
     bootstrapFiles:
         - tests/phpstan/bootstrap.php
-        
-    ignoreErrors:
-        - '#Path in require_once\(\) .*includes/lib/.* is not a file or it does not exist\.#'
