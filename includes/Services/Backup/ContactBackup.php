@@ -74,7 +74,7 @@ class ContactBackup {
 			)
 		);
 
-		if ( $query->have_posts() ) {
+		if ( ! empty( $query->posts ) ) {
 			foreach ( $query->posts as $post ) {
 				$post_id = $post instanceof WP_Post ? $post->ID : (int) $post;
 				if ( ! $post_id ) {
@@ -142,7 +142,7 @@ class ContactBackup {
 			$headers[0] = preg_replace( '/^\x{FEFF}/u', '', $headers[0] );
 		}
 
-		$col_map = array_flip( $headers );
+		$col_map = array_flip( array_map( 'strval', $headers ) );
 
 		$created = 0;
 		$updated = 0;

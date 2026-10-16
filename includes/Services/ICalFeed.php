@@ -140,7 +140,7 @@ class ICalFeed {
 		);
 
 		// Remove .ics from the slug for processing.
-		$feed_slug_base = preg_replace( '/\.ics$/', '', $feed_slug );
+		$feed_slug_base = (string) preg_replace( '/\.ics$/', '', (string) $feed_slug );
 
 		$feed_details = array(
 			'name' => '',
@@ -332,8 +332,8 @@ class ICalFeed {
 				$dtstart = ';VALUE=DATE:' . $start_date_obj->format( 'Ymd' );
 				$dtend   = ';VALUE=DATE:' . $end_date_obj->format( 'Ymd' );
 			} else {
-				$start_datetime_str = $start_date_str . ( ! empty( $start_time ) ? 'T' . str_replace( ':', '', $start_time ) . '00' : 'T000000' );
-				$end_datetime_str   = ( ! empty( $end_date_str ) ? $end_date_str : $start_date_str ) . ( ! empty( $end_time ) ? 'T' . str_replace( ':', '', $end_time ) . '00' : 'T235959' );
+				$start_datetime_str = $start_date_str . ( ! empty( $start_time ) ? 'T' . (string) str_replace( ':', '', (string) $start_time ) . '00' : 'T000000' );
+				$end_datetime_str   = ( ! empty( $end_date_str ) ? $end_date_str : $start_date_str ) . ( ! empty( $end_time ) ? 'T' . (string) str_replace( ':', '', (string) $end_time ) . '00' : 'T235959' );
 
 				$dtstart = ';TZID=' . $timezone_string . ':' . str_replace( '-', '', $start_datetime_str );
 				$dtend   = ';TZID=' . $timezone_string . ':' . str_replace( '-', '', $end_datetime_str );
@@ -424,7 +424,7 @@ class ICalFeed {
 		$text = str_replace( '\\', '\\\\', $text );
 		$text = str_replace( ',', '\,', $text );
 		$text = str_replace( ';', '\;', $text );
-		$text = preg_replace( "/\r\n|\n|\r/", "\n", $text );
+		$text = (string) preg_replace( "/\r\n|\n|\r/", "\n", $text );
 		$text = str_replace( "\n", '\n', $text );
 		return $text;
 	}
@@ -436,7 +436,7 @@ class ICalFeed {
 	 * @return string Folded line.
 	 */
 	private function fold_line( $line ) {
-		$line = preg_replace( '/(?=.)/u', '$0', $line ); // Make sure we count multibyte characters correctly.
+		$line = (string) preg_replace( '/(?=.)/u', '$0', (string) $line ); // Make sure we count multibyte characters correctly.
 		$line = str_replace( "\r\n", "\n", $line );
 		$line = wordwrap( $line, 75, "\r\n ", true );
 		return $line;

@@ -71,7 +71,7 @@ class SaveHandler {
 
 			$post_data_to_save = array();
 			foreach ( $_POST as $key => $value ) {
-				if ( str_starts_with( $key, 'dame_' ) || 'tax_input' === $key ) {
+				if ( str_starts_with( (string) $key, 'dame_' ) || 'tax_input' === $key ) {
 					$post_data_to_save[ $key ] = wp_unslash( $value );
 				}
 			}

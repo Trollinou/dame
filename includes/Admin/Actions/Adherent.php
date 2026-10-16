@@ -104,7 +104,8 @@ class Adherent {
 		wp_trash_post( $post_id );
 
 		// 6. Redirection vers la fiche contact.
-		wp_safe_redirect( get_edit_post_link( $contact_id, 'raw' ) );
+		$redirect_url = get_edit_post_link( $contact_id, 'raw' ) ?? admin_url( 'edit.php?post_type=dame_contact' );
+		wp_safe_redirect( $redirect_url );
 		exit;
 	}
 }

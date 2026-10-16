@@ -10,6 +10,9 @@ define( 'DAME_PLUGIN_DIR', dirname( __DIR__, 2 ) . '/' );
 if ( ! defined( 'DAME_VERSION' ) ) {
 	define( 'DAME_VERSION', '5.0.0' );
 }
+if ( ! defined( 'WPINC' ) ) {
+	define( 'WPINC', 'wp-includes' );
+}
 define( 'COOKIEPATH', '/' );
 
 if ( file_exists( dirname( __DIR__, 2 ) . '/vendor/autoload.php' ) ) {

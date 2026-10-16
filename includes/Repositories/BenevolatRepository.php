@@ -77,7 +77,7 @@ class BenevolatRepository {
 			)
 		);
 
-		return is_array( $choices ) ? $choices : array();
+		return is_array( $choices ) ? array_values( array_filter( $choices, 'is_string' ) ) : array();
 	}
 
 	/**

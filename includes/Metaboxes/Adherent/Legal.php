@@ -267,7 +267,7 @@ class Legal {
 			$post_data_to_save = array();
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			foreach ( $_POST as $key => $value ) {
-				if ( strpos( $key, 'dame_' ) === 0 ) {
+				if ( strpos( (string) $key, 'dame_' ) === 0 ) {
 					$post_data_to_save[ $key ] = wp_unslash( $value );
 				}
 			}

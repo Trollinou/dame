@@ -341,7 +341,7 @@ class Menu {
 									<ul>
 										<?php foreach ( $latest_adherents as $adherent ) : ?>
 											<li>
-												<a href="<?php echo esc_url( get_edit_post_link( $adherent->ID ) ); ?>">
+												<a href="<?php echo esc_url( (string) get_edit_post_link( $adherent->ID ) ); ?>">
 													<?php echo esc_html( get_the_title( $adherent->ID ) ); ?>
 												</a>
 												- <span class="dame-dashboard-meta"><?php echo esc_html( (string) get_the_date( '', $adherent->ID ) ); ?></span>
@@ -444,7 +444,7 @@ class Menu {
 											?>
 											<li>
 												<strong><?php echo esc_html( $formatted_date ); ?></strong> :
-												<a href="<?php echo esc_url( get_edit_post_link( $event->ID ) ); ?>">
+												<a href="<?php echo esc_url( (string) get_edit_post_link( $event->ID ) ); ?>">
 													<?php echo esc_html( get_the_title( $event->ID ) ); ?>
 												</a>
 											</li>
@@ -475,7 +475,7 @@ class Menu {
 											?>
 											<li>
 												<strong><?php echo esc_html( $formatted_date ); ?></strong> :
-												<a href="<?php echo esc_url( get_edit_post_link( $benevolat['ID'] ) ); ?>">
+												<a href="<?php echo esc_url( (string) get_edit_post_link( (int) $benevolat['ID'] ) ); ?>">
 													<?php echo esc_html( $benevolat['title'] ); ?>
 												</a>
 												- <span class="dame-dashboard-meta"><?php echo intval( $benevolat['responses_count'] ); ?> <?php echo esc_html( _n( 'réponse', 'réponses', $benevolat['responses_count'], 'dame' ) ); ?></span>

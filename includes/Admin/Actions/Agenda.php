@@ -145,7 +145,7 @@ class Agenda {
 		}
 
 		// Redirect to the edit screen for the new draft.
-		$redirect_url = get_edit_post_link( $new_post_id, 'raw' );
+		$redirect_url = get_edit_post_link( $new_post_id, 'raw' ) ?? admin_url( 'edit.php?post_type=dame_agenda' );
 		wp_safe_redirect( $redirect_url );
 		exit;
 	}

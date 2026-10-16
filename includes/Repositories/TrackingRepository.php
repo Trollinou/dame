@@ -51,17 +51,20 @@ class TrackingRepository {
 	 * @return bool True if updated, false otherwise.
 	 */
 	public function record_open( int $message_id, string $email_hash, string $user_ip, string $now ): bool {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$updated = $this->db->query(
-			$this->db->prepare(
-				'UPDATE %i SET opened_at = %s, user_ip = %s WHERE message_id = %d AND email_hash = %s',
-				$this->table_name,
-				$now,
-				$user_ip,
-				$message_id,
-				$email_hash
-			)
+		$sql = $this->db->prepare(
+			'UPDATE %i SET opened_at = %s, user_ip = %s WHERE message_id = %d AND email_hash = %s',
+			$this->table_name,
+			$now,
+			$user_ip,
+			$message_id,
+			$email_hash
 		);
+		if ( empty( $sql ) ) {
+			return false;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$updated = $this->db->query( $sql );
 
 		return false !== $updated && $updated > 0;
 	}

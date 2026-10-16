@@ -59,7 +59,7 @@ class Adherent_Matcher {
 				)
 			);
 
-			if ( $query->have_posts() ) {
+			if ( ! empty( $query->posts ) ) {
 				$first = $query->posts[0];
 				return is_numeric( $first ) ? (int) $first : ( $first instanceof \WP_Post ? $first->ID : 0 );
 			}
@@ -106,7 +106,7 @@ class Adherent_Matcher {
 			)
 		);
 
-		if ( $query->have_posts() ) {
+		if ( ! empty( $query->posts ) ) {
 			$first = $query->posts[0];
 			return is_numeric( $first ) ? (int) $first : ( $first instanceof \WP_Post ? $first->ID : 0 );
 		}

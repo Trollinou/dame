@@ -100,7 +100,8 @@ class Birthday {
 			$birthdays = array();
 			$seen_ids  = array();
 
-			foreach ( $query->posts as $post ) {
+			$posts = $query->posts ?? array();
+			foreach ( $posts as $post ) {
 				if ( ! $post instanceof \WP_Post ) {
 					continue;
 				}
@@ -330,8 +331,10 @@ class Birthday {
 				$civilite = 'Madame';
 			}
 
-			$subject = str_replace( array( '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ), array( (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age, (string) $civilite ), $article->post_title );
-			$content = str_replace( array( '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ), array( (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age, (string) $civilite ), apply_filters( 'the_content', $article->post_content ) );
+			$subject     = str_replace( array( '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ), array( (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age, (string) $civilite ), (string) $article->post_title );
+			$raw_content = apply_filters( 'the_content', $article->post_content );
+			$raw_text    = is_string( $raw_content ) ? $raw_content : (string) $article->post_content;
+			$content     = str_replace( array( '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' ), array( (string) \DAME\Core\Utils::format_lastname( (string) $nom ), (string) \DAME\Core\Utils::format_firstname( (string) $prenom ), (string) $age, (string) $civilite ), $raw_text );
 
 			$emails = \DAME\Core\Utils::get_emails_for_adherent( $pid );
 			if ( $emails ) {

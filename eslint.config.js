@@ -40,12 +40,39 @@ module.exports = [
 			},
 		},
 		rules: {
-			// On désactive les règles trop restrictives pour ce projet
-			'camelcase': 'off',          // Autorise les variables avec des _ (snake_case)
-			'no-alert': 'off',          // Autorise alert() et confirm()
-			'no-console': [ 'warn', { allow: [ 'warn', 'error' ] } ],       // Avertit pour log() mais autorise warn() et error()
-			'eqeqeq': 'warn',           // Avertit au lieu de bloquer pour les == au lieu de ===
-			'no-unused-vars': 'warn',   // Avertit pour les variables non utilisées au lieu de bloquer
-		},
+			// =================================================================
+			// 1. RIGUEUR & QUALITÉ (Équivalent "Strict" JS/TS)
+			// =================================================================
+			'eqeqeq': [ 'error', 'smart' ], // Oblige === et !== (tolère == null)
+			'curly': [ 'error', 'all' ], // Oblige les accolades {} même sur 1 ligne
+			'prefer-const': 'error', // Impose const si la variable n'est pas réassignée
+			'no-shadow': 'error', // Interdit de masquer une variable parente
+			'no-console': [ 'warn', { allow: [ 'warn', 'error' ] } ],
+			'no-unused-vars': [
+				'warn',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_',
+				},
+			],
+
+			// =================================================================
+			// 2. ADAPTATIONS WORDPRESS & ARCHITECTURE (Légitimes)
+			// =================================================================
+			'camelcase': 'off', // Autorise le snake_case issu de PHP / WP
+			'no-alert': 'off', // Autorise alert() et confirm() dans l'admin WP
+			'prettier/prettier': 'off', // Ne bloque pas le linter sur du formatage pur
+			'import/no-unresolved': 'off', // Délégué à TypeScript / Bundler
+			'import/no-extraneous-dependencies': 'off',
+
+			// =================================================================
+			// 3. ALLÈGEMENT JSDOC (Géré par TypeScript / Noms explicites)
+			// =================================================================
+			'jsdoc/require-param': 'off',
+			'jsdoc/require-param-type': 'off',
+			'jsdoc/require-returns': 'off',
+			'jsdoc/require-returns-type': 'off',
+			'jsdoc/check-param-names': 'off',		},
 	},
 ];

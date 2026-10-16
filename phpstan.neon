@@ -1,18 +1,35 @@
-includes:
-    - vendor/szepeviktor/phpstan-wordpress/extension.neon
 parameters:
-    level: 7
+    level: 8
     phpVersion: 80400 # Force l'analyse pour PHP 8.4
+
+    # =========================================================================
+    # 1. OPTIONS DE RIGUEUR (Alternative propre au mode "Strict" global)
+    # =========================================================================
     treatPhpDocTypesAsCertain: false
+    checkUninitializedProperties: true
+    checkBenevolentUnionTypes: true
+    checkExplicitMixedMissingReturn: true
+    checkFunctionNameCase: true
+    checkInternalClassCaseSensitivity: true
+
+    # =========================================================================
+    # 2. GESTION DES ERREURS IGNORÉES
+    # =========================================================================
+    # Mettre à "true" une fois le Level 8 atteint pour nettoyer les vieux @phpstan-ignore inutiles
     reportUnmatchedIgnoredErrors: false
-    parallel:
-        maximumNumberOfProcesses: 1
+
+    # =========================================================================
+    # 3. FICHIERS ET DOSSIERS À ANALYSER
+    # =========================================================================
     paths:
         - dame.php
         - includes/
+
     excludePaths:
         - includes/lib/*
+
     bootstrapFiles:
         - tests/phpstan/bootstrap.php
+        
     ignoreErrors:
         - '#Path in require_once\(\) .*includes/lib/.* is not a file or it does not exist\.#'

@@ -221,7 +221,7 @@ class Classification {
 			$cached_post_data  = get_transient( 'dame_post_data_' . $post_id );
 			$post_data_to_save = ! empty( $cached_post_data ) && is_array( $cached_post_data ) ? $cached_post_data : array();
 			foreach ( $_POST as $key => $value ) {
-				if ( strpos( $key, 'dame_' ) === 0 ) {
+				if ( strpos( (string) $key, 'dame_' ) === 0 ) {
 					$post_data_to_save[ $key ] = sanitize_text_field( wp_unslash( $value ) );
 				}
 			}

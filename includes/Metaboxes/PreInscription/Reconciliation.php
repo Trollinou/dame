@@ -113,7 +113,7 @@ class Reconciliation {
 				sprintf(
 					/* translators: 1: Lien vers l'édition de l'adhérent, 2: ID de l'adhérent */
 					__( 'Correspondance trouvée avec l\'adhérent <a href="%1$s" target="_blank">#%2$d</a>.', 'dame' ),
-					esc_url( get_edit_post_link( $matched_id ) ),
+					esc_url( (string) get_edit_post_link( $matched_id ) ),
 					(int) $matched_id
 				),
 				array(

@@ -72,7 +72,8 @@ class AgendaBackup {
 			update_meta_cache( 'post', wp_list_pluck( $query->posts, 'ID' ) );
 		}
 
-		foreach ( $query->posts as $post ) {
+		$posts_to_backup = $query->posts ?? array();
+		foreach ( $posts_to_backup as $post ) {
 			if ( ! $post instanceof WP_Post ) {
 				continue;
 			}

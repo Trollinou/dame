@@ -94,7 +94,8 @@ class BatchSender {
 			}
 
 			$subject     = $message_post->post_title;
-			$content     = apply_filters( 'the_content', $message_post->post_content );
+			$raw_content = apply_filters( 'the_content', $message_post->post_content );
+			$content     = is_string( $raw_content ) ? $raw_content : (string) $message_post->post_content;
 			$options     = get_option( 'dame_options' );
 			$from_name   = $options['sender_name'] ?? get_bloginfo( 'name' );
 			$from_email  = $options['sender_email'] ?? get_option( 'admin_email' );

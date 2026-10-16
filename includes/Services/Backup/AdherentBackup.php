@@ -302,7 +302,7 @@ class AdherentBackup {
 			'Moyen de locomotion',
 			'Statut adhésion',
 		);
-		$col_map          = array_flip( $header );
+		$col_map          = array_flip( array_map( 'strval', $header ) );
 
 		// Data mapping from CSV columns to post meta keys.
 		$meta_mapping = array(
@@ -672,7 +672,8 @@ class AdherentBackup {
 			update_meta_cache( 'post', wp_list_pluck( $query->posts, 'ID' ) );
 		}
 
-		foreach ( $query->posts as $post ) {
+		$posts_to_backup = $query->posts ?? array();
+		foreach ( $posts_to_backup as $post ) {
 			if ( ! $post instanceof WP_Post ) {
 				continue;
 			}

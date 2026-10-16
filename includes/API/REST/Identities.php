@@ -135,8 +135,8 @@ class Identities {
 			)
 		);
 
-		$adherents_a = array_values( array_filter( $query_a->posts, static fn( $p ) => $p instanceof \WP_Post ) );
-		$adherents_b = array_values( array_filter( $query_b->posts, static fn( $p ) => $p instanceof \WP_Post ) );
+		$adherents_a = array_values( array_filter( $query_a->posts ?? array(), static fn( $p ) => $p instanceof \WP_Post ) );
+		$adherents_b = array_values( array_filter( $query_b->posts ?? array(), static fn( $p ) => $p instanceof \WP_Post ) );
 
 		$accessible_adh_ids = array_values(
 			array_filter(
@@ -190,7 +190,7 @@ class Identities {
 				),
 			)
 		);
-		$pending_preinscriptions = array_values( array_filter( $pending_pre_query->posts, static fn( $p ) => $p instanceof \WP_Post ) );
+		$pending_preinscriptions = array_values( array_filter( $pending_pre_query->posts ?? array(), static fn( $p ) => $p instanceof \WP_Post ) );
 		$matched_pre_ids         = array();
 
 		// Bulk prime post, taxonomy term, and meta caches to eliminate N+1 queries.

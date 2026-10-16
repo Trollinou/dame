@@ -43,13 +43,14 @@ class MessageReport {
 		$unique_opens      = $tracking_repo->get_unique_opens_count( $message_id );
 		$opened_recipients = $tracking_repo->get_opened_recipients_map( $message_id );
 
-		$message = get_post( $message_id );
+		$message    = get_post( $message_id );
+		$post_title = $message instanceof \WP_Post ? $message->post_title : '';
 		?>
 		<div class="wrap">
 			<h1>
 			<?php
 			// translators: %s is the message post title.
-			echo esc_html( sprintf( __( 'Rapport d\'ouverture : %s', 'dame' ), $message->post_title ) );
+			echo esc_html( sprintf( __( 'Rapport d\'ouverture : %s', 'dame' ), $post_title ) );
 			?>
 			</h1>
 

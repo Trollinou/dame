@@ -227,7 +227,7 @@ class Identity {
 			// Save posted data to transient to repopulate form.
 			$post_data_to_save = array();
 			foreach ( $_POST as $key => $value ) {
-				if ( strpos( $key, 'dame_' ) === 0 ) {
+				if ( strpos( (string) $key, 'dame_' ) === 0 ) {
 					$post_data_to_save[ $key ] = sanitize_text_field( wp_unslash( $value ) );
 				}
 			}

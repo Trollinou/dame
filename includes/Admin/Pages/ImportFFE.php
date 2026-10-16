@@ -382,7 +382,7 @@ endif;
 	/**
 	 * Process a single CSV row using pre-built lookup tables.
 	 *
-	 * @param string[]           $row                 CSV row.
+	 * @param array<string|null> $row                 CSV row.
 	 * @param array<string, int> $members_by_license  Lookup table by license.
 	 * @param array<string, int> $members_by_name     Lookup table by name.
 	 * @param int[]              $updated_ids         Array of updated post IDs.
