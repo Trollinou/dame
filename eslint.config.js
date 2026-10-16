@@ -73,6 +73,7 @@ module.exports = [
 			'jsdoc/require-param-type': 'off',
 			'jsdoc/require-returns': 'off',
 			'jsdoc/require-returns-type': 'off',
-			'jsdoc/check-param-names': 'off',		},
+			'jsdoc/check-param-names': 'off',
+		},
 	},
 ];
