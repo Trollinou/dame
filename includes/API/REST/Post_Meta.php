@@ -29,6 +29,49 @@ class Post_Meta {
 		add_filter( 'rest_dame_agenda_query', array( $this, 'filter_agenda_query' ), 10, 2 );
 		add_filter( 'rest_dame_agenda_collection_params', array( $this, 'allow_meta_orderby' ) );
 		add_filter( 'rest_pre_serve_request', array( $this, 'expose_cors_headers' ), 10, 4 );
+		add_filter( 'rest_pre_dispatch', array( $this, 'check_protected_routes_access' ), 10, 3 );
+	}
+
+	/**
+	 * Checks permissions for protected CPT collections in the REST API.
+	 *
+	 * Allows public access for agenda and volunteering calls. Restricts adherents, contacts,
+	 * messages, pre-inscriptions collections, and volunteer poll responses to staff/admin roles.
+	 *
+	 * @param mixed           $result  Response to replace with, or null to continue.
+	 * @param \WP_REST_Server $server  Server instance.
+	 * @param WP_REST_Request $request Request object.
+	 * @return mixed WP_Error if unauthorized, null otherwise.
+	 */
+	public function check_protected_routes_access( mixed $result, \WP_REST_Server $server, WP_REST_Request $request ): mixed {
+		$route = $request->get_route();
+
+		$protected_prefixes = array(
+			'/wp/v2/adherents',
+			'/wp/v2/contacts',
+			'/wp/v2/messages',
+			'/wp/v2/pre-inscriptions',
+			'/wp/v2/benevolat-reponses',
+			'/wp/v2/ical-feeds',
+		);
+
+		foreach ( $protected_prefixes as $prefix ) {
+			if ( str_starts_with( $route, $prefix ) ) {
+				$allowed_roles = array( 'administrator', 'editor', 'staff', 'entraineur' );
+				$user          = wp_get_current_user();
+
+				if ( ! is_user_logged_in() || empty( array_intersect( $allowed_roles, (array) $user->roles ) ) ) {
+					return new \WP_Error(
+						'rest_forbidden_context',
+						__( 'Désolé, vous n\'êtes pas autorisé à accéder à cette ressource.', 'dame' ),
+						array( 'status' => rest_authorization_required_code() )
+					);
+				}
+				break;
+			}
+		}
+
+		return $result;
 	}
 
 	/**

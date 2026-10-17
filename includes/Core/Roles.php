@@ -25,6 +25,11 @@ class Roles {
 	 * Register custom roles and assign capabilities.
 	 */
 	public function register_roles(): void {
+		$roles_version = get_option( 'dame_roles_version', '0' );
+		if ( version_compare( (string) $roles_version, \DAME_VERSION, '>=' ) ) {
+			return;
+		}
+
 		// Role: Membre.
 		add_role(
 			'membre',
@@ -96,5 +101,7 @@ class Roles {
 				$role->add_cap( 'read_private_dame_messages' );
 			}
 		}
+
+		update_option( 'dame_roles_version', \DAME_VERSION, false );
 	}
 }

@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+### Sécurité & Contrôle d'Accès PWA / REST API
+- **Sécurisation des Collections REST Sensibles (`DAME\API\REST\Post_Meta`)** :
+  - Interception via `rest_pre_dispatch` sur les routes de collections CPT non publiques (`/wp/v2/adherents`, `/wp/v2/contacts`, `/wp/v2/messages`, `/wp/v2/pre-inscriptions`, `/wp/v2/benevolat-reponses`, `/wp/v2/ical-feeds`) pour exiger une authentification et un rôle autorisé (`administrator`, `editor`, `staff`, `entraineur`).
+  - Maintien de l'accès public libre pour l'agenda, les appels à bénévoles et les endpoints de soumission/téléchargement légitimes (`/dame/v1/pre-inscription`, `/dame/v1/pre-inscriptions/*/pdf/*`).
+- **Validation Sécurisée des Jetons de Téléchargement (`DAME\API\REST\PreInscription`)** :
+  - Utilisation de `hash_equals()` pour la comparaison du jeton de téléchargement temporaire (`_dame_download_token`).
+
+### Performance & Cache
+- **Éradication des Requêtes N+1 (`DAME\Services\Birthday`)** :
+  - Amorçage préventif du cache objet WordPress avec `_prime_post_caches( $ids, false, true )` avant la boucle de chargement des métadonnées d'anniversaires.
+- **Invalidation Atomique du Cache Objet (`DAME\Repositories\MemberRepository`, `DAME\API\REST\PreInscription`, `DAME\Shortcodes\RegistrationForm\SubmissionHandler`)** :
+  - Correction du groupe de taxonomie d'invalidation dans `invalidate_member_cache()` (`dame_saison_adhesion`).
+  - Purge déterministe `wp_cache_delete( $post_id, 'post_meta' )` après les requêtes SQL `INSERT INTO {$wpdb->postmeta}` d'enregistrement en masse.
+- **Réduction des Écritures BDD au Bootstrap (`DAME\Core\Roles`, `DAME\Core\Cron`)** :
+  - Vérification de la version des rôles (`dame_roles_version`) pour éviter les appels `add_role()` / `add_cap()` répétés sur chaque hook `init`.
+  - Contrôle `wp_next_scheduled()` avant toute réinscription d'événements WP-Cron sur `admin_init`.
+
+### Architecture & Standards
+- **Suppression des Déclarations de Métadonnées Redondantes (`DAME\CPT\Adherent`, `DAME\CPT\Agenda`, `DAME\CPT\Benevolat`)** :
+  - Centralisation exclusive de l'enregistrement des champs meta via `DAME\API\REST\Post_Meta::register_all_meta`.
+  - Harmonisation des liaisons de blocs (`DAME\Blocks\Manager`) pour supporter les clés canoniques (`_dame_license_number`, `_dame_elo_standard`).
+- **Unicité des Écouteurs d'Événements Front-End (`DAME\Shortcodes\Agenda`)** :
+  - Élimination des directives d'écouteurs réactifs doubles en front-end pour la navigation mensuelle du calendrier.
+
+
 ## [5.6.5] - 2026-10-13
 
 ### Sauvegarde & Intégration API Hooks EG Backup

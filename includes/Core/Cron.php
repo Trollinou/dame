@@ -54,31 +54,16 @@ class Cron {
 		$options  = get_option( 'dame_options', array() );
 		$time_str = ! empty( $options['backup_time'] ) ? $options['backup_time'] : '01:00';
 
-		$backup_timestamp = $this->get_timestamp_from_local_time( $time_str );
-
-		// Check if scheduled time has changed.
-		$scheduled_backup = wp_next_scheduled( 'dame_daily_backup_event' );
-		if ( $scheduled_backup && (int) $scheduled_backup !== (int) $backup_timestamp ) {
-			wp_clear_scheduled_hook( 'dame_daily_backup_event' );
-			$scheduled_backup = false;
-		}
-
-		if ( ! $scheduled_backup ) {
+		if ( ! wp_next_scheduled( 'dame_daily_backup_event' ) ) {
+			$backup_timestamp = $this->get_timestamp_from_local_time( $time_str );
 			wp_schedule_event( $backup_timestamp, 'daily', 'dame_daily_backup_event' );
 		}
 
 		// Birthday emails.
 		if ( ! empty( $options['birthday_emails_enabled'] ) ) {
-			$birthday_time      = ! empty( $options['birthday_time'] ) ? $options['birthday_time'] : '09:00';
-			$birthday_timestamp = $this->get_timestamp_from_local_time( $birthday_time );
-			$scheduled_birthday = wp_next_scheduled( 'dame_birthday_email_event' );
-
-			if ( $scheduled_birthday && (int) $scheduled_birthday !== (int) $birthday_timestamp ) {
-				wp_clear_scheduled_hook( 'dame_birthday_email_event' );
-				$scheduled_birthday = false;
-			}
-
-			if ( ! $scheduled_birthday ) {
+			if ( ! wp_next_scheduled( 'dame_birthday_email_event' ) ) {
+				$birthday_time      = ! empty( $options['birthday_time'] ) ? $options['birthday_time'] : '09:00';
+				$birthday_timestamp = $this->get_timestamp_from_local_time( $birthday_time );
 				wp_schedule_event( $birthday_timestamp, 'daily', 'dame_birthday_email_event' );
 			}
 		} else {
@@ -86,11 +71,9 @@ class Cron {
 		}
 
 		// FFE Sync.
-		$ffe_sync_time      = '12:00';
-		$ffe_sync_timestamp = $this->get_timestamp_from_local_time( $ffe_sync_time );
-		$scheduled_ffe_sync = wp_next_scheduled( 'dame_ffe_sync_event' );
-
-		if ( ! $scheduled_ffe_sync ) {
+		if ( ! wp_next_scheduled( 'dame_ffe_sync_event' ) ) {
+			$ffe_sync_time      = '12:00';
+			$ffe_sync_timestamp = $this->get_timestamp_from_local_time( $ffe_sync_time );
 			wp_schedule_event( $ffe_sync_timestamp, 'daily', 'dame_ffe_sync_event' );
 		}
 	}

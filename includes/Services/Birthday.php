@@ -169,6 +169,7 @@ class Birthday {
 			$ids = get_posts( $args );
 			if ( is_array( $ids ) ) {
 				$ids = array_unique( $ids );
+				_prime_post_caches( $ids, false, true );
 			} else {
 				$ids = array();
 			}

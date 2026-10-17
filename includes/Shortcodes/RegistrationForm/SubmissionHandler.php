@@ -324,5 +324,6 @@ class SubmissionHandler {
 		$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
+		wp_cache_delete( (int) $post_id, 'post_meta' );
 	}
 }
