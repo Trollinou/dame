@@ -33,7 +33,7 @@
     "watch": "sass --watch src/scss/:assets/css/"
   },
   "devDependencies": {
-    "@types/node": "^26.6.3",
+    "@types/node": "^26.6.5",
     "@wordpress/eslint-plugin": "^25.9.0",
     "@wordpress/interactivity": "^6.56.0",
     "adm-zip": "^0.6.1",
@@ -41,7 +41,7 @@
     "eslint": "^9.39.5",
     "minimatch": "^10.2.6",
     "rtlcss": "^4.3.0",
-    "sass": "^1.105.1",
+    "sass": "^1.105.2",
     "terser": "^5.51.2",
     "typescript": "^6.0.3"
   },
