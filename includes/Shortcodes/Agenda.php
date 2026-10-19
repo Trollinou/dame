@@ -38,11 +38,6 @@ class Agenda {
 		$atts = shortcode_atts( array(), (array) $atts, 'dame_agenda' );
 		wp_enqueue_style( 'dame-public-agenda' );
 
-		// Load Interactivity API Script Module (WordPress 6.5+ / 7.x).
-		if ( function_exists( 'wp_enqueue_script_module' ) ) {
-			wp_enqueue_script_module( 'dame/agenda' );
-		}
-
 		wp_enqueue_script( 'dame-public-agenda' );
 
 		// Get WordPress's start_of_week option.
@@ -103,28 +98,9 @@ class Agenda {
 			)
 		);
 
-		$interactivity_context = array(
-			'currentYear'        => (int) gmdate( 'Y' ),
-			'currentMonth'       => (int) gmdate( 'n' ) - 1,
-			'monthTitle'         => '',
-			'startOfWeek'        => $start_of_week,
-			'searchTerm'         => '',
-			'selectedCategories' => array(),
-			'isFilterOpen'       => false,
-			'isLoading'          => false,
-			'activeEvent'        => null,
-			'isModalOpen'        => false,
-			'ajaxUrl'            => admin_url( 'admin-ajax.php' ),
-			'nonce'              => wp_create_nonce( 'dame_agenda_nonce' ),
-		);
-
-		$context_attr = function_exists( 'wp_interactivity_data_wp_context' )
-			? wp_interactivity_data_wp_context( $interactivity_context )
-			: 'data-wp-context=\'' . wp_json_encode( $interactivity_context ) . '\'';
-
 		ob_start();
 		?>
-		<div id="dame-agenda-wrapper" data-wp-interactive="dame/agenda" <?php echo $context_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> data-wp-watch="callbacks.onInit">
+		<div id="dame-agenda-wrapper">
 			<div class="dame-agenda-header">
 				<div class="dame-agenda-primary-controls">
 					<div class="dame-agenda-month-display">
@@ -139,12 +115,12 @@ class Agenda {
 						</div>
 					</div>
 					<div class="dame-agenda-nav-buttons">
-						<button id="dame-agenda-prev-month" class="button" data-wp-on--click="actions.prevMonth">&lt;</button>
-						<button id="dame-agenda-today" class="button" data-wp-on--click="actions.today">
+						<button id="dame-agenda-prev-month" class="button">&lt;</button>
+						<button id="dame-agenda-today" class="button">
 							<span class="dame-desktop-text"><?php esc_html_e( 'Aujourd\'hui', 'dame' ); ?></span>
 							<span class="dame-mobile-text"><?php esc_html_e( 'Auj.', 'dame' ); ?></span>
 						</button>
-						<button id="dame-agenda-next-month" class="button" data-wp-on--click="actions.nextMonth">&gt;</button>
+						<button id="dame-agenda-next-month" class="button">&gt;</button>
 					</div>
 				</div>
 

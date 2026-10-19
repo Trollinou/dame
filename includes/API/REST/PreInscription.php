@@ -134,7 +134,7 @@ class PreInscription {
 		// 1. Token validation (anonymous success download).
 		if ( ! empty( $token ) ) {
 			$saved_token = get_post_meta( $post_id, '_dame_download_token', true );
-			if ( $token === $saved_token ) {
+			if ( is_string( $saved_token ) && ! empty( $saved_token ) && hash_equals( $saved_token, (string) $token ) ) {
 				return true;
 			}
 		}
@@ -635,6 +635,14 @@ class PreInscription {
 		$adherent_id        = isset( $params['adherent_id'] ) ? (int) $params['adherent_id'] : 0;
 		$pre_inscription_id = isset( $params['pre_inscription_id'] ) ? (int) $params['pre_inscription_id'] : 0;
 
+		// Idempotency lock: avoid duplicate submissions within 15 seconds.
+		$lock_key        = 'dame_pre_lock_' . md5( strtolower( (string) ( $sanitized_data['dame_first_name'] ?? '' ) . (string) ( $sanitized_data['dame_last_name'] ?? '' ) . ( $sanitized_data['dame_birth_date'] ?? '' ) . ( $sanitized_data['dame_email'] ?? '' ) ) );
+		$cached_response = get_transient( $lock_key );
+		if ( false !== $cached_response && is_array( $cached_response ) ) {
+			return rest_ensure_response( $cached_response );
+		}
+		set_transient( $lock_key, '1', 15 );
+
 		// Create or Update Pre-inscription Post.
 		$birth_name          = $sanitized_data['dame_birth_name'] ?? '';
 		$last_name           = $sanitized_data['dame_last_name'] ?? '';
@@ -801,6 +809,7 @@ class PreInscription {
 		$query = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES " . implode( ', ', $meta_insert_placeholders );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		$wpdb->query( $wpdb->prepare( $query, $meta_insert_values ) );
+		wp_cache_delete( (int) $post_id, 'post_meta' );
 
 		// Process electronic signature if provided and health questionnaire is negative.
 		$signature_image = isset( $params['signature_image'] ) ? (string) $params['signature_image'] : '';
@@ -881,19 +890,21 @@ class PreInscription {
 				$last_name
 			);
 
-		return rest_ensure_response(
-			array(
-				'success'              => true,
-				'updated'              => $is_update,
-				'message'              => $message,
-				'post_id'              => $post_id,
-				'download_token'       => $download_token,
-				'health_questionnaire' => $sanitized_data['dame_health_questionnaire'] ?? '',
-				'is_minor'             => $is_minor,
-				'payment_url'          => $payment_url,
-				'sender_email'         => $sender_email,
-			)
+		$response_data = array(
+			'success'              => true,
+			'updated'              => $is_update,
+			'message'              => $message,
+			'post_id'              => $post_id,
+			'download_token'       => $download_token,
+			'health_questionnaire' => $sanitized_data['dame_health_questionnaire'] ?? '',
+			'is_minor'             => $is_minor,
+			'payment_url'          => $payment_url,
+			'sender_email'         => $sender_email,
 		);
+
+		set_transient( $lock_key, $response_data, 15 );
+
+		return rest_ensure_response( $response_data );
 	}
 
 	/**

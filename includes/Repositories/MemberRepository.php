@@ -118,7 +118,7 @@ class MemberRepository {
 			wp_cache_delete( 'ffe_' . md5( strtolower( trim( $ffe_id ) ) ), 'dame_members' );
 		}
 
-		$terms = wp_get_post_terms( $post_id, 'dame_season', array( 'fields' => 'ids' ) );
+		$terms = wp_get_post_terms( $post_id, 'dame_saison_adhesion', array( 'fields' => 'ids' ) );
 		if ( ! is_wp_error( $terms ) && is_array( $terms ) ) {
 			foreach ( $terms as $term_id ) {
 				wp_cache_delete( 'count_season_' . (int) $term_id, 'dame_members' );

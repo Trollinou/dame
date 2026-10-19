@@ -227,14 +227,18 @@ class Manager {
 				$last  = (string) get_post_meta( $post_id, '_dame_last_name', true );
 				return trim( $first . ' ' . $last );
 
+			case 'license_number':
 			case 'ffe_licence':
-				return (string) get_post_meta( $post_id, '_dame_ffe_licence', true );
+				$licence = (string) get_post_meta( $post_id, '_dame_license_number', true );
+				return ! empty( $licence ) ? $licence : (string) get_post_meta( $post_id, '_dame_ffe_licence', true );
 
 			case 'category':
 				return (string) get_post_meta( $post_id, '_dame_category', true );
 
+			case 'elo_standard':
 			case 'rating_elo':
-				return (string) get_post_meta( $post_id, '_dame_rating_elo', true );
+				$elo = (string) get_post_meta( $post_id, '_dame_elo_standard', true );
+				return ! empty( $elo ) ? $elo : (string) get_post_meta( $post_id, '_dame_rating_elo', true );
 
 			default:
 				return (string) get_post_meta( $post_id, '_' . $key, true );
