@@ -3,6 +3,11 @@
 ## [Unreleased]
 
 ### Mailing & Ciblage des Destinataires
+- **Purge de la File d'Envoi sur le Rapport de Message (`DAME\Admin\Pages\MessageReport`)** :
+  - Ajout d'un bouton d'action sécurisé (avec dialogue de confirmation) affiché lorsqu'il reste des messages non expédiés, permettant de purger les e-mails en attente (`sent_at IS NULL`).
+  - Déprogrammation automatique des réessais et lots planifiés résiduels dans WP-Cron (`dame_cron_send_batch`).
+  - Préservation intégrale des e-mails déjà expédiés et de l'historique d'ouverture.
+  - Mise à jour du statut du message (`sent` si envoi partiel, ou `draft` si aucun envoi) et des compteurs de lots pour débloquer tout blocage dans l'interface de mailing.
 - **Résolution géographique des contacts (`DAME\Admin\Pages\Mailing\RecipientResolver`)** :
   - Correction d'une régression critique où la sélection combinée d'un type de contact (ex: "Club d'échecs") et de régions envoyait le message à l'ensemble des contacts du type sans filtre géographique.
   - Dérivation automatique des départements associés aux régions ciblées côté serveur via `Data_Provider::get_departments_by_region()`.
