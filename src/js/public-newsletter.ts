@@ -178,17 +178,25 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			if (spinner) {
 				spinner.style.display = 'inline-block';
 			}
-			if (submitText && typeof dameNewsletterData !== 'undefined') {
+			let newsletterData =
+				typeof dame_newsletter_data !== 'undefined'
+					? dame_newsletter_data
+					: undefined;
+			if (!newsletterData && typeof dameNewsletterData !== 'undefined') {
+				newsletterData = dameNewsletterData;
+			}
+
+			if (submitText && typeof newsletterData !== 'undefined') {
 				submitText.textContent =
-					dameNewsletterData?.i18n?.submitting ||
+					newsletterData?.i18n?.submitting ||
 					'Inscription en cours...';
 			}
 
 			const formData = new FormData(form);
 			const ajaxUrl =
-				typeof dameNewsletterData !== 'undefined' &&
-				dameNewsletterData?.ajaxUrl
-					? dameNewsletterData.ajaxUrl
+				typeof newsletterData !== 'undefined' &&
+				newsletterData?.ajaxUrl
+					? newsletterData.ajaxUrl
 					: '/wp-admin/admin-ajax.php';
 
 			fetch(ajaxUrl, {

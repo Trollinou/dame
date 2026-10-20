@@ -115,12 +115,18 @@ class Assets {
 		// 1. Command Palette : réservée aux écrans du plugin si l'API wp-commands est présente.
 		if ( wp_script_is( 'wp-commands', 'registered' ) ) {
 			wp_enqueue_script( 'dame-admin-command-palette' );
+			$commands_payload = array(
+				'adminUrl' => admin_url(),
+			);
+			wp_localize_script(
+				'dame-admin-command-palette',
+				'dame_admin_commands',
+				$commands_payload
+			);
 			wp_localize_script(
 				'dame-admin-command-palette',
 				'dameAdminCommands',
-				array(
-					'adminUrl' => admin_url(),
-				)
+				$commands_payload
 			);
 		}
 
@@ -167,13 +173,19 @@ class Assets {
 		// Modale et actions d'attestation : liste, vue et édition de fiche adhérent.
 		if ( $is_adherent_cpt || 'dame-hidden_page_dame-view-adherent' === $screen->id ) {
 			wp_enqueue_script( 'dame-admin-attestation' );
+			$attestation_payload = array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'dame_attestation_action' ),
+			);
+			wp_localize_script(
+				'dame-admin-attestation',
+				'dame_attestation_data',
+				$attestation_payload
+			);
 			wp_localize_script(
 				'dame-admin-attestation',
 				'dameAttestationData',
-				array(
-					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-					'nonce'   => wp_create_nonce( 'dame_attestation_action' ),
-				)
+				$attestation_payload
 			);
 		}
 	}

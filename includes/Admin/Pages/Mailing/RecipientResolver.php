@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DAME\Admin\Pages\Mailing;
 
 use DAME\Core\Utils;
+use DAME\Services\Data_Provider;
 
 /**
  * Resolves, filters, deduplicates and registers message recipients.
@@ -121,70 +122,78 @@ class RecipientResolver {
 			$meta['depts']         = $depts;
 			$meta['regions']       = $regions;
 
-			$has_types = ! empty( $contact_types );
-			$has_depts = ! empty( $depts );
+			$depts   = array_values( array_filter( $depts, fn( string $d ): bool => '' !== trim( $d ) ) );
+			$regions = array_values( array_filter( $regions, fn( string $r ): bool => '' !== trim( $r ) ) );
 
-			if ( $has_types || $has_depts ) {
+			$has_types   = ! empty( $contact_types );
+			$has_depts   = ! empty( $depts );
+			$has_regions = ! empty( $regions );
+			$has_geo     = $has_depts || $has_regions;
+
+			if ( $has_types || $has_geo ) {
 				$contact_criteria_selected = true;
-				if ( $has_types && $has_depts ) {
-					$contact_ids = get_posts(
+
+				$query_args = array(
+					'post_type'      => 'dame_contact',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+				);
+
+				if ( $has_types ) {
+					$query_args['tax_query'] = array(
 						array(
-							'post_type'      => 'dame_contact',
-							'posts_per_page' => -1,
-							'fields'         => 'ids',
-							'tax_query'      => array(
-								array(
-									'taxonomy' => 'dame_contact_type',
-									'field'    => 'term_id',
-									'terms'    => $contact_types,
-								),
-							),
-							'meta_query'     => array(
-								array(
-									'key'     => '_dame_contact_department',
-									'value'   => $depts,
-									'compare' => 'IN',
-								),
-							),
-						)
-					);
-				} elseif ( $has_types ) {
-					$contact_ids = get_posts(
-						array(
-							'post_type'      => 'dame_contact',
-							'posts_per_page' => -1,
-							'fields'         => 'ids',
-							'tax_query'      => array(
-								array(
-									'taxonomy' => 'dame_contact_type',
-									'field'    => 'term_id',
-									'terms'    => $contact_types,
-								),
-							),
-						)
-					);
-				} elseif ( $has_depts ) {
-					$contact_ids = get_posts(
-						array(
-							'post_type'      => 'dame_contact',
-							'posts_per_page' => -1,
-							'fields'         => 'ids',
-							'meta_query'     => array(
-								array(
-									'key'     => '_dame_contact_department',
-									'value'   => $depts,
-									'compare' => 'IN',
-								),
-							),
-						)
+							'taxonomy' => 'dame_contact_type',
+							'field'    => 'term_id',
+							'terms'    => $contact_types,
+						),
 					);
 				}
+
+				if ( $has_geo ) {
+					$all_target_depts = $depts;
+					if ( $has_regions ) {
+						foreach ( $regions as $region_code ) {
+							$all_target_depts = array_merge( $all_target_depts, Data_Provider::get_departments_by_region( $region_code ) );
+						}
+						$all_target_depts = array_values( array_unique( $all_target_depts ) );
+					}
+
+					$geo_clauses = array();
+					if ( ! empty( $all_target_depts ) ) {
+						$geo_clauses[] = array(
+							'key'     => '_dame_contact_department',
+							'value'   => $all_target_depts,
+							'compare' => 'IN',
+						);
+					}
+					if ( ! empty( $regions ) ) {
+						$geo_clauses[] = array(
+							'key'     => '_dame_contact_region',
+							'value'   => $regions,
+							'compare' => 'IN',
+						);
+					}
+
+					if ( count( $geo_clauses ) > 1 ) {
+						$query_args['meta_query'] = array(
+							'relation' => 'OR',
+							$geo_clauses[0],
+							$geo_clauses[1],
+						);
+					} elseif ( 1 === count( $geo_clauses ) ) {
+						$query_args['meta_query'] = array(
+							$geo_clauses[0],
+						);
+					}
+				}
+
+				$contact_ids = get_posts( $query_args );
 			}
 		}
 
 		return array(
-			'adherent_ids'               => array_map( 'intval', $adherent_ids ),
-			'contact_ids'                => array_map( 'intval', $contact_ids ),
+			'adherent_ids'               => array_values( array_unique( array_map( 'intval', $adherent_ids ) ) ),
+			'contact_ids'                => array_values( array_unique( array_map( 'intval', $contact_ids ) ) ),
 			'adherent_criteria_selected' => $adherent_criteria_selected,
 			'contact_criteria_selected'  => $contact_criteria_selected,
 			'meta'                       => $meta,

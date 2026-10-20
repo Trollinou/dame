@@ -95,18 +95,24 @@ class Newsletter {
 
 		// Enqueue the public newsletter script and localized data for modal display and AJAX.
 		wp_enqueue_script( 'dame-public-newsletter' );
+		$newsletter_payload = array(
+			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+			'nonce'   => wp_create_nonce( 'dame_newsletter_nonce' ),
+			'i18n'    => array(
+				'submitting'    => __( 'Inscription en cours...', 'dame' ),
+				'submitSuccess' => __( 'Inscription réussie !', 'dame' ),
+				'genericError'  => __( 'Une erreur est survenue. Veuillez réessayer.', 'dame' ),
+			),
+		);
+		wp_localize_script(
+			'dame-public-newsletter',
+			'dame_newsletter_data',
+			$newsletter_payload
+		);
 		wp_localize_script(
 			'dame-public-newsletter',
 			'dameNewsletterData',
-			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'dame_newsletter_nonce' ),
-				'i18n'    => array(
-					'submitting'    => __( 'Inscription en cours...', 'dame' ),
-					'submitSuccess' => __( 'Inscription réussie !', 'dame' ),
-					'genericError'  => __( 'Une erreur est survenue. Veuillez réessayer.', 'dame' ),
-				),
-			)
+			$newsletter_payload
 		);
 
 		ob_start();

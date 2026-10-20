@@ -19,6 +19,9 @@
   - Scripts classiques Admin/Front dans `src/js/*.ts` compilés dans `assets/js/*.js`.
   - **Script Modules (Interactivity API)** dans `src/js/modules/*.ts` compilés en ESM dans `assets/js/modules/*.js` avec `@wordpress/interactivity` externalisé.
   - **Contrat PWA** : Types dans `src/types/` rigoureusement isolés sans aucune dépendance WordPress ni DOM.
+  - **Nommage Strict des Variables Globales JS (snake_case obligatoire)** :
+    - Toute variable globale exposée à JavaScript via `wp_localize_script()` ou `wp_add_inline_script()` doit impérativement respecter la convention `snake_case` préfixée par `dame_` (ex: `dame_mailing_data`, `dame_admin_data`, `dame_attestation_data`, `dame_newsletter_data`, `dame_admin_commands`). L'introduction de noms en `camelCase` (ex: `dameMailingData`, `dameAdminCommands`, `dameAttestationData`) est formellement interdite.
+    - Dans `src/types/globals.d.ts`, interdiction de déclarer des interfaces ou variables globales fantômes (non injectées par PHP ou non consommées par les scripts réels). Toute déclaration globale doit avoir une correspondance 1-pour-1 effective.
 
 ## 3. Architecture & Structure
 - **PSR-4 / Namespaces** : Sous-dossiers dans `includes/` en PascalCase (`includes/Admin/`, `includes/CPT/`, `includes/DTO/`, `includes/Blocks/`). Fichiers/classes en PascalCase. Déclarer `"autoload": { "psr-4": { "DAME\\": "includes/" } }` dans `composer.json`.
@@ -57,6 +60,9 @@
 - **Sécurité WP** : Nonce + Capability checks (`manage_options`, `edit_posts`) systématiques. Input sanitization + Output escaping (`esc_html`, `esc_attr`). Ne jamais utiliser de mots-clés réservés du langage (ex: `$default`) comme noms d'arguments (utiliser `$default_value`).
 - **Post Meta** : Attribut `name` HTML sans `_`, mais enregistrement meta BDD avec `_` (ex: `_dame_identity_name`). Déclaration systématique avec `register_post_meta()` et `show_in_rest => true` pour Block Bindings & REST API.
 - **Shortcodes** : Capturer `wp_editor()` via `ob_start()` / `ob_get_clean()`.
+- **Mailing, Résolution de Destinataires & Filtres Géographiques** :
+  - **Étanchéité Serveur** : Le résolveur de destinataires (`RecipientResolver`) ne doit jamais présumer que le client JavaScript a converti les critères de plus haut niveau (ex: sélection d'une région) en critères fins (ex: départements cochés).
+  - **Prise en compte des Régions** : Toute sélection de régions (`dame_contact_regions`) doit être résolue côté serveur en dérivant les départements via `Data_Provider::get_departments_by_region()` et en combinant dans une `meta_query` (relation `OR`) la région (`_dame_contact_region`) et les départements ciblés (`_dame_contact_department`), afin d'empêcher toute fuite vers des contacts non concernés.
 
 ## 5. QA, Tests & Conformité
 - **Analyse Statique & Standards** : Config PHPStan Level 7 (`phpstan.neon`), PHPCS (détection des écarts de standards) et PHPCBF (correction automatique du style) + ESLint WP (`eslint.config.js`).

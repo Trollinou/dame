@@ -59,6 +59,14 @@ class Mailing {
 
 		wp_localize_script(
 			'dame-admin-mailing',
+			'dame_mailing_data',
+			array(
+				'regionMapping' => $region_mapping,
+			)
+		);
+
+		wp_localize_script(
+			'dame-admin-mailing',
 			'dameMailingData',
 			array(
 				'regionMapping' => $region_mapping,

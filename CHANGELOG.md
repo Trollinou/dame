@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+### Mailing & Ciblage des Destinataires
+- **Résolution géographique des contacts (`DAME\Admin\Pages\Mailing\RecipientResolver`)** :
+  - Correction d'une régression critique où la sélection combinée d'un type de contact (ex: "Club d'échecs") et de régions envoyait le message à l'ensemble des contacts du type sans filtre géographique.
+  - Dérivation automatique des départements associés aux régions ciblées côté serveur via `Data_Provider::get_departments_by_region()`.
+  - Construction d'une `meta_query` étanche combinant `_dame_contact_region` et `_dame_contact_department` (relation `OR`) associée à la `tax_query` du type de contact (`dame_contact_type`).
+  - Déduplication stricte des identifiants adhérents et contacts (`array_unique`).
+- **Synchronisation et Normalisation snake_case des Données Globales JS (`DAME\Admin\Pages\Mailing`, `DAME\Admin\Assets`, `DAME\Shortcodes\Newsletter`, `src/js/*`, `src/types/globals.d.ts`)** :
+  - Correction du nom de variable `dame_mailing_data` pour la synchronisation automatique des régions vers les départements dans le formulaire de mailing.
+  - Harmonisation complète de l'ensemble des dictionnaires JS injectés en `snake_case` historique (`dame_mailing_data`, `dame_admin_commands`, `dame_attestation_data`, `dame_newsletter_data`) avec alias rétrocompatibles.
+  - Nettoyage et suppression des déclarations et interfaces fantômes dans `src/types/globals.d.ts`.
+  - Prise en compte de la région dans le pré-cochage lors du basculement en mode manuel dans `admin-mailing.ts`.
+- **Tests Unitaires & Règles Projet (`tests/Unit/DataProviderTest.php`, `AGENTS.md`)** :
+  - Ajout du test unitaire `DataProviderTest::test_get_departments_by_region` validant le mapping des régions et départements.
+  - Enregistrement des directives strictes de nommage `snake_case` et d'étanchéité géographique serveur dans `AGENTS.md`.
+
 ### Sécurité & Contrôle d'Accès PWA / REST API
 - **Sécurisation des Collections REST Sensibles (`DAME\API\REST\Post_Meta`)** :
   - Interception via `rest_pre_dispatch` sur les routes de collections CPT non publiques (`/wp/v2/adherents`, `/wp/v2/contacts`, `/wp/v2/messages`, `/wp/v2/pre-inscriptions`, `/wp/v2/benevolat-reponses`, `/wp/v2/ical-feeds`) pour exiger une authentification et un rôle autorisé (`administrator`, `editor`, `staff`, `entraineur`).

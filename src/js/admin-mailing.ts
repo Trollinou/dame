@@ -134,11 +134,19 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			const checkbox = target as HTMLInputElement;
 			const regionCode = checkbox.value;
 			const isChecked = checkbox.checked;
-			const depts =
+			let mappingSource: Record<string, string[]> = {};
+			if (
 				typeof dame_mailing_data !== 'undefined' &&
 				dame_mailing_data.regionMapping
-					? dame_mailing_data.regionMapping[regionCode] || []
-					: [];
+			) {
+				mappingSource = dame_mailing_data.regionMapping;
+			} else if (
+				typeof dameMailingData !== 'undefined' &&
+				dameMailingData?.regionMapping
+			) {
+				mappingSource = dameMailingData.regionMapping;
+			}
+			const depts = mappingSource[regionCode] || [];
 
 			const deptList = document.querySelector<HTMLElement>(
 				'.dame-dept-criteria-list .dame-checkbox-list'
@@ -261,6 +269,11 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		const selectedTypes = Array.from(typesSelect.selectedOptions).map(
 			(opt: HTMLOptionElement) => opt.value
 		);
+		const selectedRegions = Array.from(
+			document.querySelectorAll<HTMLInputElement>(
+				'.dame-region-criteria-list input[type="checkbox"]:checked'
+			)
+		).map((cb: HTMLInputElement) => cb.value);
 		const selectedDepts = Array.from(
 			document.querySelectorAll<HTMLInputElement>(
 				'.dame-dept-criteria-list input[type="checkbox"]:checked'
@@ -268,7 +281,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		).map((cb: HTMLInputElement) => cb.value);
 
 		const hasTypes = selectedTypes.length > 0;
+		const hasRegions = selectedRegions.length > 0;
 		const hasDepts = selectedDepts.length > 0;
+		const hasGeo = hasRegions || hasDepts;
 
 		const contactCheckboxes =
 			contactManualWrap.querySelectorAll<HTMLInputElement>(
@@ -277,25 +292,28 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 		contactCheckboxes.forEach((cb: HTMLInputElement): void => {
 			const dept = cb.getAttribute('data-dept') || '';
+			const region = cb.getAttribute('data-region') || '';
 			const typesAttr = cb.getAttribute('data-types') || '';
 			const types = typesAttr.split(',');
 
 			const matchType = types.some((t: string) =>
 				selectedTypes.includes(t)
 			);
-			const matchDept = selectedDepts.includes(dept);
+			const matchGeo =
+				(hasDepts && selectedDepts.includes(dept)) ||
+				(hasRegions && selectedRegions.includes(region));
 
 			let shouldCheck = false;
 
-			if (hasTypes && hasDepts) {
-				// Intersection du Type et des départements sélectionnés
-				shouldCheck = matchType && matchDept;
+			if (hasTypes && hasGeo) {
+				// Intersection du Type et des critères géographiques sélectionnés
+				shouldCheck = matchType && matchGeo;
 			} else if (hasTypes) {
 				// Seulement par type
 				shouldCheck = matchType;
-			} else if (hasDepts) {
-				// Seulement par département
-				shouldCheck = matchDept;
+			} else if (hasGeo) {
+				// Seulement par géographie
+				shouldCheck = matchGeo;
 			}
 
 			if (shouldCheck) {

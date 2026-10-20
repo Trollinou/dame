@@ -14,15 +14,16 @@ interface AttestationResponseData {
 	emails: string[];
 }
 
-interface DameAttestationGlobal {
-	ajaxUrl: string;
-	nonce: string;
-}
-
-declare const dameAttestationData: DameAttestationGlobal;
-
 document.addEventListener('DOMContentLoaded', (): void => {
-	if (typeof dameAttestationData === 'undefined') {
+	let attestationData =
+		typeof dame_attestation_data !== 'undefined'
+			? dame_attestation_data
+			: undefined;
+	if (!attestationData && typeof dameAttestationData !== 'undefined') {
+		attestationData = dameAttestationData;
+	}
+
+	if (!attestationData) {
 		return;
 	}
 
@@ -219,7 +220,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		}
 
 		// Fetch pre-filled data
-		const fetchUrl = `${dameAttestationData.ajaxUrl}?action=dame_get_attestation_data&adherent_id=${currentAdherentId}&_wpnonce=${dameAttestationData.nonce}`;
+		const fetchUrl = `${attestationData.ajaxUrl}?action=dame_get_attestation_data&adherent_id=${currentAdherentId}&_wpnonce=${attestationData.nonce}`;
 		fetch(fetchUrl)
 			.then((res) => res.json())
 			.then((resp) => {
@@ -313,10 +314,10 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			payment_amount: amountInput.value,
 			payment_date: dateInput.value,
 			payment_method: methodSelect.value,
-			_wpnonce: dameAttestationData.nonce,
+			_wpnonce: attestationData.nonce,
 		});
 
-		window.location.href = `${dameAttestationData.ajaxUrl}?${params.toString()}`;
+		window.location.href = `${attestationData.ajaxUrl}?${params.toString()}`;
 	});
 
 	// Handle Send Email button
@@ -349,9 +350,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		formData.append('payment_amount', amountInput.value);
 		formData.append('payment_date', dateInput.value);
 		formData.append('payment_method', methodSelect.value);
-		formData.append('_wpnonce', dameAttestationData.nonce);
+		formData.append('_wpnonce', attestationData.nonce);
 
-		fetch(dameAttestationData.ajaxUrl, {
+		fetch(attestationData.ajaxUrl, {
 			method: 'POST',
 			body: formData,
 		})

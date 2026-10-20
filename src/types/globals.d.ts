@@ -2,16 +2,6 @@
  * Déclarations des variables globales injectées par WordPress et DAME.
  */
 
-export interface DameSettings {
-	ajaxUrl: string;
-	restUrl: string;
-	nonce: string;
-	apiNonce?: string;
-	pluginUrl: string;
-	version: string;
-	[key: string]: unknown;
-}
-
 export interface DameAdminData {
 	ajax_url: string;
 	nonce: string;
@@ -95,12 +85,6 @@ export interface DameAgendaAjax {
 	[key: string]: unknown;
 }
 
-export interface DameContactAjax {
-	ajax_url: string;
-	nonce: string;
-	[key: string]: unknown;
-}
-
 export interface DamePreInscriptionAjax {
 	ajax_url: string;
 	nonce: string;
@@ -120,11 +104,6 @@ export interface DameNewsletterData {
 
 declare global {
 	const ajaxurl: string;
-	const dameSettings: DameSettings | undefined;
-	const dameAdminData: DameAdminData | undefined;
-	const dameAgendaSettings: DameSettings | undefined;
-	const dame_settings: DameSettings | undefined;
-	const dame_vars: Record<string, unknown> | undefined;
 
 	const dame_adherent_actions_data: DameAdherentActionsData;
 	const dame_backup_adherent_data: DameBackupAdherentData;
@@ -137,10 +116,15 @@ declare global {
 	const dame_benevolat_data: DameBenevolatData;
 	const dame_admin_data: DameAdminData;
 	const dame_mailing_data: DameMailingData;
+	const dameMailingData: DameMailingData | undefined;
 	const dame_agenda_ajax: DameAgendaAjax;
-	const dame_contact_ajax: DameContactAjax;
 	const dame_pre_inscription_ajax: DamePreInscriptionAjax;
+	const dame_newsletter_data: DameNewsletterData | undefined;
 	const dameNewsletterData: DameNewsletterData | undefined;
+	const dame_attestation_data: { ajaxUrl: string; nonce: string } | undefined;
+	const dameAttestationData: { ajaxUrl: string; nonce: string } | undefined;
+	const dame_admin_commands: { adminUrl: string } | undefined;
+	const dameAdminCommands: { adminUrl: string } | undefined;
 
 	const jQuery: any;
 
@@ -149,12 +133,12 @@ declare global {
 		ajaxurl?: string;
 		prefillRep1?: () => void;
 		initBirthCityAutocomplete?: (id: string) => void;
-		dameSettings?: DameSettings;
-		dameAdminData?: DameAdminData;
-		dameAgendaSettings?: DameSettings;
-		dame_settings?: DameSettings;
-		dame_vars?: Record<string, unknown>;
+		dame_newsletter_data?: DameNewsletterData;
 		dameNewsletterData?: DameNewsletterData;
+		dame_attestation_data?: { ajaxUrl: string; nonce: string };
+		dameAttestationData?: { ajaxUrl: string; nonce: string };
+		dame_admin_commands?: { adminUrl: string };
+		dameAdminCommands?: { adminUrl: string };
 		dame_adherent_actions_data?: DameAdherentActionsData;
 		dame_backup_adherent_data?: DameBackupAdherentData;
 		dame_backup_agenda_data?: DameBackupAgendaData;
@@ -166,10 +150,9 @@ declare global {
 		dame_benevolat_data?: DameBenevolatData;
 		dame_admin_data?: DameAdminData;
 		dame_mailing_data?: DameMailingData;
+		dameMailingData?: DameMailingData;
 		dame_agenda_ajax?: DameAgendaAjax;
-		dame_contact_ajax?: DameContactAjax;
 		dame_pre_inscription_ajax?: DamePreInscriptionAjax;
-		dameAdminCommands?: { adminUrl: string };
 		wp?: {
 			apiFetch?: (options: { path?: string; url?: string; method?: string; data?: unknown; headers?: Record<string, string> }) => Promise<unknown>;
 			i18n?: {

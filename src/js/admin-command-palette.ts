@@ -24,7 +24,10 @@ function initDAMECommands(): void {
 
 	const register = wpObj.commands.registerCommand;
 	const getUrl = (path: string): string => {
-		const base = window.dameAdminCommands?.adminUrl || 'admin.php';
+		const base =
+			window.dame_admin_commands?.adminUrl ||
+			window.dameAdminCommands?.adminUrl ||
+			'admin.php';
 		return base.endsWith('/')
 			? `${base}${path}`
 			: `${base.replace(/[^/]+$/, '')}${path}`;
