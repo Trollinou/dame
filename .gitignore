@@ -15,8 +15,15 @@ scratch/
 /.phpunit.cache/
 .phpunit.result.cache
 *.log
-.vscode/
 .idea/
 .env*
 .antigravityrules
 .phpcs.cache
+# Ignorer tout le dossier .vscode par défaut (sécurité)
+.vscode/*
+
+# Mais versionner la configuration standardisée du projet
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
