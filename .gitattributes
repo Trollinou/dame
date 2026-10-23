@@ -23,6 +23,7 @@
 .gitignore text eol=lf
 .gitattributes text eol=lf
 .eslintrc.json text eol=lf
+.editorconfig text eol=lf
 .distignore text eol=lf
 
 # Fichiers de templates/dist et locks
