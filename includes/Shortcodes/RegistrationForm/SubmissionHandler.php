@@ -143,8 +143,8 @@ class SubmissionHandler {
 		}
 
 		// Email Notifications.
-		$options         = get_option( 'dame_options' );
-		$recipient_email = isset( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+		$options         = get_option( 'dame_options', array() );
+		$recipient_email = ! empty( $options['assoc_email'] ) && is_email( (string) $options['assoc_email'] ) ? (string) $options['assoc_email'] : (string) get_option( 'admin_email' );
 
 		$subject = 'Nouvelle préinscription de ' . $first_name . ' ' . $last_name;
 		$body    = "Une nouvelle demande de préinscription a été soumise.\n\nVoici les détails :\n";
@@ -155,14 +155,13 @@ class SubmissionHandler {
 				$body .= '- ' . $label . ': ' . $value . "\n";
 			}
 		}
-		$headers = array( 'From: ' . $recipient_email );
-		wp_mail( $recipient_email, $subject, $body, $headers );
+		wp_mail( $recipient_email, $subject, $body );
 
 		PreInscription_Mailer::send_adherent_confirmation( (int) $post_id, $sanitized_data );
 
 		// Return JSON response.
 		$payment_url  = isset( $options['payment_url'] ) ? $options['payment_url'] : '';
-		$sender_email = isset( $options['sender_email'] ) && ! empty( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+		$sender_email = $recipient_email;
 
 		$response_data = array(
 			'message'              => sprintf(

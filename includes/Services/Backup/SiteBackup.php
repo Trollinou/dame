@@ -357,8 +357,8 @@ class SiteBackup {
 		$attachments = apply_filters( 'dame_scheduled_backup_attachments', $attachments, $backup_dir );
 
 		// Send Email.
-		$options = get_option( 'dame_options' );
-		$to      = $options['sender_email'] ?? get_option( 'admin_email' );
+		$options = get_option( 'dame_options', array() );
+		$to      = ! empty( $options['assoc_email'] ) && is_email( (string) $options['assoc_email'] ) ? (string) $options['assoc_email'] : (string) get_option( 'admin_email' );
 		if ( $to ) {
 			/* translators: %s: Site title */
 			$subject = sprintf( __( 'Sauvegarde journalière pour %s', 'dame' ), get_bloginfo( 'name' ) );

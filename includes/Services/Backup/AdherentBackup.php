@@ -738,7 +738,15 @@ class AdherentBackup {
 		}
 		$dame_options = get_option( 'dame_options' );
 		if ( is_array( $dame_options ) ) {
-			unset( $dame_options['smtp_password'] );
+			unset(
+				$dame_options['smtp_password'],
+				$dame_options['smtp_host'],
+				$dame_options['smtp_port'],
+				$dame_options['smtp_encryption'],
+				$dame_options['smtp_username'],
+				$dame_options['smtp_batch_size'],
+				$dame_options['sender_email']
+			);
 		}
 		$data['options']['dame_options'] = $dame_options;
 

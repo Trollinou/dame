@@ -300,9 +300,12 @@ class Birthday {
 			)
 		);
 
-		$sent_list    = array();
-		$sender_email = $options['sender_email'] ?? get_option( 'admin_email' );
-		$headers      = array( 'Content-Type: text/html; charset=UTF-8', 'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>' );
+		$sent_list   = array();
+		$admin_email = ! empty( $options['assoc_email'] ) && is_email( (string) $options['assoc_email'] ) ? (string) $options['assoc_email'] : (string) get_option( 'admin_email' );
+		$headers     = array(
+			'Content-Type: text/html; charset=UTF-8',
+			'X-Queue-Batch: anniversaires-' . current_time( 'Y-m-d' ),
+		);
 
 		while ( $query->have_posts() ) {
 			$query->the_post();
@@ -349,7 +352,7 @@ class Birthday {
 
 		// Report to Admin.
 		if ( ! empty( $sent_list ) ) {
-			wp_mail( $sender_email, 'Rapport Anniversaires', "Joyeux anniversaire envoyé à :\n" . implode( "\n", $sent_list ), $headers );
+			wp_mail( $admin_email, 'Rapport Anniversaires', "Joyeux anniversaire envoyé à :\n" . implode( "\n", $sent_list ), $headers );
 		}
 	}
 }

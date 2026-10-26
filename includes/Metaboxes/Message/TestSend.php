@@ -156,21 +156,13 @@ class TestSend {
 		$subject = $post->post_title;
 		$content = apply_filters( 'the_content', $post->post_content );
 
-		// Inject tracking pixel for test? Maybe not needed for test, or yes to verify it works.
-		// Let's inject it to be sure.
 		$tracking_url = Tracker::get_pixel_url( $post_id, $email );
-		$pixel_img    = '<img src="' . esc_url( $tracking_url ) . '" alt="" width="1" height="1" style="display:none; border:0;" />';
-		$message_body = '<div style="margin: 1cm;">' . $content . $pixel_img . '</div>';
+		$message_body = Tracker::prepare_email_body( is_string( $content ) ? $content : (string) $post->post_content, $tracking_url );
 
-		$options      = get_option( 'dame_options' );
-		$sender_email = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
-		$headers      = array(
+		$headers = array(
 			'Content-Type: text/html; charset=UTF-8',
-			'From: ' . get_bloginfo( 'name' ) . ' <' . $sender_email . '>',
+			'X-Queue-Priority: 0',
 		);
-
-		// Force SMTP config via action just in case.
-		// (Mailer class handles this globally on phpmailer_init).
 
 		$sent = wp_mail( $email, '[TEST] ' . $subject, $message_body, $headers );
 

@@ -38,6 +38,7 @@ class FormRenderer {
 		$state_regions           = isset( $saved_state['dame_contact_regions'] ) ? array_map( 'sanitize_text_field', (array) $saved_state['dame_contact_regions'] ) : array();
 		$state_manual_recipients = isset( $saved_state['dame_manual_recipients'] ) ? array_map( 'absint', (array) $saved_state['dame_manual_recipients'] ) : array();
 		$state_manual_contacts   = isset( $saved_state['dame_manual_contacts'] ) ? array_map( 'absint', (array) $saved_state['dame_manual_contacts'] ) : array();
+		$state_priority          = isset( $saved_state['dame_sending_priority'] ) ? absint( $saved_state['dame_sending_priority'] ) : 0;
 		$state_had_attachment    = ! empty( $saved_state['_had_attachment'] );
 
 		// Data fetching.
@@ -133,6 +134,17 @@ class FormRenderer {
 							<div id="dame_message_warning" style="color: #d63638; display: none; margin-top: 5px;">
 								<?php esc_html_e( 'Ce message a déjà été envoyé. Veuillez le dupliquer pour faire un nouvel envoi.', 'dame' ); ?>
 							</div>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="dame_sending_priority"><?php esc_html_e( 'Priorité d\'envoi', 'dame' ); ?> <span class="description" style="color: #d63638;">*</span></label></th>
+						<td>
+							<select name="dame_sending_priority" id="dame_sending_priority" required>
+								<option value=""><?php esc_html_e( '— Sélectionner la priorité d\'envoi —', 'dame' ); ?></option>
+								<option value="10" <?php selected( $state_priority, 10 ); ?>><?php esc_html_e( 'Normale (Au fil de l\'eau)', 'dame' ); ?></option>
+								<option value="20" <?php selected( $state_priority, 20 ); ?>><?php esc_html_e( 'Nocturne / Basse (Plage 22h00 – 06h00)', 'dame' ); ?></option>
+							</select>
+							<p class="description"><?php esc_html_e( 'Obligatoire. La priorité nocturne reporte automatiquement l\'expédition des envois de masse à la fenêtre 22h00 – 06h00.', 'dame' ); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -338,7 +350,7 @@ class FormRenderer {
 				<p>
 				<?php
 				/* translators: %d is the number of scheduled messages. */
-				echo esc_html( sprintf( __( 'Planification réussie. %d messages sont en cours d\'envoi.', 'dame' ), (int) $count ) );
+				echo esc_html( sprintf( __( 'Envoi transmis avec succès. %d messages ont été pris en charge pour expédition.', 'dame' ), (int) $count ) );
 				?>
 				</p>
 			</div>
@@ -351,6 +363,7 @@ class FormRenderer {
 				'nonce'                => __( 'Vérification de sécurité échouée.', 'dame' ),
 				'permission'           => __( 'Permission refusée.', 'dame' ),
 				'invalid_message'      => __( 'Message invalide.', 'dame' ),
+				'no_priority'          => __( 'Veuillez obligatoirement sélectionner une priorité d\'envoi (Normale ou Nocturne).', 'dame' ),
 				/* translators: %s is the allowed file extensions. */
 				'upload_failed'        => sprintf( __( 'Erreur lors du téléchargement de la pièce jointe. Types autorisés : %s.', 'dame' ), $allowed_types ),
 				'no_criteria'          => __( 'Veuillez sélectionner au moins un critère (Saison, Groupe ou Zone).', 'dame' ),

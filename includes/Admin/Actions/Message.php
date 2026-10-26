@@ -23,11 +23,9 @@ class Message {
 		add_filter( 'post_row_actions', array( $this, 'add_duplicate_link' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'add_to_post_link' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'add_reset_link' ), 10, 2 );
-		add_filter( 'post_row_actions', array( $this, 'add_force_sent_link' ), 10, 2 );
 		add_action( 'admin_action_dame_duplicate', array( $this, 'handle_duplicate' ) );
 		add_action( 'admin_action_dame_to_post', array( $this, 'handle_to_post' ) );
 		add_action( 'admin_action_dame_reset_send', array( $this, 'handle_reset' ) );
-		add_action( 'admin_action_dame_force_sent', array( $this, 'handle_force_sent' ) );
 	}
 
 	/**
@@ -195,8 +193,6 @@ class Message {
 		// 1. Reset message metadata.
 		update_post_meta( $post_id, '_dame_message_status', 'publish' );
 		update_post_meta( $post_id, '_dame_message_recipients_count', 0 );
-		update_post_meta( $post_id, '_dame_scheduled_batches_processed', 0 );
-		update_post_meta( $post_id, '_dame_scheduled_batches_total', 0 );
 
 		// Clear selection criteria.
 		delete_post_meta( $post_id, '_dame_recipient_method' );
@@ -243,52 +239,6 @@ class Message {
 
 		// Redirect back with success message.
 		wp_safe_redirect( admin_url( 'edit.php?post_type=dame_message&reset_done=1' ) );
-		exit;
-	}
-
-	/**
-	 * Add "Forcer Envoyé" link.
-	 *
-	 * @param array<string, mixed> $actions Existing actions.
-	 * @param \WP_Post             $post Current post.
-	 * @return array<string, mixed> Modified actions.
-	 */
-	public function add_force_sent_link( $actions, $post ): array {
-		if ( 'dame_message' !== $post->post_type || ! current_user_can( 'edit_dame_messages' ) ) {
-			return $actions;
-		}
-
-		$status = get_post_meta( $post->ID, '_dame_message_status', true );
-		if ( 'sending' !== $status && 'scheduled' !== $status ) {
-			return $actions;
-		}
-
-		$url = wp_nonce_url(
-			admin_url( 'admin.php?action=dame_force_sent&post=' . $post->ID ),
-			'dame_force_sent_' . $post->ID
-		);
-
-		$actions['force_sent'] = sprintf(
-			'<a href="%s" class="dame-action-link-primary">%s</a>',
-			esc_url( $url ),
-			esc_html__( 'Terminer l\'envoi', 'dame' )
-		);
-
-		return $actions;
-	}
-
-	/**
-	 * Handle manual completion.
-	 */
-	public function handle_force_sent(): void {
-		$post    = $this->get_verified_post( 'dame_force_sent' );
-		$post_id = $post->ID;
-
-		$total = (int) get_post_meta( $post_id, '_dame_scheduled_batches_total', true );
-		update_post_meta( $post_id, '_dame_message_status', 'sent' );
-		update_post_meta( $post_id, '_dame_scheduled_batches_processed', $total );
-
-		wp_safe_redirect( admin_url( 'edit.php?post_type=dame_message' ) );
 		exit;
 	}
 

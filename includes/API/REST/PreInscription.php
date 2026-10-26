@@ -853,8 +853,8 @@ class PreInscription {
 		}
 
 		// Send Email Notification.
-		$options         = get_option( 'dame_options' );
-		$recipient_email = isset( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+		$options         = get_option( 'dame_options', array() );
+		$recipient_email = ! empty( $options['assoc_email'] ) && is_email( (string) $options['assoc_email'] ) ? (string) $options['assoc_email'] : (string) get_option( 'admin_email' );
 
 		$subject_prefix = $is_update ? 'Mise à jour de la préinscription de ' : 'Nouvelle préinscription de ';
 		$subject        = $subject_prefix . $first_name . ' ' . $last_name;
@@ -867,14 +867,13 @@ class PreInscription {
 				$body .= '- ' . $label . ': ' . $value . "\n";
 			}
 		}
-		$headers = array( 'From: ' . $recipient_email );
-		wp_mail( $recipient_email, $subject, $body, $headers );
+		wp_mail( $recipient_email, $subject, $body );
 
 		// Send Confirmation Email to Adherent and Legal Representatives with signed PDFs.
 		PreInscription_Mailer::send_adherent_confirmation( $post_id, $sanitized_data, $is_update );
 
 		$payment_url  = isset( $options['payment_url'] ) ? $options['payment_url'] : '';
-		$sender_email = isset( $options['sender_email'] ) && ! empty( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+		$sender_email = $recipient_email;
 
 		$message = $is_update
 			? sprintf(

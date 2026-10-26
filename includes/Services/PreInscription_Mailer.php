@@ -14,12 +14,12 @@ use DAME\Services\Document_Storage;
 
 /**
  * Class PreInscription_Mailer
- * Handles email confirmations and notifications for pre-inscriptions via BatchSender queue.
+ * Handles email confirmations and notifications for pre-inscriptions via wp_mail().
  */
 class PreInscription_Mailer {
 
 	/**
-	 * Queues a confirmation email to the adherent and legal representatives in the global BatchSender queue.
+	 * Sends a confirmation email to the adherent and legal representatives via wp_mail().
 	 *
 	 * @param int                  $post_id        Pre-inscription Post ID.
 	 * @param array<string, mixed> $sanitized_data Form data.
@@ -82,14 +82,19 @@ class PreInscription_Mailer {
 			}
 		}
 
-		// 4. Build email content using standard tags [NOM], [PRENOM], [CIVILITE].
+		// 4. Build email content.
 		$options     = get_option( 'dame_options', array() );
-		$sender_name = ! empty( $options['sender_name'] ) ? (string) $options['sender_name'] : get_bloginfo( 'name' );
+		$assoc_name  = ! empty( $options['assoc_name'] ) ? (string) $options['assoc_name'] : get_bloginfo( 'name' );
 		$payment_url = isset( $options['payment_url'] ) ? trim( (string) $options['payment_url'] ) : '';
 
+		$sexe       = isset( $sanitized_data['dame_sexe'] ) ? (string) $sanitized_data['dame_sexe'] : (string) get_post_meta( $post_id, '_dame_sexe', true );
+		$civilite   = 'Féminin' === $sexe ? 'Madame' : 'Monsieur';
+		$nom_fmt    = Utils::format_lastname( (string) $nom_raw );
+		$prenom_fmt = Utils::format_firstname( (string) $prenom_raw );
+
 		$subject = $is_update
-			? sprintf( '[%s] Mise à jour de votre préinscription — [PRENOM] [NOM]', $sender_name )
-			: sprintf( '[%s] Confirmation de votre demande de préinscription — [PRENOM] [NOM]', $sender_name );
+			? sprintf( '[%s] Mise à jour de votre préinscription — %s %s', $assoc_name, $prenom_fmt, $nom_fmt )
+			: sprintf( '[%s] Confirmation de votre demande de préinscription — %s %s', $assoc_name, $prenom_fmt, $nom_fmt );
 
 		$health_q = '';
 		if ( isset( $sanitized_data['dame_health_questionnaire'] ) ) {
@@ -108,11 +113,11 @@ class PreInscription_Mailer {
 		}
 
 		$body_lines   = array();
-		$body_lines[] = '<p>Bonjour [CIVILITE] [NOM],</p>';
+		$body_lines[] = '<p>Bonjour ' . esc_html( $civilite ) . ' ' . esc_html( $nom_fmt ) . ',</p>';
 		if ( $is_update ) {
-			$body_lines[] = '<p>Nous vous confirmons la bonne prise en compte de la mise à jour de la préinscription pour <strong>[PRENOM] [NOM]</strong>.</p>';
+			$body_lines[] = '<p>Nous vous confirmons la bonne prise en compte de la mise à jour de la préinscription pour <strong>' . esc_html( $prenom_fmt ) . ' ' . esc_html( $nom_fmt ) . '</strong>.</p>';
 		} else {
-			$body_lines[] = '<p>Nous avons bien reçu votre demande de préinscription pour <strong>[PRENOM] [NOM]</strong>.</p>';
+			$body_lines[] = '<p>Nous avons bien reçu votre demande de préinscription pour <strong>' . esc_html( $prenom_fmt ) . ' ' . esc_html( $nom_fmt ) . '</strong>.</p>';
 		}
 
 		if ( 'oui' === strtolower( $health_q ) ) {
@@ -131,62 +136,17 @@ class PreInscription_Mailer {
 			$body_lines[] = '<p>Vous trouverez en pièce jointe de cet e-mail la copie des documents complétés et signés électroniquement lors de votre démarche.</p>';
 		}
 
-		$body_lines[] = '<p>À très bientôt,<br>L\'équipe de ' . esc_html( $sender_name ) . '</p>';
+		$body_lines[] = '<p>À très bientôt,<br>L\'équipe de ' . esc_html( $assoc_name ) . '</p>';
 
 		$body_html = implode( "\n", $body_lines );
 
-		// 5. Create private dame_message post for queue processing.
-		$message_data = array(
-			'post_title'   => $subject,
-			'post_content' => $body_html,
-			'post_type'    => 'dame_message',
-			'post_status'  => 'private',
+		// 5. Envoi direct via wp_mail() avec gestion transparente de file par EG Mail.
+		$headers = array(
+			'Content-Type: text/html; charset=UTF-8',
+			'X-Queue-Priority: 10',
+			'X-Queue-Batch: pre-inscription-' . $post_id,
 		);
-		$message_id   = wp_insert_post( $message_data );
 
-		if ( is_wp_error( $message_id ) || ! ( $message_id > 0 ) ) {
-			return false;
-		}
-
-		update_post_meta( $message_id, '_dame_message_status', 'scheduled' );
-		update_post_meta( $message_id, '_dame_message_type', 'pre_inscription_confirmation' );
-		update_post_meta( $message_id, '_dame_message_recipients_count', count( $recipients ) );
-		update_post_meta( $message_id, '_dame_pre_inscription_id', $post_id );
-
-		if ( ! empty( $attachments ) ) {
-			update_post_meta( $message_id, '_dame_message_attachments', $attachments );
-		}
-
-		// 6. Insert into tracking / queue table.
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'dame_message_opens';
-		$label      = Utils::format_firstname( (string) $prenom_raw ) . ' ' . Utils::format_lastname( (string) $nom_raw );
-
-		foreach ( $recipients as $recipient_email ) {
-			$hash = md5( strtolower( trim( $recipient_email ) ) );
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->insert(
-				$table_name,
-				array(
-					'message_id'      => $message_id,
-					'recipient_id'    => $post_id,
-					'recipient_name'  => $label,
-					'recipient_email' => $recipient_email,
-					'email_hash'      => $hash,
-				),
-				array( '%d', '%d', '%s', '%s', '%s' )
-			);
-		}
-
-		// 7. Schedule immediate background queue processing if not scheduled.
-		if ( ! wp_next_scheduled( 'dame_cron_process_queue' ) ) {
-			wp_schedule_single_event( time(), 'dame_cron_process_queue' );
-		}
-
-		if ( function_exists( 'spawn_cron' ) ) {
-			spawn_cron();
-		}
-
-		return true;
+		return (bool) wp_mail( $recipients, $subject, $body_html, $headers, $attachments );
 	}
 }
