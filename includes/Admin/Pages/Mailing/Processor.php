@@ -10,6 +10,9 @@ declare(strict_types=1);
 namespace DAME\Admin\Pages\Mailing;
 
 use DAME\API\Tracker;
+use DateTimeImmutable;
+use DateTimeZone;
+use Exception;
 
 /**
  * Handles validation, recipient processing, attachment handling and queue dispatching for mailings.
@@ -58,6 +61,27 @@ class Processor {
 			$save_state_and_redirect( 'no_priority' );
 		}
 		$priority = (int) $raw_priority;
+
+		$raw_scheduled_at    = isset( $_POST['dame_scheduled_at'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['dame_scheduled_at'] ) ) ) : '';
+		$scheduled_local_str = '';
+		$scheduled_gmt_str   = '';
+
+		if ( '' !== $raw_scheduled_at ) {
+			$timezone = wp_timezone();
+			try {
+				$scheduled_dt = new DateTimeImmutable( $raw_scheduled_at, $timezone );
+			} catch ( Exception $e ) {
+				$scheduled_dt = null;
+			}
+
+			$now_dt = new DateTimeImmutable( 'now', $timezone );
+			if ( null === $scheduled_dt || $scheduled_dt <= $now_dt ) {
+				$save_state_and_redirect( 'invalid_scheduled_date' );
+			} else {
+				$scheduled_local_str = $scheduled_dt->format( 'Y-m-d H:i:s' );
+				$scheduled_gmt_str   = $scheduled_dt->setTimezone( new DateTimeZone( 'UTC' ) )->format( 'Y-m-d H:i:s' );
+			}
+		}
 
 		$adherent_method = isset( $_POST['dame_adherent_method'] ) ? sanitize_key( (string) $_POST['dame_adherent_method'] ) : 'group';
 		$contact_method  = isset( $_POST['dame_contact_method'] ) ? sanitize_key( (string) $_POST['dame_contact_method'] ) : 'group';
@@ -135,7 +159,11 @@ class Processor {
 			'X-Queue-Batch: dame-message-' . $message_id,
 		);
 
-		$sent_at_now      = current_time( 'mysql', true );
+		if ( '' !== $scheduled_local_str ) {
+			$headers[] = 'X-Queue-Scheduled-At: ' . $scheduled_local_str;
+		}
+
+		$sent_at_now      = '' !== $scheduled_gmt_str ? $scheduled_gmt_str : current_time( 'mysql', true );
 		$sent_count       = 0;
 		$sent_emails_data = array();
 

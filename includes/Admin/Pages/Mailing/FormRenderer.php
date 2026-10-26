@@ -39,7 +39,9 @@ class FormRenderer {
 		$state_manual_recipients = isset( $saved_state['dame_manual_recipients'] ) ? array_map( 'absint', (array) $saved_state['dame_manual_recipients'] ) : array();
 		$state_manual_contacts   = isset( $saved_state['dame_manual_contacts'] ) ? array_map( 'absint', (array) $saved_state['dame_manual_contacts'] ) : array();
 		$state_priority          = isset( $saved_state['dame_sending_priority'] ) ? absint( $saved_state['dame_sending_priority'] ) : 0;
+		$state_scheduled_at      = isset( $saved_state['dame_scheduled_at'] ) ? sanitize_text_field( (string) $saved_state['dame_scheduled_at'] ) : '';
 		$state_had_attachment    = ! empty( $saved_state['_had_attachment'] );
+		$min_scheduled_at        = (string) wp_date( 'Y-m-d\TH:i' );
 
 		// Data fetching.
 		$raw_seasons = get_terms(
@@ -145,6 +147,13 @@ class FormRenderer {
 								<option value="20" <?php selected( $state_priority, 20 ); ?>><?php esc_html_e( 'Nocturne / Basse (Plage 22h00 – 06h00)', 'dame' ); ?></option>
 							</select>
 							<p class="description"><?php esc_html_e( 'Obligatoire. La priorité nocturne reporte automatiquement l\'expédition des envois de masse à la fenêtre 22h00 – 06h00.', 'dame' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="dame_scheduled_at"><?php esc_html_e( 'Date et heure d\'envoi programmé (Optionnel)', 'dame' ); ?></label></th>
+						<td>
+							<input type="datetime-local" name="dame_scheduled_at" id="dame_scheduled_at" value="<?php echo esc_attr( $state_scheduled_at ); ?>" min="<?php echo esc_attr( $min_scheduled_at ); ?>" class="regular-text">
+							<p class="description"><?php esc_html_e( 'Laissez vide pour un envoi immédiat selon la priorité choisie. En cas de priorité Nocturne (20), la date programmée définit l\'échéance à partir de laquelle l\'envoi nocturne (22h00 – 06h00) débutera.', 'dame' ); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -362,8 +371,9 @@ class FormRenderer {
 			$error_message = match ( $error ) {
 				'nonce'                => __( 'Vérification de sécurité échouée.', 'dame' ),
 				'permission'           => __( 'Permission refusée.', 'dame' ),
-				'invalid_message'      => __( 'Message invalide.', 'dame' ),
-				'no_priority'          => __( 'Veuillez obligatoirement sélectionner une priorité d\'envoi (Normale ou Nocturne).', 'dame' ),
+				'invalid_message'        => __( 'Message invalide.', 'dame' ),
+				'no_priority'            => __( 'Veuillez obligatoirement sélectionner une priorité d\'envoi (Normale ou Nocturne).', 'dame' ),
+				'invalid_scheduled_date' => __( 'La date et l\'heure d\'envoi programmé doivent être valides et situées dans le futur.', 'dame' ),
 				/* translators: %s is the allowed file extensions. */
 				'upload_failed'        => sprintf( __( 'Erreur lors du téléchargement de la pièce jointe. Types autorisés : %s.', 'dame' ), $allowed_types ),
 				'no_criteria'          => __( 'Veuillez sélectionner au moins un critère (Saison, Groupe ou Zone).', 'dame' ),
