@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.7.0] - 2026-10-26
+
 ### Mailing & Ciblage des Destinataires
 - **Purge de la File d'Envoi sur le Rapport de Message (`DAME\Admin\Pages\MessageReport`)** :
   - Ajout d'un bouton d'action sécurisé (avec dialogue de confirmation) affiché lorsqu'il reste des messages non expédiés, permettant de purger les e-mails en attente (`sent_at IS NULL`).
