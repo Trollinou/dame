@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.7.1] - 2026-10-26
+
 ## [5.7.0] - 2026-10-26
 
 ### Mailing & Ciblage des Destinataires
