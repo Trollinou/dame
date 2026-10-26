@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace DAME\Admin\Pages\Mailing;
 
+use DateTime;
 use DAME\Core\Utils;
 use DAME\Services\Data_Provider;
 
@@ -362,12 +363,13 @@ class RecipientResolver {
 	}
 
 	/**
-	 * Pre-registers message opens tracking records.
+	 * Registers sent message tracking records and recipient postmeta.
 	 *
 	 * @param int                                                                               $message_id Message post ID.
 	 * @param array<string, array{id: int, names: array<string>, prio: int, raw_email: string}> $email_data Email recipient data.
+	 * @param string                                                                            $sent_at    Sent datetime string (Y-m-d H:i:s).
 	 */
-	public function register_tracking_records( int $message_id, array $email_data ): void {
+	public function register_tracking_records( int $message_id, array $email_data, string $sent_at ): void {
 		global $wpdb;
 		$table_tracking = $wpdb->prefix . 'dame_message_opens';
 		$values_sql     = array();
@@ -377,18 +379,26 @@ class RecipientResolver {
 			$hash         = md5( strtolower( trim( $email ) ) );
 			$label        = implode( ', ', array_unique( $info['names'] ) );
 			$values_sql[] = $wpdb->prepare(
-				'(%d, %d, %s, %s, %s)',
+				'(%d, %d, %s, %s, %s, %s)',
 				$message_id,
 				$info['id'],
 				$label,
 				$email,
-				$hash
+				$hash,
+				$sent_at
 			);
+
+			// Maintain postmeta receipt markers.
+			if ( $info['id'] > 0 ) {
+				add_post_meta( $info['id'], '_dame_message_received', (string) $message_id );
+				update_post_meta( $info['id'], "_dame_message_{$message_id}_sent_at", $sent_at );
+				wp_cache_delete( $info['id'], 'post_meta' );
+			}
 		}
 
 		if ( ! empty( $values_sql ) ) {
 			$emails_to_insert = array_column( $email_data, 'raw_email' );
-			// Only delete pending (unsent) records for these emails, preserving already sent or opened historical records.
+			// Delete any previous pending records for these emails.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->query(
 				$wpdb->prepare(
@@ -398,7 +408,81 @@ class RecipientResolver {
 			);
 
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
-			$wpdb->query( "INSERT INTO {$table_tracking} (message_id, recipient_id, recipient_name, recipient_email, email_hash) VALUES " . implode( ',', $values_sql ) );
+			$wpdb->query( "INSERT INTO {$table_tracking} (message_id, recipient_id, recipient_name, recipient_email, email_hash, sent_at) VALUES " . implode( ',', $values_sql ) );
 		}
+	}
+
+	/**
+	 * Personalizes subject and body tags [NOM], [PRENOM], [AGE], [CIVILITE] for a specific recipient.
+	 *
+	 * @param int    $rid     Recipient post ID.
+	 * @param string $email   Recipient email.
+	 * @param string $label   Recipient fallback label.
+	 * @param string $subject Original subject.
+	 * @param string $content Original HTML content.
+	 * @return array{subject: string, content: string}
+	 */
+	public function personalize_message( int $rid, string $email, string $label, string $subject, string $content ): array {
+		$nom    = '';
+		$prenom = '';
+		$sexe   = '';
+		$age    = '';
+
+		$type = get_post_type( $rid );
+		if ( 'adherent' === $type || 'dame_pre_inscription' === $type ) {
+			$adherent_email = get_post_meta( $rid, '_dame_email', true );
+			if ( strtolower( trim( (string) $adherent_email ) ) === strtolower( trim( $email ) ) ) {
+				$nom = (string) get_post_meta( $rid, '_dame_last_name', true );
+				if ( empty( $nom ) ) {
+					$nom = (string) get_post_meta( $rid, '_dame_birth_name', true );
+				}
+				$prenom = (string) get_post_meta( $rid, '_dame_first_name', true );
+				$sexe   = (string) get_post_meta( $rid, '_dame_sexe', true );
+				$birth  = (string) get_post_meta( $rid, '_dame_birth_date', true );
+				if ( ! empty( $birth ) ) {
+					try {
+						$age = (string) ( new DateTime( (string) $birth ) )->diff( new DateTime() )->y;
+					} catch ( \Exception $e ) {
+						$age = '';
+					}
+				}
+			} else {
+				for ( $i = 1; $i <= 2; $i++ ) {
+					$rep_email = get_post_meta( $rid, "_dame_legal_rep_{$i}_email", true );
+					if ( strtolower( trim( (string) $rep_email ) ) === strtolower( trim( $email ) ) ) {
+						$nom    = (string) get_post_meta( $rid, "_dame_legal_rep_{$i}_last_name", true );
+						$prenom = (string) get_post_meta( $rid, "_dame_legal_rep_{$i}_first_name", true );
+						break;
+					}
+				}
+			}
+		} elseif ( 'dame_contact' === $type ) {
+			$nom    = (string) get_post_meta( $rid, '_dame_contact_last_name', true );
+			$prenom = (string) get_post_meta( $rid, '_dame_contact_first_name', true );
+			$sexe   = (string) get_post_meta( $rid, '_dame_contact_sexe', true );
+		}
+
+		$civilite = 'Monsieur';
+		if ( 'Féminin' === $sexe ) {
+			$civilite = 'Madame';
+		}
+
+		if ( empty( $nom ) && empty( $prenom ) ) {
+			$search  = array( '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' );
+			$replace = array( $label, '', '', $civilite );
+		} else {
+			$search  = array( '[NOM]', '[PRENOM]', '[AGE]', '[CIVILITE]' );
+			$replace = array(
+				esc_html( Utils::format_lastname( (string) $nom ) ),
+				esc_html( Utils::format_firstname( (string) $prenom ) ),
+				esc_html( (string) $age ),
+				esc_html( $civilite ),
+			);
+		}
+
+		return array(
+			'subject' => str_replace( $search, $replace, $subject ),
+			'content' => str_replace( $search, $replace, $content ),
+		);
 	}
 }

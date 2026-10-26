@@ -27,35 +27,6 @@ class Emails {
 	 * Register settings.
 	 */
 	public function register(): void {
-		// Section SMTP.
-		add_settings_section(
-			'dame_mailing_section',
-			__( 'Configuration SMTP', 'dame' ),
-			'__return_empty_string',
-			'dame_mailing_section_group'
-		);
-
-		$fields = array(
-			'sender_email'    => __( 'Email de l\'expéditeur', 'dame' ),
-			'smtp_host'       => __( 'Serveur SMTP', 'dame' ),
-			'smtp_port'       => __( 'Port SMTP', 'dame' ),
-			'smtp_encryption' => __( 'Chiffrement', 'dame' ),
-			'smtp_username'   => __( 'Utilisateur SMTP', 'dame' ),
-			'smtp_password'   => __( 'Mot de passe SMTP', 'dame' ),
-			'smtp_batch_size' => __( 'Taille du lot (emails/minute)', 'dame' ),
-		);
-
-		foreach ( $fields as $key => $label ) {
-			add_settings_field(
-				'dame_' . $key,
-				$label,
-				array( $this, 'render_field' ),
-				'dame_mailing_section_group',
-				'dame_mailing_section',
-				array( 'key' => $key )
-			);
-		}
-
 		// Section Newsletter.
 		add_settings_section(
 			'dame_newsletter_section',
@@ -132,16 +103,6 @@ class Emails {
 		$options = get_option( 'dame_options' );
 		$value   = isset( $options[ $key ] ) ? $options[ $key ] : '';
 
-		if ( 'smtp_encryption' === $key ) {
-			$encryption = ! empty( $value ) ? $value : 'tls';
-			echo '<select name="dame_options[smtp_encryption]">';
-			echo '<option value="none" ' . selected( $encryption, 'none', false ) . '>Aucun</option>';
-			echo '<option value="ssl" ' . selected( $encryption, 'ssl', false ) . '>SSL</option>';
-			echo '<option value="tls" ' . selected( $encryption, 'tls', false ) . '>TLS</option>';
-			echo '</select>';
-			return;
-		}
-
 		if ( 'newsletter_contact_type' === $key ) {
 			$terms = get_terms(
 				array(
@@ -215,17 +176,6 @@ class Emails {
 			echo '<p class="description">' . esc_html__( 'Variables disponibles : {prenom}, {nom}, {saison}, {montant}, {mode_paiement}, {date_paiement}, {association}, {site_web}. Laissez vide pour utiliser le texte par défaut.', 'dame' ) . '</p>';
 			return;
 		}
-
-		$type = 'text';
-		if ( 'sender_email' === $key ) {
-			$type = 'email';
-		} elseif ( 'smtp_port' === $key || 'smtp_batch_size' === $key ) {
-			$type = 'number';
-		} elseif ( 'smtp_password' === $key ) {
-			$type = 'password';
-		}
-
-		echo '<input type="' . esc_attr( $type ) . '" name="dame_options[' . esc_attr( $key ) . ']" value="' . esc_attr( $value ) . '" class="regular-text" />';
 	}
 
 	/**
@@ -243,28 +193,6 @@ class Emails {
 	 * @return array<string, mixed> Sanitized options.
 	 */
 	public function sanitize( $input, $existing_options ) {
-		if ( isset( $input['sender_email'] ) ) {
-			$existing_options['sender_email'] = sanitize_email( $input['sender_email'] );
-		}
-		if ( isset( $input['smtp_host'] ) ) {
-			$existing_options['smtp_host'] = sanitize_text_field( $input['smtp_host'] );
-		}
-		if ( isset( $input['smtp_port'] ) ) {
-			$existing_options['smtp_port'] = absint( $input['smtp_port'] );
-		}
-		if ( isset( $input['smtp_encryption'] ) && in_array( $input['smtp_encryption'], array( 'none', 'ssl', 'tls' ), true ) ) {
-			$existing_options['smtp_encryption'] = $input['smtp_encryption'];
-		}
-		if ( isset( $input['smtp_username'] ) ) {
-			$existing_options['smtp_username'] = sanitize_text_field( $input['smtp_username'] );
-		}
-		if ( ! empty( $input['smtp_password'] ) ) {
-			$existing_options['smtp_password'] = trim( $input['smtp_password'] );
-		}
-		if ( isset( $input['smtp_batch_size'] ) ) {
-			$existing_options['smtp_batch_size'] = absint( $input['smtp_batch_size'] );
-		}
-
 		// Newsletter settings sanitation.
 		if ( isset( $input['newsletter_contact_type'] ) ) {
 			$existing_options['newsletter_contact_type'] = absint( $input['newsletter_contact_type'] );

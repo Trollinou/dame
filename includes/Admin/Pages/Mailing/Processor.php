@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace DAME\Admin\Pages\Mailing;
 
+use DAME\API\Tracker;
+
 /**
  * Handles validation, recipient processing, attachment handling and queue dispatching for mailings.
  */
@@ -50,6 +52,12 @@ class Processor {
 		if ( ! $message_id ) {
 			$save_state_and_redirect( 'invalid_message' );
 		}
+
+		$raw_priority = isset( $_POST['dame_sending_priority'] ) ? sanitize_text_field( wp_unslash( $_POST['dame_sending_priority'] ) ) : '';
+		if ( '' === $raw_priority || ! in_array( (int) $raw_priority, array( 10, 20 ), true ) ) {
+			$save_state_and_redirect( 'no_priority' );
+		}
+		$priority = (int) $raw_priority;
 
 		$adherent_method = isset( $_POST['dame_adherent_method'] ) ? sanitize_key( (string) $_POST['dame_adherent_method'] ) : 'group';
 		$contact_method  = isset( $_POST['dame_contact_method'] ) ? sanitize_key( (string) $_POST['dame_contact_method'] ) : 'group';
@@ -94,21 +102,71 @@ class Processor {
 			$save_state_and_redirect( 'all_already_received' );
 		}
 
-		// SQL tracking registration.
-		$resolver->register_tracking_records( $message_id, $email_data );
-
 		// Attachment handling.
 		$attachment_handler = new AttachmentHandler();
 		if ( ! $attachment_handler->handle_upload( $message_id ) ) {
 			$save_state_and_redirect( 'upload_failed' );
 		}
 
-		// Save Message Meta & Schedule Queue.
-		$old_count = (int) get_post_meta( $message_id, '_dame_message_recipients_count', true );
-		$new_total = $old_count + count( $recipient_emails );
+		// Prepare attachments list.
+		$attachments     = array();
+		$attachment_path = get_post_meta( $message_id, '_dame_message_attachment', true );
+		if ( ! empty( $attachment_path ) && is_string( $attachment_path ) ) {
+			$norm_att = wp_normalize_path( $attachment_path );
+			if ( file_exists( $norm_att ) ) {
+				$attachments[] = $norm_att;
+			} elseif ( file_exists( $attachment_path ) ) {
+				$attachments[] = $attachment_path;
+			}
+		}
 
-		update_post_meta( $message_id, '_dame_message_status', 'scheduled' );
-		update_post_meta( $message_id, '_dame_sent_date', current_time( 'mysql', true ) );
+		$message_post = get_post( $message_id );
+		if ( ! $message_post ) {
+			$save_state_and_redirect( 'invalid_message' );
+		}
+
+		$base_subject = $message_post->post_title;
+		$raw_content  = apply_filters( 'the_content', $message_post->post_content );
+		$base_content = is_string( $raw_content ) ? $raw_content : (string) $message_post->post_content;
+
+		$headers = array(
+			'Content-Type: text/html; charset=UTF-8',
+			'X-Queue-Priority: ' . $priority,
+			'X-Queue-Batch: dame-message-' . $message_id,
+		);
+
+		$sent_at_now      = current_time( 'mysql', true );
+		$sent_count       = 0;
+		$sent_emails_data = array();
+
+		// Dispatch via standard wp_mail() (transparently queued/handled by EG Mail).
+		foreach ( $email_data as $info ) {
+			$email = $info['raw_email'];
+			$label = implode( ', ', array_unique( $info['names'] ) );
+			$rid   = (int) $info['id'];
+
+			$personalized = $resolver->personalize_message( $rid, $email, $label, $base_subject, $base_content );
+			$tracking_url = Tracker::get_pixel_url( $message_id, $email );
+			$message_body = Tracker::prepare_email_body( $personalized['content'], $tracking_url );
+
+			$sent = wp_mail( $email, $personalized['subject'], $message_body, $headers, $attachments );
+			if ( $sent ) {
+				$sent_emails_data[ strtolower( $email ) ] = $info;
+				++$sent_count;
+			}
+		}
+
+		if ( ! empty( $sent_emails_data ) ) {
+			$resolver->register_tracking_records( $message_id, $sent_emails_data, $sent_at_now );
+		}
+
+		// Update Message Post Metadata.
+		$old_count = (int) get_post_meta( $message_id, '_dame_message_recipients_count', true );
+		$new_total = $old_count + $sent_count;
+
+		update_post_meta( $message_id, '_dame_message_status', 'sent' );
+		update_post_meta( $message_id, '_dame_sent_date', $sent_at_now );
+		update_post_meta( $message_id, '_dame_sending_priority', $priority );
 		update_post_meta( $message_id, '_dame_message_recipients_count', $new_total );
 		update_post_meta( $message_id, '_dame_adherent_method', $adherent_method );
 		update_post_meta( $message_id, '_dame_contact_method', $contact_method );
@@ -131,19 +189,11 @@ class Processor {
 			update_post_meta( $message_id, '_dame_manual_contacts', $meta['manual_contacts'] );
 		}
 
-		$total_batches = (int) ceil( count( $recipient_emails ) / 20 );
-		update_post_meta( $message_id, '_dame_scheduled_batches_total', $total_batches );
-		update_post_meta( $message_id, '_dame_scheduled_batches_processed', 0 );
-
-		if ( ! wp_next_scheduled( 'dame_cron_process_queue' ) ) {
-			wp_schedule_single_event( time(), 'dame_cron_process_queue' );
-		}
-
 		wp_safe_redirect(
 			add_query_arg(
 				array(
 					'success' => 1,
-					'count'   => count( $recipient_emails ),
+					'count'   => $sent_count,
 				),
 				$base_url
 			)

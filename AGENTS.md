@@ -55,7 +55,7 @@
   - **Unicité du gestionnaire** : Un formulaire ne doit avoir qu'un seul point d'entrée de soumission (ne jamais cumuler un écouteur JS classique et une directive `data-wp-on--submit`).
   - **Anti-rebond Client** : Vérifier un verrou synchrone (`if (ctx.isSubmitting) return;`), stopper la propagation (`event.stopPropagation()`) et désactiver immédiatement le bouton submit dans le DOM.
   - **Idempotence Serveur** : Poser un verrou transient court (10 à 15s) sur l'empreinte de la soumission pour garantir l'unicité du traitement et des e-mails en cas de requêtes concurrentes.
-- **Files d'attente & WP-Cron** : Respecter l'architecture asynchrone des services (ex: `BatchSender`). Ne pas forcer d'exécution synchrone en contournement sans avoir préalablement vérifié l'intégrité de l'insertion en base de données.
+- **Files d'attente d'envoi & EG Mail** : Déléguer la file d'attente FIFO et les quotas d'envoi d'emails à EG Mail via la fonction native `wp_mail()`. Piloter la priorité et les lots via les en-têtes standardisés `X-Queue-Priority` et `X-Queue-Batch`.
 - **HTML API** : Utiliser `WP_HTML_Tag_Processor` / `WP_HTML_Processor` pour toute manipulation ou injection dans le HTML (e-mails, tracking, wrappers) au lieu de regex.
 - **Sécurité WP** : Nonce + Capability checks (`manage_options`, `edit_posts`) systématiques. Input sanitization + Output escaping (`esc_html`, `esc_attr`). Ne jamais utiliser de mots-clés réservés du langage (ex: `$default`) comme noms d'arguments (utiliser `$default_value`).
 - **Post Meta** : Attribut `name` HTML sans `_`, mais enregistrement meta BDD avec `_` (ex: `_dame_identity_name`). Déclaration systématique avec `register_post_meta()` et `show_in_rest => true` pour Block Bindings & REST API.

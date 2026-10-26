@@ -190,8 +190,8 @@ class Contact {
 			}
 			set_transient( $lock_key, '1', 15 );
 
-			$options = get_option( 'dame_options' );
-			$to      = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
+			$options = get_option( 'dame_options', array() );
+			$to      = ! empty( $options['assoc_email'] ) && is_email( (string) $options['assoc_email'] ) ? (string) $options['assoc_email'] : (string) get_option( 'admin_email' );
 
 			$email_subject = 'Formulaire de contact - ' . $subject;
 

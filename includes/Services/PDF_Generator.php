@@ -1052,59 +1052,24 @@ class PDF_Generator {
 		// Convert plaintext template to clean paragraphs.
 		$body_html = wpautop( esc_html( $body ) );
 
-		// Create private dame_message post to route through the global BatchSender queue.
-		$message_id = wp_insert_post(
-			array(
-				'post_title'   => $subject,
-				'post_content' => $body_html,
-				'post_type'    => 'dame_message',
-				'post_status'  => 'private',
-			)
+		// Envoi direct via wp_mail() avec attachement PDF (interception transparente EG Mail).
+		$headers = array(
+			'Content-Type: text/html; charset=UTF-8',
+			'X-Queue-Priority: 10',
+			'X-Queue-Batch: attestation-paiement-' . $adherent_id,
 		);
 
-		if ( is_wp_error( $message_id ) || ! ( $message_id > 0 ) ) {
-			Document_Storage::delete_file( $stored_filename );
+		$sent = wp_mail( $recipients, $subject, $body_html, $headers, array( $absolute_path ) );
+
+		// Suppression du fichier temporaire après copie dans le spool EG Mail.
+		Document_Storage::delete_file( $stored_filename );
+
+		if ( ! $sent ) {
 			return array(
 				'success'    => false,
-				'message'    => __( 'Impossible de planifier l\'envoi du message dans la file d\'attente.', 'dame' ),
+				'message'    => __( 'Échec de la transmission du message via wp_mail().', 'dame' ),
 				'recipients' => $recipients,
 			);
-		}
-
-		update_post_meta( $message_id, '_dame_message_status', 'scheduled' );
-		update_post_meta( $message_id, '_dame_message_type', 'attestation_paiement' );
-		update_post_meta( $message_id, '_dame_message_recipients_count', count( $recipients ) );
-		update_post_meta( $message_id, '_dame_attestation_adherent_id', $adherent_id );
-		update_post_meta( $message_id, '_dame_message_attachments', array( $absolute_path ) );
-
-		// Insert recipients into global queue table dame_message_opens.
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'dame_message_opens';
-		$label      = Utils::format_firstname( $first_name ) . ' ' . Utils::format_lastname( $last_name );
-
-		foreach ( $recipients as $recipient_email ) {
-			$hash = md5( strtolower( trim( $recipient_email ) ) );
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->insert(
-				$table_name,
-				array(
-					'message_id'      => $message_id,
-					'recipient_id'    => $adherent_id,
-					'recipient_name'  => $label,
-					'recipient_email' => $recipient_email,
-					'email_hash'      => $hash,
-				),
-				array( '%d', '%d', '%s', '%s', '%s' )
-			);
-		}
-
-		// Schedule immediate queue processing (respects smtp_batch_size per minute).
-		if ( ! wp_next_scheduled( 'dame_cron_process_queue' ) ) {
-			wp_schedule_single_event( time(), 'dame_cron_process_queue' );
-		}
-
-		if ( function_exists( 'spawn_cron' ) ) {
-			spawn_cron();
 		}
 
 		return array(

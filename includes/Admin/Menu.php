@@ -28,7 +28,6 @@ class Menu {
 		add_action( 'admin_menu', array( $this, 'reorder_dame_submenu' ), 999 );
 		add_filter( 'parent_file', array( $this, 'highlight_parent_menu' ) );
 		add_filter( 'submenu_file', array( $this, 'highlight_submenu' ) );
-		( new MessageReport() )->init();
 		( new Backups() )->init();
 		( new Mailing() )->init();
 	}

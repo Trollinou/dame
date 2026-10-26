@@ -64,19 +64,10 @@ class Message {
 						} else {
 							echo esc_html( (string) get_the_modified_date( 'd/m/Y H:i', $post_id ) );
 						}
+					} elseif ( 'scheduled' === $status ) {
+						echo esc_html__( 'Planifié', 'dame' );
 					} else {
-						$processed = (int) get_post_meta( $post_id, '_dame_scheduled_batches_processed', true );
-						$total     = (int) get_post_meta( $post_id, '_dame_scheduled_batches_total', true );
-
-						if ( 'scheduled' === $status ) {
-							echo esc_html__( 'Planifié', 'dame' );
-						} else {
-							echo esc_html__( 'En cours', 'dame' );
-						}
-
-						if ( $total > 0 ) {
-							echo esc_html( sprintf( ' (%d/%d)', (int) $processed, (int) $total ) );
-						}
+						echo esc_html__( 'En cours', 'dame' );
 					}
 				} else {
 					echo '—';

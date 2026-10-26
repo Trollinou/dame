@@ -19,8 +19,6 @@ use DAME\CPT\Benevolat;
 use DAME\Core\Roles;
 use DAME\Core\Upgrader;
 use DAME\API\Tracker;
-use DAME\Services\Mailer;
-use DAME\Services\BatchSender;
 use DAME\Admin\Pages\Mailing;
 use DAME\Admin\Pages\ImportFFE;
 use DAME\Admin\Columns\Message as MessageColumns;
@@ -158,12 +156,6 @@ class Plugin {
 		);
 
 		// Initialize Services.
-		$mailer = new Mailer();
-		$mailer->init();
-
-		$batch_sender = new BatchSender();
-		$batch_sender->init();
-
 		$pdf_generator = new PDF_Generator();
 		$pdf_generator->init();
 

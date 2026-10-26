@@ -273,11 +273,9 @@ class Newsletter {
 		$subject = str_replace( array_keys( $replacements ), array_values( $replacements ), $subject );
 		$body    = str_replace( array_keys( $replacements ), array_values( $replacements ), $body );
 
-		$headers = array();
-		$sender  = isset( $options['sender_email'] ) && is_email( $options['sender_email'] ) ? $options['sender_email'] : get_option( 'admin_email' );
-		if ( $sender ) {
-			$headers[] = 'From: ' . $assoc_name . ' <' . $sender . '>';
-		}
+		$headers = array(
+			'Content-Type: text/html; charset=UTF-8',
+		);
 
 		return (bool) wp_mail( $email, $subject, $body, $headers );
 	}
