@@ -146,24 +146,16 @@ class Utils {
 			return __( 'Date de naissance invalide', 'dame' );
 		}
 
-		// Get the current season tag ID from options.
-		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
-		if ( ! $current_season_tag_id ) {
-			return __( 'Saison non définie', 'dame' );
-		}
-
-		$season_term = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
-		if ( is_wp_error( $season_term ) || ! $season_term ) {
+		$season_term = \DAME\Services\Season_Service::get_current_season_term();
+		if ( ! $season_term ) {
 			return __( 'Saison invalide', 'dame' );
 		}
 
-		// Season name is expected to be in "YYYY/YYYY" format, e.g., "2023/2024".
-		$season_name = $season_term->name;
-		$years       = explode( '/', $season_name );
-		if ( count( $years ) !== 2 || ! is_numeric( $years[1] ) ) {
+		$years = \DAME\Services\Season_Service::parse_season_years( $season_term );
+		if ( ! $years ) {
 			return __( 'Format de saison invalide', 'dame' );
 		}
-		$season_end_year = (int) $years[1];
+		$season_end_year = $years['end'];
 
 		// Calculate age at the beginning of the season's end year.
 		$reference_date = new DateTime( $season_end_year . '-01-01', new \DateTimeZone( 'UTC' ) );
@@ -252,24 +244,16 @@ class Utils {
 	 * @return array{start: string, end: string}|null An array containing the start and end dates of the birth range, or null.
 	 */
 	public static function get_birth_date_range_for_category( $category_key ) {
-		// Get the current season tag ID from options.
-		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
-		if ( ! $current_season_tag_id ) {
+		$season_term = \DAME\Services\Season_Service::get_current_season_term();
+		if ( ! $season_term ) {
 			return null;
 		}
 
-		$season_term = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
-		if ( is_wp_error( $season_term ) || ! $season_term ) {
+		$years = \DAME\Services\Season_Service::parse_season_years( $season_term );
+		if ( ! $years ) {
 			return null;
 		}
-
-		// Season name is expected to be in "YYYY/YYYY" format, e.g., "2023/2024".
-		$season_name = $season_term->name;
-		$years       = explode( '/', $season_name );
-		if ( count( $years ) !== 2 || ! is_numeric( $years[1] ) ) {
-			return null;
-		}
-		$season_end_year = (int) $years[1];
+		$season_end_year = $years['end'];
 		$reference_date  = new DateTime( $season_end_year . '-01-01', new \DateTimeZone( 'UTC' ) );
 
 		$age_map = array(

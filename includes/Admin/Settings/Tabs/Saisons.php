@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace DAME\Admin\Settings\Tabs;
 
+use DAME\Services\Season_Service;
+
 /**
  * Class Saisons
  */
@@ -95,26 +97,7 @@ class Saisons {
 	 * @return string
 	 */
 	private function get_next_season_name() {
-		$current_season_tag_id = get_option( 'dame_current_season_tag_id' );
-
-		if ( $current_season_tag_id ) {
-			$current_season_term = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
-			if ( $current_season_term && ! is_wp_error( $current_season_term ) ) {
-				if ( preg_match( '/(\d{4})\/(\d{4})/', $current_season_term->name, $matches ) ) {
-					$end_year               = (int) $matches[2];
-					$next_season_start_year = $end_year;
-					$next_season_end_year   = $next_season_start_year + 1;
-					return sprintf( 'Saison %d/%d', $next_season_start_year, $next_season_end_year );
-				}
-			}
-		}
-
-		$current_month     = (int) wp_date( 'n' );
-		$current_year      = (int) wp_date( 'Y' );
-		$season_start_year = ( $current_month >= 9 ) ? $current_year + 1 : $current_year;
-		$season_end_year   = $season_start_year + 1;
-
-		return sprintf( 'Saison %d/%d', $season_start_year, $season_end_year );
+		return Season_Service::get_next_season_name();
 	}
 
 	/**

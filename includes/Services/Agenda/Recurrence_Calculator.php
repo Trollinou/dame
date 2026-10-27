@@ -11,6 +11,7 @@ namespace DAME\Services\Agenda;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use DAME\Services\Season_Service;
 
 /**
  * Class Recurrence_Calculator
@@ -28,12 +29,7 @@ class Recurrence_Calculator {
 	 * @return DateTimeImmutable The season deadline.
 	 */
 	public static function get_season_deadline( DateTimeImmutable $start_date ): DateTimeImmutable {
-		$year  = (int) $start_date->format( 'Y' );
-		$month = (int) $start_date->format( 'n' );
-
-		$end_year = ( $month >= 9 ) ? ( $year + 1 ) : $year;
-
-		return $start_date->setDate( $end_year, 8, 31 )->setTime( 23, 59, 59 );
+		return Season_Service::get_sports_season_deadline( $start_date );
 	}
 
 	/**
