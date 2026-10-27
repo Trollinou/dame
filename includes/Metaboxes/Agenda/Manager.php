@@ -131,6 +131,14 @@ class Manager {
 			'side',
 			'high'
 		);
+		add_meta_box(
+			'dame_agenda_ticketing_metabox',
+			__( 'Inscrits Billetterie & HelloAsso', 'dame' ),
+			array( $this, 'render_ticketing' ),
+			'dame_agenda',
+			'normal',
+			'default'
+		);
 	}
 
 	/**
@@ -170,12 +178,22 @@ class Manager {
 	}
 
 	/**
+	 * Renders the ticketing & HelloAsso inscriptions metabox.
+	 *
+	 * @param WP_Post $post The post object.
+	 */
+	public function render_ticketing( WP_Post $post ): void {
+		( new TicketingMetabox() )->render( $post );
+	}
+
+	/**
 	 * Save meta box content for Agenda CPT.
 	 *
 	 * @param int $post_id Post ID.
 	 */
 	public function save( int $post_id ): void {
 		( new SaveHandler() )->save( $post_id );
+		( new TicketingMetabox() )->save( $post_id );
 	}
 
 	/**

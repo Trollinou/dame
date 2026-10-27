@@ -87,8 +87,40 @@ class Actions {
 	public function render( $post, $metabox ): void {
 		$matched_id = $metabox['args']['matched_id'];
 		wp_nonce_field( 'dame_pre_inscription_process_action', 'dame_pre_inscription_action_nonce' );
+
+		// HelloAsso Payment check.
+		global $wpdb;
+		$ha_table = $wpdb->prefix . 'dame_ha_items';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$ha_payment = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT amount_cents, payment_method, order_date, tier_name FROM %i WHERE matched_pre_inscription_id = %d AND status = 'Processed' ORDER BY id DESC LIMIT 1",
+				$ha_table,
+				$post->ID
+			),
+			ARRAY_A
+		);
 		?>
 		<div class="dame-actions-wrapper">
+			<?php if ( ! empty( $ha_payment ) ) : ?>
+				<div style="background: #edfaef; border-left: 4px solid #46b450; padding: 10px; margin-bottom: 15px; border-radius: 3px;">
+					<strong style="color: #2e7d32;">💳 <?php esc_html_e( 'Paiement HelloAsso Reçu !', 'dame' ); ?></strong><br>
+					<span style="font-size: 13px;">
+						<?php
+						printf(
+							/* translators: 1: montant en euros, 2: date */
+							esc_html__( '%1$s € le %2$s', 'dame' ),
+							esc_html( number_format( ( (int) $ha_payment['amount_cents'] ) / 100, 2, ',', ' ' ) ),
+							esc_html( (string) $ha_payment['order_date'] )
+						);
+						?>
+						<?php if ( ! empty( $ha_payment['tier_name'] ) ) : ?>
+							<br><em>(<?php echo esc_html( (string) $ha_payment['tier_name'] ); ?>)</em>
+						<?php endif; ?>
+					</span>
+				</div>
+			<?php endif; ?>
+
 			<?php if ( $matched_id ) : ?>
 				<input type="hidden" name="dame_matched_adherent_id" value="<?php echo esc_attr( (string) $matched_id ); ?>" />
 				<p><strong><span class="dashicons dashicons-yes-alt" style="color: green;"></span> <?php esc_html_e( 'Adhérent existant trouvé !', 'dame' ); ?></strong></p>
@@ -182,6 +214,34 @@ class Actions {
 
 					if ( isset( $adherent_meta['_dame_signature_date'] ) && $season_suffix ) {
 						$adherent_meta[ '_dame_signature_date' . $season_suffix ] = $adherent_meta['_dame_signature_date'];
+					}
+
+					// Transfer matched HelloAsso payment if found.
+					global $wpdb;
+					$ha_table = $wpdb->prefix . 'dame_ha_items';
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+					$ha_payment = $wpdb->get_row(
+						$wpdb->prepare(
+							"SELECT amount_cents, payment_method, order_date FROM %i WHERE matched_pre_inscription_id = %d AND status = 'Processed' ORDER BY id DESC LIMIT 1",
+							$ha_table,
+							$post_id
+						),
+						ARRAY_A
+					);
+					if ( is_array( $ha_payment ) && ! empty( $ha_payment['amount_cents'] ) ) {
+						$p_amount = (float) ( (int) $ha_payment['amount_cents'] / 100 );
+						$p_date   = ! empty( $ha_payment['order_date'] ) ? substr( (string) $ha_payment['order_date'], 0, 10 ) : wp_date( 'Y-m-d' );
+						$p_method = ! empty( $ha_payment['payment_method'] ) ? (string) $ha_payment['payment_method'] : 'HelloAsso';
+
+						$adherent_meta['_dame_payment_amount'] = $p_amount;
+						$adherent_meta['_dame_payment_date']   = $p_date;
+						$adherent_meta['_dame_payment_method'] = $p_method;
+
+						if ( $season_suffix ) {
+							$adherent_meta[ '_dame_payment_amount' . $season_suffix ] = $p_amount;
+							$adherent_meta[ '_dame_payment_date' . $season_suffix ]   = $p_date;
+							$adherent_meta[ '_dame_payment_method' . $season_suffix ] = $p_method;
+						}
 					}
 
 					// Recalculate department and region based on postal code.
