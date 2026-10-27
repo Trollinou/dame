@@ -68,3 +68,35 @@ if ( ! function_exists( 'wp_mkdir_p' ) ) {
 	}
 }
 
+// Global WordPress Options & REST mocks for unit tests.
+global $dame_test_options;
+$dame_test_options = array();
+
+if ( ! function_exists( 'get_option' ) ) {
+	function get_option( string $option, mixed $default_value = false ): mixed {
+		global $dame_test_options;
+		return $dame_test_options[ $option ] ?? $default_value;
+	}
+}
+
+if ( ! function_exists( 'update_option' ) ) {
+	function update_option( string $option, mixed $value, mixed $autoload = null ): bool {
+		global $dame_test_options;
+		$dame_test_options[ $option ] = $value;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'rest_url' ) ) {
+	function rest_url( string $path = '' ): string {
+		return 'https://example.com/wp-json/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'wp_generate_password' ) ) {
+	function wp_generate_password( int $length = 12, bool $special_chars = true, bool $extra_special_chars = false ): string {
+		return substr( bin2hex( random_bytes( (int) ceil( $length / 2 ) ) ), 0, $length );
+	}
+}
+
+
