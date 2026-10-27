@@ -48,7 +48,7 @@ flowchart TD
 
 ---
 
-## 2. Sécurité, Rôles & Authentification
+## 2. Sécurité, Rôles & Authentification (Simple JWT Login)
 
 ### Rôles Autorisés
 L'accès aux endpoints `/dame/v1/ticketing/*` est restreint aux utilisateurs disposant de la capabilité `manage_dame_ticketing` ou `edit_posts` :
@@ -57,23 +57,30 @@ L'accès aux endpoints `/dame/v1/ticketing/*` est restreint aux utilisateurs dis
 - `staff`
 - `entraineur`
 
-### Modes d'Authentification Pris en Charge
+### Intégration Native avec **Simple JWT Login**
+Le site et la PWA utilisant l'extension **Simple JWT Login**, le flux d'authentification s'intègre parfaitement et de façon transparente avec le noyau WordPress :
 
-| Méthode | Cas d'usage PWA | En-têtes HTTP Requis |
-| :--- | :--- | :--- |
-| **Session Cookie + Nonce** | PWA connectée au même domaine WordPress | `X-WP-Nonce: <wp_rest_nonce>` + Cookie de session |
-| **Application Passwords (Natif WP)** | PWA découplée ou installée sur smartphone | `Authorization: Basic base64(user:app_password)` |
-| **JWT Bearer Token** | PWA utilisant un plugin JWT (ex: `jwt-auth`) | `Authorization: Bearer <jwt_token>` |
+1. **Obtention du JWT** : La PWA s'authentifie sur la route Simple JWT Login (ex: `POST /wp-json/simple-jwt-login/v1/auth`) avec les identifiants de l'arbitre ou de l'entraîneur et récupère le `jwt`.
+2. **Propagation du Token** : Chaque requête envoyée à `/dame/v1/ticketing/*` doit simplement inclure l'en-tête standard :
+   ```http
+   Authorization: Bearer <votre_jwt_token>
+   ```
+3. **Résolution Automatique du Current User** : Simple JWT Login intercepte le filtre natif WordPress `determine_current_user`, valide la signature/expiration du token, et initialise l'utilisateur WordPress connecté (`wp_set_current_user`).
+4. **Vérification des Droits DAME** : Le contrôleur `Ticketing_REST` vérifie automatiquement `current_user_can('manage_dame_ticketing') || current_user_can('edit_posts')`. Tout arbitre, entraîneur, staff ou administrateur authentifié par son JWT est immédiatement autorisé.
+
+> [!TIP]
+> **Format des En-têtes HTTP Requis pour la PWA** :
+> ```http
+> Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+> Accept: application/json
+> Content-Type: application/json
+> ```
 
 > [!IMPORTANT]
-> En cas d'erreur d'autorisation, l'API renvoie un code HTTP `403 Forbidden` :
-> ```json
-> {
->   "code": "rest_forbidden",
->   "message": "Désolé, vous n’avez pas l’autorisation de faire cela.",
->   "data": { "status": 403 }
-> }
-> ```
+> En cas de token expiré ou de droits insuffisants :
+> - Token absent / invalide : `401 Unauthorized` ou `403 Forbidden` (`{"code": "jwt_auth_invalid_token"}` ou `{"code": "rest_forbidden"}`).
+> - Rôle non autorisé (ex: simple abonné sans droit de billetterie) : `403 Forbidden` (`{"code": "rest_forbidden", "message": "Désolé, vous n’avez pas l’autorisation de faire cela."}`).
+> La PWA peut alors automatiquement rediriger l'utilisateur vers son écran de connexion.
 
 ---
 
@@ -358,9 +365,9 @@ Le joueur est **automatiquement marqué comme pointé présent** et le service e
 
 ---
 
-## 6. Service API Prêt à l'Emploi (TypeScript)
+## 6. Service API Prêt à l'Emploi (TypeScript avec Simple JWT Login)
 
-Voici une implémentation propre du client API pour la PWA, compatible avec `fetch` natif :
+Voici une implémentation propre et modulaire du client API pour la PWA, branchée directement sur votre token Simple JWT Login :
 
 ```typescript
 import type {
@@ -371,11 +378,29 @@ import type {
 
 export class TicketingApiService {
   private baseUrl: string;
-  private getHeaders: () => Record<string, string>;
+  private getJwtToken: () => string | null;
 
-  constructor(config: { baseUrl: string; getAuthHeader: () => Record<string, string> }) {
+  /**
+   * @param config.baseUrl URL de base WordPress (ex: 'https://monclub.fr/wp-json')
+   * @param config.getJwtToken Fonction retournant le JWT actif issu de Simple JWT Login
+   */
+  constructor(config: { baseUrl: string; getJwtToken: () => string | null }) {
     this.baseUrl = config.baseUrl.replace(/\/$/, '');
-    this.getHeaders = config.getAuthHeader;
+    this.getJwtToken = config.getJwtToken;
+  }
+
+  /**
+   * Génère les en-têtes avec le Bearer token Simple JWT Login
+   */
+  private buildHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Accept': 'application/json',
+    };
+    const token = this.getJwtToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
   }
 
   /**
@@ -384,11 +409,12 @@ export class TicketingApiService {
   async getCampaigns(): Promise<TicketingCampaignDTO[]> {
     const res = await fetch(`${this.baseUrl}/dame/v1/ticketing/campaigns`, {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        ...this.getHeaders(),
-      },
+      headers: this.buildHeaders(),
     });
+
+    if (res.status === 401 || res.status === 403) {
+      throw new Error('AUTH_EXPIRED');
+    }
 
     if (!res.ok) {
       throw new Error(`Erreur récupération campagnes (${res.status})`);
@@ -415,11 +441,12 @@ export class TicketingApiService {
     const qs = query.toString() ? `?${query.toString()}` : '';
     const res = await fetch(`${this.baseUrl}/dame/v1/ticketing/campaigns/${campaignId}/items${qs}`, {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        ...this.getHeaders(),
-      },
+      headers: this.buildHeaders(),
     });
+
+    if (res.status === 401 || res.status === 403) {
+      throw new Error('AUTH_EXPIRED');
+    }
 
     if (!res.ok) {
       throw new Error(`Erreur récupération inscrits (${res.status})`);
@@ -438,11 +465,14 @@ export class TicketingApiService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...this.getHeaders(),
+        ...this.buildHeaders(),
       },
       body,
     });
+
+    if (res.status === 401 || res.status === 403) {
+      throw new Error('AUTH_EXPIRED');
+    }
 
     if (!res.ok) {
       throw new Error(`Erreur pointage billet #${itemId} (${res.status})`);
@@ -462,11 +492,14 @@ export class TicketingApiService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...this.getHeaders(),
+        ...this.buildHeaders(),
       },
       body: JSON.stringify(data),
     });
+
+    if (res.status === 401 || res.status === 403) {
+      throw new Error('AUTH_EXPIRED');
+    }
 
     if (!res.ok) {
       throw new Error(`Erreur inscription sur place (${res.status})`);
@@ -475,6 +508,12 @@ export class TicketingApiService {
     return res.json();
   }
 }
+
+// Exemple d'initialisation dans la PWA :
+// const ticketingApi = new TicketingApiService({
+//   baseUrl: 'https://monclub.fr/wp-json',
+//   getJwtToken: () => localStorage.getItem('simple_jwt_token'),
+// });
 ```
 
 ---
@@ -488,3 +527,4 @@ Dans les gymnases ou salles polyvalentes à faible connectivité :
    - Si `navigator.onLine === false`, marquer le joueur localement comme pointé et empiler l'appel `{ itemId, checkedIn: true, timestamp }` dans `IndexedDB`.
    - Écouter l'événement `window.addEventListener('online', ...)` pour dépiler les requêtes de pointage dès que la connexion 4G/Wi-Fi est rétablie.
 4. **Export Sharly Chess de Secours** : Rappeler aux arbitres que l'export Sharly Chess reste toujours téléchargeable directement depuis l'administration WordPress (`DAME > Billetterie`) ou intégrable dans la PWA pour générer le fichier `boule_inscrits.csv` d'un simple clic.
+
