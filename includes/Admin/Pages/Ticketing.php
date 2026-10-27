@@ -274,7 +274,84 @@ class Ticketing {
 	 * Renders campaigns list table.
 	 */
 	private function render_campaigns_list(): void {
-		$campaigns = $this->repository->get_all_campaigns();
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$current_type = isset( $_GET['form_type'] ) ? sanitize_text_field( wp_unslash( $_GET['form_type'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$current_orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'start_date';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$current_order = isset( $_GET['order'] ) && 'asc' === strtolower( sanitize_key( wp_unslash( $_GET['order'] ) ) ) ? 'asc' : 'desc';
+
+		$filters = array(
+			'form_type' => $current_type,
+			'orderby'   => $current_orderby,
+			'order'     => $current_order,
+		);
+
+		$campaigns   = $this->repository->get_all_campaigns( $filters );
+		$type_counts = $this->repository->get_campaign_type_counts();
+
+		// Helper to build sort URL.
+		$build_sort_url = static function ( string $column ) use ( $current_type, $current_orderby, $current_order ): string {
+			$next_order = ( $current_orderby === $column && 'asc' === $current_order ) ? 'desc' : 'asc';
+			$args       = array(
+				'page'    => 'dame-ticketing',
+				'orderby' => $column,
+				'order'   => $next_order,
+			);
+			if ( ! empty( $current_type ) ) {
+				$args['form_type'] = $current_type;
+			}
+			return add_query_arg( $args, admin_url( 'admin.php' ) );
+		};
+
+		// Helper to render sort indicator.
+		$sort_indicator = static function ( string $column ) use ( $current_orderby, $current_order ): string {
+			if ( $current_orderby !== $column ) {
+				return '';
+			}
+			return 'asc' === $current_order ? ' ▲' : ' ▼';
+		};
+
+		$base_url = admin_url( 'admin.php?page=dame-ticketing' );
+		if ( 'start_date' !== $current_orderby || 'desc' !== $current_order ) {
+			$base_url = add_query_arg(
+				array(
+					'orderby' => $current_orderby,
+					'order'   => $current_order,
+				),
+				$base_url
+			);
+		}
+
+		$types_config = array(
+			'all'        => array(
+				'label' => __( 'Tous', 'dame' ),
+				'count' => $type_counts['all'] ?? 0,
+			),
+			'Event'      => array(
+				'label' => __( 'Événements', 'dame' ),
+				'count' => $type_counts['Event'] ?? 0,
+			),
+			'Membership' => array(
+				'label' => __( 'Adhésions', 'dame' ),
+				'count' => $type_counts['Membership'] ?? 0,
+			),
+			'Donation'   => array(
+				'label' => __( 'Dons', 'dame' ),
+				'count' => $type_counts['Donation'] ?? 0,
+			),
+			'Shop'       => array(
+				'label' => __( 'Boutique', 'dame' ),
+				'count' => $type_counts['Shop'] ?? 0,
+			),
+		);
+
+		if ( ! empty( $type_counts['Checkout'] ) ) {
+			$types_config['Checkout'] = array(
+				'label' => __( 'Paiement direct', 'dame' ),
+				'count' => $type_counts['Checkout'],
+			);
+		}
 		?>
 		<div class="wrap">
 			<h1 class="wp-heading-inline"><?php esc_html_e( 'Billetterie & Inscriptions HelloAsso', 'dame' ); ?></h1>
@@ -289,23 +366,48 @@ class Ticketing {
 				<?php esc_html_e( 'Retrouvez ici toutes vos campagnes de billetterie, tournois et adhésions synchronisées en temps réel.', 'dame' ); ?>
 			</p>
 
-			<table class="wp-list-table widefat fixed striped" style="margin-top:15px;">
+			<ul class="subsubsub" style="margin-top:10px; margin-bottom:10px;">
+				<?php
+				$links = array();
+				foreach ( $types_config as $key => $cfg ) {
+					if ( 'all' !== $key && 0 === $cfg['count'] ) {
+						continue;
+					}
+					$is_current = ( 'all' === $key && empty( $current_type ) ) || ( $current_type === $key );
+					$url        = ( 'all' === $key ) ? remove_query_arg( 'form_type', $base_url ) : add_query_arg( 'form_type', $key, $base_url );
+					$class      = $is_current ? 'current' : '';
+					$links[]    = sprintf(
+						'<li class="%s"><a href="%s" class="%s">%s <span class="count">(%d)</span></a></li>',
+						esc_attr( strtolower( $key ) ),
+						esc_url( $url ),
+						esc_attr( $class ),
+						esc_html( $cfg['label'] ),
+						(int) $cfg['count']
+					);
+				}
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo implode( ' | ', $links );
+				?>
+			</ul>
+
+			<table class="wp-list-table widefat fixed striped" style="margin-top:10px;">
 				<thead>
 					<tr>
-						<th><?php esc_html_e( 'Titre de la campagne', 'dame' ); ?></th>
-						<th><?php esc_html_e( 'Type HelloAsso', 'dame' ); ?></th>
-						<th><?php esc_html_e( 'Catégorie DAME', 'dame' ); ?></th>
-						<th><?php esc_html_e( 'Inscrits / Pointés', 'dame' ); ?></th>
-						<th><?php esc_html_e( 'Montant collecté', 'dame' ); ?></th>
-						<th><?php esc_html_e( 'Dernière synchro', 'dame' ); ?></th>
-						<th><?php esc_html_e( 'Actions', 'dame' ); ?></th>
+						<th><a href="<?php echo esc_url( $build_sort_url( 'title' ) ); ?>"><strong><?php esc_html_e( 'Titre de la campagne', 'dame' ); ?><?php echo esc_html( $sort_indicator( 'title' ) ); ?></strong></a></th>
+						<th style="width:110px;"><a href="<?php echo esc_url( $build_sort_url( 'form_type' ) ); ?>"><strong><?php esc_html_e( 'Type HelloAsso', 'dame' ); ?><?php echo esc_html( $sort_indicator( 'form_type' ) ); ?></strong></a></th>
+						<th style="width:170px;"><a href="<?php echo esc_url( $build_sort_url( 'start_date' ) ); ?>"><strong><?php esc_html_e( 'Dates / Période', 'dame' ); ?><?php echo esc_html( $sort_indicator( 'start_date' ) ); ?></strong></a></th>
+						<th style="width:110px;"><?php esc_html_e( 'Catégorie DAME', 'dame' ); ?></th>
+						<th style="width:130px;"><?php esc_html_e( 'Inscrits / Pointés', 'dame' ); ?></th>
+						<th style="width:120px;"><?php esc_html_e( 'Montant collecté', 'dame' ); ?></th>
+						<th style="width:140px;"><?php esc_html_e( 'Dernière synchro', 'dame' ); ?></th>
+						<th style="width:120px;"><?php esc_html_e( 'Actions', 'dame' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
 					<?php if ( empty( $campaigns ) ) : ?>
 						<tr>
-							<td colspan="7">
-								<?php esc_html_e( 'Aucune campagne enregistrée. Cliquez sur « Synchroniser les campagnes HelloAsso » ou configurez votre Webhook.', 'dame' ); ?>
+							<td colspan="8">
+								<?php esc_html_e( 'Aucune campagne enregistrée pour ce filtre. Cliquez sur « Synchroniser les campagnes HelloAsso » ou réinitialisez les filtres.', 'dame' ); ?>
 							</td>
 						</tr>
 					<?php else : ?>
@@ -320,6 +422,37 @@ class Ticketing {
 									<br><span style="color:#666; font-size:12px;">slug: <?php echo esc_html( (string) $camp['form_slug'] ); ?></span>
 								</td>
 								<td><?php echo esc_html( (string) $camp['form_type'] ); ?></td>
+								<td>
+									<?php
+									$start_raw = ! empty( $camp['start_date'] ) ? (string) $camp['start_date'] : '';
+									$end_raw   = ! empty( $camp['end_date'] ) ? (string) $camp['end_date'] : '';
+									$start_ts  = ! empty( $start_raw ) ? strtotime( $start_raw ) : false;
+									$end_ts    = ! empty( $end_raw ) ? strtotime( $end_raw ) : false;
+
+									if ( false !== $start_ts ) {
+										if ( false !== $end_ts && gmdate( 'Y-m-d', $start_ts ) !== gmdate( 'Y-m-d', $end_ts ) ) {
+											echo esc_html(
+												sprintf(
+													/* translators: 1: start date, 2: end date */
+													__( 'Du %1$s au %2$s', 'dame' ),
+													wp_date( 'd/m/Y', $start_ts ),
+													wp_date( 'd/m/Y', $end_ts )
+												)
+											);
+										} else {
+											echo esc_html(
+												sprintf(
+													/* translators: %s: date */
+													__( 'Le %s', 'dame' ),
+													wp_date( 'd/m/Y', $start_ts )
+												)
+											);
+										}
+									} else {
+										echo '<span style="color:#888;">—</span>';
+									}
+									?>
+								</td>
 								<td>
 									<span class="badge" style="background:#e0e0e0; padding:3px 8px; border-radius:4px; font-size:12px;">
 										<?php echo esc_html( (string) $camp['campaign_category'] ); ?>

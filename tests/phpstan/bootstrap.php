@@ -135,4 +135,11 @@ if ( ! function_exists( 'wp_parse_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_date' ) ) {
+	function wp_date( string $format, ?int $timestamp = null, ?DateTimeZone $timezone = null ): string {
+		$timestamp = $timestamp ?? time();
+		return date( $format, $timestamp );
+	}
+}
+
 

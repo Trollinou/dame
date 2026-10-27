@@ -133,6 +133,7 @@ class TicketingRepository {
 		$campaign_id = (int) $this->db->insert_id;
 		wp_cache_set( $cache_key, $campaign_id, self::CACHE_GROUP, 3600 );
 		wp_cache_delete( 'campaigns_list', self::CACHE_GROUP );
+		wp_cache_delete( 'campaign_type_counts', self::CACHE_GROUP );
 
 		return $campaign_id;
 	}
@@ -194,29 +195,100 @@ class TicketingRepository {
 
 		wp_cache_delete( 'campaign_' . $campaign_id, self::CACHE_GROUP );
 		wp_cache_delete( 'campaigns_list', self::CACHE_GROUP );
+		wp_cache_delete( 'campaign_type_counts', self::CACHE_GROUP );
 
 		return false !== $result;
 	}
 
 	/**
-	 * Retrieves all campaigns.
+	 * Retrieves all campaigns with optional filtering and sorting.
 	 *
+	 * @param array<string, mixed> $filters Optional filters ('form_type', 'orderby', 'order').
 	 * @return array<int, array<string, mixed>>
 	 */
-	public function get_all_campaigns(): array {
-		$cached = wp_cache_get( 'campaigns_list', self::CACHE_GROUP );
+	public function get_all_campaigns( array $filters = array() ): array {
+		$cache_key = 'campaigns_list_' . md5( (string) wp_json_encode( $filters ) );
+		$cached    = wp_cache_get( $cache_key, self::CACHE_GROUP );
+		if ( false !== $cached && is_array( $cached ) ) {
+			return $cached;
+		}
+
+		$table  = $this->get_campaigns_table();
+		$where  = 'WHERE 1=1';
+		$params = array( $table );
+
+		if ( ! empty( $filters['form_type'] ) ) {
+			$where   .= ' AND form_type = %s';
+			$params[] = sanitize_text_field( (string) $filters['form_type'] );
+		}
+
+		$allowed_orderby = array(
+			'start_date' => 'start_date',
+			'title'      => 'title',
+			'id'         => 'id',
+			'form_type'  => 'form_type',
+		);
+		$orderby_key     = (string) ( $filters['orderby'] ?? 'start_date' );
+		$order_col       = $allowed_orderby[ $orderby_key ] ?? 'start_date';
+		$order_dir       = ( isset( $filters['order'] ) && 'ASC' === strtoupper( (string) $filters['order'] ) ) ? 'ASC' : 'DESC';
+
+		// For start_date, place NULL values at the bottom regardless of sort order.
+		if ( 'start_date' === $order_col ) {
+			$order_clause = ( 'ASC' === $order_dir )
+				? 'ORDER BY (start_date IS NULL), start_date ASC, id DESC'
+				: 'ORDER BY (start_date IS NULL), start_date DESC, id DESC';
+		} else {
+			$order_clause = "ORDER BY {$order_col} {$order_dir}, id DESC";
+		}
+
+		$sql = "SELECT * FROM %i {$where} {$order_clause}";
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$rows = $this->db->get_results(
+			$this->db->prepare( $sql, ...$params ),
+			ARRAY_A
+		);
+
+		$result = is_array( $rows ) ? $rows : array();
+		wp_cache_set( $cache_key, $result, self::CACHE_GROUP, 1800 );
+
+		return $result;
+	}
+
+	/**
+	 * Returns the counts of campaigns grouped by form_type.
+	 *
+	 * @return array<string, int>
+	 */
+	public function get_campaign_type_counts(): array {
+		$cached = wp_cache_get( 'campaign_type_counts', self::CACHE_GROUP );
 		if ( false !== $cached && is_array( $cached ) ) {
 			return $cached;
 		}
 
 		$table = $this->get_campaigns_table();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$rows = $this->db->get_results( "SELECT * FROM {$table} ORDER BY id DESC", ARRAY_A );
+		$rows = $this->db->get_results(
+			$this->db->prepare( 'SELECT form_type, COUNT(*) as cnt FROM %i GROUP BY form_type', $table ),
+			ARRAY_A
+		);
 
-		$result = is_array( $rows ) ? $rows : array();
-		wp_cache_set( 'campaigns_list', $result, self::CACHE_GROUP, 1800 );
+		$counts = array(
+			'all' => 0,
+		);
 
-		return $result;
+		if ( is_array( $rows ) ) {
+			foreach ( $rows as $row ) {
+				$ft             = (string) ( $row['form_type'] ?? '' );
+				$c              = (int) ( $row['cnt'] ?? 0 );
+				$counts[ $ft ]  = $c;
+				$counts['all'] += $c;
+			}
+		}
+
+		wp_cache_set( 'campaign_type_counts', $counts, self::CACHE_GROUP, 1800 );
+
+		return $counts;
 	}
 
 	/**

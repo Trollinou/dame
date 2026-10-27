@@ -91,13 +91,20 @@ class Synchronizer {
 				continue;
 			}
 
+			$start_raw  = ! empty( $form['startDate'] ) ? (string) $form['startDate'] : '';
+			$end_raw    = ! empty( $form['endDate'] ) ? (string) $form['endDate'] : '';
+			$start_time = ! empty( $start_raw ) ? strtotime( $start_raw ) : false;
+			$end_time   = ! empty( $end_raw ) ? strtotime( $end_raw ) : false;
+			$start_date = false !== $start_time ? gmdate( 'Y-m-d H:i:s', $start_time ) : null;
+			$end_date   = false !== $end_time ? gmdate( 'Y-m-d H:i:s', $end_time ) : null;
+
 			$id = $this->repository->get_or_create_campaign(
 				$slug,
 				$type,
 				array(
 					'title'        => (string) ( $form['title'] ?? $slug ),
-					'start_date'   => $form['startDate'] ?? null,
-					'end_date'     => $form['endDate'] ?? null,
+					'start_date'   => $start_date,
+					'end_date'     => $end_date,
 					'last_sync_at' => current_time( 'mysql' ),
 				)
 			);
