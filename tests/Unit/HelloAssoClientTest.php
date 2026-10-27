@@ -33,5 +33,20 @@ class HelloAssoClientTest extends TestCase {
 		$this->assertStringContainsString( 'dame/v1/helloasso/webhook', $url );
 		$this->assertStringContainsString( 'token=', $url );
 	}
+
+	/**
+	 * Test environment URL resolution.
+	 */
+	public function test_environment_url_resolution(): void {
+		global $dame_test_options;
+
+		$dame_test_options['dame_options'] = array( 'helloasso_environment' => Client::ENV_PRODUCTION );
+		$this->assertSame( 'https://api.helloasso.com/oauth2/token', Client::get_oauth_url() );
+		$this->assertSame( 'https://api.helloasso.com/v5', Client::get_api_base_url() );
+
+		$dame_test_options['dame_options'] = array( 'helloasso_environment' => Client::ENV_SANDBOX );
+		$this->assertSame( 'https://api.helloasso-sandbox.com/oauth2/token', Client::get_oauth_url() );
+		$this->assertSame( 'https://api.helloasso-sandbox.com/v5', Client::get_api_base_url() );
+	}
 }
 

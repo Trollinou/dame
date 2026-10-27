@@ -68,9 +68,39 @@ if ( ! function_exists( 'wp_mkdir_p' ) ) {
 	}
 }
 
+if ( ! defined( 'DAY_IN_SECONDS' ) ) {
+	define( 'DAY_IN_SECONDS', 86400 );
+}
+
 // Global WordPress Options & REST mocks for unit tests.
 global $dame_test_options;
 $dame_test_options = array();
+
+global $dame_test_transients;
+$dame_test_transients = array();
+
+if ( ! function_exists( 'get_transient' ) ) {
+	function get_transient( string $transient ): mixed {
+		global $dame_test_transients;
+		return $dame_test_transients[ $transient ] ?? false;
+	}
+}
+
+if ( ! function_exists( 'set_transient' ) ) {
+	function set_transient( string $transient, mixed $value, int $expiration = 0 ): bool {
+		global $dame_test_transients;
+		$dame_test_transients[ $transient ] = $value;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'delete_transient' ) ) {
+	function delete_transient( string $transient ): bool {
+		global $dame_test_transients;
+		unset( $dame_test_transients[ $transient ] );
+		return true;
+	}
+}
 
 if ( ! function_exists( 'get_option' ) ) {
 	function get_option( string $option, mixed $default_value = false ): mixed {

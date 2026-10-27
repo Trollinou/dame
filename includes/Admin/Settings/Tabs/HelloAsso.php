@@ -37,6 +37,14 @@ class HelloAsso {
 		);
 
 		add_settings_field(
+			'helloasso_environment',
+			__( 'Environnement', 'dame' ),
+			array( $this, 'render_environment_field' ),
+			'dame_helloasso_section_group',
+			'dame_helloasso_api_section'
+		);
+
+		add_settings_field(
 			'helloasso_client_id',
 			__( 'Client ID', 'dame' ),
 			array( $this, 'render_client_id_field' ),
@@ -73,6 +81,27 @@ class HelloAsso {
 	 */
 	public function render_api_section_intro(): void {
 		echo '<p class="description">' . esc_html__( 'Renseignez ici vos identifiants d\'API HelloAsso v5 générés depuis votre espace association (Menu Mon compte > Intégrations et API).', 'dame' ) . '</p>';
+	}
+
+	/**
+	 * Render Environment field.
+	 */
+	public function render_environment_field(): void {
+		$options = get_option( 'dame_options', array() );
+		$val     = (string) ( $options['helloasso_environment'] ?? HelloAssoClient::ENV_PRODUCTION );
+		?>
+		<select name="dame_options[helloasso_environment]" id="helloasso_environment">
+			<option value="<?php echo esc_attr( HelloAssoClient::ENV_PRODUCTION ); ?>" <?php selected( $val, HelloAssoClient::ENV_PRODUCTION ); ?>>
+				<?php esc_html_e( 'Production (api.helloasso.com)', 'dame' ); ?>
+			</option>
+			<option value="<?php echo esc_attr( HelloAssoClient::ENV_SANDBOX ); ?>" <?php selected( $val, HelloAssoClient::ENV_SANDBOX ); ?>>
+				<?php esc_html_e( 'Bac à sable / Test (api.helloasso-sandbox.com)', 'dame' ); ?>
+			</option>
+		</select>
+		<p class="description">
+			<?php esc_html_e( 'Choisissez l\'environnement correspondant à votre compte HelloAsso (Production ou Sandbox).', 'dame' ); ?>
+		</p>
+		<?php
 	}
 
 	/**
@@ -147,14 +176,17 @@ class HelloAsso {
 	 * @return array<string, mixed> Sanitized options.
 	 */
 	public function sanitize( array $input, array $existing_options ): array {
+		if ( isset( $input['helloasso_environment'] ) && in_array( $input['helloasso_environment'], array( HelloAssoClient::ENV_PRODUCTION, HelloAssoClient::ENV_SANDBOX ), true ) ) {
+			$existing_options['helloasso_environment'] = $input['helloasso_environment'];
+		}
 		if ( isset( $input['helloasso_client_id'] ) ) {
-			$existing_options['helloasso_client_id'] = sanitize_text_field( $input['helloasso_client_id'] );
+			$existing_options['helloasso_client_id'] = sanitize_text_field( trim( (string) $input['helloasso_client_id'] ) );
 		}
 		if ( isset( $input['helloasso_client_secret'] ) ) {
-			$existing_options['helloasso_client_secret'] = sanitize_text_field( $input['helloasso_client_secret'] );
+			$existing_options['helloasso_client_secret'] = sanitize_text_field( trim( (string) $input['helloasso_client_secret'] ) );
 		}
 		if ( isset( $input['helloasso_org_slug'] ) ) {
-			$existing_options['helloasso_org_slug'] = sanitize_title( $input['helloasso_org_slug'] );
+			$existing_options['helloasso_org_slug'] = sanitize_text_field( trim( (string) $input['helloasso_org_slug'] ) );
 		}
 
 		// Ensure webhook token exists.
