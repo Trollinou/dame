@@ -62,3 +62,4 @@ export interface AddOnSiteParticipantRequest {
 	amount?: number;
 	payment_method?: string;
 }
+
