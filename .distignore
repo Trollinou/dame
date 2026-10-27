@@ -23,6 +23,8 @@
 /ARCHITECTURE.md
 /RELEASE.md
 /USING.md
+/docs
+/docs/*
 /composer.json
 /composer.lock
 /dist-temp

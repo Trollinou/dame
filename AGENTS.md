@@ -16,8 +16,8 @@
   - Typage strict des paramètres : interdiction formelle des types implicites nullables (utiliser explicitement `?Type $param = null`).
   - Composer AUTORISÉ en prod (`composer install --no-dev --optimize-autoloader`). Inclure `vendor/autoload.php` + Autoloader SPL natif fallback dans `dame.php`.
 - **JS / CSS** : TypeScript Strict (`strict: true`, ES2021 Vanilla, pas de jQuery), SCSS avec BEM.
-  - Scripts classiques Admin/Front dans `src/js/*.ts` compilés dans `assets/js/*.js`.
-  - **Script Modules (Interactivity API)** dans `src/js/modules/*.ts` compilés en ESM dans `assets/js/modules/*.js` avec `@wordpress/interactivity` externalisé.
+  - Scripts classiques Admin/Front dans `src/ts/*.ts` compilés dans `assets/js/*.js`.
+  - **Script Modules (Interactivity API)** dans `src/ts/modules/*.ts` compilés en ESM dans `assets/js/modules/*.js` avec `@wordpress/interactivity` externalisé.
   - **Contrat PWA** : Types dans `src/types/` rigoureusement isolés sans aucune dépendance WordPress ni DOM.
   - **Nommage Strict des Variables Globales JS (snake_case obligatoire)** :
     - Toute variable globale exposée à JavaScript via `wp_localize_script()` ou `wp_add_inline_script()` doit impérativement respecter la convention `snake_case` préfixée par `dame_` (ex: `dame_mailing_data`, `dame_admin_data`, `dame_attestation_data`, `dame_newsletter_data`, `dame_admin_commands`). L'introduction de noms en `camelCase` (ex: `dameMailingData`, `dameAdminCommands`, `dameAttestationData`) est formellement interdite.

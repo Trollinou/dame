@@ -117,6 +117,11 @@ class Upgrader {
 			$this->initialize_contact_gender_v457();
 		}
 
+		// Version < 5.8.0 : Tables SQL Billetterie & HelloAsso.
+		if ( version_compare( $old_version, '5.8.0', '<' ) ) {
+			$this->create_helloasso_tables_v580();
+		}
+
 		// Finalisation.
 		update_option( 'dame_plugin_version', $new_version );
 	}
@@ -650,5 +655,76 @@ class Upgrader {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Create HelloAsso Campaigns and Items tables (v5.8.0).
+	 */
+	private function create_helloasso_tables_v580(): void {
+		global $wpdb;
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$campaigns_table = $wpdb->prefix . 'dame_ha_campaigns';
+		$items_table     = $wpdb->prefix . 'dame_ha_items';
+
+		$sql_campaigns = "CREATE TABLE $campaigns_table (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			form_slug varchar(191) NOT NULL,
+			form_type varchar(50) NOT NULL,
+			title varchar(255) NOT NULL,
+			campaign_category varchar(32) NOT NULL DEFAULT 'other',
+			linked_agenda_id bigint(20) DEFAULT NULL,
+			linked_season_id bigint(20) DEFAULT NULL,
+			start_date datetime DEFAULT NULL,
+			end_date datetime DEFAULT NULL,
+			last_sync_at datetime DEFAULT NULL,
+			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			UNIQUE KEY form_slug_type (form_slug, form_type),
+			INDEX category_idx (campaign_category),
+			INDEX linked_agenda_idx (linked_agenda_id)
+		) $charset_collate;";
+
+		$sql_items = "CREATE TABLE $items_table (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			campaign_id bigint(20) NOT NULL,
+			ha_item_id bigint(20) DEFAULT NULL,
+			ha_order_id bigint(20) DEFAULT NULL,
+			source varchar(20) NOT NULL DEFAULT 'helloasso',
+			status varchar(32) NOT NULL DEFAULT 'Processed',
+			participant_first_name varchar(100) NOT NULL DEFAULT '',
+			participant_last_name varchar(100) NOT NULL DEFAULT '',
+			participant_email varchar(191) NOT NULL DEFAULT '',
+			participant_birth_date date DEFAULT NULL,
+			payer_first_name varchar(100) NOT NULL DEFAULT '',
+			payer_last_name varchar(100) NOT NULL DEFAULT '',
+			payer_email varchar(191) NOT NULL DEFAULT '',
+			tier_name varchar(191) NOT NULL DEFAULT '',
+			amount_cents int(11) NOT NULL DEFAULT 0,
+			payment_method varchar(50) NOT NULL DEFAULT 'HelloAsso',
+			order_date datetime DEFAULT NULL,
+			license_number varchar(32) NOT NULL DEFAULT '',
+			fide_id varchar(32) NOT NULL DEFAULT '',
+			elo int(11) DEFAULT NULL,
+			club_name varchar(191) NOT NULL DEFAULT '',
+			phone varchar(50) NOT NULL DEFAULT '',
+			custom_fields_json longtext,
+			matched_adherent_id bigint(20) NOT NULL DEFAULT 0,
+			matched_pre_inscription_id bigint(20) NOT NULL DEFAULT 0,
+			matched_contact_id bigint(20) NOT NULL DEFAULT 0,
+			checked_in tinyint(1) NOT NULL DEFAULT 0,
+			checked_in_at datetime DEFAULT NULL,
+			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			UNIQUE KEY ha_item_unique (ha_item_id),
+			INDEX campaign_idx (campaign_id),
+			INDEX checked_in_idx (checked_in),
+			INDEX matched_adherent_idx (matched_adherent_id),
+			INDEX license_number_idx (license_number)
+		) $charset_collate;";
+
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		dbDelta( $sql_campaigns );
+		dbDelta( $sql_items );
 	}
 }

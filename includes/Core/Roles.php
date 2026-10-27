@@ -87,7 +87,7 @@ class Roles {
 		);
 		add_role( 'entraineur', __( 'Entraineur', 'dame' ), $entraineur_caps );
 
-		// Assign custom message capabilities.
+		// Assign custom message and ticketing capabilities.
 		$roles_to_modify = array( 'administrator', 'editor', 'staff', 'entraineur' );
 		foreach ( $roles_to_modify as $role_name ) {
 			$role = get_role( $role_name );
@@ -99,6 +99,9 @@ class Roles {
 				$role->add_cap( 'edit_others_dame_messages' );
 				$role->add_cap( 'publish_dame_messages' );
 				$role->add_cap( 'read_private_dame_messages' );
+
+				// Billetterie HelloAsso.
+				$role->add_cap( 'manage_dame_ticketing' );
 			}
 		}
 

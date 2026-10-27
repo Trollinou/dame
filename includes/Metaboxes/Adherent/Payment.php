@@ -80,7 +80,35 @@ class Payment {
 			'Espèces'        => __( 'Espèces', 'dame' ),
 			'Carte bancaire' => __( 'Carte bancaire', 'dame' ),
 		);
+
+		// Check if an unlinked or matched HelloAsso payment exists for this adherent.
+		global $wpdb;
+		$ha_table = $wpdb->prefix . 'dame_ha_items';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$ha_payment = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT amount_cents, payment_method, order_date, tier_name FROM %i WHERE matched_adherent_id = %d AND status = 'Processed' ORDER BY id DESC LIMIT 1",
+				$ha_table,
+				$post->ID
+			),
+			ARRAY_A
+		);
 		?>
+		<?php if ( ! empty( $ha_payment ) ) : ?>
+			<div style="background: #edfaef; border-left: 4px solid #46b450; padding: 10px; margin-bottom: 15px; border-radius: 3px;">
+				<strong style="color: #2e7d32;">💳 <?php esc_html_e( 'Paiement HelloAsso Détecté !', 'dame' ); ?></strong><br>
+				<span style="font-size: 13px;">
+					<?php
+					printf(
+						/* translators: 1: montant en euros, 2: date */
+						esc_html__( '%1$s € le %2$s', 'dame' ),
+						esc_html( number_format( ( (int) $ha_payment['amount_cents'] ) / 100, 2, ',', ' ' ) ),
+						esc_html( (string) $ha_payment['order_date'] )
+					);
+					?>
+				</span>
+			</div>
+		<?php endif; ?>
 		<p>
 			<strong><?php esc_html_e( 'Saison active :', 'dame' ); ?></strong>
 			<span style="color: #0073aa; font-weight: 600;"><?php echo esc_html( $season_name ); ?></span>

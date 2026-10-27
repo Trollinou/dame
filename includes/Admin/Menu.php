@@ -12,6 +12,7 @@ namespace DAME\Admin;
 use DAME\Admin\Pages\Mailing;
 use DAME\Admin\Pages\Backups;
 use DAME\Admin\Pages\ImportFFE;
+use DAME\Admin\Pages\Ticketing;
 use DAME\Admin\Settings\Main as SettingsMain;
 use DAME\Admin\Pages\MessageReport;
 
@@ -30,6 +31,7 @@ class Menu {
 		add_filter( 'submenu_file', array( $this, 'highlight_submenu' ) );
 		( new Backups() )->init();
 		( new Mailing() )->init();
+		( new Ticketing() )->init();
 	}
 
 	/**
@@ -55,6 +57,16 @@ class Menu {
 			'edit_dame_messages',
 			'dame-mailing',
 			array( new Mailing(), 'render' )
+		);
+
+		// Billetterie & Inscriptions HelloAsso.
+		add_submenu_page(
+			'dame-admin',
+			__( 'Billetterie & HelloAsso', 'dame' ),
+			__( 'Billetterie', 'dame' ),
+			'manage_dame_ticketing',
+			'dame-ticketing',
+			array( new Ticketing(), 'render' )
 		);
 
 		// Sauvegardes.
@@ -118,6 +130,7 @@ class Menu {
 			'edit.php?post_type=dame_pre_inscription' => __( 'Toutes les préinscriptions', 'dame' ),
 			'edit.php?post_type=dame_agenda'          => __( 'Tous les évènements', 'dame' ),
 			'edit.php?post_type=benevolat'            => __( 'Appels à bénévoles', 'dame' ),
+			'dame-ticketing'                          => __( 'Billetterie', 'dame' ),
 			'edit.php?post_type=dame_message'         => __( 'Tous les messages', 'dame' ),
 			'dame-mailing'                            => __( 'Envoyer un message', 'dame' ),
 			'edit-tags.php?taxonomy=dame_group&amp;post_type=adherent' => __( "Groupes d'Adhérent", 'dame' ),

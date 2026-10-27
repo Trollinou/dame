@@ -64,6 +64,7 @@ use DAME\API\REST\Registration;
 use DAME\API\REST\Identities;
 use DAME\API\REST\Benevolat as Benevolat_REST;
 use DAME\API\REST\PreInscription as PreInscription_REST;
+use DAME\API\REST\Ticketing_REST;
 
 
 /**
@@ -151,6 +152,7 @@ class Plugin {
 				( new Identities() )->register_routes();
 				( new Benevolat_REST() )->register_routes();
 				( new PreInscription_REST() )->register_routes();
+				( new Ticketing_REST() )->register_routes();
 				( new Tracker() )->register_routes();
 			}
 		);
