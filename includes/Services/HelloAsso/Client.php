@@ -45,6 +45,12 @@ class Client {
 	public const REFRESH_TRANSIENT_KEY = 'dame_ha_refresh_token';
 
 	/**
+	 * Custom User Agent for HelloAsso API requests.
+	 * Cloudflare WAF on HelloAsso blocks default WordPress user agents ('WordPress/...') with HTTP 404.
+	 */
+	public const USER_AGENT = 'DAME-HelloAsso-Client/5.8.0';
+
+	/**
 	 * Cleans and normalizes an organization slug.
 	 * Extracts the slug if a full HelloAsso URL was pasted, trims whitespace and converts to lowercase.
 	 *
@@ -131,11 +137,12 @@ class Client {
 		$response = wp_remote_post(
 			$url,
 			array(
-				'timeout' => 15,
-				'headers' => array(
+				'timeout'    => 15,
+				'user-agent' => self::USER_AGENT,
+				'headers'    => array(
 					'Content-Type' => 'application/x-www-form-urlencoded',
 				),
-				'body'    => http_build_query( $body_params, '', '&' ),
+				'body'       => http_build_query( $body_params, '', '&' ),
 			)
 		);
 
@@ -261,8 +268,9 @@ class Client {
 		$response = wp_remote_get(
 			$url,
 			array(
-				'timeout' => 20,
-				'headers' => array(
+				'timeout'    => 20,
+				'user-agent' => self::USER_AGENT,
+				'headers'    => array(
 					'Authorization' => 'Bearer ' . $token,
 					'Accept'        => 'application/json',
 				),
