@@ -365,11 +365,17 @@ Le joueur est **automatiquement marqué comme pointé présent** et le service e
 
 ---
 
-## 6. Service API Prêt à l'Emploi (TypeScript avec Simple JWT Login)
+## 6. Service API Prêt à l'Emploi (TypeScript avec `js-sdk`)
 
-Voici une implémentation propre et modulaire du client API pour la PWA, branchée directement sur votre token Simple JWT Login :
+La PWA disposant déjà du SDK TypeScript dédié dans `js-sdk` (`SimpleJwtLogin`), l'intégration est immédiate et profite directement :
+- du stockage persistant sécurisé via `LocalStorageTokenStorage`,
+- du rafraîchissement proactif et silencieux du token avant expiration via `getValidJwt()`,
+- de la méthode native `fetchWithAuth(url, init)` qui injecte automatiquement le `Authorization: Bearer <token>` et réessaye automatiquement en cas de `401 Unauthorized`.
+
+### Implémentation du Service Billetterie utilisant `SimpleJwtLogin`
 
 ```typescript
+import { SimpleJwtLogin } from 'simple-jwt-login'; // ou chemin relatif vers ../js-sdk
 import type {
   TicketingCampaignDTO,
   TicketingItemDTO,
@@ -377,44 +383,27 @@ import type {
 } from './types/api/ticketing';
 
 export class TicketingApiService {
-  private baseUrl: string;
-  private getJwtToken: () => string | null;
+  private sdk: SimpleJwtLogin;
+  private endpointPrefix: string;
 
   /**
-   * @param config.baseUrl URL de base WordPress (ex: 'https://monclub.fr/wp-json')
-   * @param config.getJwtToken Fonction retournant le JWT actif issu de Simple JWT Login
+   * @param sdk Instance configurée de SimpleJwtLogin (avec LocalStorageTokenStorage)
+   * @param useWpJson Utiliser '/wp-json' (défaut) ou la query string '/?rest_route='
    */
-  constructor(config: { baseUrl: string; getJwtToken: () => string | null }) {
-    this.baseUrl = config.baseUrl.replace(/\/$/, '');
-    this.getJwtToken = config.getJwtToken;
+  constructor(sdk: SimpleJwtLogin, useWpJson = true) {
+    this.sdk = sdk;
+    this.endpointPrefix = useWpJson ? '/wp-json/dame/v1/ticketing' : '/?rest_route=/dame/v1/ticketing';
   }
 
   /**
-   * Génère les en-têtes avec le Bearer token Simple JWT Login
-   */
-  private buildHeaders(): Record<string, string> {
-    const headers: Record<string, string> = {
-      'Accept': 'application/json',
-    };
-    const token = this.getJwtToken();
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    return headers;
-  }
-
-  /**
-   * Récupère la liste de toutes les campagnes
+   * Récupère la liste de toutes les campagnes de billetterie
    */
   async getCampaigns(): Promise<TicketingCampaignDTO[]> {
-    const res = await fetch(`${this.baseUrl}/dame/v1/ticketing/campaigns`, {
+    const url = `${this.endpointPrefix}/campaigns`;
+    const res = await this.sdk.fetchWithAuth(url, {
       method: 'GET',
-      headers: this.buildHeaders(),
+      headers: { 'Accept': 'application/json' },
     });
-
-    if (res.status === 401 || res.status === 403) {
-      throw new Error('AUTH_EXPIRED');
-    }
 
     if (!res.ok) {
       throw new Error(`Erreur récupération campagnes (${res.status})`);
@@ -430,23 +419,22 @@ export class TicketingApiService {
     campaignId: number,
     filters?: { checked_in?: boolean; tier?: string }
   ): Promise<TicketingItemDTO[]> {
-    const query = new URLSearchParams();
+    const params = new URLSearchParams();
     if (filters?.checked_in !== undefined) {
-      query.set('checked_in', filters.checked_in ? '1' : '0');
+      params.set('checked_in', filters.checked_in ? '1' : '0');
     }
     if (filters?.tier) {
-      query.set('tier', filters.tier);
+      params.set('tier', filters.tier);
     }
 
-    const qs = query.toString() ? `?${query.toString()}` : '';
-    const res = await fetch(`${this.baseUrl}/dame/v1/ticketing/campaigns/${campaignId}/items${qs}`, {
+    const separator = this.endpointPrefix.includes('?') ? '&' : '?';
+    const qs = params.toString() ? `${separator}${params.toString()}` : '';
+    const url = `${this.endpointPrefix}/campaigns/${campaignId}/items${qs}`;
+
+    const res = await this.sdk.fetchWithAuth(url, {
       method: 'GET',
-      headers: this.buildHeaders(),
+      headers: { 'Accept': 'application/json' },
     });
-
-    if (res.status === 401 || res.status === 403) {
-      throw new Error('AUTH_EXPIRED');
-    }
 
     if (!res.ok) {
       throw new Error(`Erreur récupération inscrits (${res.status})`);
@@ -456,23 +444,23 @@ export class TicketingApiService {
   }
 
   /**
-   * Bascule l'état de pointage (Check-in)
+   * Bascule le statut de pointage (Check-in 1-clic)
    */
-  async toggleCheckin(itemId: number, checkedIn?: boolean): Promise<{ success: boolean; item_id: number }> {
+  async toggleCheckin(
+    itemId: number,
+    checkedIn?: boolean
+  ): Promise<{ success: boolean; item_id: number }> {
+    const url = `${this.endpointPrefix}/items/${itemId}/checkin`;
     const body = checkedIn !== undefined ? JSON.stringify({ checked_in: checkedIn }) : undefined;
 
-    const res = await fetch(`${this.baseUrl}/dame/v1/ticketing/items/${itemId}/checkin`, {
+    const res = await this.sdk.fetchWithAuth(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...this.buildHeaders(),
+        'Accept': 'application/json',
       },
       body,
     });
-
-    if (res.status === 401 || res.status === 403) {
-      throw new Error('AUTH_EXPIRED');
-    }
 
     if (!res.ok) {
       throw new Error(`Erreur pointage billet #${itemId} (${res.status})`);
@@ -482,24 +470,22 @@ export class TicketingApiService {
   }
 
   /**
-   * Enregistre un participant sur place
+   * Enregistre un participant sur place et le pointe automatiquement
    */
   async addOnSiteParticipant(
     campaignId: number,
     data: AddOnSiteParticipantRequest
   ): Promise<{ success: boolean; item_id: number }> {
-    const res = await fetch(`${this.baseUrl}/dame/v1/ticketing/campaigns/${campaignId}/items`, {
+    const url = `${this.endpointPrefix}/campaigns/${campaignId}/items`;
+
+    const res = await this.sdk.fetchWithAuth(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...this.buildHeaders(),
+        'Accept': 'application/json',
       },
       body: JSON.stringify(data),
     });
-
-    if (res.status === 401 || res.status === 403) {
-      throw new Error('AUTH_EXPIRED');
-    }
 
     if (!res.ok) {
       throw new Error(`Erreur inscription sur place (${res.status})`);
@@ -509,11 +495,21 @@ export class TicketingApiService {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Exemple d'initialisation dans la PWA :
-// const ticketingApi = new TicketingApiService({
-//   baseUrl: 'https://monclub.fr/wp-json',
-//   getJwtToken: () => localStorage.getItem('simple_jwt_token'),
+// ─────────────────────────────────────────────────────────────────────────────
+// import { SimpleJwtLogin, LocalStorageTokenStorage } from '../js-sdk';
+//
+// const authClient = new SimpleJwtLogin('https://monclub.fr', {
+//   useWpJson: true,
+//   tokenStorage: new LocalStorageTokenStorage('monclub_pwa'),
+//   onSessionExpired: (err) => {
+//     console.warn('Session expirée, redirection vers le login...', err);
+//   },
 // });
+//
+// export const ticketingApi = new TicketingApiService(authClient);
+```
 ```
 
 ---
