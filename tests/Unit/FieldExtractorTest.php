@@ -63,3 +63,4 @@ class FieldExtractorTest extends TestCase {
 		$this->assertEmpty( $extracted['extracted_fields'] );
 	}
 }
+

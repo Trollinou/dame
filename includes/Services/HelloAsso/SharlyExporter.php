@@ -110,3 +110,4 @@ class SharlyExporter {
 		return is_string( $csv_string ) ? $csv_string : '';
 	}
 }
+

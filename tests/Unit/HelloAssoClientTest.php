@@ -34,3 +34,4 @@ class HelloAssoClientTest extends TestCase {
 		$this->assertStringContainsString( 'token=', $url );
 	}
 }
+

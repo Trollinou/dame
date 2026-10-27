@@ -8,5 +8,6 @@ export * from './api/agenda';
 export * from './api/adherent';
 export * from './api/pre-inscription';
 export * from './api/benevolat';
+export * from './api/ticketing';
 export * from './api/tracker';
 export type * from './globals';
