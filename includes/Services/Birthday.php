@@ -26,6 +26,21 @@ class Birthday {
 		add_action( 'untrashed_post', array( self::class, 'clear_birthday_cache' ) );
 		add_action( 'deleted_post', array( self::class, 'clear_birthday_cache' ) );
 		add_action( 'update_option_dame_current_season_tag_id', array( self::class, 'clear_birthday_cache' ) );
+		add_action( 'set_object_terms', array( self::class, 'on_set_object_terms' ), 10, 4 );
+	}
+
+	/**
+	 * Clears birthday cache when season terms are updated on an adherent.
+	 *
+	 * @param int                   $object_id Object ID.
+	 * @param array<int|string>     $terms     An array of object term IDs or slugs.
+	 * @param array<int>            $tt_ids    An array of term taxonomy IDs.
+	 * @param string                $taxonomy  Taxonomy slug.
+	 */
+	public static function on_set_object_terms( int $object_id, array $terms, array $tt_ids, string $taxonomy ): void {
+		if ( 'dame_saison_adhesion' === $taxonomy ) {
+			self::clear_birthday_cache( $object_id );
+		}
 	}
 
 	/**
@@ -67,14 +82,19 @@ class Birthday {
 	 */
 	public function get_today_birthdays(): array {
 		$season_ids = $this->get_filtered_season_ids();
-		$today_str  = wp_date( 'Y-m-d' );
-		$cache_key  = 'dame_today_birthdays_' . $today_str . '_' . implode( '_', $season_ids );
+		if ( empty( $season_ids ) ) {
+			return array();
+		}
+
+		$today_str = wp_date( 'Y-m-d' );
+		$cache_key = 'dame_today_birthdays_' . $today_str . '_' . implode( '_', $season_ids );
 
 		$birthdays = get_transient( $cache_key );
 
 		if ( false === $birthdays ) {
 			$args = array(
 				'post_type'      => 'adherent',
+				'post_status'    => 'publish',
 				'posts_per_page' => -1,
 				'meta_query'     => array(
 					array(
@@ -83,18 +103,15 @@ class Birthday {
 						'compare' => 'REGEXP',
 					),
 				),
-			);
-
-			if ( ! empty( $season_ids ) ) {
-				$args['tax_query'] = array(
+				'tax_query'      => array(
 					array(
 						'taxonomy' => 'dame_saison_adhesion',
 						'field'    => 'term_id',
 						'terms'    => $season_ids,
 						'operator' => 'IN',
 					),
-				);
-			}
+				),
+			);
 
 			$query     = new WP_Query( $args );
 			$birthdays = array();
@@ -143,28 +160,30 @@ class Birthday {
 	 */
 	public function get_upcoming_birthdays( int $limit = 10 ): array {
 		$season_ids = $this->get_filtered_season_ids();
-		$today_str  = wp_date( 'Y-m-d' );
-		$cache_key  = 'dame_upcoming_birthdays_' . $today_str . '_' . implode( '_', $season_ids );
+		if ( empty( $season_ids ) ) {
+			return array();
+		}
+
+		$today_str = wp_date( 'Y-m-d' );
+		$cache_key = 'dame_upcoming_birthdays_' . $today_str . '_' . implode( '_', $season_ids );
 
 		$upcoming = get_transient( $cache_key );
 
 		if ( false === $upcoming ) {
 			$args = array(
 				'post_type'      => 'adherent',
+				'post_status'    => 'publish',
 				'posts_per_page' => -1,
 				'fields'         => 'ids',
-			);
-
-			if ( ! empty( $season_ids ) ) {
-				$args['tax_query'] = array(
+				'tax_query'      => array(
 					array(
 						'taxonomy' => 'dame_saison_adhesion',
 						'field'    => 'term_id',
 						'terms'    => $season_ids,
 						'operator' => 'IN',
 					),
-				);
-			}
+				),
+			);
 
 			$ids = get_posts( $args );
 			if ( is_array( $ids ) ) {
@@ -175,6 +194,25 @@ class Birthday {
 			}
 			$today    = new DateTime( 'today', new \DateTimeZone( 'UTC' ) );
 			$upcoming = array();
+
+			// Identifier la saison N/N+1 lors de la période de chevauchement (01/07 au 31/10).
+			$md             = wp_date( 'm-d' );
+			$in_overlap     = ( $md >= '07-01' && $md <= '10-31' );
+			$next_season_id = 0;
+			$season_cutoff  = null;
+
+			if ( $in_overlap ) {
+				$year             = (int) wp_date( 'Y' );
+				$next_season_term = get_term_by( 'name', sprintf( 'Saison %d/%d', $year, $year + 1 ), 'dame_saison_adhesion' );
+				if ( $next_season_term ) {
+					$next_season_id = (int) $next_season_term->term_id;
+				}
+				try {
+					$season_cutoff = new DateTime( $year . '-10-31 23:59:59', new \DateTimeZone( 'UTC' ) );
+				} catch ( \Exception $e ) {
+					$season_cutoff = null;
+				}
+			}
 
 			foreach ( $ids as $id ) {
 				$birth_date_str = get_post_meta( $id, '_dame_birth_date', true );
@@ -191,6 +229,14 @@ class Birthday {
 						$next_birthday->modify( '+1 year' );
 					} else {
 						$next_birthday = $this_year_birthday;
+					}
+
+					// Si l'anniversaire tombe après le 31 octobre lors du chevauchement estival/automnal,
+					// l'adhérent doit obligatoirement être inscrit pour la saison suivante N/N+1.
+					if ( $in_overlap && $season_cutoff && $next_birthday > $season_cutoff && $next_season_id > 0 ) {
+						if ( ! has_term( $next_season_id, 'dame_saison_adhesion', $id ) ) {
+							continue;
+						}
 					}
 
 					$days_until = $today->diff( $next_birthday )->days;
@@ -281,6 +327,7 @@ class Birthday {
 		$query = new WP_Query(
 			array(
 				'post_type'      => 'adherent',
+				'post_status'    => 'publish',
 				'posts_per_page' => -1,
 				'meta_query'     => array(
 					array(
@@ -301,6 +348,7 @@ class Birthday {
 		);
 
 		$sent_list   = array();
+		$seen_ids    = array();
 		$admin_email = ! empty( $options['assoc_email'] ) && is_email( (string) $options['assoc_email'] ) ? (string) $options['assoc_email'] : (string) get_option( 'admin_email' );
 		$headers     = array(
 			'Content-Type: text/html; charset=UTF-8',
@@ -310,10 +358,11 @@ class Birthday {
 		while ( $query->have_posts() ) {
 			$query->the_post();
 			$pid = get_the_ID();
-			if ( ! $pid ) {
+			if ( ! $pid || in_array( $pid, $seen_ids, true ) ) {
 				continue;
 			}
-			$nom = get_post_meta( $pid, '_dame_last_name', true );
+			$seen_ids[] = $pid;
+			$nom        = get_post_meta( $pid, '_dame_last_name', true );
 			if ( empty( $nom ) ) {
 				$nom = get_post_meta( $pid, '_dame_birth_name', true );
 			}
