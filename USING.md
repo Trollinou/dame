@@ -230,5 +230,45 @@ Lorsqu'un message a déjà été envoyé (statut *sent*) et que vous souhaitez l
 - **Préservation des statistiques d'ouverture :** L'historique d'envoi et les dates d'ouverture (`opened_at`) des destinataires précédents restent strictement conservés et visibles dans le rapport d'ouverture (`DAME > Messages > Rapport d'ouverture`).
 - **Réinitialisation complète :** Si vous désirez renvoyer un message à l'intégralité d'un groupe (y compris ceux l'ayant déjà reçu), utilisez l'action **« Reset envoi »** depuis la liste des messages.
 
+## 11. Billetterie & Inscriptions HelloAsso
+
+Le module de billetterie synchronise automatiquement vos formulaires et campagnes HelloAsso avec votre site WordPress et l'application mobile PWA pour le pointage des tournois et événements.
+
+### a. Configuration initiale de la connexion
+1. Rendez-vous dans **DAME > Réglages > onglet HelloAsso**.
+2. Renseignez vos identifiants API obtenus depuis votre compte HelloAsso (section *Mon compte > Intégrations et API*) :
+   - **Client ID** (ex: `716b353772c14fba82ac20ac6bc06530`)
+   - **Client Secret**
+   - **Slug de l'organisation** : saisissez votre identifiant court (ex: `echiquier-ledonien`) ou l'URL complète de votre page HelloAsso. Le système extrait et nettoie automatiquement le slug.
+3. **Environnement** : Laissez la case « Activer le mode Bac à sable (Sandbox) » décochée pour la production. Activez-la uniquement si vous travaillez avec des clés de test `helloasso-sandbox.com`.
+4. Cliquez sur **Enregistrer les réglages**. Le système teste immédiatement la connexion avec l'API HelloAsso et confirme la validation.
+
+### b. Synchronisation des campagnes
+Depuis l'écran **DAME > Billetterie** :
+- Cliquez sur le bouton **« ↻ Synchroniser les campagnes HelloAsso »** pour importer ou mettre à jour instantanément vos formulaires.
+- Les données de formulaires (titre, dates de réalisation, montants collectés, nombre d'inscrits, tarifs) sont récupérées et stockées en base locale.
+- **Webhook en temps réel** : Vous pouvez également déclarer l'URL de notification Webhook fournie dans les réglages sur votre interface HelloAsso pour recevoir les nouvelles inscriptions en temps réel dès validation du paiement.
+
+### c. Navigation, filtres par type et tri chronologique
+L'écran **DAME > Billetterie** propose une vue claire de toutes vos activités :
+- **Filtres par type de formulaire** : Des onglets rapides permettent d'isoler en un clic :
+  - **Tous** : Vue globale avec le total des campagnes.
+  - **Événements (`Event`)** : Tournois d'échecs, opens, stages, simultanées.
+  - **Adhésions (`Membership`)** : Cotisations annuelles et licences de club.
+  - **Dons (`Donation`)** : Campagnes de dons et mécénat.
+  - **Boutique (`Shop`)** : Vente de matériel, pendules, t-shirts du club.
+  - **Paiements directs (`Checkout`)** : Règlements libres.
+- **Dates / Période de réalisation** : La colonne dédiée affiche la période précise (`Du dd/mm/YYYY au dd/mm/YYYY` ou `Le dd/mm/YYYY`).
+- **Tri chronologique** : Les campagnes sont triées par défaut de l'événement le plus récent au plus ancien (`start_date DESC`). Les colonnes *Titre*, *Type* et *Dates* sont cliquables pour trier par ordre alphabétique ou inverser la chronologie.
+
+### d. Pointage des inscrits & Gestion du jour J
+En cliquant sur **« Gérer les inscrits »** en face d'une campagne :
+- **Recherche instantanée** : Filtrez les participants par nom, prénom, n° de licence FFE ou tarif.
+- **Bascule de présence en 1 clic** : Cliquez sur le statut *Présent / Absent* pour pointer un joueur franchissant la porte de la salle. Le compteur d'inscrits pointés se met à jour instantanément.
+- **Rapprochement automatique (Matcher)** : Le système associe automatiquement le participant avec un adhérent existant du club (badge *Adhérent #ID*), une préinscription ou un contact connu.
+- **Inscription sur place** : Un formulaire permet d'ajouter un joueur arrivant le jour même (paiement en espèces ou par chèque), qui est immédiatement intégré à la liste et pointé présent.
+- **Export Sharly Chess (Arbitres)** : Le bouton **« Exporter pour Sharly (CSV) »** génère un fichier normalisé prêt à être importé dans le logiciel d'appariement officiel Sharly Chess (Nom, Prénom, Sexe, Date de naissance, Titre, Elo, Club, N° FFE, FIDE ID).
+
+
 
 

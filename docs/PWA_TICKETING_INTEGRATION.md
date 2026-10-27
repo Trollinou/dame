@@ -168,6 +168,14 @@ Récupère toutes les campagnes synchronisées avec leurs compteurs de pointage 
 
 - **Méthode** : `GET`
 - **URL** : `/wp-json/dame/v1/ticketing/campaigns`
+- **Paramètres Query (optionnels)** :
+  - `form_type` : Filtrer par type de formulaire (`Event`, `Membership`, `Donation`, `Shop`, `Checkout`).
+  - `orderby` : Colonne de tri (`start_date`, `title`, `id`, `form_type`). Par défaut : `start_date`.
+  - `order` : Direction de tri (`asc` ou `desc`). Par défaut : `desc` (les dates définies s'affichent en tête, les formulaires permanents sans date sont relégués en fin).
+- **Exemple de Requête** :
+  ```http
+  GET /wp-json/dame/v1/ticketing/campaigns?form_type=Event&orderby=start_date&order=desc
+  ```
 - **Exemple de Réponse (`200 OK`)** :
 ```json
 [
@@ -396,10 +404,22 @@ export class TicketingApiService {
   }
 
   /**
-   * Récupère la liste de toutes les campagnes de billetterie
+   * Récupère la liste des campagnes avec filtres et tri optionnels
    */
-  async getCampaigns(): Promise<TicketingCampaignDTO[]> {
-    const url = `${this.endpointPrefix}/campaigns`;
+  async getCampaigns(filters?: {
+    form_type?: string;
+    orderby?: 'start_date' | 'title' | 'id' | 'form_type';
+    order?: 'asc' | 'desc';
+  }): Promise<TicketingCampaignDTO[]> {
+    const params = new URLSearchParams();
+    if (filters?.form_type) params.set('form_type', filters.form_type);
+    if (filters?.orderby) params.set('orderby', filters.orderby);
+    if (filters?.order) params.set('order', filters.order);
+
+    const separator = this.endpointPrefix.includes('?') ? '&' : '?';
+    const qs = params.toString() ? `${separator}${params.toString()}` : '';
+    const url = `${this.endpointPrefix}/campaigns${qs}`;
+
     const res = await this.sdk.fetchWithAuth(url, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
@@ -523,4 +543,38 @@ Dans les gymnases ou salles polyvalentes à faible connectivité :
    - Si `navigator.onLine === false`, marquer le joueur localement comme pointé et empiler l'appel `{ itemId, checkedIn: true, timestamp }` dans `IndexedDB`.
    - Écouter l'événement `window.addEventListener('online', ...)` pour dépiler les requêtes de pointage dès que la connexion 4G/Wi-Fi est rétablie.
 4. **Export Sharly Chess de Secours** : Rappeler aux arbitres que l'export Sharly Chess reste toujours téléchargeable directement depuis l'administration WordPress (`DAME > Billetterie`) ou intégrable dans la PWA pour générer le fichier `boule_inscrits.csv` d'un simple clic.
+
+---
+
+## 8. Synchronisation HelloAsso & Architecture Réseau
+
+Le backend DAME assure le pont complet entre l'API HelloAsso v5 et la base locale WordPress :
+
+```mermaid
+flowchart LR
+    HA_API["API HelloAsso v5\n(api.helloasso.com)"]
+    WAF["Cloudflare WAF\n(Filtrage User-Agent)"]
+    Client["DAME HelloAsso Client\n(User-Agent: DAME-HelloAsso-Client/5.8.0)"]
+    OAuth["OAuth 2.0 Manager\n(Transient Token + Refresh Token)"]
+    DB[("Tables dame_ha_*\n(Campagnes & Billets)")]
+
+    Client -->|Requête HTTP| WAF
+    WAF -->|200 OK| HA_API
+    Client <-->|Token & Refresh| OAuth
+    Client -->|Sync Campagnes & Items| DB
+```
+
+### 1. Contournement Cloudflare WAF
+HelloAsso protège son infrastructure avec Cloudflare WAF, qui bloque automatiquement les requêtes contenant `WordPress/` dans le header `User-Agent` avec un statut `HTTP 404 — Not Found`. Le client HTTP de DAME surcharge systématiquement ce header avec `DAME-HelloAsso-Client/5.8.0`.
+
+### 2. Normalisation du Slug & Découverte Automatique
+L'utilisateur peut saisir soit le slug pur (`echiquier-ledonien`), soit une URL HelloAsso complète (`https://www.helloasso.com/associations/echiquier-ledonien`). Le client DAME :
+- Extrait et nettoie le slug via `Client::clean_org_slug()`.
+- En cas de réponse 404 sur les routes d'organisation, interroge automatiquement `/v5/users/me/organizations` pour détecter le slug officiel rattaché aux identifiants API et met à jour l'option sans intervention de l'administrateur.
+
+### 3. Gestion du Cycle de Vie des Tokens OAuth 2.0
+- **Mode Normal** : Les tokens d'accès ont une durée de vie de 30 minutes. Ils sont mis en cache dans un transient WordPress (`dame_ha_access_token`).
+- **Renouvellement Automatique** : Lors de l'expiration, le client utilise le `refresh_token` (`grant_type=refresh_token`) ou renégocie un token neuf via `grant_type=client_credentials`.
+- **Support Sandbox** : Une bascule dans `DAME > Réglages > HelloAsso` permet de basculer instantanément vers l'environnement de test HelloAsso (`api.helloasso-sandbox.com`).
+
 

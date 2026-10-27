@@ -81,6 +81,28 @@ class Ticketing_REST {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_campaigns' ),
 					'permission_callback' => array( $this, 'check_pwa_permission' ),
+					'args'                => array(
+						'form_type' => array(
+							'type'              => 'string',
+							'required'          => false,
+							'sanitize_callback' => 'sanitize_text_field',
+							'validate_callback' => static fn( $param ) => is_string( $param ) && strlen( $param ) <= 50,
+						),
+						'orderby'   => array(
+							'type'              => 'string',
+							'required'          => false,
+							'default'           => 'start_date',
+							'enum'              => array( 'start_date', 'title', 'id', 'form_type' ),
+							'sanitize_callback' => 'sanitize_key',
+						),
+						'order'     => array(
+							'type'              => 'string',
+							'required'          => false,
+							'default'           => 'desc',
+							'enum'              => array( 'asc', 'desc', 'ASC', 'DESC' ),
+							'sanitize_callback' => 'sanitize_key',
+						),
+					),
 				),
 			)
 		);
@@ -173,10 +195,24 @@ class Ticketing_REST {
 	/**
 	 * PWA: Retrieves all campaigns with computed stats.
 	 *
+	 * @param WP_REST_Request|null $request Optional request.
 	 * @return WP_REST_Response
 	 */
-	public function get_campaigns(): WP_REST_Response {
-		$campaigns = $this->repository->get_all_campaigns();
+	public function get_campaigns( ?WP_REST_Request $request = null ): WP_REST_Response {
+		$filters = array();
+		if ( $request instanceof WP_REST_Request ) {
+			if ( ! empty( $request['form_type'] ) ) {
+				$filters['form_type'] = sanitize_text_field( (string) $request['form_type'] );
+			}
+			if ( ! empty( $request['orderby'] ) ) {
+				$filters['orderby'] = sanitize_key( (string) $request['orderby'] );
+			}
+			if ( ! empty( $request['order'] ) ) {
+				$filters['order'] = sanitize_key( (string) $request['order'] );
+			}
+		}
+
+		$campaigns = $this->repository->get_all_campaigns( $filters );
 		$result    = array();
 
 		foreach ( $campaigns as $camp ) {

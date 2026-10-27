@@ -4,6 +4,23 @@
 
 ## [5.8.0] - 2026-10-27
 
+### Billetterie & Inscriptions HelloAsso
+- **Module Billetterie & Inscriptions HelloAsso (`DAME\Services\HelloAsso\*`, `DAME\Repositories\TicketingRepository`, `DAME\Admin\Pages\Ticketing`)** :
+  - Client API HelloAsso v5 robuste avec gestion automatique du cycle de vie des jetons OAuth 2.0 (`grant_type=client_credentials` et `grant_type=refresh_token`).
+  - Contournement du blocage Cloudflare WAF d'HelloAsso (erreur HTTP 404 sur les User-Agents contenant "WordPress") par la définition systématique du header personnalisé `DAME-HelloAsso-Client/5.8.0`.
+  - Normalisation automatique du slug de l'organisation et mécanisme d'auto-découverte de secours via `/v5/users/me/organizations` en cas de 404.
+  - Support de l'environnement Bac à sable (Sandbox) paramétrable dans l'onglet des réglages HelloAsso.
+  - Ingestion, normalisation et stockage des dates de réalisation (`startDate` et `endDate`) au format standard MySQL `datetime`.
+  - Tableau d'administration réactif `DAME > Billetterie` avec onglets de filtrage par type (`Tous`, `Événements`, `Adhésions`, `Dons`, `Boutique`, `Paiement direct`), colonne des dates de réalisation et tri chronologique cliquable (avec indicateurs `▲` / `▼`).
+  - Écran de pointage et d'émargement en direct avec bascule de présence instantanée, filtre de recherche par nom/licence/tarif et export CSV normalisé pour le logiciel d'appariement d'échecs Sharly Chess.
+  - Moteur de réconciliation automatique (`Matcher`) associant les participants aux fiches adhérents, préinscriptions et contacts.
+  - Possibilité d'inscription manuelle sur place (paiement en espèces ou par chèque) avec pointage automatique.
+- **API REST & Contrat PWA (`DAME\API\REST\Ticketing_REST`, `src/types/api/ticketing.ts`, `docs/PWA_TICKETING_INTEGRATION.md`)** :
+  - Authentification transparente avec l'extension Simple JWT Login pour la PWA du club et contrôle d'accès sur `manage_dame_ticketing` et `edit_posts`.
+  - Endpoints REST : `/dame/v1/ticketing/campaigns` (supportant les paramètres `form_type`, `orderby`, `order`), `/dame/v1/ticketing/campaigns/{id}/items`, `/dame/v1/ticketing/items/{id}/checkin` et `/dame/v1/ticketing/campaigns/{id}/items`.
+  - Endpoint Webhook `/dame/v1/helloasso/webhook` pour l'ingestion temps réel des notifications de paiement.
+  - Guide d'intégration PWA complet avec types TypeScript et service API client.
+
 ## [5.7.1] - 2026-10-26
 
 ## [5.7.0] - 2026-10-26

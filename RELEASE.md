@@ -1,6 +1,6 @@
 # Release Notes — DAME v5.8.0
 
-**Date :** 9 octobre 2026
+**Date :** 27 octobre 2026
 
 ## 🚀 Changements Majeurs
 
@@ -31,3 +31,18 @@
   - 3. *Salle de jeu* (Adresse pour calcul automatique des temps de trajet et distances).
   - 4. *Représentant(e) & Cachet officiel* (Signataire, logo et cachet/signature).
   - Ajout d'une case à cocher « La salle de jeu est située à la même adresse que le siège social » avec recopie dynamique en temps réel.
+
+### 4. Billetterie, Pointage & Intégration HelloAsso (Web & PWA)
+- **Synchronisation Sécurisée HelloAsso (`DAME\Services\HelloAsso\*`, `DAME\Repositories\TicketingRepository`)** :
+  - Client API v5 avec jetons OAuth 2.0 (rafraîchissement automatique et support de la Sandbox).
+  - Contournement du blocage Cloudflare WAF (erreur HTTP 404) via l'en-tête personnalisé `DAME-HelloAsso-Client/5.8.0`.
+  - Normalisation intelligente du slug d'organisation et mécanisme d'auto-découverte via `/v5/users/me/organizations`.
+  - Ingestion des dates de réalisation des campagnes (`startDate`, `endDate`) au format MySQL.
+- **Interface d'Administration & Émargement (`DAME\Admin\Pages\Ticketing`)** :
+  - Filtres d'onglets rapides par type (`Tous`, `Événements`, `Adhésions`, `Dons`, `Boutique`, `Paiement direct`).
+  - Colonne des dates de réalisation et tri chronologique par défaut (`start_date DESC`) avec colonnes triables.
+  - Émargement des participants en un clic, recherche dynamique instantanée, inscription manuelle sur place et export Sharly Chess (CSV).
+- **API REST & Prêt pour la PWA (`DAME\API\REST\Ticketing_REST`)** :
+  - Authentification transparente Simple JWT Login pour arbitres et encadrants.
+  - Endpoints complets de consultation, filtrage et pointage temps réel.
+  - Guide complet d'intégration PWA dans `docs/PWA_TICKETING_INTEGRATION.md`.
