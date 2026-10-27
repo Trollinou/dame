@@ -45,6 +45,29 @@ class Client {
 	public const REFRESH_TRANSIENT_KEY = 'dame_ha_refresh_token';
 
 	/**
+	 * Cleans and normalizes an organization slug.
+	 * Extracts the slug if a full HelloAsso URL was pasted, trims whitespace and converts to lowercase.
+	 *
+	 * @param string $slug Input slug or URL.
+	 * @return string Normalized slug.
+	 */
+	public static function clean_org_slug( string $slug ): string {
+		$slug = trim( $slug );
+		if ( str_contains( $slug, '/' ) ) {
+			$path = (string) wp_parse_url( $slug, PHP_URL_PATH );
+			if ( empty( $path ) ) {
+				$path = $slug;
+			}
+			$parts = array_values( array_filter( explode( '/', trim( $path, '/' ) ) ) );
+			if ( ! empty( $parts ) ) {
+				$slug = end( $parts );
+			}
+		}
+
+		return strtolower( trim( $slug ) );
+	}
+
+	/**
 	 * Retrieves the configured HelloAsso options.
 	 *
 	 * @return array{client_id: string, client_secret: string, org_slug: string, webhook_token: string, environment: string}
@@ -55,7 +78,7 @@ class Client {
 		return array(
 			'client_id'     => trim( (string) ( $options['helloasso_client_id'] ?? '' ) ),
 			'client_secret' => trim( (string) ( $options['helloasso_client_secret'] ?? '' ) ),
-			'org_slug'      => trim( (string) ( $options['helloasso_org_slug'] ?? '' ) ),
+			'org_slug'      => self::clean_org_slug( (string) ( $options['helloasso_org_slug'] ?? '' ) ),
 			'webhook_token' => trim( (string) ( $options['helloasso_webhook_token'] ?? '' ) ),
 			'environment'   => trim( (string) ( $options['helloasso_environment'] ?? self::ENV_PRODUCTION ) ),
 		);
@@ -285,11 +308,39 @@ class Client {
 			);
 		}
 
-		$res = self::get( 'organizations/' . rawurlencode( $cfg['org_slug'] ) );
+		$cleaned_slug = self::clean_org_slug( $cfg['org_slug'] );
+		$res          = self::get( 'organizations/' . rawurlencode( $cleaned_slug ) );
+
 		if ( is_wp_error( $res ) ) {
+			// If 404, check /users/me/organizations to discover the actual accessible slug(s).
+			$user_orgs = self::get( 'users/me/organizations' );
+			if ( ! is_wp_error( $user_orgs ) && ! empty( $user_orgs ) ) {
+				$available = array();
+				foreach ( $user_orgs as $org ) {
+					if ( is_array( $org ) && ! empty( $org['slug'] ) ) {
+						$available[] = sprintf( '« %s » (slug: %s)', (string) ( $org['name'] ?? '' ), (string) $org['slug'] );
+					}
+				}
+				if ( ! empty( $available ) ) {
+					return array(
+						'success' => false,
+						'message' => sprintf(
+							/* translators: 1: Requested slug, 2: Available organizations */
+							__( 'Organisation introuvable avec le slug « %1$s » (HTTP 404). Vos organisations accessibles avec ces clés API sont : %2$s. Veuillez corriger le slug dans le champ ci-dessous.', 'dame' ),
+							$cfg['org_slug'],
+							implode( ', ', $available )
+						),
+					);
+				}
+			}
+
 			return array(
 				'success' => false,
-				'message' => $res->get_error_message(),
+				'message' => sprintf(
+					/* translators: %s: Organisation slug */
+					__( 'Organisation introuvable avec le slug « %s » (HTTP 404). L\'authentification OAuth2 a bien réussi, mais l\'organisation n\'existe pas sous ce nom. Vérifiez l\'orthographe exacte du slug dans votre URL HelloAsso (ex: helloasso.com/associations/VOTRE-SLUG).', 'dame' ),
+					$cfg['org_slug']
+				),
 			);
 		}
 

@@ -48,5 +48,17 @@ class HelloAssoClientTest extends TestCase {
 		$this->assertSame( 'https://api.helloasso-sandbox.com/oauth2/token', Client::get_oauth_url() );
 		$this->assertSame( 'https://api.helloasso-sandbox.com/v5', Client::get_api_base_url() );
 	}
+
+	/**
+	 * Test slug normalization.
+	 */
+	public function test_clean_org_slug(): void {
+		$this->assertSame( 'mon-club', Client::clean_org_slug( 'mon-club' ) );
+		$this->assertSame( 'mon-club', Client::clean_org_slug( 'MON-CLUB' ) );
+		$this->assertSame( 'mon-club', Client::clean_org_slug( '  mon-club/  ' ) );
+		$this->assertSame( 'mon-club', Client::clean_org_slug( 'https://www.helloasso.com/associations/mon-club' ) );
+		$this->assertSame( 'mon-club', Client::clean_org_slug( 'https://www.helloasso.com/associations/mon-club/' ) );
+		$this->assertSame( 'mon-club', Client::clean_org_slug( 'helloasso.com/associations/mon-club' ) );
+	}
 }
 
