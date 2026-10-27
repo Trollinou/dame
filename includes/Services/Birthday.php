@@ -11,6 +11,7 @@ namespace DAME\Services;
 
 use WP_Query;
 use DateTime;
+use DAME\Services\Season_Service;
 
 /**
  * Class Birthday
@@ -49,30 +50,7 @@ class Birthday {
 	 * @return array<int>
 	 */
 	private function get_filtered_season_ids(): array {
-		$md = wp_date( 'm-d' );
-		if ( $md >= '07-01' && $md <= '10-31' ) {
-			$year       = (int) wp_date( 'Y' );
-			$season_ids = array();
-
-			$season_1_name = sprintf( 'Saison %d/%d', $year - 1, $year );
-			$term_1        = get_term_by( 'name', $season_1_name, 'dame_saison_adhesion' );
-			if ( $term_1 ) {
-				$season_ids[] = (int) $term_1->term_id;
-			}
-
-			$season_2_name = sprintf( 'Saison %d/%d', $year, $year + 1 );
-			$term_2        = get_term_by( 'name', $season_2_name, 'dame_saison_adhesion' );
-			if ( $term_2 ) {
-				$season_ids[] = (int) $term_2->term_id;
-			}
-
-			if ( ! empty( $season_ids ) ) {
-				return $season_ids;
-			}
-		}
-
-		$season_id = (int) get_option( 'dame_current_season_tag_id' );
-		return $season_id ? array( $season_id ) : array();
+		return Season_Service::get_valid_membership_season_ids();
 	}
 
 	/**
@@ -196,22 +174,17 @@ class Birthday {
 			$upcoming = array();
 
 			// Identifier la saison N/N+1 lors de la période de chevauchement (01/07 au 31/10).
-			$md             = wp_date( 'm-d' );
-			$in_overlap     = ( $md >= '07-01' && $md <= '10-31' );
+			$in_overlap     = Season_Service::is_in_membership_overlap();
 			$next_season_id = 0;
 			$season_cutoff  = null;
 
 			if ( $in_overlap ) {
 				$year             = (int) wp_date( 'Y' );
-				$next_season_term = get_term_by( 'name', sprintf( 'Saison %d/%d', $year, $year + 1 ), 'dame_saison_adhesion' );
+				$next_season_term = get_term_by( 'name', Season_Service::format_season_name( $year, $year + 1 ), 'dame_saison_adhesion' );
 				if ( $next_season_term ) {
 					$next_season_id = (int) $next_season_term->term_id;
 				}
-				try {
-					$season_cutoff = new DateTime( $year . '-10-31 23:59:59', new \DateTimeZone( 'UTC' ) );
-				} catch ( \Exception $e ) {
-					$season_cutoff = null;
-				}
+				$season_cutoff = Season_Service::get_membership_expiry_date( $year - 1 );
 			}
 
 			foreach ( $ids as $id ) {

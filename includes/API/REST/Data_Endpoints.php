@@ -13,6 +13,7 @@ use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
 use DAME\Services\Data_Provider;
+use DAME\Services\Season_Service;
 
 /**
  * Class Data_Endpoints
@@ -154,9 +155,7 @@ class Data_Endpoints {
 	 * @return WP_REST_Response
 	 */
 	public function get_pwa_config(): WP_REST_Response {
-		$current_season_tag_id = (int) get_option( 'dame_current_season_tag_id' );
-		$current_season_term   = get_term( $current_season_tag_id, 'dame_saison_adhesion' );
-		$current_season_name   = ( $current_season_term && ! is_wp_error( $current_season_term ) ) ? $current_season_term->name : '';
+		$current_season_name = Season_Service::get_current_season_name();
 
 		// Détecte si le plugin ROI est actif (classe principale chargée).
 		$roi_active = class_exists( 'ROI\\Core\\Plugin' );

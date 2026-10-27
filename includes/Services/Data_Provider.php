@@ -601,13 +601,8 @@ class Data_Provider {
 	 * @return bool True if renewal, false if first registration.
 	 */
 	public static function is_adherent_renewal( int $adherent_id, int $target_season_id ): bool {
-		$target_term = get_term( $target_season_id, 'dame_saison_adhesion' );
-		$target_year = 0;
-		if ( $target_term && ! is_wp_error( $target_term ) ) {
-			if ( preg_match( '/(\d{4})/', $target_term->name, $matches ) ) {
-				$target_year = (int) $matches[1];
-			}
-		}
+		$target_years = Season_Service::parse_season_years( $target_season_id );
+		$target_year  = $target_years['start'] ?? 0;
 
 		$terms = wp_get_post_terms( $adherent_id, 'dame_saison_adhesion' );
 		if ( empty( $terms ) || is_wp_error( $terms ) ) {
@@ -620,11 +615,9 @@ class Data_Provider {
 			}
 
 			if ( $target_year > 0 ) {
-				if ( preg_match( '/(\d{4})/', $term->name, $matches ) ) {
-					$prev_year = (int) $matches[1];
-					if ( $prev_year < $target_year ) {
-						return true;
-					}
+				$term_years = Season_Service::parse_season_years( $term );
+				if ( $term_years && $term_years['start'] < $target_year ) {
+					return true;
 				}
 			} else {
 				// Fallback if no year pattern detected: any other existing term indicates a prior membership.
