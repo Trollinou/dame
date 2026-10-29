@@ -1,0 +1,506 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixins" as *;
+
+/**
+ * Ticketing Campaign View Styles
+ * Performance & Safari WebKit optimized (no backdrop-filter blur, hardware isolation).
+ */
+
+.dame-ticketing-wrap {
+	// Header KPIs
+	.dame-ticketing-kpi-bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 16px;
+		background: #ffffff;
+		border: 1px solid #ccd0d4;
+		border-radius: 6px;
+		padding: 10px 16px;
+		margin: 12px 0 16px;
+		font-size: 13px;
+
+		.dame-kpi-item {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			color: #50575e;
+
+			strong {
+				color: #1d2327;
+				font-weight: 600;
+			}
+
+			&--success {
+				strong {
+					color: #008a20;
+				}
+			}
+
+			&--highlight {
+				color: #2271b1;
+				strong {
+					color: #2271b1;
+				}
+			}
+		}
+
+		.dame-kpi-separator {
+			color: #dcdcde;
+			font-size: 12px;
+		}
+
+		.dame-kpi-actions {
+			margin-left: auto;
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+		}
+	}
+
+	// Filter Toolbar
+	.dame-ticketing-toolbar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		margin-bottom: 12px;
+
+		.dame-toolbar-left {
+			display: inline-flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.dame-toolbar-right {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			margin-left: auto;
+		}
+	}
+
+	// Status Filter Button Group
+	.dame-status-filter-group {
+		display: inline-flex;
+		border: 1px solid #8c8f94;
+		border-radius: 4px;
+		overflow: hidden;
+
+		.dame-status-btn {
+			padding: 4px 10px;
+			background: #ffffff;
+			border: none;
+			border-right: 1px solid #8c8f94;
+			color: #2c3338;
+			font-size: 13px;
+			line-height: 1.4;
+			cursor: pointer;
+			text-decoration: none;
+			transition: background-color 0.1s ease;
+
+			&:last-child {
+				border-right: none;
+			}
+
+			&:hover {
+				background-color: #f0f0f1;
+			}
+
+			&.active {
+				background-color: #2271b1;
+				color: #ffffff;
+				font-weight: 600;
+			}
+
+			.count {
+				font-size: 11px;
+				opacity: 0.85;
+			}
+		}
+	}
+
+	// Multi-select Tier Dropdown
+	.dame-tier-dropdown-wrapper {
+		position: relative;
+		display: inline-block;
+
+		.dame-dropdown-trigger {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 4px 10px;
+			background: #ffffff;
+			border: 1px solid #8c8f94;
+			border-radius: 4px;
+			font-size: 13px;
+			color: #2c3338;
+			cursor: pointer;
+
+			&:hover {
+				border-color: #2271b1;
+				color: #2271b1;
+			}
+
+			.dashicons {
+				font-size: 16px;
+				width: 16px;
+				height: 16px;
+			}
+
+			.badge {
+				background: #2271b1;
+				color: #ffffff;
+				padding: 1px 6px;
+				border-radius: 10px;
+				font-size: 11px;
+				font-weight: 600;
+			}
+		}
+
+		.dame-dropdown-menu {
+			position: absolute;
+			top: calc(100% + 4px);
+			left: 0;
+			z-index: 1000;
+			width: 320px;
+			max-width: 90vw;
+			background: #ffffff;
+			border: 1px solid #ccd0d4;
+			border-radius: 4px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+			padding: 8px;
+			display: none;
+
+			&.open {
+				display: block;
+			}
+
+			.dame-dropdown-search {
+				margin-bottom: 8px;
+
+				input {
+					width: 100%;
+					box-sizing: border-box;
+					padding: 4px 8px;
+					font-size: 12px;
+				}
+			}
+
+			.dame-dropdown-actions {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 4px 2px 8px;
+				border-bottom: 1px solid #f0f0f1;
+				margin-bottom: 6px;
+				font-size: 12px;
+
+				button {
+					background: none;
+					border: none;
+					color: #2271b1;
+					cursor: pointer;
+					padding: 0;
+
+					&:hover {
+						text-decoration: underline;
+					}
+				}
+			}
+
+			.dame-dropdown-list {
+				max-height: 220px;
+				overflow-y: auto;
+				overscroll-behavior: contain;
+
+				label {
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					padding: 4px 6px;
+					border-radius: 3px;
+					font-size: 12px;
+					cursor: pointer;
+
+					&:hover {
+						background: #f6f7f7;
+					}
+
+					.tier-title {
+						flex: 1;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+						margin-left: 6px;
+					}
+
+					.tier-count {
+						color: #646970;
+						font-size: 11px;
+						margin-left: 6px;
+					}
+				}
+			}
+		}
+	}
+
+	// Search Input
+	.dame-search-box {
+		position: relative;
+		display: inline-block;
+
+		input[type="search"] {
+			padding: 4px 8px 4px 26px;
+			border: 1px solid #8c8f94;
+			border-radius: 4px;
+			font-size: 13px;
+			height: 30px;
+			width: 220px;
+			transition: width 0.2s ease, border-color 0.2s ease;
+
+			&:focus {
+				width: 260px;
+				border-color: #2271b1;
+			}
+		}
+
+		.dashicons-search {
+			position: absolute;
+			left: 6px;
+			top: 50%;
+			transform: translateY(-50%);
+			color: #646970;
+			font-size: 16px;
+			width: 16px;
+			height: 16px;
+			pointer-events: none;
+		}
+	}
+
+	// Sharly Export & Tools Dropdown
+	.dame-action-dropdown {
+		position: relative;
+		display: inline-block;
+
+		.dame-action-menu {
+			position: absolute;
+			top: calc(100% + 4px);
+			right: 0;
+			z-index: 1000;
+			min-width: 240px;
+			background: #ffffff;
+			border: 1px solid #ccd0d4;
+			border-radius: 4px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+			padding: 4px 0;
+			display: none;
+
+			&.open {
+				display: block;
+			}
+
+			a, button {
+				display: block;
+				width: 100%;
+				text-align: left;
+				padding: 8px 14px;
+				background: none;
+				border: none;
+				color: #2c3338;
+				font-size: 13px;
+				text-decoration: none;
+				cursor: pointer;
+				box-sizing: border-box;
+
+				&:hover {
+					background-color: #f0f6fc;
+					color: #2271b1;
+				}
+
+				.dashicons {
+					margin-right: 6px;
+					font-size: 16px;
+					width: 16px;
+					height: 16px;
+					vertical-align: text-bottom;
+				}
+			}
+
+			.dame-menu-divider {
+				height: 1px;
+				background-color: #f0f0f1;
+				margin: 4px 0;
+			}
+		}
+	}
+
+	// Table Styling
+	.wp-list-table {
+		border-radius: 4px;
+		overflow: hidden;
+
+		th.sortable {
+			cursor: pointer;
+			user-select: none;
+
+			&:hover {
+				background-color: #f0f0f1;
+			}
+
+			.sort-indicator {
+				font-size: 10px;
+				margin-left: 4px;
+				color: #2271b1;
+			}
+		}
+
+		tr.is-checked-in {
+			background-color: #f0f9eb;
+		}
+
+		.dame-checkin-btn {
+			min-width: 76px;
+			text-align: center;
+			cursor: pointer;
+			transition: all 0.15s ease;
+
+			&.is-present {
+				background-color: #008a20;
+				border-color: #00701a;
+				color: #ffffff;
+
+				&:hover {
+					background-color: #b32d2e;
+					border-color: #9f2425;
+				}
+			}
+
+			&.is-loading {
+				opacity: 0.6;
+				pointer-events: none;
+			}
+		}
+	}
+}
+
+// Modal Styles (WebKit / macOS optimized: hardware isolation, no backdrop blur)
+.dame-ticketing-modal-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100050;
+	background-color: rgba(15, 23, 42, 0.65);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	box-sizing: border-box;
+
+	&.open {
+		display: flex;
+	}
+
+	.dame-ticketing-modal {
+		background: #ffffff;
+		border-radius: 8px;
+		width: 100%;
+		max-width: 580px;
+		max-height: 90vh;
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+		display: flex;
+		flex-direction: column;
+		isolation: isolate;
+		transform: translateZ(0);
+		contain: layout style;
+		overflow: hidden;
+
+		.dame-modal-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 14px 18px;
+			border-bottom: 1px solid #e2e8f0;
+			background: #f8fafc;
+
+			h2 {
+				margin: 0;
+				font-size: 15px;
+				font-weight: 600;
+				color: #0f172a;
+				display: flex;
+				align-items: center;
+				gap: 8px;
+
+				.dashicons {
+					color: #2271b1;
+				}
+			}
+
+			.dame-modal-close-btn {
+				background: none;
+				border: none;
+				cursor: pointer;
+				color: #64748b;
+				padding: 4px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border-radius: 4px;
+
+				&:hover {
+					background-color: #e2e8f0;
+					color: #0f172a;
+				}
+			}
+		}
+
+		.dame-modal-body {
+			padding: 18px;
+			overflow-y: auto;
+			overscroll-behavior: contain;
+
+			.form-grid {
+				display: grid;
+				grid-template-columns: repeat(2, 1fr);
+				gap: 12px;
+
+				@media (max-width: 600px) {
+					grid-template-columns: 1fr;
+				}
+
+				.form-group {
+					margin: 0;
+
+					label {
+						display: block;
+						font-weight: 600;
+						font-size: 12px;
+						margin-bottom: 4px;
+						color: #334155;
+					}
+
+					input, select {
+						width: 100%;
+						box-sizing: border-box;
+					}
+
+					&.full-width {
+						grid-column: 1 / -1;
+					}
+				}
+			}
+		}
+
+		.dame-modal-footer {
+			display: flex;
+			align-items: center;
+			justify-content: flex-end;
+			gap: 10px;
+			padding: 12px 18px;
+			border-top: 1px solid #e2e8f0;
+			background: #f8fafc;
+		}
+	}
+}

@@ -445,10 +445,10 @@ class TicketingRepository {
 	}
 
 	/**
-	 * Retrieves items belonging to a campaign, optionally filtered by checked_in or tier.
+	 * Retrieves items belonging to a campaign, optionally filtered by checked_in, tier or multiple tiers.
 	 *
 	 * @param int                  $campaign_id Campaign ID.
-	 * @param array<string, mixed> $filters     Optional filters: checked_in (bool), tier (string).
+	 * @param array<string, mixed> $filters     Optional filters: checked_in (bool), tier (string), tiers (array<int, string>).
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function get_campaign_items( int $campaign_id, array $filters = array() ): array {
@@ -464,65 +464,37 @@ class TicketingRepository {
 			return $cached;
 		}
 
-		$where        = array( 'campaign_id = %d' );
-		$query_params = array( $table, $campaign_id );
+		$where_parts = array( 'campaign_id = %d' );
+		$params      = array( $campaign_id );
 
 		if ( isset( $filters['checked_in'] ) ) {
-			$where[]        = 'checked_in = %d';
-			$query_params[] = $filters['checked_in'] ? 1 : 0;
+			$where_parts[] = 'checked_in = %d';
+			$params[]      = $filters['checked_in'] ? 1 : 0;
 		}
 
-		if ( ! empty( $filters['tier'] ) ) {
-			$where[]        = 'tier_name = %s';
-			$query_params[] = sanitize_text_field( (string) $filters['tier'] );
+		if ( ! empty( $filters['tiers'] ) && is_array( $filters['tiers'] ) ) {
+			$placeholders = array();
+			foreach ( $filters['tiers'] as $t ) {
+				$placeholders[] = '%s';
+				$params[]       = sanitize_text_field( (string) $t );
+			}
+			$where_parts[] = 'tier_name IN (' . implode( ', ', $placeholders ) . ')';
+		} elseif ( ! empty( $filters['tier'] ) ) {
+			$where_parts[] = 'tier_name = %s';
+			$params[]      = sanitize_text_field( (string) $filters['tier'] );
 		}
 
-		$where_clause = implode( ' AND ', $where );
-		if ( 'campaign_id = %d' === $where_clause ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$rows = $this->db->get_results(
-				$this->db->prepare(
-					'SELECT * FROM %i WHERE campaign_id = %d ORDER BY participant_last_name ASC, participant_first_name ASC',
-					$table,
-					$campaign_id
-				),
-				ARRAY_A
-			);
-		} elseif ( isset( $filters['checked_in'] ) && ! empty( $filters['tier'] ) ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$rows = $this->db->get_results(
-				$this->db->prepare(
-					'SELECT * FROM %i WHERE campaign_id = %d AND checked_in = %d AND tier_name = %s ORDER BY participant_last_name ASC, participant_first_name ASC',
-					$table,
-					$campaign_id,
-					$filters['checked_in'] ? 1 : 0,
-					sanitize_text_field( (string) $filters['tier'] )
-				),
-				ARRAY_A
-			);
-		} elseif ( isset( $filters['checked_in'] ) ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$rows = $this->db->get_results(
-				$this->db->prepare(
-					'SELECT * FROM %i WHERE campaign_id = %d AND checked_in = %d ORDER BY participant_last_name ASC, participant_first_name ASC',
-					$table,
-					$campaign_id,
-					$filters['checked_in'] ? 1 : 0
-				),
-				ARRAY_A
-			);
-		} else {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$rows = $this->db->get_results(
-				$this->db->prepare(
-					'SELECT * FROM %i WHERE campaign_id = %d AND tier_name = %s ORDER BY participant_last_name ASC, participant_first_name ASC',
-					$table,
-					$campaign_id,
-					sanitize_text_field( (string) $filters['tier'] )
-				),
-				ARRAY_A
-			);
-		}
+		$where_clause = implode( ' AND ', $where_parts );
+		$sql          = "SELECT * FROM %i WHERE {$where_clause} ORDER BY participant_last_name ASC, participant_first_name ASC";
+
+		// Prepend table placeholder.
+		array_unshift( $params, $table );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$rows = $this->db->get_results(
+			$this->db->prepare( $sql, ...$params ),
+			ARRAY_A
+		);
 
 		$result = is_array( $rows ) ? $rows : array();
 		wp_cache_set( $cache_key, $result, self::CACHE_GROUP, 600 );
@@ -580,6 +552,27 @@ class TicketingRepository {
 		wp_cache_delete( 'campaign_stats_' . $campaign_id, self::CACHE_GROUP );
 
 		return false !== $result;
+	}
+
+	/**
+	 * Retrieves a single ticket item by ID.
+	 *
+	 * @param int $item_id Ticket item ID.
+	 * @return array<string, mixed>|null
+	 */
+	public function get_item( int $item_id ): ?array {
+		if ( $item_id <= 0 ) {
+			return null;
+		}
+
+		$table = $this->get_items_table();
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$row = $this->db->get_row(
+			$this->db->prepare( 'SELECT * FROM %i WHERE id = %d LIMIT 1', $table, $item_id ),
+			ARRAY_A
+		);
+
+		return is_array( $row ) ? $row : null;
 	}
 
 	/**
