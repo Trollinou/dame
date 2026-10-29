@@ -33,6 +33,9 @@ class FormRenderer {
 		$state_groups_saisonnier = isset( $saved_state['dame_recipient_groups_saisonnier'] ) ? array_map( 'absint', (array) $saved_state['dame_recipient_groups_saisonnier'] ) : array();
 		$state_groups_permanent  = isset( $saved_state['dame_recipient_groups_permanent'] ) ? array_map( 'absint', (array) $saved_state['dame_recipient_groups_permanent'] ) : array();
 		$state_contact_types     = isset( $saved_state['dame_recipient_contact_types'] ) ? array_map( 'absint', (array) $saved_state['dame_recipient_contact_types'] ) : array();
+		$state_ha_method         = isset( $saved_state['dame_ha_method'] ) ? sanitize_key( (string) $saved_state['dame_ha_method'] ) : 'group';
+		$state_ha_campaigns      = isset( $saved_state['dame_recipient_ha_campaigns'] ) ? array_map( 'absint', (array) $saved_state['dame_recipient_ha_campaigns'] ) : array();
+		$state_manual_ha_items   = isset( $saved_state['dame_manual_ha_items'] ) ? array_map( 'absint', (array) $saved_state['dame_manual_ha_items'] ) : array();
 
 		$state_depts             = isset( $saved_state['dame_contact_depts'] ) ? array_map( 'sanitize_text_field', (array) $saved_state['dame_contact_depts'] ) : array();
 		$state_regions           = isset( $saved_state['dame_contact_regions'] ) ? array_map( 'sanitize_text_field', (array) $saved_state['dame_contact_regions'] ) : array();
@@ -112,6 +115,10 @@ class FormRenderer {
 				'order'          => 'ASC',
 			)
 		);
+
+		$ticketing_repo = new \DAME\Repositories\TicketingRepository();
+		$ha_campaigns   = $ticketing_repo->get_campaigns_with_active_items();
+		$ha_items       = $ticketing_repo->get_all_active_items();
 		?>
 		<div class="wrap">
 			<h1>
@@ -123,15 +130,17 @@ class FormRenderer {
 
 			<?php $this->render_notices( $success, $count, $error, $state_had_attachment ); ?>
 
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data">
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data" class="dame-mailing-form-wrap">
 				<input type="hidden" name="action" value="dame_process_mailing">
 				<?php wp_nonce_field( 'dame_mailing_action', 'dame_mailing_nonce' ); ?>
 
-				<table class="form-table">
-					<tr>
-						<th scope="row"><label for="dame_message_to_send"><?php esc_html_e( 'Message à envoyer', 'dame' ); ?></label></th>
-						<td>
-							<select name="dame_message_to_send" id="dame_message_to_send" required>
+				<!-- PARAMÈTRES GÉNÉRAUX EN GRILLE 2x2 COMPACTE -->
+				<div class="dame-mailing-settings-card">
+					<div class="dame-mailing-settings-grid">
+						<!-- Ligne 1, Col 1 : Message à envoyer -->
+						<div class="dame-mailing-field">
+							<label for="dame_message_to_send"><strong><?php esc_html_e( 'Message à envoyer', 'dame' ); ?></strong> <span class="description" style="color: #d63638;">*</span></label>
+							<select name="dame_message_to_send" id="dame_message_to_send" required class="widefat">
 								<option value=""><?php esc_html_e( 'Sélectionner un message...', 'dame' ); ?></option>
 								<?php foreach ( $messages as $message ) : ?>
 									<?php $status = get_post_meta( $message->ID, '_dame_message_status', true ); ?>
@@ -141,39 +150,39 @@ class FormRenderer {
 							<div id="dame_message_warning" style="color: #d63638; display: none; margin-top: 5px;">
 								<?php esc_html_e( 'Ce message a déjà été envoyé. Veuillez le dupliquer pour faire un nouvel envoi.', 'dame' ); ?>
 							</div>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="dame_sending_priority"><?php esc_html_e( 'Priorité d\'envoi', 'dame' ); ?> <span class="description" style="color: #d63638;">*</span></label></th>
-						<td>
-							<select name="dame_sending_priority" id="dame_sending_priority" required>
+						</div>
+
+						<!-- Ligne 1, Col 2 : Pièce jointe -->
+						<div class="dame-mailing-field">
+							<label for="dame_message_attachment"><strong><?php esc_html_e( 'Pièce jointe', 'dame' ); ?></strong> <span class="description">(<?php esc_html_e( 'Optionnel', 'dame' ); ?>)</span></label>
+							<input type="file" name="dame_message_attachment" id="dame_message_attachment" class="widefat">
+							<p class="description"><?php esc_html_e( 'Le fichier sera envoyé à tous les destinataires.', 'dame' ); ?></p>
+						</div>
+
+						<!-- Ligne 2, Col 1 : Priorité d'envoi -->
+						<div class="dame-mailing-field">
+							<label for="dame_sending_priority"><strong><?php esc_html_e( 'Priorité d\'envoi', 'dame' ); ?></strong> <span class="description" style="color: #d63638;">*</span></label>
+							<select name="dame_sending_priority" id="dame_sending_priority" required class="widefat">
 								<option value=""><?php esc_html_e( '— Sélectionner la priorité d\'envoi —', 'dame' ); ?></option>
 								<option value="10" <?php selected( $state_priority, 10 ); ?>><?php esc_html_e( 'Normale (Au fil de l\'eau)', 'dame' ); ?></option>
 								<option value="20" <?php selected( $state_priority, 20 ); ?>><?php esc_html_e( 'Nocturne / Basse (Plage 22h00 – 06h00)', 'dame' ); ?></option>
 							</select>
 							<p class="description"><?php esc_html_e( 'Obligatoire. La priorité nocturne reporte automatiquement l\'expédition des envois de masse à la fenêtre 22h00 – 06h00.', 'dame' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="dame_scheduled_at"><?php esc_html_e( 'Date et heure d\'envoi programmé (Optionnel)', 'dame' ); ?></label></th>
-						<td>
-							<input type="datetime-local" name="dame_scheduled_at" id="dame_scheduled_at" value="<?php echo esc_attr( $state_scheduled_at ); ?>" min="<?php echo esc_attr( $min_scheduled_at ); ?>" class="regular-text">
-							<p class="description"><?php esc_html_e( 'Laissez vide pour un envoi immédiat selon la priorité choisie. En cas de priorité Nocturne (20), la date programmée définit l\'échéance à partir de laquelle l\'envoi nocturne (22h00 – 06h00) débutera.', 'dame' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="dame_message_attachment"><?php esc_html_e( 'Pièce jointe (Optionnel)', 'dame' ); ?></label></th>
-						<td>
-							<input type="file" name="dame_message_attachment" id="dame_message_attachment">
-							<p class="description"><?php esc_html_e( 'Le fichier sera envoyé à tous les destinataires.', 'dame' ); ?></p>
-						</td>
-					</tr>
-				</table>
+						</div>
 
-				<!-- DEUX COLONNES -->
+						<!-- Ligne 2, Col 2 : Date d'envoi programmé -->
+						<div class="dame-mailing-field">
+							<label for="dame_scheduled_at"><strong><?php esc_html_e( 'Date et heure d\'envoi programmé', 'dame' ); ?></strong> <span class="description">(<?php esc_html_e( 'Optionnel', 'dame' ); ?>)</span></label>
+							<input type="datetime-local" name="dame_scheduled_at" id="dame_scheduled_at" value="<?php echo esc_attr( $state_scheduled_at ); ?>" min="<?php echo esc_attr( $min_scheduled_at ); ?>" class="widefat">
+							<p class="description"><?php esc_html_e( 'Laissez vide pour un envoi immédiat selon la priorité choisie. En cas de priorité Nocturne (20), la date programmée définit l\'échéance à partir de laquelle l\'envoi nocturne (22h00 – 06h00) débutera.', 'dame' ); ?></p>
+						</div>
+					</div>
+				</div>
+
+				<!-- TROIS COLONNES (25% Adhérents, 50% Contacts, 25% HelloAsso) -->
 				<div class="dame-mailing-columns" style="display:flex; gap: 20px;">
-					<!-- Colonne Gauche : Adhérents -->
-					<div class="dame-mailing-col" style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4;">
+					<!-- Colonne 1 : Adhérents (25%) -->
+					<div class="dame-mailing-col dame-mailing-col--adherents" style="flex:1; min-width: 250px; padding: 15px; background: #fff; border: 1px solid #ccd0d4;">
 						<h3><?php esc_html_e( 'Filtres Adhérents', 'dame' ); ?></h3>
 
 						<div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
@@ -232,8 +241,8 @@ class FormRenderer {
 						</div>
 					</div>
 
-					<!-- Colonne Droite : Contacts -->
-					<div class="dame-mailing-col" style="flex:1; padding: 15px; background: #fff; border: 1px solid #ccd0d4;">
+					<!-- Colonne 2 : Contacts (50%) -->
+					<div class="dame-mailing-col dame-mailing-col--contacts" style="flex:2; min-width: 350px; padding: 15px; background: #fff; border: 1px solid #ccd0d4;">
 						<h3><?php esc_html_e( 'Filtres Contacts', 'dame' ); ?></h3>
 
 						<div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
@@ -299,10 +308,86 @@ class FormRenderer {
 							?>
 						</div>
 					</div>
+
+					<!-- Colonne 3 : HelloAsso (25%) -->
+					<div class="dame-mailing-col dame-mailing-col--helloasso" style="flex:1; min-width: 250px; padding: 15px; background: #fff; border: 1px solid #ccd0d4;">
+						<h3><?php esc_html_e( 'Filtres HelloAsso', 'dame' ); ?></h3>
+
+						<div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+							<label><input type="radio" name="dame_ha_method" value="group" <?php checked( $state_ha_method, 'group' ); ?>> <?php esc_html_e( 'Par critères', 'dame' ); ?></label>
+							<label style="margin-left: 15px;"><input type="radio" name="dame_ha_method" value="manual" <?php checked( $state_ha_method, 'manual' ); ?>> <?php esc_html_e( 'Sélection manuelle', 'dame' ); ?></label>
+						</div>
+
+						<div class="dame-ha-group-wrap <?php echo 'group' === $state_ha_method ? '' : 'dame-hidden'; ?>">
+							<div style="margin-bottom: 15px;">
+								<label><strong><?php esc_html_e( 'Campagnes & Événements HelloAsso', 'dame' ); ?></strong></label><br>
+								<?php
+								$campaign_items_map = array();
+								foreach ( $ha_campaigns as $camp ) {
+									$campaign_items_map[ (int) $camp['id'] ] = sprintf(
+										'%s (%d)',
+										(string) $camp['title'],
+										(int) ( $camp['active_items_count'] ?? 0 )
+									);
+								}
+								$this->render_searchable_list(
+									__( 'Rechercher une campagne...', 'dame' ),
+									$campaign_items_map,
+									'dame_recipient_ha_campaigns',
+									$state_ha_campaigns,
+									fn( $label ) => $label
+								);
+								?>
+							</div>
+						</div>
+
+						<div class="dame-ha-manual-wrap <?php echo 'manual' === $state_ha_method ? '' : 'dame-hidden'; ?>">
+							<?php
+							$participant_items_map = array();
+							foreach ( $ha_items as $item ) {
+								$part_fn    = trim( (string) ( $item['participant_first_name'] ?? '' ) );
+								$part_ln    = trim( (string) ( $item['participant_last_name'] ?? '' ) );
+								$part_label = trim( $part_fn . ' ' . $part_ln );
+								if ( empty( $part_label ) ) {
+									$part_label = __( 'Participant', 'dame' );
+								}
+								$participant_items_map[ (int) $item['id'] ] = $item;
+							}
+							$this->render_searchable_list(
+								__( 'Rechercher un participant...', 'dame' ),
+								$participant_items_map,
+								'dame_manual_ha_items',
+								$state_manual_ha_items,
+								function ( $item ) {
+									$part_fn    = trim( (string) ( $item['participant_first_name'] ?? '' ) );
+									$part_ln    = trim( (string) ( $item['participant_last_name'] ?? '' ) );
+									$part_label = trim( $part_fn . ' ' . $part_ln );
+									if ( empty( $part_label ) ) {
+										$part_label = __( 'Participant', 'dame' );
+									}
+									$camp_title = (string) ( $item['campaign_title'] ?? '' );
+									return sprintf( '%s — %s', $part_label, $camp_title );
+								},
+								fn( $item ) => sprintf( 'data-campaign="%d"', (int) ( $item['campaign_id'] ?? 0 ) )
+							);
+							?>
+						</div>
+					</div>
 				</div>
 
-				<div style="margin-top: 30px; padding: 20px; background: #f0f0f1; border: 1px solid #ccd0d4;">
-					<?php submit_button( __( 'Envoyer le message', 'dame' ), 'primary large' ); ?>
+				<!-- BARRE D'ACTION STICKY (Toujours accessible sans scroll) -->
+				<div class="dame-mailing-sticky-bar">
+					<div class="dame-mailing-sticky-info">
+						<span class="dame-sticky-icon" aria-hidden="true">✉️</span>
+						<span id="dame_sticky_message_name" class="dame-sticky-message-name"><?php esc_html_e( 'Aucun message sélectionné', 'dame' ); ?></span>
+						<span class="dame-sticky-sep">|</span>
+						<span id="dame_sticky_priority_name" class="dame-sticky-priority-name"><?php esc_html_e( 'Priorité non définie', 'dame' ); ?></span>
+					</div>
+					<div class="dame-mailing-sticky-action">
+						<button type="submit" id="dame_submit_mailing_btn" class="button button-primary button-large">
+							<?php esc_html_e( 'Envoyer le message', 'dame' ); ?> ➔
+						</button>
+					</div>
 				</div>
 			</form>
 		</div>

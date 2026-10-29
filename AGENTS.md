@@ -60,9 +60,11 @@
 - **Sécurité WP** : Nonce + Capability checks (`manage_options`, `edit_posts`) systématiques. Input sanitization + Output escaping (`esc_html`, `esc_attr`). Ne jamais utiliser de mots-clés réservés du langage (ex: `$default`) comme noms d'arguments (utiliser `$default_value`).
 - **Post Meta** : Attribut `name` HTML sans `_`, mais enregistrement meta BDD avec `_` (ex: `_dame_identity_name`). Déclaration systématique avec `register_post_meta()` et `show_in_rest => true` pour Block Bindings & REST API.
 - **Shortcodes** : Capturer `wp_editor()` via `ob_start()` / `ob_get_clean()`.
-- **Mailing, Résolution de Destinataires & Filtres Géographiques** :
-  - **Étanchéité Serveur** : Le résolveur de destinataires (`RecipientResolver`) ne doit jamais présumer que le client JavaScript a converti les critères de plus haut niveau (ex: sélection d'une région) en critères fins (ex: départements cochés).
-  - **Prise en compte des Régions** : Toute sélection de régions (`dame_contact_regions`) doit être résolue côté serveur en dérivant les départements via `Data_Provider::get_departments_by_region()` et en combinant dans une `meta_query` (relation `OR`) la région (`_dame_contact_region`) et les départements ciblés (`_dame_contact_department`), afin d'empêcher toute fuite vers des contacts non concernés.
+- **Mailing, Résolution de Destinataires & Filtres Métier** :
+  - **Résolution Adhérents** : Formule stricte `Sexe AND ( Groupe Permanent OR (Saisons AND Groupe Saisonnier) )`. Au moins une saison ou un groupe permanent doit être sélectionné. Si un groupe saisonnier est coché sans saison, la branche saisonnière n'extrait aucun adhérent. Le filtre Sexe restreint l'ensemble.
+  - **Régions comme Raccourci UI** : Les régions servent d'outil d'action groupée pour cocher/décocher rapidement des départements. Elles disposent d'un état tri-state (`indeterminate`) lorsqu'une partie seulement de leurs départements est cochée.
+  - **Départements comme Source de Vérité** : Le filtrage géographique s'effectue strictement sur les départements explicitement cochés (`_dame_contact_department IN (...)`). Si des départements sont renseignés, aucune clause d'élargissement régional (`OR _dame_contact_region`) ne doit être appliquée afin de respecter scrupuleusement les départements décochés par l'utilisateur.
+  - **Prérequis Type de Contact** : Au moins une catégorie de contact (`dame_contact_type`) doit être sélectionnée pour cibler des contacts par critères.
 
 ## 5. QA, Tests & Conformité
 - **Analyse Statique & Standards** : Config PHPStan Level 7 (`phpstan.neon`), PHPCS (détection des écarts de standards) et PHPCBF (correction automatique du style) + ESLint WP (`eslint.config.js`).

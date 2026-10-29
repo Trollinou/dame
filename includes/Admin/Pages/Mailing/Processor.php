@@ -85,18 +85,20 @@ class Processor {
 
 		$adherent_method = isset( $_POST['dame_adherent_method'] ) ? sanitize_key( (string) $_POST['dame_adherent_method'] ) : 'group';
 		$contact_method  = isset( $_POST['dame_contact_method'] ) ? sanitize_key( (string) $_POST['dame_contact_method'] ) : 'group';
+		$ha_method       = isset( $_POST['dame_ha_method'] ) ? sanitize_key( (string) $_POST['dame_ha_method'] ) : 'group';
 
 		$resolver = new RecipientResolver();
 		$target   = $resolver->resolve_target_ids( $_POST );
 
-		if ( ! $target['adherent_criteria_selected'] && ! $target['contact_criteria_selected'] ) {
+		if ( ! $target['adherent_criteria_selected'] && ! $target['contact_criteria_selected'] && ! $target['ha_criteria_selected'] ) {
 			$save_state_and_redirect( 'no_criteria' );
 		}
 
 		$adherent_ids = $target['adherent_ids'];
 		$contact_ids  = $target['contact_ids'];
+		$ha_item_ids  = $target['ha_item_ids'];
 
-		if ( empty( $adherent_ids ) && empty( $contact_ids ) ) {
+		if ( empty( $adherent_ids ) && empty( $contact_ids ) && empty( $ha_item_ids ) ) {
 			$save_state_and_redirect( 'no_recipients' );
 		}
 
@@ -108,15 +110,21 @@ class Processor {
 			$contact_ids = $resolver->filter_already_received( $contact_ids, $message_id );
 		}
 
-		if ( empty( $adherent_ids ) && empty( $contact_ids ) ) {
-			$save_state_and_redirect( 'all_already_received' );
+		$message_post = get_post( $message_id );
+		if ( ! $message_post ) {
+			$save_state_and_redirect( 'invalid_message' );
 		}
 
-		// Email collection and deduplication.
-		$email_data = $resolver->collect_email_data( $adherent_ids, $contact_ids );
+		$base_subject    = $message_post->post_title;
+		$raw_content     = apply_filters( 'the_content', $message_post->post_content );
+		$base_content    = is_string( $raw_content ) ? $raw_content : (string) $message_post->post_content;
+		$is_personalized = $resolver->has_personalization_tags( $base_subject, $base_content );
+
+		// Email collection and deduplication (conditioned by personalization tags).
+		$email_data = $resolver->collect_email_data( $adherent_ids, $contact_ids, $ha_item_ids, $is_personalized );
 
 		// For group selections, also filter out any emails that were already sent/scheduled for this message.
-		if ( 'manual' !== $adherent_method && 'manual' !== $contact_method ) {
+		if ( 'manual' !== $adherent_method && 'manual' !== $contact_method && 'manual' !== $ha_method ) {
 			$email_data = $resolver->filter_already_sent_emails( $email_data, $message_id );
 		}
 
@@ -144,11 +152,6 @@ class Processor {
 			}
 		}
 
-		$message_post = get_post( $message_id );
-		if ( ! $message_post ) {
-			$save_state_and_redirect( 'invalid_message' );
-		}
-
 		$base_subject = $message_post->post_title;
 		$raw_content  = apply_filters( 'the_content', $message_post->post_content );
 		$base_content = is_string( $raw_content ) ? $raw_content : (string) $message_post->post_content;
@@ -168,18 +171,18 @@ class Processor {
 		$sent_emails_data = array();
 
 		// Dispatch via standard wp_mail() (transparently queued/handled by EG Mail).
-		foreach ( $email_data as $info ) {
+		foreach ( $email_data as $email_key => $info ) {
 			$email = $info['raw_email'];
 			$label = implode( ', ', array_unique( $info['names'] ) );
 			$rid   = (int) $info['id'];
 
-			$personalized = $resolver->personalize_message( $rid, $email, $label, $base_subject, $base_content );
+			$personalized = $resolver->personalize_message( $rid, $email, $label, $base_subject, $base_content, $info );
 			$tracking_url = Tracker::get_pixel_url( $message_id, $email );
 			$message_body = Tracker::prepare_email_body( $personalized['content'], $tracking_url );
 
 			$sent = wp_mail( $email, $personalized['subject'], $message_body, $headers, $attachments );
 			if ( $sent ) {
-				$sent_emails_data[ strtolower( $email ) ] = $info;
+				$sent_emails_data[ $email_key ] = $info;
 				++$sent_count;
 			}
 		}
@@ -198,6 +201,7 @@ class Processor {
 		update_post_meta( $message_id, '_dame_message_recipients_count', $new_total );
 		update_post_meta( $message_id, '_dame_adherent_method', $adherent_method );
 		update_post_meta( $message_id, '_dame_contact_method', $contact_method );
+		update_post_meta( $message_id, '_dame_ha_method', $ha_method );
 
 		$meta = $target['meta'];
 		if ( 'group' === $adherent_method ) {
@@ -215,6 +219,12 @@ class Processor {
 			update_post_meta( $message_id, '_dame_recipient_regions', $meta['regions'] );
 		} else {
 			update_post_meta( $message_id, '_dame_manual_contacts', $meta['manual_contacts'] );
+		}
+
+		if ( 'group' === $ha_method ) {
+			update_post_meta( $message_id, '_dame_recipient_ha_campaigns', $meta['ha_campaigns'] );
+		} else {
+			update_post_meta( $message_id, '_dame_manual_ha_items', $meta['manual_ha_items'] );
 		}
 
 		wp_safe_redirect(

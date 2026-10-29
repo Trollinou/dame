@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+### Intégration HelloAsso dans le Mailing & Refonte UX de l'Écran d'Envoi
+- **Règles Booléennes Précises pour le Ciblage des Adhérents (`RecipientResolver`, `Utils`)** :
+  - Implémentation stricte de la formule `Sexe AND ( Groupe Permanent OR (Saisons AND Groupe Saisonnier) )`.
+  - Condition préalable obligatoire d'au moins une saison ou un groupe permanent sélectionné.
+  - Ciblage de l'ensemble de la saison lorsqu'aucun groupe saisonnier n'est spécifié.
+  - Neutralisation de la branche saisonnière si un groupe saisonnier est sélectionné sans saison.
+- **Filtrage Géographique Strict des Contacts & Sélecteur Régional Tri-State (`RecipientResolver`, TypeScript)** :
+  - Filtrage géographique des contacts basé strictement sur les départements explicitement cochés (`_dame_contact_department IN (...)`), supprimant la fuite d'e-mails vers des contacts de départements décochés d'une même région.
+  - Comportement tri-state (`indeterminate`) pour les cases à cocher de régions : cochée si tous les départements sont sélectionnés, indéterminée (`[-]`) si une partie seulement est cochée, décochée si aucun ne l'est.
+  - Prérequis obligatoire d'au moins une catégorie de contact (`dame_contact_type`) pour tout ciblage par critères.
+  - Réorganisation dynamique de la liste (éléments cochés et indéterminés remontés en tête) et mise à jour synchronisée des compteurs et du pré-cochage en sélection manuelle.
+- **Union des Destinataires & Ciblage des Inscrits HelloAsso (`DAME\Admin\Pages\Mailing\RecipientResolver`, `DAME\Repositories\TicketingRepository`)** :
+  - Intégration des participants et payeurs HelloAsso comme 3ᵉ source de destinataires aux côtés des Adhérents et des Contacts.
+  - Double mode de sélection : par campagnes d'événements (mode critères) ou sélection individuelle par inscrit (mode manuel) avec pré-cochage synchronisé.
+  - Double adressage systématique : routage vers l'e-mail du participant et vers l'e-mail du payeur.
+  - Inclusion automatique des représentants légaux 1 et 2 (`_dame_legal_rep_1_email`, `_dame_legal_rep_2_email`) pour tout participant HelloAsso réconcilié avec un adhérent mineur (< 18 ans).
+- **Dédoublonnage Intelligent Conditionné par les Balises de Personnalisation** :
+  - Détection automatique des balises (`[NOM]`, `[PRENOM]`, `[AGE]`, `[CIVILITE]`).
+  - En présence de balises : conservation d'un envoi distinct par participant pour qu'un responsable légal ayant inscrit plusieurs enfants reçoive un e-mail personnalisé pour chacun.
+  - En l'absence de balises : dédoublonnage strict par adresse e-mail pour éviter les doublons génériques.
+  - Attribution systématique de `[NOM]` et `[PRENOM]` au nom du participant inscrit.
+- **Refonte Ergonomique & Optimisation UX de la Page d'Envoi (`FormRenderer`, SCSS, TypeScript)** :
+  - Répartition visuelle responsive équilibrée : 25% Adhérents, 50% Contacts, 25% HelloAsso.
+  - Grille compacte 2×2 pour les réglages supérieurs : Ligne 1 (Message + Pièce jointe) et Ligne 2 (Priorité d'envoi + Date programmée), divisant la hauteur par deux tout en conservant 100% des textes d'aide explicatifs.
+  - Barre d'action sticky dockée en bas d'écran avec rappel dynamique du message sélectionné et de sa priorité, gardant le bouton « Envoyer le message » toujours accessible sans défilement.
+- **Couverture de Tests & Assurance Qualité** :
+  - Ajout des tests unitaires `tests/Unit/MailingRecipientPersonalizationTest.php`.
+  - Conformité stricte PHPStan Level 7, PHPCS/WPCS et ESLint.
+
 ## [5.8.4] - 2026-10-29
 
 ### Ergonomie de l'Administration & Refonte du Menu DAME
