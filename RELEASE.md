@@ -1,10 +1,27 @@
-# Release Notes — DAME v5.8.0
+# Release Notes — DAME v5.8.1
 
-**Date :** 27 octobre 2026
+**Date :** 29 octobre 2026
 
 ## 🚀 Changements Majeurs
 
-### 1. Attestations d'Adhésion & Paiement (PDF & Envoi par E-mail)
+### 1. Ergonomie de l'Écran d'Événement HelloAsso & Émargement Jour J
+- **Interface Réactive et Épurée (`DAME\Admin\Pages\Ticketing`, `src/scss/admin/_ticketing.scss`)** :
+  - Remplacement des 3 grandes boîtes encombrantes par un bandeau de KPIs compacts intégré en ligne sous le titre.
+  - Déplacement des actions techniques (resynchronisation HelloAsso, synchronisation contacts) dans un menu compact `⚙️ Outils ▾`.
+  - Inscription manuelle sur place intégrée dans une modale dédiée accessible et fluide (optimisée Safari/WebKit).
+- **Sélecteur Déroulant Multi-Tarifs (`src/js/admin-ticketing.ts`)** :
+  - Remplacement de la ligne de boutons débordante par un menu déroulant escamotable avec recherche rapide, cases à cocher, compteurs d'inscrits et actions « Tout sélectionner / Tout effacer ».
+  - Permet de combiner instantanément plusieurs tarifs (ex: *Open A Adulte* + *Open A U20*).
+- **Export Sharly Chess Tri-Options Synchronisé** :
+  - Menu d'export dynamique lié à la sélection active : *Exporter la sélection filtrée*, *Exporter les pointés filtrés*, ou *Exporter l'intégralité (Tous)*.
+  - Support de requêtes multi-tarifs dans le repository (`TicketingRepository::get_campaign_items`).
+- **Pointage Instantané (AJAX) & Recherche en Direct** :
+  - Bascule de présence immédiate en 1 clic sans rechargement de page (`wp_ajax_dame_toggle_checkin_ajax`), avec mise à jour temps réel des compteurs et préservation des filtres.
+  - Recherche instantanée multi-champs (Nom, Licence, Club) et tri interactif des colonnes en direct.
+- **Création de Catégorie de Contact à la Volée** :
+  - Création directe d'une nouvelle catégorie de contact lors de l'export des joueurs externes sans avoir à quitter l'écran.
+
+### 2. Attestations d'Adhésion & Paiement (PDF & Envoi par E-mail)
 - **Génération Dématérialisée PDF (`DAME\Services\PDF_Generator`)** :
   - Reçus et attestations d'adhésion au format PDF conformes aux exigences administratives (CE, CSE, mutuelles santé, employeurs, Pass'Sport).
   - Conversion automatique et normalisée des montants en toutes lettres en français (`DAME\Core\Utils::number_to_french_words`).

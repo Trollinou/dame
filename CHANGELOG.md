@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## [5.8.1] - 2026-10-29
+
+### Billetterie & Événements HelloAsso (Ergonomie & Émargement)
+- **Refonte Ergonomique de l'Écran d'Événement (`DAME\Admin\Pages\Ticketing`, `src/scss/admin/_ticketing.scss`)** :
+  - Dégagement visuel complet de la page : remplacement des 3 grandes boîtes par un bandeau de KPIs compacts intégré en ligne sous le titre.
+  - Déplacement des actions techniques (resynchronisation HelloAsso, synchronisation des contacts) dans un menu d'outils secondaire compact `⚙️ Outils ▾`.
+  - Intégration de l'inscription sur place dans une modale dédiée accessible et fluide (optimisée Safari/WebKit sans backdrop-filter blur).
+- **Sélecteur Déroulant Multi-Tarifs (`src/js/admin-ticketing.ts`)** :
+  - Remplacement de la ligne de boutons horizontaux débordante par un sélecteur déroulant multi-critères avec recherche rapide, cases à cocher, compteurs d'inscrits et actions « Tout sélectionner / Tout effacer ».
+  - Possibilité de combiner plusieurs tarifs en un clic (ex: *Open A Adulte* + *Open A U20*).
+- **Export Sharly Chess Avancé & Synchronisé** :
+  - Bouton combiné dynamique indiquant en direct le nombre de joueurs concernés : `📥 Exporter Sharly (X) ▾`.
+  - 3 options de téléchargement direct :
+    1. *Exporter la sélection filtrée* (respecte les tarifs cochés et les filtres de présence).
+    2. *Exporter les pointés filtrés* (uniquement les présents parmi les tarifs sélectionnés).
+    3. *Exporter l'intégralité (Tous)* : ignore les filtres et télécharge l'ensemble des inscrits de la campagne.
+  - Prise en charge des tableaux de tarifs multiples côté repository (`TicketingRepository::get_campaign_items` avec `tier_name IN (...)`).
+- **Pointage en Direct (AJAX) & Recherche Instantanée** :
+  - Bascule de présence immédiate en 1 clic sans rechargement de page (`wp_ajax_dame_toggle_checkin_ajax`), avec mise à jour temps réel des compteurs et préservation des filtres actifs.
+  - Recherche instantanée multicritère (Nom, Prénom, Licence FFE, Club) et tri interactif des colonnes en direct.
+- **Création de Catégorie de Contact à la Volée** :
+  - Possibilité de créer un nouveau type de contact directement depuis la modale de synchronisation sans quitter l'écran.
+
 ## [5.8.0] - 2026-10-27
 
 ### Billetterie & Inscriptions HelloAsso

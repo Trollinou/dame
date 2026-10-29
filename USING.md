@@ -261,13 +261,19 @@ L'écran **DAME > Billetterie** propose une vue claire de toutes vos activités 
 - **Dates / Période de réalisation** : La colonne dédiée affiche la période précise (`Du dd/mm/YYYY au dd/mm/YYYY` ou `Le dd/mm/YYYY`).
 - **Tri chronologique** : Les campagnes sont triées par défaut de l'événement le plus récent au plus ancien (`start_date DESC`). Les colonnes *Titre*, *Type* et *Dates* sont cliquables pour trier par ordre alphabétique ou inverser la chronologie.
 
-### d. Pointage des inscrits & Gestion du jour J
+### d. Pointage des inscrits & Gestion du jour J (Écran d'Événement)
 En cliquant sur **« Gérer les inscrits »** en face d'une campagne :
-- **Recherche instantanée** : Filtrez les participants par nom, prénom, n° de licence FFE ou tarif.
-- **Bascule de présence en 1 clic** : Cliquez sur le statut *Présent / Absent* pour pointer un joueur franchissant la porte de la salle. Le compteur d'inscrits pointés se met à jour instantanément.
+- **En-tête épuré & KPIs en direct** : Une fine bande intégrée affiche les indicateurs clés (`Inscrits`, `Pointés`, `Collecté`, `Affichage dynamique`).
+- **Sélecteur Déroulant Multi-Tarifs (`🏷️ Tarifs / Tournois`)** : Permet de combiner en un clic plusieurs tarifs (ex: *Open A Adulte* + *Open A U20*) avec recherche rapide, cases à cocher et compteurs d'inscrits.
+- **Recherche instantanée** : Filtrez les participants en temps réel par nom, prénom, n° de licence FFE ou club.
+- **Bascule de présence instantanée (AJAX)** : Cliquez sur le bouton *Présent / Absent* pour pointer un joueur. Le statut change immédiatement sans recharger la page et les filtres actifs restent mémorisés.
 - **Rapprochement automatique (Matcher)** : Le système associe automatiquement le participant avec un adhérent existant du club (badge *Adhérent #ID*), une préinscription ou un contact connu.
-- **Inscription sur place** : Un formulaire permet d'ajouter un joueur arrivant le jour même (paiement en espèces ou par chèque), qui est immédiatement intégré à la liste et pointé présent.
-- **Export Sharly Chess (Arbitres)** : Le bouton **« Exporter pour Sharly (CSV) »** génère un fichier normalisé prêt à être importé dans le logiciel d'appariement officiel Sharly Chess (Nom, Prénom, Sexe, Date de naissance, Titre, Elo, Club, N° FFE, FIDE ID).
+- **Inscription sur place** : Le bouton `➕ Inscription sur place` ouvre une modale dédiée pour enregistrer rapidement un joueur arrivant le jour même (règlement en espèces ou par chèque). Il est immédiatement ajouté et pointé présent.
+- **Export Sharly Chess Tri-Options (Arbitres)** : Le bouton `📥 Exporter Sharly (X) ▾` propose 3 actions adaptées :
+  1. *Exporter la sélection filtrée* (respecte les tarifs et filtres cochés).
+  2. *Exporter les pointés filtrés* (uniquement les présents parmi les tarifs cochés).
+  3. *Exporter l'intégralité (Tous)* : ignore les filtres et télécharge l'ensemble des inscrits de la campagne.
+- **Synchronisation vers Contacts avec création à la volée** : Le menu `⚙️ Outils ▾` permet d'exporter les participants externes vers l'annuaire Contacts en choisissant une catégorie existante ou en saisissant un nouveau nom de catégorie créé à la volée.
 
 
 
