@@ -347,46 +347,73 @@ class Utils {
 			$permanent_groups  = get_post_meta( $message_id, '_dame_recipient_groups_permanent', true );
 			$recipient_gender  = get_post_meta( $message_id, '_dame_recipient_gender', true );
 
-			if ( ! empty( $seasons ) || ! empty( $saisonnier_groups ) || ! empty( $permanent_groups ) ) {
-				$query_args = array(
-					'post_type'      => 'adherent',
-					'posts_per_page' => -1,
-					'fields'         => 'ids',
-					'tax_query'      => array(
-						'relation' => 'OR',
-					),
-				);
+			$has_seasons   = ! empty( $seasons ) && is_array( $seasons );
+			$has_permanent = ! empty( $permanent_groups ) && is_array( $permanent_groups );
 
-				// Clause 1: Seasons.
-				if ( ! empty( $seasons ) ) {
-					$query_args['tax_query'][] = array(
-						'taxonomy' => 'dame_saison_adhesion',
+			if ( $has_permanent || $has_seasons ) {
+				$branches = array();
+
+				if ( $has_permanent ) {
+					$branches[] = array(
+						'taxonomy' => 'dame_group',
 						'field'    => 'term_id',
-						'terms'    => $seasons,
+						'terms'    => $permanent_groups,
 						'operator' => 'IN',
 					);
 				}
 
-				// Clause 2: Groups (Merge both types).
-				$all_groups = array_merge(
-					is_array( $saisonnier_groups ) ? $saisonnier_groups : array(),
-					is_array( $permanent_groups ) ? $permanent_groups : array()
+				if ( $has_seasons ) {
+					$has_saisonnier = ! empty( $saisonnier_groups ) && is_array( $saisonnier_groups );
+					if ( $has_saisonnier ) {
+						$branches[] = array(
+							'relation' => 'AND',
+							array(
+								'taxonomy' => 'dame_saison_adhesion',
+								'field'    => 'term_id',
+								'terms'    => $seasons,
+								'operator' => 'IN',
+							),
+							array(
+								'taxonomy' => 'dame_group',
+								'field'    => 'term_id',
+								'terms'    => $saisonnier_groups,
+								'operator' => 'IN',
+							),
+						);
+					} else {
+						$branches[] = array(
+							'taxonomy' => 'dame_saison_adhesion',
+							'field'    => 'term_id',
+							'terms'    => $seasons,
+							'operator' => 'IN',
+						);
+					}
+				}
+
+				$query_args = array(
+					'post_type'      => 'adherent',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
 				);
 
-				if ( ! empty( $all_groups ) ) {
-					$query_args['tax_query'][] = array(
-						'taxonomy' => 'dame_group',
-						'field'    => 'term_id',
-						'terms'    => $all_groups,
-						'operator' => 'IN',
+				if ( count( $branches ) > 1 ) {
+					$query_args['tax_query'] = array_merge(
+						array( 'relation' => 'OR' ),
+						$branches
+					);
+				} elseif ( 1 === count( $branches ) ) {
+					$query_args['tax_query'] = array(
+						$branches[0],
 					);
 				}
 
 				// Meta Query for Gender (Intersection).
 				if ( ! empty( $recipient_gender ) && 'all' !== $recipient_gender ) {
-					$query_args['meta_query'][] = array(
-						'key'   => '_dame_sexe',
-						'value' => $recipient_gender,
+					$query_args['meta_query'] = array(
+						array(
+							'key'   => '_dame_sexe',
+							'value' => $recipient_gender,
+						),
 					);
 				}
 

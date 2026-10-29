@@ -60,7 +60,8 @@
 - **Sécurité WP** : Nonce + Capability checks (`manage_options`, `edit_posts`) systématiques. Input sanitization + Output escaping (`esc_html`, `esc_attr`). Ne jamais utiliser de mots-clés réservés du langage (ex: `$default`) comme noms d'arguments (utiliser `$default_value`).
 - **Post Meta** : Attribut `name` HTML sans `_`, mais enregistrement meta BDD avec `_` (ex: `_dame_identity_name`). Déclaration systématique avec `register_post_meta()` et `show_in_rest => true` pour Block Bindings & REST API.
 - **Shortcodes** : Capturer `wp_editor()` via `ob_start()` / `ob_get_clean()`.
-- **Mailing, Résolution de Destinataires & Filtres Géographiques** :
+- **Mailing, Résolution de Destinataires & Filtres Métier** :
+  - **Résolution Adhérents** : Formule stricte `Sexe AND ( Groupe Permanent OR (Saisons AND Groupe Saisonnier) )`. Au moins une saison ou un groupe permanent doit être sélectionné. Si un groupe saisonnier est coché sans saison, la branche saisonnière n'extrait aucun adhérent. Le filtre Sexe restreint l'ensemble.
   - **Régions comme Raccourci UI** : Les régions servent d'outil d'action groupée pour cocher/décocher rapidement des départements. Elles disposent d'un état tri-state (`indeterminate`) lorsqu'une partie seulement de leurs départements est cochée.
   - **Départements comme Source de Vérité** : Le filtrage géographique s'effectue strictement sur les départements explicitement cochés (`_dame_contact_department IN (...)`). Si des départements sont renseignés, aucune clause d'élargissement régional (`OR _dame_contact_region`) ne doit être appliquée afin de respecter scrupuleusement les départements décochés par l'utilisateur.
   - **Prérequis Type de Contact** : Au moins une catégorie de contact (`dame_contact_type`) doit être sélectionnée pour cibler des contacts par critères.

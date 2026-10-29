@@ -76,29 +76,67 @@ class RecipientResolver {
 			$meta['groups_permanent']  = $groups_permanent;
 			$meta['gender']            = $gender;
 
-			if ( ! empty( $seasons ) || ! empty( $groups_saisonnier ) || ! empty( $groups_permanent ) || 'all' !== $gender ) {
-				$adherent_criteria_selected = true;
-				$args                       = array(
-					'post_type'      => 'adherent',
-					'posts_per_page' => -1,
-					'fields'         => 'ids',
-					'tax_query'      => array( 'relation' => 'OR' ),
-				);
+			$has_seasons   = ! empty( $seasons );
+			$has_permanent = ! empty( $groups_permanent );
 
-				if ( ! empty( $seasons ) ) {
-					$args['tax_query'][] = array(
-						'taxonomy' => 'dame_saison_adhesion',
+			// Règle : Sexe AND ( Groupe Permanent OR (Saisons AND Groupe Saisonnier) ).
+			// A minima un groupe permanent et/ou une saison doit obligatoirement être sélectionné.
+			if ( $has_permanent || $has_seasons ) {
+				$adherent_criteria_selected = true;
+
+				$branches = array();
+
+				// 1. Branche Groupe Permanent (indépendant de la saison).
+				if ( $has_permanent ) {
+					$branches[] = array(
+						'taxonomy' => 'dame_group',
 						'field'    => 'term_id',
-						'terms'    => $seasons,
+						'terms'    => $groups_permanent,
 					);
 				}
 
-				$all_groups = array_merge( $groups_saisonnier, $groups_permanent );
-				if ( ! empty( $all_groups ) ) {
-					$args['tax_query'][] = array(
-						'taxonomy' => 'dame_group',
-						'field'    => 'term_id',
-						'terms'    => $all_groups,
+				// 2. Branche Saisonnière : (Saisons AND Groupe Saisonnier).
+				// Une saison est obligatoire pour cibler des adhérents de saison ou des groupes saisonniers.
+				if ( $has_seasons ) {
+					$has_saisonnier = ! empty( $groups_saisonnier );
+					if ( $has_saisonnier ) {
+						$branches[] = array(
+							'relation' => 'AND',
+							array(
+								'taxonomy' => 'dame_saison_adhesion',
+								'field'    => 'term_id',
+								'terms'    => $seasons,
+							),
+							array(
+								'taxonomy' => 'dame_group',
+								'field'    => 'term_id',
+								'terms'    => $groups_saisonnier,
+							),
+						);
+					} else {
+						// Si aucun groupe saisonnier n'est spécifié, on cible tous les adhérents de la saison.
+						$branches[] = array(
+							'taxonomy' => 'dame_saison_adhesion',
+							'field'    => 'term_id',
+							'terms'    => $seasons,
+						);
+					}
+				}
+
+				$args = array(
+					'post_type'      => 'adherent',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+				);
+
+				if ( count( $branches ) > 1 ) {
+					$args['tax_query'] = array_merge(
+						array( 'relation' => 'OR' ),
+						$branches
+					);
+				} elseif ( 1 === count( $branches ) ) {
+					$args['tax_query'] = array(
+						$branches[0],
 					);
 				}
 
