@@ -93,6 +93,13 @@ class Mailing {
 		}
 		$state_array = is_array( $saved_state ) ? $saved_state : array();
 
+		// Pre-populate message to send if message_id is provided in query arguments.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( empty( $state_array['dame_message_to_send'] ) && isset( $_GET['message_id'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$state_array['dame_message_to_send'] = absint( wp_unslash( $_GET['message_id'] ) );
+		}
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$success = isset( $_GET['success'] ) ? absint( $_GET['success'] ) : 0;
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended

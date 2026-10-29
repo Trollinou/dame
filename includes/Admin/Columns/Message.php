@@ -39,6 +39,7 @@ class Message {
 			}
 			$new_columns[ $key ] = $value;
 		}
+		$new_columns['message_actions'] = __( 'Actions', 'dame' );
 		return $new_columns;
 	}
 
@@ -122,6 +123,21 @@ class Message {
 					);
 				} else {
 					echo '—';
+				}
+				break;
+
+			case 'message_actions':
+				$status = get_post_status( $post_id );
+				if ( 'publish' === $status && current_user_can( 'edit_dame_messages' ) ) {
+					$url = admin_url( 'admin.php?page=dame-mailing&message_id=' . $post_id );
+					printf(
+						'<a href="%s" class="button button-small button-primary" title="%s">%s</a>',
+						esc_url( $url ),
+						esc_attr__( 'Envoyer ce message aux destinataires', 'dame' ),
+						esc_html__( 'Envoyer', 'dame' )
+					);
+				} else {
+					echo '<span style="color:#a7aaad;">—</span>';
 				}
 				break;
 		}

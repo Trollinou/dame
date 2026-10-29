@@ -5,7 +5,11 @@
 a[href="admin.php?page=dame-message-report"],
 li:has(> a[href="admin.php?page=dame-message-report"]),
 a[href="admin.php?page=dame-view-adherent"],
-li:has(> a[href="admin.php?page=dame-view-adherent"]) {
+li:has(> a[href="admin.php?page=dame-view-adherent"]),
+a[href="admin.php?page=dame-mailing"],
+li:has(> a[href="admin.php?page=dame-mailing"]),
+a[href="admin.php?page=dame-backups"],
+li:has(> a[href="admin.php?page=dame-backups"]) {
     display: none !important;
 }
 
