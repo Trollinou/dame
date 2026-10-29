@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DAME\Services\HelloAsso;
 
 use DAME\Repositories\TicketingRepository;
+use DAME\Core\Utils;
 use WP_Error;
 
 /**
@@ -91,12 +92,10 @@ class Synchronizer {
 				continue;
 			}
 
-			$start_raw  = ! empty( $form['startDate'] ) ? (string) $form['startDate'] : '';
-			$end_raw    = ! empty( $form['endDate'] ) ? (string) $form['endDate'] : '';
-			$start_time = ! empty( $start_raw ) ? strtotime( $start_raw ) : false;
-			$end_time   = ! empty( $end_raw ) ? strtotime( $end_raw ) : false;
-			$start_date = false !== $start_time ? gmdate( 'Y-m-d H:i:s', $start_time ) : null;
-			$end_date   = false !== $end_time ? gmdate( 'Y-m-d H:i:s', $end_time ) : null;
+			$start_raw  = ! empty( $form['startDate'] ) ? (string) $form['startDate'] : null;
+			$end_raw    = ! empty( $form['endDate'] ) ? (string) $form['endDate'] : null;
+			$start_date = Utils::normalize_iso_datetime( $start_raw );
+			$end_date   = Utils::normalize_iso_datetime( $end_raw );
 
 			$id = $this->repository->get_or_create_campaign(
 				$slug,

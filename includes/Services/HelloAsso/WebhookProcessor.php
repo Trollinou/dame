@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DAME\Services\HelloAsso;
 
 use DAME\Repositories\TicketingRepository;
+use DAME\Core\Utils;
 
 /**
  * Class WebhookProcessor
@@ -110,13 +111,18 @@ class WebhookProcessor {
 			return;
 		}
 
+		$start_raw  = ! empty( $form['startDate'] ) ? (string) $form['startDate'] : null;
+		$end_raw    = ! empty( $form['endDate'] ) ? (string) $form['endDate'] : null;
+		$start_date = Utils::normalize_iso_datetime( $start_raw );
+		$end_date   = Utils::normalize_iso_datetime( $end_raw );
+
 		$this->repository->get_or_create_campaign(
 			$slug,
 			$type,
 			array(
 				'title'        => (string) ( $form['title'] ?? $slug ),
-				'start_date'   => $form['startDate'] ?? null,
-				'end_date'     => $form['endDate'] ?? null,
+				'start_date'   => $start_date,
+				'end_date'     => $end_date,
 				'last_sync_at' => current_time( 'mysql' ),
 			)
 		);
@@ -155,7 +161,7 @@ class WebhookProcessor {
 		$payer_last   = (string) ( $payer['lastName'] ?? '' );
 		$payer_email  = (string) ( $payer['email'] ?? '' );
 		$order_id     = isset( $order['id'] ) ? (int) $order['id'] : null;
-		$order_date   = isset( $order['date'] ) ? sanitize_text_field( (string) $order['date'] ) : current_time( 'mysql' );
+		$order_date   = Utils::normalize_iso_datetime( isset( $order['date'] ) ? (string) $order['date'] : null ) ?? current_time( 'mysql' );
 		$order_status = (string) ( $order['status'] ?? 'Processed' );
 
 		$items = is_array( $order['items'] ?? null ) ? $order['items'] : array();
@@ -250,4 +256,3 @@ class WebhookProcessor {
 		return 0;
 	}
 }
-

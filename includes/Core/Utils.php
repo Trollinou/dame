@@ -680,4 +680,40 @@ class Utils {
 
 		return $result;
 	}
+
+	/**
+	 * Normalizes an ISO 8601 or date string to MySQL datetime (YYYY-MM-DD HH:MM:SS) in WordPress timezone.
+	 *
+	 * Preserves the actual wall-clock date and time by taking into account the source timezone
+	 * offset and converting it to the WordPress site timezone (e.g. Europe/Paris).
+	 *
+	 * @param string|null $raw_date Raw date string from HelloAsso API or webhook.
+	 * @return string|null Formatted MySQL datetime string, or null on failure.
+	 */
+	public static function normalize_iso_datetime( ?string $raw_date ): ?string {
+		if ( null === $raw_date ) {
+			return null;
+		}
+
+		$trimmed = trim( $raw_date );
+		if ( '' === $trimmed ) {
+			return null;
+		}
+
+		try {
+			$tz = function_exists( 'wp_timezone' ) ? wp_timezone() : new \DateTimeZone( 'Europe/Paris' );
+
+			// If string contains an explicit timezone offset (+02:00, -05:00, Z).
+			if ( preg_match( '/[+-]\d{2}:\d{2}$|Z$/i', $trimmed ) ) {
+				$dt = new \DateTimeImmutable( $trimmed );
+				return $dt->setTimezone( $tz )->format( 'Y-m-d H:i:s' );
+			}
+
+			// If no timezone is specified (e.g. '2026-05-08' or '2026-05-08 14:00:00').
+			$dt = new \DateTimeImmutable( $trimmed, $tz );
+			return $dt->format( 'Y-m-d H:i:s' );
+		} catch ( \Exception $e ) {
+			return null;
+		}
+	}
 }
