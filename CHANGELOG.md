@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [5.8.3] - 2026-10-29
+
+### HelloAsso & Normalisation des Dates (Fuseaux Horaires)
+- **Normalisation Robuste des Dates ISO 8601 (`DAME\Core\Utils::normalize_iso_datetime`)** :
+  - Correction du décalage de date induit par la conversion UTC stricte (`gmdate`) des dates d'événements HelloAsso (ex: `2026-05-08T00:00:00+02:00` qui basculait au 7 mai à 22:00:00 UTC).
+  - Prise en compte rigoureuse du décalage horaire source (`+02:00`, `+01:00`, `Z`) converti dans le fuseau horaire officiel du site WordPress (`wp_timezone()`, Europe/Paris).
+  - Préservation du jour et de l'heure réels de début et de fin d'événement (`start_date`, `end_date`) ainsi que de la date d'enregistrement des commandes (`order_date`).
+- **Synchronisation & Webhook HelloAsso (`DAME\Services\HelloAsso\Synchronizer`, `DAME\Services\HelloAsso\WebhookProcessor`)** :
+  - Normalisation systématique à l'ingestion API et à la réception des webhooks de formulaires et commandes.
+  - Diffusion cohérente au format standard `YYYY-MM-DD HH:MM:SS` dans les endpoints REST PWA (`/dame/v1/ticketing/*`).
+- **Couverture de Tests Unitaires (`tests/Unit/IsoDateTimeTest.php`)** :
+  - Ajout d'une suite complète de tests validant la conversion des dates d'été (+02:00), d'hiver (+01:00), UTC (Z) et les cas d'erreur.
+
 ## [5.8.2] - 2026-10-29
 
 ### Import de Contacts & Synchronisation FFE

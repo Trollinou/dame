@@ -1,10 +1,21 @@
-# Release Notes — DAME v5.8.2
+# Release Notes — DAME v5.8.3
 
 **Date :** 29 octobre 2026
 
 ## 🚀 Changements Majeurs
 
-### 1. Import Manuel de Contacts & Clubs FFE
+### 1. Prise en Compte des Fuseaux Horaires HelloAsso (ISO 8601)
+- **Normalisation Précise des Dates (`DAME\Core\Utils::normalize_iso_datetime`)** :
+  - Résolution du problème de décalage de dates où un événement estival débutant à minuit (`2026-05-08T00:00:00+02:00`) basculait sur la veille (`2026-05-07 22:00:00 UTC`).
+  - Conversion rigoureuse des offsets (`+02:00`, `+01:00`, `Z`) vers le fuseau officiel WordPress (`wp_timezone()`), garantissant l'exactitude du jour d'événement sur le web et dans l'API PWA.
+- **Synchronisation API & Webhooks** :
+  - Prise en charge automatique sur les formulaires HelloAsso (`start_date`, `end_date`) et sur les commandes (`order_date`).
+- **Tests Unitaires Automatisés** :
+  - Suite de tests `IsoDateTimeTest` validant l'ensemble des scénarios de décalage horaire.
+
+---
+
+# Release Notes — DAME v5.8.2
 - **Support Universel Encodage CSV (UTF-8, BOM & Windows-1252)** :
   - Détection automatique et transparente de l'encodage des fichiers CSV importés (`ContactBackup::import_csv`).
   - Suppression sans régression du BOM Excel (`\xEF\xBB\xBF`) sur le premier en-tête.
