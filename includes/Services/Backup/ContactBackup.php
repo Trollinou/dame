@@ -111,6 +111,8 @@ class ContactBackup {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified in router.
 		$type_slug = isset( $_POST['contact_type'] ) ? sanitize_key( wp_unslash( $_POST['contact_type'] ) ) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified in router.
+		$remove_missing = ! empty( $_POST['remove_missing_contacts'] );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified in router.
 		if ( empty( $type_slug ) || ! isset( $_FILES['dame_import_contacts_file'] ) || ! is_array( $_FILES['dame_import_contacts_file'] ) || empty( $_FILES['dame_import_contacts_file']['tmp_name'] ) || ( isset( $_FILES['dame_import_contacts_file']['error'] ) && UPLOAD_ERR_OK !== $_FILES['dame_import_contacts_file']['error'] ) ) {
 			$this->add_admin_notice( __( 'Données invalides pour l\'import.', 'dame' ), 'error' );
 			return;
@@ -126,6 +128,32 @@ class ContactBackup {
 			return;
 		}
 
+		// Pre-fetch all contact IDs currently in the target category.
+		$existing_category_contact_query = new \WP_Query(
+			array(
+				'post_type'              => 'dame_contact',
+				'post_status'            => 'publish',
+				'posts_per_page'         => -1,
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+				'tax_query'              => array(
+					array(
+						'taxonomy' => 'dame_contact_type',
+						'field'    => 'slug',
+						'terms'    => $type_slug,
+					),
+				),
+			)
+		);
+		$initial_category_ids            = array();
+		if ( ! empty( $existing_category_contact_query->posts ) ) {
+			foreach ( $existing_category_contact_query->posts as $cat_post ) {
+				$initial_category_ids[] = $cat_post instanceof \WP_Post ? (int) $cat_post->ID : (int) $cat_post;
+			}
+		}
+
 		// Read headers.
 		$headers = fgetcsv( $handle, 0, ';', '"', '\\' );
 		if ( ! $headers ) {
@@ -134,29 +162,39 @@ class ContactBackup {
 			return;
 		}
 
+		// Helper to normalize input encoding (auto-detect UTF-8 vs Windows-1252 / ISO-8859-1).
+		$normalize_encoding = static function ( string $val ): string {
+			if ( mb_check_encoding( $val, 'UTF-8' ) ) {
+				return $val;
+			}
+			return (string) mb_convert_encoding( $val, 'UTF-8', 'Windows-1252' );
+		};
+
 		// Convert headers to UTF-8 and map them.
-		$headers = array_map( fn( $h ) => mb_convert_encoding( (string) $h, 'UTF-8', 'Windows-1252' ), $headers );
+		$headers = array_map( fn( $h ) => $normalize_encoding( (string) $h ), $headers );
 
 		// Remove BOM if present.
 		if ( isset( $headers[0] ) ) {
-			$headers[0] = preg_replace( '/^\x{FEFF}/u', '', $headers[0] );
+			$headers[0] = (string) preg_replace( '/^\x{FEFF}/u', '', (string) $headers[0] );
 		}
 
 		$col_map = array_flip( array_map( 'strval', $headers ) );
 
-		$created = 0;
-		$updated = 0;
+		$created               = 0;
+		$updated               = 0;
+		$processed_contact_ids = array();
 
 		while ( ( $row = fgetcsv( $handle, 0, ';', '"', '\\' ) ) !== false ) {
-			// Convert to UTF-8.
-			$row = array_map( fn( $val ) => mb_convert_encoding( (string) $val, 'UTF-8', 'Windows-1252' ), $row );
+			// Convert to UTF-8 (handling UTF-8, UTF-8 BOM or Windows-1252).
+			$row = array_map( fn( $val ) => $normalize_encoding( (string) $val ), $row );
 
 			// Map columns based on headers.
 			$org        = isset( $col_map['Organisation'] ) ? trim( $row[ $col_map['Organisation'] ] ?? '' ) : '';
 			$last_name  = isset( $col_map['Nom'] ) ? trim( $row[ $col_map['Nom'] ] ?? '' ) : '';
 			$first_name = isset( $col_map['Prenom'] ) ? trim( $row[ $col_map['Prenom'] ] ?? '' ) : '';
 			$role       = isset( $col_map['Role'] ) ? trim( $row[ $col_map['Role'] ] ?? '' ) : '';
-			$email      = isset( $col_map['Email'] ) ? trim( $row[ $col_map['Email'] ] ?? '' ) : '';
+			$raw_email  = isset( $col_map['Email'] ) ? trim( $row[ $col_map['Email'] ] ?? '' ) : '';
+			$email      = sanitize_email( $raw_email );
 
 			$refus = '0';
 			if ( isset( $col_map['Refus mailing'] ) ) {
@@ -172,57 +210,89 @@ class ContactBackup {
 				continue;
 			}
 
-			// Deduplication Logic.
-			$args = array(
-				'post_type'      => 'dame_contact',
-				'posts_per_page' => 1,
-				'fields'         => 'ids',
-				'meta_query'     => array( 'relation' => 'AND' ),
-			);
+			// Cascading Deduplication Logic:
+			// 1. Prioritize Email match (institution or president email).
+			// 2. Fall back to Organization match (for clubs / associations).
+			// 3. Fall back to Last Name + First Name match.
+			$post_id = 0;
 
-			if ( empty( $org ) ) {
-				$args['meta_query'][] = array(
-					'key'     => '_dame_contact_last_name',
-					'value'   => $last_name,
-					'compare' => '=',
-				);
-				$args['meta_query'][] = array(
-					'key'     => '_dame_contact_first_name',
-					'value'   => $first_name,
-					'compare' => '=',
-				);
-				$args['meta_query'][] = array(
-					'relation' => 'OR',
+			if ( ! empty( $email ) && is_email( $email ) ) {
+				$email_query = new \WP_Query(
 					array(
-						'key'     => '_dame_contact_organization',
-						'compare' => 'NOT EXISTS',
-					),
-					array(
-						'key'     => '_dame_contact_organization',
-						'value'   => '',
-						'compare' => '=',
-					),
+						'post_type'              => 'dame_contact',
+						'posts_per_page'         => 1,
+						'fields'                 => 'ids',
+						'no_found_rows'          => true,
+						'update_post_meta_cache' => false,
+						'update_post_term_cache' => false,
+						'meta_query'             => array(
+							array(
+								'key'     => '_dame_contact_email',
+								'value'   => $email,
+								'compare' => '=',
+							),
+						),
+					)
 				);
-			} else {
-				$args['meta_query'][] = array(
-					'key'     => '_dame_contact_organization',
-					'value'   => $org,
-					'compare' => '=',
-				);
-				$args['meta_query'][] = array(
-					'key'     => '_dame_contact_last_name',
-					'value'   => $last_name,
-					'compare' => '=',
-				);
-				$args['meta_query'][] = array(
-					'key'     => '_dame_contact_first_name',
-					'value'   => $first_name,
-					'compare' => '=',
-				);
+				if ( ! empty( $email_query->posts ) ) {
+					$matched_post = $email_query->posts[0];
+					$post_id      = $matched_post instanceof \WP_Post ? (int) $matched_post->ID : (int) $matched_post;
+				}
 			}
 
-			$ids     = get_posts( $args );
-			$post_id = ! empty( $ids ) ? (int) $ids[0] : 0;
+			if ( ! $post_id && ! empty( $org ) ) {
+				$org_query = new \WP_Query(
+					array(
+						'post_type'              => 'dame_contact',
+						'posts_per_page'         => 1,
+						'fields'                 => 'ids',
+						'no_found_rows'          => true,
+						'update_post_meta_cache' => false,
+						'update_post_term_cache' => false,
+						'meta_query'             => array(
+							array(
+								'key'     => '_dame_contact_organization',
+								'value'   => $org,
+								'compare' => '=',
+							),
+						),
+					)
+				);
+				if ( ! empty( $org_query->posts ) ) {
+					$matched_post = $org_query->posts[0];
+					$post_id      = $matched_post instanceof \WP_Post ? (int) $matched_post->ID : (int) $matched_post;
+				}
+			}
+
+			if ( ! $post_id && ( ! empty( $last_name ) || ! empty( $first_name ) ) ) {
+				$person_query = new \WP_Query(
+					array(
+						'post_type'              => 'dame_contact',
+						'posts_per_page'         => 1,
+						'fields'                 => 'ids',
+						'no_found_rows'          => true,
+						'update_post_meta_cache' => false,
+						'update_post_term_cache' => false,
+						'meta_query'             => array(
+							'relation' => 'AND',
+							array(
+								'key'     => '_dame_contact_last_name',
+								'value'   => $last_name,
+								'compare' => '=',
+							),
+							array(
+								'key'     => '_dame_contact_first_name',
+								'value'   => $first_name,
+								'compare' => '=',
+							),
+						),
+					)
+				);
+				if ( ! empty( $person_query->posts ) ) {
+					$matched_post = $person_query->posts[0];
+					$post_id      = $matched_post instanceof \WP_Post ? (int) $matched_post->ID : (int) $matched_post;
+				}
+			}
 
 			$formatted_last  = Utils::format_lastname( $last_name );
 			$formatted_first = Utils::format_firstname( $first_name );
@@ -254,6 +324,8 @@ class ContactBackup {
 			}
 
 			if ( $post_id ) {
+				$processed_contact_ids[] = $post_id;
+
 				update_post_meta( $post_id, '_dame_contact_organization', $org );
 				update_post_meta( $post_id, '_dame_contact_last_name', $formatted_last );
 				update_post_meta( $post_id, '_dame_contact_first_name', $formatted_first );
@@ -282,14 +354,43 @@ class ContactBackup {
 
 		fclose( $handle );
 
-		$this->add_admin_notice(
-			sprintf(
-				/* translators: 1: Count of created contacts, 2: Count of updated contacts */
-				__( 'Import terminé : %1$d contacts créés, %2$d mis à jour.', 'dame' ),
-				$created,
-				$updated
-			)
+		// Handle missing contacts in category.
+		$missing_contact_ids = array_values( array_diff( $initial_category_ids, $processed_contact_ids ) );
+		$removed_count       = 0;
+
+		if ( $remove_missing && ! empty( $missing_contact_ids ) ) {
+			foreach ( $missing_contact_ids as $missing_id ) {
+				wp_remove_object_terms( $missing_id, $type_slug, 'dame_contact_type' );
+				++$removed_count;
+			}
+		}
+
+		$notice_message = sprintf(
+			/* translators: 1: Count of created contacts, 2: Count of updated contacts */
+			__( 'Import terminé : %1$d contacts créés, %2$d mis à jour.', 'dame' ),
+			$created,
+			$updated
 		);
+
+		if ( $remove_missing ) {
+			if ( $removed_count > 0 ) {
+				$notice_message .= ' ' . sprintf(
+					/* translators: %d: Count of removed contacts from category */
+					__( '%d contact(s) absents du fichier ont été retirés de la catégorie.', 'dame' ),
+					$removed_count
+				);
+			} else {
+				$notice_message .= ' ' . __( 'Aucun contact existant n\'était absent de la catégorie.', 'dame' );
+			}
+		} elseif ( ! empty( $missing_contact_ids ) ) {
+			$notice_message .= ' ' . sprintf(
+				/* translators: %d: Count of contacts absent in CSV */
+				__( 'Information : %d contact(s) préalablement rattachés à cette catégorie n\'étaient pas dans le fichier (inchangés).', 'dame' ),
+				count( $missing_contact_ids )
+			);
+		}
+
+		$this->add_admin_notice( $notice_message, 'success' );
 	}
 
 	/**

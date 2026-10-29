@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [5.8.2] - 2026-10-29
+
+### Import de Contacts & Synchronisation FFE
+- **Support Universel Encodage CSV (UTF-8, BOM & Windows-1252)** :
+  - Détection automatique et transparente de l'encodage des fichiers CSV importés (`ContactBackup::import_csv`).
+  - Suppression sans régression du Byte Order Mark (`\xEF\xBB\xBF`) généré par Microsoft Excel.
+  - Préservation intégrale des caractères accentués français en UTF-8 natif tout en maintenant la rétrocompatibilité avec les exports historiques en Windows-1252 / ANSI.
+- **Rapprochement Intelligent Multi-Critères en Cascade** :
+  - Priorisation de l'adresse e-mail (`_dame_contact_email`) pour réconcilier les adresses institutionnelles et de contact.
+  - Détection par organisation (`_dame_contact_organization`) pour mettre à jour la fiche du club même en cas de changement de président ou de correspondant.
+  - Détection de repli par couple Nom + Prénom pour les contacts individuels sans organisation.
+- **Gestion des Contacts Absents & Synchronisation de Catégorie** :
+  - Ajout d'une option par case à cocher sur le formulaire d'importation : *« Retirer de la catégorie les contacts absents du fichier »*.
+  - Déréférencement sécurisé des contacts obsolètes de la catégorie cible (`wp_remove_object_terms`) sans perte de données ni suppression en base.
+  - Restitution détaillée dans le bilan d'administration du nombre de contacts créés, mis à jour et retirés ou absents.
+
 ## [5.8.1] - 2026-10-29
 
 ### Billetterie & Événements HelloAsso (Ergonomie & Émargement)

@@ -1,3 +1,24 @@
+# Release Notes — DAME v5.8.2
+
+**Date :** 29 octobre 2026
+
+## 🚀 Changements Majeurs
+
+### 1. Import Manuel de Contacts & Clubs FFE
+- **Support Universel Encodage CSV (UTF-8, BOM & Windows-1252)** :
+  - Détection automatique et transparente de l'encodage des fichiers CSV importés (`ContactBackup::import_csv`).
+  - Suppression sans régression du BOM Excel (`\xEF\xBB\xBF`) sur le premier en-tête.
+  - Fin des problèmes de mojibake ou de caractères altérés lors des imports directs depuis Excel.
+- **Rapprochement Intelligent Multi-Critères en Cascade** :
+  - Recherche en cascade par Email prioritaire (`_dame_contact_email`), puis par Nom du club/Organisation (`_dame_contact_organization`), puis par Nom et Prénom.
+  - Garantit la mise à jour des clubs existants même en cas de changement de président ou de mise à jour des coordonnées.
+- **Gestion des Contacts Absents & Actualisation de Catégorie** :
+  - Case à cocher dédiée dans le formulaire d'importation : *« Retirer de la catégorie les contacts absents du fichier »*.
+  - Permet de désynchroniser proprement les clubs disparus ou non renouvelés de la catégorie cible sans supprimer leurs données historiques.
+  - Notification admin détaillée indiquant les contacts créés, mis à jour et retirés.
+
+---
+
 # Release Notes — DAME v5.8.1
 
 **Date :** 29 octobre 2026

@@ -145,6 +145,16 @@ endif;
 							<label for="dame_import_contacts_file"><strong><?php esc_html_e( 'Fichier CSV Contacts :', 'dame' ); ?></strong></label><br>
 							<input type="file" id="dame_import_contacts_file" name="dame_import_contacts_file" accept=".csv" required style="margin-top: 5px;">
 						</p>
+						<p style="margin-top: 10px;">
+							<label>
+								<input type="checkbox" name="remove_missing_contacts" value="1">
+								<strong><?php esc_html_e( 'Retirer de la catégorie les contacts absents du fichier', 'dame' ); ?></strong>
+							</label>
+							<br>
+							<span class="description" style="color: #666; font-size: 12px;">
+								<?php esc_html_e( 'Si cochée, les contacts actuellement rattachés à cette catégorie qui ne figurent pas dans ce CSV perdront cette catégorie (recommandé pour actualiser la liste officielle des clubs FFE).', 'dame' ); ?>
+							</span>
+						</p>
 						<?php submit_button( __( 'Importer les contacts (CSV)', 'dame' ), 'secondary', 'submit', false ); ?>
 					</form>
 				</div>
