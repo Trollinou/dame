@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.8.4] - 2026-10-29
+
 ### Ergonomie de l'Administration & Refonte du Menu DAME
 - **Simplification Majeure du Menu Latéral (Réduction de 17 à 11 Entrées Déterministes)** :
   - Raccourcissement des libellés (suppression des préfixes redondants *« Tous les / Toutes les »*) tenant désormais sur une seule ligne.
