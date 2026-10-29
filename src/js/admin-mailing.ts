@@ -132,43 +132,132 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			target?.matches('.dame-region-criteria-list input[type="checkbox"]')
 		) {
 			const checkbox = target as HTMLInputElement;
+			checkbox.indeterminate = false;
 			const regionCode = checkbox.value;
 			const isChecked = checkbox.checked;
-			let mappingSource: Record<string, string[]> = {};
-			if (
-				typeof dame_mailing_data !== 'undefined' &&
-				dame_mailing_data.regionMapping
-			) {
-				mappingSource = dame_mailing_data.regionMapping;
-			} else if (
-				typeof dameMailingData !== 'undefined' &&
-				dameMailingData?.regionMapping
-			) {
-				mappingSource = dameMailingData.regionMapping;
-			}
-			const depts = mappingSource[regionCode] || [];
+			const mapping = getRegionMapping();
+			const depts = mapping[regionCode] || [];
 
 			const deptList = document.querySelector<HTMLElement>(
 				'.dame-dept-criteria-list .dame-checkbox-list'
 			);
-			if (!deptList || depts.length === 0) {
-				return;
-			}
+			if (deptList && depts.length > 0) {
+				depts.forEach((code: string): void => {
+					const deptCheckbox = deptList.querySelector<HTMLInputElement>(
+						`input[value="${code}"]`
+					);
+					if (deptCheckbox) {
+						deptCheckbox.checked = isChecked;
+					}
+				});
 
-			depts.forEach((code: string): void => {
-				const deptCheckbox = deptList.querySelector<HTMLInputElement>(
-					`input[value="${code}"]`
-				);
-				if (deptCheckbox) {
-					deptCheckbox.checked = isChecked;
+				// Trigger reorder and count update for departments list
+				reorderList(deptList);
+				updateSelectionCount(deptList);
+				syncAllRegions();
+			}
+		}
+
+		// Logic for syncing Department -> Region (tri-state indeterminate)
+		if (
+			target?.matches('.dame-dept-criteria-list input[type="checkbox"]')
+		) {
+			const deptCheckbox = target as HTMLInputElement;
+			const deptCode = deptCheckbox.value;
+			const mapping = getRegionMapping();
+
+			Object.entries(mapping).forEach(([regionCode, depts]): void => {
+				if (depts.includes(deptCode)) {
+					syncRegionState(regionCode);
 				}
 			});
-
-			// Trigger reorder and count update for departments list
-			reorderList(deptList);
-			updateSelectionCount(deptList);
+			const regionList = document.querySelector<HTMLElement>(
+				'.dame-region-criteria-list .dame-checkbox-list'
+			);
+			if (regionList) {
+				reorderList(regionList);
+				updateSelectionCount(regionList);
+			}
 		}
 	});
+
+	/**
+	 * Retrieves the Region -> Departments mapping from localized global data.
+	 */
+	function getRegionMapping(): Record<string, string[]> {
+		if (
+			typeof dame_mailing_data !== 'undefined' &&
+			dame_mailing_data.regionMapping
+		) {
+			return dame_mailing_data.regionMapping;
+		} else if (
+			typeof dameMailingData !== 'undefined' &&
+			dameMailingData?.regionMapping
+		) {
+			return dameMailingData.regionMapping;
+		}
+		return {};
+	}
+
+	/**
+	 * Updates the tri-state (checked / unchecked / indeterminate) of a region checkbox.
+	 * @param regionCode
+	 */
+	function syncRegionState(regionCode: string): void {
+		const mapping = getRegionMapping();
+		const depts = mapping[regionCode] || [];
+		if (depts.length === 0) {
+			return;
+		}
+
+		const regionList = document.querySelector<HTMLElement>(
+			'.dame-region-criteria-list .dame-checkbox-list'
+		);
+		const deptList = document.querySelector<HTMLElement>(
+			'.dame-dept-criteria-list .dame-checkbox-list'
+		);
+		if (!regionList || !deptList) {
+			return;
+		}
+
+		const regionCheckbox = regionList.querySelector<HTMLInputElement>(
+			`input[value="${regionCode}"]`
+		);
+		if (!regionCheckbox) {
+			return;
+		}
+
+		let checkedCount = 0;
+		depts.forEach((code: string): void => {
+			const deptCheckbox = deptList.querySelector<HTMLInputElement>(
+				`input[value="${code}"]`
+			);
+			if (deptCheckbox?.checked) {
+				checkedCount++;
+			}
+		});
+
+		if (checkedCount === depts.length) {
+			regionCheckbox.checked = true;
+			regionCheckbox.indeterminate = false;
+		} else if (checkedCount === 0) {
+			regionCheckbox.checked = false;
+			regionCheckbox.indeterminate = false;
+		} else {
+			regionCheckbox.checked = false;
+			regionCheckbox.indeterminate = true;
+		}
+	}
+
+	/**
+	 * Synchronizes all region checkboxes based on currently checked departments.
+	 */
+	function syncAllRegions(): void {
+		const mapping = getRegionMapping();
+		Object.keys(mapping).forEach((regionCode: string): void => {
+			syncRegionState(regionCode);
+		});
+	}
 
 	/**
 	 * Updates the selection counter for a list.
@@ -201,18 +290,26 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			listContainer.querySelectorAll<HTMLLabelElement>('label')
 		);
 
-		// Sort labels: checked first, then alphabetical
+		// Sort labels: checked first (2), indeterminate next (1), unchecked last (0), then alphabetical
 		labels.sort((a, b) => {
 			const aInput = a.querySelector<HTMLInputElement>('input');
 			const bInput = b.querySelector<HTMLInputElement>('input');
-			const aChecked = aInput ? aInput.checked : false;
-			const bChecked = bInput ? bInput.checked : false;
 
-			if (aChecked && !bChecked) {
-				return -1;
-			}
-			if (!aChecked && bChecked) {
-				return 1;
+			const getScore = (input: HTMLInputElement | null): number => {
+				if (input?.checked) {
+					return 2;
+				}
+				if (input?.indeterminate) {
+					return 1;
+				}
+				return 0;
+			};
+
+			const aScore = getScore(aInput);
+			const bScore = getScore(bInput);
+
+			if (aScore !== bScore) {
+				return bScore - aScore;
 			}
 
 			const aText = a.textContent ? a.textContent.trim() : '';
@@ -244,7 +341,10 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		criteriaLists.forEach((container: HTMLElement): void => {
 			container
 				.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
-				.forEach((cb: HTMLInputElement) => (cb.checked = false));
+				.forEach((cb: HTMLInputElement) => {
+					cb.checked = false;
+					cb.indeterminate = false;
+				});
 			const list = container.querySelector<HTMLElement>(
 				'.dame-checkbox-list'
 			);
@@ -269,21 +369,19 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		const selectedTypes = Array.from(typesSelect.selectedOptions).map(
 			(opt: HTMLOptionElement) => opt.value
 		);
-		const selectedRegions = Array.from(
-			document.querySelectorAll<HTMLInputElement>(
-				'.dame-region-criteria-list input[type="checkbox"]:checked'
-			)
-		).map((cb: HTMLInputElement) => cb.value);
+		const hasTypes = selectedTypes.length > 0;
+		// Au moins un type de contact doit obligatoirement être sélectionné
+		if (!hasTypes) {
+			return;
+		}
+
 		const selectedDepts = Array.from(
 			document.querySelectorAll<HTMLInputElement>(
 				'.dame-dept-criteria-list input[type="checkbox"]:checked'
 			)
 		).map((cb: HTMLInputElement) => cb.value);
 
-		const hasTypes = selectedTypes.length > 0;
-		const hasRegions = selectedRegions.length > 0;
 		const hasDepts = selectedDepts.length > 0;
-		const hasGeo = hasRegions || hasDepts;
 
 		const contactCheckboxes =
 			contactManualWrap.querySelectorAll<HTMLInputElement>(
@@ -292,31 +390,16 @@ document.addEventListener('DOMContentLoaded', (): void => {
 
 		contactCheckboxes.forEach((cb: HTMLInputElement): void => {
 			const dept = cb.getAttribute('data-dept') || '';
-			const region = cb.getAttribute('data-region') || '';
 			const typesAttr = cb.getAttribute('data-types') || '';
 			const types = typesAttr.split(',');
 
 			const matchType = types.some((t: string) =>
 				selectedTypes.includes(t)
 			);
-			const matchGeo =
-				(hasDepts && selectedDepts.includes(dept)) ||
-				(hasRegions && selectedRegions.includes(region));
+			// Si des départements sont sélectionnés, restreindre strictement à ces départements
+			const matchGeo = !hasDepts || selectedDepts.includes(dept);
 
-			let shouldCheck = false;
-
-			if (hasTypes && hasGeo) {
-				// Intersection du Type et des critères géographiques sélectionnés
-				shouldCheck = matchType && matchGeo;
-			} else if (hasTypes) {
-				// Seulement par type
-				shouldCheck = matchType;
-			} else if (hasGeo) {
-				// Seulement par géographie
-				shouldCheck = matchGeo;
-			}
-
-			if (shouldCheck) {
+			if (matchType && matchGeo) {
 				cb.checked = true;
 			}
 		});
@@ -475,6 +558,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		reorderList(list);
 		updateSelectionCount(list);
 	});
+	syncAllRegions();
 
 	/**
 	 * Normalizes text by converting to lowercase and removing accents.

@@ -3,6 +3,11 @@
 ## [Unreleased]
 
 ### Intégration HelloAsso dans le Mailing & Refonte UX de l'Écran d'Envoi
+- **Filtrage Géographique Strict des Contacts & Sélecteur Régional Tri-State (`RecipientResolver`, TypeScript)** :
+  - Filtrage géographique des contacts basé strictement sur les départements explicitement cochés (`_dame_contact_department IN (...)`), supprimant la fuite d'e-mails vers des contacts de départements décochés d'une même région.
+  - Comportement tri-state (`indeterminate`) pour les cases à cocher de régions : cochée si tous les départements sont sélectionnés, indéterminée (`[-]`) si une partie seulement est cochée, décochée si aucun ne l'est.
+  - Prérequis obligatoire d'au moins une catégorie de contact (`dame_contact_type`) pour tout ciblage par critères.
+  - Réorganisation dynamique de la liste (éléments cochés et indéterminés remontés en tête) et mise à jour synchronisée des compteurs et du pré-cochage en sélection manuelle.
 - **Union des Destinataires & Ciblage des Inscrits HelloAsso (`DAME\Admin\Pages\Mailing\RecipientResolver`, `DAME\Repositories\TicketingRepository`)** :
   - Intégration des participants et payeurs HelloAsso comme 3ᵉ source de destinataires aux côtés des Adhérents et des Contacts.
   - Double mode de sélection : par campagnes d'événements (mode critères) ou sélection individuelle par inscrit (mode manuel) avec pré-cochage synchronisé.
