@@ -75,14 +75,24 @@ class Message {
 
 		$url = admin_url( 'admin.php?page=dame-mailing&message_id=' . $post->ID );
 
-		$actions['send_message'] = sprintf(
+		$send_link = sprintf(
 			'<a href="%s" style="font-weight: 600; color: #2271b1;" title="%s">%s</a>',
 			esc_url( $url ),
 			esc_attr__( 'Envoyer ce message aux destinataires', 'dame' ),
 			esc_html__( 'Envoyer', 'dame' )
 		);
 
-		return $actions;
+		// Place 'Envoyer' right after 'Modifier' if present, otherwise at the beginning.
+		$new_actions = array();
+		if ( isset( $actions['edit'] ) ) {
+			$new_actions['edit']         = $actions['edit'];
+			$new_actions['send_message'] = $send_link;
+			unset( $actions['edit'] );
+		} else {
+			$new_actions['send_message'] = $send_link;
+		}
+
+		return array_merge( $new_actions, $actions );
 	}
 
 	/**
