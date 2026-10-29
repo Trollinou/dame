@@ -45,7 +45,6 @@
     }
 
     .dame-mailing-col {
-        flex: 1;
         min-width: 0;
         background: $dame-admin-card-bg;
         padding: 20px;
@@ -53,10 +52,142 @@
         box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
         border-radius: $dame-radius-sm;
 
+        &--adherents {
+            flex: 1;
+        }
+
+        &--contacts {
+            flex: 2;
+        }
+
+        &--helloasso {
+            flex: 1;
+        }
+
         h3 {
             margin-top: 0;
             border-bottom: 1px solid $dame-admin-border-subtle;
             padding-bottom: 10px;
+        }
+    }
+}
+
+.dame-mailing-form-wrap {
+    padding-bottom: 80px;
+}
+
+.dame-mailing-settings-card {
+    background: $dame-admin-card-bg;
+    border: 1px solid $dame-admin-border;
+    border-radius: $dame-radius-sm;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    padding: 18px 22px;
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+.dame-mailing-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 24px;
+
+    @include tablet {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+}
+
+.dame-mailing-field {
+    label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+        color: #1d2327;
+    }
+
+    .description {
+        margin-top: 4px;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #646970;
+    }
+
+    select,
+    input[type="text"],
+    input[type="datetime-local"],
+    input[type="file"] {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+.dame-mailing-sticky-bar {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 160px;
+    z-index: 999;
+    background: #fff;
+    border-top: 1px solid #ccd0d4;
+    box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.08);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: left 0.15s ease;
+
+    .folded & {
+        left: 36px;
+    }
+
+    @media screen and (max-width: 960px) {
+        left: 36px;
+    }
+
+    @media screen and (max-width: 782px) {
+        left: 0;
+        padding: 10px 16px;
+    }
+
+    .dame-mailing-sticky-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #2c3338;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        .dame-sticky-icon {
+            font-size: 16px;
+        }
+
+        .dame-sticky-message-name {
+            font-weight: 600;
+            color: #1d2327;
+        }
+
+        .dame-sticky-sep {
+            color: #dcdcde;
+            margin: 0 4px;
+        }
+
+        .dame-sticky-priority-name {
+            color: #2271b1;
+            font-weight: 500;
+        }
+    }
+
+    .dame-mailing-sticky-action {
+        flex-shrink: 0;
+
+        .button-primary {
+            font-size: 14px;
+            padding: 4px 20px;
+            height: auto;
+            line-height: 28px;
         }
     }
 }

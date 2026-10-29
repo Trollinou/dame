@@ -44,6 +44,18 @@ if ( ! function_exists( '__' ) ) {
 	}
 }
 
+if ( ! function_exists( 'esc_html' ) ) {
+	function esc_html( string $text ): string {
+		return htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' );
+	}
+}
+
+if ( ! function_exists( 'get_post_type' ) ) {
+	function get_post_type( mixed $post = null ): string|false {
+		return false;
+	}
+}
+
 if ( ! function_exists( 'trailingslashit' ) ) {
 	function trailingslashit( string $path ): string {
 		return rtrim( $path, '/\\' ) . '/';

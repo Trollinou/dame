@@ -646,4 +646,143 @@ class TicketingRepository {
 
 		return $stats;
 	}
+
+	/**
+	 * Retrieves campaigns that have active (non-canceled, non-refunded) items.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function get_campaigns_with_active_items(): array {
+		$cache_key = 'campaigns_with_active_items';
+		$cached    = wp_cache_get( $cache_key, self::CACHE_GROUP );
+		if ( false !== $cached && is_array( $cached ) ) {
+			return $cached;
+		}
+
+		$campaigns_table = $this->get_campaigns_table();
+		$items_table     = $this->get_items_table();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$rows = $this->db->get_results(
+			$this->db->prepare(
+				"SELECT c.*, COUNT(i.id) as active_items_count 
+				 FROM %i c
+				 INNER JOIN %i i ON c.id = i.campaign_id
+				 WHERE i.status NOT IN ('Canceled', 'Refunded')
+				 GROUP BY c.id
+				 ORDER BY (c.start_date IS NULL), c.start_date DESC, c.id DESC",
+				$campaigns_table,
+				$items_table
+			),
+			ARRAY_A
+		);
+
+		$result = is_array( $rows ) ? $rows : array();
+		wp_cache_set( $cache_key, $result, self::CACHE_GROUP, 1800 );
+
+		return $result;
+	}
+
+	/**
+	 * Retrieves all active items with campaign title.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function get_all_active_items(): array {
+		$cache_key = 'all_active_items_list';
+		$cached    = wp_cache_get( $cache_key, self::CACHE_GROUP );
+		if ( false !== $cached && is_array( $cached ) ) {
+			return $cached;
+		}
+
+		$campaigns_table = $this->get_campaigns_table();
+		$items_table     = $this->get_items_table();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$rows = $this->db->get_results(
+			$this->db->prepare(
+				"SELECT i.*, c.title as campaign_title, c.form_type as campaign_form_type
+				 FROM %i i
+				 INNER JOIN %i c ON i.campaign_id = c.id
+				 WHERE i.status NOT IN ('Canceled', 'Refunded')
+				 ORDER BY i.participant_last_name ASC, i.participant_first_name ASC, i.id ASC",
+				$items_table,
+				$campaigns_table
+			),
+			ARRAY_A
+		);
+
+		$result = is_array( $rows ) ? $rows : array();
+		wp_cache_set( $cache_key, $result, self::CACHE_GROUP, 900 );
+
+		return $result;
+	}
+
+	/**
+	 * Retrieves active items belonging to specified campaign IDs.
+	 *
+	 * @param array<int> $campaign_ids List of campaign IDs.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function get_active_items_by_campaigns( array $campaign_ids ): array {
+		$clean_ids = array_values( array_filter( array_map( 'absint', $campaign_ids ) ) );
+		if ( empty( $clean_ids ) ) {
+			return array();
+		}
+
+		$campaigns_table = $this->get_campaigns_table();
+		$items_table     = $this->get_items_table();
+		$placeholders    = implode( ', ', array_fill( 0, count( $clean_ids ), '%d' ) );
+
+		$params = array_merge( array( $items_table, $campaigns_table ), $clean_ids );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$rows = $this->db->get_results(
+			$this->db->prepare(
+				"SELECT i.*, c.title as campaign_title, c.form_type as campaign_form_type
+				 FROM %i i
+				 INNER JOIN %i c ON i.campaign_id = c.id
+				 WHERE i.status NOT IN ('Canceled', 'Refunded') AND i.campaign_id IN ({$placeholders})
+				 ORDER BY i.participant_last_name ASC, i.participant_first_name ASC",
+				...$params
+			),
+			ARRAY_A
+		);
+
+		return is_array( $rows ) ? $rows : array();
+	}
+
+	/**
+	 * Retrieves active items by their IDs.
+	 *
+	 * @param array<int> $item_ids List of item IDs.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function get_active_items_by_ids( array $item_ids ): array {
+		$clean_ids = array_values( array_filter( array_map( 'absint', $item_ids ) ) );
+		if ( empty( $clean_ids ) ) {
+			return array();
+		}
+
+		$campaigns_table = $this->get_campaigns_table();
+		$items_table     = $this->get_items_table();
+		$placeholders    = implode( ', ', array_fill( 0, count( $clean_ids ), '%d' ) );
+
+		$params = array_merge( array( $items_table, $campaigns_table ), $clean_ids );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$rows = $this->db->get_results(
+			$this->db->prepare(
+				"SELECT i.*, c.title as campaign_title, c.form_type as campaign_form_type
+				 FROM %i i
+				 INNER JOIN %i c ON i.campaign_id = c.id
+				 WHERE i.status NOT IN ('Canceled', 'Refunded') AND i.id IN ({$placeholders})
+				 ORDER BY i.participant_last_name ASC, i.participant_first_name ASC",
+				...$params
+			),
+			ARRAY_A
+		);
+
+		return is_array( $rows ) ? $rows : array();
+	}
 }

@@ -331,7 +331,139 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		}
 	}
 
-	// 3. Searchable Lists Logic (Universal)
+	// 3. Toggling HelloAsso Methods with Pre-checking
+	const haMethodRadios = document.querySelectorAll<HTMLInputElement>(
+		'input[name="dame_ha_method"]'
+	);
+	const haGroupWrap = document.querySelector<HTMLElement>(
+		'.dame-ha-group-wrap'
+	);
+	const haManualWrap = document.querySelector<HTMLElement>(
+		'.dame-ha-manual-wrap'
+	);
+
+	if (haMethodRadios.length > 0 && haGroupWrap && haManualWrap) {
+		const initialHaChecked = document.querySelector<HTMLInputElement>(
+			'input[name="dame_ha_method"]:checked'
+		);
+		let currentHaMethod = initialHaChecked
+			? initialHaChecked.value
+			: 'group';
+
+		haMethodRadios.forEach((radio: HTMLInputElement): void => {
+			radio.addEventListener('change', (): void => {
+				const newMethod = radio.value;
+
+				if (currentHaMethod === 'manual' && newMethod === 'group') {
+					if (
+						confirm(
+							'Souhaitez-vous vraiment revenir à la sélection par critères ? Vos filtres actuels et votre sélection manuelle seront réinitialisés.'
+						)
+					) {
+						resetHaCriteria();
+					} else {
+						const manualRadio =
+							document.querySelector<HTMLInputElement>(
+								'input[name="dame_ha_method"][value="manual"]'
+							);
+						if (manualRadio) {
+							manualRadio.checked = true;
+						}
+						return;
+					}
+				}
+
+				currentHaMethod = newMethod;
+
+				if (newMethod === 'group') {
+					haGroupWrap.classList.remove('dame-hidden');
+					haManualWrap.classList.add('dame-hidden');
+
+					haManualWrap
+						.querySelectorAll<HTMLInputElement>(
+							'input[type="checkbox"]'
+						)
+						.forEach(
+							(cb: HTMLInputElement) => (cb.checked = false)
+						);
+					const manualList =
+						haManualWrap.querySelector<HTMLElement>(
+							'.dame-checkbox-list'
+						);
+					if (manualList) {
+						reorderList(manualList);
+						updateSelectionCount(manualList);
+					}
+				} else {
+					haGroupWrap.classList.add('dame-hidden');
+					haManualWrap.classList.remove('dame-hidden');
+
+					performHaPrecheck();
+				}
+			});
+		});
+	}
+
+	function resetHaCriteria(): void {
+		if (!haGroupWrap || !haManualWrap) {
+			return;
+		}
+		haGroupWrap
+			.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+			.forEach((cb: HTMLInputElement) => (cb.checked = false));
+
+		haManualWrap
+			.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+			.forEach((cb: HTMLInputElement) => (cb.checked = false));
+
+		const lists = [
+			haGroupWrap.querySelector<HTMLElement>('.dame-checkbox-list'),
+			haManualWrap.querySelector<HTMLElement>('.dame-checkbox-list'),
+		];
+		lists.forEach((list: HTMLElement | null) => {
+			if (list) {
+				reorderList(list);
+				updateSelectionCount(list);
+			}
+		});
+	}
+
+	function performHaPrecheck(): void {
+		if (!haGroupWrap || !haManualWrap) {
+			return;
+		}
+
+		const selectedCampaigns = Array.from(
+			haGroupWrap.querySelectorAll<HTMLInputElement>(
+				'input[name="dame_recipient_ha_campaigns[]"]:checked'
+			)
+		).map((cb: HTMLInputElement) => cb.value);
+
+		if (selectedCampaigns.length === 0) {
+			return;
+		}
+
+		const manualCheckboxes =
+			haManualWrap.querySelectorAll<HTMLInputElement>(
+				'input[name="dame_manual_ha_items[]"]'
+			);
+
+		manualCheckboxes.forEach((cb: HTMLInputElement) => {
+			const campaignId = cb.getAttribute('data-campaign');
+			if (campaignId && selectedCampaigns.includes(campaignId)) {
+				cb.checked = true;
+			}
+		});
+
+		const manualList =
+			haManualWrap.querySelector<HTMLElement>('.dame-checkbox-list');
+		if (manualList) {
+			reorderList(manualList);
+			updateSelectionCount(manualList);
+		}
+	}
+
+	// 4. Searchable Lists Logic (Universal)
 	const searchInputs =
 		document.querySelectorAll<HTMLInputElement>('.dame-list-search');
 	const checkboxLists = document.querySelectorAll<HTMLElement>(
@@ -381,47 +513,91 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		});
 	});
 
-	// 4. Already sent warning logic
+	// 4. Already sent warning and sticky action bar logic
 	const messageSelect = document.getElementById(
 		'dame_message_to_send'
+	) as HTMLSelectElement | null;
+	const prioritySelect = document.getElementById(
+		'dame_sending_priority'
 	) as HTMLSelectElement | null;
 	const warningDiv = document.getElementById(
 		'dame_message_warning'
 	) as HTMLElement | null;
+	const stickyMessageName = document.getElementById(
+		'dame_sticky_message_name'
+	) as HTMLElement | null;
+	const stickyPriorityName = document.getElementById(
+		'dame_sticky_priority_name'
+	) as HTMLElement | null;
+	const submitBtn = document.getElementById(
+		'dame_submit_mailing_btn'
+	) as HTMLButtonElement | null;
 
-	if (messageSelect && warningDiv) {
+	function updateStickyInfo(): void {
+		if (messageSelect && stickyMessageName) {
+			const selectedOption =
+				messageSelect.options[messageSelect.selectedIndex];
+			if (selectedOption && selectedOption.value) {
+				stickyMessageName.textContent = selectedOption.text;
+			} else {
+				stickyMessageName.textContent = 'Aucun message sélectionné';
+			}
+		}
+
+		if (prioritySelect && stickyPriorityName) {
+			const selectedPrio =
+				prioritySelect.options[prioritySelect.selectedIndex];
+			if (selectedPrio && selectedPrio.value) {
+				stickyPriorityName.textContent = `Priorité : ${selectedPrio.text}`;
+			} else {
+				stickyPriorityName.textContent = 'Priorité non définie';
+			}
+		}
+	}
+
+	if (messageSelect) {
 		messageSelect.addEventListener('change', (): void => {
+			updateStickyInfo();
+
 			const selectedOption =
 				messageSelect.options[messageSelect.selectedIndex];
 			const status = selectedOption
 				? selectedOption.getAttribute('data-status')
 				: null;
-			const submitBtn = document.querySelector<HTMLInputElement>(
-				'input[type="submit"]'
-			);
 
-			if (status === 'scheduled') {
-				warningDiv.style.display = 'block';
-				warningDiv.style.color = '#d63638';
-				warningDiv.textContent =
-					"Ce message est actuellement en cours d'envoi. Veuillez attendre la fin du traitement.";
-				if (submitBtn) {
-					submitBtn.disabled = true;
-				}
-			} else if (status === 'sent') {
-				warningDiv.style.display = 'block';
-				warningDiv.style.color = '#2271b1';
-				warningDiv.textContent =
-					"Ce message a déjà été expédié. Tout nouvel envoi sera incrémental : les personnes l'ayant déjà reçu seront automatiquement ignorées.";
-				if (submitBtn) {
-					submitBtn.disabled = false;
-				}
-			} else {
-				warningDiv.style.display = 'none';
-				if (submitBtn) {
-					submitBtn.disabled = false;
+			if (warningDiv) {
+				if (status === 'scheduled') {
+					warningDiv.style.display = 'block';
+					warningDiv.style.color = '#d63638';
+					warningDiv.textContent =
+						"Ce message est actuellement en cours d'envoi. Veuillez attendre la fin du traitement.";
+					if (submitBtn) {
+						submitBtn.disabled = true;
+					}
+				} else if (status === 'sent') {
+					warningDiv.style.display = 'block';
+					warningDiv.style.color = '#2271b1';
+					warningDiv.textContent =
+						"Ce message a déjà été expédié. Tout nouvel envoi sera incrémental : les personnes l'ayant déjà reçu seront automatiquement ignorées.";
+					if (submitBtn) {
+						submitBtn.disabled = false;
+					}
+				} else {
+					warningDiv.style.display = 'none';
+					if (submitBtn) {
+						submitBtn.disabled = false;
+					}
 				}
 			}
 		});
 	}
+
+	if (prioritySelect) {
+		prioritySelect.addEventListener('change', (): void => {
+			updateStickyInfo();
+		});
+	}
+
+	// Initialize sticky bar on load
+	updateStickyInfo();
 });
