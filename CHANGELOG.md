@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.8.5] - 2026-10-29
+
 ### Intégration HelloAsso dans le Mailing & Refonte UX de l'Écran d'Envoi
 - **Règles Booléennes Précises pour le Ciblage des Adhérents (`RecipientResolver`, `Utils`)** :
   - Implémentation stricte de la formule `Sexe AND ( Groupe Permanent OR (Saisons AND Groupe Saisonnier) )`.
