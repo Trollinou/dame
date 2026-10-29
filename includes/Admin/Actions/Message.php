@@ -20,12 +20,69 @@ class Message {
 	 * Initialize the actions.
 	 */
 	public function init(): void {
+		add_filter( 'post_row_actions', array( $this, 'add_send_link' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'add_duplicate_link' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'add_to_post_link' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'add_reset_link' ), 10, 2 );
 		add_action( 'admin_action_dame_duplicate', array( $this, 'handle_duplicate' ) );
 		add_action( 'admin_action_dame_to_post', array( $this, 'handle_to_post' ) );
 		add_action( 'admin_action_dame_reset_send', array( $this, 'handle_reset' ) );
+		add_action( 'admin_head-edit.php', array( $this, 'inject_send_button_in_header' ) );
+	}
+
+	/**
+	 * Injects "Envoyer un message" action button next to "Ajouter" in the messages list table header.
+	 */
+	public function inject_send_button_in_header(): void {
+		$screen = get_current_screen();
+		if ( ! $screen || 'edit-dame_message' !== $screen->id || ! current_user_can( 'edit_dame_messages' ) ) {
+			return;
+		}
+
+		$send_url   = esc_url( admin_url( 'admin.php?page=dame-mailing' ) );
+		$button_txt = esc_js( __( 'Envoyer un message', 'dame' ) );
+		?>
+		<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			var addNew = document.querySelector('.wrap .page-title-action');
+			if (addNew) {
+				var sendBtn = document.createElement('a');
+				sendBtn.href = '<?php echo $send_url; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>';
+				sendBtn.className = 'page-title-action';
+				sendBtn.textContent = '<?php echo $button_txt; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>';
+				addNew.insertAdjacentElement('afterend', sendBtn);
+			}
+		});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Add "Envoyer" link to row actions for published messages.
+	 *
+	 * @param array<string, mixed> $actions Existing actions.
+	 * @param WP_Post             $post    Current post.
+	 * @return array<string, mixed> Modified actions.
+	 */
+	public function add_send_link( array $actions, WP_Post $post ): array {
+		if ( 'dame_message' !== $post->post_type || 'publish' !== $post->post_status ) {
+			return $actions;
+		}
+
+		if ( ! current_user_can( 'edit_dame_messages' ) ) {
+			return $actions;
+		}
+
+		$url = admin_url( 'admin.php?page=dame-mailing&message_id=' . $post->ID );
+
+		$actions['send_message'] = sprintf(
+			'<a href="%s" style="font-weight: 600; color: #2271b1;" title="%s">%s</a>',
+			esc_url( $url ),
+			esc_attr__( 'Envoyer ce message aux destinataires', 'dame' ),
+			esc_html__( 'Envoyer', 'dame' )
+		);
+
+		return $actions;
 	}
 
 	/**

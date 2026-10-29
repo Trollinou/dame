@@ -73,7 +73,17 @@ class ImportFFE {
 		$this->display_report();
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Import Manuel', 'dame' ); ?></h1>
+			<h1><?php esc_html_e( 'Imports & Sauvegardes', 'dame' ); ?></h1>
+
+			<nav class="nav-tab-wrapper" style="margin-bottom: 20px;">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=dame-import-ffe' ) ); ?>" class="nav-tab nav-tab-active">
+					<?php esc_html_e( 'Imports CSV & FFE', 'dame' ); ?>
+				</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=dame-backups' ) ); ?>" class="nav-tab">
+					<?php esc_html_e( 'Sauvegardes & Restaurations', 'dame' ); ?>
+				</a>
+			</nav>
+
 			<p><?php esc_html_e( 'Ce module rassemble l\'ensemble des outils d\'importation de fichiers CSV (adhérents, contacts, participants HelloAsso et mise à jour FFE).', 'dame' ); ?></p>
 
 			<!-- 1. SECTION ADHÉRENTS -->

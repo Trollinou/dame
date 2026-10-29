@@ -92,6 +92,10 @@ class Backups {
 	 * Render the page.
 	 */
 	public function render(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
 		$contact_types = get_terms(
 			array(
 				'taxonomy'   => 'dame_contact_type',
@@ -101,7 +105,16 @@ class Backups {
 
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Sauvegardes et Restaurations', 'dame' ); ?></h1>
+			<h1><?php esc_html_e( 'Imports & Sauvegardes', 'dame' ); ?></h1>
+
+			<nav class="nav-tab-wrapper" style="margin-bottom: 20px;">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=dame-import-ffe' ) ); ?>" class="nav-tab">
+					<?php esc_html_e( 'Imports CSV & FFE', 'dame' ); ?>
+				</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=dame-backups' ) ); ?>" class="nav-tab nav-tab-active">
+					<?php esc_html_e( 'Sauvegardes & Restaurations', 'dame' ); ?>
+				</a>
+			</nav>
 
 			<div class="notice notice-info" style="margin: 20px 0; padding: 12px 16px;">
 				<p>

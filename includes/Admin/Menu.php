@@ -27,6 +27,7 @@ class Menu {
 	public function init(): void {
 		add_action( 'admin_menu', array( $this, 'add_menus' ), 10 );
 		add_action( 'admin_menu', array( $this, 'reorder_dame_submenu' ), 999 );
+		add_action( 'all_admin_notices', array( $this, 'render_taxonomies_and_feeds_tabs' ) );
 		add_filter( 'parent_file', array( $this, 'highlight_parent_menu' ) );
 		add_filter( 'submenu_file', array( $this, 'highlight_submenu' ) );
 		( new Backups() )->init();
@@ -46,10 +47,10 @@ class Menu {
 			'dame-admin',
 			array( $this, 'render_dashboard' ),
 			'dashicons-groups',
-			30
+			30.1
 		);
 
-		// Envoyer un message (Mailing).
+		// Envoyer un message (Mailing - rattaché aux messages).
 		add_submenu_page(
 			'dame-admin',
 			__( 'Envoyer un message', 'dame' ),
@@ -59,37 +60,37 @@ class Menu {
 			array( new Mailing(), 'render' )
 		);
 
-		// Billetterie & Inscriptions HelloAsso.
+		// HelloAsso & Billetterie.
 		add_submenu_page(
 			'dame-admin',
-			__( 'Billetterie & HelloAsso', 'dame' ),
-			__( 'Billetterie', 'dame' ),
+			__( 'HelloAsso', 'dame' ),
+			__( 'HelloAsso', 'dame' ),
 			'manage_dame_ticketing',
 			'dame-ticketing',
 			array( new Ticketing(), 'render' )
 		);
 
-		// Sauvegardes.
+		// Imports & Sauvegardes (Administrateurs).
 		add_submenu_page(
 			'dame-admin',
-			__( 'Sauvegardes et Import', 'dame' ),
+			__( 'Imports & Sauvegardes', 'dame' ),
+			__( 'Imports & Sauvegardes', 'dame' ),
+			'manage_options',
+			'dame-import-ffe',
+			array( new ImportFFE(), 'render' )
+		);
+
+		// Sauvegardes (Sous-onglet d'Imports & Sauvegardes).
+		add_submenu_page(
+			'dame-admin',
+			__( 'Sauvegardes et Restaurations', 'dame' ),
 			__( 'Sauvegardes', 'dame' ),
 			'manage_options',
 			'dame-backups',
 			array( new Backups(), 'render' )
 		);
 
-		// Import Manuel.
-		add_submenu_page(
-			'dame-admin',
-			__( 'Import Manuel', 'dame' ),
-			__( 'Import Manuel', 'dame' ),
-			'manage_options',
-			'dame-import-ffe',
-			array( new ImportFFE(), 'render' )
-		);
-
-		// Réglages.
+		// Réglages (Administrateurs).
 		add_submenu_page(
 			'dame-admin',
 			__( 'Réglages DAME', 'dame' ),
@@ -123,36 +124,82 @@ class Menu {
 		$dame_submenu = $submenu['dame-admin'];
 		$reordered    = array();
 
+		// Target 11 clean items in exact requested order.
 		$desired_order = array(
-			'dame-admin'                              => __( 'Tableau de bord', 'dame' ),
-			'edit.php?post_type=adherent'             => __( 'Tous les adhérents', 'dame' ),
-			'edit.php?post_type=dame_contact'         => __( 'Tous les contacts', 'dame' ),
-			'edit.php?post_type=dame_pre_inscription' => __( 'Toutes les préinscriptions', 'dame' ),
-			'edit.php?post_type=dame_agenda'          => __( 'Tous les évènements', 'dame' ),
-			'edit.php?post_type=benevolat'            => __( 'Appels à bénévoles', 'dame' ),
-			'dame-ticketing'                          => __( 'Billetterie', 'dame' ),
-			'edit.php?post_type=dame_message'         => __( 'Tous les messages', 'dame' ),
-			'dame-mailing'                            => __( 'Envoyer un message', 'dame' ),
-			'edit-tags.php?taxonomy=dame_group&amp;post_type=adherent' => __( "Groupes d'Adhérent", 'dame' ),
-			'edit-tags.php?taxonomy=dame_contact_type&amp;post_type=dame_contact' => __( 'Groupes de Contact', 'dame' ),
-			'edit-tags.php?taxonomy=dame_agenda_category&amp;post_type=dame_agenda' => __( "Groupes d'Évènements", 'dame' ),
-			'edit-tags.php?taxonomy=dame_saison_adhesion&amp;post_type=adherent' => __( "Saisons d'adhésion", 'dame' ),
-			'edit.php?post_type=dame_ical_feed'       => __( "Flux d'agenda", 'dame' ),
-			'dame-import-ffe'                         => __( 'Import Manuel', 'dame' ),
-			'dame-backups'                            => __( 'Sauvegardes et Restaurations', 'dame' ),
-			'dame-settings'                           => __( 'Réglages', 'dame' ),
+			'dame-admin'                              => array(
+				'title' => __( 'Tableau de bord', 'dame' ),
+				'cap'   => 'edit_dame_messages',
+			),
+			'edit.php?post_type=dame_pre_inscription' => array(
+				'title' => __( 'Préinscriptions', 'dame' ),
+				'cap'   => 'edit_dame_messages',
+			),
+			'edit.php?post_type=adherent'             => array(
+				'title' => __( 'Adhérents', 'dame' ),
+				'cap'   => 'edit_dame_messages',
+			),
+			'edit.php?post_type=dame_contact'         => array(
+				'title' => __( 'Contacts', 'dame' ),
+				'cap'   => 'edit_dame_messages',
+			),
+			'edit.php?post_type=dame_agenda'          => array(
+				'title' => __( 'Évènements', 'dame' ),
+				'cap'   => 'edit_dame_messages',
+			),
+			'dame-ticketing'                          => array(
+				'title' => __( 'HelloAsso', 'dame' ),
+				'cap'   => 'manage_dame_ticketing',
+			),
+			'edit.php?post_type=benevolat'            => array(
+				'title' => __( 'Appels à bénévoles', 'dame' ),
+				'cap'   => 'edit_dame_messages',
+			),
+			'edit.php?post_type=dame_message'         => array(
+				'title' => __( 'Messages', 'dame' ),
+				'cap'   => 'edit_dame_messages',
+			),
+			'edit-tags.php?taxonomy=dame_group&amp;post_type=adherent' => array(
+				'title' => __( 'Catégories & Flux', 'dame' ),
+				'cap'   => 'manage_categories',
+			),
+			'dame-import-ffe'                         => array(
+				'title' => __( 'Imports & Sauvegardes', 'dame' ),
+				'cap'   => 'manage_options',
+			),
+			'dame-settings'                           => array(
+				'title' => __( 'Réglages', 'dame' ),
+				'cap'   => 'manage_options',
+			),
 		);
 
-		foreach ( $desired_order as $url => $new_title ) {
+		// Items to explicitly exclude from the sidebar menu (managed via tabs or actions).
+		$excluded_slugs = array(
+			'dame-mailing',
+			'dame-backups',
+			'edit.php?post_type=dame_ical_feed',
+			'edit-tags.php?taxonomy=dame_contact_type&amp;post_type=dame_contact',
+			'edit-tags.php?taxonomy=dame_contact_type&post_type=dame_contact',
+			'edit-tags.php?taxonomy=dame_agenda_category&amp;post_type=dame_agenda',
+			'edit-tags.php?taxonomy=dame_agenda_category&post_type=dame_agenda',
+			'edit-tags.php?taxonomy=dame_saison_adhesion&amp;post_type=adherent',
+			'edit-tags.php?taxonomy=dame_saison_adhesion&post_type=adherent',
+		);
+
+		foreach ( $desired_order as $url => $config ) {
+			if ( ! current_user_can( $config['cap'] ) ) {
+				continue;
+			}
+
 			$found = false;
 			foreach ( $dame_submenu as $key => $item ) {
 				$item_url   = str_replace( '&', '&amp;', $item[2] );
 				$target_url = str_replace( '&', '&amp;', $url );
 
 				if ( $item_url === $target_url || $item[2] === $url ) {
-					$item[0] = $new_title;
+					$item[0] = $config['title'];
+					$item[1] = $config['cap'];
 					if ( ! isset( $item[3] ) ) {
-						$item[3] = $new_title;
+						$item[3] = $config['title'];
 					}
 					$reordered[] = $item;
 					unset( $dame_submenu[ $key ] );
@@ -162,13 +209,17 @@ class Menu {
 			}
 
 			if ( ! $found ) {
-				$cap         = ( strpos( $url, 'edit-tags.php' ) !== false ) ? 'manage_categories' : 'manage_options';
 				$clean_url   = str_replace( '&amp;', '&', $url );
-				$reordered[] = array( $new_title, $cap, $clean_url, $new_title );
+				$reordered[] = array( $config['title'], $config['cap'], $clean_url, $config['title'] );
 			}
 		}
 
+		// Keep any unexpected third-party submenu items while filtering out excluded items.
 		foreach ( $dame_submenu as $item ) {
+			$item_url = str_replace( '&', '&amp;', $item[2] );
+			if ( in_array( $item[2], $excluded_slugs, true ) || in_array( $item_url, $excluded_slugs, true ) ) {
+				continue;
+			}
 			if ( ! isset( $item[3] ) ) {
 				$item[3] = $item[0];
 			}
@@ -518,12 +569,15 @@ class Menu {
 		global $current_screen;
 		$dame_taxonomies = array( 'dame_saison_adhesion', 'dame_group', 'dame_agenda_category', 'dame_contact_type' );
 
-		if ( isset( $current_screen->taxonomy ) && in_array( $current_screen->taxonomy, $dame_taxonomies, true ) ) {
-			return 'dame-admin';
+		if ( $current_screen instanceof \WP_Screen ) {
+			if ( in_array( $current_screen->taxonomy, $dame_taxonomies, true ) || 'dame_ical_feed' === $current_screen->post_type ) {
+				return 'dame-admin';
+			}
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET['page'] ) && $_GET['page'] === 'dame-message-report' ) {
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		if ( in_array( $page, array( 'dame-message-report', 'dame-mailing', 'dame-backups' ), true ) ) {
 			return 'dame-admin';
 		}
 
@@ -538,27 +592,84 @@ class Menu {
 	 */
 	public function highlight_submenu( ?string $submenu_file ): ?string {
 		global $current_screen;
+		$dame_taxonomies = array( 'dame_saison_adhesion', 'dame_group', 'dame_agenda_category', 'dame_contact_type' );
 
-		if ( isset( $current_screen->taxonomy ) ) {
-			if ( $current_screen->taxonomy === 'dame_saison_adhesion' ) {
-				return 'edit-tags.php?taxonomy=dame_saison_adhesion&post_type=adherent';
-			}
-			if ( $current_screen->taxonomy === 'dame_group' ) {
+		if ( $current_screen instanceof \WP_Screen ) {
+			if ( in_array( $current_screen->taxonomy, $dame_taxonomies, true ) || 'dame_ical_feed' === $current_screen->post_type ) {
 				return 'edit-tags.php?taxonomy=dame_group&post_type=adherent';
-			}
-			if ( $current_screen->taxonomy === 'dame_agenda_category' ) {
-				return 'edit-tags.php?taxonomy=dame_agenda_category&post_type=dame_agenda';
-			}
-			if ( $current_screen->taxonomy === 'dame_contact_type' ) {
-				return 'edit-tags.php?taxonomy=dame_contact_type&post_type=dame_contact';
 			}
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET['page'] ) && $_GET['page'] === 'dame-message-report' ) {
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		if ( 'dame-message-report' === $page || 'dame-mailing' === $page ) {
 			return 'edit.php?post_type=dame_message';
 		}
 
+		if ( 'dame-backups' === $page ) {
+			return 'dame-import-ffe';
+		}
+
 		return $submenu_file;
+	}
+
+	/**
+	 * Render horizontal tabs for taxonomies and iCal feeds.
+	 */
+	public function render_taxonomies_and_feeds_tabs(): void {
+		$screen = get_current_screen();
+		if ( ! $screen ) {
+			return;
+		}
+
+		$is_dame_group   = 'dame_group' === $screen->taxonomy;
+		$is_contact_type = 'dame_contact_type' === $screen->taxonomy;
+		$is_agenda_cat   = 'dame_agenda_category' === $screen->taxonomy;
+		$is_season       = 'dame_saison_adhesion' === $screen->taxonomy;
+		$is_ical_feed    = 'dame_ical_feed' === $screen->post_type;
+
+		if ( ! $is_dame_group && ! $is_contact_type && ! $is_agenda_cat && ! $is_season && ! $is_ical_feed ) {
+			return;
+		}
+
+		$tabs = array(
+			'dame_group'           => array(
+				'title'  => __( "Groupes d'Adhérent", 'dame' ),
+				'url'    => admin_url( 'edit-tags.php?taxonomy=dame_group&post_type=adherent' ),
+				'active' => $is_dame_group,
+			),
+			'dame_contact_type'    => array(
+				'title'  => __( 'Groupes de Contact', 'dame' ),
+				'url'    => admin_url( 'edit-tags.php?taxonomy=dame_contact_type&post_type=dame_contact' ),
+				'active' => $is_contact_type,
+			),
+			'dame_agenda_category' => array(
+				'title'  => __( "Groupes d'Évènements", 'dame' ),
+				'url'    => admin_url( 'edit-tags.php?taxonomy=dame_agenda_category&post_type=dame_agenda' ),
+				'active' => $is_agenda_cat,
+			),
+			'dame_saison_adhesion' => array(
+				'title'  => __( "Saisons d'adhésion", 'dame' ),
+				'url'    => admin_url( 'edit-tags.php?taxonomy=dame_saison_adhesion&post_type=adherent' ),
+				'active' => $is_season,
+			),
+			'dame_ical_feed'       => array(
+				'title'  => __( "Flux d'agenda", 'dame' ),
+				'url'    => admin_url( 'edit.php?post_type=dame_ical_feed' ),
+				'active' => $is_ical_feed,
+			),
+		);
+
+		?>
+		<div class="wrap dame-taxonomies-tabs-wrap" style="margin-bottom: 20px;">
+			<nav class="nav-tab-wrapper">
+				<?php foreach ( $tabs as $tab ) : ?>
+					<a href="<?php echo esc_url( $tab['url'] ); ?>" class="nav-tab <?php echo $tab['active'] ? 'nav-tab-active' : ''; ?>">
+						<?php echo esc_html( $tab['title'] ); ?>
+					</a>
+				<?php endforeach; ?>
+			</nav>
+		</div>
+		<?php
 	}
 }

@@ -114,7 +114,12 @@ class FormRenderer {
 		);
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Envoyer un message', 'dame' ); ?></h1>
+			<h1>
+				<?php esc_html_e( 'Envoyer un message', 'dame' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=dame_message' ) ); ?>" class="page-title-action">
+					<?php esc_html_e( '← Retour aux messages', 'dame' ); ?>
+				</a>
+			</h1>
 
 			<?php $this->render_notices( $success, $count, $error, $state_had_attachment ); ?>
 
