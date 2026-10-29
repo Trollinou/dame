@@ -172,10 +172,8 @@ class Menu {
 			),
 		);
 
-		// Items to explicitly exclude from the sidebar menu (managed via tabs or actions).
+		// Slugs to explicitly exclude from the sidebar menu (managed via tabs on native screens).
 		$excluded_slugs = array(
-			'dame-mailing',
-			'dame-backups',
 			'edit.php?post_type=dame_ical_feed',
 			'edit-tags.php?taxonomy=dame_contact_type&amp;post_type=dame_contact',
 			'edit-tags.php?taxonomy=dame_contact_type&post_type=dame_contact',
@@ -184,6 +182,9 @@ class Menu {
 			'edit-tags.php?taxonomy=dame_saison_adhesion&amp;post_type=adherent',
 			'edit-tags.php?taxonomy=dame_saison_adhesion&post_type=adherent',
 		);
+
+		// Subpages to keep in $submenu for core permission verification, but hide via CSS class.
+		$hidden_subpages = array( 'dame-mailing', 'dame-backups' );
 
 		foreach ( $desired_order as $url => $config ) {
 			if ( ! current_user_can( $config['cap'] ) ) {
@@ -214,11 +215,14 @@ class Menu {
 			}
 		}
 
-		// Keep any unexpected third-party submenu items while filtering out excluded items.
+		// Keep hidden subpages and any unexpected third-party items.
 		foreach ( $dame_submenu as $item ) {
 			$item_url = str_replace( '&', '&amp;', $item[2] );
 			if ( in_array( $item[2], $excluded_slugs, true ) || in_array( $item_url, $excluded_slugs, true ) ) {
 				continue;
+			}
+			if ( in_array( $item[2], $hidden_subpages, true ) ) {
+				$item[4] = isset( $item[4] ) ? $item[4] . ' dame-hidden' : 'dame-hidden';
 			}
 			if ( ! isset( $item[3] ) ) {
 				$item[3] = $item[0];
