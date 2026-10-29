@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+### Ergonomie de l'Administration & Refonte du Menu DAME
+- **Simplification Majeure du Menu Latéral (Réduction de 17 à 11 Entrées Déterministes)** :
+  - Raccourcissement des libellés (suppression des préfixes redondants *« Tous les / Toutes les »*) tenant désormais sur une seule ligne.
+  - Renommage de l'entrée *« Billetterie »* en *« HelloAsso »*.
+  - Réorganisation ordonnée et logique : *Tableau de bord*, *Préinscriptions*, *Adhérents*, *Contacts*, *Évènements*, *HelloAsso*, *Appels à bénévoles*, *Messages*, *Catégories & Flux*, *Imports & Sauvegardes*, *Réglages*.
+  - Permissions et capacités étanches : accès à *Catégories & Flux* pour les rôles Éditeur et Administrateur (`manage_categories`), et réservation stricte des *Imports & Sauvegardes* et *Réglages* aux Administrateurs (`manage_options`).
+- **Hubs Horizontaux par Onglets (« Catégories & Flux » et « Imports & Sauvegardes »)** :
+  - **Catégories & Flux** : regroupement de 5 écrans sous une barre d'onglets unifiée (`nav-tab-wrapper`) : *Groupes d'Adhérents*, *Groupes de Contacts*, *Groupes d'Évènements*, *Saisons d'adhésion* et *Flux d'agenda (iCal)*, avec préservation de l'entrée active en surbrillance.
+  - **Imports & Sauvegardes** : centralisation des outils d'importation CSV/FFE et des sauvegardes/restaurations sous 2 onglets horizontaux clairs.
+- **Fluidification du Workflow d'Envoi de Messages** :
+  - Intégration directe de l'envoi depuis la liste des messages sans entrée redondante dans le menu latéral.
+  - Bouton d'action **« Envoyer un message »** en haut de page à côté de *« Ajouter un nouveau message »*.
+  - Ajout d'une colonne dédiée **« Actions »** avec bouton bleu WordPress **« Envoyer »** pour chaque message publié.
+  - Action rapide au survol sous le titre repositionnée en tête des actions de ligne.
+  - Pré-sélection automatique du message cible dans le formulaire d'envoi (`admin.php?page=dame-mailing&message_id=XX`) et bouton de retour rapide vers la liste des messages.
+  - Conservation sécurisée des sous-pages dans le tableau `$submenu` pour garantir l'autorisation d'accès native WordPress (`user_can_access_admin_page`).
+- **Harmonisation de la Barre d'Outils Supérieure (Toolbar)** :
+  - Alignement strict du menu DAME de l'Admin Bar pour refléter fidèlement les items 2 à 8 du menu principal (*Préinscriptions*, *Adhérents*, *Contacts*, *Évènements*, *HelloAsso*, *Appels à bénévoles*, *Messages*).
+  - Épuration des actions obsolètes pour une barre d'outils plus légère.
+
 ## [5.8.3] - 2026-10-29
 
 ### HelloAsso & Normalisation des Dates (Fuseaux Horaires)

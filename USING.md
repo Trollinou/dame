@@ -207,18 +207,21 @@ Le shortcode `[dame_fiche_inscription]` permet aux futurs adhérents de saisir l
 ## 9. Groupes d'Adhérents & Sauvegardes
 
 ### a. Types de Groupes d'Adhérents
-Lors de la création ou de la gestion de groupes (`DAME > Groupes d'Adhérent`), vous pouvez définir le type de chaque groupe :
+Lors de la création ou de la gestion de groupes (`DAME > Catégories & Flux > onglet Groupes d'Adhérent`), vous pouvez définir le type de chaque groupe :
 - **Saisonnier (Par défaut) :** Réservé aux membres et adhérents actifs du club au titre de la saison en cours (ex: *Cours Jeunes Débutants*, *Équipe Nationale 1*).
 - **Permanent :** Destiné aux contacts transversaux ou extérieurs (ex: *Bénévoles récurrents*, *Élus locaux*, *Presse*, *Partenaires*), permettant un ciblage précis dans les outils de mailing sans réinitialisation saisonnière.
 
 ### b. Sauvegardes & Restauration Complète
-Depuis l'écran `DAME > Sauvegardes et Restaurations` :
+Depuis l'écran `DAME > Imports & Sauvegardes > onglet Sauvegardes & Restaurations` :
 - **Sauvegarde complète (.json.gz) :** Archive compressée contenant l'ensemble des adhérents, contacts, préinscriptions, messages, taxonomies (saisons, groupes avec leurs métadonnées de type, types de contact) et configurations.
 - **Restauration :** Permet la réimportation intégrale sur un autre environnement ou en cas de sinistre, avec préservation stricte des identifiants, des relations de taxonomie et des métadonnées personnalisées.
 
 ## 10. Envoi de Messages & Mailing Incrémental
 
-Le module d'envoi de messages (`DAME > Envoyer un message`) permet de diffuser des communications ciblées aux adhérents et contacts du club.
+Le module d'envoi de messages est directement accessible depuis l'écran `DAME > Messages` :
+- **Envoi direct :** Cliquez sur le bouton bleu **« Envoyer »** présent dans la colonne *Actions* d'un message publié (ou l'action de survol sous son titre) pour ouvrir le formulaire avec ce message automatiquement pré-sélectionné.
+- **Envoi libre :** Cliquez sur le bouton **« Envoyer un message »** en en-tête de la liste des messages pour sélectionner manuellement le message à diffuser.
+- **Retour rapide :** Un bouton **« ← Retour aux messages »** permet de revenir instantanément à la liste des messages.
 
 ### a. Modes de sélection des destinataires
 - **Par critères (Recommandé pour les diffusions de groupe) :** Sélectionnez des critères (Saisons, Groupes saisonniers/permanents, Sexe, Types de contacts, Régions, Départements).
@@ -232,7 +235,7 @@ Lorsqu'un message a déjà été envoyé (statut *sent*) et que vous souhaitez l
 
 ## 11. Billetterie & Inscriptions HelloAsso
 
-Le module de billetterie synchronise automatiquement vos formulaires et campagnes HelloAsso avec votre site WordPress et l'application mobile PWA pour le pointage des tournois et événements.
+Le module HelloAsso synchronise automatiquement vos formulaires et campagnes HelloAsso avec votre site WordPress et l'application mobile PWA pour le pointage des tournois et événements.
 
 ### a. Configuration initiale de la connexion
 1. Rendez-vous dans **DAME > Réglages > onglet HelloAsso**.
@@ -244,13 +247,13 @@ Le module de billetterie synchronise automatiquement vos formulaires et campagne
 4. Cliquez sur **Enregistrer les réglages**. Le système teste immédiatement la connexion avec l'API HelloAsso et confirme la validation.
 
 ### b. Synchronisation des campagnes
-Depuis l'écran **DAME > Billetterie** :
+Depuis l'écran **DAME > HelloAsso** :
 - Cliquez sur le bouton **« ↻ Synchroniser les campagnes HelloAsso »** pour importer ou mettre à jour instantanément vos formulaires.
 - Les données de formulaires (titre, dates de réalisation, montants collectés, nombre d'inscrits, tarifs) sont récupérées et stockées en base locale.
 - **Webhook en temps réel** : Vous pouvez également déclarer l'URL de notification Webhook fournie dans les réglages sur votre interface HelloAsso pour recevoir les nouvelles inscriptions en temps réel dès validation du paiement.
 
 ### c. Navigation, filtres par type et tri chronologique
-L'écran **DAME > Billetterie** propose une vue claire de toutes vos activités :
+L'écran **DAME > HelloAsso** propose une vue claire de toutes vos activités :
 - **Filtres par type de formulaire** : Des onglets rapides permettent d'isoler en un clic :
   - **Tous** : Vue globale avec le total des campagnes.
   - **Événements (`Event`)** : Tournois d'échecs, opens, stages, simultanées.

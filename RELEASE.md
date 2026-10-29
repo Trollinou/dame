@@ -1,3 +1,27 @@
+# Release Notes — DAME (Prochaine Release)
+
+**Date :** 29 octobre 2026
+
+## 🚀 Changements Majeurs
+
+### 1. Refonte Ergonomique & Allègement du Menu d'Administration
+- **Menu Latéral Déterministe (Réduit de 17 à 11 Entrées)** :
+  - Raccourcissement des libellés (suppression des préfixes verbeux *« Tous les / Toutes les »*) tenant sur une seule ligne.
+  - Renommage de *« Billetterie »* en *« HelloAsso »*.
+  - Ordre optimisé : *Tableau de bord*, *Préinscriptions*, *Adhérents*, *Contacts*, *Évènements*, *HelloAsso*, *Appels à bénévoles*, *Messages*, *Catégories & Flux*, *Imports & Sauvegardes*, *Réglages*.
+  - Cloisonnement des permissions : *Catégories & Flux* accessible aux Éditeurs et Administrateurs (`manage_categories`), et réservation des *Imports & Sauvegardes* et *Réglages* aux Administrateurs (`manage_options`).
+- **Hubs Horizontaux par Onglets** :
+  - **Catégories & Flux** : Regroupement sous 5 onglets horizontaux des 4 taxonomies (*Groupes d'Adhérent*, *Groupes de Contact*, *Groupes d'Évènements*, *Saisons d'adhésion*) et des *Flux d'agenda (iCal)*.
+  - **Imports & Sauvegardes** : Regroupement sous 2 onglets des imports CSV/FFE et des sauvegardes/restaurations.
+- **Envoi de Messages Intégré et Accéléré** :
+  - Bouton direct **« Envoyer un message »** en en-tête de la liste des messages.
+  - Colonne dédiée **« Actions »** avec bouton WordPress **« Envoyer »** sur chaque message publié, pré-sélectionnant automatiquement le message dans le formulaire.
+  - Bouton **« ← Retour aux messages »** sur l'écran d'envoi.
+- **Barre d'Outils Supérieure (Admin Toolbar)** :
+  - Alignement strict du menu DAME sur les items 2 à 8 du menu principal (*Préinscriptions*, *Adhérents*, *Contacts*, *Évènements*, *HelloAsso*, *Appels à bénévoles*, *Messages*) et retrait des actions obsolètes.
+
+---
+
 # Release Notes — DAME v5.8.3
 
 **Date :** 29 octobre 2026
