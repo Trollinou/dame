@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		) {
 			const checkbox = target as HTMLInputElement;
 			checkbox.indeterminate = false;
+			checkbox.classList.remove('is-indeterminate');
 			const regionCode = checkbox.value;
 			const isChecked = checkbox.checked;
 			const mapping = getRegionMapping();
@@ -162,20 +163,13 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		if (
 			target?.matches('.dame-dept-criteria-list input[type="checkbox"]')
 		) {
-			const deptCheckbox = target as HTMLInputElement;
-			const deptCode = deptCheckbox.value;
-			const mapping = getRegionMapping();
-
-			Object.entries(mapping).forEach(([regionCode, depts]): void => {
-				if (depts.includes(deptCode)) {
-					syncRegionState(regionCode);
-				}
-			});
 			const regionList = document.querySelector<HTMLElement>(
 				'.dame-region-criteria-list .dame-checkbox-list'
 			);
 			if (regionList) {
+				syncAllRegions();
 				reorderList(regionList);
+				syncAllRegions();
 				updateSelectionCount(regionList);
 			}
 		}
@@ -240,12 +234,15 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		if (checkedCount === depts.length) {
 			regionCheckbox.checked = true;
 			regionCheckbox.indeterminate = false;
+			regionCheckbox.classList.remove('is-indeterminate');
 		} else if (checkedCount === 0) {
 			regionCheckbox.checked = false;
 			regionCheckbox.indeterminate = false;
+			regionCheckbox.classList.remove('is-indeterminate');
 		} else {
 			regionCheckbox.checked = false;
 			regionCheckbox.indeterminate = true;
+			regionCheckbox.classList.add('is-indeterminate');
 		}
 	}
 
@@ -275,7 +272,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		);
 		if (countSpan) {
 			const checkedCount = listContainer.querySelectorAll(
-				'input[type="checkbox"]:checked'
+				'input[type="checkbox"]:checked, input[type="checkbox"].is-indeterminate'
 			).length;
 			countSpan.textContent = String(checkedCount);
 		}
@@ -299,7 +296,10 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				if (input?.checked) {
 					return 2;
 				}
-				if (input?.indeterminate) {
+				if (
+					input?.indeterminate ||
+					input?.classList.contains('is-indeterminate')
+				) {
 					return 1;
 				}
 				return 0;
@@ -344,6 +344,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				.forEach((cb: HTMLInputElement) => {
 					cb.checked = false;
 					cb.indeterminate = false;
+					cb.classList.remove('is-indeterminate');
 				});
 			const list = container.querySelector<HTMLElement>(
 				'.dame-checkbox-list'
