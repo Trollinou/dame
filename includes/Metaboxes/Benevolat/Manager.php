@@ -74,6 +74,93 @@ class Manager {
 			'normal',
 			'high'
 		);
+		add_meta_box(
+			'dame_benevolat_article_sync',
+			__( 'Flux d\'actualités & Article lié', 'dame' ),
+			array( $this, 'render_article_sync' ),
+			'benevolat',
+			'side',
+			'default'
+		);
+	}
+
+	/**
+	 * Render the meta box for article synchronization.
+	 *
+	 * @param \WP_Post $post The post object.
+	 */
+	public function render_article_sync( \WP_Post $post ): void {
+		$options      = get_option( 'dame_options', array() );
+		$options      = is_array( $options ) ? $options : array();
+		$default_auto = ! empty( $options['benevolat_auto_publish'] );
+
+		$meta_sync = get_post_meta( $post->ID, '_dame_benevolat_sync_article', true );
+		$is_sync   = '' === $meta_sync ? $default_auto : (bool) $meta_sync;
+
+		$selected_cat = (int) get_post_meta( $post->ID, '_dame_benevolat_category', true );
+		if ( $selected_cat <= 0 ) {
+			$selected_cat = isset( $options['benevolat_default_category'] ) ? (int) $options['benevolat_default_category'] : (int) get_option( 'default_category' );
+		}
+
+		$linked_article_id = (int) get_post_meta( $post->ID, '_dame_linked_article_id', true );
+		$linked_article    = $linked_article_id > 0 ? get_post( $linked_article_id ) : null;
+		$article_valid     = $linked_article instanceof \WP_Post && 'post' === $linked_article->post_type;
+		?>
+		<div class="dame-benevolat-article-sync-box">
+			<p>
+				<label>
+					<input type="checkbox" name="_dame_benevolat_sync_article" value="1" <?php checked( $is_sync ); ?> />
+					<strong><?php esc_html_e( 'Publier dans le flux d\'articles', 'dame' ); ?></strong>
+				</label>
+			</p>
+
+			<p>
+				<label for="dame_benevolat_category"><strong><?php esc_html_e( 'Catégorie de l\'article :', 'dame' ); ?></strong></label><br>
+				<?php
+				wp_dropdown_categories(
+					array(
+						'name'              => '_dame_benevolat_category',
+						'id'                => 'dame_benevolat_category',
+						'selected'          => $selected_cat,
+						'hierarchical'      => 1,
+						'show_option_none'  => __( '— Catégorie par défaut —', 'dame' ),
+						'option_none_value' => '0',
+						'hide_empty'        => 0,
+						'class'             => 'widefat',
+					)
+				);
+				?>
+			</p>
+
+			<?php if ( $article_valid && $linked_article ) : ?>
+				<hr style="margin: 15px 0 10px 0;">
+				<p style="margin: 0 0 5px 0;">
+					<strong><?php esc_html_e( 'Article lié :', 'dame' ); ?></strong>
+					<?php
+					$status_obj   = get_post_status_object( (string) $linked_article->post_status );
+					$status_label = $status_obj ? $status_obj->label : $linked_article->post_status;
+					?>
+					<span class="dame-status-badge" style="background: #f0f0f1; padding: 2px 6px; border-radius: 3px; font-size: 11px;">
+						<?php echo esc_html( (string) $status_label ); ?>
+					</span>
+				</p>
+				<p style="margin: 0; font-size: 12px;">
+					<?php if ( 'publish' === $linked_article->post_status ) : ?>
+						<a href="<?php echo esc_url( (string) get_permalink( $linked_article->ID ) ); ?>" target="_blank" rel="noopener noreferrer">
+							<?php esc_html_e( 'Voir l\'article en ligne', 'dame' ); ?> <span class="dashicons dashicons-external" style="font-size: 14px; vertical-align: middle;"></span>
+						</a>
+						<span style="color: #ccd0d4;"> | </span>
+					<?php endif; ?>
+					<a href="<?php echo esc_url( (string) get_edit_post_link( $linked_article->ID ) ); ?>" target="_blank" rel="noopener noreferrer">
+						<?php esc_html_e( 'Modifier l\'article', 'dame' ); ?>
+					</a>
+				</p>
+			<?php endif; ?>
+			<p class="description" style="margin-top: 10px;">
+				<?php esc_html_e( 'L\'article est synchronisé automatiquement lors de la publication ou de la mise à jour de cet appel.', 'dame' ); ?>
+			</p>
+		</div>
+		<?php
 	}
 
 	/**
@@ -318,7 +405,10 @@ class Manager {
 												</span>
 											<?php else : ?>
 												<span style="color: #646970;">
-													<?php echo esc_html( sprintf( _n( '%d inscrit', '%d inscrits', $count, 'dame' ), $count ) ); ?>
+													<?php
+													/* translators: %d: number of registered volunteers. */
+													echo esc_html( sprintf( _n( '%d inscrit', '%d inscrits', $count, 'dame' ), $count ) );
+													?>
 												</span>
 											<?php endif; ?>
 										</div>
@@ -382,19 +472,6 @@ class Manager {
 	 * @param int $post_id The ID of the post being saved.
 	 */
 	public function save( $post_id ): void {
-		$responses_exist = (bool) get_posts(
-			array(
-				'post_type'      => 'benevolat_reponse',
-				'post_parent'    => $post_id,
-				'posts_per_page' => 1,
-				'fields'         => 'ids',
-			)
-		);
-
-		if ( $responses_exist ) {
-			return;
-		}
-
 		if ( ! isset( $_POST['dame_benevolat_metabox_nonce'] ) ) {
 			return;
 		}
@@ -409,58 +486,86 @@ class Manager {
 			return;
 		}
 
-		if ( ! isset( $_POST['_dame_benevolat_data'] ) ) {
-			delete_post_meta( $post_id, '_dame_benevolat_data' );
-			return;
+		// 1. Save Article synchronization settings.
+		if ( isset( $_POST['_dame_benevolat_sync_article'] ) ) {
+			update_post_meta( $post_id, '_dame_benevolat_sync_article', 1 );
+		} else {
+			update_post_meta( $post_id, '_dame_benevolat_sync_article', 0 );
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$raw_benevolat_data = is_array( $_POST['_dame_benevolat_data'] ) ? wp_unslash( $_POST['_dame_benevolat_data'] ) : array();
-		$benevolat_data     = array();
-		foreach ( (array) $raw_benevolat_data as $date_group ) {
-			if ( ! empty( $date_group['date'] ) ) {
-				$new_date_group = array(
-					'date'       => sanitize_text_field( $date_group['date'] ),
-					'time_slots' => array(),
-				);
-				if ( ! empty( $date_group['time_slots'] ) ) {
-					foreach ( $date_group['time_slots'] as $time_slot ) {
-						if ( ! empty( $time_slot['start'] ) && ! empty( $time_slot['end'] ) ) {
-							$slot_data = array(
-								'start' => sanitize_text_field( $time_slot['start'] ),
-								'end'   => sanitize_text_field( $time_slot['end'] ),
-							);
-							if ( isset( $time_slot['needed'] ) && '' !== (string) $time_slot['needed'] ) {
-								$slot_data['needed'] = max( 0, (int) $time_slot['needed'] );
-							} else {
-								$slot_data['needed'] = 0;
-							}
-							$new_date_group['time_slots'][] = $slot_data;
-						}
-					}
-				}
-				usort(
-					$new_date_group['time_slots'],
-					function ( $a, $b ) {
-						return strcmp( $a['start'], $b['start'] );
-					}
-				);
-
-				$benevolat_data[] = $new_date_group;
-			}
+		if ( isset( $_POST['_dame_benevolat_category'] ) ) {
+			update_post_meta( $post_id, '_dame_benevolat_category', (int) $_POST['_dame_benevolat_category'] );
 		}
 
-		usort(
-			$benevolat_data,
-			function ( $a, $b ) {
-				return strcmp( $a['date'], $b['date'] );
-			}
+		// 2. Save Dates and Timeslots only if not locked by existing responses.
+		$responses_exist = (bool) get_posts(
+			array(
+				'post_type'      => 'benevolat_reponse',
+				'post_parent'    => $post_id,
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+			)
 		);
 
-		if ( ! empty( $benevolat_data ) ) {
-			update_post_meta( $post_id, '_dame_benevolat_data', $benevolat_data );
-		} else {
-			delete_post_meta( $post_id, '_dame_benevolat_data' );
+		if ( ! $responses_exist ) {
+			if ( ! isset( $_POST['_dame_benevolat_data'] ) ) {
+				delete_post_meta( $post_id, '_dame_benevolat_data' );
+			} else {
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$raw_benevolat_data = is_array( $_POST['_dame_benevolat_data'] ) ? wp_unslash( $_POST['_dame_benevolat_data'] ) : array();
+				$benevolat_data     = array();
+				foreach ( (array) $raw_benevolat_data as $date_group ) {
+					if ( ! empty( $date_group['date'] ) ) {
+						$new_date_group = array(
+							'date'       => sanitize_text_field( $date_group['date'] ),
+							'time_slots' => array(),
+						);
+						if ( ! empty( $date_group['time_slots'] ) ) {
+							foreach ( $date_group['time_slots'] as $time_slot ) {
+								if ( ! empty( $time_slot['start'] ) && ! empty( $time_slot['end'] ) ) {
+									$slot_data = array(
+										'start' => sanitize_text_field( $time_slot['start'] ),
+										'end'   => sanitize_text_field( $time_slot['end'] ),
+									);
+									if ( isset( $time_slot['needed'] ) && '' !== (string) $time_slot['needed'] ) {
+										$slot_data['needed'] = max( 0, (int) $time_slot['needed'] );
+									} else {
+										$slot_data['needed'] = 0;
+									}
+									$new_date_group['time_slots'][] = $slot_data;
+								}
+							}
+						}
+						usort(
+							$new_date_group['time_slots'],
+							function ( $a, $b ) {
+								return strcmp( $a['start'], $b['start'] );
+							}
+						);
+
+						$benevolat_data[] = $new_date_group;
+					}
+				}
+
+				usort(
+					$benevolat_data,
+					function ( $a, $b ) {
+						return strcmp( $a['date'], $b['date'] );
+					}
+				);
+
+				if ( ! empty( $benevolat_data ) ) {
+					update_post_meta( $post_id, '_dame_benevolat_data', $benevolat_data );
+				} else {
+					delete_post_meta( $post_id, '_dame_benevolat_data' );
+				}
+			}
+		}
+
+		// 3. Trigger synchronization with linked article.
+		$post = get_post( $post_id );
+		if ( $post instanceof \WP_Post ) {
+			( new \DAME\Services\BenevolatArticleSync() )->sync( $post_id, $post );
 		}
 	}
 

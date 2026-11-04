@@ -17,6 +17,7 @@ use DAME\Admin\Settings\Tabs\Paiements;
 use DAME\Admin\Settings\Tabs\HelloAsso;
 use DAME\Admin\Settings\Tabs\Sauvegarde;
 use DAME\Admin\Settings\Tabs\Emails;
+use DAME\Admin\Settings\Tabs\Benevolat;
 use DAME\Admin\Settings\Tabs\Desinstallation;
 
 /**
@@ -27,7 +28,7 @@ class Main {
 	/**
 	 * Array of tab instances.
 	 *
-	 * @var array<string, Association|Assignation|Saisons|Anniversaires|Paiements|HelloAsso|Sauvegarde|Emails|Desinstallation>
+	 * @var array<string, Association|Assignation|Saisons|Benevolat|Anniversaires|Paiements|HelloAsso|Sauvegarde|Emails|Desinstallation>
 	 */
 	private array $tabs = array();
 
@@ -39,6 +40,7 @@ class Main {
 		$this->tabs['association']     = new Association();
 		$this->tabs['assignation']     = new Assignation();
 		$this->tabs['saisons']         = new Saisons();
+		$this->tabs['benevolat']       = new Benevolat();
 		$this->tabs['anniversaires']   = new Anniversaires();
 		$this->tabs['paiements']       = new Paiements();
 		$this->tabs['helloasso']       = new HelloAsso();

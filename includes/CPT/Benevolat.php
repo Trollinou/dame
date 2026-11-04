@@ -19,9 +19,10 @@ class Benevolat {
 	 */
 	public function init(): void {
 		add_action( 'init', array( $this, 'register' ) );
-		add_action( 'wp_trash_post', array( $this, 'handle_status_change' ) );
-		add_action( 'untrash_post', array( $this, 'handle_status_change' ) );
+		add_action( 'wp_trash_post', array( $this, 'handle_trash' ) );
+		add_action( 'untrash_post', array( $this, 'handle_untrash' ) );
 		add_action( 'deleted_post', array( $this, 'handle_deletion' ) );
+		add_filter( 'the_content', array( $this, 'display_benevolat_form' ) );
 		add_filter( 'use_block_editor_for_post_type', array( $this, 'disable_block_editor' ), 10, 2 );
 		if ( is_admin() ) {
 			add_action( 'admin_init', array( $this, 'save_last_list_url' ) );
@@ -43,29 +44,71 @@ class Benevolat {
 	}
 
 	/**
-	 * Handle post status changes (trash/untrash).
+	 * Handle post status change to trash.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function handle_trash( int $post_id ): void {
+		$post = get_post( $post_id );
+		if ( $post && 'benevolat' === $post->post_type ) {
+			( new \DAME\Services\BenevolatArticleSync() )->trash_linked_article( $post_id );
+		}
+	}
+
+	/**
+	 * Handle post restoration from trash.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function handle_untrash( int $post_id ): void {
+		$post = get_post( $post_id );
+		if ( $post && 'benevolat' === $post->post_type ) {
+			( new \DAME\Services\BenevolatArticleSync() )->untrash_linked_article( $post_id );
+		}
+	}
+
+	/**
+	 * Handle post deletion.
 	 *
 	 * @param int $post_id Post ID.
 	 */
 	public function handle_deletion( int $post_id ): void {
 		$post = get_post( $post_id );
-		if ( ! $post || 'benevolat_reponse' !== $post->post_type ) {
+		if ( ! $post ) {
 			return;
 		}
 
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'dame_benevolat_votes';
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom plugin table cleanup on CPT deletion.
-		$wpdb->delete( $table_name, array( 'recipient_id' => $post_id ), array( '%d' ) );
+		if ( 'benevolat_reponse' === $post->post_type ) {
+			global $wpdb;
+			$table_name = $wpdb->prefix . 'dame_benevolat_votes';
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom plugin table cleanup on CPT deletion.
+			$wpdb->delete( $table_name, array( 'recipient_id' => $post_id ), array( '%d' ) );
+		} elseif ( 'benevolat' === $post->post_type ) {
+			( new \DAME\Services\BenevolatArticleSync() )->delete_linked_article( $post_id );
+		}
 	}
 
 	/**
-	 * Simplified status change handler.
+	 * Automatically display benevolat form on single benevolat post view.
 	 *
-	 * @param int $post_id Post ID.
+	 * @param string $content Post content.
+	 * @return string
 	 */
-	public function handle_status_change( int $post_id ): void {
-		// For now, we only care about permanent deletion to avoid ID collisions.
+	public function display_benevolat_form( string $content ): string {
+		if ( is_singular( 'benevolat' ) && in_the_loop() && is_main_query() ) {
+			$post_id = get_the_ID();
+			if ( ! $post_id ) {
+				return $content;
+			}
+
+			$slug      = (string) get_post_field( 'post_name', $post_id );
+			$shortcode = new \DAME\Shortcodes\Benevolat();
+			$form_html = $shortcode->render( array( 'slug' => $slug ) );
+
+			return $content . "\n\n" . $form_html;
+		}
+
+		return $content;
 	}
 
 	/**
@@ -102,7 +145,7 @@ class Benevolat {
 			'hierarchical'       => false,
 			'menu_position'      => 20,
 			'menu_icon'          => 'dashicons-chart-bar',
-			'supports'           => array( 'title', 'editor' ),
+			'supports'           => array( 'title', 'editor', 'thumbnail' ),
 			'show_in_rest'       => true,
 			'rest_base'          => 'benevolats',
 		);
