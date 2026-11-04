@@ -5,6 +5,7 @@
 export interface BenevolatTimeSlot {
 	start: string;
 	end: string;
+	needed?: number;
 	max_participants?: number;
 }
 
@@ -24,6 +25,23 @@ export interface Benevolat {
 		rendered: string;
 	};
 	dame_benevolat_data: BenevolatDay[];
+	dame_benevolat_counts?: Record<string, number>;
+}
+
+export interface BenevolatSlotStat {
+	choice_key: string;
+	date: string;
+	start: string;
+	end: string;
+	needed: number;
+	registered_count: number;
+	is_fulfilled: boolean;
+}
+
+export interface BenevolatStatsResponse {
+	id: number;
+	total_distinct_voters: number;
+	slots: BenevolatSlotStat[];
 }
 
 export interface BenevolatReponse {

@@ -96,6 +96,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				<input type="time" name="_dame_benevolat_data[${dateIndex}][time_slots][${timeIndex}][start]" value="${previousEndTime}" step="900">
 				<span>-</span>
 				<input type="time" name="_dame_benevolat_data[${dateIndex}][time_slots][${timeIndex}][end]" value="" step="900">
+				<label style="margin-left: 10px;">Bénévoles souhaités :</label>
+				<input type="number" min="0" step="1" name="_dame_benevolat_data[${dateIndex}][time_slots][${timeIndex}][needed]" value="" placeholder="0" class="benevolat-time-needed" style="width: 70px;">
 				<button type="button" class="button remove-benevolat-time-slot">Supprimer</button>
 			`;
 			timeSlotsWrapper.appendChild(newTimeSlot);

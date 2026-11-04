@@ -181,14 +181,56 @@ class Post_Meta {
 			'dame_benevolat_data',
 			array(
 				'get_callback'    => function ( $post_arr ) {
-					return get_post_meta( $post_arr['id'], '_dame_benevolat_data', true );
+					$data = get_post_meta( $post_arr['id'], '_dame_benevolat_data', true );
+					if ( ! is_array( $data ) ) {
+						return array();
+					}
+					foreach ( $data as &$date_group ) {
+						if ( isset( $date_group['time_slots'] ) && is_array( $date_group['time_slots'] ) ) {
+							foreach ( $date_group['time_slots'] as &$slot ) {
+								$slot['needed'] = isset( $slot['needed'] ) ? (int) $slot['needed'] : 0;
+							}
+							unset( $slot );
+						}
+					}
+					unset( $date_group );
+					return $data;
 				},
 				'update_callback' => function ( $value, $post_obj ) {
+					if ( is_array( $value ) ) {
+						foreach ( $value as &$date_group ) {
+							if ( isset( $date_group['time_slots'] ) && is_array( $date_group['time_slots'] ) ) {
+								foreach ( $date_group['time_slots'] as &$slot ) {
+									if ( isset( $slot['needed'] ) ) {
+										$slot['needed'] = max( 0, (int) $slot['needed'] );
+									}
+								}
+								unset( $slot );
+							}
+						}
+						unset( $date_group );
+					}
 					return update_post_meta( $post_obj->ID, '_dame_benevolat_data', $value );
 				},
 				'schema'          => array(
 					'description' => __( 'Structured data (dates and time slots).', 'dame' ),
 					'type'        => 'array',
+				),
+			)
+		);
+
+		// Benevolat Choice Counts per slot.
+		register_rest_field(
+			'benevolat',
+			'dame_benevolat_counts',
+			array(
+				'get_callback' => function ( $post_arr ) {
+					$repository = new \DAME\Repositories\BenevolatRepository();
+					return $repository->get_choice_counts( (int) $post_arr['id'] );
+				},
+				'schema'       => array(
+					'description' => __( 'Nombre d\'inscrits par créneau (clé_choix => décompte).', 'dame' ),
+					'type'        => 'object',
 				),
 			)
 		);
@@ -606,8 +648,13 @@ class Post_Meta {
 									'items' => array(
 										'type'       => 'object',
 										'properties' => array(
-											'start' => array( 'type' => 'string' ),
-											'end'   => array( 'type' => 'string' ),
+											'start'  => array( 'type' => 'string' ),
+											'end'    => array( 'type' => 'string' ),
+											'needed' => array(
+												'type'        => 'integer',
+												'description' => __( 'Nombre de bénévoles souhaités.', 'dame' ),
+												'minimum'     => 0,
+											),
 										),
 									),
 								),

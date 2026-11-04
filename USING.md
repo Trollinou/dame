@@ -62,7 +62,7 @@ Cette fonctionnalité permet de solliciter l'aide des membres pour vos événeme
 2.  Cliquez sur `Nouvel appel à bénévoles`.
 3.  Donnez un titre et une description (ex: "Bénévoles Tournoi de Printemps").
 4.  Dans la metabox **Configuration**, ajoutez les dates.
-5.  Pour chaque date, ajoutez un ou plusieurs créneaux horaires (ex: 08:00 - 12:00, 12:00 - 14:00).
+5.  Pour chaque date, ajoutez un ou plusieurs créneaux horaires (ex: 08:00 - 12:00, 12:00 - 14:00) et indiquez éventuellement le **nombre de bénévoles souhaités** (besoin indicatif pour guider les membres, sans limitation d'inscription).
 6.  Publiez l'appel.
 
 ### b. Diffuser l'appel
@@ -72,7 +72,9 @@ Vous pouvez diffuser l'appel de deux manières :
 
 ### c. Suivi des réponses
 -   Les membres peuvent s'inscrire sur les créneaux en cochant les cases.
--   Dans l'administration WordPress, ouvrez l'appel pour voir le **Tableau récapitulatif** montrant qui est inscrit sur quel créneau.
+-   Le formulaire affiche le besoin indicatif directement aux volontaires (ex: `(1 inscrit / 3 souhaités)`).
+-   Les inscriptions restent ouvertes sans restriction même si le besoin configuré est déjà couvert.
+-   Dans l'administration WordPress, ouvrez l'appel pour voir le **Tableau récapitulatif** montrant le ratio des inscrits par rapport au besoin (`X / Y souhaité(s)`) ainsi que la liste nominative des personnes inscrites par créneau.
 -   Les inscrits reçoivent une confirmation visuelle ("Voté") sur l'application PWA.
 
 ### d. Sécurité et Verrouillage

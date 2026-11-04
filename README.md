@@ -121,7 +121,8 @@ L'application mobile est accessible via une URL simplifiée : `https://votre-sit
 Le support des `'custom-fields'` a été activé pour les types **Adhérents**, **Agenda**, **Contacts**, **Benevolat** et **Benevolat_Reponse**. Cela permet de lire et modifier toutes les métadonnées directement via les endpoints REST standard.
 
 **Note spécifique au Bénévolat :**
-Les données de configuration (dates et horaires) sont exposées sous la clé `dame_benevolat_data`. 
+Les données de configuration (dates et horaires) sont exposées sous la clé `dame_benevolat_data`. Chaque créneau horaire inclut désormais le nombre de bénévoles souhaités via la propriété `needed` (entier, `0` si non spécifié).
+Le dictionnaire du nombre d'inscrits par créneau est accessible sous `dame_benevolat_counts` (`{"0_0": 2, ...}`).
 Pour les **Réponses**, l'ID du bénévolat parent est disponible sous la clé `benevolat_id` et les choix sous `choices`.
 
 ### 1. Données de Référence (Lookups)
@@ -166,6 +167,8 @@ Récupère les identités liées à l'email de l'utilisateur connecté.
 *   **Téléchargement Sécurisé PDF :** `GET /wp-json/dame/v1/pre-inscriptions/{id}/pdf/{health|parental}?token={token}`
 
 ### 8. Gestion du Bénévolat
+*   **Récupérer les statistiques d'un appel :** `GET /wp-json/dame/v1/benevolats/{id}/stats`
+    *   Renvoie la synthèse de chaque créneau avec `choice_key`, `date`, `start`, `end`, `needed`, `registered_count`, `is_fulfilled`.
 *   **Récupérer mon vote :** `GET /wp-json/dame/v1/benevolats/{id}/my-vote`
 *   **Voter / Modifier :** `POST /wp-json/dame/v1/benevolats/{id}/vote`
     *   Corps : `{ "choices": ["0_1", "1_0"] }`

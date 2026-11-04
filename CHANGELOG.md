@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Appels à Bénévoles (`benevolat`)
+- **Gestion du Nombre de Bénévoles Souhaités par Créneau (`needed`)** :
+  - **Configuration Admin (`Metaboxes\Benevolat\Manager`, `admin-benevolat.ts`)** : Ajout d'un champ numérique optionnel *« Bénévoles souhaités »* sur chaque plage horaire, avec synchronisation dynamique du DOM et ré-indexation automatique.
+  - **Tableau Récapitulatif Admin** : Affichage d'un indicateur de complétion visuel (`X inscrit(s) / Y souhaité(s)`) avec différenciation colorimétrique selon que le besoin est comblé ou non.
+  - **Formulaire & Shortcode Public (`Shortcodes\Benevolat`)** : Affichage transparent du besoin pour les volontaires (`(X inscrit(s) / Y souhaité(s))`), sans blocage ni quota restrictif d'inscription.
+  - **Repository & Optimisation SQL (`BenevolatRepository`)** : Ajout de la méthode `get_choice_counts()` pour extraire directement le décompte des participants par créneau (`choice_key => count`) via une requête groupée unique.
+  - **API REST WordPress & PWA (`API\REST\Post_Meta`, `API\REST\Benevolat`, `types/api/benevolat.ts`)** :
+    - Exposition de `needed` dans le schéma REST et dans `dame_benevolat_data`.
+    - Exposition du champ calculé `dame_benevolat_counts` sur le CPT `benevolat` (`/wp/v2/benevolats`).
+    - Enregistrement du nouvel endpoint public `GET /dame/v1/benevolats/{id}/stats` calculant l'état d'avancement détaillé de chaque tranche horaire (`choice_key`, `date`, `start`, `end`, `needed`, `registered_count`, `is_fulfilled`).
+    - Mise à jour des contrats TypeScript (`BenevolatTimeSlot`, `Benevolat`, `BenevolatSlotStat`, `BenevolatStatsResponse`).
+
 ## [5.8.5] - 2026-10-29
 
 ### Intégration HelloAsso dans le Mailing & Refonte UX de l'Écran d'Envoi
