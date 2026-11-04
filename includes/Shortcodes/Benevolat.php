@@ -59,19 +59,14 @@ class Benevolat {
 		}
 
 		// Get all responses to calculate counts for each time slot via SQL.
-		global $wpdb;
-		$table_votes = $wpdb->prefix . 'dame_benevolat_votes';
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$vote_results = $wpdb->get_results(
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$wpdb->prepare( "SELECT v.choice_key, COUNT(DISTINCT v.recipient_id) as count FROM {$table_votes} v INNER JOIN {$wpdb->posts} p ON v.recipient_id = p.ID WHERE v.poll_id = %d AND p.post_status = 'publish' GROUP BY v.choice_key", $benevolat->ID )
-		);
+		$repository    = new \DAME\Repositories\BenevolatRepository();
+		$choice_counts = $repository->get_choice_counts( $benevolat->ID );
 
 		$response_counts = array();
-		foreach ( $vote_results as $row ) {
-			$parts = explode( '_', $row->choice_key );
-			if ( count( $parts ) === 2 ) {
-				$response_counts[ (int) $parts[0] ][ (int) $parts[1] ] = (int) $row->count;
+		foreach ( $choice_counts as $choice_key => $count ) {
+			$parts = explode( '_', $choice_key );
+			if ( 2 === count( $parts ) ) {
+				$response_counts[ (int) $parts[0] ][ (int) $parts[1] ] = $count;
 			}
 		}
 
@@ -201,15 +196,23 @@ class Benevolat {
 												if ( isset( $user_responses[ $date_index ][ $time_index ] ) && '1' === (string) $user_responses[ $date_index ][ $time_index ] ) {
 													$checked = 'checked';
 												}
-												$count = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
+												$count  = isset( $response_counts[ $date_index ][ $time_index ] ) ? $response_counts[ $date_index ][ $time_index ] : 0;
+												$needed = isset( $time_slot['needed'] ) ? (int) $time_slot['needed'] : 0;
 												?>
 												<label class="ct-checkbox-container benevolat-timeslot-label <?php echo $is_locked ? 'is-past' : ''; ?>">
 													<input type="checkbox" name="benevolat_responses[<?php echo esc_attr( (string) $date_index ); ?>][<?php echo esc_attr( (string) $time_index ); ?>]" value="1" <?php echo esc_attr( (string) $checked ); ?> <?php disabled( $is_locked ); ?>>
 													<span>
 														<?php
 														echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ) . ' ';
-														/* translators: %d: number of registered volunteers */
-														echo esc_html( sprintf( _n( '(%d inscrit)', '(%d inscrits)', $count, 'dame' ), $count ) );
+														if ( $needed > 0 ) {
+															$needed_label = sprintf( _n( '%d souhaité', '%d souhaités', $needed, 'dame' ), $needed );
+															$count_label  = sprintf( _n( '%d inscrit', '%d inscrits', $count, 'dame' ), $count );
+															/* translators: 1: registered count label, 2: needed count label */
+															echo esc_html( sprintf( __( '(%1$s / %2$s)', 'dame' ), $count_label, $needed_label ) );
+														} else {
+															/* translators: %d: number of registered volunteers */
+															echo esc_html( sprintf( _n( '(%d inscrit)', '(%d inscrits)', $count, 'dame' ), $count ) );
+														}
 														?>
 													</span>
 												</label>

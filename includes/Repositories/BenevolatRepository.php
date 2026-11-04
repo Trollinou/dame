@@ -62,6 +62,35 @@ class BenevolatRepository {
 	}
 
 	/**
+	 * Retrieves choice counts for a specific benevolat call.
+	 *
+	 * @param int $benevolat_id Benevolat Post ID.
+	 * @return array<string, int> Associative array of choice_key => count.
+	 */
+	public function get_choice_counts( int $benevolat_id ): array {
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $this->db->get_results(
+			$this->db->prepare(
+				"SELECT v.choice_key, COUNT(DISTINCT v.recipient_id) AS count FROM %i v INNER JOIN %i p ON v.recipient_id = p.ID WHERE v.poll_id = %d AND p.post_status = 'publish' GROUP BY v.choice_key",
+				$this->table_name,
+				$this->db->posts,
+				$benevolat_id
+			)
+		);
+
+		$counts = array();
+		if ( is_array( $rows ) ) {
+			foreach ( $rows as $row ) {
+				if ( isset( $row->choice_key, $row->count ) ) {
+					$counts[ (string) $row->choice_key ] = (int) $row->count;
+				}
+			}
+		}
+
+		return $counts;
+	}
+
+	/**
 	 * Retrieves all choice keys selected by a specific response ID.
 	 *
 	 * @param int $response_id Response Post ID.

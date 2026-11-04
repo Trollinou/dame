@@ -89,6 +89,26 @@ class Benevolat {
 				),
 			)
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<id>\d+)/stats',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_benevolat_stats' ),
+					'permission_callback' => '__return_true',
+					'args'                => array(
+						'id' => array(
+							'type'              => 'integer',
+							'required'          => true,
+							'sanitize_callback' => 'absint',
+							'validate_callback' => static fn( $param ) => is_numeric( $param ) && (int) $param > 0,
+						),
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -130,6 +150,59 @@ class Benevolat {
 		$choices     = $repository->get_choices_by_response( $response_id );
 
 		return rest_ensure_response( array( 'choices' => $choices ) );
+	}
+
+	/**
+	 * Retrieves slots and volunteer participation stats for a specific benevolat.
+	 *
+	 * @param WP_REST_Request $request The REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_benevolat_stats( WP_REST_Request $request ) {
+		$benevolat_id = (int) $request['id'];
+		$benevolat    = get_post( $benevolat_id );
+
+		if ( ! $benevolat || 'benevolat' !== $benevolat->post_type ) {
+			return new WP_Error( 'invalid_benevolat', __( 'L\'appel à bénévoles n\'existe pas.', 'dame' ), array( 'status' => 404 ) );
+		}
+
+		$benevolat_data = get_post_meta( $benevolat_id, '_dame_benevolat_data', true );
+		if ( ! is_array( $benevolat_data ) ) {
+			$benevolat_data = array();
+		}
+
+		$repository    = new \DAME\Repositories\BenevolatRepository();
+		$choice_counts = $repository->get_choice_counts( $benevolat_id );
+
+		$slots = array();
+		foreach ( $benevolat_data as $date_index => $date_info ) {
+			$date_str = (string) ( $date_info['date'] ?? '' );
+			if ( ! empty( $date_info['time_slots'] ) && is_array( $date_info['time_slots'] ) ) {
+				foreach ( $date_info['time_slots'] as $time_index => $time_slot ) {
+					$choice_key       = "{$date_index}_{$time_index}";
+					$registered_count = $choice_counts[ $choice_key ] ?? 0;
+					$needed           = isset( $time_slot['needed'] ) ? (int) $time_slot['needed'] : 0;
+
+					$slots[] = array(
+						'choice_key'       => $choice_key,
+						'date'             => $date_str,
+						'start'            => (string) ( $time_slot['start'] ?? '' ),
+						'end'              => (string) ( $time_slot['end'] ?? '' ),
+						'needed'           => $needed,
+						'registered_count' => $registered_count,
+						'is_fulfilled'     => $needed > 0 && $registered_count >= $needed,
+					);
+				}
+			}
+		}
+
+		return rest_ensure_response(
+			array(
+				'id'                    => $benevolat_id,
+				'total_distinct_voters' => $repository->get_distinct_voter_count( $benevolat_id ),
+				'slots'                 => $slots,
+			)
+		);
 	}
 
 	/**

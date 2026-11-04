@@ -88,6 +88,13 @@ document.addEventListener('DOMContentLoaded', (): void => {
 					if (timeInputs[1]) {
 						timeInputs[1].name = `_dame_benevolat_data[${dateIndex}][time_slots][${timeIndex}][end]`;
 					}
+
+					const neededInput = slot.querySelector<HTMLInputElement>(
+						'.benevolat-time-needed'
+					);
+					if (neededInput) {
+						neededInput.name = `_dame_benevolat_data[${dateIndex}][time_slots][${timeIndex}][needed]`;
+					}
 				});
 			}
 		});
@@ -228,6 +235,8 @@ document.addEventListener('DOMContentLoaded', (): void => {
 				<input type="time" name="_dame_benevolat_data[${dateIndex}][time_slots][${timeIndex}][start]" value="${previousEndTime}" step="900" class="benevolat-time-start">
 				<span>-</span>
 				<input type="time" name="_dame_benevolat_data[${dateIndex}][time_slots][${timeIndex}][end]" value="" step="900" class="benevolat-time-end">
+				<label style="margin-left: 10px;">Bénévoles souhaités :</label>
+				<input type="number" min="0" step="1" name="_dame_benevolat_data[${dateIndex}][time_slots][${timeIndex}][needed]" value="" placeholder="0" class="benevolat-time-needed" style="width: 70px;">
 				<button type="button" class="button remove-benevolat-time-slot">Supprimer</button>
 			`;
 			slotsWrapper.appendChild(slotDiv);

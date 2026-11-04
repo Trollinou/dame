@@ -78,6 +78,18 @@
     margin-top: 5px;
 }
 
+.benevolat-time-slot-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+
+    input[type="number"] {
+        width: 75px;
+    }
+}
+
 .benevolat-results-table {
     width: 100%;
     border-collapse: collapse;

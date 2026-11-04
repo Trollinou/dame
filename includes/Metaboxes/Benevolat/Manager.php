@@ -169,6 +169,8 @@ class Manager {
 											<input type="time" name="_dame_benevolat_data[<?php echo esc_attr( (string) $date_key ); ?>][time_slots][<?php echo esc_attr( (string) $time_key ); ?>][start]" value="<?php echo esc_attr( $time_slot['start'] ); ?>" step="900" <?php disabled( $is_locked ); ?>>
 											<span>-</span>
 											<input type="time" name="_dame_benevolat_data[<?php echo esc_attr( (string) $date_key ); ?>][time_slots][<?php echo esc_attr( (string) $time_key ); ?>][end]" value="<?php echo esc_attr( $time_slot['end'] ); ?>" step="900" <?php disabled( $is_locked ); ?>>
+											<label style="margin-left: 10px;"><?php esc_html_e( 'Bénévoles souhaités :', 'dame' ); ?></label>
+											<input type="number" min="0" step="1" name="_dame_benevolat_data[<?php echo esc_attr( (string) $date_key ); ?>][time_slots][<?php echo esc_attr( (string) $time_key ); ?>][needed]" value="<?php echo esc_attr( isset( $time_slot['needed'] ) && '' !== (string) $time_slot['needed'] ? (string) $time_slot['needed'] : '' ); ?>" placeholder="0" class="benevolat-time-needed" style="width: 70px;" <?php disabled( $is_locked ); ?>>
 											<?php if ( ! $is_locked ) : ?>
 												<button type="button" class="button remove-benevolat-time-slot"><?php esc_html_e( 'Supprimer', 'dame' ); ?></button>
 											<?php endif; ?>
@@ -233,10 +235,11 @@ class Manager {
 				foreach ( $date_info['time_slots'] as $time_index => $time_slot ) {
 					$slot_key             = $date_index . '_' . $time_index;
 					$results[ $slot_key ] = array(
-						'date'  => $date_str,
-						'start' => $time_slot['start'],
-						'end'   => $time_slot['end'],
-						'names' => array(),
+						'date'   => $date_str,
+						'start'  => $time_slot['start'],
+						'end'    => $time_slot['end'],
+						'needed' => isset( $time_slot['needed'] ) ? (int) $time_slot['needed'] : 0,
+						'names'  => array(),
 					);
 				}
 			}
@@ -266,7 +269,10 @@ class Manager {
 		foreach ( $results as $slot_key => $details ) {
 			$date_obj       = new \DateTime( $details['date'] );
 			$formatted_date = date_i18n( 'l j F Y', $date_obj->getTimestamp() );
-			$grouped_results[ $formatted_date ][ $details['start'] . ' - ' . $details['end'] ] = $details['names'];
+			$grouped_results[ $formatted_date ][ $details['start'] . ' - ' . $details['end'] ] = array(
+				'names'  => $details['names'],
+				'needed' => $details['needed'],
+			);
 		}
 		?>
 		<div class="benevolat-results-wrapper">
@@ -296,12 +302,33 @@ class Manager {
 							<td><?php echo esc_html( $slot_time ); ?></td>
 							<?php foreach ( $grouped_results as $date => $slots ) : ?>
 								<td>
-									<?php if ( isset( $slots[ $slot_time ] ) && ! empty( $slots[ $slot_time ] ) ) : ?>
-										<ul>
-											<?php foreach ( $slots[ $slot_time ] as $name ) : ?>
-												<li><?php echo esc_html( $name ); ?></li>
-											<?php endforeach; ?>
-										</ul>
+									<?php if ( isset( $slots[ $slot_time ] ) ) : ?>
+										<?php
+										$slot_data = $slots[ $slot_time ];
+										$count     = count( $slot_data['names'] );
+										$needed    = $slot_data['needed'];
+										?>
+										<div class="benevolat-slot-recap-header" style="font-size: 11px; margin-bottom: 4px; font-weight: 600;">
+											<?php if ( $needed > 0 ) : ?>
+												<span style="color: <?php echo $count >= $needed ? '#2271b1' : '#d63638'; ?>;">
+													<?php
+													/* translators: 1: registered count, 2: needed count */
+													echo esc_html( sprintf( __( '%1$d / %2$d souhaité(s)', 'dame' ), $count, $needed ) );
+													?>
+												</span>
+											<?php else : ?>
+												<span style="color: #646970;">
+													<?php echo esc_html( sprintf( _n( '%d inscrit', '%d inscrits', $count, 'dame' ), $count ) ); ?>
+												</span>
+											<?php endif; ?>
+										</div>
+										<?php if ( ! empty( $slot_data['names'] ) ) : ?>
+											<ul style="margin: 0; padding-left: 15px;">
+												<?php foreach ( $slot_data['names'] as $name ) : ?>
+													<li><?php echo esc_html( $name ); ?></li>
+												<?php endforeach; ?>
+											</ul>
+										<?php endif; ?>
 									<?php endif; ?>
 								</td>
 							<?php endforeach; ?>
@@ -399,10 +426,16 @@ class Manager {
 				if ( ! empty( $date_group['time_slots'] ) ) {
 					foreach ( $date_group['time_slots'] as $time_slot ) {
 						if ( ! empty( $time_slot['start'] ) && ! empty( $time_slot['end'] ) ) {
-							$new_date_group['time_slots'][] = array(
+							$slot_data = array(
 								'start' => sanitize_text_field( $time_slot['start'] ),
 								'end'   => sanitize_text_field( $time_slot['end'] ),
 							);
+							if ( isset( $time_slot['needed'] ) && '' !== (string) $time_slot['needed'] ) {
+								$slot_data['needed'] = max( 0, (int) $time_slot['needed'] );
+							} else {
+								$slot_data['needed'] = 0;
+							}
+							$new_date_group['time_slots'][] = $slot_data;
 						}
 					}
 				}
