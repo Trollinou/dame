@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.8.6] - 2026-11-04
+
 ### Appels à Bénévoles (`benevolat`)
 - **Gestion du Nombre de Bénévoles Souhaités par Créneau (`needed`)** :
   - **Configuration Admin (`Metaboxes\Benevolat\Manager`, `admin-benevolat.ts`)** : Ajout d'un champ numérique optionnel *« Bénévoles souhaités »* sur chaque plage horaire, avec synchronisation dynamique du DOM et ré-indexation automatique.

@@ -22,7 +22,7 @@
 
 ---
 
-# Release Notes — DAME v5.8.5
+# Release Notes — DAME v5.8.6
 
 **Date :** 29 octobre 2026
 
