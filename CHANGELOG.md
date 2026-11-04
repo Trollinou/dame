@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.8.7] - 2026-11-04
+
 ### Appels à Bénévoles (`benevolat`)
 - **Publication & Synchronisation Automatique dans le Flux d'Articles (`Services\BenevolatArticleSync`, `Metaboxes\Benevolat\Manager`, `Admin\Settings\Tabs\Benevolat`)** :
   - **Génération automatique d'un article WordPress standard (`post`)** lors de la création ou mise à jour d'un appel à bénévoles, éliminant la tâche manuelle de copier/coller le shortcode.

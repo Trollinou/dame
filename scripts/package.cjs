@@ -30,26 +30,52 @@ const tempDestDir = path.join(buildDir, pluginSlug);
 
 // Fonction de résolution intelligente de PHP/Composer (notamment pour l'environnement LocalWP)
 function resolvePhpEnvironment() {
-    let hasGlobalPhp = false;
-    try {
-        execSync('php -v', { stdio: 'ignore' });
-        hasGlobalPhp = true;
-    } catch (e) {}
+    let globalPhpCmd = null;
+    const candidatePhp = process.platform === 'darwin'
+        ? ['php', '/opt/homebrew/bin/php', '/usr/local/bin/php', '/usr/bin/php']
+        : ['php'];
 
-    let hasGlobalComposer = false;
-    try {
-        execSync('composer --version', { stdio: 'ignore' });
-        hasGlobalComposer = true;
-    } catch (e) {}
+    for (const cmd of candidatePhp) {
+        try {
+            execSync(`"${cmd}" -v`, { stdio: 'ignore' });
+            globalPhpCmd = cmd;
+            break;
+        } catch (e) {}
+    }
 
     const env = { ...process.env };
+    // 24575 = E_ALL & ~E_DEPRECATED (évite les caractères shell '&' et supprime les warnings de dépréciation PHP 8.5 dans les outils CLI)
+    const phpCliFlags = '-d error_reporting=24575';
+    const phpPrefix = globalPhpCmd ? `"${globalPhpCmd}" ${phpCliFlags}` : null;
 
-    // 1. Si PHP et Composer sont tous deux globaux dans PATH
-    if (hasGlobalPhp && hasGlobalComposer) {
+    // Détection d'un Composer global moderne (ex: Homebrew ou PATH)
+    let systemComposerCmd = null;
+    const candidateComposer = process.platform === 'darwin'
+        ? ['composer', '/opt/homebrew/bin/composer', '/usr/local/bin/composer']
+        : ['composer'];
+
+    for (const cmd of candidateComposer) {
+        try {
+            execSync(`"${cmd}" --version`, { stdio: 'ignore' });
+            systemComposerCmd = `"${cmd}"`;
+            break;
+        } catch (e) {
+            if (globalPhpCmd) {
+                try {
+                    execSync(`"${globalPhpCmd}" "${cmd}" --version`, { stdio: 'ignore' });
+                    systemComposerCmd = `${phpPrefix} "${cmd}"`;
+                    break;
+                } catch (e2) {}
+            }
+        }
+    }
+
+    // 1. Si PHP et Composer sont tous deux disponibles directement sur le système hôte
+    if (globalPhpCmd && systemComposerCmd) {
         return {
-            phpCmd: 'php',
-            phpPrefix: 'php',
-            composerCmd: 'composer',
+            phpCmd: globalPhpCmd,
+            phpPrefix,
+            composerCmd: systemComposerCmd,
             env,
             options: { shell: true }
         };
@@ -122,24 +148,29 @@ function resolvePhpEnvironment() {
         let phpBinPath = null;
 
         if (fs.existsSync(lightningServicesDir)) {
-            const dirs = fs.readdirSync(lightningServicesDir);
-            const phpDirs = dirs.filter(d => d.startsWith('php-')).sort().reverse();
-            const php84Dir = phpDirs.find(d => d.startsWith('php-8.4'));
-            const chosenPhpDir = php84Dir || phpDirs[0];
+            try {
+                const dirs = fs.readdirSync(lightningServicesDir);
+                const phpDirs = dirs.filter(d => d.startsWith('php-')).sort().reverse();
+                const php84Dir = phpDirs.find(d => d.startsWith('php-8.4'));
+                const chosenPhpDir = php84Dir || phpDirs[0];
 
-            if (chosenPhpDir) {
-                const possiblePaths = [
-                    path.join(lightningServicesDir, chosenPhpDir, 'bin/sbin/php'),
-                    path.join(lightningServicesDir, chosenPhpDir, 'bin/bin/php'),
-                    path.join(lightningServicesDir, chosenPhpDir, 'bin/php')
-                ];
-                for (const p of possiblePaths) {
-                    if (fs.existsSync(p)) {
-                        phpBinPath = p;
-                        break;
+                if (chosenPhpDir) {
+                    const possiblePaths = [
+                        path.join(lightningServicesDir, chosenPhpDir, 'bin/darwin-arm64/bin/php'),
+                        path.join(lightningServicesDir, chosenPhpDir, 'bin/darwin-x64/bin/php'),
+                        path.join(lightningServicesDir, chosenPhpDir, 'bin/darwin/bin/php'),
+                        path.join(lightningServicesDir, chosenPhpDir, 'bin/sbin/php'),
+                        path.join(lightningServicesDir, chosenPhpDir, 'bin/bin/php'),
+                        path.join(lightningServicesDir, chosenPhpDir, 'bin/php')
+                    ];
+                    for (const p of possiblePaths) {
+                        if (fs.existsSync(p)) {
+                            phpBinPath = p;
+                            break;
+                        }
                     }
                 }
-            }
+            } catch (e) {}
         }
 
         if (phpBinPath) {
@@ -148,10 +179,10 @@ function resolvePhpEnvironment() {
             const phpDir = path.dirname(phpBinPath);
             env.PATH = `${phpDir}:${env.PATH || ''}`;
 
-            const phpPrefix = `"${phpBinPath}"`;
+            const phpPrefix = `"${phpBinPath}" ${phpCliFlags}`;
             let composerCmd = null;
-            if (hasGlobalComposer) {
-                composerCmd = 'composer';
+            if (systemComposerCmd) {
+                composerCmd = systemComposerCmd;
             } else if (fs.existsSync(localComposerPhar)) {
                 composerCmd = `${phpPrefix} "${localComposerPhar}"`;
                 console.log(`   - Composer : ${localComposerPhar}`);
@@ -167,11 +198,11 @@ function resolvePhpEnvironment() {
         }
     }
 
-    if (hasGlobalPhp) {
+    if (globalPhpCmd) {
         return {
-            phpCmd: 'php',
-            phpPrefix: 'php',
-            composerCmd: hasGlobalComposer ? 'composer' : null,
+            phpCmd: globalPhpCmd,
+            phpPrefix,
+            composerCmd: systemComposerCmd,
             env,
             options: { shell: true }
         };
