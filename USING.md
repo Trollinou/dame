@@ -57,29 +57,44 @@ Vous pouvez exporter les données complètes de vos événements sous forme de f
 
 Cette fonctionnalité permet de solliciter l'aide des membres pour vos événements (tournois, buvettes, installation).
 
-### a. Créer un appel
-1.  Allez dans `DAME > Appels à bénévoles`.
-2.  Cliquez sur `Nouvel appel à bénévoles`.
-3.  Donnez un titre et une description (ex: "Bénévoles Tournoi de Printemps").
-4.  Dans la metabox **Configuration**, ajoutez les dates.
-5.  Pour chaque date, ajoutez un ou plusieurs créneaux horaires (ex: 08:00 - 12:00, 12:00 - 14:00) et indiquez éventuellement le **nombre de bénévoles souhaités** (besoin indicatif pour guider les membres, sans limitation d'inscription).
-6.  Publiez l'appel.
+### a. Configuration globale (Réglages DAME)
+Avant de créer vos appels, vous pouvez définir vos préférences par défaut dans `DAME > Réglages > Bénévolat` :
+- **Publication automatique :** Cochez la case pour que chaque nouvel appel crée automatiquement un article dans votre blog / flux d'actualités.
+- **Catégorie d'articles par défaut :** Choisissez la catégorie WordPress dans laquelle seront classés ces articles (ex: *Bénévolat*, *Vie du club*, *Actualités*).
+- **Image mise en avant par défaut :** Sélectionnez dans la médiathèque l'illustration par défaut (vignette / couverture) qui sera automatiquement assignée à l'article s'il n'a pas d'image spécifique.
 
-### b. Diffuser l'appel
-Vous pouvez diffuser l'appel de deux manières :
--   **Lien direct :** Envoyez l'URL de l'appel.
--   **Shortcode :** Copiez le shortcode affiché dans la liste des appels (ex: `[dame_benevolat slug="tournoi-printemps"]`) et collez-le dans une page ou un article.
+### b. Créer un appel
+1. Allez dans `DAME > Appels à bénévoles > Nouvel appel`.
+2. Donnez un titre et une description (ex: "Bénévoles Tournoi de Printemps").
+3. Dans la metabox **Configuration**, ajoutez les dates et les créneaux horaires, avec optionnellement le **nombre de bénévoles souhaités**.
+4. Dans le panneau latéral droit **Image mise en avant**, vous pouvez optionnellement choisir un visuel spécifique pour cet événement précis (si vide, l'image par défaut configurée dans les réglages DAME sera utilisée automatiquement).
+5. Dans la metabox latérale **Flux d'actualités & Article lié** :
+   - Vérifiez que la case **« Publier dans le flux d'articles »** est bien cochée.
+   - Ajustez la catégorie si vous souhaitez ranger cet article dans une catégorie différente de celle par défaut.
+6. Cliquez sur **Publier**.
 
-### c. Suivi des réponses
--   Les membres peuvent s'inscrire sur les créneaux en cochant les cases.
--   Le formulaire affiche le besoin indicatif directement aux volontaires (ex: `(1 inscrit / 3 souhaités)`).
--   Les inscriptions restent ouvertes sans restriction même si le besoin configuré est déjà couvert.
--   Dans l'administration WordPress, ouvrez l'appel pour voir le **Tableau récapitulatif** montrant le ratio des inscrits par rapport au besoin (`X / Y souhaité(s)`) ainsi que la liste nominative des personnes inscrites par créneau.
--   Les inscrits reçoivent une confirmation visuelle ("Voté") sur l'application PWA.
+### c. Diffusion automatique dans le flux d'articles
+Vous n'avez plus besoin de copier/coller manuellement le shortcode dans un article :
+- **Génération automatique de l'article :** Dès la publication de l'appel, un article WordPress standard (`post`) est créé et publié dans le flux d'actualités du site (page d'accueil, blog, flux RSS, widgets).
+- **Slug sémantique :** L'article reprend fidèlement le slug textuel de l'appel (ex: `https://votre-site.com/benevoles-tournoi-de-printemps/`).
+- **Contenu épuré :** L'article intègre automatiquement le formulaire interactif de vote sans doublonner le texte de description.
+- **Accès direct en administration :** Dans la liste des appels (`DAME > Appels à bénévoles`), une colonne **« Article lié »** vous permet d'accéder à l'article en ligne ou en modification en un seul clic.
+- **Cycle de vie synchronisé :** Si vous modifiez le titre, dépubliez ou mettez à la corbeille l'appel à bénévoles, l'article associé se synchronise automatiquement.
 
-### d. Sécurité et Verrouillage
--   Dès qu'une journée est passée, les inscriptions pour cette journée sont **automatiquement verrouillées** pour préserver l'historique des présences.
--   Un appel dont toutes les dates sont passées s'affiche comme "Terminé".
+### d. Autres modes de diffusion (Optionnels)
+- **Lien direct CPT :** L'URL directe de l'appel (ex: `https://votre-site.com/benevolat/benevoles-tournoi/`) affiche automatiquement le formulaire interactif complet grâce au filtre natif de contenu.
+- **Shortcode personnalisé :** Vous pouvez toujours utiliser le shortcode n'importe où dans vos pages : `[dame_benevolat slug="votre-slug"]` ou `[dame_benevolat id="123"]`.
+
+### e. Suivi des réponses
+- Les membres peuvent s'inscrire sur les créneaux en cochant les cases.
+- Le formulaire affiche le besoin indicatif directement aux volontaires (ex: `(1 inscrit / 3 souhaités)`).
+- Les inscriptions restent ouvertes sans restriction même si le besoin configuré est déjà couvert.
+- Dans l'administration WordPress, ouvrez l'appel pour voir le **Tableau récapitulatif** montrant le ratio des inscrits par rapport au besoin (`X / Y souhaité(s)`) ainsi que la liste nominative des personnes inscrites par créneau.
+- Les inscrits reçoivent une confirmation visuelle ("Voté") sur l'application PWA.
+
+### f. Sécurité et Verrouillage
+- Dès qu'une journée est passée, les inscriptions pour cette journée sont **automatiquement verrouillées** pour préserver l'historique des présences.
+- Un appel dont toutes les dates sont passées s'affiche comme "Terminé".
 
 ## 4. Gestion des données FFE (Fédération Française des Échecs)
 
