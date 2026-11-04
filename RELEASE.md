@@ -1,10 +1,26 @@
 # Release Notes — DAME (Prochaine Release)
 
-**Date :** 29 octobre 2026
+**Date :** 4 novembre 2026
 
 ## 🚀 Changements Majeurs
 
-### 1. Refonte Ergonomique & Allègement du Menu d'Administration
+### 1. Synchronisation Automatique des Appels à Bénévoles dans le Flux d'Articles
+- **Génération Déterministe d'Articles WordPress (`post`)** :
+  - Fin de la contrainte manuelle de copier/coller les shortcodes dans des articles pour rendre les appels visibles dans les actualités.
+  - Tout appel à bénévoles publié crée et synchronise automatiquement un article de blog (`post`) rattaché avec cycle de vie bidirectionnel (mises à jour, mise à la corbeille, restauration).
+  - Reprise fidèle du slug sémantique de l'appel pour l'article (ex: `/appel-a-benevoles-chaussin/`).
+  - Contenu de l'article épuré au seul shortcode `[dame_benevolat]` pour éviter tout dédoublement du texte de description.
+- **Gestion Complète dans les Réglages DAME (`Options DAME > Bénévolat`)** :
+  - Nouvel onglet de réglages dédié avec sélecteur de catégorie par défaut et gestionnaire de média WordPress (`wp.media`) pour assigner une image de couverture par défaut avec prévisualisation.
+  - Surcharge optionnelle de la couverture via l'image à la une native (`thumbnail`) sur chaque appel.
+- **Ergonomie Admin & Accès Immédiat** :
+  - Métabox latérale sur l'appel avec options de synchronisation, sélection de catégorie et liens directs vers l'article.
+  - Nouvelle colonne d'administration *« Article lié »* dans la table des appels.
+- **Rendu Direct & Shortcode Flexible** :
+  - Filtre `the_content` natif sur le CPT `benevolat` pour restitution immédiate du formulaire interactif en consultation d'URL directe.
+  - Prise en charge simultanée des attributs `slug` et `id` dans le shortcode `[dame_benevolat]`.
+
+### 2. Refonte Ergonomique & Allègement du Menu d'Administration
 - **Menu Latéral Déterministe (Réduit de 17 à 11 Entrées)** :
   - Raccourcissement des libellés (suppression des préfixes verbeux *« Tous les / Toutes les »*) tenant sur une seule ligne.
   - Renommage de *« Billetterie »* en *« HelloAsso »*.

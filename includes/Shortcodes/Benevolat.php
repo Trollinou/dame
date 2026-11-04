@@ -37,16 +37,25 @@ class Benevolat {
 		$atts = shortcode_atts(
 			array(
 				'slug' => '',
+				'id'   => 0,
 			),
 			is_array( $atts ) ? $atts : array(),
 			'dame_benevolat'
 		);
 
-		if ( empty( $atts['slug'] ) ) {
-			return '<p>' . __( 'Erreur : Le slug est manquant.', 'dame' ) . '</p>';
+		$benevolat    = null;
+		$benevolat_id = ! empty( $atts['id'] ) ? (int) $atts['id'] : 0;
+
+		if ( $benevolat_id > 0 ) {
+			$found_post = get_post( $benevolat_id );
+			if ( $found_post instanceof \WP_Post && 'benevolat' === $found_post->post_type ) {
+				$benevolat = $found_post;
+			}
 		}
 
-		$benevolat = get_page_by_path( $atts['slug'], OBJECT, 'benevolat' );
+		if ( ! $benevolat && ! empty( $atts['slug'] ) ) {
+			$benevolat = get_page_by_path( (string) $atts['slug'], OBJECT, 'benevolat' );
+		}
 
 		if ( ! $benevolat ) {
 			return '<p>' . __( 'Erreur : Appel à bénévoles non trouvé.', 'dame' ) . '</p>';
@@ -205,8 +214,10 @@ class Benevolat {
 														<?php
 														echo esc_html( $time_slot['start'] . ' - ' . $time_slot['end'] ) . ' ';
 														if ( $needed > 0 ) {
+															/* translators: %d: number of volunteers needed. */
 															$needed_label = sprintf( _n( '%d souhaité', '%d souhaités', $needed, 'dame' ), $needed );
-															$count_label  = sprintf( _n( '%d inscrit', '%d inscrits', $count, 'dame' ), $count );
+															/* translators: %d: number of volunteers registered. */
+															$count_label = sprintf( _n( '%d inscrit', '%d inscrits', $count, 'dame' ), $count );
 															/* translators: 1: registered count label, 2: needed count label */
 															echo esc_html( sprintf( __( '(%1$s / %2$s)', 'dame' ), $count_label, $needed_label ) );
 														} else {

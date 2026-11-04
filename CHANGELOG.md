@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+### Appels à Bénévoles (`benevolat`)
+- **Publication & Synchronisation Automatique dans le Flux d'Articles (`Services\BenevolatArticleSync`, `Metaboxes\Benevolat\Manager`, `Admin\Settings\Tabs\Benevolat`)** :
+  - **Génération automatique d'un article WordPress standard (`post`)** lors de la création ou mise à jour d'un appel à bénévoles, éliminant la tâche manuelle de copier/coller le shortcode.
+  - **Nouvel onglet Réglages globaux (`Options DAME > Bénévolat`)** :
+    - Activation/désactivation par défaut de l'auto-publication (`benevolat_auto_publish`).
+    - Choix de la catégorie d'articles WordPress par défaut (`benevolat_default_category`).
+    - Sélection d'une image de mise en avant par défaut via la médiathèque WordPress `wp.media` (`benevolat_default_thumbnail_id`), avec script dédié `src/js/admin-benevolat-settings.ts`.
+  - **Métabox latérale dédiée sur chaque appel (`Flux d'actualités & Article lié`)** :
+    - Option de publication par appel et sélection d'une catégorie spécifique.
+    - Liens directs et badges de statut vers l'article lié (*« Voir l'article en ligne »*, *« Modifier l'article »*).
+  - **Slug sémantique & Contenu épuré** :
+    - Reprise stricte du slug textuel de l'appel pour l'article (ex: `/appel-a-benevoles-chaussin/`).
+    - Contenu de l'article restreint au seul shortcode `[dame_benevolat]` pour éviter tout dédoublement du texte de description.
+  - **Support d'image native & Affichage Single direct (`CPT\Benevolat`)** :
+    - Ajout du support `'thumbnail'` au CPT `benevolat` pour définir une couverture spécifique par événement (avec repli sur l'image par défaut des réglages si omise).
+    - Filtre `the_content` automatique sur `is_singular('benevolat')` pour afficher le formulaire de vote directement sur la vue détaillée.
+    - Synchronisation automatique du cycle de vie (mise à la corbeille, restauration et suppression définitive de l'article lié).
+  - **Colonne d'administration (`Admin\ListTables\Benevolat`)** : Ajout d'une colonne *« Article lié »* permettant d'accéder à l'article en 1 clic.
+  - **Shortcode étendu (`Shortcodes\Benevolat`)** : Prise en charge combinée des attributs `slug` et `id` pour une identification instantanée et pérenne de l'appel.
+
 ## [5.8.6] - 2026-11-04
 
 ### Appels à Bénévoles (`benevolat`)
