@@ -79,6 +79,7 @@ export interface DameAgendaAjax {
 		months: string[];
 		weekdays_short: string[];
 		all_day: string;
+		benevolat_call?: string;
 		[key: string]: unknown;
 	};
 	categories?: Record<string, unknown>;

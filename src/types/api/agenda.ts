@@ -30,6 +30,16 @@ export interface AgendaEventMeta {
 	_dame_color?: string;
 	_dame_recurrence_group_id?: string;
 	_dame_agenda_description?: string;
+	_dame_linked_benevolat_id?: number | null;
+	_dame_linked_ha_campaign_id?: number | null;
+}
+
+export interface LinkedBenevolatSummary {
+	id: number;
+	title: string;
+	slug: string;
+	url: string;
+	is_active: boolean;
 }
 
 export interface AgendaEventDTOData {
@@ -48,6 +58,7 @@ export interface AgendaEventDTOData {
 	competition_level?: CompetitionLevelValue | null;
 	color?: string | null;
 	series_id?: string | null;
+	linked_benevolat_id?: number | null;
 }
 
 export interface AgendaEvent {
@@ -64,5 +75,6 @@ export interface AgendaEvent {
 	_dame_agenda_description_html?: string;
 	categories_data?: AgendaEventCategory[];
 	dame_agenda_category?: number[];
+	linked_benevolat?: LinkedBenevolatSummary | null;
 	meta: AgendaEventMeta;
 }

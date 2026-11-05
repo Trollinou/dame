@@ -82,6 +82,14 @@ class Manager {
 			'side',
 			'default'
 		);
+		add_meta_box(
+			'dame_benevolat_linked_agenda',
+			__( 'Événement Agenda associé', 'dame' ),
+			array( $this, 'render_linked_agenda' ),
+			'benevolat',
+			'side',
+			'default'
+		);
 	}
 
 	/**
@@ -158,6 +166,73 @@ class Manager {
 			<?php endif; ?>
 			<p class="description" style="margin-top: 10px;">
 				<?php esc_html_e( 'L\'article est synchronisé automatiquement lors de la publication ou de la mise à jour de cet appel.', 'dame' ); ?>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render the meta box for linking an Agenda event.
+	 *
+	 * @param \WP_Post $post The post object.
+	 */
+	public function render_linked_agenda( \WP_Post $post ): void {
+		$linked_agenda_id = (int) get_post_meta( $post->ID, '_dame_linked_agenda_id', true );
+
+		$agenda_events = get_posts(
+			array(
+				'post_type'      => 'dame_agenda',
+				'post_status'    => array( 'publish', 'draft' ),
+				'posts_per_page' => -1,
+				'meta_key'       => '_dame_start_date',
+				'orderby'        => 'meta_value',
+				'order'          => 'DESC',
+			)
+		);
+		?>
+		<div class="dame-benevolat-linked-agenda-box">
+			<p>
+				<label for="_dame_linked_agenda_id"><strong><?php esc_html_e( 'Événement de l\'Agenda :', 'dame' ); ?></strong></label><br>
+				<select name="_dame_linked_agenda_id" id="_dame_linked_agenda_id" class="widefat" style="margin-top: 5px;">
+					<option value="0"><?php esc_html_e( '— Aucun événement associé —', 'dame' ); ?></option>
+					<?php foreach ( $agenda_events as $event ) : ?>
+						<?php
+						$start_date = (string) get_post_meta( $event->ID, '_dame_start_date', true );
+						$date_label = ! empty( $start_date ) ? ' (' . $start_date . ')' : '';
+						?>
+						<option value="<?php echo esc_attr( (string) $event->ID ); ?>" <?php selected( (int) $event->ID, $linked_agenda_id ); ?>>
+							<?php echo esc_html( (string) $event->post_title . $date_label ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			</p>
+
+			<?php if ( $linked_agenda_id > 0 ) : ?>
+				<?php
+				$linked_event = get_post( $linked_agenda_id );
+				if ( $linked_event ) :
+					$start_date = (string) get_post_meta( $linked_agenda_id, '_dame_start_date', true );
+					$location   = (string) get_post_meta( $linked_agenda_id, '_dame_location_name', true );
+					?>
+					<div style="background: #f0f6fc; border-left: 3px solid #2271b1; padding: 8px 10px; margin-top: 10px; font-size: 12px;">
+						<strong><?php echo esc_html( (string) $linked_event->post_title ); ?></strong>
+						<?php if ( ! empty( $start_date ) ) : ?>
+							<br>📅 <?php echo esc_html( $start_date ); ?>
+						<?php endif; ?>
+						<?php if ( ! empty( $location ) ) : ?>
+							<br>📍 <?php echo esc_html( $location ); ?>
+						<?php endif; ?>
+						<p style="margin: 8px 0 0 0;">
+							<a href="<?php echo esc_url( get_edit_post_link( $linked_agenda_id ) ?? '' ); ?>" target="_blank" class="button button-small">
+								<?php esc_html_e( 'Modifier l\'événement ↗', 'dame' ); ?>
+							</a>
+						</p>
+					</div>
+				<?php endif; ?>
+			<?php endif; ?>
+
+			<p class="description" style="margin-top: 8px;">
+				<?php esc_html_e( 'Relier cet appel à un événement permet de l\'afficher automatiquement sur la fiche de l\'agenda.', 'dame' ); ?>
 			</p>
 		</div>
 		<?php
@@ -562,7 +637,33 @@ class Manager {
 			}
 		}
 
-		// 3. Trigger synchronization with linked article.
+		// 3. Save Linked Agenda event.
+		if ( isset( $_POST['_dame_linked_agenda_id'] ) ) {
+			$agenda_id     = absint( $_POST['_dame_linked_agenda_id'] );
+			$old_agenda_id = (int) get_post_meta( $post_id, '_dame_linked_agenda_id', true );
+
+			if ( $agenda_id > 0 ) {
+				update_post_meta( $post_id, '_dame_linked_agenda_id', $agenda_id );
+				update_post_meta( $agenda_id, '_dame_linked_benevolat_id', $post_id );
+
+				if ( $old_agenda_id > 0 && $old_agenda_id !== $agenda_id ) {
+					$prev_linked = (int) get_post_meta( $old_agenda_id, '_dame_linked_benevolat_id', true );
+					if ( $prev_linked === $post_id ) {
+						delete_post_meta( $old_agenda_id, '_dame_linked_benevolat_id' );
+					}
+				}
+			} else {
+				delete_post_meta( $post_id, '_dame_linked_agenda_id' );
+				if ( $old_agenda_id > 0 ) {
+					$prev_linked = (int) get_post_meta( $old_agenda_id, '_dame_linked_benevolat_id', true );
+					if ( $prev_linked === $post_id ) {
+						delete_post_meta( $old_agenda_id, '_dame_linked_benevolat_id' );
+					}
+				}
+			}
+		}
+
+		// 4. Trigger synchronization with linked article.
 		$post = get_post( $post_id );
 		if ( $post instanceof \WP_Post ) {
 			( new \DAME\Services\BenevolatArticleSync() )->sync( $post_id, $post );

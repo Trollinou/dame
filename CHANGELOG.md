@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+### Association Événements Agenda ⟷ Appels à Bénévoles
+- **Administration & Liaison Bidirectionnelle (`Metaboxes\Agenda\BenevolatMetabox`, `Metaboxes\Benevolat\Manager`, `CPT\Agenda`, `CPT\Benevolat`)** :
+  - **Nouvelle métabox sur l'Agenda (`Appel à bénévoles associé`)** : permet d'associer un appel à bénévoles à un événement d'agenda, affiche le nombre d'inscrits, les créneaux configurés et des boutons d'accès rapide (*Modifier l'appel ↗*, *Voir la page publique ↗*).
+  - **Métabox miroir latérale sur le Bénévolat (`Événement Agenda associé`)** : permet de sélectionner un événement d'agenda avec rappel des dates et lieux.
+  - **Synchronisation bidirectionnelle atomique** entre `_dame_linked_benevolat_id` (sur `dame_agenda`) et `_dame_linked_agenda_id` (sur `benevolat`), avec nettoyage déterministe lors des désaccouplements.
+- **Expérience Front-Office pour les Adhérents (`CPT\Agenda`, `CPT\Benevolat`, `Shortcodes\Agenda`, `public-agenda.ts`, SCSS)** :
+  - **Page d'événement (`is_singular('dame_agenda')`)** : encadré d'appel à bénévoles avec message explicatif et bouton direct `🤝 Participer comme bénévole →` redirigeant vers le formulaire d'inscription.
+  - **Liste d'événements (`[dame_liste_agenda]`)** : badge interactif `🤝 Appel à bénévoles`.
+  - **Calendrier interactif (`[dame_agenda]`)** : intégration dans la réponse AJAX `get_events_ajax()` et affichage de la mention dans le tooltip au survol d'un événement.
+  - **Page de bénévolat (`is_singular('benevolat')`)** : bannière rappelant l'événement d'agenda associé avec lien de retour, suppression du doublon de description et masquage du sous-titre redondant avec le titre de page.
+- **API REST & Contrats PWA (`API\REST\Post_Meta`, `src/types/api/`, `docs/PWA_AGENDA_BENEVOLAT_INTEGRATION.md`)** :
+  - Exposition des post meta `_dame_linked_benevolat_id` et `_dame_linked_agenda_id` avec `show_in_rest => true`.
+  - Champ personnalisé calculé `linked_benevolat` (`id`, `title`, `slug`, `url`, `is_active`) sur `/wp/v2/agenda`.
+  - Champ personnalisé calculé `linked_agenda` (`id`, `title`, `start_date`, `end_date`, `location`, `url`) sur `/wp/v2/benevolats`.
+  - Interfaces TypeScript strictes et document de conception technique TDD complet pour l'application mobile / PWA du club.
+
+
 ## [5.8.7] - 2026-11-04
 
 ### Appels à Bénévoles (`benevolat`)

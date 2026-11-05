@@ -201,6 +201,18 @@ class Manager {
 				}
 				return 'individuelle' === $comp ? __( 'Compétition Individuelle', 'dame' ) : __( 'Compétition par Équipe', 'dame' );
 
+			case 'benevolat_url':
+				$b_id = (int) get_post_meta( $post_id, '_dame_linked_benevolat_id', true );
+				return ( $b_id > 0 && 'publish' === get_post_status( $b_id ) ) ? (string) get_permalink( $b_id ) : '';
+
+			case 'benevolat_title':
+				$b_id = (int) get_post_meta( $post_id, '_dame_linked_benevolat_id', true );
+				return ( $b_id > 0 && 'publish' === get_post_status( $b_id ) ) ? (string) get_the_title( $b_id ) : '';
+
+			case 'has_benevolat':
+				$b_id = (int) get_post_meta( $post_id, '_dame_linked_benevolat_id', true );
+				return ( $b_id > 0 && 'publish' === get_post_status( $b_id ) ) ? '1' : '';
+
 			default:
 				return (string) get_post_meta( $post_id, '_' . $key, true );
 		}

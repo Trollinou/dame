@@ -1,10 +1,24 @@
 # Release Notes — DAME (Prochaine Release)
 
-**Date :** 4 novembre 2026
+**Date :** 5 novembre 2026
 
 ## 🚀 Changements Majeurs
 
-### 1. Synchronisation Automatique des Appels à Bénévoles dans le Flux d'Articles
+### 1. Association Bidirectionnelle Agenda ⟷ Appels à Bénévoles & Expérience Front-Office
+- **Liaison en Administration** :
+  - Métabox dédiée sur l'Agenda permettant d'associer un appel à bénévoles, avec indicateur du nombre de bénévoles inscrits, créneaux configurés et liens de navigation rapide.
+  - Métabox miroir latérale sur le Bénévolat pour relier un événement d'agenda.
+  - Synchronisation bidirectionnelle atomique (`_dame_linked_benevolat_id` et `_dame_linked_agenda_id`).
+- **Visibilité Front-Office pour les Adhérents** :
+  - **Fiche événement (`dame_agenda`)** : encadré d'appel à l'action avec message explicatif et bouton direct `🤝 Participer comme bénévole →` vers le formulaire d'inscription.
+  - **Liste d'événements (`[dame_liste_agenda]`)** : badge interactif `🤝 Appel à bénévoles`.
+  - **Calendrier interactif (`[dame_agenda]`)** : mention interactive dans le tooltip au survol.
+  - **Fiche de bénévolat (`benevolat`)** : bannière rappelant l'événement associé avec lien direct.
+- **API REST & Contrats PWA** :
+  - Exposition des champs calculés `linked_benevolat` (`/wp/v2/agenda`) et `linked_agenda` (`/wp/v2/benevolats`).
+  - Contrats TypeScript stricts et guide de conception TDD complet (`docs/PWA_AGENDA_BENEVOLAT_INTEGRATION.md`).
+
+### 2. Synchronisation Automatique des Appels à Bénévoles dans le Flux d'Articles
 - **Génération Déterministe d'Articles WordPress (`post`)** :
   - Fin de la contrainte manuelle de copier/coller les shortcodes dans des articles pour rendre les appels visibles dans les actualités.
   - Tout appel à bénévoles publié crée et synchronise automatiquement un article de blog (`post`) rattaché avec cycle de vie bidirectionnel (mises à jour, mise à la corbeille, restauration).

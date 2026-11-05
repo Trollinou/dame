@@ -53,6 +53,7 @@ readonly class AgendaEventDTO {
 		public ?CompetitionLevel $competition_level = null,
 		public ?string $color = null,
 		public ?string $series_id = null,
+		public ?int $linked_benevolat_id = null,
 	) {}
 
 	/**
@@ -104,6 +105,7 @@ readonly class AgendaEventDTO {
 			competition_level: CompetitionLevel::from_raw( (string) get_post_meta( $id, '_dame_competition_level', true ) ),
 			color: ! empty( $color ) ? $color : null,
 			series_id: ! empty( $series_id ) ? $series_id : null,
+			linked_benevolat_id: is_numeric( get_post_meta( $id, '_dame_linked_benevolat_id', true ) ) ? (int) get_post_meta( $id, '_dame_linked_benevolat_id', true ) : null,
 		);
 	}
 
@@ -114,21 +116,22 @@ readonly class AgendaEventDTO {
 	 */
 	public function to_array(): array {
 		return array(
-			'id'                => $this->id,
-			'title'             => $this->title,
-			'start_date'        => $this->start_date,
-			'end_date'          => $this->end_date,
-			'all_day'           => $this->all_day,
-			'start_time'        => $this->start_time,
-			'end_time'          => $this->end_time,
-			'location'          => $this->location,
-			'address'           => $this->address,
-			'latitude'          => $this->latitude,
-			'longitude'         => $this->longitude,
-			'competition_type'  => $this->competition_type->value,
-			'competition_level' => $this->competition_level?->value,
-			'color'             => $this->color,
-			'series_id'         => $this->series_id,
+			'id'                  => $this->id,
+			'title'               => $this->title,
+			'start_date'          => $this->start_date,
+			'end_date'            => $this->end_date,
+			'all_day'             => $this->all_day,
+			'start_time'          => $this->start_time,
+			'end_time'            => $this->end_time,
+			'location'            => $this->location,
+			'address'             => $this->address,
+			'latitude'            => $this->latitude,
+			'longitude'           => $this->longitude,
+			'competition_type'    => $this->competition_type->value,
+			'competition_level'   => $this->competition_level?->value,
+			'color'               => $this->color,
+			'series_id'           => $this->series_id,
+			'linked_benevolat_id' => $this->linked_benevolat_id,
 		);
 	}
 }

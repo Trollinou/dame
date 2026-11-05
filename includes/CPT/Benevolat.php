@@ -103,9 +103,31 @@ class Benevolat {
 
 			$slug      = (string) get_post_field( 'post_name', $post_id );
 			$shortcode = new \DAME\Shortcodes\Benevolat();
-			$form_html = $shortcode->render( array( 'slug' => $slug ) );
+			$form_html = $shortcode->render(
+				array(
+					'slug'       => $slug,
+					'show_title' => false,
+				)
+			);
 
-			return $content . "\n\n" . $form_html;
+			$agenda_banner = '';
+			$linked_agenda = (int) get_post_meta( $post_id, '_dame_linked_agenda_id', true );
+			if ( $linked_agenda > 0 && 'publish' === get_post_status( $linked_agenda ) ) {
+				$agenda_title = get_the_title( $linked_agenda );
+				$agenda_url   = (string) get_permalink( $linked_agenda );
+				$start_date   = (string) get_post_meta( $linked_agenda, '_dame_start_date', true );
+				$date_info    = ! empty( $start_date ) ? ' (' . date_i18n( get_option( 'date_format' ), strtotime( $start_date ) ) . ')' : '';
+
+				$agenda_banner = sprintf(
+					'<div class="dame-benevolat-agenda-banner">📅 %1$s <a href="%2$s" class="dame-benevolat-agenda-link"><strong>%3$s</strong>%4$s</a></div>',
+					esc_html__( 'Cet appel à bénévoles est associé à l\'événement :', 'dame' ),
+					esc_url( $agenda_url ),
+					esc_html( $agenda_title ),
+					esc_html( $date_info )
+				);
+			}
+
+			return $agenda_banner . $form_html;
 		}
 
 		return $content;
@@ -151,6 +173,17 @@ class Benevolat {
 		);
 
 		register_post_type( 'benevolat', $benevolat_args );
+
+		register_post_meta(
+			'benevolat',
+			'_dame_linked_agenda_id',
+			array(
+				'show_in_rest'  => true,
+				'single'        => true,
+				'type'          => 'integer',
+				'auth_callback' => static fn() => current_user_can( 'edit_posts' ),
+			)
+		);
 
 		$reponse_labels = array(
 			'name'          => _x( 'Réponses au bénévolat', 'post type general name', 'dame' ),
