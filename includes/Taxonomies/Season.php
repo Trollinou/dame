@@ -221,4 +221,3 @@ class Season {
 		return $content;
 	}
 }
-

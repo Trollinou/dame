@@ -61,4 +61,3 @@ class HelloAssoClientTest extends TestCase {
 		$this->assertSame( 'mon-club', Client::clean_org_slug( 'helloasso.com/associations/mon-club' ) );
 	}
 }
-

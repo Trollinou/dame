@@ -204,4 +204,3 @@ class Season_Service {
 		return $current_id > 0 ? array( $current_id ) : array();
 	}
 }
-

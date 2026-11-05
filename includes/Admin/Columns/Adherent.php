@@ -628,4 +628,3 @@ class Adherent {
 		return $redirect_to;
 	}
 }
-

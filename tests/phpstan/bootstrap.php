@@ -153,5 +153,3 @@ if ( ! function_exists( 'wp_date' ) ) {
 		return date( $format, $timestamp );
 	}
 }
-
-

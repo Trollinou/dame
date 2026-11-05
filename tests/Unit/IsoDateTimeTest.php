@@ -89,4 +89,3 @@ final class IsoDateTimeTest extends TestCase {
 		$this->assertNull( Utils::normalize_iso_datetime( 'not-a-date' ) );
 	}
 }
-

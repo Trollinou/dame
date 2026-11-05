@@ -108,4 +108,3 @@ class FieldExtractor {
 		return $result;
 	}
 }
-

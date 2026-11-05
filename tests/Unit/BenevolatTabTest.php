@@ -47,4 +47,3 @@ final class BenevolatTabTest extends TestCase {
 		$this->assertSame( 0, $sanitized2['benevolat_auto_publish'] );
 	}
 }
-

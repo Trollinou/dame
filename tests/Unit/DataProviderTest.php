@@ -33,4 +33,3 @@ final class DataProviderTest extends TestCase {
 		$this->assertNotContains( '21', $idf_depts );
 	}
 }
-

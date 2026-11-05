@@ -64,4 +64,3 @@ final class MailingRecipientPersonalizationTest extends TestCase {
 		$this->assertSame( '<p>Bonjour Léo DUPONT, nous confirmons votre venue.</p>', $result['content'] );
 	}
 }
-

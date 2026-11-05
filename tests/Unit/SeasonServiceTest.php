@@ -91,4 +91,3 @@ class SeasonServiceTest extends TestCase {
 		$this->assertSame( '2025-10-31 23:59:59', $expiry->format( 'Y-m-d H:i:s' ) );
 	}
 }
-
