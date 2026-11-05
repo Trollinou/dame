@@ -103,13 +103,18 @@ class Benevolat {
 
 			$slug      = (string) get_post_field( 'post_name', $post_id );
 			$shortcode = new \DAME\Shortcodes\Benevolat();
-			$form_html = $shortcode->render( array( 'slug' => $slug ) );
+			$form_html = $shortcode->render(
+				array(
+					'slug'       => $slug,
+					'show_title' => false,
+				)
+			);
 
 			$agenda_banner = '';
 			$linked_agenda = (int) get_post_meta( $post_id, '_dame_linked_agenda_id', true );
 			if ( $linked_agenda > 0 && 'publish' === get_post_status( $linked_agenda ) ) {
 				$agenda_title = get_the_title( $linked_agenda );
-				$agenda_url   = get_permalink( $linked_agenda );
+				$agenda_url   = (string) get_permalink( $linked_agenda );
 				$start_date   = (string) get_post_meta( $linked_agenda, '_dame_start_date', true );
 				$date_info    = ! empty( $start_date ) ? ' (' . date_i18n( get_option( 'date_format' ), strtotime( $start_date ) ) . ')' : '';
 
@@ -122,7 +127,7 @@ class Benevolat {
 				);
 			}
 
-			return $agenda_banner . $content . "\n\n" . $form_html;
+			return $agenda_banner . $form_html;
 		}
 
 		return $content;

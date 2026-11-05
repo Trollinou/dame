@@ -71,21 +71,9 @@ class BenevolatMetabox {
 
 			<?php if ( $linked_benevolat_id > 0 ) : ?>
 				<?php
-				$linked_post = get_post( $linked_benevolat_id );
-				$b_data      = get_post_meta( $linked_benevolat_id, '_dame_benevolat_data', true );
-
-				// Get responses count.
-				$response_count = (int) count(
-					get_posts(
-						array(
-							'post_type'      => 'benevolat_reponse',
-							'post_parent'    => $linked_benevolat_id,
-							'post_status'    => 'publish',
-							'posts_per_page' => -1,
-							'fields'         => 'ids',
-						)
-					)
-				);
+				$linked_post    = get_post( $linked_benevolat_id );
+				$b_data         = get_post_meta( $linked_benevolat_id, '_dame_benevolat_data', true );
+				$response_count = $this->repository->get_distinct_voter_count( $linked_benevolat_id );
 
 				$total_slots = 0;
 				if ( is_array( $b_data ) ) {
@@ -103,11 +91,13 @@ class BenevolatMetabox {
 						<strong><?php esc_html_e( 'Statut des inscriptions bénévoles :', 'dame' ); ?></strong>
 						<span style="margin-left: 10px; color: #2271b1; font-weight:600;">
 							<?php
-							printf(
-								/* translators: 1: responses count, 2: total time slots */
-								esc_html__( '%1$d bénévole(s) inscrit(s) sur %2$d créneau(x)', 'dame' ),
-								$response_count,
-								$total_slots
+							echo esc_html(
+								sprintf(
+									/* translators: 1: responses count, 2: total time slots */
+									__( '%1$d bénévole(s) inscrit(s) sur %2$d créneau(x)', 'dame' ),
+									$response_count,
+									$total_slots
+								)
 							);
 							?>
 						</span>
@@ -117,7 +107,7 @@ class BenevolatMetabox {
 							<?php esc_html_e( 'Modifier l\'appel ↗', 'dame' ); ?>
 						</a>
 						<?php if ( $linked_post && 'publish' === $linked_post->post_status ) : ?>
-							<a href="<?php echo esc_url( get_permalink( $linked_benevolat_id ) ); ?>" target="_blank" class="button button-secondary">
+							<a href="<?php echo esc_url( (string) get_permalink( $linked_benevolat_id ) ); ?>" target="_blank" class="button button-secondary">
 								<?php esc_html_e( 'Voir la page publique ↗', 'dame' ); ?>
 							</a>
 						<?php endif; ?>

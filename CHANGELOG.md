@@ -11,7 +11,7 @@
   - **Page d'événement (`is_singular('dame_agenda')`)** : encadré d'appel à bénévoles avec message explicatif et bouton direct `🤝 Participer comme bénévole →` redirigeant vers le formulaire d'inscription.
   - **Liste d'événements (`[dame_liste_agenda]`)** : badge interactif `🤝 Appel à bénévoles`.
   - **Calendrier interactif (`[dame_agenda]`)** : intégration dans la réponse AJAX `get_events_ajax()` et affichage de la mention dans le tooltip au survol d'un événement.
-  - **Page de bénévolat (`is_singular('benevolat')`)** : bannière rappelant l'événement d'agenda associé avec lien de retour.
+  - **Page de bénévolat (`is_singular('benevolat')`)** : bannière rappelant l'événement d'agenda associé avec lien de retour, suppression du doublon de description et masquage du sous-titre redondant avec le titre de page.
 - **API REST & Contrats PWA (`API\REST\Post_Meta`, `src/types/api/`, `docs/PWA_AGENDA_BENEVOLAT_INTEGRATION.md`)** :
   - Exposition des post meta `_dame_linked_benevolat_id` et `_dame_linked_agenda_id` avec `show_in_rest => true`.
   - Champ personnalisé calculé `linked_benevolat` (`id`, `title`, `slug`, `url`, `is_active`) sur `/wp/v2/agenda`.

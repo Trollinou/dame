@@ -36,12 +36,15 @@ class Benevolat {
 	public function render( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'slug' => '',
-				'id'   => 0,
+				'slug'       => '',
+				'id'         => 0,
+				'show_title' => true,
 			),
 			is_array( $atts ) ? $atts : array(),
 			'dame_benevolat'
 		);
+
+		$show_title = filter_var( $atts['show_title'], FILTER_VALIDATE_BOOLEAN );
 
 		$benevolat    = null;
 		$benevolat_id = ! empty( $atts['id'] ) ? (int) $atts['id'] : 0;
@@ -147,7 +150,9 @@ class Benevolat {
 		ob_start();
 		?>
 		<div class="dame-benevolat-wrapper" data-wp-interactive="dame/benevolat" <?php echo $context_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-			<h3><?php echo esc_html( (string) $benevolat->post_title ); ?></h3>
+			<?php if ( $show_title ) : ?>
+				<h3><?php echo esc_html( (string) $benevolat->post_title ); ?></h3>
+			<?php endif; ?>
 			<?php if ( ! empty( $benevolat->post_content ) ) : ?>
 				<div class="benevolat-description">
 					<?php echo wp_kses_post( wpautop( $benevolat->post_content ) ); ?>

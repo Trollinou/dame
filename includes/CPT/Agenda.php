@@ -276,7 +276,7 @@ class Agenda {
 			// Volunteering call (Appel à bénévoles).
 			$linked_benevolat_id = (int) get_post_meta( $post_id, '_dame_linked_benevolat_id', true );
 			if ( $linked_benevolat_id > 0 && 'publish' === get_post_status( $linked_benevolat_id ) ) {
-				$benevolat_url   = get_permalink( $linked_benevolat_id );
+				$benevolat_url   = (string) get_permalink( $linked_benevolat_id );
 				$benevolat_title = get_the_title( $linked_benevolat_id );
 
 				$details_html .= '<div class="dame-event-detail-item dame-event-benevolat">';
