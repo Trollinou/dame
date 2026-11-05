@@ -141,7 +141,7 @@ class Agenda {
 				} else {
 					$date_display = sprintf(
 						/* translators: 1: Date de début, 2: Date de fin */
-						__( 'From %1$s to %2$s', 'dame' ),
+						__( 'Du %1$s au %2$s', 'dame' ),
 						date_i18n( get_option( 'date_format' ), $start_date->getTimestamp() ),
 						date_i18n( get_option( 'date_format' ), $end_date->getTimestamp() )
 					);
