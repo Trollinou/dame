@@ -86,6 +86,7 @@ class Agenda {
 						__( 'Décembre', 'dame' ),
 					),
 					'weekdays_short' => $ordered_weekdays,
+					'benevolat_call' => __( 'Appel à bénévoles en cours', 'dame' ),
 				),
 			)
 		);
@@ -313,22 +314,29 @@ class Agenda {
 				$color     = ( is_array( $term_meta ) && ! empty( $term_meta['color'] ) ) ? (string) $term_meta['color'] : '#ccc';
 				$status    = (string) get_post_status( $post_id );
 
+				$linked_b_id    = $dto->linked_benevolat_id;
+				$has_benevolat  = $linked_b_id && 'publish' === get_post_status( $linked_b_id );
+				$benevolat_url  = $has_benevolat ? (string) get_permalink( $linked_b_id ) : '';
+
 				$event_data = array(
-					'id'                => $dto->id,
-					'title'             => $dto->title,
-					'status'            => $status,
-					'url'               => get_permalink( $dto->id ),
-					'start_date'        => $dto->start_date,
-					'start_time'        => $dto->start_time,
-					'end_date'          => $dto->end_date,
-					'end_time'          => $dto->end_time,
-					'all_day'           => $dto->all_day ? 1 : 0,
-					'location'          => $dto->location,
-					'description'       => get_post_meta( $dto->id, '_dame_agenda_description', true ),
-					'competition_type'  => $dto->competition_type->value,
-					'competition_level' => $dto->competition_level?->value,
-					'color'             => $color,
-					'category'          => $term ? $term->name : '',
+					'id'                  => $dto->id,
+					'title'               => $dto->title,
+					'status'              => $status,
+					'url'                 => get_permalink( $dto->id ),
+					'start_date'          => $dto->start_date,
+					'start_time'          => $dto->start_time,
+					'end_date'            => $dto->end_date,
+					'end_time'            => $dto->end_time,
+					'all_day'             => $dto->all_day ? 1 : 0,
+					'location'            => $dto->location,
+					'description'         => get_post_meta( $dto->id, '_dame_agenda_description', true ),
+					'competition_type'    => $dto->competition_type->value,
+					'competition_level'   => $dto->competition_level?->value,
+					'color'               => $color,
+					'category'            => $term ? $term->name : '',
+					'has_benevolat'       => $has_benevolat,
+					'linked_benevolat_id' => $has_benevolat ? $linked_b_id : null,
+					'benevolat_url'       => $benevolat_url,
 				);
 
 				$bg_color = $color;
@@ -512,6 +520,16 @@ class Agenda {
 					<div class="dame-liste-agenda-details">
 						<h4 class="event-title"><a href="<?php the_permalink(); ?>"><?php echo esc_html( (string) get_post_field( 'post_title', $post_id ) ); ?></a></h4>
 						<p class="event-date"><?php echo $date_display; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
+						<?php
+						$linked_b_id = (int) get_post_meta( $post_id, '_dame_linked_benevolat_id', true );
+						if ( $linked_b_id > 0 && 'publish' === get_post_status( $linked_b_id ) ) :
+							?>
+							<p class="event-benevolat-badge-container">
+								<a href="<?php echo esc_url( (string) get_permalink( $linked_b_id ) ); ?>" class="dame-agenda-benevolat-badge">
+									🤝 <?php esc_html_e( 'Appel à bénévoles', 'dame' ); ?>
+								</a>
+							</p>
+						<?php endif; ?>
 						<?php
 						$description = (string) get_post_meta( $post_id, '_dame_agenda_description', true );
 						if ( ! empty( $description ) ) :

@@ -14,6 +14,15 @@ export interface BenevolatDay {
 	time_slots?: BenevolatTimeSlot[];
 }
 
+export interface LinkedAgendaSummary {
+	id: number;
+	title: string;
+	start_date: string;
+	end_date: string;
+	location?: string;
+	url: string;
+}
+
 export interface Benevolat {
 	id: number;
 	modified: string;
@@ -26,6 +35,10 @@ export interface Benevolat {
 	};
 	dame_benevolat_data: BenevolatDay[];
 	dame_benevolat_counts?: Record<string, number>;
+	linked_agenda?: LinkedAgendaSummary | null;
+	meta?: {
+		_dame_linked_agenda_id?: number | null;
+	};
 }
 
 export interface BenevolatSlotStat {

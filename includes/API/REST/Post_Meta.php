@@ -235,6 +235,40 @@ class Post_Meta {
 			)
 		);
 
+		// Linked Agenda Event for Benevolat.
+		register_rest_field(
+			'benevolat',
+			'linked_agenda',
+			array(
+				'get_callback' => function ( $post_arr ) {
+					$agenda_id = (int) get_post_meta( $post_arr['id'], '_dame_linked_agenda_id', true );
+					if ( ! $agenda_id || 'publish' !== get_post_status( $agenda_id ) ) {
+						return null;
+					}
+					return array(
+						'id'         => $agenda_id,
+						'title'      => get_the_title( $agenda_id ),
+						'start_date' => (string) get_post_meta( $agenda_id, '_dame_start_date', true ),
+						'end_date'   => (string) get_post_meta( $agenda_id, '_dame_end_date', true ),
+						'location'   => (string) get_post_meta( $agenda_id, '_dame_location_name', true ),
+						'url'        => get_permalink( $agenda_id ),
+					);
+				},
+				'schema'       => array(
+					'description' => __( 'Événement d\'agenda associé.', 'dame' ),
+					'type'        => array( 'object', 'null' ),
+					'properties'  => array(
+						'id'         => array( 'type' => 'integer' ),
+						'title'      => array( 'type' => 'string' ),
+						'start_date' => array( 'type' => 'string' ),
+						'end_date'   => array( 'type' => 'string' ),
+						'location'   => array( 'type' => 'string' ),
+						'url'        => array( 'type' => 'string' ),
+					),
+				),
+			)
+		);
+
 		// Benevolat Response Parent ID.
 		register_rest_field(
 			'benevolat_reponse',
@@ -334,6 +368,39 @@ class Post_Meta {
 				),
 			)
 		);
+
+		// Linked Volunteering call (Benevolat) for Agenda.
+		register_rest_field(
+			'dame_agenda',
+			'linked_benevolat',
+			array(
+				'get_callback' => function ( $post_arr ) {
+					$b_id = (int) get_post_meta( $post_arr['id'], '_dame_linked_benevolat_id', true );
+					if ( ! $b_id || 'publish' !== get_post_status( $b_id ) ) {
+						return null;
+					}
+					return array(
+						'id'        => $b_id,
+						'title'     => get_the_title( $b_id ),
+						'slug'      => (string) get_post_field( 'post_name', $b_id ),
+						'url'       => get_permalink( $b_id ),
+						'is_active' => true,
+					);
+				},
+				'schema'       => array(
+					'description' => __( 'Appel à bénévoles associé.', 'dame' ),
+					'type'        => array( 'object', 'null' ),
+					'properties'  => array(
+						'id'        => array( 'type' => 'integer' ),
+						'title'     => array( 'type' => 'string' ),
+						'slug'      => array( 'type' => 'string' ),
+						'url'       => array( 'type' => 'string' ),
+						'is_active' => array( 'type' => 'boolean' ),
+					),
+				),
+			)
+		);
+
 		// Rapport d'envoi et d'ouverture pour les Messages.
 		register_rest_field(
 			'dame_message',
@@ -574,9 +641,11 @@ class Post_Meta {
 			'_dame_city'               => 'string',
 			'_dame_latitude'           => 'string',
 			'_dame_longitude'          => 'string',
-			'_dame_distance'           => 'string',
-			'_dame_travel_time'        => 'string',
-			'_dame_agenda_description' => 'string',
+			'_dame_distance'              => 'string',
+			'_dame_travel_time'           => 'string',
+			'_dame_agenda_description'    => 'string',
+			'_dame_linked_benevolat_id'   => 'integer',
+			'_dame_linked_ha_campaign_id' => 'integer',
 		);
 
 		$this->register_fields( 'dame_agenda', $fields );
@@ -664,6 +733,18 @@ class Post_Meta {
 				),
 				'single'         => true,
 				'type'           => 'array',
+				'auth_callback'  => array( $this, 'auth_callback' ),
+			)
+		);
+
+		register_meta(
+			'post',
+			'_dame_linked_agenda_id',
+			array(
+				'object_subtype' => 'benevolat',
+				'show_in_rest'   => true,
+				'single'         => true,
+				'type'           => 'integer',
 				'auth_callback'  => array( $this, 'auth_callback' ),
 			)
 		);

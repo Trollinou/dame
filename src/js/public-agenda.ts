@@ -13,6 +13,9 @@ interface CalendarEvent {
 	url?: string;
 	location?: string;
 	description?: string;
+	has_benevolat?: boolean;
+	benevolat_url?: string;
+	linked_benevolat_id?: number | null;
 	[key: string]: unknown;
 }
 
@@ -650,6 +653,13 @@ document.addEventListener('DOMContentLoaded', (): void => {
 			}
 			if (eventData.description) {
 				tooltipHtml += `<div class="tooltip-description">${eventData.description}</div>`;
+			}
+			if (eventData.has_benevolat) {
+				const benevolatLabel =
+					typeof dame_agenda_ajax.i18n.benevolat_call === 'string'
+						? dame_agenda_ajax.i18n.benevolat_call
+						: 'Appel à bénévoles en cours';
+				tooltipHtml += `<div class="tooltip-benevolat">🤝 ${benevolatLabel}</div>`;
 			}
 
 			tooltip.innerHTML = tooltipHtml;

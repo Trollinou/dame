@@ -102,6 +102,17 @@ class Agenda {
 		);
 
 		register_post_type( 'dame_agenda', $args );
+
+		register_post_meta(
+			'dame_agenda',
+			'_dame_linked_benevolat_id',
+			array(
+				'show_in_rest'  => true,
+				'single'        => true,
+				'type'          => 'integer',
+				'auth_callback' => static fn() => current_user_can( 'edit_posts' ),
+			)
+		);
 	}
 
 	/**
@@ -260,6 +271,27 @@ class Agenda {
 					$details_html .= '</div>';
 					$details_html .= '</div>';
 				}
+			}
+
+			// Volunteering call (Appel à bénévoles).
+			$linked_benevolat_id = (int) get_post_meta( $post_id, '_dame_linked_benevolat_id', true );
+			if ( $linked_benevolat_id > 0 && 'publish' === get_post_status( $linked_benevolat_id ) ) {
+				$benevolat_url   = get_permalink( $linked_benevolat_id );
+				$benevolat_title = get_the_title( $linked_benevolat_id );
+
+				$details_html .= '<div class="dame-event-detail-item dame-event-benevolat">';
+				$details_html .= '<h4>🤝 ' . esc_html__( 'Appel à bénévoles', 'dame' ) . '</h4>';
+				$details_html .= '<p class="dame-event-benevolat-text">' . sprintf(
+					/* translators: %s: Titre de l'appel à bénévoles */
+					esc_html__( 'Un appel à bénévoles est en cours pour cet événement : %s. Votre aide est essentielle pour la réussite de cette rencontre !', 'dame' ),
+					'<strong>' . esc_html( $benevolat_title ) . '</strong>'
+				) . '</p>';
+				$details_html .= '<div class="dame-event-benevolat-cta">';
+				$details_html .= '<a href="' . esc_url( $benevolat_url ) . '" class="button button-primary dame-button-benevolat">';
+				$details_html .= '🤝 ' . esc_html__( 'Participer comme bénévole', 'dame' ) . ' &rarr;';
+				$details_html .= '</a>';
+				$details_html .= '</div>';
+				$details_html .= '</div>';
 			}
 
 			$details_html .= '</div>';

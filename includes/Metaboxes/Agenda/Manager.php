@@ -139,6 +139,14 @@ class Manager {
 			'normal',
 			'default'
 		);
+		add_meta_box(
+			'dame_agenda_benevolat_metabox',
+			__( 'Appel à bénévoles associé', 'dame' ),
+			array( $this, 'render_benevolat' ),
+			'dame_agenda',
+			'normal',
+			'default'
+		);
 	}
 
 	/**
@@ -187,6 +195,15 @@ class Manager {
 	}
 
 	/**
+	 * Renders the associated volunteering call (Benevolat) metabox.
+	 *
+	 * @param WP_Post $post The post object.
+	 */
+	public function render_benevolat( WP_Post $post ): void {
+		( new BenevolatMetabox() )->render( $post );
+	}
+
+	/**
 	 * Save meta box content for Agenda CPT.
 	 *
 	 * @param int $post_id Post ID.
@@ -194,6 +211,7 @@ class Manager {
 	public function save( int $post_id ): void {
 		( new SaveHandler() )->save( $post_id );
 		( new TicketingMetabox() )->save( $post_id );
+		( new BenevolatMetabox() )->save( $post_id );
 	}
 
 	/**
