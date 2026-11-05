@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.8.8] - 2026-11-05
+
 ### Association Événements Agenda ⟷ Appels à Bénévoles
 - **Administration & Liaison Bidirectionnelle (`Metaboxes\Agenda\BenevolatMetabox`, `Metaboxes\Benevolat\Manager`, `CPT\Agenda`, `CPT\Benevolat`)** :
   - **Nouvelle métabox sur l'Agenda (`Appel à bénévoles associé`)** : permet d'associer un appel à bénévoles à un événement d'agenda, affiche le nombre d'inscrits, les créneaux configurés et des boutons d'accès rapide (*Modifier l'appel ↗*, *Voir la page publique ↗*).
