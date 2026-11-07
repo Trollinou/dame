@@ -13,7 +13,8 @@
 - **Récupération des coordonnées payeur et pagination API v5** :
   - Détection de l'objet `$raw_item['payer']` sur chaque article synchronisé via l'API `/items` HelloAsso.
   - Sauvegarde systématique de `payer_email` en base de données.
-  - Parcours complet de la pagination (`continuationToken` / `pageIndex`) pour synchroniser 100% des participants des campagnes de plus de 100 inscrits.
+  - Parcours complet de la pagination par curseur (`continuationToken` sans `pageIndex` en conflit) pour synchroniser 100% des participants des campagnes de plus de 100 inscrits (ex: 157 inscrits).
+  - Exclusion des pourboires HelloAsso (`Contribution`, `Bonus`) et dons (`Donation`) pour empêcher la création de faux participants fantômes aux tarifs inexistants (ex: 4 €). Purge automatique en base des lignes antérieures lors de la synchronisation.
 - **Mailing ciblé & Prévisualisation des destinataires** :
   - Dédoublonnage des libellés de destinataires lorsque l'adresse participant et payeur est identique.
   - Prise en compte du nom du payeur pour les messages personnalisés qui lui sont adressés.
