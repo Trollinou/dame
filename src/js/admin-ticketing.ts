@@ -419,6 +419,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (col === 'participant') {
           valA = a.dataset.name || '';
           valB = b.dataset.name || '';
+        } else if (col === 'email') {
+          valA = a.dataset.email || '';
+          valB = b.dataset.email || '';
         } else if (col === 'elo') {
           const eloA = parseInt(a.dataset.elo || '0', 10);
           const eloB = parseInt(b.dataset.elo || '0', 10);

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [5.8.10] - 2026-11-07
+
+### Billetterie HelloAsso, Synchronisation & Résolution Mailing
+- **Colonne Email Dédiée & Repli Payeur (`Admin\Pages\Ticketing`, `src/js/admin-ticketing.ts`)** :
+  - **Nouvelle colonne « Email »** dans le tableau d'administration des participants d'une campagne HelloAsso (`#dame-ticketing-table`).
+  - **Affichage intelligent avec repli** : affiche l'e-mail du participant en lien `mailto:`, ou à défaut l'e-mail du payeur accompagné de la mention explicite `(Payeur : Nom Prénom)`, ou un tiret `—` si aucun e-mail n'est renseigné.
+  - **Tri en direct** : colonne triable (`th.sortable[data-sort="email"]`) avec indicateur directionnel ▲/▼.
+  - **Recherche instantanée enrichie** : inclusion des e-mails (participant et payeur) et du nom du payeur dans l'index de recherche rapide.
+  - **Création de fiches contacts externes** : repli automatique vers l'e-mail du payeur si le participant externe n'a pas d'adresse propre.
+- **Récupération des E-mails & Pagination API v5 (`Services\HelloAsso\WebhookProcessor`, `Services\HelloAsso\Synchronizer`)** :
+  - **Détection des coordonnées payeur par article** : extraction de l'objet `$raw_item['payer']` renvoyé par l'endpoint `/items` d'HelloAsso (au lieu d'attendre uniquement un objet global de commande), permettant d'alimenter correctement `payer_email` en BDD et d'attribuer un e-mail de repli aux participants qui n'en ont pas.
+  - **Gestion de la pagination complète** : implémentation d'une boucle parcourant `continuationToken` et `pageIndex` dans `sync_campaign_items()`, garantissant l'importation intégrale des campagnes dépassant 100 participants.
+- **Dédoublonnage & Métadonnées Mailing (`Admin\Pages\Mailing\RecipientResolver`)** :
+  - Évite les libellés en doublon dans la prévisualisation des destinataires lorsque l'e-mail du participant et celui du payeur sont identiques.
+  - Attribution des prénom et nom réels du payeur lors de la personnalisation des messages qui lui sont adressés.
+
 ## [5.8.9] - 2026-11-07
 
 ### Mailing, Renvoi de Messages & Filtres Destinataires

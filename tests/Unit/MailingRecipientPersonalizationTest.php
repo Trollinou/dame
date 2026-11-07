@@ -63,4 +63,26 @@ final class MailingRecipientPersonalizationTest extends TestCase {
 		$this->assertSame( 'Information pour Léo', $result['subject'] );
 		$this->assertSame( '<p>Bonjour Léo DUPONT, nous confirmons votre venue.</p>', $result['content'] );
 	}
+
+	/**
+	 * Tests personalizing message for a HelloAsso payer with payer names.
+	 */
+	public function test_personalize_message_for_helloasso_payer(): void {
+		$recipient_data = array(
+			'first_name' => 'Marc',
+			'last_name'  => 'Dupont',
+		);
+
+		$result = $this->resolver->personalize_message(
+			0,
+			'marc.dupont@example.com',
+			'Léo Dupont (Payeur : Open d\'échecs)',
+			'Bonjour [PRENOM]',
+			'<p>Bonjour [PRENOM] [NOM], voici le récapitulatif pour votre inscription.</p>',
+			$recipient_data
+		);
+
+		$this->assertSame( 'Bonjour Marc', $result['subject'] );
+		$this->assertSame( '<p>Bonjour Marc DUPONT, voici le récapitulatif pour votre inscription.</p>', $result['content'] );
+	}
 }

@@ -1,8 +1,22 @@
-# Release Notes — DAME (Prochaine Release)
+# Release Notes — DAME (v5.8.10)
 
-**Date :** 5 novembre 2026
+**Date :** 7 novembre 2026
 
 ## 🚀 Changements Majeurs
+
+### 1. Billetterie HelloAsso : Colonne Email Dédiée & Repli Payeur
+- **Nouvelle colonne « Email » dans l'administration** :
+  - Intégration d'une colonne Email triable et recherchable sur le tableau de bord des participants d'une campagne (`#dame-ticketing-table`).
+  - Priorise l'e-mail propre du participant lorsqu'il est renseigné.
+  - En l'absence d'e-mail participant (mineurs, enfants, inscriptions groupées), bascule automatiquement sur l'e-mail du payeur avec la mention visuelle `(Payeur : Nom Prénom)`.
+  - Intégration complète dans le tri JavaScript côté client et dans l'index de recherche instantanée.
+- **Récupération des coordonnées payeur et pagination API v5** :
+  - Détection de l'objet `$raw_item['payer']` sur chaque article synchronisé via l'API `/items` HelloAsso.
+  - Sauvegarde systématique de `payer_email` en base de données.
+  - Parcours complet de la pagination (`continuationToken` / `pageIndex`) pour synchroniser 100% des participants des campagnes de plus de 100 inscrits.
+- **Mailing ciblé & Prévisualisation des destinataires** :
+  - Dédoublonnage des libellés de destinataires lorsque l'adresse participant et payeur est identique.
+  - Prise en compte du nom du payeur pour les messages personnalisés qui lui sont adressés.
 
 ### 1. Association Bidirectionnelle Agenda ⟷ Appels à Bénévoles & Expérience Front-Office
 - **Liaison en Administration** :
@@ -52,7 +66,7 @@
 
 ---
 
-# Release Notes — DAME v5.8.9
+# Release Notes — DAME v5.8.10
 
 **Date :** 29 octobre 2026
 

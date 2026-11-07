@@ -152,25 +152,57 @@ class Synchronizer {
 		$form_slug = rawurlencode( (string) $campaign['form_slug'] );
 
 		// Retrieve items for this form via HelloAsso API v5: organizations/{orgSlug}/forms/{formType}/{formSlug}/items
-		$endpoint = sprintf( 'organizations/%s/forms/%s/%s/items', rawurlencode( $cfg['org_slug'] ), $form_type, $form_slug );
-		$response = Client::get(
-			$endpoint,
-			array(
-				'pageIndex' => 1,
+		$endpoint           = sprintf( 'organizations/%s/forms/%s/%s/items', rawurlencode( $cfg['org_slug'] ), $form_type, $form_slug );
+		$all_items          = array();
+		$continuation_token = null;
+		$page_index         = 1;
+		$max_pages          = 20; // Safety guard: up to 2,000 items.
+
+		do {
+			$query_params = array(
+				'pageIndex' => $page_index,
 				'pageSize'  => 100,
-			)
-		);
-
-		if ( is_wp_error( $response ) ) {
-			return array(
-				'success'      => false,
-				'items_synced' => 0,
-				'message'      => $response->get_error_message(),
 			);
-		}
+			if ( ! empty( $continuation_token ) ) {
+				$query_params['continuationToken'] = $continuation_token;
+			}
 
-		$items = $response['data'] ?? array();
-		if ( ! is_array( $items ) ) {
+			$response = Client::get( $endpoint, $query_params );
+
+			if ( is_wp_error( $response ) ) {
+				if ( empty( $all_items ) ) {
+					return array(
+						'success'      => false,
+						'items_synced' => 0,
+						'message'      => $response->get_error_message(),
+					);
+				}
+				break;
+			}
+
+			$items = $response['data'] ?? array();
+			if ( ! is_array( $items ) || empty( $items ) ) {
+				break;
+			}
+
+			$all_items = array_merge( $all_items, $items );
+
+			$pagination         = is_array( $response['pagination'] ?? null ) ? $response['pagination'] : array();
+			$continuation_token = ! empty( $pagination['continuationToken'] ) ? (string) $pagination['continuationToken'] : null;
+			$total_pages        = isset( $pagination['totalPages'] ) ? (int) $pagination['totalPages'] : -1;
+
+			++$page_index;
+
+			if ( $total_pages > 0 && $page_index > $total_pages ) {
+				break;
+			}
+
+			if ( empty( $continuation_token ) && count( $items ) < 100 ) {
+				break;
+			}
+		} while ( $page_index <= $max_pages );
+
+		if ( empty( $all_items ) ) {
 			return array(
 				'success'      => true,
 				'items_synced' => 0,
@@ -185,7 +217,7 @@ class Synchronizer {
 				'formSlug' => $campaign['form_slug'],
 				'formType' => $campaign['form_type'],
 				'formName' => $campaign['title'],
-				'items'    => $items,
+				'items'    => $all_items,
 			),
 		);
 

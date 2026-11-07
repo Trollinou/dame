@@ -529,9 +529,11 @@ class RecipientResolver {
 					$email_data[ $key ]['names'][] = $label;
 				}
 
-				// B. E-mail du payeur HelloAsso.
+				// B. E-mail du payeur HelloAsso (si distinct de l'e-mail du participant).
 				$payer_email = trim( (string) ( $item['payer_email'] ?? '' ) );
-				if ( ! empty( $payer_email ) && is_email( $payer_email ) ) {
+				if ( ! empty( $payer_email ) && is_email( $payer_email ) && strtolower( $payer_email ) !== strtolower( $part_email ) ) {
+					$payer_fn  = trim( (string) ( $item['payer_first_name'] ?? '' ) );
+					$payer_ln  = trim( (string) ( $item['payer_last_name'] ?? '' ) );
 					$raw_email = $payer_email;
 					$lemail    = strtolower( $raw_email );
 					$key       = $is_personalized ? $lemail . '_' . $target_suffix : $lemail;
@@ -543,8 +545,8 @@ class RecipientResolver {
 							'names'      => array(),
 							'prio'       => 4,
 							'raw_email'  => $raw_email,
-							'first_name' => $part_fn,
-							'last_name'  => $part_ln,
+							'first_name' => ! empty( $payer_fn ) ? $payer_fn : $part_fn,
+							'last_name'  => ! empty( $payer_ln ) ? $payer_ln : $part_ln,
 						);
 					}
 					$email_data[ $key ]['names'][] = $label;

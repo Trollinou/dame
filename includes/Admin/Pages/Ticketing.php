@@ -302,7 +302,7 @@ class Ticketing {
 					continue;
 				}
 
-				$email = sanitize_email( (string) $it['participant_email'] );
+				$email = sanitize_email( (string) ( ! empty( $it['participant_email'] ) ? $it['participant_email'] : ( $it['payer_email'] ?? '' ) ) );
 				$last  = (string) $it['participant_last_name'];
 				$first = (string) $it['participant_first_name'];
 				$org   = (string) ( $it['club_name'] ?? '' );
@@ -776,6 +776,9 @@ class Ticketing {
 						<th class="sortable" data-sort="participant">
 							<?php esc_html_e( 'Participant', 'dame' ); ?><span class="sort-indicator"> ▲</span>
 						</th>
+						<th class="sortable" data-sort="email">
+							<?php esc_html_e( 'Email', 'dame' ); ?><span class="sort-indicator"></span>
+						</th>
 						<th style="width:110px;">
 							<?php esc_html_e( 'Licence FFE', 'dame' ); ?>
 						</th>
@@ -799,22 +802,35 @@ class Ticketing {
 				<tbody>
 					<?php if ( empty( $items ) ) : ?>
 						<tr>
-							<td colspan="8"><?php esc_html_e( 'Aucun participant synchronisé pour le moment.', 'dame' ); ?></td>
+							<td colspan="9"><?php esc_html_e( 'Aucun participant synchronisé pour le moment.', 'dame' ); ?></td>
 						</tr>
 					<?php else : ?>
 						<?php foreach ( $items as $it ) : ?>
 							<?php
-							$is_in        = ! empty( $it['checked_in'] );
-							$is_adh       = ! empty( $it['matched_adherent_id'] );
-							$tier_val     = ! empty( $it['tier_name'] ) ? (string) $it['tier_name'] : __( 'Standard', 'dame' );
-							$full_name    = Utils::format_lastname( (string) $it['participant_last_name'] ) . ' ' . Utils::format_firstname( (string) $it['participant_first_name'] );
-							$search_index = $full_name . ' ' . ( $it['license_number'] ?? '' ) . ' ' . ( $it['club_name'] ?? '' ) . ' ' . ( $it['participant_email'] ?? '' );
+							$is_in           = ! empty( $it['checked_in'] );
+							$is_adh          = ! empty( $it['matched_adherent_id'] );
+							$tier_val        = ! empty( $it['tier_name'] ) ? (string) $it['tier_name'] : __( 'Standard', 'dame' );
+							$full_name       = Utils::format_lastname( (string) $it['participant_last_name'] ) . ' ' . Utils::format_firstname( (string) $it['participant_first_name'] );
+							$part_email      = trim( (string) ( $it['participant_email'] ?? '' ) );
+							$payer_email     = trim( (string) ( $it['payer_email'] ?? '' ) );
+							$payer_name      = trim( (string) ( $it['payer_first_name'] ?? '' ) . ' ' . (string) ( $it['payer_last_name'] ?? '' ) );
+							$effective_email = ! empty( $part_email ) ? $part_email : $payer_email;
+							$search_index    = $full_name . ' ' . ( $it['license_number'] ?? '' ) . ' ' . ( $it['club_name'] ?? '' ) . ' ' . $part_email . ' ' . $payer_email . ' ' . $payer_name;
+
+							$payer_title = '';
+							if ( ! empty( $payer_name ) ) {
+								/* translators: %s: payer name */
+								$payer_title = sprintf( __( 'Payeur : %s', 'dame' ), $payer_name );
+							} else {
+								$payer_title = __( 'Email du payeur', 'dame' );
+							}
 							?>
 							<tr class="dame-participant-row <?php echo $is_in ? 'is-checked-in' : ''; ?>"
 								data-item-id="<?php echo esc_attr( (string) $it['id'] ); ?>"
 								data-checked-in="<?php echo $is_in ? '1' : '0'; ?>"
 								data-tier="<?php echo esc_attr( $tier_val ); ?>"
 								data-name="<?php echo esc_attr( $full_name ); ?>"
+								data-email="<?php echo esc_attr( strtolower( $effective_email ) ); ?>"
 								data-elo="<?php echo esc_attr( (string) ( $it['elo'] ?? '0' ) ); ?>"
 								data-club="<?php echo esc_attr( (string) ( $it['club_name'] ?? '' ) ); ?>"
 								data-amount="<?php echo esc_attr( (string) ( $it['amount_cents'] ?? '0' ) ); ?>"
@@ -829,8 +845,21 @@ class Ticketing {
 								</td>
 								<td>
 									<strong><?php echo esc_html( $full_name ); ?></strong>
-									<?php if ( ! empty( $it['participant_email'] ) ) : ?>
-										<br><span style="color:#666; font-size:12px;"><?php echo esc_html( (string) $it['participant_email'] ); ?></span>
+								</td>
+								<td>
+									<?php if ( ! empty( $part_email ) ) : ?>
+										<a href="mailto:<?php echo esc_attr( $part_email ); ?>" style="text-decoration:none; color:inherit;">
+											<?php echo esc_html( $part_email ); ?>
+										</a>
+									<?php elseif ( ! empty( $payer_email ) ) : ?>
+										<a href="mailto:<?php echo esc_attr( $payer_email ); ?>" style="text-decoration:none; color:inherit;">
+											<?php echo esc_html( $payer_email ); ?>
+										</a>
+										<br><span style="color:#666; font-size:11px;" title="<?php echo esc_attr( $payer_title ); ?>">
+											(<?php esc_html_e( 'Payeur', 'dame' ); ?><?php echo ! empty( $payer_name ) ? ' : ' . esc_html( $payer_name ) : ''; ?>)
+										</span>
+									<?php else : ?>
+										<span style="color:#999;">—</span>
 									<?php endif; ?>
 								</td>
 								<td><?php echo esc_html( (string) ( $it['license_number'] ?? '—' ) ); ?></td>
@@ -853,7 +882,7 @@ class Ticketing {
 							</tr>
 						<?php endforeach; ?>
 						<tr id="dame-no-match-row" style="display:none;">
-							<td colspan="8" style="text-align:center; padding:15px; color:#666;">
+							<td colspan="9" style="text-align:center; padding:15px; color:#666;">
 								<?php esc_html_e( 'Aucun participant ne correspond aux critères de recherche et filtres actuels.', 'dame' ); ?>
 							</td>
 						</tr>

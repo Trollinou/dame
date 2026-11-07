@@ -174,10 +174,22 @@ class WebhookProcessor {
 
 			$ha_item_id = isset( $raw_item['id'] ) ? (int) $raw_item['id'] : null;
 
+			// Payer details: check item-level first, then order-level.
+			$item_payer       = is_array( $raw_item['payer'] ?? null ) ? $raw_item['payer'] : $payer;
+			$item_payer_first = trim( (string) ( $item_payer['firstName'] ?? $payer_first ) );
+			$item_payer_last  = trim( (string) ( $item_payer['lastName'] ?? $payer_last ) );
+			$item_payer_email = trim( (string) ( $item_payer['email'] ?? $payer_email ) );
+
+			// Order details at item level if present.
+			$item_order_id   = isset( $raw_item['order']['id'] ) ? (int) $raw_item['order']['id'] : $order_id;
+			$item_order_date = Utils::normalize_iso_datetime( isset( $raw_item['order']['date'] ) ? (string) $raw_item['order']['date'] : null ) ?? $order_date;
+			$item_status     = (string) ( $raw_item['state'] ?? $raw_item['status'] ?? $order_status );
+
 			// Participant details (fallback to payer if empty).
-			$part_first = trim( (string) ( $raw_item['user']['firstName'] ?? $payer_first ) );
-			$part_last  = trim( (string) ( $raw_item['user']['lastName'] ?? $payer_last ) );
-			$part_email = trim( (string) ( $raw_item['user']['email'] ?? $payer_email ) );
+			$raw_user   = is_array( $raw_item['user'] ?? null ) ? $raw_item['user'] : array();
+			$part_first = trim( (string) ( $raw_user['firstName'] ?? $item_payer_first ) );
+			$part_last  = trim( (string) ( $raw_user['lastName'] ?? $item_payer_last ) );
+			$part_email = trim( (string) ( $raw_user['email'] ?? $item_payer_email ) );
 
 			// Extract custom chess fields.
 			$custom_fields = $raw_item['customFields'] ?? array();
@@ -189,7 +201,7 @@ class WebhookProcessor {
 					'first_name'  => $part_first,
 					'last_name'   => $part_last,
 					'email'       => $part_email,
-					'payer_email' => $payer_email,
+					'payer_email' => $item_payer_email,
 					'license'     => $chess_data['license_number'],
 				)
 			);
@@ -207,20 +219,20 @@ class WebhookProcessor {
 			$item_record = array(
 				'campaign_id'                => $campaign_id,
 				'ha_item_id'                 => $ha_item_id,
-				'ha_order_id'                => $order_id,
+				'ha_order_id'                => $item_order_id,
 				'source'                     => 'helloasso',
-				'status'                     => $order_status,
+				'status'                     => $item_status,
 				'participant_first_name'     => $part_first,
 				'participant_last_name'      => $part_last,
 				'participant_email'          => $part_email,
 				'participant_birth_date'     => $final_birth,
-				'payer_first_name'           => $payer_first,
-				'payer_last_name'            => $payer_last,
-				'payer_email'                => $payer_email,
+				'payer_first_name'           => $item_payer_first,
+				'payer_last_name'            => $item_payer_last,
+				'payer_email'                => $item_payer_email,
 				'tier_name'                  => (string) ( $raw_item['name'] ?? '' ),
 				'amount_cents'               => $amount_cents,
 				'payment_method'             => 'HelloAsso',
-				'order_date'                 => $order_date,
+				'order_date'                 => $item_order_date,
 				'license_number'             => $final_license,
 				'fide_id'                    => $final_fide_id,
 				'elo'                        => $final_elo,
