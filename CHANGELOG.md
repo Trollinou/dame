@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.8.9] - 2026-11-07
+
 ### Mailing, Renvoi de Messages & Filtres Destinataires
 - **Réinitialisation Complète & Invalidation du Cache (`Admin\Actions\Message::handle_reset`)** :
   - Purge intégrale et déterministe de tous les marqueurs de réception `_dame_message_received` et dates d'envoi `_dame_message_{id}_sent_at` sur chaque adhérent et contact précédemment ciblé.

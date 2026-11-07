@@ -1,6 +1,6 @@
 {
   "name": "dame",
-  "version": "5.8.8",
+  "version": "5.8.9",
   "description": "Dossier Administratif des Membres Échiquéens",
   "types": "./src/types/index.ts",
   "main": "./src/types/index.ts",
