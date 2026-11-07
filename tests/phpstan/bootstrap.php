@@ -212,3 +212,30 @@ if ( ! function_exists( 'wp_date' ) ) {
 		return date( $format, $timestamp );
 	}
 }
+
+if ( ! function_exists( 'wp_json_encode' ) ) {
+	function wp_json_encode( mixed $data, int $options = 0, int $depth = 512 ): string|false {
+		return json_encode( $data, $options, $depth );
+	}
+}
+
+if ( ! function_exists( 'current_time' ) ) {
+	function current_time( string $type, int|bool $gmt = 0 ): int|string {
+		return 'timestamp' === $type ? time() : date( 'Y-m-d H:i:s' );
+	}
+}
+
+if ( ! function_exists( 'remove_accents' ) ) {
+	function remove_accents( string $string ): string {
+		$converted = iconv( 'UTF-8', 'ASCII//TRANSLIT//IGNORE', $string );
+		return false !== $converted ? $converted : $string;
+	}
+}
+
+if ( ! class_exists( 'WP_Query' ) ) {
+	class WP_Query {
+		public array $posts = array();
+		public function __construct( mixed $args = null ) {}
+		public function have_posts(): bool { return false; }
+	}
+}

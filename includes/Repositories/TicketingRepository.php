@@ -445,6 +445,40 @@ class TicketingRepository {
 	}
 
 	/**
+	 * Deletes an item by its HelloAsso item ID.
+	 *
+	 * @param int $ha_item_id HelloAsso item ID.
+	 * @return bool True if deleted, false otherwise.
+	 */
+	public function delete_item_by_ha_id( int $ha_item_id ): bool {
+		if ( $ha_item_id <= 0 ) {
+			return false;
+		}
+
+		$table = $this->get_items_table();
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$campaign_id = (int) $this->db->get_var(
+			$this->db->prepare( 'SELECT campaign_id FROM %i WHERE ha_item_id = %d LIMIT 1', $table, $ha_item_id )
+		);
+
+		if ( $campaign_id <= 0 ) {
+			return false;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$deleted = $this->db->delete(
+			$table,
+			array( 'ha_item_id' => $ha_item_id ),
+			array( '%d' )
+		);
+
+		wp_cache_delete( 'campaign_items_' . $campaign_id, self::CACHE_GROUP );
+		wp_cache_delete( 'campaign_stats_' . $campaign_id, self::CACHE_GROUP );
+
+		return false !== $deleted;
+	}
+
+	/**
 	 * Retrieves items belonging to a campaign, optionally filtered by checked_in, tier or multiple tiers.
 	 *
 	 * @param int                  $campaign_id Campaign ID.

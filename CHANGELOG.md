@@ -14,6 +14,7 @@
 - **Récupération des E-mails & Pagination API v5 (`Services\HelloAsso\WebhookProcessor`, `Services\HelloAsso\Synchronizer`)** :
   - **Détection des coordonnées payeur par article** : extraction de l'objet `$raw_item['payer']` renvoyé par l'endpoint `/items` d'HelloAsso (au lieu d'attendre uniquement un objet global de commande), permettant d'alimenter correctement `payer_email` en BDD et d'attribuer un e-mail de repli aux participants qui n'en ont pas.
   - **Gestion de la pagination complète** : implémentation d'une boucle parcourant `continuationToken` et `pageIndex` dans `sync_campaign_items()`, garantissant l'importation intégrale des campagnes dépassant 100 participants.
+  - **Filtrage des dons & pourboires annexes** : exclusion des lignes de type `Donation`, `Contribution`, `Bonus`, `Option` ou `Product` sur les formulaires d'événements/adhésions, évitant la création de faux participants fantômes (ex: don facultatif de 4 € au club). Nettoyage automatique en BDD (`delete_item_by_ha_id`) des lignes de don antérieures lors de la synchronisation.
 - **Dédoublonnage & Métadonnées Mailing (`Admin\Pages\Mailing\RecipientResolver`)** :
   - Évite les libellés en doublon dans la prévisualisation des destinataires lorsque l'e-mail du participant et celui du payeur sont identiques.
   - Attribution des prénom et nom réels du payeur lors de la personnalisation des messages qui lui sont adressés.

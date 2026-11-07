@@ -173,6 +173,16 @@ class WebhookProcessor {
 			}
 
 			$ha_item_id = isset( $raw_item['id'] ) ? (int) $raw_item['id'] : null;
+			$item_type  = strtolower( trim( (string) ( $raw_item['type'] ?? $raw_item['itemType'] ?? '' ) ) );
+
+			// Filter out extra non-registration items (donations, tips, options, products) on Event/Membership forms.
+			$is_non_participant = in_array( $item_type, array( 'donation', 'bonus', 'contribution', 'monthlydonation', 'monthlypayment', 'offlinedonation', 'option', 'product' ), true );
+			if ( $is_non_participant && 'donation' !== strtolower( $form_type ) ) {
+				if ( null !== $ha_item_id && $ha_item_id > 0 ) {
+					$this->repository->delete_item_by_ha_id( $ha_item_id );
+				}
+				continue;
+			}
 
 			// Payer details: check item-level first, then order-level.
 			$item_payer       = is_array( $raw_item['payer'] ?? null ) ? $raw_item['payer'] : $payer;
