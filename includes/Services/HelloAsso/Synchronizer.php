@@ -159,12 +159,17 @@ class Synchronizer {
 		$max_pages          = 20; // Safety guard: up to 2,000 items.
 
 		do {
-			$query_params = array(
-				'pageIndex' => $page_index,
-				'pageSize'  => 100,
-			);
+			// Mutually exclusive: when continuationToken is present, pageIndex MUST NOT be sent.
 			if ( ! empty( $continuation_token ) ) {
-				$query_params['continuationToken'] = $continuation_token;
+				$query_params = array(
+					'pageSize'          => 100,
+					'continuationToken' => $continuation_token,
+				);
+			} else {
+				$query_params = array(
+					'pageSize'  => 100,
+					'pageIndex' => $page_index,
+				);
 			}
 
 			$response = Client::get( $endpoint, $query_params );
@@ -197,7 +202,8 @@ class Synchronizer {
 				break;
 			}
 
-			if ( empty( $continuation_token ) && count( $items ) < 100 ) {
+			// If fewer items than pageSize returned, we reached the final page.
+			if ( count( $items ) < 100 ) {
 				break;
 			}
 		} while ( $page_index <= $max_pages );
