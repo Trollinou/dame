@@ -155,17 +155,17 @@ class FormRenderer {
 									<?php esc_html_e( 'Mode d\'envoi pour ce message déjà expédié :', 'dame' ); ?>
 								</p>
 								<label style="display: block; margin-bottom: 4px; cursor: pointer;">
-									<input type="radio" name="dame_send_mode" value="full" checked>
-									<strong><?php esc_html_e( 'Renvoi complet / Rappel', 'dame' ); ?></strong>
-									<span class="description" style="display: block; margin-left: 20px; font-size: 12px;">
-										<?php esc_html_e( 'Envoyer à l\'ensemble de la sélection (y compris ceux ayant déjà reçu le message).', 'dame' ); ?>
-									</span>
-								</label>
-								<label style="display: block; cursor: pointer;">
-									<input type="radio" name="dame_send_mode" value="incremental">
+									<input type="radio" name="dame_send_mode" value="incremental" checked>
 									<strong><?php esc_html_e( 'Envoi incrémental', 'dame' ); ?></strong>
 									<span class="description" style="display: block; margin-left: 20px; font-size: 12px;">
 										<?php esc_html_e( 'Envoyer uniquement aux nouveaux destinataires n\'ayant pas encore reçu ce message.', 'dame' ); ?>
+									</span>
+								</label>
+								<label style="display: block; cursor: pointer;">
+									<input type="radio" name="dame_send_mode" value="full">
+									<strong><?php esc_html_e( 'Renvoi complet / Rappel', 'dame' ); ?></strong>
+									<span class="description" style="display: block; margin-left: 20px; font-size: 12px;">
+										<?php esc_html_e( 'Envoyer à l\'ensemble de la sélection (y compris ceux ayant déjà reçu le message).', 'dame' ); ?>
 									</span>
 								</label>
 							</div>

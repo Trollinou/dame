@@ -11,8 +11,9 @@
   - Réinitialisation complète des enregistrements de suivi SQL dans `{$wpdb->prefix}dame_message_opens` et remise à zéro de tous les critères enregistrés (`_dame_ha_method`, `_dame_recipient_ha_campaigns`, `_dame_manual_ha_items`, priorité, auteur).
 - **Choix du Mode d'Envoi pour les Messages Déjà Expédiés (`Admin\Pages\Mailing\Processor`, `Admin\Pages\Mailing\FormRenderer`, `src/js/admin-mailing.ts`)** :
   - **Sélecteur de mode d'envoi dédié** affiché dynamiquement dès la sélection d'un message ayant le statut `sent` :
-    - 🔘 **Renvoi complet / Rappel** *(par défaut)* : expédie le message à 100% de la sélection actuelle (adhérents, contacts, participants HelloAsso), y compris à ceux l'ayant déjà reçu lors d'une campagne précédente.
-    - 🔘 **Envoi incrémental** : filtre automatiquement les destinataires pour n'expédier qu'aux nouveaux contacts / adhérents n'ayant pas encore reçu le message.
+    - 🔘 **Envoi incrémental** *(par défaut)* : filtre automatiquement les destinataires pour n'expédier qu'aux nouveaux contacts / adhérents n'ayant pas encore reçu le message.
+    - 🔘 **Renvoi complet / Rappel** : expédie le message à 100% de la sélection actuelle (adhérents, contacts, participants HelloAsso), y compris à ceux l'ayant déjà reçu lors d'une campagne précédente.
+  - **Sécurité anti-erreur** : affichage d'une boîte de dialogue de confirmation native lors de la validation du formulaire si le mode *« Renvoi complet / Rappel »* est sélectionné, évitant tout renvoi massif involontaire.
 - **Résolution Déterministe des Destinataires (`Admin\Pages\Mailing\RecipientResolver`)** :
   - Dans `filter_already_received` et `filter_already_sent_emails` : court-circuit immédiat si la table de suivi `dame_message_opens` ne contient aucun enregistrement pour le message (message neuf ou réinitialisé), garantissant qu'aucun reliquat de métadonnée orpheline ne bloque l'envoi.
   - Prévention des doublons de métadonnées `_dame_message_received` lors des renvois multiples.

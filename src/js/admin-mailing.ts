@@ -703,6 +703,29 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		});
 	}
 
+	// 5. Confirmation check if full resend is chosen
+	const mailingForm = document.querySelector<HTMLFormElement>(
+		'form.dame-mailing-form-wrap'
+	);
+	if (mailingForm) {
+		mailingForm.addEventListener('submit', (e: SubmitEvent): void => {
+			const fullModeRadio = document.querySelector<HTMLInputElement>(
+				'input[name="dame_send_mode"][value="full"]:checked'
+			);
+			const isSendModeVisible =
+				sendModeWrap && sendModeWrap.style.display !== 'none';
+
+			if (isSendModeVisible && fullModeRadio) {
+				const confirmed = confirm(
+					"Attention : vous avez sélectionné le mode « Renvoi complet / Rappel ».\n\nLe message sera réexpédié à l'ensemble des destinataires de la sélection, y compris ceux l'ayant déjà reçu lors des précédents envois.\n\nSouhaitez-vous vraiment confirmer ce renvoi complet ?"
+				);
+				if (!confirmed) {
+					e.preventDefault();
+				}
+			}
+		});
+	}
+
 	// Initialize sticky bar and message status on load
 	updateStickyInfo();
 	updateMessageStatus();

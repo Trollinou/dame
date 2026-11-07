@@ -104,7 +104,7 @@ class Processor {
 
 		$send_mode = isset( $_POST['dame_send_mode'] ) && in_array( $_POST['dame_send_mode'], array( 'full', 'incremental' ), true )
 			? sanitize_key( (string) $_POST['dame_send_mode'] )
-			: 'full';
+			: 'incremental';
 
 		// Incremental filtering for group selections when incremental mode is chosen.
 		if ( 'incremental' === $send_mode ) {
