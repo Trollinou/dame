@@ -608,6 +608,9 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	const warningDiv = document.getElementById(
 		'dame_message_warning'
 	) as HTMLElement | null;
+	const sendModeWrap = document.getElementById(
+		'dame_send_mode_wrap'
+	) as HTMLElement | null;
 	const stickyMessageName = document.getElementById(
 		'dame_sticky_message_name'
 	) as HTMLElement | null;
@@ -617,6 +620,53 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	const submitBtn = document.getElementById(
 		'dame_submit_mailing_btn'
 	) as HTMLButtonElement | null;
+
+	function updateMessageStatus(): void {
+		if (!messageSelect) {
+			return;
+		}
+
+		const selectedOption =
+			messageSelect.options[messageSelect.selectedIndex];
+		const status = selectedOption
+			? selectedOption.getAttribute('data-status')
+			: null;
+
+		if (status === 'scheduled') {
+			if (warningDiv) {
+				warningDiv.style.display = 'block';
+				warningDiv.style.color = '#d63638';
+				warningDiv.textContent =
+					"Ce message est actuellement en cours d'envoi. Veuillez attendre la fin du traitement.";
+			}
+			if (sendModeWrap) {
+				sendModeWrap.style.display = 'none';
+			}
+			if (submitBtn) {
+				submitBtn.disabled = true;
+			}
+		} else if (status === 'sent') {
+			if (warningDiv) {
+				warningDiv.style.display = 'none';
+			}
+			if (sendModeWrap) {
+				sendModeWrap.style.display = 'block';
+			}
+			if (submitBtn) {
+				submitBtn.disabled = false;
+			}
+		} else {
+			if (warningDiv) {
+				warningDiv.style.display = 'none';
+			}
+			if (sendModeWrap) {
+				sendModeWrap.style.display = 'none';
+			}
+			if (submitBtn) {
+				submitBtn.disabled = false;
+			}
+		}
+	}
 
 	function updateStickyInfo(): void {
 		if (messageSelect && stickyMessageName) {
@@ -643,37 +693,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 	if (messageSelect) {
 		messageSelect.addEventListener('change', (): void => {
 			updateStickyInfo();
-
-			const selectedOption =
-				messageSelect.options[messageSelect.selectedIndex];
-			const status = selectedOption
-				? selectedOption.getAttribute('data-status')
-				: null;
-
-			if (warningDiv) {
-				if (status === 'scheduled') {
-					warningDiv.style.display = 'block';
-					warningDiv.style.color = '#d63638';
-					warningDiv.textContent =
-						"Ce message est actuellement en cours d'envoi. Veuillez attendre la fin du traitement.";
-					if (submitBtn) {
-						submitBtn.disabled = true;
-					}
-				} else if (status === 'sent') {
-					warningDiv.style.display = 'block';
-					warningDiv.style.color = '#2271b1';
-					warningDiv.textContent =
-						"Ce message a déjà été expédié. Tout nouvel envoi sera incrémental : les personnes l'ayant déjà reçu seront automatiquement ignorées.";
-					if (submitBtn) {
-						submitBtn.disabled = false;
-					}
-				} else {
-					warningDiv.style.display = 'none';
-					if (submitBtn) {
-						submitBtn.disabled = false;
-					}
-				}
-			}
+			updateMessageStatus();
 		});
 	}
 
@@ -683,6 +703,7 @@ document.addEventListener('DOMContentLoaded', (): void => {
 		});
 	}
 
-	// Initialize sticky bar on load
+	// Initialize sticky bar and message status on load
 	updateStickyInfo();
+	updateMessageStatus();
 });

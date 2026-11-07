@@ -198,10 +198,29 @@ class RecipientResolver {
 				}
 
 				if ( ! empty( $target_depts ) ) {
+					// Tolérance sur les formats de départements (avec ou sans zéro initial).
+					$dept_variants = array();
+					foreach ( $target_depts as $td ) {
+						$dept_variants[] = (string) $td;
+						$dept_variants[] = ltrim( (string) $td, '0' );
+						if ( 1 === strlen( (string) $td ) ) {
+							$dept_variants[] = '0' . $td;
+						}
+					}
+					$dept_variants = array_values( array_unique( array_filter( $dept_variants ) ) );
+
 					$query_args['meta_query'] = array(
 						array(
 							'key'     => '_dame_contact_department',
-							'value'   => $target_depts,
+							'value'   => $dept_variants,
+							'compare' => 'IN',
+						),
+					);
+				} elseif ( ! empty( $regions ) ) {
+					$query_args['meta_query'] = array(
+						array(
+							'key'     => '_dame_contact_region',
+							'value'   => $regions,
 							'compare' => 'IN',
 						),
 					);
@@ -258,13 +277,19 @@ class RecipientResolver {
 
 		// 1. Get all recipient IDs that already received or are scheduled for this message in SQL tracking table.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$existing_ids     = $wpdb->get_col(
+		$existing_ids = $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT DISTINCT recipient_id FROM {$table_tracking} WHERE message_id = %d AND recipient_id > 0", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$message_id
 			)
 		);
-		$existing_ids_map = ! empty( $existing_ids ) ? array_fill_keys( array_map( 'intval', $existing_ids ), true ) : array();
+
+		// If tracking table has no records for this message, it has either never been sent or has been reset.
+		if ( empty( $existing_ids ) ) {
+			return $ids;
+		}
+
+		$existing_ids_map = array_fill_keys( array_map( 'intval', $existing_ids ), true );
 
 		return array_values(
 			array_filter(
@@ -598,9 +623,12 @@ class RecipientResolver {
 				$sent_at
 			);
 
-			// Maintain postmeta receipt markers.
+			// Maintain postmeta receipt markers without duplicates.
 			if ( $info['id'] > 0 ) {
-				add_post_meta( $info['id'], '_dame_message_received', (string) $message_id );
+				$already_marked = get_post_meta( $info['id'], '_dame_message_received', false );
+				if ( ! in_array( (string) $message_id, array_map( 'strval', (array) $already_marked ), true ) ) {
+					add_post_meta( $info['id'], '_dame_message_received', (string) $message_id );
+				}
 				update_post_meta( $info['id'], "_dame_message_{$message_id}_sent_at", $sent_at );
 				wp_cache_delete( $info['id'], 'post_meta' );
 			}

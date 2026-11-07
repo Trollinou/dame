@@ -260,8 +260,11 @@ class Message {
 		// 1. Reset message metadata.
 		update_post_meta( $post_id, '_dame_message_status', 'publish' );
 		update_post_meta( $post_id, '_dame_message_recipients_count', 0 );
+		delete_post_meta( $post_id, '_dame_sent_date' );
+		delete_post_meta( $post_id, '_dame_sending_priority' );
+		delete_post_meta( $post_id, '_dame_sending_author' );
 
-		// Clear selection criteria.
+		// Clear selection criteria (Adhérents, Contacts, HelloAsso).
 		delete_post_meta( $post_id, '_dame_recipient_method' );
 		delete_post_meta( $post_id, '_dame_recipient_seasons' );
 		delete_post_meta( $post_id, '_dame_recipient_groups_saisonnier' );
@@ -274,29 +277,70 @@ class Message {
 		delete_post_meta( $post_id, '_dame_manual_contacts' );
 		delete_post_meta( $post_id, '_dame_adherent_method' );
 		delete_post_meta( $post_id, '_dame_contact_method' );
+		delete_post_meta( $post_id, '_dame_ha_method' );
+		delete_post_meta( $post_id, '_dame_recipient_ha_campaigns' );
+		delete_post_meta( $post_id, '_dame_manual_ha_items' );
 
-		// 2. Purge global recipients history for this message (on adherents and contacts).
+		clean_post_cache( $post_id );
+
+		// 2. Identify all recipient IDs that received this message and invalidate their object cache.
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->delete(
-			$wpdb->postmeta,
-			array(
-				'meta_key'   => '_dame_message_received',
-				'meta_value' => (string) $post_id,
-			),
-			array( '%s', '%s' )
-		);
-
-		// Also purge the individual send dates.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->delete(
-			$wpdb->postmeta,
-			array( 'meta_key' => "_dame_message_{$post_id}_sent_at" ),
-			array( '%s' )
-		);
-
-		// 3. Purge tracking data (opens).
 		$table_opens = $wpdb->prefix . 'dame_message_opens';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$postmeta_ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_dame_message_received' AND (meta_value = %s OR meta_value = %d)",
+				(string) $post_id,
+				$post_id
+			)
+		);
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$tracking_ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT recipient_id FROM {$table_opens} WHERE message_id = %d AND recipient_id > 0", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$post_id
+			)
+		);
+
+		$all_recipient_ids = array_unique(
+			array_filter(
+				array_merge(
+					array_map( 'intval', (array) $postmeta_ids ),
+					array_map( 'intval', (array) $tracking_ids )
+				),
+				fn( int $id ): bool => $id > 0
+			)
+		);
+
+		foreach ( $all_recipient_ids as $rid ) {
+			delete_post_meta( $rid, '_dame_message_received', (string) $post_id );
+			delete_post_meta( $rid, '_dame_message_received', $post_id );
+			delete_post_meta( $rid, "_dame_message_{$post_id}_sent_at" );
+			clean_post_cache( $rid );
+			wp_cache_delete( $rid, 'post_meta' );
+		}
+
+		// Direct SQL cleanup in postmeta as a safety net.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->postmeta} WHERE meta_key = '_dame_message_received' AND (meta_value = %s OR meta_value = %d)",
+				(string) $post_id,
+				$post_id
+			)
+		);
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s",
+				"_dame_message_{$post_id}_sent_at"
+			)
+		);
+
+		// 3. Purge tracking data (opens and logs).
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->delete(
 			$table_opens,

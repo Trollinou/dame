@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Mailing, Renvoi de Messages & Filtres Destinataires
+- **Réinitialisation Complète & Invalidation du Cache (`Admin\Actions\Message::handle_reset`)** :
+  - Purge intégrale et déterministe de tous les marqueurs de réception `_dame_message_received` et dates d'envoi `_dame_message_{id}_sent_at` sur chaque adhérent et contact précédemment ciblé.
+  - Invalidation immédiate du cache WordPress postmeta (`clean_post_cache`, `wp_cache_delete`) pour empêcher la persistance en mémoire des anciens marqueurs lors d'un réenvoi.
+  - Réinitialisation complète des enregistrements de suivi SQL dans `{$wpdb->prefix}dame_message_opens` et remise à zéro de tous les critères enregistrés (`_dame_ha_method`, `_dame_recipient_ha_campaigns`, `_dame_manual_ha_items`, priorité, auteur).
+- **Choix du Mode d'Envoi pour les Messages Déjà Expédiés (`Admin\Pages\Mailing\Processor`, `Admin\Pages\Mailing\FormRenderer`, `src/js/admin-mailing.ts`)** :
+  - **Sélecteur de mode d'envoi dédié** affiché dynamiquement dès la sélection d'un message ayant le statut `sent` :
+    - 🔘 **Renvoi complet / Rappel** *(par défaut)* : expédie le message à 100% de la sélection actuelle (adhérents, contacts, participants HelloAsso), y compris à ceux l'ayant déjà reçu lors d'une campagne précédente.
+    - 🔘 **Envoi incrémental** : filtre automatiquement les destinataires pour n'expédier qu'aux nouveaux contacts / adhérents n'ayant pas encore reçu le message.
+- **Résolution Déterministe des Destinataires (`Admin\Pages\Mailing\RecipientResolver`)** :
+  - Dans `filter_already_received` et `filter_already_sent_emails` : court-circuit immédiat si la table de suivi `dame_message_opens` ne contient aucun enregistrement pour le message (message neuf ou réinitialisé), garantissant qu'aucun reliquat de métadonnée orpheline ne bloque l'envoi.
+  - Prévention des doublons de métadonnées `_dame_message_received` lors des renvois multiples.
+  - Conformité stricte du filtrage géographique des contacts : lorsque des départements sont sélectionnés, la requête SQL cible exclusivement `_dame_contact_department IN (...)` avec tolérance sur le format (`01` / `1`) et n'applique aucune clause d'élargissement régional `OR _dame_contact_region`, respectant fidèlement les départements décochés par l'utilisateur.
+
 ## [5.8.8] - 2026-11-05
 
 ### Association Événements Agenda ⟷ Appels à Bénévoles

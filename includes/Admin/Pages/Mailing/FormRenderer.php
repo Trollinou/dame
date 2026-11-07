@@ -150,6 +150,25 @@ class FormRenderer {
 							<div id="dame_message_warning" style="color: #d63638; display: none; margin-top: 5px;">
 								<?php esc_html_e( 'Ce message a déjà été envoyé. Veuillez le dupliquer pour faire un nouvel envoi.', 'dame' ); ?>
 							</div>
+							<div id="dame_send_mode_wrap" style="display: none; margin-top: 10px; padding: 10px 12px; background: #f0f6fc; border-left: 4px solid #2271b1; border-radius: 2px;">
+								<p style="margin: 0 0 6px 0; font-weight: 600; color: #1d2327;">
+									<?php esc_html_e( 'Mode d\'envoi pour ce message déjà expédié :', 'dame' ); ?>
+								</p>
+								<label style="display: block; margin-bottom: 4px; cursor: pointer;">
+									<input type="radio" name="dame_send_mode" value="full" checked>
+									<strong><?php esc_html_e( 'Renvoi complet / Rappel', 'dame' ); ?></strong>
+									<span class="description" style="display: block; margin-left: 20px; font-size: 12px;">
+										<?php esc_html_e( 'Envoyer à l\'ensemble de la sélection (y compris ceux ayant déjà reçu le message).', 'dame' ); ?>
+									</span>
+								</label>
+								<label style="display: block; cursor: pointer;">
+									<input type="radio" name="dame_send_mode" value="incremental">
+									<strong><?php esc_html_e( 'Envoi incrémental', 'dame' ); ?></strong>
+									<span class="description" style="display: block; margin-left: 20px; font-size: 12px;">
+										<?php esc_html_e( 'Envoyer uniquement aux nouveaux destinataires n\'ayant pas encore reçu ce message.', 'dame' ); ?>
+									</span>
+								</label>
+							</div>
 						</div>
 
 						<!-- Ligne 1, Col 2 : Pièce jointe -->

@@ -102,12 +102,18 @@ class Processor {
 			$save_state_and_redirect( 'no_recipients' );
 		}
 
-		// Incremental filtering for group selections.
-		if ( 'manual' !== $adherent_method ) {
-			$adherent_ids = $resolver->filter_already_received( $adherent_ids, $message_id );
-		}
-		if ( 'manual' !== $contact_method ) {
-			$contact_ids = $resolver->filter_already_received( $contact_ids, $message_id );
+		$send_mode = isset( $_POST['dame_send_mode'] ) && in_array( $_POST['dame_send_mode'], array( 'full', 'incremental' ), true )
+			? sanitize_key( (string) $_POST['dame_send_mode'] )
+			: 'full';
+
+		// Incremental filtering for group selections when incremental mode is chosen.
+		if ( 'incremental' === $send_mode ) {
+			if ( 'manual' !== $adherent_method ) {
+				$adherent_ids = $resolver->filter_already_received( $adherent_ids, $message_id );
+			}
+			if ( 'manual' !== $contact_method ) {
+				$contact_ids = $resolver->filter_already_received( $contact_ids, $message_id );
+			}
 		}
 
 		$message_post = get_post( $message_id );
@@ -123,8 +129,8 @@ class Processor {
 		// Email collection and deduplication (conditioned by personalization tags).
 		$email_data = $resolver->collect_email_data( $adherent_ids, $contact_ids, $ha_item_ids, $is_personalized );
 
-		// For group selections, also filter out any emails that were already sent/scheduled for this message.
-		if ( 'manual' !== $adherent_method && 'manual' !== $contact_method && 'manual' !== $ha_method ) {
+		// For group selections, filter out emails already sent if incremental mode is chosen.
+		if ( 'incremental' === $send_mode && 'manual' !== $adherent_method && 'manual' !== $contact_method && 'manual' !== $ha_method ) {
 			$email_data = $resolver->filter_already_sent_emails( $email_data, $message_id );
 		}
 

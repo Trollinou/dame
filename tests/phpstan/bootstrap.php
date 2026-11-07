@@ -84,6 +84,65 @@ if ( ! defined( 'DAY_IN_SECONDS' ) ) {
 	define( 'DAY_IN_SECONDS', 86400 );
 }
 
+if ( ! defined( 'ARRAY_A' ) ) {
+	define( 'ARRAY_A', 'ARRAY_A' );
+}
+if ( ! defined( 'OBJECT' ) ) {
+	define( 'OBJECT', 'OBJECT' );
+}
+
+// Global WordPress Postmeta mocks for unit tests.
+global $dame_test_postmeta;
+$dame_test_postmeta = array();
+
+if ( ! function_exists( 'get_post_meta' ) ) {
+	function get_post_meta( int $post_id, string $key = '', bool $single = false ): mixed {
+		global $dame_test_postmeta;
+		if ( '' === $key ) {
+			return $dame_test_postmeta[ $post_id ] ?? array();
+		}
+		$values = $dame_test_postmeta[ $post_id ][ $key ] ?? array();
+		if ( $single ) {
+			return $values[0] ?? '';
+		}
+		return $values;
+	}
+}
+
+if ( ! function_exists( 'update_post_meta' ) ) {
+	function update_post_meta( int $post_id, string $key, mixed $value, mixed $prev_value = '' ): bool {
+		global $dame_test_postmeta;
+		$dame_test_postmeta[ $post_id ][ $key ] = array( $value );
+		return true;
+	}
+}
+
+if ( ! function_exists( 'add_post_meta' ) ) {
+	function add_post_meta( int $post_id, string $key, mixed $value, bool $unique = false ): bool {
+		global $dame_test_postmeta;
+		if ( ! isset( $dame_test_postmeta[ $post_id ][ $key ] ) ) {
+			$dame_test_postmeta[ $post_id ][ $key ] = array();
+		}
+		if ( $unique && ! empty( $dame_test_postmeta[ $post_id ][ $key ] ) ) {
+			return false;
+		}
+		$dame_test_postmeta[ $post_id ][ $key ][] = $value;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'delete_post_meta' ) ) {
+	function delete_post_meta( int $post_id, string $key, mixed $value = '' ): bool {
+		global $dame_test_postmeta;
+		if ( '' === $value ) {
+			unset( $dame_test_postmeta[ $post_id ][ $key ] );
+		} elseif ( isset( $dame_test_postmeta[ $post_id ][ $key ] ) ) {
+			$dame_test_postmeta[ $post_id ][ $key ] = array_values( array_filter( $dame_test_postmeta[ $post_id ][ $key ], fn( $v ) => $v !== $value ) );
+		}
+		return true;
+	}
+}
+
 // Global WordPress Options & REST mocks for unit tests.
 global $dame_test_options;
 $dame_test_options = array();
