@@ -33,6 +33,7 @@ class Adherent {
 		add_action( 'load-edit.php', array( $this, 'remove_date_filter' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'add_filters' ) );
 		add_action( 'pre_get_posts', array( $this, 'filter_query' ) );
+		add_filter( 'posts_where', array( $this, 'filter_refus_mailing_where' ), 10, 2 );
 
 		// Search & Actions.
 		add_filter( 'posts_search', array( $this, 'extend_search' ), 10, 2 );
@@ -109,8 +110,26 @@ class Adherent {
 				break;
 
 			case 'dame_email':
-				$email = get_post_meta( $post_id, '_dame_email', true );
-				echo esc_html( $email );
+				$email       = (string) get_post_meta( $post_id, '_dame_email', true );
+				$email_refus = ! empty( trim( $email ) ) && '1' === get_post_meta( $post_id, '_dame_email_refuses_comms', true );
+				$rep1_email  = (string) get_post_meta( $post_id, '_dame_legal_rep_1_email', true );
+				$rep1_refus  = ! empty( trim( $rep1_email ) ) && '1' === get_post_meta( $post_id, '_dame_legal_rep_1_email_refuses_comms', true );
+				$rep2_email  = (string) get_post_meta( $post_id, '_dame_legal_rep_2_email', true );
+				$rep2_refus  = ! empty( trim( $rep2_email ) ) && '1' === get_post_meta( $post_id, '_dame_legal_rep_2_email_refuses_comms', true );
+				$rep_refus   = $rep1_refus || $rep2_refus;
+
+				$output = ! empty( $email ) ? esc_html( $email ) : ( $rep_refus ? '—' : '' );
+
+				if ( $email_refus && $rep_refus ) {
+					$output .= ' <span class="dame-status-badge dame-status-badge--refused" title="' . esc_attr__( 'L\'adhérent et au moins un représentant légal refusent les communications.', 'dame' ) . '">' . esc_html__( 'Refus mailing & rep.', 'dame' ) . '</span>';
+				} elseif ( $email_refus ) {
+					$output .= ' <span class="dame-status-badge dame-status-badge--refused" title="' . esc_attr__( 'L\'adhérent refuse les communications.', 'dame' ) . '">' . esc_html__( 'Refus mailing', 'dame' ) . '</span>';
+				} elseif ( $rep_refus ) {
+					$output .= ' <span class="dame-status-badge dame-status-badge--refused" title="' . esc_attr__( 'Au moins un représentant légal refuse les communications.', 'dame' ) . '">' . esc_html__( 'Refus rep. légal', 'dame' ) . '</span>';
+				}
+
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output contains escaped string and HTML badges.
+				echo $output;
 				break;
 
 			case 'dame_phone':
@@ -290,7 +309,7 @@ class Adherent {
 			// Age Category filter.
 			$age_categories = \DAME\Core\Utils::get_all_age_categories();
 			if ( ! empty( $age_categories ) ) {
-				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin filter parameter.
 				$current_age_category = isset( $_GET['dame_age_category_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_age_category_filter'] ) ) : '';
 				?>
 				<select name="dame_age_category_filter">
@@ -301,6 +320,17 @@ class Adherent {
 				</select>
 				<?php
 			}
+
+			// Mailing refusal filter.
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin filter parameter.
+			$current_refus = isset( $_GET['dame_refus_mailing_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_refus_mailing_filter'] ) ) : '';
+			?>
+			<select name="dame_refus_mailing_filter">
+				<option value=""><?php esc_html_e( 'Tous les consentements mailing', 'dame' ); ?></option>
+				<option value="refused" <?php selected( 'refused', $current_refus ); ?>><?php esc_html_e( 'Avec refus mailing', 'dame' ); ?></option>
+				<option value="accepted" <?php selected( 'accepted', $current_refus ); ?>><?php esc_html_e( 'Sans refus mailing', 'dame' ); ?></option>
+			</select>
+			<?php
 		}
 	}
 
@@ -520,6 +550,49 @@ class Adherent {
 		}
 
 		return $search;
+	}
+
+	/**
+	 * Filters the Adherent CPT query based on mailing refusal status.
+	 *
+	 * @param string   $where The WHERE clause of the query.
+	 * @param WP_Query $query The WP_Query instance.
+	 * @return string The modified WHERE clause.
+	 */
+	public function filter_refus_mailing_where( string $where, WP_Query $query ): string {
+		global $wpdb, $pagenow;
+
+		if ( ! is_admin() || 'edit.php' !== $pagenow || ! $query->is_main_query() || 'adherent' !== $query->get( 'post_type' ) ) {
+			return $where;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin filter parameter.
+		$refus_filter = isset( $_GET['dame_refus_mailing_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['dame_refus_mailing_filter'] ) ) : '';
+
+		if ( 'refused' !== $refus_filter && 'accepted' !== $refus_filter ) {
+			return $where;
+		}
+
+		$exists_subquery = "EXISTS (
+			SELECT 1 FROM {$wpdb->postmeta} AS pm_refus
+			INNER JOIN {$wpdb->postmeta} AS pm_email ON pm_email.post_id = pm_refus.post_id
+			WHERE pm_refus.post_id = {$wpdb->posts}.ID
+			AND (
+				(pm_refus.meta_key = '_dame_email_refuses_comms' AND pm_refus.meta_value = '1' AND pm_email.meta_key = '_dame_email' AND TRIM(pm_email.meta_value) != '')
+				OR
+				(pm_refus.meta_key = '_dame_legal_rep_1_email_refuses_comms' AND pm_refus.meta_value = '1' AND pm_email.meta_key = '_dame_legal_rep_1_email' AND TRIM(pm_email.meta_value) != '')
+				OR
+				(pm_refus.meta_key = '_dame_legal_rep_2_email_refuses_comms' AND pm_refus.meta_value = '1' AND pm_email.meta_key = '_dame_legal_rep_2_email' AND TRIM(pm_email.meta_value) != '')
+			)
+		)";
+
+		if ( 'refused' === $refus_filter ) {
+			$where .= " AND ({$exists_subquery})";
+		} elseif ( 'accepted' === $refus_filter ) {
+			$where .= " AND NOT ({$exists_subquery})";
+		}
+
+		return $where;
 	}
 
 	/**

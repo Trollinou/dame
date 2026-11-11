@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## [5.8.11] - 2026-11-11
+
+### Filtre & Visibilité des Refus Mailing Adhérents
+- **Filtre de Consentement Mailing (`Admin\Columns\Adherent`)** :
+  - **Menu déroulant dédié** dans la barre de filtrage native de la liste des adhérents (`edit.php?post_type=adherent`) avec 3 options :
+    - *Tous les consentements mailing* (par défaut).
+    - *Avec refus mailing* : sélectionne les adhérents ayant au moins une adresse e-mail renseignée et marquée en refus (soit l'adhérent lui-même, soit le représentant légal 1, soit le représentant légal 2).
+    - *Sans refus mailing* : exclut strictement tous les adhérents ayant au moins un refus effectif (conserve tous les autres, y compris ceux sans e-mail).
+  - **Sous-requête `EXISTS` optimisée (`posts_where`)** :
+    - Évalue conjointement la présence d'une adresse e-mail non vide et le flag de refus pour l'adhérent (`_dame_email` / `_dame_email_refuses_comms`) et ses représentants légaux (`_dame_legal_rep_{1,2}_email` / `_dame_legal_rep_{1,2}_email_refuses_comms`).
+    - Compatible avec la pagination et combinable sans conflit avec les autres filtres (groupe, saison, civilité, catégorie d'âge, recherche).
+- **Indicateurs Visuels dans la Colonne Email (`Admin\Columns\Adherent`, `src/scss/admin/_reports.scss`)** :
+  - Conservation de l'adresse principale de l'adhérent (ou tiret `—` si absente).
+  - Badges d'état stylisés (`.dame-status-badge--refused`) avec infobulle contextuelle :
+    - `Refus mailing` si l'e-mail de l'adhérent est en refus.
+    - `Refus rep. légal` si un représentant légal est en refus.
+    - `Refus mailing & rep.` si les deux types sont en refus.
+
 ## [5.8.10] - 2026-11-07
 
 ### Billetterie HelloAsso, Synchronisation & Résolution Mailing

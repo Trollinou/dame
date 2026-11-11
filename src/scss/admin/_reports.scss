@@ -37,6 +37,16 @@
     &--error {
         color: $dame-admin-danger;
     }
+
+    &--refused {
+        background-color: #fcf0f1;
+        color: $dame-admin-danger;
+        border: 1px solid rgba(214, 54, 56, 0.2);
+        font-size: 0.82em;
+        margin-left: 4px;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
 }
 
 .dame-action-reset-send {

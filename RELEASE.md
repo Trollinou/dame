@@ -1,10 +1,24 @@
-# Release Notes — DAME (v5.8.10)
+# Release Notes — DAME (v5.8.11)
 
-**Date :** 7 novembre 2026
+**Date :** 11 novembre 2026
 
 ## 🚀 Changements Majeurs
 
-### 1. Billetterie HelloAsso : Colonne Email Dédiée & Repli Payeur
+### 1. Filtre & Visibilité des Refus Mailing Adhérents
+- **Nouveau Filtre dans la Liste des Adhérents (`edit.php?post_type=adherent`)** :
+  - Sélecteur de consentement mailing intégré dans la barre d'outils native de l'écran d'administration.
+  - Options de filtrage :
+    - *Tous les consentements mailing* (par défaut).
+    - *Avec refus mailing* (au moins une adresse e-mail renseignée et marquée en refus, adhérent ou représentant légal).
+    - *Sans refus mailing* (exclusion stricte de tout refus, conservation de tous les autres adhérents).
+- **Indicateurs Visuels Dédiés dans la Colonne « Email »** :
+  - Affichage de l'e-mail principal avec badges explicites : `Refus mailing`, `Refus rep. légal` ou `Refus mailing & rep.`.
+  - Infobulle informative au survol détaillant l'origine du refus.
+- **Performance & Robustesse SQL** :
+  - Requête basée sur une sous-requête corrélée `EXISTS` / `NOT EXISTS` sur `posts_where`.
+  - Intégration transparente avec les filtres taxonomiques, de métadonnées et la pagination WordPress.
+
+### 2. Billetterie HelloAsso : Colonne Email Dédiée & Repli Payeur
 - **Nouvelle colonne « Email » dans l'administration** :
   - Intégration d'une colonne Email triable et recherchable sur le tableau de bord des participants d'une campagne (`#dame-ticketing-table`).
   - Priorise l'e-mail propre du participant lorsqu'il est renseigné.
@@ -67,7 +81,7 @@
 
 ---
 
-# Release Notes — DAME v5.8.10
+# Release Notes — DAME v5.8.11
 
 **Date :** 29 octobre 2026
 
