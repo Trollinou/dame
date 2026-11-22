@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.9.0] - 2026-11-22
+
 ### Synchronisation Saisonnière des Rôles PWA & Règle FFE au 30 Septembre
 - **Service Centralisé de Synchronisation (`Services\Membership_Role_Sync`)** :
   - Promotion et rétrogradation automatiques du rôle WordPress (`membre` ↔ `subscriber`) en fonction des adhésions actives (`dame_saison_adhesion`) sur les saisons valides retournées par `Season_Service::get_valid_membership_season_ids()`.

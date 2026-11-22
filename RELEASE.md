@@ -1,10 +1,23 @@
-# Release Notes — DAME (v5.8.11)
+# Release Notes — DAME (v5.9.0)
 
-**Date :** 11 novembre 2026
+**Date :** 22 novembre 2026
 
 ## 🚀 Changements Majeurs
 
-### 1. Filtre & Visibilité des Refus Mailing Adhérents
+### 1. Synchronisation Saisonnière des Rôles PWA & Règle FFE au 30 Septembre
+- **Gestion Automatique des Rôles (`membre` ↔ `subscriber`) (`Services\Membership_Role_Sync`)** :
+  - Promotion et rétrogradation automatiques en fonction des adhésions actives (`dame_saison_adhesion`) sur les saisons valides retournées par `Season_Service::get_valid_membership_season_ids()`.
+  - Synchronisation en temps réel via les hooks `set_object_terms`, `added_post_meta` et `updated_post_meta` (e-mails adhérent et représentants légaux).
+  - Gestion native des comptes multi-adhérents (parents/responsables légaux) et protection stricte des rôles privilégiés (`administrator`, `editor`, `staff`, `entraineur`) ainsi que des comptes non vérifiés.
+- **Tâche Cron Quotidienne & Action Manuelle (`Core\Cron`, `Admin\Settings\Tabs\Saisons`)** :
+  - Exécution quotidienne automatique (`dame_membership_role_sync_event` à `03:00`) assurant la bascule le **1er octobre**.
+  - Bouton manuel *« Synchroniser les rôles Membre / Abonné »* dans **Réglages > Saisons**.
+- **Inscription REST (`API\REST\Registration`)** :
+  - Passage en `membre` à la validation du jeton conditionné à une adhésion active (sinon maintien en `subscriber` vérifié jusqu'à la prise de licence).
+- **Alignement FFE au 30 Septembre (`Services\Season_Service`, `Services\Birthday`)** :
+  - Fenêtre de chevauchement annuelle ajustée du **1er juillet au 30 septembre** (`07-01` → `09-30`) et date d'expiration au **30 septembre 23:59:59** (incluant les endpoints `/dame/v1/birthdays/today` et `/dame/v1/birthdays/upcoming`).
+
+### 2. Filtre & Visibilité des Refus Mailing Adhérents
 - **Nouveau Filtre dans la Liste des Adhérents (`edit.php?post_type=adherent`)** :
   - Sélecteur de consentement mailing intégré dans la barre d'outils native de l'écran d'administration.
   - Options de filtrage :
@@ -81,7 +94,7 @@
 
 ---
 
-# Release Notes — DAME v5.8.11
+# Release Notes — DAME v5.9.0
 
 **Date :** 29 octobre 2026
 
