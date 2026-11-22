@@ -68,26 +68,27 @@ class SeasonServiceTest extends TestCase {
 	}
 
 	/**
-	 * Test membership overlap check (July 1st to Oct 31st).
+	 * Test membership overlap check (July 1st to Sept 30th).
 	 */
 	public function test_is_in_membership_overlap(): void {
 		// In overlap window.
 		$this->assertTrue( Season_Service::is_in_membership_overlap( new DateTimeImmutable( '2024-07-01' ) ) );
 		$this->assertTrue( Season_Service::is_in_membership_overlap( new DateTimeImmutable( '2024-08-15' ) ) );
 		$this->assertTrue( Season_Service::is_in_membership_overlap( new DateTimeImmutable( '2024-09-01' ) ) );
-		$this->assertTrue( Season_Service::is_in_membership_overlap( new DateTimeImmutable( '2024-10-31' ) ) );
+		$this->assertTrue( Season_Service::is_in_membership_overlap( new DateTimeImmutable( '2024-09-30' ) ) );
 
 		// Outside overlap window.
 		$this->assertFalse( Season_Service::is_in_membership_overlap( new DateTimeImmutable( '2024-06-30' ) ) );
-		$this->assertFalse( Season_Service::is_in_membership_overlap( new DateTimeImmutable( '2024-11-01' ) ) );
+		$this->assertFalse( Season_Service::is_in_membership_overlap( new DateTimeImmutable( '2024-10-01' ) ) );
+		$this->assertFalse( Season_Service::is_in_membership_overlap( new DateTimeImmutable( '2024-10-31' ) ) );
 		$this->assertFalse( Season_Service::is_in_membership_overlap( new DateTimeImmutable( '2025-01-10' ) ) );
 	}
 
 	/**
-	 * Test membership expiry date (October 31st N+1).
+	 * Test membership expiry date (September 30th N+1).
 	 */
 	public function test_get_membership_expiry_date(): void {
 		$expiry = Season_Service::get_membership_expiry_date( 2024 );
-		$this->assertSame( '2025-10-31 23:59:59', $expiry->format( 'Y-m-d H:i:s' ) );
+		$this->assertSame( '2025-09-30 23:59:59', $expiry->format( 'Y-m-d H:i:s' ) );
 	}
 }

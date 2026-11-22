@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Synchronisation Saisonnière des Rôles PWA & Règle FFE au 30 Septembre
+- **Service Centralisé de Synchronisation (`Services\Membership_Role_Sync`)** :
+  - Promotion et rétrogradation automatiques du rôle WordPress (`membre` ↔ `subscriber`) en fonction des adhésions actives (`dame_saison_adhesion`) sur les saisons valides retournées par `Season_Service::get_valid_membership_season_ids()`.
+  - **Temps réel** : écoute des hooks `set_object_terms` (`dame_saison_adhesion` sur `adherent`) ainsi que `added_post_meta` / `updated_post_meta` sur les e-mails (`_dame_email`, `_dame_legal_rep_1_email`, `_dame_legal_rep_2_email`).
+  - **Gestion multi-adhérents & sécurité** : conserve le statut `membre` d'un parent/responsable légal tant qu'au moins une fiche `adherent` rattachée est active ; ne modifie jamais les rôles privilégiés (`administrator`, `editor`, `staff`, `entraineur`) ni les comptes non vérifiés (`_dame_is_verified !== '1'`).
+- **Tâche Cron Quotidienne (`Core\Cron`)** :
+  - Ajout de l'événement quotidien `dame_membership_role_sync_event` (exécuté à `03:00` heure locale) pour assurer la bascule automatique le **1er octobre** sans coupure manuelle.
+- **Inscription REST (`API\REST\Registration`)** :
+  - À la validation du lien e-mail, le passage en `membre` est conditionné à l'existence d'une adhésion active ; à défaut, l'utilisateur reste `subscriber` vérifié et sera promu automatiquement lors de l'activation de sa licence.
+- **Administration (`Admin\Settings\Tabs\Saisons`)** :
+  - Ajout du bouton « Synchroniser les rôles Membre / Abonné » permettant un recalcul manuel immédiat avec bilan chiffré.
+- **Alignement FFE au 30 Septembre (`Services\Season_Service`, `Services\Birthday`)** :
+  - Ajustement de la fenêtre de chevauchement annuelle du **1er juillet au 30 septembre** (`07-01` → `09-30`) et de la date d'expiration au **30 septembre 23:59:59** (impactant également les endpoints `/dame/v1/birthdays/today` et `/dame/v1/birthdays/upcoming`).
+
 ## [5.8.11] - 2026-11-11
 
 ### Filtre & Visibilité des Refus Mailing Adhérents

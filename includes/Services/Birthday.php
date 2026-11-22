@@ -173,7 +173,7 @@ class Birthday {
 			$today    = new DateTime( 'today', new \DateTimeZone( 'UTC' ) );
 			$upcoming = array();
 
-			// Identifier la saison N/N+1 lors de la période de chevauchement (01/07 au 31/10).
+			// Identifier la saison N/N+1 lors de la période de chevauchement (01/07 au 30/09).
 			$in_overlap     = Season_Service::is_in_membership_overlap();
 			$next_season_id = 0;
 			$season_cutoff  = null;
@@ -204,7 +204,7 @@ class Birthday {
 						$next_birthday = $this_year_birthday;
 					}
 
-					// Si l'anniversaire tombe après le 31 octobre lors du chevauchement estival/automnal,
+					// Si l'anniversaire tombe après le 30 septembre lors du chevauchement estival/automnal,
 					// l'adhérent doit obligatoirement être inscrit pour la saison suivante N/N+1.
 					if ( $in_overlap && $season_cutoff && $next_birthday > $season_cutoff && $next_season_id > 0 ) {
 						if ( ! has_term( $next_season_id, 'dame_saison_adhesion', $id ) ) {

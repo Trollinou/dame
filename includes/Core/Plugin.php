@@ -40,6 +40,7 @@ use DAME\Services\ICalFeed as ICalFeedService;
 use DAME\Services\Backup;
 use DAME\Services\Birthday;
 use DAME\Services\Newsletter as NewsletterService;
+use DAME\Services\Membership_Role_Sync;
 use DAME\Shortcodes\RegistrationForm;
 use DAME\Shortcodes\Agenda as AgendaShortcode;
 use DAME\Shortcodes\Benevolat as BenevolatShortcode;
@@ -168,6 +169,9 @@ class Plugin {
 
 		$newsletter_service = new NewsletterService();
 		$newsletter_service->init();
+
+		$membership_role_sync = new Membership_Role_Sync();
+		$membership_role_sync->init();
 
 		$cron_manager = new Cron();
 		$cron_manager->init();

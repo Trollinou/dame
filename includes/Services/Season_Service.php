@@ -18,7 +18,7 @@ use WP_Term;
  * Class Season_Service
  *
  * Handles logic, calculations and term lookups related to both the sports season
- * (Sept 1st to Aug 31st) and the membership/licence validity cycle (July 1st to Oct 31st N+1).
+ * (Sept 1st to Aug 31st) and the membership/licence validity cycle (July 1st to Sept 30th N+1).
  */
 class Season_Service {
 
@@ -143,28 +143,28 @@ class Season_Service {
 	}
 
 	/**
-	 * Determines whether a given date is within the annual membership overlap window (July 1st to Oct 31st).
+	 * Determines whether a given date is within the annual membership overlap window (July 1st to Sept 30th).
 	 *
 	 * During this window, members of the ending season (N-1/N) retain active privileges
 	 * while new members for the upcoming season (N/N+1) can register and participate.
 	 *
 	 * @param DateTimeInterface|null $date The date to check, defaults to current time.
-	 * @return bool True if within the July 1st - October 31st window.
+	 * @return bool True if within the July 1st - September 30th window.
 	 */
 	public static function is_in_membership_overlap( ?DateTimeInterface $date = null ): bool {
 		$md = $date ? $date->format( 'm-d' ) : wp_date( 'm-d' );
-		return ( $md >= '07-01' && $md <= '10-31' );
+		return ( $md >= '07-01' && $md <= '09-30' );
 	}
 
 	/**
-	 * Computes the membership expiry cutoff date (October 31st 23:59:59 of N+1) for a season starting in year N.
+	 * Computes the membership expiry cutoff date (September 30th 23:59:59 of N+1) for a season starting in year N.
 	 *
 	 * @param int $season_start_year The starting year of the season (e.g. 2024 for season 2024/2025).
 	 * @return DateTimeImmutable The expiry cutoff date.
 	 */
 	public static function get_membership_expiry_date( int $season_start_year ): DateTimeImmutable {
 		return new DateTimeImmutable(
-			sprintf( '%d-10-31 23:59:59', $season_start_year + 1 ),
+			sprintf( '%d-09-30 23:59:59', $season_start_year + 1 ),
 			new DateTimeZone( 'UTC' )
 		);
 	}
@@ -172,8 +172,8 @@ class Season_Service {
 	/**
 	 * Gets the term IDs of all valid membership seasons for a given date.
 	 *
-	 * - During the overlap period (July 1st to Oct 31st): returns term IDs for both Saison (Y-1)/Y and Saison Y/(Y+1).
-	 * - Outside overlap (Nov 1st to June 30th): returns the currently configured active season term ID.
+	 * - During the overlap period (July 1st to Sept 30th): returns term IDs for both Saison (Y-1)/Y and Saison Y/(Y+1).
+	 * - Outside overlap (Oct 1st to June 30th): returns the currently configured active season term ID.
 	 *
 	 * @param DateTimeInterface|null $date Optional reference date, defaults to today.
 	 * @return array<int> Term IDs of valid seasons.
@@ -183,7 +183,7 @@ class Season_Service {
 			$year       = $date ? (int) $date->format( 'Y' ) : (int) wp_date( 'Y' );
 			$season_ids = array();
 
-			// Saison N-1/N (finishing on Oct 31st of year N).
+			// Saison N-1/N (finishing on Sept 30th of year N).
 			$term_1 = get_term_by( 'name', self::format_season_name( $year - 1, $year ), 'dame_saison_adhesion' );
 			if ( $term_1 instanceof WP_Term ) {
 				$season_ids[] = (int) $term_1->term_id;

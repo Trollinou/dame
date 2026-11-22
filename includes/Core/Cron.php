@@ -12,6 +12,7 @@ namespace DAME\Core;
 use DAME\Services\Backup;
 use DAME\Services\Birthday;
 use DAME\Services\FFESyncBatch;
+use DAME\Services\Membership_Role_Sync;
 use DateTime;
 
 /**
@@ -40,6 +41,12 @@ class Cron {
 			'dame_ffe_sync_event',
 			function () {
 				( new FFESyncBatch() )->run();
+			}
+		);
+		add_action(
+			'dame_membership_role_sync_event',
+			function () {
+				( new Membership_Role_Sync() )->sync_all_users();
 			}
 		);
 		add_action( 'admin_init', array( $this, 'schedule_events' ) );
@@ -75,6 +82,12 @@ class Cron {
 			$ffe_sync_time      = '12:00';
 			$ffe_sync_timestamp = $this->get_timestamp_from_local_time( $ffe_sync_time );
 			wp_schedule_event( $ffe_sync_timestamp, 'daily', 'dame_ffe_sync_event' );
+		}
+
+		// Membership Role Sync.
+		if ( ! wp_next_scheduled( 'dame_membership_role_sync_event' ) ) {
+			$role_sync_timestamp = $this->get_timestamp_from_local_time( '03:00' );
+			wp_schedule_event( $role_sync_timestamp, 'daily', 'dame_membership_role_sync_event' );
 		}
 	}
 

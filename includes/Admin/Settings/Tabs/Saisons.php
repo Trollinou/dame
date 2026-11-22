@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace DAME\Admin\Settings\Tabs;
 
+use DAME\Services\Membership_Role_Sync;
 use DAME\Services\Season_Service;
 
 /**
@@ -174,6 +175,24 @@ class Saisons {
 				}
 			}
 
+			if ( 'sync_membership_roles' === $action ) {
+				if ( ! current_user_can( 'manage_options' ) ) {
+					return;
+				}
+				$stats = ( new Membership_Role_Sync() )->sync_all_users();
+				add_action(
+					'admin_notices',
+					function () use ( $stats ) {
+						echo '<div class="updated"><p>' . sprintf(
+							/* translators: 1: Nombre de comptes promus, 2: Nombre de comptes rétrogradés */
+							esc_html__( 'Synchronisation des rôles PWA terminée : %1$d compte(s) promu(s) en Membre, %2$d compte(s) rétrogradé(s) en Abonné.', 'dame' ),
+							(int) $stats['promoted'],
+							(int) $stats['demoted']
+						) . '</p></div>';
+					}
+				);
+			}
+
 			if ( 'update_season_pricing' === $action && isset( $_POST['dame_save_pricing'] ) ) {
 				if ( ! current_user_can( 'manage_options' ) ) {
 					return;
@@ -273,6 +292,18 @@ class Saisons {
 						}
 						?>
 					</p>
+				</form>
+			</div>
+
+			<hr class="wp-header-end">
+
+			<div>
+				<h3><?php esc_html_e( 'Synchronisation des rôles PWA (Membre / Abonné)', 'dame' ); ?></h3>
+				<p><?php esc_html_e( 'Recalcule immédiatement les rôles WordPress des utilisateurs vérifiés selon les adhésions actives pour la période en cours (avec tolérance jusqu\'au 30 septembre). Les rôles d\'administration et d\'encadrement ne sont jamais modifiés.', 'dame' ); ?></p>
+				<form method="post">
+					<input type="hidden" name="dame_action" value="sync_membership_roles" />
+					<?php wp_nonce_field( 'dame_season_management_nonce', 'dame_season_management_nonce_field' ); ?>
+					<?php submit_button( __( 'Synchroniser les rôles Membre / Abonné', 'dame' ), 'secondary', 'dame_sync_membership_roles', false ); ?>
 				</form>
 			</div>
 

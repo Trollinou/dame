@@ -15,6 +15,7 @@ use WP_REST_Server;
 use WP_Error;
 use WP_User;
 use DAME\Services\Adherent_Matcher;
+use DAME\Services\Membership_Role_Sync;
 
 /**
  * Class Registration
@@ -188,9 +189,11 @@ class Registration {
 			wp_die( esc_html__( 'Le jeton de vérification a expiré.', 'dame' ) );
 		}
 
-		// Passe le user_meta '_dame_is_verified' à 1, change le rôle à 'membre' et supprime le token.
+		// Passe le user_meta '_dame_is_verified' à 1, promeut en 'membre' uniquement si une adhésion est active, et supprime le token.
 		update_user_meta( $user->ID, '_dame_is_verified', 1 );
-		$user->set_role( 'membre' );
+		if ( Membership_Role_Sync::has_active_membership_for_email( $user->user_email ) ) {
+			$user->set_role( 'membre' );
+		}
 		delete_user_meta( $user->ID, '_dame_verification_token' );
 		delete_user_meta( $user->ID, '_dame_verification_token_expiration' );
 
