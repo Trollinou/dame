@@ -223,7 +223,7 @@ class Recurrence_Calculator {
 				);
 			}
 
-			if ( $candidate && $candidate > $start_date ) {
+			if ( $candidate > $start_date ) {
 				if ( $candidate > $deadline ) {
 					break;
 				}
